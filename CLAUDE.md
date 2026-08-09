@@ -37,14 +37,15 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 > Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
 > ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
 
-## Eklentiler
+## Beceriler
 
-- `frontend-design@claude-plugins-official` — arayuz gelistirmede kullanilacak
-  tasarim becerisi. Market: `anthropics/claude-plugins-official`. Hem market hem
-  eklenti `.claude/settings.json` icinde proje kapsaminda tanimli.
-  **Dikkat:** bu tanim tek basina yeterli olmayabiliyor — uzak (web) oturumlarinda
-  eklenti indirilmeden kalabiliyor. Oturum basinda `claude plugin list` ile
-  dogrula, eksikse Kararlar bolumundeki iki komutu calistir.
+- `frontend-design` — arayuz gelistirmede kullanilacak tasarim becerisi.
+  Repoda: `.claude/skills/frontend-design/`. Her oturumda ag ve yukleyici
+  olmadan otomatik yuklenir; ekstra kurulum gerekmez.
+  Nereden geldigi ve nasil guncellendigi:
+  `.claude/skills/frontend-design/KAYNAK.md`.
+
+Eklenti (plugin) kurulumu **kullanilmiyor** — gerekcesi Kararlar bolumunde.
 
 ## Kararlar
 
@@ -56,7 +57,9 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   marketi kullanilmisti; bu yanlisti. Market gercekte `anthropics/claude-plugins-official`
   deposu olarak mevcut ve `frontend-design` icinde yer aliyor. Ayar
   `frontend-design@claude-plugins-official` olarak duzeltildi.
-- 2026-08-09 — Eklenti kurulumu yeni konteynerde kendiliginden gelmiyor. Oturuma
-  baslarken `claude plugin list` ile dogrula; eksikse su iki komutu calistir:
-  `claude plugin marketplace add anthropics/claude-plugins-official` ve
-  `claude plugin install frontend-design@claude-plugins-official`.
+- 2026-08-09 — Eklenti yontemi birakildi, beceri repoya kopyalandi (vendor).
+  Gerekce: `claude plugin install` eklentiyi `~/.claude/` altina kuruyor, o dizin
+  konteynerle birlikte siliniyor; `.claude/settings.json` icindeki eklenti tanimi
+  da uzak oturumda indirmeyi tetiklemedi, yani beceri hic yuklenmedi.
+  `.claude/skills/` ise repoda oldugu icin her oturumda kosulsuz okunur.
+  Bedeli: upstream guncellemeleri elle cekilir (bkz. `KAYNAK.md`).
