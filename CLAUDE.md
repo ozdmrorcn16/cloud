@@ -44,22 +44,25 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   Hem market hem eklenti `.claude/settings.json` icinde proje kapsaminda
   tanimli, yani **ayar** yeni konteynerde kendiliginden geri gelir.
 
-  **Dikkat:** ayarin geri gelmesi eklentinin yuklu olmasi demek degil.
-  Claude Code on the web (bulut) konteynerlerinde `SKIP_PLUGIN_MARKETPLACE=true`
-  ortam degiskeni tanimli oldugu icin market klonlanmaz ve eklenti otomatik
-  kurulmaz; oturum acildiginda `claude plugin list` bos gelir. Yerel CLI'da
-  boyle bir kisit yok, ayar oldugu gibi calisir.
+  **Neden ek is gerekti:** ayarin geri gelmesi eklentinin yuklu olmasi demek
+  degil. Claude Code on the web (bulut) konteynerlerinde
+  `SKIP_PLUGIN_MARKETPLACE=true` tanimli oldugu icin market klonlanmaz ve
+  eklenti otomatik kurulmaz; kurulum da `/root/.claude/...` altina yazildigi
+  icin konteynerle birlikte silinir. Yerel CLI'da boyle bir kisit yok.
 
-  Bulut oturumunda elle kurmak icin:
+  **Cozum:** `.claude/hooks/eklenti-kur.py` betigi `SessionStart` hook'u
+  olarak tanimli. Her oturum acilisinda eklentinin diskte olup olmadigina
+  bakar; yoksa marketi ekleyip eklentiyi kurar ve `reloadSkills` bayragiyla
+  cikarak beceriyi ayni oturumda kullanilabilir yapar. Yani elle komut
+  calistirmak gerekmiyor.
 
-  ```bash
-  claude plugin marketplace add anthropics/claude-code
-  claude plugin install frontend-design@claude-code-plugins
-  ```
+  - Kurulum gerektiginde oturum acilisi ~35 sn uzar (market klonu).
+  - Eklenti zatan kuruluysa hook 0.03 sn surer ve hicbir sey yazmaz.
+  - Hook hicbir kosulda oturumu engellemez; kurulum basarisiz olursa yalnizca
+    bilgilendirme metni birakir.
 
-  Kurulum `/root/.claude/...` altina yazilir, yani konteyner ile birlikte
-  silinir; her yeni bulut oturumunda tekrarlanmasi gerekir. Beceri, ortamda
-  hazir gelen `/mnt/skills/public/frontend-design` kopyasindan farklidir.
+  Not: bu beceri, ortamda hazir gelen `/mnt/skills/public/frontend-design`
+  kopyasindan farklidir.
 
 ## Kararlar
 
@@ -73,3 +76,6 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   gecerli, eklenti 1.1.0 olarak sorunsuz kuruluyor. Ancak bulut konteynerinde
   `SKIP_PLUGIN_MARKETPLACE=true` nedeniyle otomatik kurulum olmuyor; her bulut
   oturumunda iki komutla elle kurulmasi gerekiyor (bkz. "Eklentiler").
+- 2026-08-09 — Eklenti kurulumu kalicilastirildi: `SessionStart` hook'u
+  (`.claude/hooks/eklenti-kur.py`) her yeni konteynerde eklentiyi otomatik
+  kuruyor. Elle kurulum adimina artik gerek yok.

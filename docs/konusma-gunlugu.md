@@ -6,10 +6,11 @@ yazilir.
 
 ## Otomatik kayit nasil calisiyor
 
-`.claude/settings.json` icinde iki hook tanimli:
+`.claude/settings.json` icinde uc hook tanimli:
 
 | Olay | Ne yapar |
 |---|---|
+| `SessionStart` (oturum acilisinda) | `.claude/hooks/eklenti-kur.py` ile eksik eklentileri kurar. Ayrintilar `CLAUDE.md` > "Eklentiler". |
 | `Stop` (her yanit sonunda) | Oturum dokumunu `docs/oturumlar/` altina yazar. Arka planda calisir, yaniti bekletmez. |
 | `SessionEnd` (oturum kapanirken) | Ayni dokumu yazar, sonra `docs/oturumlar` ve bu dosyayi commit'leyip dala push eder. |
 
@@ -46,3 +47,6 @@ icinde `/hooks` menusunden devre disi birak.
   Bulut konteynerlerinde `SKIP_PLUGIN_MARKETPLACE=true` oldugu icin otomatik
   kurulum calismiyor; elle kurulum adimlari `CLAUDE.md` > "Eklentiler"
   bolumune yazildi.
+- **2026-08-09** — Elle kurulum ihtiyaci ortadan kaldirildi: `SessionStart`
+  hook'u eklentiyi her yeni konteynerde otomatik kuruyor ve `reloadSkills`
+  ile ayni oturumda kullanilabilir hale getiriyor.
