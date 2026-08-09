@@ -41,3 +41,11 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-08-09** — `frontend-design` eklentisinin kurulumu dogrulandi ve eksik
+  bulundu. Ayarlar dosyasindaki tanim dogruydu (market adi `claude-code-plugins`
+  gercekten resmi markette boyle geciyor, eklenti 1.1.0 mevcut) ama yeni
+  konteynerde eklenti yuklenmiyordu: proje dizini guvenilir isaretli gelmedigi
+  icin (`~/.claude.json` -> `hasTrustDialogAccepted: false`) proje kapsamindaki
+  `extraKnownMarketplaces` / `enabledPlugins` yok sayiliyor. Hook'lar guven
+  onayindan etkilenmediginden, kurulum `SessionStart` hook'una tasindi
+  (`.claude/hooks/eklenti-kur.sh`).
