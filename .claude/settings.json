@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-kaydet.py\" 2>/dev/null || true",
+            "async": true,
+            "statusMessage": "Oturum kaydi yaziliyor"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-kaydet.py\" --push 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Oturum kaydi push ediliyor"
+          }
+        ]
+      }
+    ]
+  }
+}
