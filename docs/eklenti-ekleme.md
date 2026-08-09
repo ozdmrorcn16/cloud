@@ -145,6 +145,79 @@ kaybolur. `.claude/hooks/eklentileri-kur.sh` adli `SessionStart` hook'u bunlari
 geri yukler; her sey yerindeyse ~5 saniyede biter, sifirdan kurulumda birkac
 dakika surer.
 
+## Yetenek testi sonuclari (2026-08-09)
+
+Eklentiler kurulu gorunmesine ragmen bazi yetenekler sessizce calismiyordu.
+Hepsi tek tek calistirilarak test edildi.
+
+| Yetenek | Durum | Not |
+|---|---|---|
+| claude-mem `search` / `timeline` / `get_observations` | calisiyor | |
+| claude-mem `smart_outline` / `smart_search` | **duzeltildi** | asagiya bak |
+| gstack `browse` (goto/text/click/screenshot) | calisiyor | JS calisiyor, render dogru |
+| gstack ortak preamble (`gstack-config`, `gstack-update-check`) | calisiyor | butun beceriler buna bagli |
+| security-guidance desen taramasi (25 kural) | calisiyor | Edit/Write'ta aninda uyariyor |
+| security-guidance LLM incelemesi | **calismiyor** | ortam kisiti, asagiya bak |
+| code-review | kismi | `gh pr diff` calisiyor, `gh pr view/list` blokli |
+| frontend-design | calisiyor | beceri dosyasi yukleniyor |
+
+### Duzeltilen: smart_outline / smart_search her dosyada bos donuyordu
+
+Belirti: her dosya icin "unsupported language or be empty".
+
+Kok neden: bu araclar `tree-sitter query` komutunu calistiriyor. `tree-sitter-cli`
+npm paketi binary'yi postinstall'da GitHub releases'ten indiriyor; o adim
+atlanmis, binary hic gelmemis. Kod bulamayinca PATH'teki `tree-sitter`a dusuyor,
+o da olmadigi icin `execFileSync` hatasi yutuluyor ve arac sessizce bos sonuc
+donduruyor — yani hata mesaji yaniltici.
+
+Yanlis iz: once `tree-sitter` **cekirdek** paketinin Node 22 ABI'si icin
+prebuild'i olmadigi gorulup kaynaktan derlendi. Ama paketin bundle'i cekirdegi
+hic `require` etmiyor; sorun o degildi. Gercek eksik CLI binary'siydi.
+
+Duzeltme hook'ta (`ts_cli_kur`). Dogrulama: python/bash/markdown ayristiriliyor,
+`smart_search` 0 yerine 103 sembol buluyor.
+
+### Calismiyor: security-guidance'in LLM inceleme katmani
+
+Eklentinin iki katmani var:
+
+1. **Desen taramasi** (senkron, 25 kural) — her Edit/Write sonrasi calisir.
+   Bu ortamda **calisiyor**; `shell=True` komut enjeksiyonunu test ederken
+   aninda yakaladi.
+2. **LLM diff incelemesi** (asenkron; Stop, `git commit`, `git push`) — bu
+   ortamda **calismiyor**.
+
+Sebep: kod `ANTHROPIC_API_KEY` veya `ANTHROPIC_AUTH_TOKEN` ariyor. Bu remote
+ortamda ikisi de yok; Claude Code kimligini bir OAuth token dosya
+tanimlayicisiyla tasiyor. Kimlik bulunamayinca hook `skip_reason=3` ile
+sessizce cikiyor. Agent SDK venv'i (355 MB) kurulu ve saglam — eksik olan tek
+sey kimlik.
+
+Bilerek duzeltilmedi: oturumun OAuth kimligini bir ortam degiskenine kopyalamak
+kimlik yonetimini degistirir ve kodu ortamin ongormedigi bir yoldan API'ye
+gonderir. Karar kullanicinin.
+
+### gh CLI
+
+17 gstack becerisi (`ship`, `review`, `qa`, `retro`...) `gh` cagiriyor ama
+konteynerde kurulu degildi. `GH_TOKEN` ortamda hazir oldugu icin binary'yi
+indirmek yetti; hook'a eklendi (`gh_kur`, `~/.local/bin/gh`).
+
+Kismi calisiyor — bu oturumun proxy'si GraphQL'i kisitliyor:
+
+```
+gh api repos/{owner}/{repo}/...   REST, calisiyor
+gh pr diff <n>                    REST, calisiyor
+gh pr list / view, gh issue list  GraphQL, HTTP 403
+```
+
+Bloklu komutlarin yerine GitHub MCP araclari (`mcp__github__*`) kullanilabilir;
+bu ortamda desteklenen yol zaten o.
+
+`scc` de kurulu degil ama hicbir beceri kullanmiyor — sadece gstack'in kendi
+gelistirici karsilastirma betigi icin, sorun degil.
+
 ### Bu ortama ozgu iki takla
 
 1. **Playwright Chromium.** gstack'in playwright'i `chromium-1208` ariyor,

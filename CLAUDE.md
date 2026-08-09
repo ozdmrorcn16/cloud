@@ -82,3 +82,16 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   `cdn.playwright.dev` ag politikasiyla blokli. Konteynerdeki chromium-1194,
   1208'in bekledigi Chrome-for-Testing yerlesimiyle `/opt/pw-browsers` altina
   sembolik linklendi. Bu takla da hook'ta duruyor.
+- 2026-08-09 — Yetenekler tek tek test edildi. Iki gercek ariza bulundu ve
+  duzeltildi, biri ortam kisiti olarak birakildi. Ayrinti:
+  `docs/eklenti-ekleme.md` → "Yetenek testi sonuclari".
+  - claude-mem'in `smart_outline`/`smart_search` araclari **her** dosyada bos
+    donuyordu: `tree-sitter-cli` binary'si hic inmemis. Hook'a indirme adimi
+    eklendi. Hata mesaji ("unsupported language") yanilticiydi.
+  - 17 gstack becerisinin ihtiyac duydugu `gh` CLI kurulu degildi; hook'a
+    eklendi. GraphQL komutlari (`gh pr list/view`) proxy tarafindan blokli,
+    REST (`gh api`, `gh pr diff`) calisiyor.
+  - security-guidance'in LLM inceleme katmani bu ortamda calisamiyor:
+    `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` yok. Desen taramasi (25 kural)
+    calisiyor. Oturum kimligini env'e kopyalamak dogru olmaz diye
+    dokunulmadi — karar kullanicinin.

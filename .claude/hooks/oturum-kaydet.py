@@ -34,6 +34,33 @@ def repo_koku() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+# Konusma dokumu repoya push edildigi icin, konusmada gecen anahtar
+# gorunumlu diziler yazilmadan once maskelenir. Aksi halde GitHub'in push
+# korumasi butun push'u reddediyor (ve hakli olarak).
+GIZLI_DESENLER = re.compile(
+    r"""(
+        sk-ant-[A-Za-z0-9_-]{16,}          # Anthropic
+      | sk_live_[A-Za-z0-9]{16,}           # Stripe canli
+      | sk_test_[A-Za-z0-9]{16,}           # Stripe test
+      | rk_live_[A-Za-z0-9]{16,}           # Stripe kisitli
+      | AKIA[0-9A-Z]{16}                   # AWS erisim anahtari
+      | ASIA[0-9A-Z]{16}                   # AWS gecici anahtar
+      | gh[pousr]_[A-Za-z0-9]{20,}         # GitHub token
+      | github_pat_[A-Za-z0-9_]{20,}       # GitHub ince taneli PAT
+      | glpat-[A-Za-z0-9_-]{16,}           # GitLab
+      | xox[abprs]-[A-Za-z0-9-]{10,}       # Slack
+      | AIza[0-9A-Za-z_-]{35}              # Google API
+      | -----BEGIN[ A-Z]*PRIVATE\ KEY----- # Ozel anahtar blogu
+    )""",
+    re.VERBOSE,
+)
+
+
+def gizlileri_maskele(metin: str) -> str:
+    """Anahtar gorunumlu dizileri maskeler; kalanini oldugu gibi birakir."""
+    return GIZLI_DESENLER.sub("<REDACTED>", metin)
+
+
 def metin_bloklari(icerik) -> str:
     """Bir mesajin icerigindeki duz metin bloklarini birlestirir.
 

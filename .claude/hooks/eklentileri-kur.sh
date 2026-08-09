@@ -107,7 +107,31 @@ else
   durum+=("tree-sitter: KURULAMADI ($LOG)")
 fi
 
-# ── 5. Market eklentileri ─────────────────────────────────────
+# ── 5. gh CLI ─────────────────────────────────────────────────
+# gstack becerilerinin 17'si `gh` cagiriyor ve konteynerde kurulu degil.
+# GH_TOKEN ortamda hazir, yani indirmek yetiyor.
+# NOT: Bu oturumun proxy'si GraphQL'i kisitliyor; `gh api repos/...` (REST)
+# calisiyor, `gh pr list` / `gh pr create` gibi GraphQL komutlari 403 donuyor.
+gh_kur() {
+  command -v gh >/dev/null 2>&1 && return 0
+  local v=2.63.2 t
+  t=$(mktemp -d) || return 1
+  if curl -fsSL --retry 3 -o "$t/gh.tgz" \
+       "https://github.com/cli/cli/releases/download/v${v}/gh_${v}_linux_amd64.tar.gz" \
+     && tar xzf "$t/gh.tgz" -C "$t"; then
+    mkdir -p "$HOME/.local/bin"
+    install -m755 "$t/gh_${v}_linux_amd64/bin/gh" "$HOME/.local/bin/gh"
+  fi
+  rm -rf "$t"
+  command -v gh >/dev/null 2>&1 || [ -x "$HOME/.local/bin/gh" ]
+}
+if gh_kur >>"$LOG" 2>&1; then
+  durum+=("gh: hazir")
+else
+  durum+=("gh: kurulamadi ($LOG)")
+fi
+
+# ── 6. Market eklentileri ─────────────────────────────────────
 # settings.json'daki extraKnownMarketplaces/enabledPlugins tek basina yetmiyor:
 # dis kaynakli eklenti gercekten kurulmadan yuklenmiyor. Eksikse kuruyoruz.
 if command -v claude >/dev/null 2>&1; then
