@@ -152,7 +152,9 @@ def ozet_uret(turler) -> str:
     """Indekste gorunecek kisa etiket: ilk kullanici mesajinin bas kismi."""
     for rol, _, metin in turler:
         if rol == "user":
-            tek_satir = re.sub(r"\s+", " ", metin).strip()
+            # Kirpmadan once maskele: 80 karakterde kesilen bir anahtar artik
+            # desene uymaz ve yarisi indekste kalirdi.
+            tek_satir = re.sub(r"\s+", " ", gizlileri_maskele(metin)).strip()
             return tek_satir[:80] + ("…" if len(tek_satir) > 80 else "")
     return "(bos oturum)"
 
@@ -209,10 +211,14 @@ def main() -> int:
     oturumlar.mkdir(parents=True, exist_ok=True)
     ham.mkdir(parents=True, exist_ok=True)
 
+    # Iki dosya da repoya push edildigi icin yazmadan once maskelenir.
     (oturumlar / dosya_adi).write_text(
-        markdown_uret(turler, oturum_id, tarih), encoding="utf-8"
+        gizlileri_maskele(markdown_uret(turler, oturum_id, tarih)), encoding="utf-8"
     )
-    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_bytes(Path(transcript).read_bytes())
+    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_text(
+        gizlileri_maskele(Path(transcript).read_text(encoding="utf-8", errors="replace")),
+        encoding="utf-8",
+    )
     indeksi_guncelle(kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih, ozet_uret(turler))
 
     if "--push" in sys.argv:

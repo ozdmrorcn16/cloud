@@ -95,3 +95,8 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
     `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` yok. Desen taramasi (25 kural)
     calisiyor. Oturum kimligini env'e kopyalamak dogru olmaz diye
     dokunulmadi — karar kullanicinin.
+- 2026-08-09 — Oturum kaydinin redaksiyonu tamamlandi. `gizlileri_maskele()`
+  onceki oturumda yazilmisti ama **hic cagrilmiyordu** (code-review eklentisinin
+  buldugu gercek acik). Artik uc cikti da maskeden geciyor: dokum `.md`, ham
+  `.jsonl` ve `konusma-gunlugu.md` indeksi. Indeks ozeti maskelendikten sonra
+  kirpiliyor, boylece yarim kalan bir anahtar sizmiyor.

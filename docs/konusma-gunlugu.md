@@ -21,6 +21,18 @@ Uretilen dosyalar:
 - `docs/oturumlar/<tarih>-<oturum>.md` — okunabilir konusma dokumu
 - `docs/oturumlar/ham/<tarih>-<oturum>.jsonl` — ham transcript yedegi
 
+### Redaksiyon
+
+Uc cikti da (dokum, ham jsonl, yukaridaki oturum indeksi) diske yazilmadan
+once `gizlileri_maskele()` fonksiyonundan gecer. Anahtar gorunumlu diziler
+(`sk-ant-…`, `AKIA…`, `ghp_…`, `xoxb-…`, ozel anahtar bloklari ve digerleri;
+tam liste betikteki `GIZLI_DESENLER`) `<REDACTED>` ile degistirilir.
+
+Bu susleme degil: kayitlar repoya push edildigi icin maskeleme olmadan
+GitHub'in push korumasi butun push'u reddediyor. Indeks ozeti de maskelendikten
+**sonra** 80 karaktere kirpilir — tersi olsaydi ortadan kesilen bir anahtar
+desene uymaz ve yarisi indekste kalirdi.
+
 ### Kapatmak istersen
 
 `.claude/settings.json` dosyasindaki `hooks` blogunu sil, ya da Claude Code
