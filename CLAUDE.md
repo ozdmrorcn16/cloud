@@ -47,6 +47,16 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - `code-review@claude-code-plugins` — PR'lari 4 paralel ajanla denetleyip
   bulgulari 0-100 guven puaniyla eleyen otomatik kod incelemesi (esik 80).
   Cagrisi: `/code-review:code-review`, PR'a yorum birakmak icin `--comment`.
+- `security-guidance@claude-code-plugins` — her duzenlemeyi guvenlik acigi
+  kaliplarina karsi tarayan hook tabanli eklenti (komut enjeksiyonu, sizmis
+  anahtar, vb.). Slash komutu yok, arka planda calisir.
+- `claude-mem@thedotmack` — oturumlar arasi kalici hafiza. `~/.claude-mem`
+  altinda SQLite + chroma; 37700 portunda bir worker calisir.
+  `/claude-mem:mem-search`, `/claude-mem:learn-codebase` gibi ~20 beceri.
+- `gstack` (garrytan/gstack) — market eklentisi **degil**;
+  `~/.claude/skills/gstack` altina klonlanip `./setup` ile kurulur. 54 beceri,
+  hepsi `gstack-` onekli (`/gstack-qa`, `/gstack-ship`, `/gstack-review`...).
+  Onek, diger eklentilerle cakismasin diye `--prefix` ile secildi.
 
 ## Kararlar
 
@@ -60,3 +70,15 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   eklendi. Bu ortamda `/plugin` paneli calismadigi icin eklentiler her zaman
   `.claude/settings.json` uzerinden acilacak; elle ekleme yontemleri
   `docs/eklenti-ekleme.md` dosyasina yazildi.
+- 2026-08-09 — `settings.json`'a yazmak **tek basina yetmiyor**: dis kaynakli
+  eklenti diskte kurulu degilse yuklenmiyor. `claude plugin install ... --scope
+  project` de calistirilmali. Onceki oturumun `frontend-design`'i bu yuzden
+  hic aktif olmamisti.
+- 2026-08-09 — `security-guidance`, `claude-mem` ve `gstack` kuruldu ve test
+  edildi. Konteyner gecici oldugu icin `~/.claude` altina kurulanlari geri
+  getiren bir `SessionStart` hook'u yazildi:
+  `.claude/hooks/eklentileri-kur.sh`.
+- 2026-08-09 — gstack'in Playwright'i chromium-1208 ariyor ama
+  `cdn.playwright.dev` ag politikasiyla blokli. Konteynerdeki chromium-1194,
+  1208'in bekledigi Chrome-for-Testing yerlesimiyle `/opt/pw-browsers` altina
+  sembolik linklendi. Bu takla da hook'ta duruyor.

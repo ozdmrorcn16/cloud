@@ -112,6 +112,50 @@ kendiliginden geri gelir.
 
 Katalogu tarayicidan gezmek icin: <https://claude.com/plugins>
 
+## Onemli tuzak: settings.json tek basina yetmez
+
+`extraKnownMarketplaces` + `enabledPlugins` yazmak eklentiyi **acar** ama
+**kurmaz**. Dis kaynakli (GitHub) bir eklenti diskte yoksa yuklenmez; Claude
+Code onu "kurulu degil" diye raporlar. Bu yuzden ayarin yaninda bir de:
+
+```bash
+claude plugin marketplace add anthropics/claude-code
+claude plugin install security-guidance@claude-code-plugins --scope project
+```
+
+calistirmak gerekiyor. Kontrol:
+
+```bash
+claude plugin marketplace list
+claude plugin list
+```
+
+## Bu depoda kurulu olanlar
+
+| Eklenti | Tur | Nasil kuruldu |
+|---|---|---|
+| `frontend-design` | market | `claude-code-plugins`, project scope |
+| `code-review` | market | `claude-code-plugins`, project scope |
+| `security-guidance` | market (hook tabanli) | `claude-code-plugins`, project scope |
+| `claude-mem` | market + npm worker | `npx claude-mem install` + `thedotmack` marketi |
+| `gstack` | market **degil** | `~/.claude/skills/gstack` klonu + `./setup` |
+
+Konteyner gecici oldugu icin `~/.claude` altindaki her sey oturum bitince
+kaybolur. `.claude/hooks/eklentileri-kur.sh` adli `SessionStart` hook'u bunlari
+geri yukler; her sey yerindeyse ~5 saniyede biter, sifirdan kurulumda birkac
+dakika surer.
+
+### Bu ortama ozgu iki takla
+
+1. **Playwright Chromium.** gstack'in playwright'i `chromium-1208` ariyor,
+   konteynerde `chromium-1194` var ve `cdn.playwright.dev` ag politikasiyla
+   blokli. Cozum: mevcut binary'yi 1208'in bekledigi Chrome-for-Testing
+   yerlesimiyle `/opt/pw-browsers` altina sembolik linklemek. Hook bunu
+   otomatik yapiyor.
+2. **Dis siteler.** `example.com` gibi hostlar proxy tarafindan 403 ile
+   reddediliyor (curl de ayni sonucu veriyor). `gstack-browse` yerel sunucuya
+   ve izinli hostlara sorunsuz gidiyor; genel web gezintisi ortam kisiti.
+
 ## Kendi eklentini yazmak
 
 Bir eklenti aslinda su yapiya sahip bir klasordur:
