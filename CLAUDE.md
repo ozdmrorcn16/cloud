@@ -39,9 +39,14 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 ## Eklentiler
 
+Hepsi `.claude/settings.json` icinde **proje kapsaminda** tanimli, yani yeni
+konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
+
 - `frontend-design@claude-code-plugins` — arayuz gelistirmede kullanilacak
-  tasarim becerisi. Hem market hem eklenti `.claude/settings.json` icinde
-  proje kapsaminda tanimli, yani yeni konteynerde kendiliginden geri gelir.
+  tasarim becerisi.
+- `code-review@claude-code-plugins` — PR'lari 4 paralel ajanla denetleyip
+  bulgulari 0-100 guven puaniyla eleyen otomatik kod incelemesi (esik 80).
+  Cagrisi: `/code-review:code-review`, PR'a yorum birakmak icin `--comment`.
 
 ## Kararlar
 
@@ -51,3 +56,7 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+- 2026-08-09 — `code-review` eklentisi ayni markete (`claude-code-plugins`)
+  eklendi. Bu ortamda `/plugin` paneli calismadigi icin eklentiler her zaman
+  `.claude/settings.json` uzerinden acilacak; elle ekleme yontemleri
+  `docs/eklenti-ekleme.md` dosyasina yazildi.
