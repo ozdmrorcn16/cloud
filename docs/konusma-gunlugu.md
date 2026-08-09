@@ -29,6 +29,9 @@ icinde `/hooks` menusunden devre disi birak.
 ## Oturumlar
 
 <!-- oturumlar:baslangic -->
+
+- 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
+
 <!-- oturumlar:bitis -->
 
 ## Kararlar
