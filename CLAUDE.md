@@ -37,8 +37,17 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 > Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
 > ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
 
+## Eklentiler
+
+- `frontend-design@claude-code-plugins` — arayuz gelistirmede kullanilacak
+  tasarim becerisi. Hem market hem eklenti `.claude/settings.json` icinde
+  proje kapsaminda tanimli, yani yeni konteynerde kendiliginden geri gelir.
+
 ## Kararlar
 
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
   kullanilacak.
+- 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
+  adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
+  deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
