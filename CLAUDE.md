@@ -39,15 +39,24 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 ## Eklentiler
 
-- `frontend-design@claude-code-plugins` — arayuz gelistirmede kullanilacak
-  tasarim becerisi. Hem market hem eklenti `.claude/settings.json` icinde
-  proje kapsaminda tanimli, yani yeni konteynerde kendiliginden geri gelir.
+- `frontend-design@claude-plugins-official` — arayuz gelistirmede kullanilacak
+  tasarim becerisi. Market: `anthropics/claude-plugins-official`. Hem market hem
+  eklenti `.claude/settings.json` icinde proje kapsaminda tanimli.
+  **Dikkat:** bu tanim tek basina yeterli olmayabiliyor — uzak (web) oturumlarinda
+  eklenti indirilmeden kalabiliyor. Oturum basinda `claude plugin list` ile
+  dogrula, eksikse Kararlar bolumundeki iki komutu calistir.
 
 ## Kararlar
 
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
   kullanilacak.
-- 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
-  adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
-  deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+- 2026-08-09 — `frontend-design` eklentisi kuruldu. Ilk denemede `claude-plugins-official`
+  marketi bulunamadi sanilip `anthropics/claude-code` deposundaki `claude-code-plugins`
+  marketi kullanilmisti; bu yanlisti. Market gercekte `anthropics/claude-plugins-official`
+  deposu olarak mevcut ve `frontend-design` icinde yer aliyor. Ayar
+  `frontend-design@claude-plugins-official` olarak duzeltildi.
+- 2026-08-09 — Eklenti kurulumu yeni konteynerde kendiliginden gelmiyor. Oturuma
+  baslarken `claude plugin list` ile dogrula; eksikse su iki komutu calistir:
+  `claude plugin marketplace add anthropics/claude-plugins-official` ve
+  `claude plugin install frontend-design@claude-plugins-official`.
