@@ -41,3 +41,8 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-08-09** — `frontend-design` eklentisinin kurulumu kontrol edildi.
+  Ayar dogru, eklenti markette mevcut ve 1.1.0 surumu sorunsuz kuruluyor.
+  Bulut konteynerlerinde `SKIP_PLUGIN_MARKETPLACE=true` oldugu icin otomatik
+  kurulum calismiyor; elle kurulum adimlari `CLAUDE.md` > "Eklentiler"
+  bolumune yazildi.

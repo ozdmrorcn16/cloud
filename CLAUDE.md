@@ -40,8 +40,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Eklentiler
 
 - `frontend-design@claude-code-plugins` — arayuz gelistirmede kullanilacak
-  tasarim becerisi. Hem market hem eklenti `.claude/settings.json` icinde
-  proje kapsaminda tanimli, yani yeni konteynerde kendiliginden geri gelir.
+  tasarim becerisi (surum 1.1.0, tek dosya: `skills/frontend-design/SKILL.md`).
+  Hem market hem eklenti `.claude/settings.json` icinde proje kapsaminda
+  tanimli, yani **ayar** yeni konteynerde kendiliginden geri gelir.
+
+  **Dikkat:** ayarin geri gelmesi eklentinin yuklu olmasi demek degil.
+  Claude Code on the web (bulut) konteynerlerinde `SKIP_PLUGIN_MARKETPLACE=true`
+  ortam degiskeni tanimli oldugu icin market klonlanmaz ve eklenti otomatik
+  kurulmaz; oturum acildiginda `claude plugin list` bos gelir. Yerel CLI'da
+  boyle bir kisit yok, ayar oldugu gibi calisir.
+
+  Bulut oturumunda elle kurmak icin:
+
+  ```bash
+  claude plugin marketplace add anthropics/claude-code
+  claude plugin install frontend-design@claude-code-plugins
+  ```
+
+  Kurulum `/root/.claude/...` altina yazilir, yani konteyner ile birlikte
+  silinir; her yeni bulut oturumunda tekrarlanmasi gerekir. Beceri, ortamda
+  hazir gelen `/mnt/skills/public/frontend-design` kopyasindan farklidir.
 
 ## Kararlar
 
@@ -51,3 +69,7 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+- 2026-08-09 — Eklenti kurulumu dogrulandi: ayar dosyasi dogru, market girdisi
+  gecerli, eklenti 1.1.0 olarak sorunsuz kuruluyor. Ancak bulut konteynerinde
+  `SKIP_PLUGIN_MARKETPLACE=true` nedeniyle otomatik kurulum olmuyor; her bulut
+  oturumunda iki komutla elle kurulmasi gerekiyor (bkz. "Eklentiler").
