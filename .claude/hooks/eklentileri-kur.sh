@@ -84,7 +84,30 @@ else
   durum+=("claude-mem: atlandi (npx yok)")
 fi
 
-# ── 4. Market eklentileri ─────────────────────────────────────
+# ── 4. tree-sitter CLI binary'si ──────────────────────────────
+# claude-mem'in smart_search / smart_outline araclari `tree-sitter query`
+# komutunu calistiriyor. npm paketi (tree-sitter-cli) binary'yi postinstall'da
+# GitHub releases'ten indiriyor; bu adim kurulum sirasinda atlandigi icin
+# binary hic gelmiyor. Bulunamayinca kod PATH'teki "tree-sitter"a dusuyor, o da
+# olmayinca hata yutuluyor ve araclar her dosya icin sessizce bos sonuc
+# ("unsupported language") donduruyor. Eksikse indiriyoruz.
+ts_cli_kur() {
+  local kok cli
+  kok=$(ls -d "$HOME"/.claude/plugins/cache/thedotmack/claude-mem/*/ 2>/dev/null | head -1)
+  [ -z "$kok" ] && return 1
+  cli="$kok/node_modules/tree-sitter-cli"
+  [ -f "$cli/install.js" ] || return 1
+  [ -x "$cli/tree-sitter" ] && return 0
+  (cd "$cli" && node install.js) >>"$LOG" 2>&1
+  [ -x "$cli/tree-sitter" ]
+}
+if ts_cli_kur; then
+  durum+=("tree-sitter: hazir")
+else
+  durum+=("tree-sitter: KURULAMADI ($LOG)")
+fi
+
+# ── 5. Market eklentileri ─────────────────────────────────────
 # settings.json'daki extraKnownMarketplaces/enabledPlugins tek basina yetmiyor:
 # dis kaynakli eklenti gercekten kurulmadan yuklenmiyor. Eksikse kuruyoruz.
 if command -v claude >/dev/null 2>&1; then
