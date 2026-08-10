@@ -100,3 +100,8 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   buldugu gercek acik). Artik uc cikti da maskeden geciyor: dokum `.md`, ham
   `.jsonl` ve `konusma-gunlugu.md` indeksi. Indeks ozeti maskelendikten sonra
   kirpiliyor, boylece yarim kalan bir anahtar sizmiyor.
+- 2026-08-09 — Maskeleme, `temizle()` adinda tek kapiya donusturuldu:
+  `gizlileri_maskele()` + yeni `kimlikleri_kisalt()`. Ikincisi `toolu_`/`msg_`/
+  `req_` onekli ic kimlikleri kisaltiyor; sir degiller ama GitHub'in push
+  korumasi onlari Stripe anahtari sanip push'u reddedebiliyor. Mevcut ham
+  dokumler de ayni fonksiyonla temizlendi.
