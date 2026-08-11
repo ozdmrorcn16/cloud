@@ -170,6 +170,31 @@ Beceri dizini oturum basinda taranir. Ilk denemede `Unknown skill` alabilirsin;
 Claude Code kisa sure sonra dizini yeniden tarayip beceriyi ayni oturumda
 etkinlestirdi.
 
+## superpowers — bilerek yarim birakildi (2026-08-11)
+
+`superpowers@superpowers-dev` (obra/superpowers v6.2.0, 14 beceri) kuruldu ama
+**yeni konteynerde gelmeyecek**. Sebep, bu dosyanin "settings.json tek basina
+yetmez" bolumundeki tuzagin ikinci yarisi:
+
+- `claude plugin install --scope project` eklentiyi **proje** `settings.json`'ina
+  yazdi (`enabledPlugins`),
+- ama `claude plugin marketplace add` market tanimini **kullanici**
+  `~/.claude/settings.json`'ina yazdi — orasi repo disi, konteynerle silinir.
+
+Yani `enabledPlugins`'te girdi var, o girdinin isaret ettigi market yok. Eksik
+parca su alti satir; kalici istenirse proje `settings.json`'inin
+`extraKnownMarketplaces` bolumune eklenmesi yeter:
+
+```json
+"superpowers-dev": {
+  "source": { "source": "github", "repo": "obra/superpowers" }
+}
+```
+
+Kullanici 2026-08-11'de bu satirlari **eklememeyi** secti; eklenti su anki
+oturumda calisiyor, konteyner yenilenince kendiliginden dusecek. Ileride
+"superpowers neden yuklenmiyor?" diye bakan olursa cevabi burasi.
+
 ## Dogrulama (2026-08-11)
 
 Kurulu her yuzey yeniden calistirildi. **Hepsi calisiyor**, yeni ariza yok.
