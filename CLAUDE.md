@@ -34,8 +34,38 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 ## Uygulama fikri
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+**Konum tabanli sosyal uygulama.** Kullanicilar arkadas buluyor, arkadas
+ekliyor, konum belirtiyor ve sohbet ediyor.
+
+- **Platform:** gercek mobil uygulama (magazadan indirilen). Tarayici
+  uygulamasi degil — kullanicinin karari, 2026-08-11.
+- **Cekirdek islevler:** arkadas kesfi, arkadas ekleme, konum paylasimi,
+  mesajlasma.
+
+### Henuz cevaplanmamis (fikri netlestirmek icin gerekli)
+
+1. **Kime hitap ediyor ve neden mevcutlardan farkli?** Bu tarif bugun onlarca
+   uygulamaya uyuyor. Ayirt edici nokta belirlenmeden teknoloji secimi
+   yapilmamali — mimariyi belirleyen sey bu.
+2. **Konum ne kadar hassas?** Canli konum mu, sehir/semt gibi kaba bir alan mi,
+   yoksa "su an burada" seklinde anlik bir paylasim mi? Uc secenek uc farkli
+   mimari ve uc farkli risk profili demek.
+3. **Kimler birbirini gorebiliyor?** Sadece karsilikli arkadaslar mi, yakindaki
+   herkes mi? Yabancilar birbirinin konumunu gorebiliyorsa uygulama guvenlik
+   acisindan bambaska bir kategoriye giriyor.
+
+### Bastan tasarima girmesi gereken kisit
+
+Yabancilarla konum paylasimi bu uygulamanin **cekirdek riski**, sonradan
+eklenecek bir ozellik degil. Sonuclari:
+
+- Turkiye'de KVKK, AB kullanicisi olacaksa GDPR kapsaminda konum "ozel nitelikli
+  olmayan ama yuksek riskli" kisisel veri; acik riza, saklama suresi ve silme
+  akisi gerekiyor.
+- App Store ve Play Store konum izni ve resit olmayan kullanicilar konusunda
+  ayri kurallar isletiyor; yanlis kurgu magaza reddine yol aciyor.
+- Taciz, takip ve sahte hesap senaryolari icin engelleme/sikayet akisi ilk
+  surumde olmali.
 
 ## Eklentiler
 
@@ -113,3 +143,10 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   (`.claude/skills/no-ai-slop/`). Deponun onerdigi `npx skills add --global`
   konteynerle birlikte silinirdi; repodaki kopya hook'suz kaliciysa tercih
   edilir. Bundan sonra tek dosyalik beceriler icin varsayilan yontem bu.
+- 2026-08-11 — **Uygulama fikri belirlendi:** konum tabanli sosyal uygulama
+  (arkadas bulma/ekleme, konum, sohbet). Platform gercek mobil uygulama olacak,
+  web degil. Ayrinti ve acik sorular yukarida "Uygulama fikri" bolumunde.
+- 2026-08-11 — Mobil karari geliztirme yerini de belirliyor: simulator, cihazda
+  deneme ve magazaya yukleme bulut konteynerinden yapilamaz. Asil gelistirme
+  kullanicinin kendi bilgisayarinda olacak; bu depo (CLAUDE.md, docs, hook'lar)
+  klonla birlikte tasiniyor, `~/.claude-mem` veritabani tasinmiyor.
