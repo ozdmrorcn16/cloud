@@ -53,6 +53,10 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - `claude-mem@thedotmack` — oturumlar arasi kalici hafiza. `~/.claude-mem`
   altinda SQLite + chroma; 37700 portunda bir worker calisir.
   `/claude-mem:mem-search`, `/claude-mem:learn-codebase` gibi ~20 beceri.
+- `no-ai-slop` (petergyang/no-ai-slop) — market eklentisi **degil**, tek dosyalik
+  beceri. Repoya dogrudan kopyalandi: `.claude/skills/no-ai-slop/`. Yaziyi 20+
+  "AI slop" kalibindan temizler, sesini korur. `/no-ai-slop <metin>` duzeltir,
+  `/no-ai-slop is this slop? <metin>` sadece tespit eder.
 - `gstack` (garrytan/gstack) — market eklentisi **degil**;
   `~/.claude/skills/gstack` altina klonlanip `./setup` ile kurulur. 54 beceri,
   hepsi `gstack-` onekli (`/gstack-qa`, `/gstack-ship`, `/gstack-review`...).
@@ -105,3 +109,7 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   `req_` onekli ic kimlikleri kisaltiyor; sir degiller ama GitHub'in push
   korumasi onlari Stripe anahtari sanip push'u reddedebiliyor. Mevcut ham
   dokumler de ayni fonksiyonla temizlendi.
+- 2026-08-11 — `no-ai-slop` becerisi `~/.claude` yerine **repoya** kuruldu
+  (`.claude/skills/no-ai-slop/`). Deponun onerdigi `npx skills add --global`
+  konteynerle birlikte silinirdi; repodaki kopya hook'suz kaliciysa tercih
+  edilir. Bundan sonra tek dosyalik beceriler icin varsayilan yontem bu.

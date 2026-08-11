@@ -139,11 +139,35 @@ claude plugin list
 | `security-guidance` | market (hook tabanli) | `claude-code-plugins`, project scope |
 | `claude-mem` | market + npm worker | `npx claude-mem install` + `thedotmack` marketi |
 | `gstack` | market **degil** | `~/.claude/skills/gstack` klonu + `./setup` |
+| `no-ai-slop` | tek dosyalik beceri | `.claude/skills/no-ai-slop/` — repoya kopyalandi |
 
 Konteyner gecici oldugu icin `~/.claude` altindaki her sey oturum bitince
 kaybolur. `.claude/hooks/eklentileri-kur.sh` adli `SessionStart` hook'u bunlari
 geri yukler; her sey yerindeyse ~5 saniyede biter, sifirdan kurulumda birkac
 dakika surer.
+
+### Yol 4 — beceriyi dogrudan repoya koymak (`no-ai-slop` ornegi)
+
+Bazi "eklenti"ler aslinda market girdisi degil, tek bir `SKILL.md`. Boylelerinde
+market/kurulum adimi yok: dosyayi `.claude/skills/<ad>/` altina koymak yeter.
+Repoda durdugu icin hook'a da ihtiyac duymaz, yeni konteynerde kendiliginden
+gelir. En dayanikli yontem bu.
+
+`no-ai-slop` (petergyang/no-ai-slop, MIT, surum 1.0.6, commit `d30eddb`) boyle
+kuruldu:
+
+```sh
+git clone --depth 1 https://github.com/petergyang/no-ai-slop.git /tmp/nas
+mkdir -p .claude/skills/no-ai-slop
+cp /tmp/nas/skills/no-ai-slop/{SKILL.md,eval.md} /tmp/nas/LICENSE \
+   .claude/skills/no-ai-slop/
+```
+
+Deponun README'si `npx skills add ... --global` oneriyor; burada **kullanmadik**,
+cunku `--global` `~/.claude` altina yazar ve konteynerle birlikte silinir.
+
+Beceriler oturum basinda taranir, yani kopyaladiktan sonra ayni oturumda
+cagrilamaz (`Unknown skill`). Sonraki oturumda `/no-ai-slop` olarak gelir.
 
 ## Yetenek testi sonuclari (2026-08-09)
 
