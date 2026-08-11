@@ -166,8 +166,30 @@ cp /tmp/nas/skills/no-ai-slop/{SKILL.md,eval.md} /tmp/nas/LICENSE \
 Deponun README'si `npx skills add ... --global` oneriyor; burada **kullanmadik**,
 cunku `--global` `~/.claude` altina yazar ve konteynerle birlikte silinir.
 
-Beceriler oturum basinda taranir, yani kopyaladiktan sonra ayni oturumda
-cagrilamaz (`Unknown skill`). Sonraki oturumda `/no-ai-slop` olarak gelir.
+Beceri dizini oturum basinda taranir. Ilk denemede `Unknown skill` alabilirsin;
+Claude Code kisa sure sonra dizini yeniden tarayip beceriyi ayni oturumda
+etkinlestirdi.
+
+## Dogrulama (2026-08-11)
+
+Kurulu her yuzey yeniden calistirildi. **Hepsi calisiyor**, yeni ariza yok.
+
+| Yuzey | Nasil test edildi | Sonuc |
+|---|---|---|
+| gstack `browse` | `goto file://…` → `text` → `screenshot` | sayfa yuklendi, metin dondu, 1280x720 PNG cikti |
+| Playwright/Chromium taklasi | yukaridaki browse kosusu | chromium-1208 linki tuttu, artik surec sizmasi yok |
+| gstack beceri sayisi | `ls ~/.claude/skills/gstack-*` | 54 |
+| claude-mem `search` | gecmis oturumlarda arama | 44 sonuc, oturumlar arasi hafiza gercekten duruyor |
+| claude-mem `smart_outline` | `oturum-kaydet.py` | 12 fonksiyon, satir araliklariyla |
+| security-guidance desen katmani | sahte `PostToolUse` yuku | `pattern_hits: 1`, komut enjeksiyonu yakalandi |
+| security-guidance LLM katmani | sahte `Stop` yuku | 0.115 sn'de `skipped` — anahtar yokken **temiz** no-op |
+| `no-ai-slop` | ornek metinde tespit modu | 10 kalip isim isim bulundu |
+| `gh` | `gh api repos/...` | REST calisiyor, GraphQL hala 403 |
+| kurulum on kosullari | `bun` 1.3.11, node 22, npx, claude, jq | hepsi imajda mevcut |
+
+Onemli olan: LLM katmani anahtar yokken **hata vermiyor, asmiyor, yeniden
+denemiyor** — 0.1 saniyede atlayip cikiyor. Yani eksik anahtar bir yavaslama
+ya da gurultu kaynagi degil, sadece o katman devre disi.
 
 ## Yetenek testi sonuclari (2026-08-09)
 
