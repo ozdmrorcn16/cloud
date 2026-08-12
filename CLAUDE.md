@@ -54,6 +54,19 @@ ekliyor, konum belirtiyor ve sohbet ediyor.
    herkes mi? Yabancilar birbirinin konumunu gorebiliyorsa uygulama guvenlik
    acisindan bambaska bir kategoriye giriyor.
 
+### Siradaki adim
+
+Tasarim tamam ve onaylandi:
+`docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`
+
+Sirada **Faz 1'in uygulama plani** var: kayit, telefon dogrulama, profil
+olusturma, oturum. Yeni oturumda once bu spec'i oku, sonra `writing-plans`
+becerisiyle plani yaz. Tasarimi bastan tartismaya gerek yok — kararlar
+spec'te, gerekceleriyle birlikte.
+
+Spec'te bes acik soru var (mekan verisi kaynagi, check-in omru, paket fiyati,
+SMS saglayicisi, moderasyon). Hicbiri Faz 1'i engellemiyor.
+
 ### Bastan tasarima girmesi gereken kisit
 
 Yabancilarla konum paylasimi bu uygulamanin **cekirdek riski**, sonradan
