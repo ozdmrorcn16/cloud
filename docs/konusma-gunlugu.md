@@ -56,3 +56,17 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-08-13** — Yas politikasi degisti: alt sinir 16'dan 18'e cikti, 16-17
+  yas bandi ve veli onayi akisi tamamen kaldirildi. Gerekce: veli onayi
+  mekanizmasinin (SMS/e-posta ile onay linki, ayri bir Edge Function)
+  getirdigi karmasikliktan Faz 1'de kacinmak. Spec ve `CLAUDE.md` guncellendi.
+- **2026-08-13** — SMS dogrulama icin Faz 1 boyunca ucretli bir saglayici
+  kurulmuyor: Supabase'in hosted projede sundugu ucretsiz "test telefon
+  numaralari" ozelligi kullanilacak (gercek SMS gonderilmez, ucret cikmaz).
+  Gercek saglayici (Twilio) entegrasyonu izole bir goreve (Faz 1 planinin
+  Task 14'u) konuldu; yalnizca magazaya cikmadan hemen once calistirilacak.
+- **2026-08-13** — Faz 1 ("Hesap": kayit, telefon dogrulama, profil olusturma,
+  oturum) uygulama plani yazildi:
+  `docs/superpowers/plans/2026-08-13-faz1-hesap.md`. Tech stack: Expo (React
+  Native + TypeScript, Expo Router) + Supabase (Auth, Postgres, Storage),
+  proje `mobil/` altina kuruluyor. 14 gorev, TDD sirali.

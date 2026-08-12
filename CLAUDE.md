@@ -169,3 +169,9 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   deneme ve magazaya yukleme bulut konteynerinden yapilamaz. Asil gelistirme
   kullanicinin kendi bilgisayarinda olacak; bu depo (CLAUDE.md, docs, hook'lar)
   klonla birlikte tasiniyor, `~/.claude-mem` veritabani tasinmiyor.
+- 2026-08-12 — **Yas politikasi degisti: alt sinir 16'dan 18'e cikti.** Veli
+  onayi karmasikligindan kacinmak icin 16-17 yas bandi ve veli onayi akisi
+  tamamen kaldirildi; tek yetiskin kullanici kitlesi var. Spec
+  (`docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`)
+  guncellendi: "Yas politikasi" bolumu, `profiller` tablosundaki `yas_bandi`
+  alani ve "yakindakiler" sorgusundaki yas bandi filtresi kaldirildi.

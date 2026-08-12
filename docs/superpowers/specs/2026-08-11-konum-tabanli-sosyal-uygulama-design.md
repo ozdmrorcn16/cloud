@@ -149,18 +149,12 @@ bolum sonradan eklenemez.
 
 ## Yas politikasi
 
-Alt sinir **16**.
+Alt sinir **18**. (2026-08-12 karari — ilk surumde 16 idi, veli onayi
+karmasikligindan kacinmak icin 18'e cikarildi.)
 
-16–18 arasi kullanici olacagi icin iki ek gereksinim doguyor:
-
-- **Yas bandi ayrimi.** Iki bant var: **16–17** ve **18+**. Bir kullanici
-  yalnizca kendi bandindaki kullanicilara gorunur ve yalnizca kendi bandini
-  gorur. 16–17 bandindaki bir kullanici yetiskinlerin yakindakiler listesine
-  dusmez, mekan odasinda da yetiskinlerle ayni odada bulunmaz. Bant, dogum
-  tarihinden turetilir ve kullanici 18'ini doldurdugunda kendiliginden degisir.
-  Bu ayrim magaza incelemesinde en cok sorulan sey.
-- **Veli onayi.** KVKK 18 alti icin veli onayi gerektiriyor; kayit akisina bir
-  adim ekleniyor.
+Kayit sirasinda dogum tarihinden yas hesaplanir; 18'in altindaysa kayit
+reddedilir. Yas bandi ayrimi ve veli onayi akisi **yok** — tek bir yetiskin
+kullanici kitlesi var, ek bir gorunurluk katmani veya onay adimi gerekmiyor.
 
 ## Teknik mimari
 
@@ -199,7 +193,7 @@ beklemeden gonderilebiliyor.
 ### Veri modeli taslagi
 
 ```
-profiller        (id, telefon_dogrulandi, ad, dogum_tarihi, yas_bandi,
+profiller        (id, telefon_dogrulandi, ad, dogum_tarihi,
                   biyografi, fotograflar[], checkin_gorunurlugu)
 mekanlar         (id, ad, konum geography(Point), adres, kategori)
 check_inler      (id, kullanici_id, mekan_id, konum, olusturuldu,
@@ -222,8 +216,7 @@ abonelikler      (kullanici_id, durum, saglayici, biter)
 2. `ST_DWithin(konum, :benim_konumum, :yaricap)` — mesafe
 3. `gizli_mi = false` — gizli check-in'ler haric
 4. `checkin_gorunurlugu` tercihine uygun olanlar
-5. Yas bandi eslesmesi
-6. Karsilikli engelleme kaydi olmayanlar
+5. Karsilikli engelleme kaydi olmayanlar
 
 Bu sorgu urunun en sik calisan islemi; PostGIS uzamsal indeksi bu yuzden
 onemli.
@@ -241,7 +234,7 @@ onemli.
 
 ## Test yaklasimi
 
-- **Birim:** yakindakiler sorgusunun filtreleri (mesafe, gizlilik, yas bandi,
+- **Birim:** yakindakiler sorgusunun filtreleri (mesafe, gizlilik,
   engelleme) tek tek test edilir. Bu sorgu yanlis calisirsa mahremiyet ihlali
   olur, o yuzden en cok test edilecek yer burasi.
 - **Entegrasyon:** kayit → dogrulama → profil → check-in → yakindakiler →
@@ -255,8 +248,8 @@ Bu tasarim tek bir uygulama planina sigmayacak kadar buyuk. Dort faza
 ayriliyor; her fazin sonunda calisan bir uygulama var.
 
 **Faz 1 — Hesap.** Kayit, telefon dogrulama, profil olusturma, oturum. Sonunda:
-kullanici hesap acabiliyor ama henuz kimseyi gormuyor. Yas bandi bu fazda
-turetiliyor.
+kullanici hesap acabiliyor ama henuz kimseyi gormuyor. Kayitta 18 yas alt
+siniri dogrulanir.
 
 **Faz 2 — Kesif ve guvenlik.** Mekanlar, check-in, yakindakiler sorgusu, mesafe
 ayari (ucretsiz aralik), gizli check-in, gorunurluk tercihi, **engelleme ve
