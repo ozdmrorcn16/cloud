@@ -7,3 +7,8 @@ __pycache__/
 # subagent-driven-development izole calisma dizinleri
 .worktrees/
 .superpowers/
+
+# mobil (Expo) projesi
+mobil/node_modules/
+mobil/.env
+mobil/.expo/
