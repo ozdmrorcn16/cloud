@@ -1,0 +1,5 @@
+# gstack browse calisma dosyalari (oturuma ozel, repoya girmemeli)
+.gstack/
+
+# hook betiklerinin python onbellegi
+__pycache__/

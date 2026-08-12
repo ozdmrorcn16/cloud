@@ -34,6 +34,49 @@ def repo_koku() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+# Konusma dokumu repoya push edildigi icin, konusmada gecen anahtar
+# gorunumlu diziler yazilmadan once maskelenir. Aksi halde GitHub'in push
+# korumasi butun push'u reddediyor (ve hakli olarak).
+GIZLI_DESENLER = re.compile(
+    r"""(
+        sk-ant-[A-Za-z0-9_-]{16,}          # Anthropic
+      | sk_live_[A-Za-z0-9]{16,}           # Stripe canli
+      | sk_test_[A-Za-z0-9]{16,}           # Stripe test
+      | rk_live_[A-Za-z0-9]{16,}           # Stripe kisitli
+      | AKIA[0-9A-Z]{16}                   # AWS erisim anahtari
+      | ASIA[0-9A-Z]{16}                   # AWS gecici anahtar
+      | gh[pousr]_[A-Za-z0-9]{20,}         # GitHub token
+      | github_pat_[A-Za-z0-9_]{20,}       # GitHub ince taneli PAT
+      | glpat-[A-Za-z0-9_-]{16,}           # GitLab
+      | xox[abprs]-[A-Za-z0-9-]{10,}       # Slack
+      | AIza[0-9A-Za-z_-]{35}              # Google API
+      | -----BEGIN[ A-Z]*PRIVATE\ KEY----- # Ozel anahtar blogu
+    )""",
+    re.VERBOSE,
+)
+
+
+def gizlileri_maskele(metin: str) -> str:
+    """Anahtar gorunumlu dizileri maskeler; kalanini oldugu gibi birakir."""
+    return GIZLI_DESENLER.sub("<REDACTED>", metin)
+
+
+# Anthropic'in ic kimlikleri (toolu_/msg_/req_ + 24 karakter) sir degil, ama
+# GitHub'in Stripe deseni onlari anahtar sanip butun push'u reddediyor. Kayit
+# icin bir degerleri de yok, o yuzden yazmadan once kisaltiliyorlar.
+KIMLIK_DESENLERI = re.compile(r"\b(msg_bdrk|toolu|msg|req)_[A-Za-z0-9]{20,}\b")
+
+
+def kimlikleri_kisalt(metin: str) -> str:
+    """Arac/mesaj kimliklerini onekini koruyarak sadelestirir."""
+    return KIMLIK_DESENLERI.sub(lambda m: f"{m.group(1)}_<ID>", metin)
+
+
+def temizle(metin: str) -> str:
+    """Repoya yazilacak her metnin gectigi tek kapi."""
+    return kimlikleri_kisalt(gizlileri_maskele(metin))
+
+
 def metin_bloklari(icerik) -> str:
     """Bir mesajin icerigindeki duz metin bloklarini birlestirir.
 
@@ -125,7 +168,9 @@ def ozet_uret(turler) -> str:
     """Indekste gorunecek kisa etiket: ilk kullanici mesajinin bas kismi."""
     for rol, _, metin in turler:
         if rol == "user":
-            tek_satir = re.sub(r"\s+", " ", metin).strip()
+            # Kirpmadan once maskele: 80 karakterde kesilen bir anahtar artik
+            # desene uymaz ve yarisi indekste kalirdi.
+            tek_satir = re.sub(r"\s+", " ", temizle(metin)).strip()
             return tek_satir[:80] + ("…" if len(tek_satir) > 80 else "")
     return "(bos oturum)"
 
@@ -182,10 +227,14 @@ def main() -> int:
     oturumlar.mkdir(parents=True, exist_ok=True)
     ham.mkdir(parents=True, exist_ok=True)
 
+    # Iki dosya da repoya push edildigi icin yazmadan once temizlenir.
     (oturumlar / dosya_adi).write_text(
-        markdown_uret(turler, oturum_id, tarih), encoding="utf-8"
+        temizle(markdown_uret(turler, oturum_id, tarih)), encoding="utf-8"
     )
-    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_bytes(Path(transcript).read_bytes())
+    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_text(
+        temizle(Path(transcript).read_text(encoding="utf-8", errors="replace")),
+        encoding="utf-8",
+    )
     indeksi_guncelle(kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih, ozet_uret(turler))
 
     if "--push" in sys.argv:

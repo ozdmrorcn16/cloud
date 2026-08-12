@@ -1,0 +1,347 @@
+# Eklentiyi Kendin Nasil Eklersin
+
+Claude Code eklentileri (plugin) *marketplace* denen kataloglardan gelir. Is her
+zaman iki adimdir:
+
+1. **Marketi ekle** — katalogu Claude Code'a tanit. Bu adimda hicbir sey kurulmaz.
+2. **Eklentiyi kur** — katalogdan istedigin eklentiyi sec.
+
+Uc farkli yol var. Bu depoda **3. yolu** (settings.json) kullaniyoruz, cunku
+konteyner gecici; sadece repoya yazilan ayar yeni oturumda geri gelir.
+
+---
+
+## Yol 1 — `/plugin` menusu (terminal CLI)
+
+En kolayi. Claude Code'un icinde:
+
+```
+/plugin
+```
+
+Sekmeler: **Discover** (kataloglari gez), **Installed** (kurulular),
+**Marketplaces** (market ekle/cikar/guncelle), **Errors** (yukleme hatalari).
+Sekmeler arasi `Tab`, geri `Shift+Tab`.
+
+Bir eklentiye `Enter` deyince kurulum kapsamini secersin:
+
+| Kapsam | Nereye yazilir | Kim gorur |
+|---|---|---|
+| **User** | `~/.claude/settings.json` | sen, butun projelerde |
+| **Project** | `.claude/settings.json` (repoda) | repodaki herkes |
+| **Local** | `.claude/settings.local.json` | sadece sen, bu repoda |
+
+> Not: `/plugin` interaktif bir panel; **web/bulut oturumlarinda calismayabilir.**
+> O durumda Yol 3'u kullan.
+
+## Yol 2 — Tek satirlik komutlar
+
+```shell
+# Market ekle (GitHub owner/repo kisayolu)
+/plugin marketplace add anthropics/claude-code
+
+# Eklenti kur:  <eklenti>@<market>
+/plugin install code-review@claude-code-plugins
+
+# Yonetim
+/plugin list
+/plugin disable  <eklenti>@<market>
+/plugin enable   <eklenti>@<market>
+/plugin uninstall <eklenti>@<market>
+/plugin marketplace list
+/plugin marketplace update <market>
+/plugin marketplace remove <market>     # dikkat: o marketten kurulanlari da siler
+
+# Kurulumdan sonra oturumu yeniden baslatmadan etkinlestir
+/reload-plugins
+```
+
+Market kaynagi GitHub olmak zorunda degil:
+
+```shell
+/plugin marketplace add https://gitlab.com/firma/plugins.git      # herhangi bir git URL'i
+/plugin marketplace add https://gitlab.com/firma/plugins.git#v1.0 # belirli bir dal/etiket
+/plugin marketplace add ./yerel-market                            # yerel klasor
+/plugin marketplace add https://ornek.com/marketplace.json        # dogrudan katalog dosyasi
+```
+
+Kabuktan (Claude Code'un disindan) da yapilabilir:
+
+```bash
+claude plugin marketplace add anthropics/claude-code
+claude plugin install code-review@claude-code-plugins --scope project
+```
+
+## Yol 3 — `.claude/settings.json` (bu depoda kullandigimiz yontem)
+
+Iki anahtar var: marketi tanitan `extraKnownMarketplaces`, eklentiyi acan
+`enabledPlugins`. Bu dosya repoda oldugu icin yeni konteynerde ayar
+kendiliginden geri gelir.
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "claude-code-plugins": {
+      "source": { "source": "github", "repo": "anthropics/claude-code" }
+    }
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true,
+    "code-review@claude-code-plugins": true
+  }
+}
+```
+
+- `extraKnownMarketplaces` icindeki anahtar (`claude-code-plugins`) **senin
+  verdigin market adidir**; `enabledPlugins` icinde `@` sonrasi bu adla ayni
+  olmali.
+- `enabledPlugins` degeri `false` yaparsan eklenti kurulu kalir ama kapanir.
+- Dis kaynakli bir eklenti sadece proje ayarinda aciksa, Claude Code ilk
+  acilista onu kurmani isteyebilir ve calistiracagin `claude plugin install`
+  komutunu gosterir.
+
+---
+
+## Hangi marketler var
+
+| Market | Nasil eklenir | Icerik |
+|---|---|---|
+| `claude-plugins-official` | Claude Code ilk interaktif aciliste **kendisi ekler**. Eklemediyse: `/plugin marketplace add anthropics/claude-plugins-official` | Anthropic'in kurate ettigi set: `github`, `linear`, `notion`, `figma`, `slack`, `sentry`, dil sunuculari (`typescript-lsp`, `pyright-lsp`, ...), `security-guidance`, `commit-commands`, `pr-review-toolkit`, `plugin-dev` |
+| `claude-community` | `/plugin marketplace add anthropics/claude-plugins-community` | Incelemeden gecmis ucuncu parti eklentiler |
+| `claude-code-plugins` (demo) | `/plugin marketplace add anthropics/claude-code` | Ornek eklentiler: `code-review`, `frontend-design`, `feature-dev`, `hookify`, `ralph-wiggum`, ... |
+
+Katalogu tarayicidan gezmek icin: <https://claude.com/plugins>
+
+## Onemli tuzak: settings.json tek basina yetmez
+
+`extraKnownMarketplaces` + `enabledPlugins` yazmak eklentiyi **acar** ama
+**kurmaz**. Dis kaynakli (GitHub) bir eklenti diskte yoksa yuklenmez; Claude
+Code onu "kurulu degil" diye raporlar. Bu yuzden ayarin yaninda bir de:
+
+```bash
+claude plugin marketplace add anthropics/claude-code
+claude plugin install security-guidance@claude-code-plugins --scope project
+```
+
+calistirmak gerekiyor. Kontrol:
+
+```bash
+claude plugin marketplace list
+claude plugin list
+```
+
+## Bu depoda kurulu olanlar
+
+| Eklenti | Tur | Nasil kuruldu |
+|---|---|---|
+| `frontend-design` | market | `claude-code-plugins`, project scope |
+| `code-review` | market | `claude-code-plugins`, project scope |
+| `security-guidance` | market (hook tabanli) | `claude-code-plugins`, project scope |
+| `claude-mem` | market + npm worker | `npx claude-mem install` + `thedotmack` marketi |
+| `gstack` | market **degil** | `~/.claude/skills/gstack` klonu + `./setup` |
+| `no-ai-slop` | tek dosyalik beceri | `.claude/skills/no-ai-slop/` — repoya kopyalandi |
+
+Konteyner gecici oldugu icin `~/.claude` altindaki her sey oturum bitince
+kaybolur. `.claude/hooks/eklentileri-kur.sh` adli `SessionStart` hook'u bunlari
+geri yukler; her sey yerindeyse ~5 saniyede biter, sifirdan kurulumda birkac
+dakika surer.
+
+### Yol 4 — beceriyi dogrudan repoya koymak (`no-ai-slop` ornegi)
+
+Bazi "eklenti"ler aslinda market girdisi degil, tek bir `SKILL.md`. Boylelerinde
+market/kurulum adimi yok: dosyayi `.claude/skills/<ad>/` altina koymak yeter.
+Repoda durdugu icin hook'a da ihtiyac duymaz, yeni konteynerde kendiliginden
+gelir. En dayanikli yontem bu.
+
+`no-ai-slop` (petergyang/no-ai-slop, MIT, surum 1.0.6, commit `d30eddb`) boyle
+kuruldu:
+
+```sh
+git clone --depth 1 https://github.com/petergyang/no-ai-slop.git /tmp/nas
+mkdir -p .claude/skills/no-ai-slop
+cp /tmp/nas/skills/no-ai-slop/{SKILL.md,eval.md} /tmp/nas/LICENSE \
+   .claude/skills/no-ai-slop/
+```
+
+Deponun README'si `npx skills add ... --global` oneriyor; burada **kullanmadik**,
+cunku `--global` `~/.claude` altina yazar ve konteynerle birlikte silinir.
+
+Beceri dizini oturum basinda taranir. Ilk denemede `Unknown skill` alabilirsin;
+Claude Code kisa sure sonra dizini yeniden tarayip beceriyi ayni oturumda
+etkinlestirdi.
+
+## superpowers — bilerek yarim birakildi (2026-08-11)
+
+`superpowers@superpowers-dev` (obra/superpowers v6.2.0, 14 beceri) kuruldu ama
+**yeni konteynerde gelmeyecek**. Sebep, bu dosyanin "settings.json tek basina
+yetmez" bolumundeki tuzagin ikinci yarisi:
+
+- `claude plugin install --scope project` eklentiyi **proje** `settings.json`'ina
+  yazdi (`enabledPlugins`),
+- ama `claude plugin marketplace add` market tanimini **kullanici**
+  `~/.claude/settings.json`'ina yazdi — orasi repo disi, konteynerle silinir.
+
+Yani `enabledPlugins`'te girdi var, o girdinin isaret ettigi market yok. Eksik
+parca su alti satir; kalici istenirse proje `settings.json`'inin
+`extraKnownMarketplaces` bolumune eklenmesi yeter:
+
+```json
+"superpowers-dev": {
+  "source": { "source": "github", "repo": "obra/superpowers" }
+}
+```
+
+Kullanici 2026-08-11'de bu satirlari **eklememeyi** secti; eklenti su anki
+oturumda calisiyor, konteyner yenilenince kendiliginden dusecek. Ileride
+"superpowers neden yuklenmiyor?" diye bakan olursa cevabi burasi.
+
+## Dogrulama (2026-08-11)
+
+Kurulu her yuzey yeniden calistirildi. **Hepsi calisiyor**, yeni ariza yok.
+
+| Yuzey | Nasil test edildi | Sonuc |
+|---|---|---|
+| gstack `browse` | `goto file://…` → `text` → `screenshot` | sayfa yuklendi, metin dondu, 1280x720 PNG cikti |
+| Playwright/Chromium taklasi | yukaridaki browse kosusu | chromium-1208 linki tuttu, artik surec sizmasi yok |
+| gstack beceri sayisi | `ls ~/.claude/skills/gstack-*` | 54 |
+| claude-mem `search` | gecmis oturumlarda arama | 44 sonuc, oturumlar arasi hafiza gercekten duruyor |
+| claude-mem `smart_outline` | `oturum-kaydet.py` | 12 fonksiyon, satir araliklariyla |
+| security-guidance desen katmani | sahte `PostToolUse` yuku | `pattern_hits: 1`, komut enjeksiyonu yakalandi |
+| security-guidance LLM katmani | sahte `Stop` yuku | 0.115 sn'de `skipped` — anahtar yokken **temiz** no-op |
+| `no-ai-slop` | ornek metinde tespit modu | 10 kalip isim isim bulundu |
+| `gh` | `gh api repos/...` | REST calisiyor, GraphQL hala 403 |
+| kurulum on kosullari | `bun` 1.3.11, node 22, npx, claude, jq | hepsi imajda mevcut |
+
+Onemli olan: LLM katmani anahtar yokken **hata vermiyor, asmiyor, yeniden
+denemiyor** — 0.1 saniyede atlayip cikiyor. Yani eksik anahtar bir yavaslama
+ya da gurultu kaynagi degil, sadece o katman devre disi.
+
+## Yetenek testi sonuclari (2026-08-09)
+
+Eklentiler kurulu gorunmesine ragmen bazi yetenekler sessizce calismiyordu.
+Hepsi tek tek calistirilarak test edildi.
+
+| Yetenek | Durum | Not |
+|---|---|---|
+| claude-mem `search` / `timeline` / `get_observations` | calisiyor | |
+| claude-mem `smart_outline` / `smart_search` | **duzeltildi** | asagiya bak |
+| gstack `browse` (goto/text/click/screenshot) | calisiyor | JS calisiyor, render dogru |
+| gstack ortak preamble (`gstack-config`, `gstack-update-check`) | calisiyor | butun beceriler buna bagli |
+| security-guidance desen taramasi (25 kural) | calisiyor | Edit/Write'ta aninda uyariyor |
+| security-guidance LLM incelemesi | **calismiyor** | ortam kisiti, asagiya bak |
+| code-review | kismi | `gh pr diff` calisiyor, `gh pr view/list` blokli |
+| frontend-design | calisiyor | beceri dosyasi yukleniyor |
+
+### Duzeltilen: smart_outline / smart_search her dosyada bos donuyordu
+
+Belirti: her dosya icin "unsupported language or be empty".
+
+Kok neden: bu araclar `tree-sitter query` komutunu calistiriyor. `tree-sitter-cli`
+npm paketi binary'yi postinstall'da GitHub releases'ten indiriyor; o adim
+atlanmis, binary hic gelmemis. Kod bulamayinca PATH'teki `tree-sitter`a dusuyor,
+o da olmadigi icin `execFileSync` hatasi yutuluyor ve arac sessizce bos sonuc
+donduruyor — yani hata mesaji yaniltici.
+
+Yanlis iz: once `tree-sitter` **cekirdek** paketinin Node 22 ABI'si icin
+prebuild'i olmadigi gorulup kaynaktan derlendi. Ama paketin bundle'i cekirdegi
+hic `require` etmiyor; sorun o degildi. Gercek eksik CLI binary'siydi.
+
+Duzeltme hook'ta (`ts_cli_kur`). Dogrulama: python/bash/markdown ayristiriliyor,
+`smart_search` 0 yerine 103 sembol buluyor.
+
+### Calismiyor: security-guidance'in LLM inceleme katmani
+
+Eklentinin iki katmani var:
+
+1. **Desen taramasi** (senkron, 25 kural) — her Edit/Write sonrasi calisir.
+   Bu ortamda **calisiyor**; `shell=True` komut enjeksiyonunu test ederken
+   aninda yakaladi.
+2. **LLM diff incelemesi** (asenkron; Stop, `git commit`, `git push`) — bu
+   ortamda **calismiyor**.
+
+Sebep: kod `ANTHROPIC_API_KEY` veya `ANTHROPIC_AUTH_TOKEN` ariyor. Bu remote
+ortamda ikisi de yok; Claude Code kimligini bir OAuth token dosya
+tanimlayicisiyla tasiyor. Kimlik bulunamayinca hook `skip_reason=3` ile
+sessizce cikiyor. Agent SDK venv'i (355 MB) kurulu ve saglam — eksik olan tek
+sey kimlik.
+
+Bilerek duzeltilmedi: oturumun OAuth kimligini bir ortam degiskenine kopyalamak
+kimlik yonetimini degistirir ve kodu ortamin ongormedigi bir yoldan API'ye
+gonderir. Karar kullanicinin.
+
+### gh CLI
+
+17 gstack becerisi (`ship`, `review`, `qa`, `retro`...) `gh` cagiriyor ama
+konteynerde kurulu degildi. `GH_TOKEN` ortamda hazir oldugu icin binary'yi
+indirmek yetti; hook'a eklendi (`gh_kur`, `~/.local/bin/gh`).
+
+Kismi calisiyor — bu oturumun proxy'si GraphQL'i kisitliyor:
+
+```
+gh api repos/{owner}/{repo}/...   REST, calisiyor
+gh pr diff <n>                    REST, calisiyor
+gh pr list / view, gh issue list  GraphQL, HTTP 403
+```
+
+Bloklu komutlarin yerine GitHub MCP araclari (`mcp__github__*`) kullanilabilir;
+bu ortamda desteklenen yol zaten o.
+
+`scc` de kurulu degil ama hicbir beceri kullanmiyor — sadece gstack'in kendi
+gelistirici karsilastirma betigi icin, sorun degil.
+
+### Bu ortama ozgu iki takla
+
+1. **Playwright Chromium.** gstack'in playwright'i `chromium-1208` ariyor,
+   konteynerde `chromium-1194` var ve `cdn.playwright.dev` ag politikasiyla
+   blokli. Cozum: mevcut binary'yi 1208'in bekledigi Chrome-for-Testing
+   yerlesimiyle `/opt/pw-browsers` altina sembolik linklemek. Hook bunu
+   otomatik yapiyor.
+2. **Dis siteler.** `example.com` gibi hostlar proxy tarafindan 403 ile
+   reddediliyor (curl de ayni sonucu veriyor). `gstack-browse` yerel sunucuya
+   ve izinli hostlara sorunsuz gidiyor; genel web gezintisi ortam kisiti.
+
+## Kendi eklentini yazmak
+
+Bir eklenti aslinda su yapiya sahip bir klasordur:
+
+```
+benim-eklentim/
+├── .claude-plugin/plugin.json   # ad, aciklama, surum  (SADECE bu dosya burada durur)
+├── skills/<ad>/SKILL.md         # /benim-eklentim:<ad> olarak cagrilir
+├── agents/                      # ozel ajanlar
+├── hooks/hooks.json             # olay kancalari
+└── .mcp.json                    # MCP sunuculari
+```
+
+Dikkat: `skills/`, `agents/`, `hooks/` **`.claude-plugin/` icine konmaz**, eklenti
+kokunde durur. Test etmek icin kurulum gerekmez:
+
+```bash
+claude --plugin-dir ./benim-eklentim
+claude plugin validate ./benim-eklentim
+```
+
+Zaten `.claude/commands/` veya `.claude/skills/` altinda yazdigin seyler varsa,
+paylasilabilir hale getirmek icin bunlari eklenti kokune kopyalayip
+`plugin.json` eklemen yeterli.
+
+## Guvenlik
+
+Eklentiler senin yetkilerinle **rastgele kod calistirabilir** (hook, MCP sunucusu,
+`bin/` altindaki calistirilabilir dosyalar). Sadece guvendigin kaynaklardan kur.
+
+## Sik takilinan yerler
+
+| Belirti | Cozum |
+|---|---|
+| `/plugin` komutu yok | Claude Code'u guncelle (`npm install -g @anthropic-ai/claude-code@latest`), yeniden baslat |
+| `/plugin` bu ortamda calismiyor | Web/bulut oturumundasin — Yol 3'u kullan |
+| `Marketplace "..." not found` | Once `/plugin marketplace add ...` |
+| Eklenti katalogda gorunmuyor | `/plugin marketplace update <market>` sonra tekrar kur |
+| Kurdum ama komutlari yok | `/reload-plugins` (uyari verirse `/reload-plugins --force`) |
+| Beceriler hala gelmiyor | `rm -rf ~/.claude/plugins/cache`, yeniden baslat, tekrar kur |
+
+Eklenti becerileri her zaman **ad alanli** cagrilir: `<eklenti-adi>:<beceri-adi>`.
+Ornegin `code-review` eklentisinin komut dosyasi `commands/code-review.md`
+oldugu icin cagrisi `/code-review:code-review` olur. Dogru adi `/plugin` detay
+ekraninda ya da `/help` icindeki "Custom commands" sekmesinde gorursun.
