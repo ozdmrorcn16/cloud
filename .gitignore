@@ -3,3 +3,7 @@
 
 # hook betiklerinin python onbellegi
 __pycache__/
+
+# subagent-driven-development izole calisma dizinleri
+.worktrees/
+.superpowers/
