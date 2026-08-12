@@ -54,6 +54,12 @@ ekliyor, konum belirtiyor ve sohbet ediyor.
    herkes mi? Yabancilar birbirinin konumunu gorebiliyorsa uygulama guvenlik
    acisindan bambaska bir kategoriye giriyor.
 
+### Yerel kuruluma gecis
+
+Gelistirme kullanicinin kendi bilgisayarina tasiniyor. Adim adim rehber:
+`docs/yerel-kuruluma-gecis.md`. claude-mem hafizasinin (181 gozlem) yedegi
+`docs/hafiza/claude-mem-yedek.db` icinde; maskelenmis ve sikistirilmis kopya.
+
 ### Siradaki adim
 
 Tasarim tamam ve onaylandi:
