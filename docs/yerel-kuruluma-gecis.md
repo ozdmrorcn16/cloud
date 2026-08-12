@@ -19,6 +19,43 @@ Bu dosya gecisin nasil yapilacagini anlatir.
 | superpowers (14 beceri) | Yeniden kurulacak — tek komut |
 | Market eklentileri | `settings.json` sayesinde kendiliginden gelir |
 
+## Windows icin kisa yol
+
+Kullanicinin bilgisayari Windows. Asagidaki uzun rehberi okumak yerine su bes
+adim yeterli; gerisini yerel Claude halleder.
+
+1. **Node.js kur.** <https://nodejs.org> → buyuk yesil **LTS** butonu. Inen
+   dosyayi cift tikla, hep **Next**, sonunda **Install**.
+2. **Git kur.** <https://git-scm.com/download/win> → indirme kendiliginden
+   baslar. Cift tikla, hep **Next**, **Install**. Bu adim sart; Node.js git
+   getirmiyor.
+3. **PowerShell'i ac.** Windows tusu → `powershell` yaz → Enter.
+4. **Claude Code'u kur.**
+   ```
+   npm install -g @anthropic-ai/claude-code
+   claude
+   ```
+   Tarayici acilip giris ister. Bir kere yapilir.
+5. **Projeyi indir.** Claude acildiktan sonra ona sunu yaz:
+
+   > https://github.com/ozdmrorcn16/cloud deposunu klonla,
+   > claude/code-review-plugin-jvgabq dalina gec, sonra
+   > docs/yerel-kuruluma-gecis.md dosyasini oku ve kalan kurulum adimlarini
+   > sen yap
+
+**Sik takilinan yer:** `npm` komutu taninmiyorsa Node.js kurulumu
+tamamlanmamis ya da PowerShell eski ortami tasiyordur. PowerShell'i kapatip
+yeniden ac.
+
+**iOS notu:** iOS uygulamasi gelistirmek Mac gerektiriyor, Windows'ta olmuyor.
+Faz 1 Android ile baslayacak. Telefona ucretsiz **Expo Go** uygulamasi
+kurulunca yazilan sey aninda gercek telefonda gorunur; emulator kurmaya gerek
+yok.
+
+---
+
+Asagisi tum platformlar icin ayrintili anlatim.
+
 ## 1. Node.js
 
 Claude Code Node.js 18 veya ustunu istiyor.
