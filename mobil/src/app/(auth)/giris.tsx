@@ -51,6 +51,9 @@ export default function GirisEkrani() {
       <Pressable style={stiller.buton} onPress={girisYap} disabled={gonderiliyor}>
         <Text style={stiller.butonYazi}>{gonderiliyor ? 'Giris yapiliyor...' : 'Giris yap'}</Text>
       </Pressable>
+      <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/kayit')}>
+        <Text style={stiller.baglanti}>Hesabin yok mu? Kayit ol</Text>
+      </Pressable>
     </View>
   )
 }
@@ -62,4 +65,6 @@ const stiller = StyleSheet.create({
   hata: { color: '#c00', marginBottom: 12 },
   buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
   butonYazi: { color: '#fff', fontWeight: '600' },
+  baglantiButonu: { marginTop: 16, alignItems: 'center' },
+  baglanti: { color: '#111' },
 })
