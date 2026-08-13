@@ -20,6 +20,12 @@ function TestBileseni() {
   return <Text>{profilVarMi ? 'profil-var' : 'profil-yok'}</Text>
 }
 
+function ProfilDurumuBileseni() {
+  const { profilVarMi, yukleniyor } = useOturum()
+  if (yukleniyor) return <Text>yukleniyor</Text>
+  return <Text>{profilVarMi === null ? 'belirsiz' : profilVarMi ? 'profil-var' : 'profil-yok'}</Text>
+}
+
 describe('OturumSaglayici', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -57,5 +63,28 @@ describe('OturumSaglayici', () => {
       expect(screen.getByText('oturum-yok')).toBeTruthy()
     })
     expect(supabase.from).not.toHaveBeenCalled()
+  })
+
+  it('profil sorgusu hata donerse profilVarMi belirsiz (null) kalir, false olmaz', async () => {
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      data: { session: { user: { id: 'kullanici-1' } } },
+    })
+    ;(supabase.from as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          maybeSingle: jest
+            .fn()
+            .mockResolvedValue({ data: null, error: { message: 'network error' } }),
+        }),
+      }),
+    })
+    await render(
+      <OturumSaglayici>
+        <ProfilDurumuBileseni />
+      </OturumSaglayici>
+    )
+    await waitFor(() => {
+      expect(screen.getByText('belirsiz')).toBeTruthy()
+    })
   })
 })

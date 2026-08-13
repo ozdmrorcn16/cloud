@@ -6,20 +6,23 @@ type OturumDurumu = {
   oturum: Session | null
   profilVarMi: boolean | null
   yukleniyor: boolean
+  profilKontrolunuYenile: () => Promise<void>
 }
 
 const OturumBaglami = createContext<OturumDurumu>({
   oturum: null,
   profilVarMi: null,
   yukleniyor: true,
+  profilKontrolunuYenile: async () => {},
 })
 
-async function profilVarMiKontrolEt(kullaniciId: string): Promise<boolean> {
-  const { data } = await supabase
+async function profilVarMiKontrolEt(kullaniciId: string): Promise<boolean | null> {
+  const { data, error } = await supabase
     .from('profiller')
     .select('id')
     .eq('id', kullaniciId)
     .maybeSingle()
+  if (error) return null
   return data !== null
 }
 
@@ -51,8 +54,14 @@ export function OturumSaglayici({ children }: { children: ReactNode }) {
     return () => dinleyici.subscription.unsubscribe()
   }, [])
 
+  async function profilKontrolunuYenile() {
+    if (oturum) {
+      setProfilVarMi(await profilVarMiKontrolEt(oturum.user.id))
+    }
+  }
+
   return (
-    <OturumBaglami.Provider value={{ oturum, profilVarMi, yukleniyor }}>
+    <OturumBaglami.Provider value={{ oturum, profilVarMi, yukleniyor, profilKontrolunuYenile }}>
       {children}
     </OturumBaglami.Provider>
   )
