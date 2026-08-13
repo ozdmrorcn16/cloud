@@ -5,9 +5,11 @@ import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { onSekizAltindaMi } from '../../lib/yas'
 import { fotografYukle } from '../../lib/fotograf-yukle'
+import { useOturum } from '../../lib/oturum'
 
 export default function ProfilOlusturEkrani() {
   const router = useRouter()
+  const { profilKontrolunuYenile } = useOturum()
   const [ad, setAd] = useState('')
   const [dogumTarihiMetni, setDogumTarihiMetni] = useState('')
   const [biyografi, setBiyografi] = useState('')
@@ -46,29 +48,43 @@ export default function ProfilOlusturEkrani() {
     }
 
     setGonderiliyor(true)
-    const { data: kullaniciVerisi } = await supabase.auth.getUser()
-    const kullaniciId = kullaniciVerisi.user?.id
+    try {
+      const { data: kullaniciVerisi } = await supabase.auth.getUser()
+      const kullaniciId = kullaniciVerisi.user?.id
 
-    const fotografYollari: string[] = []
-    for (const uri of fotografUrileri) {
-      const yol = await fotografYukle(kullaniciId!, uri)
-      fotografYollari.push(yol)
+      if (!kullaniciId) {
+        setHata('Oturumun dusmus, tekrar giris yap')
+        return
+      }
+
+      const fotografYollari: string[] = []
+      for (const uri of fotografUrileri) {
+        const yol = await fotografYukle(kullaniciId, uri)
+        fotografYollari.push(yol)
+      }
+
+      const { error } = await supabase.from('profiller').insert({
+        id: kullaniciId,
+        ad: ad.trim(),
+        dogum_tarihi: dogumTarihiMetni,
+        biyografi: biyografi.trim() || null,
+        fotograflar: fotografYollari,
+      })
+
+      if (error) {
+        setHata(error.message)
+        return
+      }
+
+      await profilKontrolunuYenile()
+      router.replace('/')
+    } catch (hataNesnesi) {
+      const mesaj =
+        hataNesnesi instanceof Error ? hataNesnesi.message : 'Beklenmeyen bir hata olustu'
+      setHata(mesaj)
+    } finally {
+      setGonderiliyor(false)
     }
-
-    const { error } = await supabase.from('profiller').insert({
-      id: kullaniciId,
-      ad: ad.trim(),
-      dogum_tarihi: dogumTarihiMetni,
-      biyografi: biyografi.trim() || null,
-      fotograflar: fotografYollari,
-    })
-    setGonderiliyor(false)
-
-    if (error) {
-      setHata(error.message)
-      return
-    }
-    router.replace('/')
   }
 
   return (
