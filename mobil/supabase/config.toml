@@ -256,17 +256,25 @@ otp_expiry = 3600
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = false
-# If enabled, users need to confirm their phone number before signing in.
+enable_signup = true
+# NOT: Bu alan hosted projede `phone_autoconfirm`e birebir esleniyor (isim
+# yaniltici). `true` yapmak dogrulama adimini ATLATIYOR; bizim akisimiz
+# verifyOtp bekledigi icin `false` olmali.
 enable_confirmations = false
 # Template for sending OTP to users
-template = "Your code is {{ .Code }}"
+template = "Dogrulama kodun: {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
 max_frequency = "5s"
 
-# Use pre-defined map of phone number to OTP for testing.
-# [auth.sms.test_otp]
-# 4152127777 = "123456"
+# Gelistirme boyunca gercek SMS gonderilmiyor: asagidaki numaralar sabit kodla
+# dogrulanir, hicbir SMS saglayicisina istek gitmez, ucret cikmaz.
+# Magazaya cikmadan once (plandaki Task 14) bu blok silinip gercek saglayici
+# (Twilio) devreye alinacak.
+[auth.sms.test_otp]
+905550000000 = "123456"
+905550000001 = "123456"
+905550000002 = "123456"
+905550000003 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
