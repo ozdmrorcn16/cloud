@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import AnaEkran from './index'
+import AnaEkran from '../../src/app/index'
 import { supabase } from '../../lib/supabase'
 
 jest.mock('../../lib/supabase', () => ({

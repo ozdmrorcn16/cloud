@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import KayitEkrani from './kayit'
-import { supabase } from '../../../lib/supabase'
+import KayitEkrani from '../../src/app/(auth)/kayit'
+import { supabase } from '../../lib/supabase'
 
-jest.mock('../../../lib/supabase', () => ({
+jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signUp: jest.fn() } },
 }))
 

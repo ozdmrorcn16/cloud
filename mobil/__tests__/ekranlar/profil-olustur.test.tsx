@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import ProfilOlusturEkrani from './profil-olustur'
+import ProfilOlusturEkrani from '../../src/app/profil-olustur'
 import { supabase } from '../../lib/supabase'
 
 jest.mock('../../lib/supabase', () => ({

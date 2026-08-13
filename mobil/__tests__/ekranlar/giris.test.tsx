@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import GirisEkrani from './giris'
-import { supabase } from '../../../lib/supabase'
+import GirisEkrani from '../../src/app/(auth)/giris'
+import { supabase } from '../../lib/supabase'
 
-jest.mock('../../../lib/supabase', () => ({
+jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signInWithPassword: jest.fn() } },
 }))
 

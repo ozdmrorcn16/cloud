@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import DogrulaEkrani from './dogrula'
-import { supabase } from '../../../lib/supabase'
+import DogrulaEkrani from '../../src/app/(auth)/dogrula'
+import { supabase } from '../../lib/supabase'
 
-jest.mock('../../../lib/supabase', () => ({
+jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { verifyOtp: jest.fn(), signUp: jest.fn() } },
 }))
 
