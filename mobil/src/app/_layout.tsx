@@ -1,18 +1,33 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { useEffect } from 'react'
+import { Slot, useRouter, useSegments } from 'expo-router'
+import { OturumSaglayici, useOturum } from '../../lib/oturum'
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+function YonlendirmeKontrolu() {
+  const { oturum, profilVarMi, yukleniyor } = useOturum()
+  const segments = useSegments()
+  const router = useRouter()
 
-SplashScreen.preventAutoHideAsync();
+  useEffect(() => {
+    if (yukleniyor) return
+    const authGrubunda = segments[0] === '(auth)'
+    const profilOlusturEkraninda = segments[0] === 'profil-olustur'
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    if (!oturum && !authGrubunda) {
+      router.replace('/giris')
+    } else if (oturum && profilVarMi === false && !profilOlusturEkraninda) {
+      router.replace('/profil-olustur')
+    } else if (oturum && profilVarMi && (authGrubunda || profilOlusturEkraninda)) {
+      router.replace('/')
+    }
+  }, [oturum, profilVarMi, yukleniyor, segments])
+
+  return <Slot />
+}
+
+export default function KokLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
+    <OturumSaglayici>
+      <YonlendirmeKontrolu />
+    </OturumSaglayici>
+  )
 }
