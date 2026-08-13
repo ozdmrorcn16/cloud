@@ -17,21 +17,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-kaydet.py\" --push 2>/dev/null || true",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-kaydet.py\" 2>/dev/null || true",
             "timeout": 120,
-            "statusMessage": "Oturum kaydi push ediliyor"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/eklentileri-kur.sh\" 2>&1 || true",
-            "timeout": 900,
-            "statusMessage": "Eklentiler geri yukleniyor (gstack, claude-mem)"
+            "statusMessage": "Oturum kaydi yaziliyor"
           }
         ]
       }

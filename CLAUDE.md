@@ -22,8 +22,14 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - Oturuma baslarken `docs/konusma-gunlugu.md` dosyasindaki son girdileri oku.
 - Kalici bir karar alindiginda (teknoloji secimi, kapsam, isim, mimari) bu
   dosyayi veya konusma gunlugunu guncelle ve commit'le.
-- Konteyner gecicidir: push edilmeyen hicbir sey kalmaz. Onemli her seyi
-  `claude/uygulama-fikri-o3tuda` dalina push et.
+- **GitHub'a hicbir sey push edilmeyecek.** Kullanicinin kalici karari
+  (2026-08-14): butun calisma bu bilgisayarda kalir. Yerelde commit'le,
+  ama `git push` calistirma, PR acma, uzak depoya bir sey gonderme —
+  kullanici o an acikca istemedigi surece. Bu yuzden `SessionEnd`
+  hook'undaki `--push` bayragi kaldirildi; oturum dokumleri artik sadece
+  yerelde yaziliyor.
+- Tek kopya riski: uzak yedek olmadigi icin bu makine tek kopya. Kullanici
+  yedeklemeyi kendi yontemiyle (harici disk vb.) yapmayi tercih ediyor.
 - Kullaniciyla Turkce konus.
 
 ## Proje durumu
