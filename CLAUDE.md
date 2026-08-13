@@ -67,23 +67,31 @@ Tasarim tamam ve onaylandi:
 (2026-08-13'te yas politikasi 18+'a sadelestirildi — asagidaki "Kararlar"
 bolumune bak).
 
-**Faz 1'in uygulama plani** (`docs/superpowers/plans/2026-08-13-faz1-hesap.md`)
-yazildi ve subagent-driven-development ile uygulandi; kod tarafi tamam
-(`mobil/` — Expo + Supabase). Kalan tek gercek engel: kullanicinin
-supabase.com'da ucretsiz bir hesap/proje acmasi ve `supabase login` ile
-CLI'yi baglamasi — bu tarayici tabanli bir adim, otomatiklestirilemez.
-Sonrasinda: `.env`'e gercek Supabase URL/anon key yazilir, `supabase db push`
-ile iki migrasyon (`profiller` tablosu, `profil-fotograflari` bucket'i)
-uygulanir, dashboard'da test telefon numarasi tanimlanir, ve Faz 1'in
-uctan uca akisi (kayit→dogrulama→profil→ana ekran) elle dogrulanir
-(plandaki Task 13). Ayrinti icin `docs/konusma-gunlugu.md`'nin
-2026-08-13 girdilerine bak.
+**Faz 1 tamamlandi** (`docs/superpowers/plans/2026-08-13-faz1-hesap.md`).
+Kayit, telefon dogrulama, profil olusturma ve oturum calisiyor; uctan uca
+hem API hem arayuz uzerinden dogrulandi. Kod `mobil/` altinda (Expo +
+Supabase), 12 test suite / 30 test yesil.
 
-Bu tamamlandiktan sonra sirada **Faz 2 — Kesif ve guvenlik** var: mekanlar,
-check-in, yakindakiler sorgusu, mesafe ayari, gizli check-in, gorunurluk
-tercihi, engelleme ve sikayet. Spec'teki bes acik soru (mekan verisi
-kaynagi, check-in omru, paket fiyati, SMS saglayicisi, moderasyon) Faz 2'nin
-bazi kisimlarini etkileyebilir, henuz cevaplanmadi.
+**Canli Supabase projesi:** `konum-sosyal`, ref `swpiibyuoffykbmirvgq`,
+bolge eu-central-1. Iki migrasyon uygulandi (`profiller` tablosu +
+`profil-fotograflari` bucket'i). Telefon dogrulama, ucretsiz test
+numaralariyla calisiyor: `+90555000000{0,1,2,3}`, hepsinin kodu `123456`,
+gercek SMS gitmiyor. Gercek anahtarlar `mobil/.env` icinde (gitignored).
+
+Calistirmak icin: `cd mobil && npx expo start --web` → <http://localhost:8081>
+
+Sirada **Faz 2 — Kesif ve guvenlik** var: mekanlar, check-in, yakindakiler
+sorgusu, mesafe ayari, gizli check-in, gorunurluk tercihi, engelleme ve
+sikayet. Once bir Faz 2 spec'i/plani yazilmali (`brainstorming` →
+`writing-plans`). Spec'teki bes acik sorudan ikisi (mekan verisi kaynagi,
+check-in omru) Faz 2'yi dogrudan etkiliyor, once cevaplanmali.
+
+**Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
+demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
+sablon gorsellerinin silinmesi, ESLint yapilandirmasinin eklenmesi,
+`jest`/`jest-expo`'nun `dependencies`ten `devDependencies`e tasinmasi,
+storage bucket'ina silme politikasi, `expo-image-picker` config
+plugin'inin `app.json`'a eklenmesi (gercek iOS derlemesi icin sart).
 
 ### Bastan tasarima girmesi gereken kisit
 

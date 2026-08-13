@@ -101,3 +101,25 @@ icinde `/hooks` menusunden devre disi birak.
   ile ayni dizindeki `.superpowers/sdd/2026-08-13-faz1-hesap/progress.md`
   defterinde kayitli (bu dosya worktree birlestirilmeden once silinecek,
   onemli kararlar buraya ve CLAUDE.md'ye tasindi).
+- **2026-08-14** — **Faz 1 tamamlandi.** Supabase projesi (`konum-sosyal`,
+  ref `swpiibyuoffykbmirvgq`, eu-central-1) acildi, CLI baglandi, iki
+  migrasyon canliya uygulandi, uctan uca akis hem API hem arayuz
+  uzerinden dogrulandi (kayit → SMS dogrulama → profil olusturma →
+  ana ekran → cikis → tekrar giris).
+- **2026-08-14** — Panelden telefon saglayicisini acmak Twilio kimlik
+  bilgisi zorunlu kiliyordu; bunun yerine yapilandirma CLI ile gonderildi
+  (`supabase config push`), boylece **ucretli bir SMS saglayicisi hesabina
+  hic gerek kalmadi**. Dort test numarasi (`+90555000000{0,1,2,3}`,
+  hepsi sabit `123456` kodu) tanimli; bu numaralara gercek SMS gitmiyor,
+  ucret cikmiyor. Magazaya cikmadan once (Task 14) `auth.sms.test_otp`
+  blogu silinip gercek saglayici devreye alinacak.
+- **2026-08-14** — Iki gercek hata yalnizca uygulama ilk kez gercekten
+  calistirildiginda ortaya cikti, testler bunlari yakalayamazdi:
+  - `auth.sms.enable_confirmations` hosted projede `phone_autoconfirm`e
+    **birebir** esleniyor (isim yaniltici): `true` yapmak SMS dogrulama
+    adimini tamamen atlatiyordu. `false` olmali — akisimiz `verifyOtp`
+    bekliyor.
+  - `app.json`'daki `web.output: "static"` sayfalari Node'da onceden
+    render etmeye calisiyor; Node'da `window` olmadigi icin Supabase'in
+    AsyncStorage tabanli oturum deposu uygulama acilmadan cokuyordu ve
+    web dev sunucusu hic ayaga kalkmiyordu. `"single"` (SPA) yapildi.
