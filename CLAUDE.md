@@ -64,14 +64,26 @@ Gelistirme kullanicinin kendi bilgisayarina tasiniyor. Adim adim rehber:
 
 Tasarim tamam ve onaylandi:
 `docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`
+(2026-08-13'te yas politikasi 18+'a sadelestirildi — asagidaki "Kararlar"
+bolumune bak).
 
-Sirada **Faz 1'in uygulama plani** var: kayit, telefon dogrulama, profil
-olusturma, oturum. Yeni oturumda once bu spec'i oku, sonra `writing-plans`
-becerisiyle plani yaz. Tasarimi bastan tartismaya gerek yok — kararlar
-spec'te, gerekceleriyle birlikte.
+**Faz 1'in uygulama plani** (`docs/superpowers/plans/2026-08-13-faz1-hesap.md`)
+yazildi ve subagent-driven-development ile uygulandi; kod tarafi tamam
+(`mobil/` — Expo + Supabase). Kalan tek gercek engel: kullanicinin
+supabase.com'da ucretsiz bir hesap/proje acmasi ve `supabase login` ile
+CLI'yi baglamasi — bu tarayici tabanli bir adim, otomatiklestirilemez.
+Sonrasinda: `.env`'e gercek Supabase URL/anon key yazilir, `supabase db push`
+ile iki migrasyon (`profiller` tablosu, `profil-fotograflari` bucket'i)
+uygulanir, dashboard'da test telefon numarasi tanimlanir, ve Faz 1'in
+uctan uca akisi (kayit→dogrulama→profil→ana ekran) elle dogrulanir
+(plandaki Task 13). Ayrinti icin `docs/konusma-gunlugu.md`'nin
+2026-08-13 girdilerine bak.
 
-Spec'te bes acik soru var (mekan verisi kaynagi, check-in omru, paket fiyati,
-SMS saglayicisi, moderasyon). Hicbiri Faz 1'i engellemiyor.
+Bu tamamlandiktan sonra sirada **Faz 2 — Kesif ve guvenlik** var: mekanlar,
+check-in, yakindakiler sorgusu, mesafe ayari, gizli check-in, gorunurluk
+tercihi, engelleme ve sikayet. Spec'teki bes acik soru (mekan verisi
+kaynagi, check-in omru, paket fiyati, SMS saglayicisi, moderasyon) Faz 2'nin
+bazi kisimlarini etkileyebilir, henuz cevaplanmadi.
 
 ### Bastan tasarima girmesi gereken kisit
 
