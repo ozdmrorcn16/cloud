@@ -1,7 +1,7 @@
 create table public.profiller (
   id uuid primary key references auth.users(id) on delete cascade,
   ad text not null,
-  dogum_tarihi date not null,
+  dogum_tarihi date not null check (dogum_tarihi <= (current_date - interval '18 years')),
   biyografi text,
   fotograflar text[] not null default '{}',
   olusturuldu timestamptz not null default now()
