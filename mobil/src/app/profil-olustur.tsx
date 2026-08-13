@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { onSekizAltindaMi } from '../../lib/yas'
+import { fotografYukle } from '../../lib/fotograf-yukle'
 
 export default function ProfilOlusturEkrani() {
   const router = useRouter()
@@ -11,6 +13,19 @@ export default function ProfilOlusturEkrani() {
   const [biyografi, setBiyografi] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
+  const [fotografUrileri, setFotografUrileri] = useState<string[]>([])
+
+  async function fotografEkle() {
+    const sonuc = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsMultipleSelection: true,
+      selectionLimit: 6,
+    })
+    if (!sonuc.canceled) {
+      setFotografUrileri((mevcut) => [...mevcut, ...sonuc.assets.map((a) => a.uri)].slice(0, 6))
+    }
+  }
 
   async function devamEt() {
     setHata(null)
@@ -34,11 +49,18 @@ export default function ProfilOlusturEkrani() {
     const { data: kullaniciVerisi } = await supabase.auth.getUser()
     const kullaniciId = kullaniciVerisi.user?.id
 
+    const fotografYollari: string[] = []
+    for (const uri of fotografUrileri) {
+      const yol = await fotografYukle(kullaniciId!, uri)
+      fotografYollari.push(yol)
+    }
+
     const { error } = await supabase.from('profiller').insert({
       id: kullaniciId,
       ad: ad.trim(),
       dogum_tarihi: dogumTarihiMetni,
       biyografi: biyografi.trim() || null,
+      fotograflar: fotografYollari,
     })
     setGonderiliyor(false)
 
@@ -59,6 +81,13 @@ export default function ProfilOlusturEkrani() {
         value={dogumTarihiMetni}
         onChangeText={setDogumTarihiMetni}
       />
+      <Pressable style={stiller.fotografButonu} onPress={fotografEkle}>
+        <Text>
+          {fotografUrileri.length > 0
+            ? `${fotografUrileri.length} fotograf secildi`
+            : 'Fotograf ekle'}
+        </Text>
+      </Pressable>
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
         placeholder="Kisa bir tanitim yaz"
@@ -79,6 +108,7 @@ const stiller = StyleSheet.create({
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
   cokSatirli: { height: 80, textAlignVertical: 'top' },
+  fotografButonu: { padding: 12, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 12, alignItems: 'center' },
   hata: { color: '#c00', marginBottom: 12 },
   buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
   butonYazi: { color: '#fff', fontWeight: '600' },
