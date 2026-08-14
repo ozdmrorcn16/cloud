@@ -42,6 +42,8 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-14 — [2026-08-14-9ff6ffed.md](oturumlar/2026-08-14-9ff6ffed.md) — kaldığımız yere geri aç
+- 2026-08-14 — [2026-08-14-639e055b.md](oturumlar/2026-08-14-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-14 — [2026-08-14-0193031c.md](oturumlar/2026-08-14-0193031c.md) — https://github.com/ozdmrorcn16/cloud deposunu klonla, claude/code-review-plugin-…
 - 2026-08-12 — [2026-08-12-bb3bdf55.md](oturumlar/2026-08-12-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-11 — [2026-08-11-bb3bdf55.md](oturumlar/2026-08-11-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
@@ -187,6 +189,31 @@ icinde `/hooks` menusunden devre disi birak.
     anlamini bosaltir hem birini bir yere cekmek icin kullanilabilir. Mekan
     *eklemedeki* ~200 m sartindan ayri ve ondan daha genistir. Bu da bir duvar
     degil hiz kesici; kararli biri cihaz konumunu taklit edebilir.
+
+11. **Check-in kalicilik modeli degisti — `profilde_kalsin` bayragi
+    kaldirildi.** (2026-08-14, tasarimin ikinci turunda.) Onceki tasarimda
+    kullanici suresi dolan check-in'i "aniya kaydet" diyerek kurtariyordu,
+    aksi halde satir silinirdi. Yeni model: sure dolunca (ya da "ayrildim"
+    ile) check-in **otomatik olarak** aniya donusur — `konum` alani
+    null'lanir, satir silinmez. Silme tamamen kullaniciya ait, istedigi
+    zaman istedigi anisini silebilir ya da hic silmeyebilir.
+    `check_inler` tablosuna bunun yerine `gorunurluk` alani eklendi
+    (varsayilan deger, 2a'da islevsiz — gercek mantigi Faz 2b'de yazilacak).
+12. **Iki ayri gorunurluk katmani var; canli check-in gorunurlugu
+    karsilikli (mutual).** (2026-08-14.)
+    - **Ani/profil gorunurlugu:** kullanici gecmis check-in'lerini/anilarini
+      profilinde kime gosterecegini kendi secer (karar #11'deki
+      `gorunurluk` alani, Faz 2b'de islevsel hale gelecek).
+    - **Canli check-in gorunurlugu:** bir mekanda check-in yapan kisi,
+      **o an ayni mekanda check-in yapmis olan diger kisiler** tarafindan
+      gorulur — bu, profil gorunurluk ayarindan bagimsiz ve otomatik.
+      Check-in yapmamis biri bunu goremez.
+    - **Yakindakiler sorgusu ucretli olacak.** Check-in yapmamis/o mekanda
+      olmayan kullanicilar, birini ancak Faz 2b'nin "yakindakiler sorgusu"
+      ozelligiyle bulabilecek ve bu ozellik **premium/ucretli** bir katman
+      olarak konumlanacak. Boylece Faz 2a'nin "kimse kimseyi gormuyor"
+      ilkesi bozulmuyor (karsilikli check-in gorunurlugu haric) ve Faz 2b
+      hem guvenlik hem monetizasyon ekseninde tasarlanacak.
 
 **Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
 tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
