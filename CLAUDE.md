@@ -34,8 +34,12 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 ## Uygulama fikri
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+> Fikrin tam metni hala burada degil. Ancak 12–14 Agustos'ta kullanicinin
+> kendi makinesinde yapilan ve depoya girmeyen calismadan anlasildigi
+> kadariyla uygulama; mekanlar, mekana check-in ve medya paylasimi
+> etrafinda kurgulanmis durumda. Kurtarilabilen kararlar ve cevaplanmamis
+> soru icin `docs/konusma-gunlugu.md` icindeki "Senkronize olmamis yerel
+> calisma" bolumune bak.
 
 ## Eklentiler
 
