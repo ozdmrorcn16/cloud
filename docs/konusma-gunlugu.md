@@ -215,6 +215,22 @@ icinde `/hooks` menusunden devre disi birak.
       ilkesi bozulmuyor (karsilikli check-in gorunurlugu haric) ve Faz 2b
       hem guvenlik hem monetizasyon ekseninde tasarlanacak.
 
+13. **Tek aktif (canli) check-in kurali.** (2026-08-14.) Kullanici ayni anda
+    yalnizca bir mekanda "canli" check-in'e sahip olabilir. Yeni bir
+    check-in yapmak, varsa oncekini otomatik olarak "ayrildim" gibi
+    kapatir (karar #11'e gore aniya donusur). Iki farkli mekanda ayni anda
+    "su an buradayim" durumu mantiksal olarak tutarsiz sayildigi icin
+    izin verilmiyor.
+14. **Gecmis anilar mekan ekraninda 2a'da da gorunur — sadece canli
+    check-in karsilikliliga tabi.** (2026-08-14.) Karar #6'daki "mekanda
+    paylasilan herkese acik anilar" bolumu Faz 2a'da aktif: bir mekanin
+    gecmiste orada check-in yapmis kisilerin anilari (not+fotograf,
+    konumsuz) herkese acik sayilir, cunku mekan zaten kamuya acik bir yer
+    ve "kimin ne zaman gittigi" hassas degil — hassas olan yalnizca *canli*
+    konum. Karar #8'deki "kimse kimseyi gormuyor" ilkesi bu yuzden yalnizca
+    canli check-in'e uygulanir, gecmis anilara degil. Kisiye ozel
+    gorunurluk tercihi (karar #9'daki `gizli_mi`) hala Faz 2b'de.
+
 **Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
 tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
 yukleme yontemi, test yaklasimi) sunmak, onay alinca spec'i
