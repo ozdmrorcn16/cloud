@@ -240,6 +240,13 @@ icinde `/hooks` menusunden devre disi birak.
     tasarlanmadi, sosyal/kesif fazinin kapsaminda. 2a'da alan hala
     islevsiz kaydediliyor (varsayilan deger `herkese_acik`), kullanici
     bunu degistiremiyor cunku ayar arayuzu 2b'de gelecek.
+16. **Anida mekanin harita konumu gosterilecek, kullanicinin kisisel
+    konumu degil.** (2026-08-14, netlestirme.) Profildeki/mekan
+    ekranindaki bir aniyi acinca mekanin kendi sabit haritadaki yeri (pin)
+    goruntuye eklenecek. Bu, karar #3/#11'i degistirmiyor — kullanicinin
+    check-in anindaki kisisel GPS koordinati hala hic saklanmiyor/
+    gosterilmiyor. Gosterilen sey `mekanlar.konum`, kullanicinin
+    `check_inler.konum`'u degil; ikisi zaten farkli alanlar.
 
 **Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
 tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
