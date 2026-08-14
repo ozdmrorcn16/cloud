@@ -86,11 +86,20 @@ gercek SMS gitmiyor. Gercek anahtarlar `mobil/.env` icinde (gitignored).
 
 Calistirmak icin: `cd mobil && npx expo start --web` → <http://localhost:8081>
 
-Sirada **Faz 2 — Kesif ve guvenlik** var: mekanlar, check-in, yakindakiler
-sorgusu, mesafe ayari, gizli check-in, gorunurluk tercihi, engelleme ve
-sikayet. Once bir Faz 2 spec'i/plani yazilmali (`brainstorming` →
-`writing-plans`). Spec'teki bes acik sorudan ikisi (mekan verisi kaynagi,
-check-in omru) Faz 2'yi dogrudan etkiliyor, once cevaplanmali.
+Sirada **Faz 2** var ve ikiye bolundu:
+
+- **Faz 2a — Mekanlar ve check-in:** OSM mekan yuklemesi, mekan arama, mekan
+  ekleme, check-in (not + fotograf), 4 saat + "ayrildim", profilde ani.
+  Sonunda kullanici check-in yapabiliyor ama henuz kimse kimseyi gormuyor.
+- **Faz 2b — Kesif ve guvenlik:** yakindakiler sorgusu, yaricap ayari, mekan
+  detayi, baskasinin profili, gizli check-in, gorunurluk tercihi, engelleme
+  ve sikayet. Gorunurluk ve koruma ayni anda geliyor.
+
+**Faz 2a'nin beyin firtinasi tamamlandi** (10 karar, hepsi kullanici onayli).
+Kararlarin tam listesi ve gerekceleri `docs/konusma-gunlugu.md` → "Faz 2
+beyin firtinasi" bolumunde. Siradaki adim: tasarimin kalan bolumlerini
+sunmak, sonra Faz 2a spec'ini
+`docs/superpowers/specs/` altina yazip `writing-plans` becerisine gecmek.
 
 **Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
 demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
@@ -195,6 +204,21 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   deneme ve magazaya yukleme bulut konteynerinden yapilamaz. Asil gelistirme
   kullanicinin kendi bilgisayarinda olacak; bu depo (CLAUDE.md, docs, hook'lar)
   klonla birlikte tasiniyor, `~/.claude-mem` veritabani tasinmiyor.
+- 2026-08-14 — **Oturum kaydi bu makinede hic calismiyormus; duzeltildi.**
+  Uc ayri ariza ust uste binmisti. (1) Python kurulu degildi; `python3` diye
+  gorunen sey Microsoft Store'un kisayol taslagiydi ve "Python was not found"
+  donuyordu. (2) Hook komutu `2>/dev/null || true` ile bitiyordu, yani hata
+  yutuluyor ve kullaniciya hic gosterilmiyordu. (3) Oturumlar proje
+  klasorunden degil `C:\WINDOWS\system32` icinden aciliyordu, bu yuzden
+  `CLAUDE.md` de otomatik yuklenmiyordu. Yapilanlar: Python 3.12 kuruldu
+  (winget, kullanici kapsami); hook komutu mutlak Python yoluna baglandi ve
+  `args` (exec) bicimine cevrildi — artik kabuk devrede degil ve hata
+  yutulmuyor; ayni hook `~/.claude/settings.json` icine de eklendi, boylece
+  oturum hangi klasorde acilirsa acilsin kayit yaziliyor. Masaustune
+  `Claude - cloud projesi.bat` kisayolu kondu. Kayip oturum dokumu
+  transcript'ten geri uretildi: `docs/oturumlar/2026-08-14-0193031c.md`,
+  213 tur. **Ders:** hata yutan bir hook, calismayan bir hook'tan daha
+  kotudur; yeni hook'lara `|| true` eklenmeyecek.
 - 2026-08-12 — **Yas politikasi degisti: alt sinir 16'dan 18'e cikti.** Veli
   onayi karmasikligindan kacinmak icin 16-17 yas bandi ve veli onayi akisi
   tamamen kaldirildi; tek yetiskin kullanici kitlesi var. Spec

@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-14 — [2026-08-14-0193031c.md](oturumlar/2026-08-14-0193031c.md) — https://github.com/ozdmrorcn16/cloud deposunu klonla, claude/code-review-plugin-…
 - 2026-08-12 — [2026-08-12-bb3bdf55.md](oturumlar/2026-08-12-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-11 — [2026-08-11-bb3bdf55.md](oturumlar/2026-08-11-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-10 — [2026-08-10-bb3bdf55.md](oturumlar/2026-08-10-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
@@ -123,3 +124,73 @@ icinde `/hooks` menusunden devre disi birak.
     render etmeye calisiyor; Node'da `window` olmadigi icin Supabase'in
     AsyncStorage tabanli oturum deposu uygulama acilmadan cokuyordu ve
     web dev sunucusu hic ayaga kalkmiyordu. `"single"` (SPA) yapildi.
+
+### Faz 2 beyin firtinasi — yarim kaldi, buradan devam edilecek
+
+2026-08-14'te baslandi, bir soru cevaplanmadan birakildi. Alinan kararlar
+(hepsi kullanici onayli):
+
+1. **Mekan verisi: OpenStreetMap, Turkiye geneli onden yukleme.** Geofabrik
+   Turkiye dosyasindan kafe/bar/restoran/park gibi mekanlar cikarilip kendi
+   `mekanlar` tablomuza yazilir (~200-400 bin kayit, ~100 MB). Sorgular
+   tamamen kendi PostGIS'imizde calisir. Google Places elendi (kullanim
+   basina ucretli + lisansi veriyi kalici saklamayi yasakliyor); canli
+   Overpass sorgusu elendi (yavas, hiz sinirli, kullanim politikasina
+   aykiri).
+2. **Check-in iki katmanli.** Canli check-in kesif icindir ve **4 saat**
+   sonra duser; ustune kullanicinin istedigi an basabilecegi bir
+   **"ayrildim" butonu** var. Kullanici isterse o check-in'i profiline
+   kalici **"ani"** olarak kaydeder: kendisi silebilir, sadece mekan adi
+   gorunur, koordinat gorunmez, "su an orada" anlamina gelmez.
+   Spec'teki orijinal "check-in birkac saat sonra tamamen silinir" karari
+   bu sekilde guncellendi.
+3. **Sure dolunca ne olur:** `profilde_kalsin = false` ise satir tamamen
+   silinir; `true` ise yalnizca `konum` alani null'lanir. Boylece sistemde
+   hicbir zaman koordinat gecmisi birikmiyor — "konum verisi tutmuyoruz"
+   duruşu korunuyor.
+4. **Medya: once sadece fotograf.** Video (depolama + moderasyon yuku)
+   sonraki bir faza birakildi; altyapi hazir olacagi icin eklemesi kolay.
+5. **Mekan odasi ozelligi tamamen kaldirildi.** Cekirdek dongu artik:
+   check-in → yakindakileri gor → sohbet/takip istegi → birebir sohbet.
+   Yan etkisi: spec'in soguk baslangic cevaplarindan biri ("mekan odalari
+   kalici, oda hic bos gorunmez") gecersiz kaldi; yerini mekan ekranindaki
+   gecmis anilar aliyor.
+6. **Mekan ekrani:** ustte su an orada check-in yapmis kisiler, altta o
+   mekanda paylasilmis herkese acik anilar. Kimse yokken bile mekan yasiyor
+   gorunur.
+7. **Kullanici yeni mekan ekleyebilir** (spec'teki "ilk surumde
+   eklenemez" karari degisti — aradigi yer OSM'de yoksa kullanici cikmaza
+   giriyordu). Korumalar: cihaz konumunun mekana yakin olmasi sarti
+   (~200 m), kaydetmeden once benzer isimli yakin mekanlarin gosterilmesi
+   (mukerrer kayit onlemi), gunluk limit, ve sikayet edilebilirlik.
+   Not: yakinlik sarti bir duvar degil hiz kesici; kararli biri cihaz
+   konumunu taklit edebilir.
+8. **Faz 2 ikiye bolundu.** Bolme cizgisi guvenlikle ilgili:
+   - **Faz 2a — Mekanlar ve check-in:** OSM yukleme, mekan arama/listeleme,
+     mekan ekleme, check-in olusturma (not + fotograf), 4 saat + ayrilma,
+     profilde ani saklama, kendi anilarini gorme/silme. Sonunda kullanici
+     check-in yapabiliyor ama **henuz kimse kimseyi gormuyor.**
+   - **Faz 2b — Kesif ve guvenlik:** yakindakiler sorgusu + yaricap ayari,
+     mekan detay ekrani, baskasinin profili, gizli check-in, gorunurluk
+     tercihi, **engelleme ve sikayet**. Gorunurluk ve koruma ayni anda
+     geliyor.
+   Yalnizca Faz 2a'nin spec'i yazilacak; 2b kendi spec'ini alacak.
+9. **2a'ya bilerek alinmayanlar:** `gizli_mi` ve anilarin gorunurluk
+   tercihi. 2a'da kimse kimseyi gormedigi icin bu ayarlarin etkisi olmaz.
+
+10. **Check-in icin yakinlik sarti: evet, ~500 m.** (2026-08-14'te cevaplandi.)
+    Cihaz konumu mekana ~500 m'den uzaksa check-in yapilamaz. Yaricap bu kadar
+    genis secildi cunku bina icinde, AVM'de ve kalabalik alanda GPS sapmasi
+    yuzlerce metreyi bulabiliyor; daha dar bir sinir durust kullaniciyi da
+    bloke ederdi. Gerekce: aksi halde biri sehrin obur ucundaki bir mekana
+    check-in yapip "su an burada" listesinde gorunebilir — hem listenin
+    anlamini bosaltir hem birini bir yere cekmek icin kullanilabilir. Mekan
+    *eklemedeki* ~200 m sartindan ayri ve ondan daha genistir. Bu da bir duvar
+    degil hiz kesici; kararli biri cihaz konumunu taklit edebilir.
+
+**Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
+tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
+yukleme yontemi, test yaklasimi) sunmak, onay alinca spec'i
+`docs/superpowers/specs/YYYY-MM-DD-faz2a-mekanlar-checkin-design.md`
+dosyasina yazmak, kullaniciya incelettirip onayini almak, sonra
+`writing-plans` becerisine gecmek var.
