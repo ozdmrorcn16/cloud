@@ -247,6 +247,9 @@ icinde `/hooks` menusunden devre disi birak.
     check-in anindaki kisisel GPS koordinati hala hic saklanmiyor/
     gosterilmiyor. Gosterilen sey `mekanlar.konum`, kullanicinin
     `check_inler.konum`'u degil; ikisi zaten farkli alanlar.
+    Etkilesim: profildeki ani listesinde sadece mekan adi duz metin
+    olarak durmaz — kullanici karta tiklayinca mekanin harita konumu
+    acilir (harita gorunumu, pin).
 
 **Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
 tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
