@@ -231,6 +231,16 @@ icinde `/hooks` menusunden devre disi birak.
     canli check-in'e uygulanir, gecmis anilara degil. Kisiye ozel
     gorunurluk tercihi (karar #9'daki `gizli_mi`) hala Faz 2b'de.
 
+15. **Profildeki ani listesinin gorunurlugu kullanicinin kendi secimi
+    olacak — "herkese acik" varsayimi reddedildi.** (2026-08-14.)
+    `gorunurluk` alani (karar #11) Faz 2b'de islevsel oldugunda uc secenek
+    sunacak: **herkese acik**, **takiplesilen (karsilikli takip)
+    kisiler**, veya **belirli kisiler** (kullanicinin sectigi ozel liste).
+    Bu, bir "takip/arkadaslik" iliski modeline ihtiyac duyuyor — henuz
+    tasarlanmadi, sosyal/kesif fazinin kapsaminda. 2a'da alan hala
+    islevsiz kaydediliyor (varsayilan deger `herkese_acik`), kullanici
+    bunu degistiremiyor cunku ayar arayuzu 2b'de gelecek.
+
 **Devam ederken:** beyin firtinasinin butun sorulari cevaplandi. Sirada
 tasarimin kalan bolumlerini (guvenlik/mahremiyet mekanikleri, mekan verisi
 yukleme yontemi, test yaklasimi) sunmak, onay alinca spec'i
