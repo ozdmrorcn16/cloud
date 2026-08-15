@@ -40,9 +40,11 @@ describe('MekanDetayEkrani', () => {
   })
 
   it('kendi aktif check-ini varsa ayrildim butonu gosterir ve basinca cagirir', async () => {
-    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
-      { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
-    ])
+    ;(suAnBurdakileriGetir as jest.Mock)
+      .mockResolvedValueOnce([
+        { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+      ])
+      .mockResolvedValueOnce([])
     ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
     ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
 
@@ -53,6 +55,25 @@ describe('MekanDetayEkrani', () => {
     await waitFor(() => {
       expect(checkIndenAyril).toHaveBeenCalledWith('checkin-1')
     })
+
+    await waitFor(() => {
+      expect(screen.getByText('Check-in yap')).toBeTruthy()
+    })
+  })
+
+  it('baskasinin aktif check-ini varsa check-in yap butonu gosterir ve ayrildim butonu yoktur', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Baskasi', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+    ])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Baskasi')).toBeTruthy()
+    })
+    expect(screen.getByText('Check-in yap')).toBeTruthy()
+    expect(screen.queryByText('Ayrildim')).toBeNull()
   })
 
   it('check-in yap butonuna basinca check-in ekranina yonlendirir', async () => {
