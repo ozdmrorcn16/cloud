@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { noktayiCoz } from './konum'
 
 export type Mekan = {
   id: string
@@ -7,13 +8,6 @@ export type Mekan = {
   adres: string | null
   osmId: number | null
   konum: { lat: number; lng: number }
-}
-
-function noktayiCoz(wkt: string): { lat: number; lng: number } {
-  // PostGIS geography, PostgREST uzerinden "POINT(lng lat)" WKT metni olarak doner.
-  const eslesme = /POINT\(([-\d.]+) ([-\d.]+)\)/.exec(wkt)
-  if (!eslesme) throw new Error(`Beklenmeyen konum formati: ${wkt}`)
-  return { lng: parseFloat(eslesme[1]), lat: parseFloat(eslesme[2]) }
 }
 
 type MekanSatiri = {

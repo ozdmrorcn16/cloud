@@ -21,3 +21,9 @@ export async function cihazKonumunuAl(): Promise<{ lat: number; lng: number }> {
   const konum = await Location.getCurrentPositionAsync({})
   return { lat: konum.coords.latitude, lng: konum.coords.longitude }
 }
+
+export function noktayiCoz(wkt: string): { lat: number; lng: number } {
+  const eslesme = /POINT\(([-\d.]+) ([-\d.]+)\)/.exec(wkt)
+  if (!eslesme) throw new Error(`Beklenmeyen konum formati: ${wkt}`)
+  return { lng: parseFloat(eslesme[1]), lat: parseFloat(eslesme[2]) }
+}

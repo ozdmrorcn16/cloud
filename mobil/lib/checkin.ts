@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { noktayiCoz } from './konum'
 
 export type CheckIn = {
   id: string
@@ -84,4 +85,28 @@ export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorun
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
+}
+
+export type AniGorunumu = CheckIn & { mekanAdi: string; mekanKonumu: { lat: number; lng: number } }
+
+type CheckInSatiriMekanli = CheckInSatiri & { mekanlar: { ad: string; konum: string } }
+
+export async function kendiAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, mekanlar(ad, konum)')
+    .eq('kullanici_id', kullaniciId)
+    .is('konum', null)
+    .order('olusturma_zamani', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data as unknown as CheckInSatiriMekanli[]).map((satir) => ({
+    ...satiriCheckInACevir(satir),
+    mekanAdi: satir.mekanlar.ad,
+    mekanKonumu: noktayiCoz(satir.mekanlar.konum),
+  }))
+}
+
+export async function aniyiSil(checkInId: string): Promise<void> {
+  const { error } = await supabase.from('check_inler').delete().eq('id', checkInId)
+  if (error) throw new Error(error.message)
 }

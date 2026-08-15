@@ -1,4 +1,4 @@
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kendiAnilariniGetir, aniyiSil } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -109,5 +109,44 @@ describe('mekanAnilariniGetir', () => {
 
     expect(sonuc[0].kullaniciAdi).toBe('Berk')
     expect(sonuc[0].canliMi).toBe(false)
+  })
+})
+
+describe('kendiAnilariniGetir', () => {
+  it('yalnizca kendi aniya donusmus check-inlerini mekan bilgisiyle getirir', async () => {
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'checkin-3', mekan_id: 'mekan-1', not_metni: 'harika', fotograf: null,
+          olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
+          konum: null, mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
+        },
+      ],
+      error: null,
+    })
+    const is_ = jest.fn().mockReturnValue({ order })
+    const eq = jest.fn().mockReturnValue({ is: is_ })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select })
+
+    const sonuc = await kendiAnilariniGetir('kullanici-1')
+
+    expect(supabase.from).toHaveBeenCalledWith('check_inler')
+    expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
+    expect(sonuc[0].mekanKonumu).toEqual({ lat: 41.015, lng: 28.979 })
+  })
+})
+
+describe('aniyiSil', () => {
+  it('check-in id sine gore satiri siler', async () => {
+    const eq = jest.fn().mockResolvedValue({ error: null })
+    const del = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ delete: del })
+
+    await aniyiSil('checkin-3')
+
+    expect(supabase.from).toHaveBeenCalledWith('check_inler')
+    expect(del).toHaveBeenCalled()
+    expect(eq).toHaveBeenCalledWith('id', 'checkin-3')
   })
 })
