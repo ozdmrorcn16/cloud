@@ -48,3 +48,8 @@ export async function checkInYap(
   if (error) throw new Error(error.message)
   return satiriCheckInACevir(data as CheckInSatiri)
 }
+
+export async function checkIndenAyril(checkInId: string): Promise<void> {
+  const { error } = await supabase.rpc('check_inden_ayril', { p_check_in_id: checkInId })
+  if (error) throw new Error(error.message)
+}

@@ -1,4 +1,4 @@
-import { checkInYap } from './checkin'
+import { checkInYap, checkIndenAyril } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -46,5 +46,20 @@ describe('checkInYap', () => {
       error: { message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' },
     })
     await expect(checkInYap('mekan-1', { lat: 41.5, lng: 29.5 })).rejects.toThrow('Mekana cok uzaksin')
+  })
+})
+
+describe('checkIndenAyril', () => {
+  it('check-in id sini rpc parametresi olarak gonderir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: null })
+    await checkIndenAyril('checkin-1')
+    expect(supabase.rpc).toHaveBeenCalledWith('check_inden_ayril', {
+      p_check_in_id: 'checkin-1',
+    })
+  })
+
+  it('sunucu hatasini firlatir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: { message: 'yetkisiz' } })
+    await expect(checkIndenAyril('checkin-1')).rejects.toThrow('yetkisiz')
   })
 })
