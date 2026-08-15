@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-15 — [2026-08-15-639e055b.md](oturumlar/2026-08-15-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-14 — [2026-08-14-9ff6ffed.md](oturumlar/2026-08-14-9ff6ffed.md) — kaldığımız yere geri aç
 - 2026-08-14 — [2026-08-14-639e055b.md](oturumlar/2026-08-14-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-14 — [2026-08-14-0193031c.md](oturumlar/2026-08-14-0193031c.md) — https://github.com/ozdmrorcn16/cloud deposunu klonla, claude/code-review-plugin-…
@@ -257,3 +258,37 @@ yukleme yontemi, test yaklasimi) sunmak, onay alinca spec'i
 `docs/superpowers/specs/YYYY-MM-DD-faz2a-mekanlar-checkin-design.md`
 dosyasina yazmak, kullaniciya incelettirip onayini almak, sonra
 `writing-plans` becerisine gecmek var.
+
+### Faz 2a uygulamasi sirasinda alinan kararlar
+
+Spec ve plan yazildiktan sonra, 15 gorevlik uygulama sirasinda ortaya
+cikan ve kayda gecmesi gereken sapmalar:
+
+17. **Cevrimdisi kuyruk ozelligi Faz 2a'ya alinmadi.** (2026-08-15.)
+    Spec'in hata durumlari tablosu "Ag yok → check-in kuyrukta bekler,
+    baglanti gelince gonderilir" diyordu. Uygulanan davranis bunun yerine
+    tek seferlik deneme + acik bir hata mesaji ("Internet baglantisi yok,
+    tekrar dene") ve kullanicinin elle tekrar denemesi. Gerekce: gercek
+    arka-plan kuyruklama kalici yerel depo, baglanti durumu dinleyicisi ve
+    otomatik yeniden gonderme gerektiriyor — bu, tek basina kucuk bir
+    faz buyuklugunde is. Bilerek ertelendi; Faz 2b oncesinde ya da onunla
+    birlikte ayri bir gorev olarak ele alinacak.
+18. **Check-in yapanin gorunen adi `check_inler` tablosunda kopyalaniyor
+    (denormalizasyon).** (2026-08-15, son incelemede bulunan kritik
+    hatanin duzeltmesi.) Mekan detay ekrani baskalarinin adini
+    `profiller(ad)` join'iyle okumaya calisiyordu; bu iki sebeple
+    calismiyordu: (a) `check_inler` ile `profiller` arasinda FK yok
+    (ikisi de bagimsiz olarak `auth.users`'a bagli), PostgREST join'i
+    cozemiyor; (b) `profiller`'in Faz 1'den kalan RLS politikasi
+    "sadece kendi profilini oku" idi. Cozum olarak `profiller`'in
+    politikasini gevsetmek **reddedildi**: Postgres RLS satir
+    duzeyindedir, sutun duzeyinde degil — `ad`'i baskalarina acan her
+    politika `dogum_tarihi`, `biyografi` ve `fotograflar` alanlarini da
+    acardi. Bu, bir hata duzeltmesinin icine gizlenmis bir Faz 2b
+    kapsamli gorunurluk degisikligi olurdu. Bunun yerine `check_inler`
+    tablosuna `kullanici_adi` sutunu eklendi; `check_in_yap` RPC'si
+    (zaten `security definer`) check-in olustururken adi profilden
+    okuyup buraya yaziyor. Tavizi: kullanici adini degistirirse eski
+    check-in'lerde/anilarda eski ad kalir — anilar icin bu zaten dogru
+    davranis (tarihsel kayit), canli check-in'lerde bayatlik penceresi
+    en fazla 4 saat.
