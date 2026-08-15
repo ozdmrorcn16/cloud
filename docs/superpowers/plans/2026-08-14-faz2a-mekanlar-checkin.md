@@ -645,6 +645,10 @@ declare
   v_gunluk_sayi int;
   v_yeni public.mekanlar;
 begin
+  if auth.uid() is null then
+    raise exception 'Kimlik dogrulamasi gerekli';
+  end if;
+
   if not ST_DWithin(
     ST_MakePoint(p_lng, p_lat)::geography,
     ST_MakePoint(p_cihaz_lng, p_cihaz_lat)::geography,
@@ -820,6 +824,10 @@ declare
   v_mekan_konum geography;
   v_yeni public.check_inler;
 begin
+  if auth.uid() is null then
+    raise exception 'Kimlik dogrulamasi gerekli';
+  end if;
+
   select konum into v_mekan_konum from public.mekanlar where id = p_mekan_id;
   if v_mekan_konum is null then
     raise exception 'Mekan bulunamadi';
@@ -1019,6 +1027,10 @@ security definer
 set search_path = public
 as $$
 begin
+  if auth.uid() is null then
+    raise exception 'Kimlik dogrulamasi gerekli';
+  end if;
+
   update public.check_inler
   set konum = null
   where id = p_check_in_id
