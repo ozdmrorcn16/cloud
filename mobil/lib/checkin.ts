@@ -55,22 +55,22 @@ export async function checkIndenAyril(checkInId: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
-export type CheckInGorunumu = CheckIn & { kullaniciId: string; kullaniciAdi: string }
+export type CheckInGorunumu = CheckIn & { kullaniciId: string; kullaniciAdi: string | null }
 
-type CheckInSatiriProfilli = CheckInSatiri & { kullanici_id: string; profiller: { ad: string } }
+type CheckInSatiriProfilli = CheckInSatiri & { kullanici_id: string; kullanici_adi: string | null }
 
 function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
   return {
     ...satiriCheckInACevir(satir),
     kullaniciId: satir.kullanici_id,
-    kullaniciAdi: satir.profiller.ad,
+    kullaniciAdi: satir.kullanici_adi,
   }
 }
 
 export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, profiller(ad)')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
@@ -80,7 +80,7 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
 export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, profiller(ad)')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi')
     .is('konum', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)

@@ -71,7 +71,7 @@ describe('suAnBurdakileriGetir', () => {
         {
           id: 'checkin-1', mekan_id: 'mekan-1', kullanici_id: 'kullanici-2', not_metni: null, fotograf: null,
           olusturma_zamani: '2026-08-14T10:00:00Z', bitis_zamani: '2026-08-14T14:00:00Z',
-          konum: 'POINT(28.979 41.015)', profiller: { ad: 'Ada' },
+          konum: 'POINT(28.979 41.015)', kullanici_adi: 'Ada',
         },
       ],
       error: null,
@@ -96,7 +96,7 @@ describe('mekanAnilariniGetir', () => {
         {
           id: 'checkin-2', mekan_id: 'mekan-1', kullanici_id: 'kullanici-3', not_metni: 'guzel', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, profiller: { ad: 'Berk' },
+          konum: null, kullanici_adi: 'Berk',
         },
       ],
       error: null,
