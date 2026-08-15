@@ -6,12 +6,33 @@ jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signOut: jest.fn().mockResolvedValue({ error: null }) } },
 }))
 
+const mockRouterPush = jest.fn()
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}))
+
 describe('AnaEkran', () => {
+  beforeEach(() => {
+    mockRouterPush.mockClear()
+  })
+
   it('cikis yap butonuna basinca signOut cagirir', async () => {
     await render(<AnaEkran />)
     await fireEvent.press(screen.getByText('Cikis yap'))
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
+  })
+
+  it('mekanlara git butonuna basinca /mekanlar rotasina yonlendirir', async () => {
+    await render(<AnaEkran />)
+    await fireEvent.press(screen.getByText('Mekanlari kesfet'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar')
+  })
+
+  it('anilarim butonuna basinca /profil/anilar rotasina yonlendirir', async () => {
+    await render(<AnaEkran />)
+    await fireEvent.press(screen.getByText('Anilarim'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/anilar')
   })
 })
