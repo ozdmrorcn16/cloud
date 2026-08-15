@@ -45,4 +45,12 @@ describe('AnilarEkrani', () => {
       expect(aniyiSil).toHaveBeenCalledWith('checkin-3')
     })
   })
+
+  it('anilar yuklenemezse hata mesaji gosterir', async () => {
+    ;(kendiAnilariniGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    await render(<AnilarEkrani />)
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+  })
 })

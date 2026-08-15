@@ -50,4 +50,22 @@ describe('MekanAramaEkrani', () => {
       expect(screen.getByText('Konum izni verilmedi')).toBeTruthy()
     })
   })
+
+  it('arama sirasinda sorgu basarisiz olursa hata gosterir', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariGetir as jest.Mock)
+      .mockResolvedValueOnce([
+        { id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1, konum: { lat: 41.015, lng: 28.979 } },
+      ])
+      .mockRejectedValueOnce(new Error('Sunucuya ulasilamadi'))
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Sahil Kafe'))
+
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kafe')
+
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+  })
 })

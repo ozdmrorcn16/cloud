@@ -31,8 +31,13 @@ export default function MekanAramaEkrani() {
   async function aramaDegisti(metin: string) {
     setArama(metin)
     if (!cihazKonumu) return
-    const sonuc = await yakinMekanlariGetir(cihazKonumu.lat, cihazKonumu.lng, metin || undefined)
-    setMekanlar(sonuc)
+    try {
+      const sonuc = await yakinMekanlariGetir(cihazKonumu.lat, cihazKonumu.lng, metin || undefined)
+      setMekanlar(sonuc)
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
   }
 
   if (yukleniyor) return <Text style={stiller.durum}>Yukleniyor...</Text>

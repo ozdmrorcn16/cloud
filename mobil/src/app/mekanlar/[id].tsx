@@ -15,16 +15,22 @@ export default function MekanDetayEkrani() {
   const [suAnBurdakiler, setSuAnBurdakiler] = useState<CheckInGorunumu[]>([])
   const [anilar, setAnilar] = useState<CheckInGorunumu[]>([])
   const [kendiKullaniciId, setKendiKullaniciId] = useState<string | null>(null)
+  const [hata, setHata] = useState<string | null>(null)
 
   async function verileriYukle() {
-    const [canlilar, gecmisAnilar, kullaniciVerisi] = await Promise.all([
-      suAnBurdakileriGetir(id),
-      mekanAnilariniGetir(id),
-      supabase.auth.getUser(),
-    ])
-    setSuAnBurdakiler(canlilar)
-    setAnilar(gecmisAnilar)
-    setKendiKullaniciId(kullaniciVerisi.data.user?.id ?? null)
+    try {
+      const [canlilar, gecmisAnilar, kullaniciVerisi] = await Promise.all([
+        suAnBurdakileriGetir(id),
+        mekanAnilariniGetir(id),
+        supabase.auth.getUser(),
+      ])
+      setSuAnBurdakiler(canlilar)
+      setAnilar(gecmisAnilar)
+      setKendiKullaniciId(kullaniciVerisi.data.user?.id ?? null)
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
   }
 
   useEffect(() => {
@@ -40,6 +46,7 @@ export default function MekanDetayEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
+      {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Text style={stiller.bolumBaslik}>Su an burada</Text>
       <FlatList
         data={suAnBurdakiler}
@@ -86,6 +93,7 @@ const stiller = StyleSheet.create({
   kullaniciAdi: { fontSize: 16, fontWeight: '600' },
   not: { color: '#555', marginTop: 2 },
   durum: { color: '#666' },
+  hata: { color: '#c00', marginBottom: 12 },
   buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 12 },
   butonYazi: { color: '#fff', fontWeight: '600' },
 })

@@ -5,12 +5,18 @@ import { kendiAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/ch
 
 export default function AnilarEkrani() {
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
+  const [hata, setHata] = useState<string | null>(null)
 
   async function anilariYukle() {
-    const { data: kullaniciVerisi } = await supabase.auth.getUser()
-    const kullaniciId = kullaniciVerisi.user?.id
-    if (!kullaniciId) return
-    setAnilar(await kendiAnilariniGetir(kullaniciId))
+    try {
+      const { data: kullaniciVerisi } = await supabase.auth.getUser()
+      const kullaniciId = kullaniciVerisi.user?.id
+      if (!kullaniciId) return
+      setAnilar(await kendiAnilariniGetir(kullaniciId))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
   }
 
   useEffect(() => {
@@ -29,6 +35,7 @@ export default function AnilarEkrani() {
   return (
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>Anilarim</Text>
+      {hata && <Text style={stiller.hata}>{hata}</Text>}
       <FlatList
         data={anilar}
         keyExtractor={(a) => a.id}
@@ -59,5 +66,6 @@ const stiller = StyleSheet.create({
   mekanAdi: { fontSize: 16, fontWeight: '600', color: '#0645ad' },
   not: { color: '#555', marginTop: 2 },
   silButonu: { color: '#c00' },
+  hata: { color: '#c00', marginBottom: 12 },
   durum: { color: '#666', marginTop: 24, textAlign: 'center' },
 })

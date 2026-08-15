@@ -86,4 +86,15 @@ describe('MekanDetayEkrani', () => {
 
     expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
   })
+
+  it('veri yuklemesi basarisiz olursa hata mesaji gosterir', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+  })
 })
