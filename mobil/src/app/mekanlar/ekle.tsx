@@ -34,7 +34,10 @@ export default function MekanEkleEkrani() {
 
   async function ekle() {
     setHata(null)
-    if (!cihazKonumu) return
+    if (!cihazKonumu) {
+      setHata('Konum alinamadi, tekrar dene')
+      return
+    }
     if (ad.trim().length === 0 || tur.trim().length === 0) {
       setHata('Mekan adi ve turu gerekli')
       return

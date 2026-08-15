@@ -70,4 +70,19 @@ describe('MekanEkleEkrani', () => {
     })
     expect(mekanEkle).not.toHaveBeenCalled()
   })
+
+  it('konum alinamadiysa hata gosterir ve mekanEkle cagirmaz', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockRejectedValue(new Error('Konum izni reddedildi'))
+
+    await render(<MekanEkleEkrani />)
+    await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adi'), 'Yeni Kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Tur (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.press(screen.getByText('Ekle'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Konum alinamadi, tekrar dene')).toBeTruthy()
+    })
+    expect(mekanEkle).not.toHaveBeenCalled()
+  })
 })
