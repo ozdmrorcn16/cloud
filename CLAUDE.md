@@ -95,11 +95,38 @@ Sirada **Faz 2** var ve ikiye bolundu:
   detayi, baskasinin profili, gizli check-in, gorunurluk tercihi, engelleme
   ve sikayet. Gorunurluk ve koruma ayni anda geliyor.
 
-**Faz 2a'nin beyin firtinasi tamamlandi** (10 karar, hepsi kullanici onayli).
-Kararlarin tam listesi ve gerekceleri `docs/konusma-gunlugu.md` → "Faz 2
-beyin firtinasi" bolumunde. Siradaki adim: tasarimin kalan bolumlerini
-sunmak, sonra Faz 2a spec'ini
-`docs/superpowers/specs/` altina yazip `writing-plans` becerisine gecmek.
+**Faz 2a TAMAMLANDI** (2026-08-15). Spec:
+`docs/superpowers/specs/2026-08-14-faz2a-mekanlar-checkin-design.md`,
+plan: `docs/superpowers/plans/2026-08-14-faz2a-mekanlar-checkin.md`.
+15 gorev, 24 commit, 21 test paketi / 69 test yesil. Beyin firtinasinda
+alinan 18 kararin tam listesi `docs/konusma-gunlugu.md` icinde.
+
+Calisan islevler: mekan arama (PostGIS, sabit 3 km yaricap), mekan
+ekleme (~200 m yakinlik + gunluk 5 limit, sunucuda zorunlu), check-in
+(~500 m yakinlik, not + fotograf, tek aktif check-in), karsilikli canli
+gorunurluk (ayni mekanda check-in yapanlar birbirini gorur — RLS ile),
+4 saat sonra ya da "ayrildim" ile otomatik ani donusumu (pg_cron),
+profilde anilari gorme/haritada acma/silme.
+
+**Faz 2a'da bulunup duzeltilen uc gercek kusur** (surec kayitlari icin):
+1. Storage politikalarinda `to authenticated` eksikti — kimliksiz
+   kullanici ani fotograflarini okuyabiliyordu.
+2. `mekan_ekle` RPC'sinde `auth.uid()` null kontrolu yoktu — kimliksiz
+   cagri gunluk limiti atlatip sahipsiz kayit ekleyebiliyordu. Ayni
+   koruma diger iki `security definer` RPC'ye de onden eklendi.
+3. Mekan detay ekrani baskalarinin adini `profiller(ad)` join'iyle
+   okumaya calisiyordu; FK yoklugu + Faz 1'in "sadece kendi profilini
+   oku" RLS'i yuzunden gercek veritabaninda hic calismiyordu ve
+   sessizce bos ekran gosteriyordu. 66 test yesil oldugu halde
+   yakalanmamisti cunku hepsi Supabase'i mock'luyor. Cozum: ad
+   `check_inler`'e denormalize edildi (karar #18).
+
+**Henuz yapilmayan tek dogrulama:** uygulamayi tarayicida ucdan uca
+elle calistirmak (`cd mobil && npx expo start --web`). Butun testler
+mock tabanli oldugu icin ucuncu kusur ancak canli veritabani
+sorgusuyla ortaya cikti — iki farkli hesapla ayni mekana check-in
+yapip birbirini gorup gormediklerini denemek, birlestirmeden once
+yapilmasi onerilen sey.
 
 **Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
 demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
@@ -107,6 +134,12 @@ sablon gorsellerinin silinmesi, ESLint yapilandirmasinin eklenmesi,
 `jest`/`jest-expo`'nun `dependencies`ten `devDependencies`e tasinmasi,
 storage bucket'ina silme politikasi, `expo-image-picker` config
 plugin'inin `app.json`'a eklenmesi (gercek iOS derlemesi icin sart).
+
+**Faz 2a'dan devreden isler:** cevrimdisi kuyruk (karar #17), OSM
+yukleme betiginin gercek veriyle ilk kez calistirilmasi
+(`araclar/README.md`), check-in fotografi silinince Storage'da kalan
+oksuz dosya, ag hatasi mesajinin sadece bir ekranda Turkcelestirilmis
+olmasi.
 
 ### Bastan tasarima girmesi gereken kisit
 
