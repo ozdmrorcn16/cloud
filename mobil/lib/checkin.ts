@@ -53,3 +53,35 @@ export async function checkIndenAyril(checkInId: string): Promise<void> {
   const { error } = await supabase.rpc('check_inden_ayril', { p_check_in_id: checkInId })
   if (error) throw new Error(error.message)
 }
+
+export type CheckInGorunumu = CheckIn & { kullaniciId: string; kullaniciAdi: string }
+
+type CheckInSatiriProfilli = CheckInSatiri & { kullanici_id: string; profiller: { ad: string } }
+
+function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
+  return {
+    ...satiriCheckInACevir(satir),
+    kullaniciId: satir.kullanici_id,
+    kullaniciAdi: satir.profiller.ad,
+  }
+}
+
+export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, profiller(ad)')
+    .not('konum', 'is', null)
+    .eq('mekan_id', mekanId)
+  if (error) throw new Error(error.message)
+  return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
+}
+
+export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorunumu[]> {
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, profiller(ad)')
+    .is('konum', null)
+    .eq('mekan_id', mekanId)
+  if (error) throw new Error(error.message)
+  return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
+}
