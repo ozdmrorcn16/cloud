@@ -1769,8 +1769,28 @@ git commit -m "mobil: mekan arama ekraninda yogunluk sayisi ve 1-5 km yaricap"
 
 **Interfaces:**
 - Consumes: `baskasininProfiliniGetir` (Task 7), `engelle`,
-  `engellediklerimiGetir`, `engeliKaldir` (Task 5).
+  `engellediklerimiGetir`, `engeliKaldir` (Task 5),
+  `kullanicininAnilariniGetir` (asagida, Step 0'da yeniden adlandiriliyor).
 - Produces: `/kullanici/[id]` rotasi — Task 16 (sikayet) buradan acilir.
+
+**Not — anilar profilde gosterilecek.** Ani dedigimiz sey zaten
+`check_inler` satirinin kendisi ve o satir mekan ekraninda herkese acik
+goruluyor; ayni satiri profilde gizlemek yeni bir koruma saglamaz
+(spec'teki gerekce). Faz 2a'daki `kendiAnilariniGetir(kullaniciId)`
+fonksiyonu zaten parametre olarak kullanici kimligi aliyor ve Task 4'ten
+sonra RLS engellemeyi ve `gorunurluk = 'kimse'` kuralini kendisi
+uyguluyor — yani baskasinin kimligiyle cagrildiginda dogru sonucu
+donduruyor. Yalnizca adi yaniltici ("kendi"), Step 0'da duzeltiliyor.
+
+- [ ] **Step 0: `kendiAnilariniGetir` fonksiyonunu yeniden adlandir**
+
+`mobil/lib/checkin.ts` icinde `kendiAnilariniGetir` →
+`kullanicininAnilariniGetir` olarak degistir (govde ayni kalir).
+`mobil/lib/checkin.test.ts` ve `mobil/src/app/profil/anilar.tsx`
+icindeki cagrilari da guncelle.
+
+Run: `cd mobil && npm test -- checkin.test.ts profil/anilar.test.tsx`
+Expected: PASS — davranis degismedi, yalnizca ad degisti.
 
 - [ ] **Step 1: Testleri yaz**
 
@@ -1788,6 +1808,7 @@ jest.mock('../../../lib/engelleme', () => ({
   engeliKaldir: jest.fn(),
   engellediklerimiGetir: jest.fn(),
 }))
+jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -1798,6 +1819,7 @@ jest.mock('expo-router', () => ({
 beforeEach(() => {
   jest.clearAllMocks()
   ;(engellediklerimiGetir as jest.Mock).mockResolvedValue([])
+  ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
 })
 
 describe('KullaniciProfiliEkrani', () => {
@@ -1811,6 +1833,24 @@ describe('KullaniciProfiliEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Ada')).toBeTruthy()
       expect(screen.getByText('merhaba')).toBeTruthy()
+    })
+  })
+
+  it('kullanicinin herkese acik anilarini listeler', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
+        fotograf: null, olusturmaZamani: '', bitisZamani: '', canliMi: false,
+        mekanKonumu: { lat: 41.015, lng: 28.979 } },
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => {
+      expect(kullanicininAnilariniGetir).toHaveBeenCalledWith('kullanici-2')
+      expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
   })
 
@@ -1861,10 +1901,19 @@ Expected: FAIL.
 
 - [ ] **Step 3: Ekrani yaz**
 
-`mobil/src/app/kullanici/[id].tsx` — profil bilgileri, `Engelle` ve
-`Sikayet et` butonlari. Engelledikten sonra profil icerigi yerine
-`Bu profil bulunamadi` gosterilir (kendi eylemin oldugu icin bu
-kullaniciya surpriz degil). Yukleme ve hata durumlari 2a desenine gore.
+`mobil/src/app/kullanici/[id].tsx` — profil bilgileri (ad, profil
+fotograflari, biyografi), altinda kullanicinin herkese acik anilari
+(mekan adi + not + fotograf; `mobil/src/app/profil/anilar.tsx`'teki
+liste desenini izle ama **silme butonu olmadan** — baskasinin anisini
+silemezsin), en altta `Engelle` ve `Sikayet et` butonlari.
+
+Anilar `kullanicininAnilariniGetir(id)` ile cekilir; RLS engellemeyi ve
+`gorunurluk = 'kimse'` kuralini zaten uyguladigi icin ekran kodu ayrica
+filtreleme yapmaz.
+
+Engelledikten sonra profil icerigi yerine `Bu profil bulunamadi`
+gosterilir (kendi eylemin oldugu icin bu kullaniciya surpriz degil).
+Yukleme ve hata durumlari 2a desenine gore.
 
 - [ ] **Step 4: Mekan detay ekraninda isimleri tiklanabilir yap**
 

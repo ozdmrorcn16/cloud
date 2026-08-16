@@ -353,17 +353,27 @@ Kararlarin tam listesi ve gerekceleri:
     (id, ad, biyografi, fotograflar) alanlariyla okunur. Gerekce:
     Postgres RLS satir duzeyindedir, sutun duzeyinde degil — `ad`'i
     baskalarina acan her politika `dogum_tarihi`'ni de acardi.
-27. **Baskasinin profilinde ani gosterilmiyor, dogum tarihi hicbir
-    kosulda gosterilmiyor.** (2026-08-16.) Kullanicinin kurali: "biri
-    birini takip etmeden anilarina erisemez; takiplesmeden birinin
-    adina tiklayinca profil resmini ve biyografisini gorur." Takip
-    modeli Faz 3'un konusu oldugu icin 2b'de profilde ani hic
-    gosterilmiyor; kural Faz 3'te "takiplestiklerin anilarini gorur"
-    olarak eklenecek. **Mekan ekranindaki anilar bundan etkilenmiyor** —
-    Faz 2a'daki gibi herkese acik kaliyorlar (karar #14). Ikisi farkli
-    seyler: mekanda birakilmis dagink izler ile bir kisinin toplu
-    gecmisi ayni sey degil. Dogum tarihi ise takiplesenlere bile
+27. **Baskasinin profilinde ad, profil fotograflari, biyografi ve
+    herkese acik anilar gosterilir; dogum tarihi hicbir kosulda
+    gosterilmez.** (2026-08-16.) Once "anilari gormek takip
+    gerektirsin" dusunuldu, sonra kullanicinin isaret ettigi gerekceyle
+    reddedildi: **ani dedigimiz sey zaten `check_inler` satirinin
+    kendisi** — ayni not, ayni fotograf — ve o satir mekan ekraninda
+    herkese acik goruluyor (karar #14). Ayni satiri profilde gizlemek
+    yeni bir koruma saglamaz; biri o fotografi mekan ekranindan zaten
+    gorebilir. Gizlilik kazanci degil, yalnizca bulmayi zorlastirmak
+    olurdu.
+
+    Kayda gecen tek fark: profildeki liste **toplu bir hareket
+    oruntusu** gosterir ("bu kisi su mekanlara gidiyor"), mekan
+    ekranindaki tek tek izlerden farki budur; takip senaryosunda ise
+    yarayan sey bu toplamadir. Ama veri zaten acik oldugu icin bu bir
+    sizinti degil, kolayliktir — ve kullaniciya bunu tamamen kapatma
+    imkani `gorunurluk = 'kimse'` secenegiyle veriliyor.
+
+    Dogum tarihi ise hicbir kullaniciya, ileride takiplesenlere bile
     acilmiyor; yalnizca kayitta yas dogrulamasi icin tutuluyor.
+    Gerekirse ileride yalnizca **yas** (tam tarih degil) eklenebilir.
 28. **Gorunurluk testleri mock'suz, gercek veritabanina karsi
     yazilacak.** Faz 2a'da 66 Jest testi yesilken mekan detay ekrani
     canli veritabaninda hic calismiyordu; sebebi butun testlerin
