@@ -1,4 +1,4 @@
-import { yakinMekanlariGetir, mekanEkle } from './mekan'
+import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir } from './mekan'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -87,5 +87,45 @@ describe('mekanEkle', () => {
     await expect(
       mekanEkle('Uzak Kafe', 'kafe', { lat: 41.02, lng: 28.98 }, { lat: 42, lng: 30 })
     ).rejects.toThrow('Mekana yakin olmalisin')
+  })
+})
+
+describe('yakinMekanlariYogunlukIleGetir', () => {
+  it('yaricapi ve aramayi rpc parametresi olarak gonderir, kisi sayisini cozer', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          id: 'mekan-1',
+          ad: 'Sahil Kafe',
+          tur: 'kafe',
+          adres: null,
+          osm_id: 123,
+          konum: 'POINT(28.979 41.015)',
+          kisi_sayisi: 8,
+        },
+      ],
+      error: null,
+    })
+
+    const sonuc = await yakinMekanlariYogunlukIleGetir(41.015, 28.979, 5000, 'kafe')
+
+    expect(supabase.rpc).toHaveBeenCalledWith('yakin_mekanlar_yogunluk', {
+      p_lat: 41.015,
+      p_lng: 28.979,
+      p_yaricap_metre: 5000,
+      p_arama: 'kafe',
+    })
+    expect(sonuc[0].kisiSayisi).toBe(8)
+    expect(sonuc[0].konum).toEqual({ lat: 41.015, lng: 28.979 })
+  })
+
+  it('hata donerse firlatir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { message: 'sunucu hatasi' },
+    })
+    await expect(yakinMekanlariYogunlukIleGetir(41.015, 28.979, 5000)).rejects.toThrow(
+      'sunucu hatasi'
+    )
   })
 })

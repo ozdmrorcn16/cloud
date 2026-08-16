@@ -63,3 +63,26 @@ export async function mekanEkle(
   if (error) throw new Error(error.message)
   return satiriMekanaCevir(data as MekanSatiri)
 }
+
+export type MekanYogunlukIle = Mekan & { kisiSayisi: number }
+
+type MekanYogunlukSatiri = MekanSatiri & { kisi_sayisi: number }
+
+export async function yakinMekanlariYogunlukIleGetir(
+  lat: number,
+  lng: number,
+  yaricapMetre: number,
+  arama?: string
+): Promise<MekanYogunlukIle[]> {
+  const { data, error } = await supabase.rpc('yakin_mekanlar_yogunluk', {
+    p_lat: lat,
+    p_lng: lng,
+    p_yaricap_metre: yaricapMetre,
+    p_arama: arama ?? null,
+  })
+  if (error) throw new Error(error.message)
+  return (data as MekanYogunlukSatiri[]).map((satir) => ({
+    ...satiriMekanaCevir(satir),
+    kisiSayisi: satir.kisi_sayisi,
+  }))
+}
