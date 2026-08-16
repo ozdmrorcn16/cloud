@@ -14,8 +14,14 @@ async function kullaniciIleBaglan(telefon: string, sifre: string) {
   let { data, error } = await istemci.auth.signInWithPassword({ phone: telefon, password: sifre })
 
   if (error) {
-    await istemci.auth.signUp({ phone: telefon, password: sifre })
-    await istemci.auth.verifyOtp({ phone: telefon, token: '123456', type: 'sms' })
+    const { error: signUpError } = await istemci.auth.signUp({ phone: telefon, password: sifre })
+    if (signUpError) {
+      console.error(`  [${telefon}] signUp hatasi: ${signUpError.message}`)
+    }
+    const { error: otpError } = await istemci.auth.verifyOtp({ phone: telefon, token: '123456', type: 'sms' })
+    if (otpError) {
+      console.error(`  [${telefon}] verifyOtp hatasi: ${otpError.message}`)
+    }
     ;({ data, error } = await istemci.auth.signInWithPassword({ phone: telefon, password: sifre }))
     if (error) throw new Error(`${telefon} ile giris yapilamadi: ${error.message}`)
   }
@@ -49,4 +55,55 @@ export function sonucuBildirVeCik() {
   }
   console.log('\nButun gorunurluk dogrulamalari gecti.')
   process.exit(0)
+}
+
+/**
+ * Bir betik calismasi sirasinda olusturulan, betigin sonunda silinmesi
+ * gereken kayitlari biriktirir.
+ *
+ * Mekanlar kasitli olarak burada yok: `mekanlar` tablosunda hicbir rol
+ * icin delete politikasi tanimli degil (sadece "herkes mekanlari
+ * okuyabilir" var), yani authenticated bir istemci kendi olusturdugu
+ * mekani silemez — service role anahtari da bu ortamda tanimli degil.
+ * Bu yuzden test mekanlari silinmek uzere degil, `mekanGetirVeyaOlustur`
+ * ile ad'a gore aranip yeniden kullanilmak uzere tasarlandi: bir kere
+ * olusturulur, sonraki calismalarda ayni satir bulunur.
+ */
+export type Temizlenecekler = {
+  checkInler: { istemci: SupabaseClient; id: string }[]
+  engellemeler: { istemci: SupabaseClient; engellenenId: string }[]
+}
+
+export function bosTemizlenecekler(): Temizlenecekler {
+  return { checkInler: [], engellemeler: [] }
+}
+
+/**
+ * Betigin olusturdugu check-in ve engelleme kayitlarini, olusturan
+ * kullanicinin kendi istemcisiyle (RLS'e uyarak) siler. Bir kayit
+ * silinemezse betigi durdurmaz; hatayi log'lar ve devam eder — boylece
+ * kismi bir temizlik, sessizce yutulan bir temizlikten iyidir ve
+ * cikan hata acikca goruluyor olur.
+ */
+export async function temizle(t: Temizlenecekler) {
+  console.log('\nTemizlik basliyor...')
+
+  for (const { istemci, id } of t.checkInler) {
+    const { error } = await istemci.from('check_inler').delete().eq('id', id)
+    if (error) {
+      console.error(`  temizlik: check-in ${id} silinemedi: ${error.message}`)
+    }
+  }
+
+  for (const { istemci, engellenenId } of t.engellemeler) {
+    const { error } = await istemci.rpc('engeli_kaldir', { p_kullanici_id: engellenenId })
+    if (error) {
+      console.error(`  temizlik: engelleme (-> ${engellenenId}) kaldirilamadi: ${error.message}`)
+    }
+  }
+
+  console.log(
+    '  Not: test mekanlari silinmedi (mekanlar tablosunda delete politikasi yok, kalicidirlar ve yeniden kullanilirlar).'
+  )
+  console.log('Temizlik bitti.')
 }
