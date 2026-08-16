@@ -99,6 +99,21 @@ silinse bile sikayet kaydi durmali (moderasyon gecmisi).
 - **`gorunurluk`** (2a'da eklendi, islevsizdi). Artik iki deger aliyor:
   `herkese_acik` | `kimse`. Ani fazini yonetiyor.
 
+  **Her iki yuzeyi birden kapatir.** Bir check-in'e yuklenen fotograf
+  normalde iki yerde birden gorunur: mekanin anilarinda ve kisinin
+  profilinde. Ayni `check_inler` satiri oldugu icin, `gorunurluk`
+  `'kimse'` yapildiginda **ikisinden de** kaybolur — kullanicinin ayri
+  ayri iki ayar yapmasi gerekmez.
+
+  Bunu saglayan sey kuralin RLS'te olmasi: politika satir duzeyinde
+  calistigi icin o satiri hangi sorgu okursa okusun ayni kural isliyor
+  (mekan anilari sorgusu, profil anilari sorgusu, ileride yazilacak
+  herhangi bir ucuncu ekran). Ekran kodunun bunu hatirlamasi gerekmiyor.
+
+  Sahibi kendi anisini her zaman gormeye devam eder (politikanin ilk
+  kosulu `kullanici_id = auth.uid()`) — kullanici kendi gecmisini
+  kaybetmiyor, yalnizca baskalarina kapatiyor.
+
 Iki alan, check-in'in iki ayri yasam evresini yonetiyor: `gizli_mi`
 **canli** evreyi, `gorunurluk` **ani** evreyi.
 
