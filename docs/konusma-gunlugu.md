@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-16 — [2026-08-16-639e055b.md](oturumlar/2026-08-16-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-15 — [2026-08-15-639e055b.md](oturumlar/2026-08-15-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-14 — [2026-08-14-9ff6ffed.md](oturumlar/2026-08-14-9ff6ffed.md) — kaldığımız yere geri aç
 - 2026-08-14 — [2026-08-14-639e055b.md](oturumlar/2026-08-14-639e055b.md) — bu oturumdan devam edebilirmiyiz
@@ -292,3 +293,80 @@ cikan ve kayda gecmesi gereken sapmalar:
     check-in'lerde/anilarda eski ad kalir — anilar icin bu zaten dogru
     davranis (tarihsel kayit), canli check-in'lerde bayatlik penceresi
     en fazla 4 saat.
+
+### Faz 2b beyin firtinasi (2026-08-16)
+
+Faz 2b'nin kapsami beyin firtinasi sirasinda **iki kez** yeniden bolundu.
+Kararlarin tam listesi ve gerekceleri:
+`docs/superpowers/specs/2026-08-16-faz2b-guvenlik-ve-yogunluk-design.md`.
+
+19. **Engelleme tam kapsamli, cift tarafli ve sessiz.** A, B'yi
+    engellediginde B'nin hicbir seyi A'ya gorunmez — canli check-in,
+    mekandaki varlik, gecmis anilar, profil. B de A'yi gormez ve
+    engellendigini anlamaz. Yarim engelleme (yalnizca canli gorunurlugu
+    kesmek) degerlendirildi ve reddedildi: taciz vakasinda engelleyen
+    kisi engelledigi kisinin iceriklerini gormeye devam ederdi.
+20. **Sikayet hem kisi hem icerik uzerine acilabilir.** `sikayetler`
+    tablosu `hedef_tur` ('kullanici' | 'check_in') ve `hedef_id` tutar.
+    Yalnizca-kisi modeli reddedildi (sikayet eden hangi icerik yuzunden
+    sikayet ettigini serbest metinle anlatmak zorunda kalirdi);
+    yalnizca-icerik modeli de reddedildi (profil fotografi ya da
+    biyografi taciz iceriyorsa sikayet edecek yer kalmiyordu).
+21. **Moderasyon paneli uygulamanin icinde degil, ayri bir web sayfasi
+    olacak** ve Faz 2b'nin disinda, sonraki bir is olarak yazilacak.
+    Gerekceler: (a) tuketici uygulamasinin icine gizlenmis yonetici
+    islevi magaza incelemesinde takilabiliyor; (b) panel uygulamanin
+    icindeyse onu koruyan tek sey bir rol kontrolu, o kontrolde bir hata
+    olursa siradan kullanici yonetici islevlerine ulasir; (c) sikayet
+    edilen fotograf ve metinleri telefon ekraninda incelemek kotu bir
+    deneyim. Sira: once sikayet toplama (2b), sonra panel — panel
+    olmadan sistem calisir, sikayet akisi olmadan panel ise yaramaz.
+22. **Ucretsiz yaricap 1-10 km degil 1-5 km, ve satilan sey yaricap
+    degil kimlik.** Ust spec "ucretsiz kullanici gorur, ucretli kullanici
+    secer" diyordu (yaricap satiliyordu). Yeni model: **ucretsiz
+    kullanici nerede hareket oldugunu gorur (mekan yogunlugu, kimliksiz),
+    ucretli kullanici kimlerin oldugunu gorur.**
+23. **Kimlik kesfi (yakindakiler kisi listesi) Faz 2b'den cikarilip
+    Faz 4'e, odeme altyapisiyla birlikte tasindi.** Gerekce: 2b'de kisi
+    listesini ucretsiz verip Faz 4'te paywall koyarsak, kullanicidan
+    zaten kullandigi bir ozelligi geri almis oluruz — urun acisindan
+    yapilabilecek en zarar verici sey. Hic verilmemis bir seyi satmak
+    kolay, verilmis bir seyi geri alip satmak zor. Geriye kalan 2b
+    tutarli bir butun: guvenlik makinesi + kimliksiz (toplu) kesif.
+24. **Mekan yogunlugu sayisinin uc kurali.** (a) Gizli check-in yapanlar
+    sayiya **dahildir** — gizlenen kimliktir, varlik degil; dahil
+    edilmezse gizlilik kullananlar mekani bos gosterir ve sayi yalan
+    soyler. (b) Engellenenler sayidan **dusmez** — kisiye gore degisen
+    sayi, karsilastirmayla engellenme bilgisini sizdirir ("dun 8'di,
+    bugun 7"). (c) Sayi **yuvarlanmaz** — "birkac kisi" gorup mekana
+    gidip 1 kisi bulan kullanici icin yaniltici olur.
+25. **`gizli_mi` bilerek RLS'e konulmadi.** Baglama bagli bir kural:
+    ayni satir, kesif yuzeylerinde gizli ama mekan ekranindaki "su an
+    burada"da gorunur. RLS satir duzeyindedir, "surada gorunsun burada
+    gorunmesin" diyemez. Alternatif (gizli check-in'i her yerde
+    gorunmez yapmak) reddedildi: o zaman "gizli" ile "yok" ayni sey
+    olurdu ve mekana gidip oradakilerle karsilasma imkani kapanirdi.
+    Riski — yeni bir kesif sorgusuna filtreyi koymayi unutmak — spec'te
+    acik not ve testle karsilaniyor.
+26. **`profiller`'in RLS politikasi degistirilmeyecek.** Baskasinin
+    profili yalnizca bir `security definer` RPC uzerinden, yalnizca
+    (id, ad, biyografi, fotograflar) alanlariyla okunur. Gerekce:
+    Postgres RLS satir duzeyindedir, sutun duzeyinde degil — `ad`'i
+    baskalarina acan her politika `dogum_tarihi`'ni de acardi.
+27. **Baskasinin profilinde ani gosterilmiyor, dogum tarihi hicbir
+    kosulda gosterilmiyor.** (2026-08-16.) Kullanicinin kurali: "biri
+    birini takip etmeden anilarina erisemez; takiplesmeden birinin
+    adina tiklayinca profil resmini ve biyografisini gorur." Takip
+    modeli Faz 3'un konusu oldugu icin 2b'de profilde ani hic
+    gosterilmiyor; kural Faz 3'te "takiplestiklerin anilarini gorur"
+    olarak eklenecek. **Mekan ekranindaki anilar bundan etkilenmiyor** —
+    Faz 2a'daki gibi herkese acik kaliyorlar (karar #14). Ikisi farkli
+    seyler: mekanda birakilmis dagink izler ile bir kisinin toplu
+    gecmisi ayni sey degil. Dogum tarihi ise takiplesenlere bile
+    acilmiyor; yalnizca kayitta yas dogrulamasi icin tutuluyor.
+28. **Gorunurluk testleri mock'suz, gercek veritabanina karsi
+    yazilacak.** Faz 2a'da 66 Jest testi yesilken mekan detay ekrani
+    canli veritabaninda hic calismiyordu; sebebi butun testlerin
+    Supabase'i mock'lamasiydi. Bu fazda korunan sey dogrudan guvenlik
+    oldugu icin kuralin gercekten uygulandigini mock'la kanitlayamayiz.
+    Ayri bir kosum: `npm run test:gorunurluk`.

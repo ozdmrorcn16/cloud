@@ -40,7 +40,7 @@ Geriye kalan 2b tutarli bir butun: **guvenlik makinesi + kimliksiz
 | Gizli check-in | `gizli_mi` — kisi mekanda gorunur ama uzaktan bulunamaz |
 | Varsayilan gizlilik | Kullanici "her check-in'im varsayilan gizli olsun" diyebilir |
 | Ani gorunurlugu | `gorunurluk` alani islevsel hale gelir: herkese acik / kimse |
-| Baskasinin profili | Ad, fotograflar, biyografi, herkese acik anilar |
+| Baskasinin profili | Yalnizca ad, fotograflar, biyografi |
 | Engelleme | Cift tarafli, sessiz, gecmis anilar dahil tam kapsamli |
 | Sikayet | Kisi ve icerik ayri ayri sikayet edilebilir |
 
@@ -49,8 +49,9 @@ Geriye kalan 2b tutarli bir butun: **guvenlik makinesi + kimliksiz
 - **Yakindakiler kisi listesi (isimler)** — Faz 4, odeme ile birlikte
 - **Odeme / abonelik altyapisi** — Faz 4
 - **Moderasyon paneli** — ayri ve sonraki bir is (asagida "Moderasyon")
-- **Takip/arkadaslik iliski modeli** — Faz 3. Bu yuzden ani gorunurlugu
-  bu fazda uc degil **iki** secenekli (karar #15'in tam hali Faz 3'te)
+- **Takip/arkadaslik iliski modeli** — Faz 3. Iki sonucu var: (a) ani
+  gorunurlugu bu fazda uc degil **iki** secenekli (karar #15'in tam hali
+  Faz 3'te), (b) baskasinin profilinde ani gosterilmiyor
 - Mesajlasma, sohbet istegi — Faz 3
 
 ## Ust spec'ten degisen kararlar
@@ -172,9 +173,25 @@ etkilenmez.
 **Mekan arama** (2a'da var, guncelleniyor) — her mekan satirinin yaninda
 anlik check-in sayisi.
 
-**Baskasinin profili** (yeni) — ad, fotograflar, biyografi ve o kisinin
-`gorunurluk = 'herkese_acik'` anilari. Alt kosede **Engelle** ve
-**Sikayet et**.
+**Baskasinin profili** (yeni) — **yalnizca** ad, fotograflar ve biyografi.
+Alt kosede **Engelle** ve **Sikayet et**.
+
+Bilerek **gosterilmeyen** iki sey var:
+
+- **Anilar.** Bir kisinin profiline gidip butun gecmisini toplu gormek
+  takip gerektirecek — ama takip modeli Faz 3'un konusu, o yuzden bu
+  fazda profilde ani hic gosterilmiyor. Kural Faz 3'te "takiplestiklerin
+  anilarini gorur" olarak eklenecek.
+
+  Bu, mekan ekranindaki anilari **etkilemez**: onlar Faz 2a'daki gibi
+  herkese acik kalir (karar #14). Ikisi farkli seyler — mekanda birakilmis
+  dagink izler ile bir kisinin toplu gecmisi ayni sey degil. Mekan kamuya
+  acik bir yer; kisinin profili degil.
+
+- **Dogum tarihi.** Hicbir kullaniciya, hicbir kosulda gosterilmez —
+  takiplesenlere bile. Yalnizca kayitta yas dogrulamasi icin tutulur.
+  Yas bilgisi de bu fazda gosterilmiyor; gerekirse Faz 3'te yalnizca
+  **yas** (tam tarih degil) eklenebilir.
 
 **Gorunurluk ayarlari** (yeni, kendi profilinde) — `varsayilan_gizli`
 anahtari ve "anilarimi kimler gorsun" (herkese acik / kimse).
