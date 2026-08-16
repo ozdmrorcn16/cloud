@@ -75,7 +75,7 @@ function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
 export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, gizli_mi')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
@@ -85,7 +85,7 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
 export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, gizli_mi')
     .is('konum', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
@@ -99,7 +99,7 @@ type CheckInSatiriMekanli = CheckInSatiri & { mekanlar: { ad: string; konum: str
 export async function kendiAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, mekanlar(ad, konum)')
+    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, gizli_mi, mekanlar(ad, konum)')
     .eq('kullanici_id', kullaniciId)
     .is('konum', null)
     .order('olusturma_zamani', { ascending: false })

@@ -16,6 +16,7 @@ describe('checkInYap', () => {
         olusturma_zamani: '2026-08-14T10:00:00Z',
         bitis_zamani: '2026-08-14T14:00:00Z',
         konum: 'POINT(28.979 41.015)',
+        gizli_mi: false,
       },
       error: null,
     })
@@ -38,6 +39,7 @@ describe('checkInYap', () => {
       olusturmaZamani: '2026-08-14T10:00:00Z',
       bitisZamani: '2026-08-14T14:00:00Z',
       canliMi: true,
+      gizliMi: false,
     })
   })
 
@@ -102,7 +104,7 @@ describe('suAnBurdakileriGetir', () => {
         {
           id: 'checkin-1', mekan_id: 'mekan-1', kullanici_id: 'kullanici-2', not_metni: null, fotograf: null,
           olusturma_zamani: '2026-08-14T10:00:00Z', bitis_zamani: '2026-08-14T14:00:00Z',
-          konum: 'POINT(28.979 41.015)', kullanici_adi: 'Ada',
+          konum: 'POINT(28.979 41.015)', kullanici_adi: 'Ada', gizli_mi: false,
         },
       ],
       error: null,
@@ -117,6 +119,7 @@ describe('suAnBurdakileriGetir', () => {
     expect(sonuc[0].kullaniciAdi).toBe('Ada')
     expect(sonuc[0].kullaniciId).toBe('kullanici-2')
     expect(sonuc[0].canliMi).toBe(true)
+    expect(sonuc[0].gizliMi).toBe(false)
   })
 })
 
@@ -127,7 +130,7 @@ describe('mekanAnilariniGetir', () => {
         {
           id: 'checkin-2', mekan_id: 'mekan-1', kullanici_id: 'kullanici-3', not_metni: 'guzel', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, kullanici_adi: 'Berk',
+          konum: null, kullanici_adi: 'Berk', gizli_mi: true,
         },
       ],
       error: null,
@@ -140,6 +143,7 @@ describe('mekanAnilariniGetir', () => {
 
     expect(sonuc[0].kullaniciAdi).toBe('Berk')
     expect(sonuc[0].canliMi).toBe(false)
+    expect(sonuc[0].gizliMi).toBe(true)
   })
 })
 
@@ -150,7 +154,7 @@ describe('kendiAnilariniGetir', () => {
         {
           id: 'checkin-3', mekan_id: 'mekan-1', not_metni: 'harika', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
+          konum: null, gizli_mi: false, mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
         },
       ],
       error: null,
@@ -165,6 +169,7 @@ describe('kendiAnilariniGetir', () => {
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
     expect(sonuc[0].mekanKonumu).toEqual({ lat: 41.015, lng: 28.979 })
+    expect(sonuc[0].gizliMi).toBe(false)
   })
 })
 
