@@ -28,6 +28,7 @@ describe('checkInYap', () => {
       p_lng: 28.979,
       p_not_metni: 'guzel bir yer',
       p_fotograf: 'kullanici-1/123.jpg',
+      p_gizli_mi: false,
     })
     expect(sonuc).toEqual({
       id: 'checkin-1',
@@ -46,6 +47,36 @@ describe('checkInYap', () => {
       error: { message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' },
     })
     await expect(checkInYap('mekan-1', { lat: 41.5, lng: 29.5 })).rejects.toThrow('Mekana cok uzaksin')
+  })
+
+  it('gizli check-in bayragini rpc parametresi olarak gonderir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: {
+        id: 'checkin-1',
+        mekan_id: 'mekan-1',
+        kullanici_id: 'kullanici-1',
+        kullanici_adi: 'Ada',
+        not_metni: null,
+        fotograf: null,
+        olusturma_zamani: '2026-08-16T10:00:00Z',
+        bitis_zamani: '2026-08-16T14:00:00Z',
+        konum: 'POINT(28.979 41.015)',
+        gizli_mi: true,
+      },
+      error: null,
+    })
+
+    const sonuc = await checkInYap('mekan-1', { lat: 41.015, lng: 28.979 }, undefined, undefined, true)
+
+    expect(supabase.rpc).toHaveBeenCalledWith('check_in_yap', {
+      p_mekan_id: 'mekan-1',
+      p_lat: 41.015,
+      p_lng: 28.979,
+      p_not_metni: null,
+      p_fotograf: null,
+      p_gizli_mi: true,
+    })
+    expect(sonuc.gizliMi).toBe(true)
   })
 })
 

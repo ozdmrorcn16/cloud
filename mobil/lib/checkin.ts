@@ -9,6 +9,7 @@ export type CheckIn = {
   olusturmaZamani: string
   bitisZamani: string
   canliMi: boolean
+  gizliMi: boolean
 }
 
 type CheckInSatiri = {
@@ -19,6 +20,7 @@ type CheckInSatiri = {
   olusturma_zamani: string
   bitis_zamani: string
   konum: string | null
+  gizli_mi: boolean
 }
 
 function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
@@ -30,6 +32,7 @@ function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
     olusturmaZamani: satir.olusturma_zamani,
     bitisZamani: satir.bitis_zamani,
     canliMi: satir.konum !== null,
+    gizliMi: satir.gizli_mi,
   }
 }
 
@@ -37,7 +40,8 @@ export async function checkInYap(
   mekanId: string,
   konum: { lat: number; lng: number },
   notMetni?: string,
-  fotograf?: string
+  fotograf?: string,
+  gizliMi: boolean = false
 ): Promise<CheckIn> {
   const { data, error } = await supabase.rpc('check_in_yap', {
     p_mekan_id: mekanId,
@@ -45,6 +49,7 @@ export async function checkInYap(
     p_lng: konum.lng,
     p_not_metni: notMetni ?? null,
     p_fotograf: fotograf ?? null,
+    p_gizli_mi: gizliMi,
   })
   if (error) throw new Error(error.message)
   return satiriCheckInACevir(data as CheckInSatiri)
