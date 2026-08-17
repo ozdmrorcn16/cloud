@@ -61,6 +61,11 @@ export default function MekanDetayEkrani() {
               </Pressable>
             )}
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
+            {item.kullaniciId !== kendiKullaniciId && (
+              <Pressable onPress={() => router.push(`/sikayet?hedefTur=check_in&hedefId=${item.id}`)}>
+                <Text style={stiller.sikayetLink}>Sikayet et</Text>
+              </Pressable>
+            )}
           </View>
         )}
         ListEmptyComponent={<Text style={stiller.durum}>Su an kimse yok</Text>}
@@ -90,6 +95,11 @@ export default function MekanDetayEkrani() {
               </Pressable>
             )}
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
+            {item.kullaniciId !== kendiKullaniciId && (
+              <Pressable onPress={() => router.push(`/sikayet?hedefTur=check_in&hedefId=${item.id}`)}>
+                <Text style={stiller.sikayetLink}>Sikayet et</Text>
+              </Pressable>
+            )}
           </View>
         )}
         ListEmptyComponent={<Text style={stiller.durum}>Henuz bir ani yok</Text>}
@@ -104,6 +114,7 @@ const stiller = StyleSheet.create({
   satir: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
   kullaniciAdi: { fontSize: 16, fontWeight: '600' },
   not: { color: '#555', marginTop: 2 },
+  sikayetLink: { color: '#c00', fontSize: 12, marginTop: 4 },
   durum: { color: '#666' },
   hata: { color: '#c00', marginBottom: 12 },
   buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 12 },

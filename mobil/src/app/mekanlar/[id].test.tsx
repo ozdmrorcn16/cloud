@@ -136,4 +136,54 @@ describe('MekanDetayEkrani', () => {
 
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-3')
   })
+
+  it('baskasinin su an buradaki karti sikayet et baglantisi gosterir ve basinca sikayet ekranina yonlendirir', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Ada', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+    ])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Sikayet et'))
+    await fireEvent.press(screen.getByText('Sikayet et'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=check_in&hedefId=checkin-1')
+  })
+
+  it('kendi su an buradaki kartinda sikayet et baglantisi gosterilmez', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+    ])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Sen'))
+
+    expect(screen.queryByText('Sikayet et')).toBeNull()
+  })
+
+  it('baskasinin ani karti sikayet et baglantisi gosterir ve basinca sikayet ekranina yonlendirir', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-2', kullaniciId: 'kullanici-3', kullaniciAdi: 'Berk', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
+    ])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Sikayet et'))
+    await fireEvent.press(screen.getByText('Sikayet et'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=check_in&hedefId=checkin-2')
+  })
+
+  it('kendi ani kartinda sikayet et baglantisi gosterilmez', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-2', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
+    ])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Sen'))
+
+    expect(screen.queryByText('Sikayet et')).toBeNull()
+  })
 })
