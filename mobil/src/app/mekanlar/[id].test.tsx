@@ -97,4 +97,43 @@ describe('MekanDetayEkrani', () => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
     })
   })
+
+  it('su an buradakiler listesinde baskasinin adina basinca profiline yonlendirir', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Ada', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+    ])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Ada'))
+    await fireEvent.press(screen.getByText('Ada'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+  })
+
+  it('su an buradakiler listesinde kendi adina basilinca yonlendirme yapmaz', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
+    ])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Sen'))
+    await fireEvent.press(screen.getByText('Sen'))
+
+    expect(mockRouterPush).not.toHaveBeenCalledWith(expect.stringContaining('/kullanici/'))
+  })
+
+  it('anilar listesinde baskasinin adina basinca profiline yonlendirir', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
+    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-2', kullaniciId: 'kullanici-3', kullaniciAdi: 'Berk', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
+    ])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Berk'))
+    await fireEvent.press(screen.getByText('Berk'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-3')
+  })
 })

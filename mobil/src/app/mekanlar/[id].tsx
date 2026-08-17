@@ -53,7 +53,13 @@ export default function MekanDetayEkrani() {
         keyExtractor={(c) => c.id}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
-            <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+            {item.kullaniciId === kendiKullaniciId ? (
+              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+            ) : (
+              <Pressable onPress={() => router.push(`/kullanici/${item.kullaniciId}`)}>
+                <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+              </Pressable>
+            )}
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
           </View>
         )}
@@ -76,7 +82,13 @@ export default function MekanDetayEkrani() {
         keyExtractor={(c) => c.id}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
-            <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+            {item.kullaniciId === kendiKullaniciId ? (
+              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+            ) : (
+              <Pressable onPress={() => router.push(`/kullanici/${item.kullaniciId}`)}>
+                <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+              </Pressable>
+            )}
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
           </View>
         )}

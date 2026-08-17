@@ -96,7 +96,7 @@ export type AniGorunumu = CheckIn & { mekanAdi: string; mekanKonumu: { lat: numb
 
 type CheckInSatiriMekanli = CheckInSatiri & { mekanlar: { ad: string; konum: string } }
 
-export async function kendiAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
+export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
     .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, gizli_mi, mekanlar(ad, konum)')

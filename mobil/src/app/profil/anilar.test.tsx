@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { Linking } from 'react-native'
 import AnilarEkrani from './anilar'
-import { kendiAnilariniGetir, aniyiSil } from '../../../lib/checkin'
+import { kullanicininAnilariniGetir, aniyiSil } from '../../../lib/checkin'
 import { supabase } from '../../../lib/supabase'
 
-jest.mock('../../../lib/checkin', () => ({ kendiAnilariniGetir: jest.fn(), aniyiSil: jest.fn() }))
+jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn(), aniyiSil: jest.fn() }))
 jest.mock('../../../lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) } },
 }))
@@ -12,7 +12,7 @@ jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
 
 beforeEach(() => {
   jest.clearAllMocks()
-  ;(kendiAnilariniGetir as jest.Mock).mockResolvedValue([
+  ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
     {
       id: 'checkin-3', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika', fotograf: null,
       olusturmaZamani: '2026-08-10T10:00:00Z', bitisZamani: '2026-08-10T14:00:00Z', canliMi: false,
@@ -47,7 +47,7 @@ describe('AnilarEkrani', () => {
   })
 
   it('anilar yuklenemezse hata mesaji gosterir', async () => {
-    ;(kendiAnilariniGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    ;(kullanicininAnilariniGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
     await render(<AnilarEkrani />)
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()

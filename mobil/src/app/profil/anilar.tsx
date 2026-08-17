@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
 import { supabase } from '../../../lib/supabase'
-import { kendiAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/checkin'
+import { kullanicininAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/checkin'
 
 export default function AnilarEkrani() {
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
@@ -12,7 +12,7 @@ export default function AnilarEkrani() {
       const { data: kullaniciVerisi } = await supabase.auth.getUser()
       const kullaniciId = kullaniciVerisi.user?.id
       if (!kullaniciId) return
-      setAnilar(await kendiAnilariniGetir(kullaniciId))
+      setAnilar(await kullanicininAnilariniGetir(kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')

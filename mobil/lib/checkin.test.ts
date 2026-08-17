@@ -1,4 +1,4 @@
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kendiAnilariniGetir, aniyiSil } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aniyiSil } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -147,7 +147,7 @@ describe('mekanAnilariniGetir', () => {
   })
 })
 
-describe('kendiAnilariniGetir', () => {
+describe('kullanicininAnilariniGetir', () => {
   it('yalnizca kendi aniya donusmus check-inlerini mekan bilgisiyle getirir', async () => {
     const order = jest.fn().mockResolvedValue({
       data: [
@@ -164,7 +164,7 @@ describe('kendiAnilariniGetir', () => {
     const select = jest.fn().mockReturnValue({ eq })
     ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select })
 
-    const sonuc = await kendiAnilariniGetir('kullanici-1')
+    const sonuc = await kullanicininAnilariniGetir('kullanici-1')
 
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
