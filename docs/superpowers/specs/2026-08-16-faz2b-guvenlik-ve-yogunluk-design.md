@@ -114,6 +114,22 @@ silinse bile sikayet kaydi durmali (moderasyon gecmisi).
   kosulu `kullanici_id = auth.uid()`) — kullanici kendi gecmisini
   kaybetmiyor, yalnizca baskalarina kapatiyor.
 
+  **Gizli check-in aniya donusurken gorunurlugu de kapanir.**
+  (2026-08-17 karari.) `gizli_mi = true` olan bir check-in ani haline
+  gelirken `gorunurluk` da otomatik olarak `'kimse'` yapilir — hem
+  kullanici "ayrildim" dediginde hem 4 saatlik otomatik donusumde.
+
+  Gerekce: iki alan iki ayri evreyi yonetiyor, ama kullanicinin niyeti
+  tek. "Buradayim ama uzaktan bulunmak istemiyorum" diyen birinin, o
+  ziyaretin 4 saat sonra profilinde herkese acik bir kayda donusmesini
+  beklemesi icin bir sebep yok. Alternatif (iki ayari tamamen bagimsiz
+  tutmak) degerlendirildi: daha ongorulebilir ama kullaniciyi ayni
+  gizlilik kararini ikinci kez, farkli bir ekranda vermeye zorluyordu.
+  Gizlilik niyeti kalici sayiliyor.
+
+  Ters yon gecerli **degil**: gizli olmayan bir check-in aniya
+  donusurken `gorunurluk` varsayilan `herkese_acik` olarak kalir.
+
 Iki alan, check-in'in iki ayri yasam evresini yonetiyor: `gizli_mi`
 **canli** evreyi, `gorunurluk` **ani** evreyi.
 

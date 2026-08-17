@@ -2110,6 +2110,121 @@ git commit -m "mobil: ana ekrandan gizlilik ayarlarina erisim"
 
 ---
 
+### Task 18: Gizli check-in aniya donusurken gorunurlugu de kapat
+
+**Files:**
+- Create: `mobil/supabase/migrations/<timestamp>_gizli_ani_gorunurlugu.sql`
+- Modify: `mobil/gorunurluk-testleri/calistir.ts` (yeni senaryo)
+
+**Interfaces:**
+- Consumes: `check_inler.gizli_mi`, `check_inler.gorunurluk` (Task 3),
+  `check_inden_ayril` (onceki fazdan), pg_cron isi (onceki fazdan).
+
+**Not:** Bu gorev plan yazildiktan sonra eklendi (2026-08-17 kullanici
+karari, spec'in "Gizli check-in aniya donusurken gorunurlugu de kapanir"
+bolumu). Gerekce orada.
+
+Kural: `gizli_mi = true` olan bir check-in ani haline gelirken
+`gorunurluk` da `'kimse'` yapilir. Iki donusum yolu var ve **ikisi de**
+guncellenmeli:
+1. `check_inden_ayril(p_check_in_id)` RPC — kullanici "ayrildim" dedigi an
+2. pg_cron isi — 4 saat dolunca otomatik
+
+Ters yon gecerli degil: `gizli_mi = false` olan check-in'in `gorunurluk`
+degeri degistirilmez.
+
+- [ ] **Step 1: Mevcut tanimlari oku**
+
+```bash
+cat mobil/supabase/migrations/*check_inden_ayril*.sql
+cat mobil/supabase/migrations/*ani_donusumu_cron*.sql
+supabase db query "select pg_get_functiondef(oid) from pg_proc where proname = 'check_inden_ayril';" --linked
+supabase db query "select jobname, schedule, command from cron.job;" --linked
+```
+
+Govdeleri buradan kopyala; ezberden yeniden yazma.
+
+- [ ] **Step 2: Migrasyonu olustur ve yaz**
+
+```bash
+cd ~/projects/cloud/mobil
+supabase migration new gizli_ani_gorunurlugu
+```
+
+`check_inden_ayril`'i `create or replace` ile yeniden yaz — mevcut
+govdesini birebir koru (auth guard dahil), yalnizca `update` ifadesini
+genislet:
+
+```sql
+update public.check_inler
+set konum = null,
+    gorunurluk = case when gizli_mi then 'kimse' else gorunurluk end
+where id = p_check_in_id
+  and kullanici_id = auth.uid()
+  and konum is not null;
+```
+
+Sonuna mevcut `revoke`/`grant` satirlarini yine ekle.
+
+Cron isini de guncelle (`cron.schedule` ayni `jobname` ile cagrilirsa isi
+degistirir, ikinci bir is yaratmaz):
+
+```sql
+select cron.schedule(
+  'check-in-suresi-dolanlari-aniya-cevir',
+  '*/10 * * * *',
+  $$ update public.check_inler
+     set konum = null,
+         gorunurluk = case when gizli_mi then 'kimse' else gorunurluk end
+     where konum is not null and bitis_zamani <= now(); $$
+);
+```
+
+- [ ] **Step 3: Uygula ve dogrula**
+
+```bash
+supabase db push
+supabase db query "select pg_get_functiondef(oid) from pg_proc where proname = 'check_inden_ayril';" --linked
+supabase db query "select jobname, command from cron.job where jobname = 'check-in-suresi-dolanlari-aniya-cevir';" --linked
+```
+
+Ikisinde de `gorunurluk` atamasi gorunmeli, ve cron isi **tek** satir
+olmali (mukerrer is olusmamis olmali).
+
+- [ ] **Step 4: Gorunurluk testine yeni senaryo ekle**
+
+`mobil/gorunurluk-testleri/calistir.ts` icine onuncu senaryo:
+
+**Senaryo 10 — Gizli check-in aniya donusunce baskasina gorunmez.**
+A, `gizli_mi = true` ile check-in yapar. A "ayrildim" der
+(`check_inden_ayril`). B — bu mekanda canli check-in'i olmayan biri —
+o aniyi **goremez** (cunku `gorunurluk` artik `'kimse'`). Kontrol
+olarak: A kendi anisini hala gorur.
+
+Ayrica ters yonu de dogrula: A gizli **olmayan** bir check-in yapip
+ayrilirsa, B o aniyi **gorur** — yani kural yalnizca gizli olanlara
+uyguluyor, hepsini kapatmiyor. Bu ikinci kisim onemli; olmadan senaryo
+"her ani kapaniyor" hatasini yakalayamaz.
+
+- [ ] **Step 5: Testleri calistir**
+
+Run: `cd mobil && npm run test:gorunurluk`
+Expected: 10/10 `OK`, cikis kodu 0.
+
+Run: `cd mobil && npm test`
+Expected: butun suite yesil (bu gorev istemci kodunu degistirmiyor, ama
+regresyon olmadigini dogrula).
+
+- [ ] **Step 6: Commit**
+
+```bash
+cd ~/projects/cloud
+git add mobil/supabase/migrations mobil/gorunurluk-testleri
+git commit -m "mobil: gizli check-in aniya donusurken gorunurlugu de kapat"
+```
+
+---
+
 ## Sonraki adim
 
 Faz 2b tamamlandiginda kullanici kendini gizleyebiliyor, anilarinin
