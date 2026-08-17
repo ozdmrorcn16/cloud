@@ -289,6 +289,46 @@ async function main() {
     esitMi(sayi, 2, 'gizli check-in yapan A, mekanin kisi_sayisi\'na dahil edilir')
   })
 
+  await senaryo('10 - Gizli check-in aniya donusunce baskasina gorunmez', async () => {
+    // Senaryo 5'ten beri A, B'yi engellemis durumda; bu blok tek basina
+    // B'nin A'nin anilarini gormesini engeller ve gorunurluk kuralinin
+    // gercekten calisip calismadigini test edilemez hale getirir. Bloku
+    // gecici olarak kaldiriyoruz (senaryo 6'daki desenin ayni), sonunda
+    // geri kuruyoruz.
+    const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
+
+    // Bolum 1: gizli check-in -> ayrildim -> ani kimseye gorunmemeli.
+    const aGizliCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, true)
+    t.checkInler.push({ istemci: a, id: aGizliCi.id })
+
+    const { error: ayril1Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aGizliCi.id })
+    if (ayril1Err) throw new Error(`check_inden_ayril hatasi (gizli): ${ayril1Err.message}`)
+
+    const bGizliAniGorurMu = await aniGorulebiliyorMu(b, aGizliCi.id)
+    esitMi(bGizliAniGorurMu, false, 'B, gizli check-in\'ten donusen aniyi goremez')
+
+    const aGizliAniGorurMu = await aniGorulebiliyorMu(a, aGizliCi.id)
+    esitMi(aGizliAniGorurMu, true, 'A, kendi gizli anisini (ani haline gelmis olsa da) hala gorur')
+
+    // Bolum 2 (ters yon kontrolu): gizli OLMAYAN check-in -> ayrildim ->
+    // ani yine herkese_acik gorunmeli. Bu kontrol olmadan senaryo, kuralin
+    // yalniz gizli check-in'leri kapattigini degil, her aniyi kapattigini
+    // da (yanlislikla) "gecti" sayabilirdi.
+    const aAcikCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, false)
+    t.checkInler.push({ istemci: a, id: aAcikCi.id })
+
+    const { error: ayril2Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aAcikCi.id })
+    if (ayril2Err) throw new Error(`check_inden_ayril hatasi (acik): ${ayril2Err.message}`)
+
+    const bAcikAniGorurMu = await aniGorulebiliyorMu(b, aAcikCi.id)
+    esitMi(bAcikAniGorurMu, true, 'B, gizli OLMAYAN check-in\'ten donusen aniyi gorur (kural sadece gizlileri kapatiyor)')
+
+    // Bloku geri kur.
+    const { error: engelErr } = await a.rpc('engelle', { p_kullanici_id: bId })
+    if (engelErr) throw new Error(`engelle hatasi: ${engelErr.message}`)
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
