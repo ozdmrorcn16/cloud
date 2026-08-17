@@ -75,6 +75,16 @@ async function anilariGetir(istemci: SupabaseClient, sahipId: string, mekanId: s
   return data as { id: string; kullanici_id: string }[]
 }
 
+// anilariGetir sahip+mekan bazinda TUM anilari listeler; bir sahibin
+// birden fazla anisi biriktigi senaryolarda (ör. senaryo 6, A'nin
+// baska bir anisini da olusturuyor) belirli BIR satirin gorunup
+// gorunmedigini net sekilde sormak icin id'ye gore dogrudan sorgu:
+async function aniGorulebiliyorMu(istemci: SupabaseClient, checkInId: string): Promise<boolean> {
+  const { data, error } = await istemci.from('check_inler').select('id').eq('id', checkInId)
+  if (error) throw new Error(`ani gorunurluk sorgusu hatasi: ${error.message}`)
+  return (data as { id: string }[]).length > 0
+}
+
 async function senaryo(isim: string, fn: () => Promise<void>) {
   console.log(`\n--- Senaryo: ${isim} ---`)
   try {
@@ -92,6 +102,7 @@ async function main() {
   const mekan2 = await mekanGetirVeyaOlustur(a, MEKAN_2.ad, MEKAN_2.lat, MEKAN_2.lng)
 
   let aCheckIn1Id: string | null = null
+  let aCheckIn2Id: string | null = null
 
   await senaryo('1 - Ayni mekanda karsilikli canli gorunurluk', async () => {
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
@@ -159,6 +170,7 @@ async function main() {
     // Her ikisi de mekan-1'de canli olsun (yeni check-in, oncekini kapatir).
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
     t.checkInler.push({ istemci: a, id: aCi.id })
+    aCheckIn2Id = aCi.id
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
     t.checkInler.push({ istemci: b, id: bCi.id })
 
@@ -178,14 +190,49 @@ async function main() {
   })
 
   await senaryo('6 - Engelleme gecmis anilari da kapsar', async () => {
-    if (!aCheckIn1Id) throw new Error('senaryo 1 A check-in id\'si yok, onkosul basarisiz')
+    if (!aCheckIn2Id) throw new Error('senaryo 5 A check-in id\'si yok, onkosul basarisiz')
 
-    // Senaryo 3'te B bu aniyi goruyordu; senaryo 5'te A, B'yi engelledi.
-    const bGorenAnilar = await anilariGetir(b, aId, mekan1)
+    // ONEMLI: bu senaryonun kendi anisi var — senaryo 4'un gorunurlugunu
+    // 'kimse' yaptigi aCheckIn1Id degil, senaryo 5'te acilan aCheckIn2Id
+    // kullaniliyor. aCheckIn1Id'yi tekrar kullanmak senaryoyu bosa
+    // cikarirdi: o satir zaten gorunurluk='kimse' oldugu icin B onu her
+    // halukarda goremez, engellemenin bir etkisi olup olmadigini test
+    // edemezdik (blok kaldirilsa bile ayni sonuc cikardi).
+    //
+    // aCheckIn2Id hala senaryo 5'ten kalma varsayilan gorunurluk =
+    // 'herkese_acik' degerinde ve daha once hic degistirilmedi.
+
+    // Pozitif kontrol icin, senaryo 5'in koydugu bloku GECICI olarak
+    // kaldiriyoruz. Boylece "B gormuyor" sonucunun sebebinin gercekten
+    // engelleme oldugunu, baska bir kuraldan (gorunurluk, mesafe vb.)
+    // kaynaklanmadigini kanitlayabiliyoruz.
+    const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
+
+    // A'nin senaryo 5'teki canli check-in'ini aniya cevir (konum null).
+    const { error: ayrilErr } = await a.rpc('check_inden_ayril', { p_check_in_id: aCheckIn2Id })
+    if (ayrilErr) throw new Error(`check_inden_ayril hatasi: ${ayrilErr.message}`)
+
+    // Pozitif kontrol: blok yokken B bu herkese_acik aniyi GERCEKTEN
+    // gorebiliyor mu? Bu kontrol gecmezse asagidaki negatif kontrolun
+    // hicbir kaniti yok demektir (satir zaten hic gorunmuyor olabilirdi).
+    const blokOncesiGorunurMu = await aniGorulebiliyorMu(b, aCheckIn2Id)
     esitMi(
-      bGorenAnilar.map((r) => r.id),
-      [],
-      'A, B\'yi engelledikten sonra B, A\'nin daha onceki (herkese_acik olsa da) anisini goremez'
+      blokOncesiGorunurMu,
+      true,
+      'pozitif kontrol: blok yokken B, A\'nin herkese_acik anisini gorur'
+    )
+
+    // Simdi bloku tekrar kur (senaryo 7/8/9'un varsaydigi "A, B'yi
+    // engellemis" durumunu geri getirir) ve asil iddiayi dogrula.
+    const { error: engelErr } = await a.rpc('engelle', { p_kullanici_id: bId })
+    if (engelErr) throw new Error(`engelle hatasi: ${engelErr.message}`)
+
+    const blokSonrasiGorunurMu = await aniGorulebiliyorMu(b, aCheckIn2Id)
+    esitMi(
+      blokSonrasiGorunurMu,
+      false,
+      'A, B\'yi (yeniden) engelledikten sonra B, ayni herkese_acik aniyi artik goremez'
     )
   })
 
@@ -214,6 +261,13 @@ async function main() {
     const bSayi = (bGoru as { id: string; kisi_sayisi: number }[]).find((m) => m.id === mekan1)
       ?.kisi_sayisi
 
+    // Bu noktada mekan-1'de canli olan tek kisi B: A'nin tek canli
+    // check-in'i senaryo 6'da aniya cevrildi ve senaryo 9'a kadar yeniden
+    // canli check-in acmiyor. Sadece esitlik degil, somut bir bekleneni de
+    // dogrulamak (senaryo 9'daki === 2 gibi) "yanlis ama esit" bir sayimi
+    // yakalayabilmek icin gerekli.
+    esitMi(aSayi, 1, 'yakin_mekanlar_yogunluk (A\'nin gorusu), mekan-1 icin dogru kisi sayisini (1) doner')
+    esitMi(bSayi, 1, 'yakin_mekanlar_yogunluk (B\'nin gorusu), mekan-1 icin dogru kisi sayisini (1) doner')
     esitMi(bSayi, aSayi, 'yakin_mekanlar_yogunluk, A engellemis olsa da A ve B icin ayni sayiyi doner')
   })
 
