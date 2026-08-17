@@ -45,4 +45,17 @@ describe('AyarlarEkrani', () => {
       expect(screen.getByText('Oturum bulunamadi')).toBeTruthy()
     })
   })
+
+  it('kaydetme basarisiz olursa anahtari eski degerine geri alir', async () => {
+    ;(varsayilanGizliyiAyarla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    await render(<AyarlarEkrani />)
+    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+
+    await fireEvent(screen.getByLabelText('Varsayilan gizli check-in'), 'valueChange', true)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+    expect(screen.getByLabelText('Varsayilan gizli check-in').props.value).toBe(false)
+  })
 })

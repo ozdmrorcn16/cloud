@@ -24,11 +24,13 @@ export default function AyarlarEkrani() {
   }, [])
 
   async function varsayilanGizliDegisti(deger: boolean) {
+    const oncekiDeger = varsayilanGizli
     setVarsayilanGizli(deger)
     try {
       await varsayilanGizliyiAyarla(deger)
       setHata(null)
     } catch (e) {
+      setVarsayilanGizli(oncekiDeger)
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
     }
   }
