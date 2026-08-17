@@ -1,13 +1,16 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import CheckInEkrani from './[mekanId]'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
+import { varsayilanGizliyiGetir } from '../../../lib/ayarlar'
 import * as ImagePicker from 'expo-image-picker'
 
 jest.mock('../../../lib/konum', () => ({ cihazKonumunuAl: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ checkInYap: jest.fn() }))
 jest.mock('../../../lib/checkin-fotograf-yukle', () => ({ checkinFotografYukle: jest.fn() }))
+jest.mock('../../../lib/ayarlar', () => ({ varsayilanGizliyiGetir: jest.fn() }))
 jest.mock('../../../lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) } },
 }))
@@ -21,9 +24,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ mekanId: 'mekan-1' }),
 }))
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.clearAllMocks()
   ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+  ;(varsayilanGizliyiGetir as jest.Mock).mockResolvedValue(false)
+  // Varsayilan olarak ilk kullanim uyarisi daha once gosterilmis kabul edilir;
+  // sadece bunu test eden senaryo bu bayragi acikca temizler.
+  await AsyncStorage.setItem('ilk-checkin-uyarisi-gosterildi', 'true')
 })
 
 describe('CheckInEkrani', () => {
@@ -39,7 +46,7 @@ describe('CheckInEkrani', () => {
     await fireEvent.press(buttons[buttons.length - 1]) // Press the button, not the title
 
     await waitFor(() => {
-      expect(checkInYap).toHaveBeenCalledWith('mekan-1', { lat: 41.015, lng: 28.979 }, 'harika', undefined)
+      expect(checkInYap).toHaveBeenCalledWith('mekan-1', { lat: 41.015, lng: 28.979 }, 'harika', undefined, false)
     })
     expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar/mekan-1')
   })
@@ -80,7 +87,7 @@ describe('CheckInEkrani', () => {
       expect(screen.getByText('Fotograf yuklenemedi, notunla check-in yapildi')).toBeTruthy()
     })
     // checkInYap fotografsiz cagirilmali
-    expect(checkInYap).toHaveBeenCalledWith('mekan-1', { lat: 41.015, lng: 28.979 }, 'not', undefined)
+    expect(checkInYap).toHaveBeenCalledWith('mekan-1', { lat: 41.015, lng: 28.979 }, 'not', undefined, false)
   })
 
   it('ag hatasi icin ozel mesaj gosterir', async () => {
@@ -92,6 +99,40 @@ describe('CheckInEkrani', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Internet baglantisi yok, tekrar dene')).toBeTruthy()
+    })
+  })
+
+  it('varsayilan gizli tercihi acikken gizli check-in yapar', async () => {
+    ;(varsayilanGizliyiGetir as jest.Mock).mockResolvedValue(true)
+    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
+
+    await render(<CheckInEkrani />)
+    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await fireEvent.press(screen.getByText('Check-in yap'))
+
+    await waitFor(() => {
+      expect(checkInYap).toHaveBeenCalledWith(
+        'mekan-1', { lat: 41.015, lng: 28.979 }, undefined, undefined, true
+      )
+    })
+  })
+
+  it('ilk check-in uyarisini gosterir ve oradan gizliye cevrilebilir', async () => {
+    await AsyncStorage.removeItem('ilk-checkin-uyarisi-gosterildi')
+    ;(varsayilanGizliyiGetir as jest.Mock).mockResolvedValue(false)
+    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
+
+    await render(<CheckInEkrani />)
+    await waitFor(() => {
+      expect(screen.getByText('Bu check-in ne paylasiyor?')).toBeTruthy()
+    })
+    await fireEvent.press(screen.getByText('Gizli yap'))
+    await fireEvent.press(screen.getByText('Check-in yap'))
+
+    await waitFor(() => {
+      expect(checkInYap).toHaveBeenCalledWith(
+        'mekan-1', { lat: 41.015, lng: 28.979 }, undefined, undefined, true
+      )
     })
   })
 })

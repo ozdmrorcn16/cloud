@@ -1,11 +1,15 @@
-import { useState } from 'react'
-import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { View, Text, TextInput, Pressable, Image, StyleSheet, Switch } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
+import { varsayilanGizliyiGetir } from '../../../lib/ayarlar'
+
+const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
 export default function CheckInEkrani() {
   const router = useRouter()
@@ -15,6 +19,34 @@ export default function CheckInEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
+  const [gizliMi, setGizliMi] = useState(false)
+  const [ilkKullanimUyarisi, setIlkKullanimUyarisi] = useState(false)
+  // Kullanici gizlilik tercihini elle degistirdiyse (switch veya ilk kullanim
+  // uyarisindaki "Gizli yap"), gec gelen varsayilanGizliyiGetir() yaniti bu
+  // secimin uzerine yazmasin.
+  const gizliManuelDegisti = useRef(false)
+
+  useEffect(() => {
+    varsayilanGizliyiGetir()
+      .then((deger) => {
+        if (!gizliManuelDegisti.current) setGizliMi(deger)
+      })
+      .catch(() => {})
+    AsyncStorage.getItem(ILK_UYARI_ANAHTARI).then((deger) => {
+      if (!deger) setIlkKullanimUyarisi(true)
+    })
+  }, [])
+
+  function gizliMiDegistir(deger: boolean) {
+    gizliManuelDegisti.current = true
+    setGizliMi(deger)
+  }
+
+  async function ilkUyariKapat(gizliSecildi: boolean) {
+    if (gizliSecildi) gizliMiDegistir(true)
+    setIlkKullanimUyarisi(false)
+    await AsyncStorage.setItem(ILK_UYARI_ANAHTARI, 'true')
+  }
 
   async function fotografSec() {
     const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
@@ -43,7 +75,7 @@ export default function CheckInEkrani() {
         }
       }
 
-      await checkInYap(mekanId, konum, notMetni.trim() || undefined, yuklenenFotoYolu)
+      await checkInYap(mekanId, konum, notMetni.trim() || undefined, yuklenenFotoYolu, gizliMi)
       router.replace(`/mekanlar/${mekanId}`)
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
@@ -56,9 +88,29 @@ export default function CheckInEkrani() {
     }
   }
 
+  if (ilkKullanimUyarisi) {
+    return (
+      <View style={stiller.kapsayici}>
+        <Text style={stiller.baslik}>Bu check-in ne paylasiyor?</Text>
+        <Text style={stiller.uyariMetni}>
+          Check-in yaptiginda bulundugun mekan ve varsa yazdigin not, seni
+          takip eden arkadaslarina gorunur olur. Check-in 4 saat sonra ya da
+          "ayrildim" dedigin anda kendiliginden kapanir. Istersen bu
+          check-in'i gizli yaparak sadece kendi profilinde tutabilirsin.
+        </Text>
+        <Pressable style={stiller.buton} onPress={() => ilkUyariKapat(false)}>
+          <Text style={stiller.butonYazi}>Anladim</Text>
+        </Pressable>
+        <Pressable style={stiller.ikincilButon} onPress={() => ilkUyariKapat(true)}>
+          <Text style={stiller.ikincilButonYazi}>Gizli yap</Text>
+        </Pressable>
+      </View>
+    )
+  }
+
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Check-in yap</Text>
+      <Text style={stiller.baslik}>Yeni check-in</Text>
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
         placeholder="Bir not ekle (opsiyonel)"
@@ -72,6 +124,15 @@ export default function CheckInEkrani() {
         </Text>
       </Pressable>
       {yerelFotoUri && <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} />}
+
+      <View style={stiller.satir}>
+        <Text style={stiller.etiket}>Gizli check-in</Text>
+        <Switch
+          accessibilityLabel="Gizli check-in"
+          value={gizliMi}
+          onValueChange={gizliMiDegistir}
+        />
+      </View>
 
       {uyari && <Text style={stiller.uyari}>{uyari}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -89,6 +150,14 @@ const stiller = StyleSheet.create({
   cokSatirli: { minHeight: 80, textAlignVertical: 'top' },
   fotoButonu: { padding: 12, alignItems: 'center', marginBottom: 12 },
   fotoButonuYazi: { color: '#0645ad' },
+  satir: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 12, marginBottom: 12,
+  },
+  etiket: { fontSize: 16 },
+  uyariMetni: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
+  ikincilButon: { padding: 14, alignItems: 'center', marginTop: 12 },
+  ikincilButonYazi: { color: '#0645ad', fontWeight: '600' },
   onizleme: { width: '100%', height: 180, borderRadius: 8, marginBottom: 12 },
   uyari: { color: '#a60', marginBottom: 12 },
   hata: { color: '#c00', marginBottom: 12 },
