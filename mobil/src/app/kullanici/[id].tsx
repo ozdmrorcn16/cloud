@@ -13,9 +13,10 @@ function fotografUrl(yol: string): string {
 export default function KullaniciProfiliEkrani() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const [profil, setProfil] = useState<BaskaProfil | null | undefined>(undefined)
+  const [profil, setProfil] = useState<BaskaProfil | null>(null)
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [hata, setHata] = useState<string | null>(null)
+  const [yukleniyor, setYukleniyor] = useState(true)
 
   async function verileriYukle() {
     try {
@@ -28,6 +29,8 @@ export default function KullaniciProfiliEkrani() {
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    } finally {
+      setYukleniyor(false)
     }
   }
 
@@ -40,12 +43,25 @@ export default function KullaniciProfiliEkrani() {
   }
 
   async function kullaniciyiEngelle() {
-    await engelle(id)
-    setProfil(null)
+    try {
+      await engelle(id)
+      setHata(null)
+      setProfil(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
   }
 
   function sikayetEt() {
     router.push(`/sikayet?hedefTur=kullanici&hedefId=${id}`)
+  }
+
+  if (yukleniyor) {
+    return (
+      <View style={stiller.kapsayici}>
+        <Text style={stiller.durum}>Yukleniyor...</Text>
+      </View>
+    )
   }
 
   if (!profil) {
@@ -72,6 +88,7 @@ export default function KullaniciProfiliEkrani() {
       )}
       <Text style={stiller.ad}>{profil.ad}</Text>
       {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
+      {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Anilar</Text>
       <FlatList

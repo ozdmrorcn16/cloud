@@ -93,4 +93,56 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
+
+  it('engelleme basarisiz olursa hata gosterir ve profili kapatmaz', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+    })
+    ;(engelle as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<KullaniciProfiliEkrani />)
+    await waitFor(() => screen.getByText('Ada'))
+    await fireEvent.press(screen.getByText('Engelle'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+    expect(screen.getByText('Ada')).toBeTruthy()
+    expect(screen.queryByText('Bu profil bulunamadi')).toBeNull()
+  })
+
+  it('yuklenirken bulunamadi mesajini gostermez', async () => {
+    let cozumlendir: (deger: unknown) => void = () => {}
+    const bekleyenSoz = new Promise((cozum) => {
+      cozumlendir = cozum
+    })
+    ;(baskasininProfiliniGetir as jest.Mock).mockReturnValue(bekleyenSoz)
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(screen.queryByText('Bu profil bulunamadi')).toBeNull()
+
+    cozumlendir({ id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [] })
+    await waitFor(() => {
+      expect(screen.getByText('Ada')).toBeTruthy()
+    })
+  })
+
+  it('baskasinin anisinda sil butonu gostermez', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
+        fotograf: null, olusturmaZamani: '', bitisZamani: '', canliMi: false,
+        mekanKonumu: { lat: 41.015, lng: 28.979 } },
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Sahil Kafe')).toBeTruthy()
+    })
+    expect(screen.queryByText('Sil')).toBeNull()
+  })
 })
