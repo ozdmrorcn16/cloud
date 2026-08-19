@@ -2000,25 +2000,7 @@ await senaryo('13 - 30 gun kurali sunucuda tutar', async () => {
   )
 })
 
-await senaryo('14 - Kullanici adi sutunu dogrudan yazilamaz', async () => {
-  const { error } = await b
-    .from('profiller')
-    .update({ kullanici_adi: 'dogrudan_yazim' })
-    .eq('id', bId)
-  esitMi(
-    error !== null,
-    true,
-    'dogrudan update ile kullanici adi degistirilemez (sutun yetkisi)'
-  )
-
-  const { error: acikHata } = await b
-    .from('profiller')
-    .update({ aramada_gorunsun: true })
-    .eq('id', bId)
-  esitMi(acikHata, null, 'aramada_gorunsun dogrudan guncellenebilir (karsi kontrol)')
-})
-
-await senaryo('15 - Arama kullanici adi ve isimle bulur', async () => {
+await senaryo('14 - Arama kullanici adi ve isimle bulur', async () => {
   const { data: bProfil } = await b.from('profiller').select('kullanici_adi, ad').single()
   const { kullanici_adi: bAdi, ad: bIsim } = bProfil as { kullanici_adi: string; ad: string }
 
@@ -2047,7 +2029,7 @@ await senaryo('15 - Arama kullanici adi ve isimle bulur', async () => {
   )
 })
 
-await senaryo('16 - Aramada gorunme kapatilinca cikmaz', async () => {
+await senaryo('15 - Aramada gorunme kapatilinca cikmaz', async () => {
   const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
   const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
 
@@ -2068,7 +2050,7 @@ await senaryo('16 - Aramada gorunme kapatilinca cikmaz', async () => {
   )
 })
 
-await senaryo('17 - Engelleme aramayi iki yonde de keser', async () => {
+await senaryo('16 - Engelleme aramayi iki yonde de keser', async () => {
   const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
   const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
   const { data: aProfil } = await a.from('profiller').select('kullanici_adi').single()
@@ -2092,7 +2074,7 @@ await senaryo('17 - Engelleme aramayi iki yonde de keser', async () => {
   )
 })
 
-await senaryo('18 - Kimliksiz cagrilar reddedilir', async () => {
+await senaryo('17 - Kimliksiz cagrilar reddedilir', async () => {
   // Giris yapmamis, ham anon istemci. RPC'lerde hem auth.uid() null
   // kontrolu hem de "revoke execute from anon" var; ikisinden biri
   // bile calissa cagri hata donmeli.
@@ -2119,8 +2101,14 @@ eklenmeli:
 import { createClient } from '@supabase/supabase-js'
 ```
 
-Not: `senaryo 14` icinde `aramada_gorunsun` degeri `true` olarak
-birakiliyor, `senaryo 16` da kendi degisikligini geri aliyor — boylece
+Not: spec'in 12 ve 13 numarali test maddeleri (kullanici adi sutununun
+dogrudan yazilamamasi, aramada_gorunsun'un yazilabilmesi) burada
+tekrarlanmiyor — Task 2'de `sema-dogrula.ts` icine konuldular ve orasi
+da gercek veritabanina karsi calisiyor. Ayni iddiayi iki pakette
+tutmak bakim yuku olurdu.
+
+Not: `senaryo 15` icinde `aramada_gorunsun` degeri `true` olarak
+birakiliyor — betik kendi degisikligini geri aliyor, boylece
 betik durumu kendinden sonrakine bozuk birakmiyor. Engelleme
 `t.engellemeler` uzerinden mevcut `temizle()` tarafindan kaldiriliyor.
 
@@ -2244,5 +2232,5 @@ git commit -m "docs: Faz 2c tamamlandi, proje hafizasi guncellendi"
 | 12 | `kisiler` | Arama ekrani |
 | 13 | `index` | Aramaya giris |
 | 14 | `kullanici/[id]` | Profilde `@kullaniciadi` |
-| 15 | `gorunurluk-testleri` | Sekiz yeni gercek veritabani senaryosu |
+| 15 | `gorunurluk-testleri` | Yedi yeni gercek veritabani senaryosu |
 | 16 | Kapanis | Tam kosum, elle gezinti, hafiza |
