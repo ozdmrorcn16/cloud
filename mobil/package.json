@@ -54,7 +54,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest",
-    "test:gorunurluk": "tsx --env-file=.env gorunurluk-testleri/calistir.ts"
+    "test:gorunurluk": "tsx --env-file=.env gorunurluk-testleri/calistir.ts",
+    "test:sema": "tsx --env-file=.env gorunurluk-testleri/sema-dogrula.ts"
   },
   "private": true,
   "jest": {
