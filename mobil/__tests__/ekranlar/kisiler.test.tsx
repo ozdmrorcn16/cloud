@@ -77,21 +77,30 @@ describe('KisilerEkrani', () => {
     await render(<KisilerEkrani />)
     const kutu = screen.getByPlaceholderText('Kullanici adi ya da isim')
 
-    // Bilerek await edilmiyor: handler henuz cozulmemis bir soze bagli
-    // kaldigi surece, `await fireEvent.changeText(...)`'in kullandigi
-    // act() sarmalayicisi o soz cozulene kadar sonsuza kadar bekliyor.
-    // Bu yuzden olaylari ates edip sonucu findByText/waitFor ile bekliyoruz.
-    fireEvent.changeText(kutu, 'ilk')
-    fireEvent.changeText(kutu, 'ikinci')
+    // fireEvent.changeText yerine handler'i dogrudan cagiriyoruz: RNTL'in
+    // fireEvent'i her cagriyi kendi act() kapsamiyla sarmaliyor ve iki
+    // cozulmemis async cagriyi ust uste ates etmek "overlapping act()
+    // calls" durumuna yol acip ikinci guncellemeyi sessizce dusuruyordu
+    // (olculdu). Dogrudan cagri bu sorunu ortadan kaldiriyor.
+    kutu.props.onChangeText('ilk')
+    kutu.props.onChangeText('ikinci')
 
     expect(await screen.findByText('ikinci')).toBeTruthy()
 
-    // Simdi eski istek geri donuyor; ekrani degistirmemeli.
+    // Eski istek simdi geri donuyor; ekrani degistirmemeli.
     ilkiCoz([{ id: 'k1', kullaniciAdi: 'birinci', ad: 'Birinci Kisi', fotograf: null }])
 
-    await waitFor(() => {
-      expect(screen.queryByText('birinci')).toBeNull()
-      expect(screen.getByText('ikinci')).toBeTruthy()
-    })
+    // waitFor kullanilmadi: ilk senkron kontrolde henuz hic guncelleme
+    // islenmeden 'dogru' gorunup erken cikardi ve testi gecersiz kilardi
+    // (olculdu). Eski istegin `await kisiAra(...)` devami Babel'in
+    // regenerator tabanli async/await ceviriminden gectigi icin tek bir
+    // mikrogorev turu yetmiyor; birden fazla gercek makrogorev turu
+    // (setTimeout 0) gerekiyor.
+    for (let i = 0; i < 5; i++) {
+      await new Promise((cozumle) => setTimeout(cozumle, 0))
+    }
+
+    expect(screen.queryByText('birinci')).toBeNull()
+    expect(screen.getByText('ikinci')).toBeTruthy()
   })
 })
