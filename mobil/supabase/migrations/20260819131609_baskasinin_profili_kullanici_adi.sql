@@ -1,4 +1,4 @@
-﻿-- Donen sutun listesi degistigi icin create or replace yetmiyor;
+-- Donen sutun listesi degistigi icin create or replace yetmiyor;
 -- fonksiyonun once dusurulmesi gerekiyor.
 drop function if exists public.baskasinin_profili(uuid);
 

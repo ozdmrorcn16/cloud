@@ -1,4 +1,4 @@
-﻿-- Istemci bu sorguyu kendisi yapamaz: profiller'in RLS politikasi
+-- Istemci bu sorguyu kendisi yapamaz: profiller'in RLS politikasi
 -- yalnizca kendi satirini gosterir, dolayisiyla "bu ad baskasinda var
 -- mi" sorusu her zaman "yok" cevabini dondururdu.
 create or replace function public.kullanici_adi_musait_mi(p_ad text)
