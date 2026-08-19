@@ -222,6 +222,26 @@ async function main() {
     .eq('id', aId)
   esitMi(adYazma?.code === '42501', true, 'kullanici_adi hala dogrudan guncellenemiyor')
 
+  console.log("\n--- Faz 3a Task 7: istek RPC'leri ---")
+  const { error: kendineHatasi } = await a.rpc('takip_istegi_gonder', {
+    p_kullanici_id: aId,
+  })
+  esitMi(
+    kendineHatasi?.message?.includes('Kendine istek') ?? false,
+    true,
+    'kendine istek gonderilemiyor'
+  )
+
+  const { error: yanitHatasi } = await a.rpc('takip_istegini_yanitla', {
+    p_kullanici_id: bId,
+    p_kabul: true,
+  })
+  esitMi(
+    yanitHatasi?.message?.includes('bulunamadi') ?? false,
+    true,
+    'olmayan istek yanitlanamiyor'
+  )
+
   sonucuBildirVeCik()
 }
 
