@@ -114,6 +114,20 @@ async function main() {
     'alt cizgi joker gibi davranmiyor, harfi harfine eslesiyor'
   )
 
+  // Ters bolu iceren arama. Kacis dogruysa desen harfi harfine
+  // "kull\a" olur ve hicbir sey eslesmez; ilk replace bozuksa "\a"
+  // bir escape dizisi gibi yorumlanip "kulla" gibi davranir ve B doner.
+  // Alt cizgi testi bu hatayi GORMEZ, cunku alt cizgiyi kaciran replace
+  // her iki surumde de calisiyor.
+  const tersBoluDeseni = bAdi.slice(0, 4) + '\\' + bAdi.slice(4, 5)
+
+  const { data: tersBoluSonuc } = await a.rpc('kisi_ara', { p_metin: tersBoluDeseni })
+  esitMi(
+    ((tersBoluSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
+    false,
+    'ters bolu escape dizisi olarak yorumlanmiyor'
+  )
+
   sonucuBildirVeCik()
 }
 
