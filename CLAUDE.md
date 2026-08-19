@@ -213,9 +213,12 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - `security-guidance@claude-code-plugins` — her duzenlemeyi guvenlik acigi
   kaliplarina karsi tarayan hook tabanli eklenti (komut enjeksiyonu, sizmis
   anahtar, vb.). Slash komutu yok, arka planda calisir.
-- `claude-mem@thedotmack` — oturumlar arasi kalici hafiza. `~/.claude-mem`
-  altinda SQLite + chroma; 37700 portunda bir worker calisir.
-  `/claude-mem:mem-search`, `/claude-mem:learn-codebase` gibi ~20 beceri.
+- `claude-mem@thedotmack` — **KAPATILDI (2026-08-19).** Oturumlar arasi
+  kalici hafiza saglıyordu (`~/.claude-mem` altinda SQLite + chroma, 37700
+  portunda worker, `/claude-mem:mem-search` gibi ~20 beceri). Worker
+  kendiliginden baslamadigi icin her makinede tekrar tekrar "worker
+  unreachable" hatasi verip mesajlari blokluyordu. Gerekce ve geri acma
+  yontemi asagidaki 2026-08-19 tarihli kararda.
 - `no-ai-slop` (petergyang/no-ai-slop) — market eklentisi **degil**, tek dosyalik
   beceri. Repoya dogrudan kopyalandi: `.claude/skills/no-ai-slop/`. Yaziyi 20+
   "AI slop" kalibindan temizler, sesini korur. `/no-ai-slop <metin>` duzeltir,
@@ -333,5 +336,23 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   Dogrulama: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:37700/`
   → `200` donmeli. Kurulum `~/.claude-mem` altina SQLite veritabani acar.
   Worker **makine basina** calisir, repoya bagli degil — yeni bir bilgisayarda
-  ya da yeni konteynerde tekrar calistirilmasi gerekir. Bu bulut
-  konteynerinde 2026-08-19'da boyle cozuldu.
+  ya da yeni konteynerde tekrar calistirilmasi gerekir.
+- 2026-08-19 — **claude-mem kapatildi.** Yukaridaki kurulum bulut
+  konteynerinde ise yaradi ama hata yerelde de cikinca kalici cozume
+  gecildi. Belirleyici ayrinti: kurulumun kendisi *"Worker autostart
+  skipped"* diyor — yani worker **kendiliginden baslamiyor**, her makine
+  yeniden baslatildiginda elle `npx claude-mem start` gerekiyor. Blokli
+  bir eklenti icin bu kabul edilebilir bir bakim yuku degil.
+
+  Eklenti **iki ayri yerde** aciliyor, ikisi de kapatilmali:
+  - `.claude/settings.json` (proje, repoda) → `false` yapildi, push edildi.
+  - `~/.claude/settings.json` (kullanici kapsami, **repoda degil**, her
+    makinede ayri) → elle `false` yapilmali. Windows'ta:
+    `C:\Users\orcns\.claude\settings.json`.
+
+  Kayip yok: CLAUDE.md'nin en basinda anlatilan kalici hafiza sistemi
+  (`CLAUDE.md` + `docs/konusma-gunlugu.md` + `docs/oturumlar/`) claude-mem'e
+  bagli degil, ondan bagimsiz calisiyor. 181 gozlemlik eski veritabani da
+  `docs/hafiza/claude-mem-yedek.db` icinde duruyor. Geri acmak istenirse:
+  iki dosyada `true` yap, sonra `npx --yes claude-mem@latest install` ve
+  `npx --yes claude-mem start`.
