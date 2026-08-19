@@ -4,6 +4,12 @@ import { baskasininProfiliniGetir } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir } from '../../../lib/checkin'
 import { profilFotograflariUrl } from '../../../lib/fotograf-url'
+import {
+  bagDurumunuGetir,
+  takipIstegiGonder,
+  takibiBirak,
+  sohbetIstegiGonder,
+} from '../../../lib/bag'
 
 jest.mock('../../../lib/profil', () => ({ baskasininProfiliniGetir: jest.fn() }))
 jest.mock('../../../lib/engelleme', () => ({
@@ -13,6 +19,15 @@ jest.mock('../../../lib/engelleme', () => ({
 }))
 jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn() }))
 jest.mock('../../../lib/fotograf-url', () => ({ profilFotograflariUrl: jest.fn() }))
+jest.mock('../../../lib/bag', () => ({
+  bagDurumunuGetir: jest.fn(),
+  takipIstegiGonder: jest.fn(),
+  takipIsteginiYanitla: jest.fn(),
+  takibiBirak: jest.fn(),
+  takipciyiCikar: jest.fn(),
+  sohbetIstegiGonder: jest.fn(),
+  sohbetIsteginiYanitla: jest.fn(),
+}))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -22,11 +37,15 @@ jest.mock('expo-router', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks()
+  ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+    id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
+  })
   ;(engellediklerimiGetir as jest.Mock).mockResolvedValue([])
   ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
   ;(profilFotograflariUrl as jest.Mock).mockImplementation((yollar: string[]) =>
     Promise.resolve(yollar.map((yol) => `https://ornek/imzali/${yol}`))
   )
+  ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
 })
 
 describe('KullaniciProfiliEkrani', () => {
@@ -201,5 +220,40 @@ describe('KullaniciProfiliEkrani', () => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
     expect(screen.queryByText('Sil')).toBeNull()
+  })
+
+  it('bag yokken iki istek butonunu gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    expect(await screen.findByText('Takip et')).toBeTruthy()
+    expect(screen.getByText('Sohbet iste')).toBeTruthy()
+  })
+
+  it('takip istegi gonderir ve durumu gunceller', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+    ;(takipIstegiGonder as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Takip et'))
+
+    await waitFor(() => expect(takipIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
+    expect(await screen.findByText('Istek gonderildi')).toBeTruthy()
+  })
+
+  it('takip ediyorken birakma butonunu gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    expect(await screen.findByText('Takibi birak')).toBeTruthy()
+  })
+
+  it('sunucu hatasini gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+    ;(takipIstegiGonder as jest.Mock).mockRejectedValue(
+      new Error('Bugunluk istek sinirina ulastin')
+    )
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Takip et'))
+    expect(await screen.findByText('Bugunluk istek sinirina ulastin')).toBeTruthy()
   })
 })
