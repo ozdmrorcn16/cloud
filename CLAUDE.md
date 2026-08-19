@@ -318,4 +318,20 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   ust uste basarisiz olup mesaji **bloke ediyor**. (2) `Stop`/`SessionEnd`
   oturum kaydi hook'lari `C:/Users/orcns/.../python.exe` yolunu gosterdigi
   icin bulutta hic calismiyor. Yerelde ikisi de dogru; sorun yalnizca
-  bulut oturumu acildiginda cikiyor. Cozum: bulutta oturum acma.
+  bulut oturumu acildiginda cikiyor.
+- 2026-08-19 — **`claude-mem worker unreachable` hatasinin cozumu.** Hata
+  "eklenti bozuk" demek degil: `enabledPlugins` claude-mem'i aciyor ama
+  eklenti o makinede kurulu degil ve worker (port 37700) calismiyor;
+  `UserPromptSubmit` hook'u ust uste basarisiz olunca mesaji **bloke
+  ediyor**. Iki komut yetiyor, hem Windows hem Linux'ta ayni:
+
+  ```
+  npx --yes claude-mem@latest install
+  npx --yes claude-mem start
+  ```
+
+  Dogrulama: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:37700/`
+  → `200` donmeli. Kurulum `~/.claude-mem` altina SQLite veritabani acar.
+  Worker **makine basina** calisir, repoya bagli degil — yeni bir bilgisayarda
+  ya da yeni konteynerde tekrar calistirilmasi gerekir. Bu bulut
+  konteynerinde 2026-08-19'da boyle cozuldu.
