@@ -202,6 +202,26 @@ async function main() {
   const { error: gizliMiHatasi } = await a.from('check_inler').select('gizli_mi').limit(1)
   esitMi(gizliMiHatasi !== null, true, 'gizli_mi sutunu artik yok')
 
+  console.log('\n--- Faz 3a Task 5: varsayilan_bulunurluk ---')
+  const { error: varsayilanOkuma } = await a
+    .from('profiller')
+    .select('varsayilan_bulunurluk')
+    .eq('id', aId)
+    .single()
+  esitMi(varsayilanOkuma, null, 'varsayilan_bulunurluk okunabiliyor')
+
+  const { error: varsayilanYazma } = await a
+    .from('profiller')
+    .update({ varsayilan_bulunurluk: 'herkese_acik' })
+    .eq('id', aId)
+  esitMi(varsayilanYazma, null, 'varsayilan_bulunurluk dogrudan guncellenebiliyor')
+
+  const { error: adYazma } = await a
+    .from('profiller')
+    .update({ kullanici_adi: 'dogrudan_yazim' })
+    .eq('id', aId)
+  esitMi(adYazma?.code === '42501', true, 'kullanici_adi hala dogrudan guncellenemiyor')
+
   sonucuBildirVeCik()
 }
 
