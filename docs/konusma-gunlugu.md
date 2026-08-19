@@ -1,8 +1,14 @@
 # Konusma Gunlugu
 
-Butun oturumlarin kalici kaydi. Bu dosyanin indeks blogu hook tarafindan
-otomatik guncellenir; "Kararlar" bolumu elle (Claude veya sen tarafindan)
-yazilir.
+Butun oturumlarin indeksi. Bu dosyanin indeks blogu hook tarafindan otomatik
+guncellenir.
+
+Kararlar burada degil, **projelerin kendi kayit dosyalarinda** tutulur:
+
+- [`projeler/youtube-otomasyonu.md`](projeler/youtube-otomasyonu.md)
+- [`projeler/uygulama-fikri.md`](projeler/uygulama-fikri.md)
+
+Ortak/altyapi kararlari icin `CLAUDE.md` dosyasina bak.
 
 ## Otomatik kayit nasil calisiyor
 
@@ -34,18 +40,3 @@ icinde `/hooks` menusunden devre disi birak.
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
-
-## Kararlar
-
-- **2026-08-19** — Uygulama fikri netlesti: **YouTube otomasyonu**. Fikirden
-  yuklemeye kadar butun adimlari yapan bir boru hatti kuruldu
-  (`otomasyon/` paketi, rehber `README.md`).
-- **2026-08-19** — Calisma yeri (yerel mi Actions mi) kararsiz kaldi; ikisini de
-  destekleyen tek bir CLI yazildi. Yerelde `python -m otomasyon tam-akis`,
-  bulutta `.github/workflows/video-uret.yml` ayni komutu cagiriyor.
-- **2026-08-19** — Ilk yuklemeler `private`; kalite elle onaylandiktan sonra
-  `konfig/kanal.yaml` icinden `public` yapilacak.
-- **2026-08-09** — Depo bos halde bulundu; onceki oturumdan kalan hicbir kayit
-  yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
-- **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
-  `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
