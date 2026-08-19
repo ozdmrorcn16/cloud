@@ -128,6 +128,16 @@ async function main() {
     'ters bolu escape dizisi olarak yorumlanmiyor'
   )
 
+  console.log('\n--- Task 6: baskasinin_profili ---')
+  const { data: profilSatirlari, error: profilHatasi } = await a.rpc('baskasinin_profili', {
+    p_kullanici_id: bId,
+  })
+  esitMi(profilHatasi, null, 'baskasinin_profili cagrilabiliyor')
+
+  const ilk = ((profilSatirlari ?? []) as Record<string, unknown>[])[0] ?? {}
+  esitMi('kullanici_adi' in ilk, true, 'donen satirda kullanici_adi var')
+  esitMi('dogum_tarihi' in ilk, false, 'donen satirda dogum tarihi yok')
+
   sonucuBildirVeCik()
 }
 
