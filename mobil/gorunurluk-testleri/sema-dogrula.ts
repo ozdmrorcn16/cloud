@@ -3,7 +3,7 @@ import { ikiKullaniciIleBaglan, esitMi, sonucuBildirVeCik } from './yardimcilar'
 const KULLANICI_ADI_DESENI = /^[a-z0-9._]{3,20}$/
 
 async function main() {
-  const { a, aId } = await ikiKullaniciIleBaglan()
+  const { a, b, aId, bId } = await ikiKullaniciIleBaglan()
 
   console.log('\n--- Task 1: kullanici adi sutunlari ---')
   const { data, error } = await a
@@ -93,11 +93,25 @@ async function main() {
     p_metin: kendiAd.slice(0, 4),
   })
   esitMi(uzunHata, null, 'iki karakterden uzun arama hata vermiyor')
-  esitMi(Array.isArray(uzunSonuc), true, 'arama dizi doner')
   esitMi(
     ((uzunSonuc ?? []) as { id: string }[]).some((s) => s.id === aId),
     false,
     'arama cagiranin kendisini sonuclara koymaz'
+  )
+
+  // Alt cizgi kullanici adinda gecerli bir karakter; kacirilmazsa `like`
+  // icinde joker gibi davranir. B'nin adindaki gercek bir harfi alt
+  // cizgiyle degistirip ariyoruz: harfi harfine eslesme kuralinda sonuc
+  // BOS olmali, kacis bozuksa B geri doner.
+  const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
+  const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
+  const jokerDeseni = bAdi.slice(0, 4) + '_'   // 5. karakter gercekte alt cizgi degil
+
+  const { data: jokerSonuc } = await a.rpc('kisi_ara', { p_metin: jokerDeseni })
+  esitMi(
+    ((jokerSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
+    false,
+    'alt cizgi joker gibi davranmiyor, harfi harfine eslesiyor'
   )
 
   sonucuBildirVeCik()

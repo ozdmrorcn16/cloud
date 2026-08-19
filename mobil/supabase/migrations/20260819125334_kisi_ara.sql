@@ -22,7 +22,7 @@ begin
   -- like/ilike joker karakterlerini kacir. Alt cizgi kullanici adinda
   -- gecerli bir karakter oldugu icin bu sart: kacirilmazsa "a_b"
   -- aramasi "axb" ile de eslesir.
-  v_desen := replace(replace(replace(v_metin, '\', '\'), '%', '\%'), '_', '\_');
+  v_desen := replace(replace(replace(v_metin, '\', '\\'), '%', '\%'), '_', '\_');
 
   return query
     select p.id,
