@@ -88,10 +88,15 @@ describe('KisilerEkrani', () => {
     let ilkiCoz: (deger: unknown) => void = () => {}
     const ilkSoz = new Promise((coz) => { ilkiCoz = coz })
 
+    // Iki sonucta da gercek bir fotograf yolu var: imzalama (async)
+    // asamasinin gercekten calistigindan ve imzalamadan SONRAKI
+    // sonIstekRef kontrolunun devrede oldugundan emin olmak icin.
+    // fotograf: null olsaydi imzalama hic tetiklenmez, o kontrol
+    // hicbir zaman test edilmemis olurdu.
     ;(kisiAra as jest.Mock)
       .mockImplementationOnce(() => ilkSoz)
       .mockResolvedValueOnce([
-        { id: 'k2', kullaniciAdi: 'ikinci', ad: 'Ikinci Kisi', fotograf: null },
+        { id: 'k2', kullaniciAdi: 'ikinci', ad: 'Ikinci Kisi', fotograf: 'k2/b.jpg' },
       ])
 
     await render(<KisilerEkrani />)
@@ -108,7 +113,7 @@ describe('KisilerEkrani', () => {
     expect(await screen.findByText('ikinci')).toBeTruthy()
 
     // Eski istek simdi geri donuyor; ekrani degistirmemeli.
-    ilkiCoz([{ id: 'k1', kullaniciAdi: 'birinci', ad: 'Birinci Kisi', fotograf: null }])
+    ilkiCoz([{ id: 'k1', kullaniciAdi: 'birinci', ad: 'Birinci Kisi', fotograf: 'k1/a.jpg' }])
 
     // waitFor kullanilmadi: ilk senkron kontrolde henuz hic guncelleme
     // islenmeden 'dogru' gorunup erken cikardi ve testi gecersiz kilardi

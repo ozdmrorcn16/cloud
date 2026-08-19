@@ -568,10 +568,13 @@ async function main() {
         )
       }
     } finally {
-      const { error: silHata } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
-      if (silHata) {
-        console.error(`  gorunurluk-testleri: yuklenen test dosyasi silinemedi: ${silHata.message}`)
-      }
+      // Sessiz temizlik, temizlik degildir: silme hatasi artik bir iddia,
+      // sadece console.error'a dusen bir log degil. Bucket'ta hicbir
+      // "for delete" politikasi yokken (20260819162119'dan once) bu
+      // cagri hep sessizce basarisiz oluyordu ve her kosum bucket'a
+      // kalici bir dosya birakiyordu.
+      const { error: silmeHatasi } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
+      esitMi(silmeHatasi, null, 'test dosyasi silinebiliyor')
     }
   })
 
