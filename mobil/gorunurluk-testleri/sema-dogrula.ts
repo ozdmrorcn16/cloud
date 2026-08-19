@@ -27,6 +27,19 @@ async function main() {
   esitMi(typeof satir.aramada_gorunsun, 'boolean', 'aramada_gorunsun boolean')
   esitMi(satir.aramada_gorunsun, true, 'aramada_gorunsun varsayilani true')
 
+  console.log('\n--- Task 2: sutun duzeyinde update yetkisi ---')
+  const { error: adHatasi } = await a
+    .from('profiller')
+    .update({ kullanici_adi: 'dogrudan_yazim' })
+    .eq('id', aId)
+  esitMi(adHatasi !== null, true, 'kullanici_adi dogrudan guncellenemiyor')
+
+  const { error: gorunurlukHatasi } = await a
+    .from('profiller')
+    .update({ aramada_gorunsun: true })
+    .eq('id', aId)
+  esitMi(gorunurlukHatasi, null, 'aramada_gorunsun dogrudan guncellenebiliyor')
+
   sonucuBildirVeCik()
 }
 
