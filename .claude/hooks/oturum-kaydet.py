@@ -39,6 +39,11 @@ SIR_KALIPLARI = [
     re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
     re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
     re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
+    # JWT parcalari (Supabase anon/service anahtarlari dahil). Her
+    # base64url parcasi ayri ayri maskelenir; nokta ile ayrilmis uc
+    # parcanin tamamini tek kalipla yakalamak, kirpilmis kayitlarda
+    # ise yaramiyordu.
+    re.compile(r"eyJ[A-Za-z0-9_\-]{20,}"),                  # JWT
     # Pexels gibi duz anahtarlar: buyuk+kucuk harf ve rakam iceren uzun dizi.
     re.compile(
         r"\b(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*[0-9])"
