@@ -25,6 +25,52 @@ from pathlib import Path
 INDEX_BASLANGIC = "<!-- oturumlar:baslangic -->"
 INDEX_BITIS = "<!-- oturumlar:bitis -->"
 
+GIZLI = "[SIR-GIZLENDI]"
+
+# Konusma sirasinda yapistirilmis olabilecek API anahtari bicimleri.
+# Kayit dosyalari depoya commit'lendigi icin bunlar yazilmadan once temizlenir.
+SIR_KALIPLARI = [
+    re.compile(r"sk-ant-[A-Za-z0-9_\-]{16,}"),          # Anthropic
+    re.compile(r"sk-[A-Za-z0-9]{32,}"),                  # OpenAI vb.
+    re.compile(r"sk_[a-f0-9]{40,}"),                     # ElevenLabs
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),           # GitHub token
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),         # GitHub ince token
+    re.compile(r"AIza[A-Za-z0-9_\-]{30,}"),             # Google API
+    re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
+    re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
+    re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
+    # Pexels gibi duz anahtarlar: buyuk+kucuk harf ve rakam iceren uzun dizi.
+    re.compile(
+        r"\b(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*[0-9])"
+        r"[A-Za-z0-9]{40,80}\b"
+    ),
+]
+
+
+def env_sirlari(kok: Path) -> list[str]:
+    """.env dosyasindaki degerler: kayitlarda bunlar da gizlenir."""
+    dosya = kok / ".env"
+    if not dosya.exists():
+        return []
+    degerler = []
+    for satir in dosya.read_text(encoding="utf-8", errors="replace").splitlines():
+        satir = satir.strip()
+        if not satir or satir.startswith("#") or "=" not in satir:
+            continue
+        deger = satir.partition("=")[2].strip().strip('"').strip("'")
+        if len(deger) >= 8:
+            degerler.append(deger)
+    return sorted(degerler, key=len, reverse=True)
+
+
+def gizle(metin: str, ek_sirlar: list[str] | None = None) -> str:
+    """Kayda yazilmadan once bilinen sir bicimlerini maskeler."""
+    for sir in ek_sirlar or []:
+        metin = metin.replace(sir, GIZLI)
+    for kalip in SIR_KALIPLARI:
+        metin = kalip.sub(GIZLI, metin)
+    return metin
+
 
 def repo_koku() -> Path:
     """Depo kokunu bul: once CLAUDE_PROJECT_DIR, sonra script konumu."""
@@ -182,11 +228,18 @@ def main() -> int:
     oturumlar.mkdir(parents=True, exist_ok=True)
     ham.mkdir(parents=True, exist_ok=True)
 
+    sirlar = env_sirlari(kok)
     (oturumlar / dosya_adi).write_text(
-        markdown_uret(turler, oturum_id, tarih), encoding="utf-8"
+        gizle(markdown_uret(turler, oturum_id, tarih), sirlar), encoding="utf-8"
     )
-    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_bytes(Path(transcript).read_bytes())
-    indeksi_guncelle(kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih, ozet_uret(turler))
+    (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_text(
+        gizle(Path(transcript).read_text(encoding="utf-8", errors="replace"), sirlar),
+        encoding="utf-8",
+    )
+    indeksi_guncelle(
+        kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih,
+        gizle(ozet_uret(turler), sirlar),
+    )
 
     if "--push" in sys.argv:
         gonder(kok, oturum_id)
