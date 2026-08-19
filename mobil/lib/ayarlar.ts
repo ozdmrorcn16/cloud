@@ -27,6 +27,26 @@ export async function varsayilanGizliyiAyarla(deger: boolean): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+export async function aramadaGorunsunGetir(): Promise<boolean> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('aramada_gorunsun')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return data?.aramada_gorunsun ?? true
+}
+
+export async function aramadaGorunsunAyarla(deger: boolean): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase
+    .from('profiller')
+    .update({ aramada_gorunsun: deger })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
 export async function aniGorunurlugunuAyarla(
   deger: 'herkese_acik' | 'kimse'
 ): Promise<void> {
