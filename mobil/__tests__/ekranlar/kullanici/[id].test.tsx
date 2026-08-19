@@ -3,6 +3,7 @@ import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir } from '../../../lib/checkin'
+import { profilFotograflariUrl } from '../../../lib/fotograf-url'
 
 jest.mock('../../../lib/profil', () => ({ baskasininProfiliniGetir: jest.fn() }))
 jest.mock('../../../lib/engelleme', () => ({
@@ -11,6 +12,7 @@ jest.mock('../../../lib/engelleme', () => ({
   engellediklerimiGetir: jest.fn(),
 }))
 jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn() }))
+jest.mock('../../../lib/fotograf-url', () => ({ profilFotograflariUrl: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -22,6 +24,9 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(engellediklerimiGetir as jest.Mock).mockResolvedValue([])
   ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
+  ;(profilFotograflariUrl as jest.Mock).mockImplementation((yollar: string[]) =>
+    Promise.resolve(yollar.map((yol) => `https://ornek/imzali/${yol}`))
+  )
 })
 
 describe('KullaniciProfiliEkrani', () => {
@@ -82,6 +87,40 @@ describe('KullaniciProfiliEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Bu profil bulunamadi')).toBeTruthy()
     })
+  })
+
+  it('fotograflari olan profil icin imzali URL ile Image gosterir, olmayan icin gostermez', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: ['kullanici-2/1.jpg', 'kullanici-2/2.jpg'],
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => {
+      expect(profilFotograflariUrl).toHaveBeenCalledWith(['kullanici-2/1.jpg', 'kullanici-2/2.jpg'])
+    })
+
+    await waitFor(() => {
+      const gorseller = screen.getAllByTestId('profil-fotografi')
+      expect(gorseller).toHaveLength(2)
+      expect(gorseller.map((g) => g.props.source.uri)).toEqual([
+        'https://ornek/imzali/kullanici-2/1.jpg',
+        'https://ornek/imzali/kullanici-2/2.jpg',
+      ])
+    })
+  })
+
+  it('fotografi olmayan profil icin Image gostermez', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => screen.getByText('Ada'))
+
+    expect(screen.queryAllByTestId('profil-fotografi')).toHaveLength(0)
   })
 
   it('engelle butonuna basinca engeller ve profili kapatir', async () => {

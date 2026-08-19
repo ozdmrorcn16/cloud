@@ -518,6 +518,63 @@ async function main() {
     esitMi(aramaHatasi !== null, true, 'kimliksiz kisi_ara cagrisi reddedilir')
   })
 
+  await senaryo('18 - Profil fotografi imzali URL ile okunabiliyor', async () => {
+    // Senaryo 16, A -> B blogunu kurup t.engellemeler'e ekleyerek bitti; bu
+    // blok temizle() cagrilana kadar kalici. Pozitif kontrolun anlamli
+    // olmasi icin (blok yuzunden degil, kural geregi imza alinabildigini
+    // kanitlamak icin) senaryo 6/10'daki desenin ayni: once gecici olarak
+    // kaldiriyoruz, sonunda t.engellemeler ile yeniden kurup temizle()'ye
+    // birakiyoruz.
+    const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    if (kaldirErr) throw new Error(`onceki blok kaldirilamadi: ${kaldirErr.message}`)
+
+    const dosyaYolu = `${aId}/gorunurluk-test-${Date.now()}.txt`
+    const icerik = Buffer.from('gorunurluk-testi')
+
+    const { error: yukleHata } = await a.storage
+      .from('profil-fotograflari')
+      .upload(dosyaYolu, icerik, { contentType: 'text/plain' })
+    if (yukleHata) throw new Error(`fotograf yukleme hatasi: ${yukleHata.message}`)
+
+    try {
+      const { data: imza1, error: imza1Hata } = await b.storage
+        .from('profil-fotograflari')
+        .createSignedUrl(dosyaYolu, 60)
+      if (imza1Hata) throw new Error(`B imza alma hatasi: ${imza1Hata.message}`)
+
+      const yanit1 = await fetch(imza1!.signedUrl)
+      esitMi(
+        yanit1.status,
+        200,
+        "B, A'nin profil fotografi icin imzali URL alip icerigi gercekten okuyabiliyor"
+      )
+
+      const { error: engelErr } = await a.rpc('engelle', { p_kullanici_id: bId })
+      if (engelErr) throw new Error(`engelle hatasi: ${engelErr.message}`)
+      t.engellemeler.push({ istemci: a, engellenenId: bId })
+
+      const { data: imza2, error: imza2Hata } = await b.storage
+        .from('profil-fotograflari')
+        .createSignedUrl(dosyaYolu, 60)
+
+      if (imza2Hata) {
+        esitMi(true, true, "A, B'yi engelledikten sonra B imza ALAMIYOR (RLS reddediyor)")
+      } else {
+        const yanit2 = await fetch(imza2!.signedUrl)
+        esitMi(
+          yanit2.status === 400 || yanit2.status === 403,
+          true,
+          "A, B'yi engelledikten sonra imzali URL artik icerigi vermiyor (400/403 doner)"
+        )
+      }
+    } finally {
+      const { error: silHata } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
+      if (silHata) {
+        console.error(`  gorunurluk-testleri: yuklenen test dosyasi silinemedi: ${silHata.message}`)
+      }
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }

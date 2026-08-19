@@ -4,16 +4,13 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { baskasininProfiliniGetir, type BaskaProfil } from '../../../lib/profil'
 import { engelle } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir, type AniGorunumu } from '../../../lib/checkin'
-import { supabase } from '../../../lib/supabase'
-
-function fotografUrl(yol: string): string {
-  return supabase.storage.from('profil-fotograflari').getPublicUrl(yol).data.publicUrl
-}
+import { profilFotograflariUrl } from '../../../lib/fotograf-url'
 
 export default function KullaniciProfiliEkrani() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [profil, setProfil] = useState<BaskaProfil | null>(null)
+  const [fotografUrlleri, setFotografUrlleri] = useState<string[]>([])
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -25,6 +22,7 @@ export default function KullaniciProfiliEkrani() {
         kullanicininAnilariniGetir(id),
       ])
       setProfil(profilVerisi)
+      setFotografUrlleri(await profilFotograflariUrl(profilVerisi?.fotograflar ?? []))
       setAnilar(anilarVerisi)
       setHata(null)
     } catch (e) {
@@ -75,13 +73,13 @@ export default function KullaniciProfiliEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      {profil.fotograflar.length > 0 && (
+      {fotografUrlleri.length > 0 && (
         <FlatList
           horizontal
-          data={profil.fotograflar}
-          keyExtractor={(yol) => yol}
+          data={fotografUrlleri}
+          keyExtractor={(url) => url}
           renderItem={({ item }) => (
-            <Image source={{ uri: fotografUrl(item) }} style={stiller.fotograf} />
+            <Image testID="profil-fotografi" source={{ uri: item }} style={stiller.fotograf} />
           )}
           style={stiller.fotografListesi}
         />

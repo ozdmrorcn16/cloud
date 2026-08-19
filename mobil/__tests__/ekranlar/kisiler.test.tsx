@@ -12,7 +12,10 @@ jest.mock('expo-router', () => ({
 jest.mock('../../lib/supabase', () => ({
   supabase: {
     storage: {
-      from: () => ({ getPublicUrl: () => ({ data: { publicUrl: 'https://ornek/foto.jpg' } }) }),
+      from: () => ({
+        createSignedUrl: () =>
+          Promise.resolve({ data: { signedUrl: 'https://ornek/imzali-foto.jpg' }, error: null }),
+      }),
     },
   },
 }))
@@ -62,6 +65,23 @@ describe('KisilerEkrani', () => {
     await fireEvent.press(await screen.findByText('orcun'))
 
     await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k1'))
+  })
+
+  it('fotografi olan sonuc icin Image gosterir, olmayan icin gostermez', async () => {
+    ;(kisiAra as jest.Mock).mockResolvedValue([
+      { id: 'k1', kullaniciAdi: 'foto-var', ad: 'Foto Var', fotograf: 'kullanici-1/1.jpg' },
+      { id: 'k2', kullaniciAdi: 'foto-yok', ad: 'Foto Yok', fotograf: null },
+    ])
+
+    await render(<KisilerEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'foto')
+
+    expect(await screen.findByText('foto-var')).toBeTruthy()
+    expect(screen.getByText('foto-yok')).toBeTruthy()
+
+    const gorseller = screen.getAllByTestId('kisi-fotografi')
+    expect(gorseller).toHaveLength(1)
+    expect(gorseller[0].props.source).toEqual({ uri: 'https://ornek/imzali-foto.jpg' })
   })
 
   it('gec donen eski arama, yeni aramanin sonuclarinin uzerine yazmaz', async () => {
