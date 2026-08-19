@@ -237,7 +237,7 @@ Test, B kullanicisinin adinin 5. karakterinin gercekte alt cizgi
 olmadigini varsayarak sabit bir konuma joker yerlestiriyordu; Task 15'in
 30-gun senaryosu B'nin adini `test_<zaman damgasi>` yapinca bu varsayim
 gerceklikten koptu ve mesru bir eslesme "hata" olarak raporlandi (ters
-bolu kacis probu ayrica calistirilip doğru sonuc verdigi icin kacis
+bolu kacis probu ayrica calistirilip dogru sonuc verdigi icin kacis
 mantiginin saglam oldugu ayrica dogrulandi). Duzeltme: joker konumu artik
 B'nin gercek adindan turetiliyor (ilk alt-cizgi-olmayan karakterin
 konumu bulunup oraya joker konuyor), sabit bir indekse guvenmiyor.

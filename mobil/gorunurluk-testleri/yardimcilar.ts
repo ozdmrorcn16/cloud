@@ -3,8 +3,16 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 const URL = process.env.EXPO_PUBLIC_SUPABASE_URL!
 const ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 
-const TEST_A = { telefon: '+905550000000', sifre: 'test1234' }
-const TEST_B = { telefon: '+905550000001', sifre: 'test1234' }
+function testHesapSifresi(): string {
+  const sifre = process.env.TEST_HESAP_SIFRESI
+  if (!sifre) {
+    throw new Error('TEST_HESAP_SIFRESI tanimli degil; mobil/.env dosyasina ekle')
+  }
+  return sifre
+}
+
+const TEST_A = { telefon: '+905550000000', sifre: testHesapSifresi() }
+const TEST_B = { telefon: '+905550000001', sifre: testHesapSifresi() }
 
 async function kullaniciIleBaglan(telefon: string, sifre: string) {
   const istemci = createClient(URL, ANON, {
