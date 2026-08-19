@@ -70,7 +70,7 @@ describe('BaglarEkrani', () => {
 
     await render(<BaglarEkrani />)
     expect(
-      await screen.findByText('Kabul edersen check-in-lerini gorebilecek.')
+      await screen.findByText("Kabul edersen check-in'lerini gorebilecek.")
     ).toBeTruthy()
   })
 
@@ -111,6 +111,20 @@ describe('BaglarEkrani', () => {
     await fireEvent.press(await screen.findByText('Kabul et'))
 
     await waitFor(() => expect(sohbetIsteginiYanitla).toHaveBeenCalledWith('k5', true))
+  })
+
+  it('gelen sohbet istegini reddeder', async () => {
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [],
+      sohbet: [{ id: 'k5', kullaniciAdi: 'zeynep', ad: 'Zeynep K' }],
+    })
+    ;(sohbetIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Reddet'))
+
+    await waitFor(() => expect(sohbetIsteginiYanitla).toHaveBeenCalledWith('k5', false))
+    await waitFor(() => expect(screen.queryByText('zeynep')).toBeNull())
   })
 
   it('gelen istekte engelle cagirir', async () => {
@@ -157,5 +171,21 @@ describe('BaglarEkrani', () => {
     await render(<BaglarEkrani />)
 
     expect(await screen.findByText('ayse')).toBeTruthy()
+  })
+
+  it('yanitlama hatasinda hata bandini gosterir ve satiri listeden kaldirmaz', async () => {
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O' }],
+      sohbet: [],
+    })
+    ;(takipIsteginiYanitla as jest.Mock).mockRejectedValue(
+      new Error('Yanitlanacak istek bulunamadi')
+    )
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Kabul et'))
+
+    expect(await screen.findByText('Yanitlanacak istek bulunamadi')).toBeTruthy()
+    expect(screen.queryByText('orcun')).toBeTruthy()
   })
 })

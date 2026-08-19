@@ -118,7 +118,7 @@ export default function BaglarEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
-      <Text style={stiller.aciklama}>Kabul edersen check-in-lerini gorebilecek.</Text>
+      <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
       <FlatList
         data={gelenTakip}
         keyExtractor={(k) => k.id}
