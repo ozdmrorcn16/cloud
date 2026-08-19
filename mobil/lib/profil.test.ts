@@ -12,7 +12,7 @@ beforeEach(() => {
 describe('baskasininProfiliniGetir', () => {
   it('profil bulunursa alanlarini doner', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({
-      data: [{ id: 'kullanici-2', ad: 'Ada', biyografi: 'merhaba', fotograflar: ['a.jpg'] }],
+      data: [{ id: 'kullanici-2', kullanici_adi: 'ada123', ad: 'Ada', biyografi: 'merhaba', fotograflar: ['a.jpg'] }],
       error: null,
     })
 
@@ -23,6 +23,7 @@ describe('baskasininProfiliniGetir', () => {
     })
     expect(sonuc).toEqual({
       id: 'kullanici-2',
+      kullaniciAdi: 'ada123',
       ad: 'Ada',
       biyografi: 'merhaba',
       fotograflar: ['a.jpg'],

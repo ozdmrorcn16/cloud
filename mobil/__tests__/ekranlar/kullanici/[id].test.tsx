@@ -27,7 +27,7 @@ beforeEach(() => {
 describe('KullaniciProfiliEkrani', () => {
   it('profili gosterir', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: 'merhaba', fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: 'merhaba', fotograflar: [],
     })
 
     await render(<KullaniciProfiliEkrani />)
@@ -38,9 +38,27 @@ describe('KullaniciProfiliEkrani', () => {
     })
   })
 
+  it('kullanici adini gosterir', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'k1',
+      kullaniciAdi: 'orcun',
+      ad: 'Orcun Ozdemir',
+      biyografi: null,
+      fotograflar: [],
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
+      expect(screen.getByText('@orcun')).toBeTruthy()
+    })
+  })
+
   it('kullanicinin herkese acik anilarini listeler', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     })
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
@@ -68,7 +86,7 @@ describe('KullaniciProfiliEkrani', () => {
 
   it('engelle butonuna basinca engeller ve profili kapatir', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     })
     ;(engelle as jest.Mock).mockResolvedValue(undefined)
 
@@ -84,7 +102,7 @@ describe('KullaniciProfiliEkrani', () => {
 
   it('sikayet butonuna basinca sikayet ekranina yonlendirir', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     })
 
     await render(<KullaniciProfiliEkrani />)
@@ -96,7 +114,7 @@ describe('KullaniciProfiliEkrani', () => {
 
   it('engelleme basarisiz olursa hata gosterir ve profili kapatmaz', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     })
     ;(engelle as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
@@ -122,7 +140,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(screen.queryByText('Bu profil bulunamadi')).toBeNull()
 
-    cozumlendir({ id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [] })
+    cozumlendir({ id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [] })
     await waitFor(() => {
       expect(screen.getByText('Ada')).toBeTruthy()
     })
@@ -130,7 +148,7 @@ describe('KullaniciProfiliEkrani', () => {
 
   it('baskasinin anisinda sil butonu gostermez', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
-      id: 'kullanici-2', ad: 'Ada', biyografi: null, fotograflar: [],
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     })
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',

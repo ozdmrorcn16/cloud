@@ -87,6 +87,7 @@ export default function KullaniciProfiliEkrani() {
         />
       )}
       <Text style={stiller.ad}>{profil.ad}</Text>
+      <Text style={stiller.kullaniciAdi}>@{profil.kullaniciAdi}</Text>
       {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -118,6 +119,7 @@ const stiller = StyleSheet.create({
   fotografListesi: { marginBottom: 12 },
   fotograf: { width: 96, height: 96, borderRadius: 8, marginRight: 8 },
   ad: { fontSize: 24, fontWeight: '600', marginBottom: 8 },
+  kullaniciAdi: { color: '#555', marginBottom: 8 },
   biyografi: { color: '#555', marginBottom: 16 },
   bolumBaslik: { fontSize: 18, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   satir: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
