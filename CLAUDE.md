@@ -337,12 +337,32 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   → `200` donmeli. Kurulum `~/.claude-mem` altina SQLite veritabani acar.
   Worker **makine basina** calisir, repoya bagli degil — yeni bir bilgisayarda
   ya da yeni konteynerde tekrar calistirilmasi gerekir.
-- 2026-08-19 — **claude-mem kapatildi.** Yukaridaki kurulum bulut
-  konteynerinde ise yaradi ama hata yerelde de cikinca kalici cozume
-  gecildi. Belirleyici ayrinti: kurulumun kendisi *"Worker autostart
-  skipped"* diyor — yani worker **kendiliginden baslamiyor**, her makine
-  yeniden baslatildiginda elle `npx claude-mem start` gerekiyor. Blokli
-  bir eklenti icin bu kabul edilebilir bir bakim yuku degil.
+- 2026-08-19 — **claude-mem kapatildi.** Hata bastan sona **bulut
+  konteynerinde** cikiyordu, yerelde degil; sayac ayni oturum icinde
+  artiyordu (67 → 78 → 82 → 91). Kullanici masaustu uygulamasindan
+  yaziyor ama arkadaki makine konteyner — bu karistirildi ve bir sure
+  bosuna Windows'ta cozum arandi. **Ders:** hatanin hangi makinede
+  ciktigini once kanitla (sayac hangi oturumda artiyor, `uname`/`pwd` ne
+  diyor), sonra cozum yaz.
+
+  Asil ariza: worker `npx claude-mem start` ile baslatilinca cagiran
+  kabugun **cocugu** oluyor ve cagri bitince surec grubuyla birlikte
+  olduruluyor. Log'a hicbir hata dusmuyor, sadece sessizce yok oluyor —
+  bu yuzden "HTTP 200 aldim, cozuldu" denip gecildi ve hata geri geldi.
+  Dogru baslatma:
+
+  ```
+  setsid nohup node <plugin>/scripts/bun-runner.js \
+      <plugin>/scripts/worker-service.cjs start >/tmp/cmem.out 2>&1 </dev/null &
+  ```
+
+  Dogrulamasi **ayri bir kabuk cagrisindan** yapilmali ve `ppid` 1
+  olmali; `ppid` baska bir sey ise surec hala asili demektir ve olecektir.
+
+  Buna ragmen eklenti kapatildi: kurulum ciktisi *"Worker autostart
+  skipped"* diyor, yani worker makine her yeniden baslatildiginda elle
+  ayaga kaldirilmali. Prompt bloklayan bir eklenti icin bu kabul
+  edilebilir bir bakim yuku degil.
 
   Eklenti **iki ayri yerde** aciliyor, ikisi de kapatilmali:
   - `.claude/settings.json` (proje, repoda) → `false` yapildi, push edildi.
