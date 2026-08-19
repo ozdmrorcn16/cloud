@@ -120,10 +120,40 @@ degil, **veritabanina giren degerin kendisinde** olmali; bunu
    deger bicim kuralina uyar ve carpismaz.
 3. `not null`, `unique` ve `check` kisitlarini ekle.
 
-`profiller`'in RLS politikasi **degismiyor** (Faz 2b karar #26): satir
-duzeyinde herkes yalnizca kendi profilini okur. Baskalarina ait veriye
-erisen her sey `security definer` RPC uzerinden gecer, cunku RLS satir
-duzeyindedir; `ad`'i acan bir politika `dogum_tarihi`'ni de acardi.
+`profiller`'in RLS **okuma** politikasi degismiyor (Faz 2b karar #26):
+satir duzeyinde herkes yalnizca kendi profilini okur. Baskalarina ait
+veriye erisen her sey `security definer` RPC uzerinden gecer, cunku RLS
+satir duzeyindedir; `ad`'i acan bir politika `dogum_tarihi`'ni de
+acardi.
+
+### Sutun duzeyinde yetki (30 gun kuralinin gercekten baglayici olmasi)
+
+`profiller`'de "kendi profilini guncelleyebilir" politikasi var ve RLS
+satir duzeyinde calisir. Bu haliyle kullanici `kullanici_adi_degistir`
+RPC'sine hic ugramadan, PostgREST uzerinden dogrudan
+`update profiller set kullanici_adi = '...'` cagirabilir ve 30 gun
+kuralini tamamen atlayabilir. Ayni tuzaga Faz 2a'da `mekan_ekle`'nin
+gunluk limitinde dusulmustu: **istemcinin cagirmayi secebilecegi bir
+kural, kural degildir.**
+
+Cozum sutun duzeyinde yetki:
+
+```sql
+revoke update on public.profiller from authenticated;
+grant update (ad, dogum_tarihi, biyografi, fotograflar,
+              varsayilan_gizli, aramada_gorunsun)
+  on public.profiller to authenticated;
+```
+
+Boylece `kullanici_adi` ve `kullanici_adi_degistirildi` sutunlarini
+yalnizca tablonun sahibi olarak calisan `security definer` RPC
+degistirebilir. Ilk kullanici adi ise `insert` yoluyla giriyor; insert
+yetkisi bolunmuyor cunku profil olusturma zaten tek seferlik ve
+`kullanici_adi_degistirildi` o anda `null` kaliyor.
+
+`dogum_tarihi` bilerek guncellenebilir birakildi — bugunku davranis bu
+ve degistirmek bu fazin isi degil. Yas kapisini saglamlastirmak icin
+onu da kilitlemek ayri bir is olarak devrediyor.
 
 ## RPC'ler
 
@@ -230,6 +260,11 @@ yasadik):
 9. Arama, engelleyen ve engellenen kullaniciyi iki yonde de gizler.
 10. Arama, kullanicinin kendisini sonuclara koymaz.
 11. `kullanici_adi_musait_mi` kimliksiz cagrida hata verir.
+12. **Dogrudan `update profiller set kullanici_adi = ...` reddedilir**
+    — sutun duzeyindeki yetki kisitinin gercekten yerinde oldugunu
+    kanitlar. Bu olmadan 30 gun kurali suslemeden ibaret kalir.
+13. Dogrudan `update profiller set aramada_gorunsun = ...` calisir —
+    yetki kisitinin fazla genis olmadiginin karsi kontrolu.
 
 ## Sonraki adim
 
