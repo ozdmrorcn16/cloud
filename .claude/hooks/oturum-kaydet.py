@@ -25,6 +25,52 @@ from pathlib import Path
 INDEX_BASLANGIC = "<!-- oturumlar:baslangic -->"
 INDEX_BITIS = "<!-- oturumlar:bitis -->"
 
+GIZLI = "[SIR-GIZLENDI]"
+
+# Konusma sirasinda yapistirilmis olabilecek API anahtari bicimleri.
+# Kayit dosyalari depoya commit'lendigi icin bunlar yazilmadan once temizlenir.
+SIR_KALIPLARI = [
+    re.compile(r"sk-ant-[A-Za-z0-9_\-]{16,}"),          # Anthropic
+    re.compile(r"sk-[A-Za-z0-9]{32,}"),                  # OpenAI vb.
+    re.compile(r"sk_[a-f0-9]{40,}"),                     # ElevenLabs
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),           # GitHub token
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),         # GitHub ince token
+    re.compile(r"AIza[A-Za-z0-9_\-]{30,}"),             # Google API
+    re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
+    re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
+    re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
+    # Pexels gibi duz anahtarlar: buyuk+kucuk harf ve rakam iceren uzun dizi.
+    re.compile(
+        r"\b(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*[0-9])"
+        r"[A-Za-z0-9]{40,80}\b"
+    ),
+]
+
+
+def env_sirlari(kok: Path) -> list[str]:
+    """.env dosyasindaki degerler: kayitlarda bunlar da gizlenir."""
+    dosya = kok / ".env"
+    if not dosya.exists():
+        return []
+    degerler = []
+    for satir in dosya.read_text(encoding="utf-8", errors="replace").splitlines():
+        satir = satir.strip()
+        if not satir or satir.startswith("#") or "=" not in satir:
+            continue
+        deger = satir.partition("=")[2].strip().strip('"').strip("'")
+        if len(deger) >= 8:
+            degerler.append(deger)
+    return sorted(degerler, key=len, reverse=True)
+
+
+def gizle(metin: str, ek_sirlar: list[str] | None = None) -> str:
+    """Kayda yazilmadan once bilinen sir bicimlerini maskeler."""
+    for sir in ek_sirlar or []:
+        metin = metin.replace(sir, GIZLI)
+    for kalip in SIR_KALIPLARI:
+        metin = kalip.sub(GIZLI, metin)
+    return metin
+
 
 def repo_koku() -> Path:
     """Depo kokunu bul: once CLAUDE_PROJECT_DIR, sonra script konumu."""
@@ -32,49 +78,6 @@ def repo_koku() -> Path:
     if ortam and (Path(ortam) / ".git").exists():
         return Path(ortam)
     return Path(__file__).resolve().parents[2]
-
-
-# Konusma dokumu repoya push edildigi icin, konusmada gecen anahtar
-# gorunumlu diziler yazilmadan once maskelenir. Aksi halde GitHub'in push
-# korumasi butun push'u reddediyor (ve hakli olarak).
-GIZLI_DESENLER = re.compile(
-    r"""(
-        sk-ant-[A-Za-z0-9_-]{16,}          # Anthropic
-      | sk_live_[A-Za-z0-9]{16,}           # Stripe canli
-      | sk_test_[A-Za-z0-9]{16,}           # Stripe test
-      | rk_live_[A-Za-z0-9]{16,}           # Stripe kisitli
-      | AKIA[0-9A-Z]{16}                   # AWS erisim anahtari
-      | ASIA[0-9A-Z]{16}                   # AWS gecici anahtar
-      | gh[pousr]_[A-Za-z0-9]{20,}         # GitHub token
-      | github_pat_[A-Za-z0-9_]{20,}       # GitHub ince taneli PAT
-      | glpat-[A-Za-z0-9_-]{16,}           # GitLab
-      | xox[abprs]-[A-Za-z0-9-]{10,}       # Slack
-      | AIza[0-9A-Za-z_-]{35}              # Google API
-      | -----BEGIN[ A-Z]*PRIVATE\ KEY----- # Ozel anahtar blogu
-    )""",
-    re.VERBOSE,
-)
-
-
-def gizlileri_maskele(metin: str) -> str:
-    """Anahtar gorunumlu dizileri maskeler; kalanini oldugu gibi birakir."""
-    return GIZLI_DESENLER.sub("<REDACTED>", metin)
-
-
-# Anthropic'in ic kimlikleri (toolu_/msg_/req_ + 24 karakter) sir degil, ama
-# GitHub'in Stripe deseni onlari anahtar sanip butun push'u reddediyor. Kayit
-# icin bir degerleri de yok, o yuzden yazmadan once kisaltiliyorlar.
-KIMLIK_DESENLERI = re.compile(r"\b(msg_bdrk|toolu|msg|req)_[A-Za-z0-9]{20,}\b")
-
-
-def kimlikleri_kisalt(metin: str) -> str:
-    """Arac/mesaj kimliklerini onekini koruyarak sadelestirir."""
-    return KIMLIK_DESENLERI.sub(lambda m: f"{m.group(1)}_<ID>", metin)
-
-
-def temizle(metin: str) -> str:
-    """Repoya yazilacak her metnin gectigi tek kapi."""
-    return kimlikleri_kisalt(gizlileri_maskele(metin))
 
 
 def metin_bloklari(icerik) -> str:
@@ -168,9 +171,7 @@ def ozet_uret(turler) -> str:
     """Indekste gorunecek kisa etiket: ilk kullanici mesajinin bas kismi."""
     for rol, _, metin in turler:
         if rol == "user":
-            # Kirpmadan once maskele: 80 karakterde kesilen bir anahtar artik
-            # desene uymaz ve yarisi indekste kalirdi.
-            tek_satir = re.sub(r"\s+", " ", temizle(metin)).strip()
+            tek_satir = re.sub(r"\s+", " ", metin).strip()
             return tek_satir[:80] + ("…" if len(tek_satir) > 80 else "")
     return "(bos oturum)"
 
@@ -227,15 +228,18 @@ def main() -> int:
     oturumlar.mkdir(parents=True, exist_ok=True)
     ham.mkdir(parents=True, exist_ok=True)
 
-    # Iki dosya da repoya push edildigi icin yazmadan once temizlenir.
+    sirlar = env_sirlari(kok)
     (oturumlar / dosya_adi).write_text(
-        temizle(markdown_uret(turler, oturum_id, tarih)), encoding="utf-8"
+        gizle(markdown_uret(turler, oturum_id, tarih), sirlar), encoding="utf-8"
     )
     (ham / f"{tarih}-{oturum_id[:8]}.jsonl").write_text(
-        temizle(Path(transcript).read_text(encoding="utf-8", errors="replace")),
+        gizle(Path(transcript).read_text(encoding="utf-8", errors="replace"), sirlar),
         encoding="utf-8",
     )
-    indeksi_guncelle(kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih, ozet_uret(turler))
+    indeksi_guncelle(
+        kok / "docs" / "konusma-gunlugu.md", dosya_adi, tarih,
+        gizle(ozet_uret(turler), sirlar),
+    )
 
     if "--push" in sys.argv:
         gonder(kok, oturum_id)
