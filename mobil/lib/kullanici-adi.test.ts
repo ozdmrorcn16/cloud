@@ -27,6 +27,14 @@ describe('kullaniciAdiGecerliMi', () => {
     expect(kullaniciAdiGecerliMi('a'.repeat(21))).toBe(false)
   })
 
+  it('tam 3 karakterlik adi kabul eder', () => {
+    expect(kullaniciAdiGecerliMi('abc')).toBe(true)
+  })
+
+  it('tam 20 karakterlik adi kabul eder', () => {
+    expect(kullaniciAdiGecerliMi('a'.repeat(20))).toBe(true)
+  })
+
   it('buyuk harfi reddeder', () => {
     expect(kullaniciAdiGecerliMi('Orcun')).toBe(false)
   })
