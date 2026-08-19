@@ -22,14 +22,14 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - Oturuma baslarken `docs/konusma-gunlugu.md` dosyasindaki son girdileri oku.
 - Kalici bir karar alindiginda (teknoloji secimi, kapsam, isim, mimari) bu
   dosyayi veya konusma gunlugunu guncelle ve commit'le.
-- **GitHub'a hicbir sey push edilmeyecek.** Kullanicinin kalici karari
-  (2026-08-14): butun calisma bu bilgisayarda kalir. Yerelde commit'le,
-  ama `git push` calistirma, PR acma, uzak depoya bir sey gonderme —
-  kullanici o an acikca istemedigi surece. Bu yuzden `SessionEnd`
-  hook'undaki `--push` bayragi kaldirildi; oturum dokumleri artik sadece
-  yerelde yaziliyor.
-- Tek kopya riski: uzak yedek olmadigi icin bu makine tek kopya. Kullanici
-  yedeklemeyi kendi yontemiyle (harici disk vb.) yapmayi tercih ediyor.
+- **Her sey GitHub'a push edilir.** Kullanicinin karari (2026-08-19):
+  2026-08-14'te konan "hicbir sey push edilmeyecek" kurali kaldirildi.
+  Commit attiktan sonra `git push` calistir; ayrica izin istemeye gerek
+  yok. Yeni dal aciyorsan `git push -u origin <dal>`.
+- Sirlar asla depoya girmez. Depo public ve artik her sey itiliyor;
+  gercek API anahtari ne teste, ne ornege, ne belgeye yazilir. (Bu daha
+  once bir kez yasandi: gercek bir Pexels anahtari teste ornek deger
+  olarak yazilip push edilmisti.)
 - Kullaniciyla Turkce konus.
 
 ## Proje durumu
@@ -237,6 +237,13 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   Onek, diger eklentilerle cakismasin diye `--prefix` ile secildi.
 
 ## Kararlar
+
+- 2026-08-19 — **Push yasagi kaldirildi.** Is hem yerelde tutulacak hem
+  GitHub'a itilecek. 2026-08-14'teki karar tek kopya riski dogurdugu icin
+  degistirildi.
+- 2026-08-19 — **YouTube otomasyonu bu depodan cikarildi.** Kendi deposuna
+  tasindi: C:\Users\orcns\projects\youtube-otomasyonu. Kullanici iki isin
+  karismamasini istedi. Ayirma `git subtree split` ile yapildi.
 
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
