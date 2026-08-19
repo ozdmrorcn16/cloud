@@ -83,16 +83,18 @@ Bulut oturumlari yalnizca hafiza, dokuman ve tasarim icin. Adim adim rehber:
 
 ### Siradaki adim
 
-Tasarim tamam ve onaylandi:
+**Once `docs/devir-teslim.md` oku** — tek sayfalik guncel durum ozeti.
+
+Kisaca: Faz 1 bitti, **Faz 2 (kesif ve guvenlik) devam ediyor**, son is
+"Task 18 / secret-moment karari + Dispatch guard'lari". Kod
+`claude/faz2b-guvenlik` dalinda ve push edilmemis; bu daldaki dosyalar
+yalnizca hafiza ve dokuman.
+
+Tasarim onayli ve degismiyor:
 `docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`
 
-Sirada **Faz 1'in uygulama plani** var: kayit, telefon dogrulama, profil
-olusturma, oturum. Yeni oturumda once bu spec'i oku, sonra `writing-plans`
-becerisiyle plani yaz. Tasarimi bastan tartismaya gerek yok — kararlar
-spec'te, gerekceleriyle birlikte.
-
 Spec'te bes acik soru var (mekan verisi kaynagi, check-in omru, paket fiyati,
-SMS saglayicisi, moderasyon). Hicbiri Faz 1'i engellemiyor.
+SMS saglayicisi, moderasyon). Hicbiri devam etmeyi engellemiyor.
 
 ### Bastan tasarima girmesi gereken kisit
 

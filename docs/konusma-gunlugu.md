@@ -42,8 +42,8 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
-- 2026-08-19 — [2026-08-19-c760a9af.md](oturumlar/2026-08-19-c760a9af.md) — bir uygulama yapiyoruz seninle
 - 2026-08-19 — [2026-08-19-f459c3ec.md](oturumlar/2026-08-19-f459c3ec.md) — bu yeni oturumdan devam edebilirmiyiz
+- 2026-08-19 — [2026-08-19-c760a9af.md](oturumlar/2026-08-19-c760a9af.md) — bir uygulama yapıyoruz seninle
 - 2026-08-12 — [2026-08-12-bb3bdf55.md](oturumlar/2026-08-12-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-11 — [2026-08-11-bb3bdf55.md](oturumlar/2026-08-11-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-10 — [2026-08-10-bb3bdf55.md](oturumlar/2026-08-10-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
