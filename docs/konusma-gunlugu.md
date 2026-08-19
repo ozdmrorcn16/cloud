@@ -30,6 +30,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-19 — [2026-08-19-58ace606.md](oturumlar/2026-08-19-58ace606.md) — yeni bir konum daha var baştan sona çalışan herşeyi senin yaptıgın bir youtube o…
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
