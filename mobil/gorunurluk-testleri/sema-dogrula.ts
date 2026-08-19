@@ -165,6 +165,15 @@ async function main() {
   esitMi('kullanici_adi' in ilk, true, 'donen satirda kullanici_adi var')
   esitMi('dogum_tarihi' in ilk, false, 'donen satirda dogum tarihi yok')
 
+  console.log('\n--- Faz 3a Task 1: takipler tablosu ---')
+  const { error: takipOkuma } = await a.from('takipler').select('takip_eden_id').limit(1)
+  esitMi(takipOkuma, null, 'takipler tablosu okunabiliyor')
+
+  const { error: takipYazma } = await a
+    .from('takipler')
+    .insert({ takip_eden_id: aId, takip_edilen_id: bId })
+  esitMi(takipYazma !== null, true, 'takipler tablosuna dogrudan yazilamiyor')
+
   sonucuBildirVeCik()
 }
 
