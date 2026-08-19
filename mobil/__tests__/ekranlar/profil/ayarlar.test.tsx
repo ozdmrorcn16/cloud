@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import AyarlarEkrani from '../../../src/app/profil/ayarlar'
 import {
-  varsayilanGizliyiGetir,
-  varsayilanGizliyiAyarla,
+  varsayilanBulunurluguGetir,
+  varsayilanBulunurluguAyarla,
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
@@ -11,8 +11,8 @@ import {
 import { kullaniciAdiniDegistir } from '../../../lib/kullanici-adi'
 
 jest.mock('../../../lib/ayarlar', () => ({
-  varsayilanGizliyiGetir: jest.fn(),
-  varsayilanGizliyiAyarla: jest.fn(),
+  varsayilanBulunurluguGetir: jest.fn(),
+  varsayilanBulunurluguAyarla: jest.fn(),
   aniGorunurlugunuAyarla: jest.fn(),
   aramadaGorunsunGetir: jest.fn(),
   aramadaGorunsunAyarla: jest.fn(),
@@ -26,8 +26,8 @@ jest.mock('../../../lib/kullanici-adi', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks()
-  ;(varsayilanGizliyiGetir as jest.Mock).mockResolvedValue(false)
-  ;(varsayilanGizliyiAyarla as jest.Mock).mockResolvedValue(undefined)
+  ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
+  ;(varsayilanBulunurluguAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(aniGorunurlugunuAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(aramadaGorunsunGetir as jest.Mock).mockResolvedValue(true)
   ;(aramadaGorunsunAyarla as jest.Mock).mockResolvedValue(undefined)
@@ -38,18 +38,26 @@ beforeEach(() => {
 })
 
 describe('AyarlarEkrani', () => {
-  it('varsayilan gizlilik anahtarini acinca kaydeder', async () => {
+  it('varsayilan bulunurlugu degistirir', async () => {
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
-    await fireEvent(screen.getByLabelText('Varsayilan gizli check-in'), 'valueChange', true)
-    await waitFor(() => {
-      expect(varsayilanGizliyiAyarla).toHaveBeenCalledWith(true)
-    })
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
+    await fireEvent.press(screen.getByText('Sadece takipcilerim'))
+    await waitFor(() =>
+      expect(varsayilanBulunurluguAyarla).toHaveBeenCalledWith('takipcilerim')
+    )
+  })
+
+  it('anilari sadece takipcilere acar', async () => {
+    await render(<AyarlarEkrani />)
+    await fireEvent.press(screen.getByText('Sadece takipcilerim gorsun'))
+    await waitFor(() =>
+      expect(aniGorunurlugunuAyarla).toHaveBeenCalledWith('takipcilerim')
+    )
   })
 
   it('anilari kimseye kapatinca kaydeder', async () => {
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
     await fireEvent.press(screen.getByText('Kimse gormesin'))
     await waitFor(() => {
       expect(aniGorunurlugunuAyarla).toHaveBeenCalledWith('kimse')
@@ -57,31 +65,30 @@ describe('AyarlarEkrani', () => {
   })
 
   it('yukleme hatasi mesaj gosterir', async () => {
-    ;(varsayilanGizliyiGetir as jest.Mock).mockRejectedValue(new Error('Oturum bulunamadi'))
+    ;(varsayilanBulunurluguGetir as jest.Mock).mockRejectedValue(new Error('Oturum bulunamadi'))
     await render(<AyarlarEkrani />)
     await waitFor(() => {
       expect(screen.getByText('Oturum bulunamadi')).toBeTruthy()
     })
   })
 
-  it('kaydetme basarisiz olursa anahtari eski degerine geri alir', async () => {
-    ;(varsayilanGizliyiAyarla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+  it('kaydetme basarisiz olursa hata gosterir', async () => {
+    ;(varsayilanBulunurluguAyarla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent(screen.getByLabelText('Varsayilan gizli check-in'), 'valueChange', true)
+    await fireEvent.press(screen.getByText('Sadece takipcilerim'))
 
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
     })
-    expect(screen.getByLabelText('Varsayilan gizli check-in').props.value).toBe(false)
   })
 
   it('kullanici adini degistirir', async () => {
     ;(kullaniciAdiniDegistir as jest.Mock).mockResolvedValue(undefined)
 
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
     await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanici adi'), 'yeniad')
     await fireEvent.press(screen.getByText('Kullanici adini degistir'))
 
@@ -95,7 +102,7 @@ describe('AyarlarEkrani', () => {
     )
 
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
     await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanici adi'), 'yeniad')
     await fireEvent.press(screen.getByText('Kullanici adini degistir'))
 
@@ -104,7 +111,7 @@ describe('AyarlarEkrani', () => {
 
   it('aramada gorunurlugu kapatir', async () => {
     await render(<AyarlarEkrani />)
-    await waitFor(() => expect(varsayilanGizliyiGetir).toHaveBeenCalled())
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
     await fireEvent(screen.getByLabelText('Aramada gorunurluk'), 'valueChange', false)
 
     await waitFor(() => expect(aramadaGorunsunAyarla).toHaveBeenCalledWith(false))

@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react'
 import { View, Text, Switch, Pressable, TextInput, StyleSheet } from 'react-native'
 import {
-  varsayilanGizliyiGetir,
-  varsayilanGizliyiAyarla,
+  varsayilanBulunurluguGetir,
+  varsayilanBulunurluguAyarla,
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
+import type { Bulunurluk } from '../../../lib/checkin'
 import {
   KULLANICI_ADI_KURALI,
   kullaniciAdiGecerliMi,
   kullaniciAdiniNormallestir,
   kullaniciAdiniDegistir,
 } from '../../../lib/kullanici-adi'
+
+const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
+  { deger: 'herkese_acik', etiket: 'Herkese acik' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim' },
+  { deger: 'gizli', etiket: 'Gizli' },
+]
 
 function tarihiBicimlendir(tarih: Date): string {
   const gun = String(tarih.getDate()).padStart(2, '0')
@@ -23,7 +30,7 @@ function tarihiBicimlendir(tarih: Date): string {
 }
 
 export default function AyarlarEkrani() {
-  const [varsayilanGizli, setVarsayilanGizli] = useState(false)
+  const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk>('herkese_acik')
   const [hata, setHata] = useState<string | null>(null)
   const [yeniKullaniciAdi, setYeniKullaniciAdi] = useState('')
   const [kullaniciAdiSonucu, setKullaniciAdiSonucu] = useState<string | null>(null)
@@ -35,7 +42,7 @@ export default function AyarlarEkrani() {
 
   async function ayarlariYukle() {
     try {
-      setVarsayilanGizli(await varsayilanGizliyiGetir())
+      setVarsayilanBulunurluk(await varsayilanBulunurluguGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
       setKullaniciAdiDurumu(await kullaniciAdiDurumunuGetir())
       setHata(null)
@@ -75,19 +82,19 @@ export default function AyarlarEkrani() {
     ayarlariYukle()
   }, [])
 
-  async function varsayilanGizliDegisti(deger: boolean) {
-    const oncekiDeger = varsayilanGizli
-    setVarsayilanGizli(deger)
+  async function varsayilanDegisti(deger: Bulunurluk) {
+    const onceki = varsayilanBulunurluk
+    setVarsayilanBulunurluk(deger)
     try {
-      await varsayilanGizliyiAyarla(deger)
+      await varsayilanBulunurluguAyarla(deger)
       setHata(null)
     } catch (e) {
-      setVarsayilanGizli(oncekiDeger)
+      setVarsayilanBulunurluk(onceki)
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
     }
   }
 
-  async function aniGorunurluguDegistir(deger: 'herkese_acik' | 'kimse') {
+  async function aniGorunurluguDegistir(deger: 'herkese_acik' | 'takipcilerim' | 'kimse') {
     try {
       await aniGorunurlugunuAyarla(deger)
       setHata(null)
@@ -128,13 +135,20 @@ export default function AyarlarEkrani() {
         <Text style={stiller.ipucu}>{KULLANICI_ADI_KURALI}</Text>
       )}
 
-      <View style={stiller.satir}>
-        <Text style={stiller.etiket}>Yeni check-in'ler varsayilan gizli olsun</Text>
-        <Switch
-          accessibilityLabel="Varsayilan gizli check-in"
-          value={varsayilanGizli}
-          onValueChange={varsayilanGizliDegisti}
-        />
+      <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayilan olarak</Text>
+      <View style={stiller.butonSatiri}>
+        {VARSAYILAN_SECENEKLERI.map((secenek) => (
+          <Pressable
+            key={secenek.deger}
+            style={[
+              stiller.buton,
+              varsayilanBulunurluk === secenek.deger && stiller.butonSecili,
+            ]}
+            onPress={() => varsayilanDegisti(secenek.deger)}
+          >
+            <Text style={stiller.butonMetni}>{secenek.etiket}</Text>
+          </Pressable>
+        ))}
       </View>
 
       <View style={stiller.satir}>
@@ -153,6 +167,12 @@ export default function AyarlarEkrani() {
           onPress={() => aniGorunurluguDegistir('herkese_acik')}
         >
           <Text style={stiller.butonMetni}>Herkes gorsun</Text>
+        </Pressable>
+        <Pressable
+          style={stiller.buton}
+          onPress={() => aniGorunurluguDegistir('takipcilerim')}
+        >
+          <Text style={stiller.butonMetni}>Sadece takipcilerim gorsun</Text>
         </Pressable>
         <Pressable
           style={stiller.buton}
@@ -179,6 +199,7 @@ const stiller = StyleSheet.create({
     paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8,
     backgroundColor: '#f0f0f0',
   },
+  butonSecili: { backgroundColor: '#111' },
   butonMetni: { color: '#0645ad', fontWeight: '600' },
   hata: { color: '#c00', marginBottom: 12 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 8 },
