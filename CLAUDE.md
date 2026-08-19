@@ -35,8 +35,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/uygulama-fikri-o3tuda`
-- **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
+- **Calisma dali:** `claude/faz2b-guvenlik`
+- **Asama:** Faz 2b uygulamasi. 18 gorevden 17'si bitti; kalan tek is
+  Task 17 (ana ekrandan gizlilik ayarlarina erisim).
+
+### Yerelden devam (2026-08-19'dan sonra tek yol bu)
+
+Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
+terminalinde surer. Yeni oturumda:
+
+```bash
+cd ~/projects/cloud            # Windows'ta: cd C:\Users\orcns\projects\cloud
+git fetch origin
+git checkout claude/faz2b-guvenlik
+git pull origin claude/faz2b-guvenlik
+cd mobil && npm install        # node_modules repoda degil
+npm test                       # mock tabanli suite
+npm run test:gorunurluk        # gercek veritabani, 10 senaryo
+```
+
+Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
 ## Uygulama fikri
 
@@ -127,6 +145,34 @@ mock tabanli oldugu icin ucuncu kusur ancak canli veritabani
 sorgusuyla ortaya cikti — iki farkli hesapla ayni mekana check-in
 yapip birbirini gorup gormediklerini denemek, birlestirmeden once
 yapilmasi onerilen sey.
+
+**Faz 2b — GUVENLIK VE YOGUNLUK: 18 gorevden 17'si bitti** (2026-08-19).
+Spec: `docs/superpowers/specs/2026-08-16-faz2b-guvenlik-ve-yogunluk-design.md`,
+plan: `docs/superpowers/plans/2026-08-16-faz2b-guvenlik-ve-yogunluk.md`.
+Beyin firtinasinda alinan 19-28 numarali kararlar `docs/konusma-gunlugu.md`
+icinde. Butun is `claude/faz2b-guvenlik` dalinda, son commit `fc82f4d`.
+
+Biten: `engellemeler` ve `sikayetler` tablolari, `gizli_mi` /
+`varsayilan_gizli` / `gorunurluk` sutunlari, `check_inler` SELECT
+politikasina engelleme + ani gorunurlugu, engelleme/sikayet/
+`baskasinin_profili`/mekan yogunlugu RPC'leri, `check_in_yap`'a gizli
+check-in parametresi, gercek veritabanina karsi calisan gorunurluk
+test altyapisi (`npm run test:gorunurluk`, 10 senaryo), gorunurluk
+ayarlari ekrani, check-in ekraninda gizlilik anahtari, mekan aramada
+yogunluk sayisi ve 1-5 km yaricap, baskasinin profili ekrani, sikayet
+ekrani, gizli check-in aniya donusurken gorunurlugun de kapanmasi.
+
+**KALAN TEK GOREV — Task 17: ana ekrandan gizlilik ayarlarina erisim.**
+`mobil/src/app/index.tsx` icine `/profil/ayarlar` rotasina giden
+"Gizlilik ayarlari" butonu, testi `mobil/__tests__/ekranlar/index.test.tsx`
+icine. Ayrinti plan dosyasinin 2054-2110. satirlarinda.
+
+**Faz 2b'de hala yapilmamis elle dogrulama** (plan Task 17 Step 5, "Atlama"
+notu var): iki tarayici penceresinde iki test numarasiyla
+(`+905550000000` ve `+905550000001`, kod `123456`) ayni mekana check-in →
+birbirinizi goruyor musunuz → biri digerini engelliyor → artik gormuyor
+musunuz → yogunluk sayisi ikisinde de ayni mi. Faz 2a'da tam bu adim
+atlandigi icin canli veritabaninda hic calismayan bir ekran uretilmisti.
 
 **Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
 demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
@@ -258,3 +304,18 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   (`docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`)
   guncellendi: "Yas politikasi" bolumu, `profiller` tablosundaki `yas_bandi`
   alani ve "yakindakiler" sorgusundaki yas bandi filtresi kaldirildi.
+- 2026-08-19 — **Bulut oturumlarinin hepsi kapatildi; tek oturumla, yalnizca
+  kullanicinin kendi terminalinden devam edilecek.** Ayni anda acik duran
+  15 bulut/kopru oturumu is parcalanmasina yol aciyordu (ayni is iki ayri
+  dalda birikmisti: `claude/faz2b-guvenlik` ve
+  `claude/burden-devam-edelim-ucxayd`, ikisi de `fc82f4d`). Bundan sonra
+  tek calisma dali `claude/faz2b-guvenlik`.
+- 2026-08-19 — **`.claude/settings.json` artik yalniz Windows'a gore
+  ayarli; bulutta acilan oturumda bozuluyor.** Iki belirti: (1) `claude-mem`
+  `enabledPlugins` icinde acik ama onu kuran `SessionStart` hook'u
+  (`eklentileri-kur.sh`) settings.json'dan cikarilmis — Linux konteynerinde
+  worker (port 37700) hic baslamiyor, eklentinin `UserPromptSubmit` hook'u
+  ust uste basarisiz olup mesaji **bloke ediyor**. (2) `Stop`/`SessionEnd`
+  oturum kaydi hook'lari `C:/Users/orcns/.../python.exe` yolunu gosterdigi
+  icin bulutta hic calismiyor. Yerelde ikisi de dogru; sorun yalnizca
+  bulut oturumu acildiginda cikiyor. Cozum: bulutta oturum acma.
