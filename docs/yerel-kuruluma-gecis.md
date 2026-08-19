@@ -39,7 +39,7 @@ adim yeterli; gerisini yerel Claude halleder.
 5. **Projeyi indir.** Claude acildiktan sonra ona sunu yaz:
 
    > https://github.com/ozdmrorcn16/cloud deposunu klonla,
-   > claude/yeni-oturumdan-devam-wjff86 dalina gec, sonra
+   > claude/uygulama-gelistirme-d4g3if dalina gec, sonra
    > docs/yerel-kuruluma-gecis.md dosyasini oku ve kalan kurulum adimlarini
    > sen yap
 
@@ -95,7 +95,7 @@ de mevcut.
 ```sh
 git clone https://github.com/ozdmrorcn16/cloud.git
 cd cloud
-git checkout claude/code-review-plugin-jvgabq
+git checkout claude/uygulama-gelistirme-d4g3if
 ```
 
 Bu dalda tasarim spec'i ve butun oturum kayitlari var.
@@ -183,7 +183,7 @@ istersen lazim olur.
 
 ## 8. Kaldigimiz yer
 
-**Dal:** `claude/yeni-oturumdan-devam-wjff86`. 2026-08-19'da dagilmis
+**Dal:** `claude/uygulama-gelistirme-d4g3if`. 2026-08-19'da dagilmis
 dallardaki her sey bu dalda birlestirildi; guncel durum yalnizca burada.
 
 **Karar (2026-08-19):** Bundan sonrasi bulutta degil, kullanicinin kendi

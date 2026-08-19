@@ -29,10 +29,27 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/yeni-oturumdan-devam-wjff86`. Onceki dallar
-  (`claude/uygulama-fikri-o3tuda`, `claude/code-review-plugin-jvgabq`, ...)
-  2026-08-19'da bu dala birlestirildi; guncel durum burada.
-- **Asama:** Tasarim onaylandi. Sirada Faz 1 uygulama plani var.
+- **Calisma dali:** `claude/uygulama-gelistirme-d4g3if`. Onceki dallar
+  (`claude/uygulama-fikri-o3tuda`, `claude/code-review-plugin-jvgabq`,
+  `claude/yeni-oturumdan-devam-wjff86`, ...) bu dala birlestirildi; uzaktaki
+  guncel durum burada.
+- **Asama:** Tasarim onaylandi. Faz 1 ve Faz 2 uzerinde calisildi; en son
+  **Faz 2b (guvenlik)** yarim kaldi — asagiya bak.
+
+### DIKKAT: push edilmemis yerel dal
+
+`claude/faz2b-guvenlik` dalinda gercek gelistirme var ve **bu dal GitHub'a
+push edilmemis**. Kullanicinin kendi bilgisayarindaki terminal oturumunda
+("App yapimi", 14 Agustos'ta acildi, 19 Agustos'ta son dokunuldu) duruyor.
+Son durum notu: *"Task 18 in progress: applying secret-moment decision;
+Dispatch guards identified"*.
+
+Bulut oturumundan o dal **gorulemez**. Yeni bir oturum "kod yok" diye
+raporluyorsa sebebi budur. Ilk is kullanicidan o dali push etmesini istemek:
+
+```sh
+git push -u origin claude/faz2b-guvenlik
+```
 
 ## Uygulama fikri
 

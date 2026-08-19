@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-19 — [2026-08-19-c760a9af.md](oturumlar/2026-08-19-c760a9af.md) — bir uygulama yapiyoruz seninle
 - 2026-08-19 — [2026-08-19-f459c3ec.md](oturumlar/2026-08-19-f459c3ec.md) — bu yeni oturumdan devam edebilirmiyiz
 - 2026-08-12 — [2026-08-12-bb3bdf55.md](oturumlar/2026-08-12-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
 - 2026-08-11 — [2026-08-11-bb3bdf55.md](oturumlar/2026-08-11-bb3bdf55.md) — # Code Review Plugin Automated code review for pull requests using multiple spec…
@@ -60,3 +61,10 @@ icinde `/hooks` menusunden devre disi birak.
 - **2026-08-19** — Yeni oturum acildi (dal: `claude/yeni-oturumdan-devam-wjff86`).
   Hafiza katmani ise yaradi: onceki oturumun karari, kurulumu ve durumu bu
   oturumda dosyalardan okunarak devam edildi. Fikir hala bos.
+- **2026-08-19** — Calisma dali `claude/uygulama-gelistirme-d4g3if` oldu;
+  `claude/yeni-oturumdan-devam-wjff86` bu dala tasindi. Yeni bulut oturumu eski
+  koldan (`uygulama-fikri-o3tuda`) actigi icin once "hicbir sey yok" gorunuyordu.
+- **2026-08-19** — Gercek gelistirme `claude/faz2b-guvenlik` dalinda ve **push
+  edilmemis**; kullanicinin kendi makinesindeki "App yapimi" CLI oturumunda
+  duruyor. Bulut oturumlari o dali goremez. Kural: her oturum basinda
+  `git branch -r` + `list_sessions` ile dagilmis is aranacak.
