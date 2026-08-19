@@ -40,6 +40,9 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   gorebiliyor)
 - **Asama:** Faz 2b tamamlandi (18/18 gorev). Sirada moderasyon paneli
   ya da Faz 3.
+- **Guncelleme (2026-08-19, Faz 2c kapanisi):** Calisma dali su an
+  `claude/faz2c-kimlik`. Faz 2c (kimlik ve kisi arama) tamamlandi
+  (16/16 gorev). Ayrinti asagida "Faz 2c TAMAMLANDI" bolumunde.
 
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
@@ -197,6 +200,65 @@ olmasi.
 sayfasi; kendi kucuk planini alacak) ve **Faz 3 — bag ve sohbet** ya da
 **Faz 4 — gelir**. Faz 4'un kisi listesi Faz 2b'nin guvenlik
 altyapisinin uzerine oturacak.
+
+**Faz 2c TAMAMLANDI** (2026-08-19). Spec:
+`docs/superpowers/specs/2026-08-19-faz2c-kimlik-ve-kisi-arama-design.md`.
+16 gorev, dal `claude/faz2c-kimlik`. `npx jest --runInBand` ile 32 test
+paketi / 151 test yesil, ayrica canli veritabanina karsi calisan iki ayri
+kosum tam gecti: `npm run test:sema` (sema ve sutun yetkilerini gercek
+veritabaninda dogruluyor, 22 dogrulama) ve `npm run test:gorunurluk`
+(17 senaryo — Faz 2b'nin 10 senaryosuna Faz 2c'nin 7 yeni kimlik/arama
+senaryosu eklendi).
+
+Calisan islevler: `profiller` tablosuna uc yeni sutun — `kullanici_adi`
+(zorunlu, benzersiz, bicim `^[a-z0-9._]{3,20}$`), `kullanici_adi_degistirildi`,
+`aramada_gorunsun`. Sutun duzeyinde yetki kisitlamasi var: `authenticated`
+rolu `kullanici_adi` ve `kullanici_adi_degistirildi` sutunlarini dogrudan
+guncelleyemiyor, yalnizca RPC uzerinden degistirilebiliyor — 30 gunluk
+degistirme kuralini sunucuda **baglayici** yapan sey bu (istemci
+atlayamaz). Uc yeni RPC: `kullanici_adi_musait_mi` (canli musaitlik
+kontrolu), `kullanici_adi_degistir` (30 gun kurali sunucuda zorlaniyor),
+`kisi_ara` (kullanici adi ve isimle arama; iki yonlu engelleme,
+`aramada_gorunsun` tercihi, kendini disliyor, en az 2 karakter, en fazla
+20 sonuc, `%`/`_`/`\` joker karakterleri kacisli). `baskasinin_profili`
+RPC'si kullanici adini da donecek sekilde genisletildi. Bes ekran
+degisikligi: kayitta kullanici adi secimi + canli musaitlik gosterimi,
+ayarlarda kullanici adi degistirme + "Beni aramada goster" anahtari,
+yeni `kisiler` (kisi arama) ekrani, ana ekranda kisi aramaya giris,
+baskasinin profilinde `@kullaniciadi`. Iki yeni istemci modulu:
+`lib/kullanici-adi.ts` (bicim kurallari + RPC sarmalayicilari),
+`lib/kisi-ara.ts` (arama cagrisi); `lib/profil.ts` ve `lib/ayarlar.ts`
+genisletildi.
+
+**Task 16 kapanisinda bulunan bir test hatasi (kodda degil, testte):**
+`test:sema` icindeki joker-kacis dogrulamasi ilk calistirmada basarisiz
+oldu — ama sebep `kisi_ara`'nin kacis mantigindaki bir kusur degildi.
+Test, B kullanicisinin adinin 5. karakterinin gercekte alt cizgi
+olmadigini varsayarak sabit bir konuma joker yerlestiriyordu; Task 15'in
+30-gun senaryosu B'nin adini `test_<zaman damgasi>` yapinca bu varsayim
+gerceklikten koptu ve mesru bir eslesme "hata" olarak raporlandi (ters
+bolu kacis probu ayrica calistirilip doğru sonuc verdigi icin kacis
+mantiginin saglam oldugu ayrica dogrulandi). Duzeltme: joker konumu artik
+B'nin gercek adindan turetiliyor (ilk alt-cizgi-olmayan karakterin
+konumu bulunup oraya joker konuyor), sabit bir indekse guvenmiyor.
+Degisen tek dosya `mobil/gorunurluk-testleri/sema-dogrula.ts`.
+
+Dev sunucusu 8083 portunda `--web --clear` ile ayaga kalkti, HTTP 200
+donduruyor, log'da `Web Bundled ... (973 modules)` satiri var ve
+`ERROR` satiri yok — hem bu oturumda hem koordinator tarafindan ayrica
+dogrulandi.
+
+**Faz 2c'nin elle dogrulanmayan kismi:** iki hesapla tarayicida gezinme
+hic yapilmadi (etkilesimli, insan gerektiriyor). Dogrulanmasi gereken
+senaryolar: iki test numarasiyla (`+905550000000` / `+905550000001`,
+sifre `test1234`) giris; A'nin kisi aramasinda B'yi kullanici adi ve
+isimle bulmasi; B'nin profilinde `@kullaniciadi`nin gorunmesi; B
+"Beni aramada goster"u kapatinca A'nin aramasinda B'nin kaybolmasi ve
+geri acinca yeniden gorunmesi; B'nin kullanici adini degistirmesi ve
+ikinci denemede 30 gun mesaji almasi; A, B'yi engelleyince ikisinin de
+birbirini aramada bulamamasi. Bu senaryolarin veritabani tarafi
+`npm run test:gorunurluk` icindeki 7 yeni senaryoda zaten kapsaniyor;
+acikta kalan yalnizca arayuz kablolamasinin elle dogrulanmasi.
 
 ### Bastan tasarima girmesi gereken kisit
 

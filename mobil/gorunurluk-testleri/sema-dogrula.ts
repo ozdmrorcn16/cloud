@@ -105,13 +105,20 @@ async function main() {
   // BOS olmali, kacis bozuksa B geri doner.
   const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
   const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
-  const jokerDeseni = bAdi.slice(0, 4) + '_'   // 5. karakter gercekte alt cizgi degil
+
+  // Deseni, gercek karakteri alt cizgi OLMAYAN bir konuma alt cizgi
+  // koyarak uretiyoruz. Sabit bir konum (ornegin 5. karakter) kullanmak
+  // kirilgan: kullanici adi degistiginde o konum gercekten alt cizgi
+  // olabilir ve desen mesru olarak eslesir, iddia da yanlis yere duser.
+  // (Bir kez yasandi: B'nin adi test_<zaman damgasi> olunca.)
+  const jokerKonumu = [...bAdi].findIndex((karakter, sira) => sira >= 2 && karakter !== '_')
+  const jokerDeseni = bAdi.slice(0, jokerKonumu) + '_'
 
   const { data: jokerSonuc } = await a.rpc('kisi_ara', { p_metin: jokerDeseni })
   esitMi(
     ((jokerSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
     false,
-    'alt cizgi joker gibi davranmiyor, harfi harfine eslesiyor'
+    `alt cizgi joker gibi davranmiyor (desen: ${jokerDeseni})`
   )
 
   // Ters bolu iceren arama. Kacis dogruysa desen harfi harfine
