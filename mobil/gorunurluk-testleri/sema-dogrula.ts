@@ -40,6 +40,28 @@ async function main() {
     .eq('id', aId)
   esitMi(gorunurlukHatasi, null, 'aramada_gorunsun dogrudan guncellenebiliyor')
 
+  console.log('\n--- Task 3: kullanici_adi_musait_mi ---')
+  const { data: kendiProfil } = await a
+    .from('profiller')
+    .select('kullanici_adi')
+    .eq('id', aId)
+    .single()
+  const kendiAd = (kendiProfil as { kullanici_adi: string }).kullanici_adi
+
+  const { data: alinmis, error: musaitHatasi } = await a.rpc('kullanici_adi_musait_mi', {
+    p_ad: kendiAd,
+  })
+  esitMi(musaitHatasi, null, 'musait_mi cagrilabiliyor')
+  esitMi(alinmis, false, 'var olan ad musait degil')
+
+  const { data: bos } = await a.rpc('kullanici_adi_musait_mi', {
+    p_ad: 'hicbir.zaman.alinmaz',
+  })
+  esitMi(bos, true, 'alinmamis ad musait')
+
+  const { data: buyukHarfli } = await a.rpc('kullanici_adi_musait_mi', { p_ad: 'ORCUN' })
+  esitMi(buyukHarfli, false, 'bicime uymayan ad musait sayilmaz')
+
   sonucuBildirVeCik()
 }
 
