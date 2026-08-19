@@ -12,7 +12,7 @@ Kullanim rehberi: [`../../youtube-otomasyonu/README.md`](../../youtube-otomasyon
 | | |
 |---|---|
 | **Asama** | Calisir durumda; uctan uca video uretiyor |
-| **Dal** | `claude/youtube-automation-setup-m1blri` |
+| **Dal** | `main` (klasor: `youtube-otomasyonu/`) |
 | **Bekleyen** | YouTube OAuth yetkilendirmesi (kullanicinin bir kerelik yapmasi gerekiyor) |
 | **Test** | 49 test geciyor (`pytest -q`), gercek mp4 ureten tumlesim testi dahil |
 
@@ -63,6 +63,9 @@ kapak uret -> YouTube'a yukle. Tek komut: `python -m otomasyon tam-akis`.
   `konfig/kanal.yaml` icinden `public` yapilacak.
 - **2026-08-19** — Kuru (deneme) kosular konu havuzunu tuketmiyor; gecmise
   `kuru: true` olarak yaziliyor.
+- **2026-08-19** — Proje `youtube-otomasyonu/` klasorune tasindi ve depo tek
+  ana dala (`main`) gecti; uygulama projesiyle ayni dalda ama ayri klasorde
+  durarak karismiyorlar.
 
 ## Acik isler
 

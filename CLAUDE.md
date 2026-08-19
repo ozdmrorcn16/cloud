@@ -52,7 +52,9 @@ yazmadan once API anahtari bicimlerini ve `.env` degerlerini maskeler.
 ## Depo
 
 - **Depo:** `ozdmrorcn16/cloud` (public)
-- **Dallar:** her proje kendi dalinda calisir; bkz. proje kayit dosyalari.
+- **Ana dal:** `main` — iki proje de burada. Yeni oturumlar bu dali klonlar.
+- Gelistirme dallari `main`'den cikar ve `main`'e doner. Projeleri ayri
+  dallarda tutma: yeni oturum yalnizca birini gorur (2026-08-19'da bu yasandi).
 
 ## Eklentiler
 
