@@ -1,14 +1,6 @@
 # Sirlar (hangi proje klasorunde olursa olsun)
 .env
-**/konfig/token.json
 *.client_secret.json
-
-# Uretim ciktilari (video/ses/gorsel) depoda tutulmaz
-cikti/
-youtube-otomasyonu/varliklar/gorseller/*
-!youtube-otomasyonu/varliklar/gorseller/.gitkeep
-youtube-otomasyonu/varliklar/muzik/*
-!youtube-otomasyonu/varliklar/muzik/.gitkeep
 
 # Python
 .venv/

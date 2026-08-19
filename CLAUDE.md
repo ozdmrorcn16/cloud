@@ -8,16 +8,20 @@ indeks ve ortak kurallardir.
 
 | Proje | Klasor | Kayit | Durum |
 |---|---|---|---|
-| YouTube otomasyonu | `youtube-otomasyonu/` | [`docs/projeler/youtube-otomasyonu.md`](docs/projeler/youtube-otomasyonu.md) | Calisiyor; YouTube yetkilendirmesi bekleniyor |
 | Uygulama | `uygulama/` | [`docs/projeler/uygulama-fikri.md`](docs/projeler/uygulama-fikri.md) | Beklemede; fikrin icerigi henuz anlatilmadi |
 
 Her proje **kendi klasorunde** durur: kendi kodu, bagimliliklari, ayarlari ve
 `.env` dosyasi. Birinin dosyalarina digerinden dokunulmaz. Depo kokunde yalnizca
 ortak seyler bulunur: `CLAUDE.md`, `docs/`, `.claude/`, `.github/`.
 
-**Onemli:** Bu ikisi ayri islerdir. YouTube otomasyonu, kullanicinin anlatacagi
-uygulama fikrinin karsiligi *degildir*. Yeni bir is baslarsa ona da
-`docs/projeler/` altinda kendi dosyasi acilir ve bu tabloya eklenir.
+**YouTube otomasyonu artik bu depoda degil.** 2026-08-19'da kullanicinin
+istegiyle kendi deposuna tasindi: C:\Users\orcns\projects\youtube-otomasyonu
+(GitHub'da ayri depo). Iki isin karismamasi icin bu depoda YouTube isi
+yapilmaz. Eski kayit dosyasi `docs/projeler/youtube-otomasyonu.md` yalnizca
+gecmis kayit olarak duruyor; guncel durum yeni deponun `CLAUDE.md` dosyasinda.
+
+Yeni bir is baslarsa ona da `docs/projeler/` altinda kendi dosyasi acilir ve
+yukaridaki tabloya eklenir.
 
 ## Nasil calisiyor
 

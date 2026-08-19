@@ -1,9 +1,0 @@
-# Calisma zamani bagimliliklari.
-# Kurulum:  python -m venv .venv && .venv/bin/pip install -r requirements.txt
-edge-tts>=7.0            # ucretsiz seslendirme (anahtar gerekmez)
-httpx>=0.27              # Pexels / ElevenLabs / Higgsfield istekleri
-PyYAML>=6.0              # konfig/kanal.yaml
-Pillow>=10.0             # kapak ve yedek gorsel uretimi
-anthropic>=0.40          # Claude ile senaryo ve SEO metinleri
-google-api-python-client>=2.100   # YouTube Data API v3
-google-auth-oauthlib>=1.2         # bir kerelik OAuth yetkilendirmesi

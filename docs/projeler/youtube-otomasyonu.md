@@ -1,5 +1,10 @@
 # Proje: YouTube Otomasyonu
 
+> **TASINDI (2026-08-19).** Bu proje artik bu depoda degil; kendi deposuna
+> ayrildi: C:\Users\orcns\projects\youtube-otomasyonu. Asagisi tasima
+> anindaki durumun kaydidir, guncel degildir. Guncel durum yeni deponun
+> `CLAUDE.md` dosyasinda tutuluyor.
+
 > Bu, "uygulama fikri" projesinden **ayri** bir istir. Ikisi karistirilmamali.
 > Diger projeler: [`uygulama-fikri.md`](uygulama-fikri.md)
 
