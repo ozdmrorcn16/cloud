@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import {
   ikiKullaniciIleBaglan,
   esitMi,
@@ -327,6 +327,163 @@ async function main() {
     // Bloku geri kur.
     const { error: engelErr } = await a.rpc('engelle', { p_kullanici_id: bId })
     if (engelErr) throw new Error(`engelle hatasi: ${engelErr.message}`)
+  })
+
+  // Senaryo 10, kendi ic mantigi geregi A -> B blogunu yeniden kurarak
+  // bitiyor. Kimlik ve arama senaryolari (11-15) bu bloktan bagimsiz
+  // calismali; blogun arama uzerindeki etkisini test eden senaryo 16
+  // kendi bloguna acikca kuruyor ve kendi temizligini t.engellemeler'e
+  // ekliyor. Burada onceki bloku kaldirmazsak senaryo 14/15'teki pozitif
+  // aramalar (A, B'yi bulmali) blok yuzunden yanlislikla basarisiz olur —
+  // bu bir uygulama kusuru degil, senaryolar arasi durum sizintisi olurdu.
+  const { error: aramaOncesiKaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+  if (aramaOncesiKaldirErr) {
+    throw new Error(`senaryo 11 oncesi engeli_kaldir hatasi: ${aramaOncesiKaldirErr.message}`)
+  }
+
+  await senaryo('11 - Kullanici adi benzersizligi', async () => {
+    // Aktor bilerek A: RPC'de 30 gun kontrolu benzersizlik kontrolunden
+    // once geliyor, dolayisiyla adi degistirilmis bir hesapla denenirse
+    // beklenen "alinmis" mesaji yerine 30 gun mesaji doner ve test
+    // betigin kacinci calismasi oldugu bilgisine bagimli hale gelir.
+    // A'nin kullanici adi hicbir senaryoda degistirilmiyor.
+    const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
+    const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
+
+    const { error } = await a.rpc('kullanici_adi_degistir', { p_yeni_ad: bAdi })
+    esitMi(
+      error?.message?.includes('alinmis') ?? false,
+      true,
+      "A, B'nin kullanici adini alamaz"
+    )
+  })
+
+  await senaryo('12 - Bicim kurallari sunucuda zorunlu', async () => {
+    for (const gecersiz of ['ORCUN', 'or', 'a'.repeat(21), 'orcun ozdemir', 'orcun-x']) {
+      const { error } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: gecersiz })
+      esitMi(
+        error?.message?.includes('kurallara uymuyor') ?? false,
+        true,
+        `gecersiz ad reddedilir: ${JSON.stringify(gecersiz)}`
+      )
+    }
+
+    const { data: musait } = await b.rpc('kullanici_adi_musait_mi', { p_ad: 'ORCUN' })
+    esitMi(musait, false, 'musait_mi buyuk harfli adi musait saymaz')
+  })
+
+  await senaryo('13 - 30 gun kurali sunucuda tutar', async () => {
+    // Bkz. yukaridaki tekrarlanabilirlik notu: basarili degistirme
+    // dogrudan iddia edilemez, cunku bir kez basarili olunca hesap
+    // 30 gun kilitlenir ve betik tekrar calistirilamaz hale gelirdi.
+    const ilkAd = `test_${Math.floor(Date.now() / 1000)}`.slice(0, 20)
+    const { error: ilkHata } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: ilkAd })
+    esitMi(
+      ilkHata === null || (ilkHata.message?.includes('30 gunde bir') ?? false),
+      true,
+      'ilk cagri ya kabul edilir ya da yalnizca 30 gun kuraliyla reddedilir'
+    )
+
+    const ikinciAd = `${ilkAd}x`.slice(0, 20)
+    const { error: ikinciHata } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: ikinciAd })
+    esitMi(
+      ikinciHata?.message?.includes('30 gunde bir') ?? false,
+      true,
+      'ardisik ikinci cagri her durumda 30 gun kuraliyla reddedilir'
+    )
+  })
+
+  await senaryo('14 - Arama kullanici adi ve isimle bulur', async () => {
+    const { data: bProfil } = await b.from('profiller').select('kullanici_adi, ad').single()
+    const { kullanici_adi: bAdi, ad: bIsim } = bProfil as { kullanici_adi: string; ad: string }
+
+    const { data: adaGore } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    esitMi(
+      ((adaGore ?? []) as { id: string }[]).some((s) => s.id === bId),
+      true,
+      'kullanici adiyla bulunur'
+    )
+
+    const { data: isimeGore } = await a.rpc('kisi_ara', { p_metin: bIsim.slice(0, 3) })
+    esitMi(
+      ((isimeGore ?? []) as { id: string }[]).some((s) => s.id === bId),
+      true,
+      'isim soyisimle bulunur'
+    )
+
+    const { data: kisa } = await a.rpc('kisi_ara', { p_metin: 'b' })
+    esitMi((kisa ?? []).length, 0, 'tek karakterlik arama bos doner')
+
+    const { data: kendisi } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    esitMi(
+      ((kendisi ?? []) as { id: string }[]).some((s) => s.id === aId),
+      false,
+      'arama kullanicinin kendisini sonuclara koymaz'
+    )
+  })
+
+  await senaryo('15 - Aramada gorunme kapatilinca cikmaz', async () => {
+    const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
+    const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
+
+    await b.from('profiller').update({ aramada_gorunsun: false }).eq('id', bId)
+    const { data: kapali } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    esitMi(
+      ((kapali ?? []) as { id: string }[]).some((s) => s.id === bId),
+      false,
+      'aramada_gorunsun = false olan kullanici cikmaz'
+    )
+
+    await b.from('profiller').update({ aramada_gorunsun: true }).eq('id', bId)
+    const { data: acik } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    esitMi(
+      ((acik ?? []) as { id: string }[]).some((s) => s.id === bId),
+      true,
+      'tercih geri acilinca yeniden gorunur (pozitif kontrol)'
+    )
+  })
+
+  await senaryo('16 - Engelleme aramayi iki yonde de keser', async () => {
+    const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
+    const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
+    const { data: aProfil } = await a.from('profiller').select('kullanici_adi').single()
+    const aAdi = (aProfil as { kullanici_adi: string }).kullanici_adi
+
+    await a.rpc('engelle', { p_kullanici_id: bId })
+    t.engellemeler.push({ istemci: a, engellenenId: bId })
+
+    const { data: aninGorusu } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    esitMi(
+      ((aninGorusu ?? []) as { id: string }[]).some((s) => s.id === bId),
+      false,
+      'engelleyen, engelledigini aramada goremez'
+    )
+
+    const { data: bninGorusu } = await b.rpc('kisi_ara', { p_metin: aAdi.slice(0, 4) })
+    esitMi(
+      ((bninGorusu ?? []) as { id: string }[]).some((s) => s.id === aId),
+      false,
+      'engellenen de engelleyeni aramada goremez (cift taraflilik)'
+    )
+  })
+
+  await senaryo('17 - Kimliksiz cagrilar reddedilir', async () => {
+    // Giris yapmamis, ham anon istemci. RPC'lerde hem auth.uid() null
+    // kontrolu hem de "revoke execute from anon" var; ikisinden biri
+    // bile calissa cagri hata donmeli.
+    const anonim = createClient(
+      process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    )
+
+    const { error: musaitHatasi } = await anonim.rpc('kullanici_adi_musait_mi', {
+      p_ad: 'herhangibiri',
+    })
+    esitMi(musaitHatasi !== null, true, 'kimliksiz musait_mi cagrisi reddedilir')
+
+    const { error: aramaHatasi } = await anonim.rpc('kisi_ara', { p_metin: 'ab' })
+    esitMi(aramaHatasi !== null, true, 'kimliksiz kisi_ara cagrisi reddedilir')
   })
 
   await temizle(t)
