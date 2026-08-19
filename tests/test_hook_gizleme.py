@@ -24,7 +24,7 @@ def hook():
 @pytest.mark.parametrize(
     "gizli",
     [
-        "jXsMvxxCgHewf8uWYIgo7QDpPzFDAd9YgDZbGRyHsAs6UM1bTSc1sbFK",  # Pexels bicimi
+        "SahteAnahtar0123456789abcdefGHIJKLMNopqrstUVWX0123456789",  # Pexels bicimi (uydurma)
         "sk-ant-api03-AbCdEfGhIjKlMnOpQrStUvWx",
         "ghp_AbCdEfGhIjKlMnOpQrStUvWxYz012345",
         "github_pat_11ABCDEFG0aBcDeFgHiJkL",
