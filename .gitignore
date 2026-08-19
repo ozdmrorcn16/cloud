@@ -1,0 +1,17 @@
+# Sirlar
+.env
+konfig/token.json
+*.client_secret.json
+
+# Uretim ciktilari (video/ses/gorsel) depoda tutulmaz
+cikti/
+varliklar/gorseller/*
+!varliklar/gorseller/.gitkeep
+varliklar/muzik/*
+!varliklar/muzik/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/

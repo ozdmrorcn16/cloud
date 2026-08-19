@@ -1,0 +1,49 @@
+# Kanal yapilandirmasi. Buradaki her anahtar koddaki varsayilani ezer
+# (bkz. otomasyon/ayarlar.py -> VARSAYILAN). API anahtarlari BURAYA YAZILMAZ;
+# onlar .env dosyasindan ya da ortam degiskenlerinden okunur.
+
+kanal:
+  ad: "Otomatik Kanal"
+  dil: tr
+  nis: "gunluk hayatta ise yarayan bilim ve teknoloji bilgileri"
+  hedef_kitle: "Turkce konusan, merakli, 18-35 yas arasi izleyici"
+  ton: "samimi, net, abartisiz; kisa cumleler"
+
+video:
+  bicim: shorts        # shorts (1080x1920) | yatay (1920x1080)
+  sahne_sayisi: 5
+  hedef_sure: 45       # saniye
+  kare_hizi: 30
+  yakinlastirma: true  # Ken Burns efekti
+
+ses:
+  # Sirayla denenir; hazir olmayan (anahtari yok / agi kapali) saglayici atlanir.
+  saglayici_sirasi: [elevenlabs, edge, espeak, sessiz]
+  edge_ses: tr-TR-AhmetNeural   # alternatif: tr-TR-EmelNeural
+  edge_hiz: "+8%"
+  elevenlabs_ses_id: ""         # ElevenLabs kullanacaksan doldur
+  muzik_yolu: ""                # ornek: varliklar/muzik/arka-plan.mp3
+  muzik_seviyesi: 0.10
+
+gorsel:
+  saglayici_sirasi: [pexels, klasor, yerel]
+  klasor: varliklar/gorseller   # elle (veya Higgsfield ile) hazirlanan gorseller
+  pexels_tur: video             # video | foto
+
+altyazi:
+  etkin: true
+  kelime_sayisi: 4
+
+metin:
+  saglayici_sirasi: [claude, sablon]
+  claude_model: claude-sonnet-5
+
+yukleme:
+  saglayici: youtube    # youtube | kuru (kuru = yuklemeden yalnizca dosya uret)
+  gizlilik: private     # once private ile dene, isleyisten emin olunca public
+  kategori_id: "27"     # 27 Egitim, 28 Bilim & Teknoloji, 24 Eglence
+  oynatma_listesi_id: ""
+
+cikti:
+  dizin: cikti
+  sakla: 20
