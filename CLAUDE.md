@@ -29,7 +29,8 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/uygulama-fikri-o3tuda`
+- **Calisma dali:** `claude/yeni-oturumdan-devam-wjff86` (once
+  `claude/uygulama-fikri-o3tuda` idi; iki dal ayni commit'ten devam ediyor)
 - **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
 
 ## Uygulama fikri
@@ -48,6 +49,9 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
   kullanilacak.
+- 2026-08-19 — Yeni oturum `claude/yeni-oturumdan-devam-wjff86` dalinda acildi;
+  hafiza katmani (CLAUDE.md + konusma gunlugu + oturum dokumleri) sorunsuz
+  yuklendi, sureklilik dogrulandi. Calisma dali bu dal olarak guncellendi.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.

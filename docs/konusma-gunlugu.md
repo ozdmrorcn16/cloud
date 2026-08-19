@@ -40,3 +40,6 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-08-19** — Yeni oturum acildi (dal: `claude/yeni-oturumdan-devam-wjff86`).
+  Hafiza katmani ise yaradi: onceki oturumun karari, kurulumu ve durumu bu
+  oturumda dosyalardan okunarak devam edildi. Fikir hala bos.
