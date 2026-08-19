@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { Linking } from 'react-native'
-import AnilarEkrani from './anilar'
+import AnilarEkrani from '../../../src/app/profil/anilar'
 import { kullanicininAnilariniGetir, aniyiSil } from '../../../lib/checkin'
 import { supabase } from '../../../lib/supabase'
 

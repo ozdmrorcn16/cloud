@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import SikayetEkrani from './sikayet'
+import SikayetEkrani from '../../src/app/sikayet'
 import { sikayetGonder } from '../../lib/sikayet'
 
 jest.mock('../../lib/sikayet', () => ({

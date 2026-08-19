@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import MekanAramaEkrani from './index'
+import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
 

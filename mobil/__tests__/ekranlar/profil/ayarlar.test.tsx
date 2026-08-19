@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import AyarlarEkrani from './ayarlar'
+import AyarlarEkrani from '../../../src/app/profil/ayarlar'
 import {
   varsayilanGizliyiGetir,
   varsayilanGizliyiAyarla,

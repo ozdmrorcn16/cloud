@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import KullaniciProfiliEkrani from './[id]'
+import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir } from '../../../lib/checkin'

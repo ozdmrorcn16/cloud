@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import MekanDetayEkrani from './[id]'
+import MekanDetayEkrani from '../../../src/app/mekanlar/[id]'
 import { suAnBurdakileriGetir, mekanAnilariniGetir, checkIndenAyril } from '../../../lib/checkin'
 import { supabase } from '../../../lib/supabase'
 
