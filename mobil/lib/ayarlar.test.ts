@@ -1,6 +1,6 @@
 import {
-  varsayilanGizliyiGetir,
-  varsayilanGizliyiAyarla,
+  varsayilanBulunurluguGetir,
+  varsayilanBulunurluguAyarla,
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
@@ -19,27 +19,27 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-describe('varsayilanGizliyiGetir', () => {
-  it('profilden varsayilan_gizli degerini okur', async () => {
-    const maybeSingle = jest.fn().mockResolvedValue({ data: { varsayilan_gizli: true }, error: null })
+describe('varsayilanBulunurluguGetir', () => {
+  it('profilden varsayilan_bulunurluk degerini okur', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({ data: { varsayilan_bulunurluk: 'gizli' }, error: null })
     const eq = jest.fn().mockReturnValue({ maybeSingle })
     const select = jest.fn().mockReturnValue({ eq })
     ;(supabase.from as jest.Mock).mockReturnValue({ select })
 
-    expect(await varsayilanGizliyiGetir()).toBe(true)
+    expect(await varsayilanBulunurluguGetir()).toBe('gizli')
     expect(supabase.from).toHaveBeenCalledWith('profiller')
   })
 })
 
-describe('varsayilanGizliyiAyarla', () => {
+describe('varsayilanBulunurluguAyarla', () => {
   it('profili gunceller', async () => {
     const eq = jest.fn().mockResolvedValue({ error: null })
     const update = jest.fn().mockReturnValue({ eq })
     ;(supabase.from as jest.Mock).mockReturnValue({ update })
 
-    await varsayilanGizliyiAyarla(true)
+    await varsayilanBulunurluguAyarla('gizli')
 
-    expect(update).toHaveBeenCalledWith({ varsayilan_gizli: true })
+    expect(update).toHaveBeenCalledWith({ varsayilan_bulunurluk: 'gizli' })
     expect(eq).toHaveBeenCalledWith('id', 'kullanici-1')
   })
 })

@@ -1,6 +1,9 @@
 import { supabase } from './supabase'
 import { noktayiCoz } from './konum'
 
+export type Bulunurluk = 'herkese_acik' | 'takipcilerim' | 'gizli'
+export type AniGorunurlugu = 'herkese_acik' | 'takipcilerim' | 'kimse'
+
 export type CheckIn = {
   id: string
   mekanId: string
@@ -9,7 +12,7 @@ export type CheckIn = {
   olusturmaZamani: string
   bitisZamani: string
   canliMi: boolean
-  gizliMi: boolean
+  bulunurluk: Bulunurluk
 }
 
 type CheckInSatiri = {
@@ -20,7 +23,7 @@ type CheckInSatiri = {
   olusturma_zamani: string
   bitis_zamani: string
   konum: string | null
-  gizli_mi: boolean
+  bulunurluk: Bulunurluk
 }
 
 function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
@@ -32,24 +35,25 @@ function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
     olusturmaZamani: satir.olusturma_zamani,
     bitisZamani: satir.bitis_zamani,
     canliMi: satir.konum !== null,
-    gizliMi: satir.gizli_mi,
+    bulunurluk: satir.bulunurluk,
   }
 }
 
 export async function checkInYap(
   mekanId: string,
-  konum: { lat: number; lng: number },
-  notMetni?: string,
-  fotograf?: string,
-  gizliMi: boolean = false
+  lat: number,
+  lng: number,
+  notMetni: string | null = null,
+  fotograf: string | null = null,
+  bulunurluk: Bulunurluk = 'herkese_acik'
 ): Promise<CheckIn> {
   const { data, error } = await supabase.rpc('check_in_yap', {
     p_mekan_id: mekanId,
-    p_lat: konum.lat,
-    p_lng: konum.lng,
-    p_not_metni: notMetni ?? null,
-    p_fotograf: fotograf ?? null,
-    p_gizli_mi: gizliMi,
+    p_lat: lat,
+    p_lng: lng,
+    p_not_metni: notMetni,
+    p_fotograf: fotograf,
+    p_bulunurluk: bulunurluk,
   })
   if (error) throw new Error(error.message)
   return satiriCheckInACevir(data as CheckInSatiri)
@@ -75,7 +79,7 @@ function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
 export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, gizli_mi')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
@@ -85,7 +89,7 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
 export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, gizli_mi')
+    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .is('konum', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(error.message)
@@ -99,7 +103,7 @@ type CheckInSatiriMekanli = CheckInSatiri & { mekanlar: { ad: string; konum: str
 export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, gizli_mi, mekanlar(ad, konum)')
+    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum)')
     .eq('kullanici_id', kullaniciId)
     .is('konum', null)
     .order('olusturma_zamani', { ascending: false })

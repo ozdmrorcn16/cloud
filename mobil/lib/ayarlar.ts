@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import type { Bulunurluk, AniGorunurlugu } from './checkin'
 
 async function kendiKullaniciId(): Promise<string> {
   const { data } = await supabase.auth.getUser()
@@ -7,22 +8,22 @@ async function kendiKullaniciId(): Promise<string> {
   return id
 }
 
-export async function varsayilanGizliyiGetir(): Promise<boolean> {
+export async function varsayilanBulunurluguGetir(): Promise<Bulunurluk> {
   const id = await kendiKullaniciId()
   const { data, error } = await supabase
     .from('profiller')
-    .select('varsayilan_gizli')
+    .select('varsayilan_bulunurluk')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(error.message)
-  return data?.varsayilan_gizli ?? false
+  return (data?.varsayilan_bulunurluk ?? 'herkese_acik') as Bulunurluk
 }
 
-export async function varsayilanGizliyiAyarla(deger: boolean): Promise<void> {
+export async function varsayilanBulunurluguAyarla(deger: Bulunurluk): Promise<void> {
   const id = await kendiKullaniciId()
   const { error } = await supabase
     .from('profiller')
-    .update({ varsayilan_gizli: deger })
+    .update({ varsayilan_bulunurluk: deger })
     .eq('id', id)
   if (error) throw new Error(error.message)
 }
@@ -73,7 +74,7 @@ export async function kullaniciAdiDurumunuGetir(): Promise<{
 }
 
 export async function aniGorunurlugunuAyarla(
-  deger: 'herkese_acik' | 'kimse'
+  deger: AniGorunurlugu
 ): Promise<void> {
   const id = await kendiKullaniciId()
   const { error } = await supabase

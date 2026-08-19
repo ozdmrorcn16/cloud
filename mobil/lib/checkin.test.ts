@@ -16,12 +16,12 @@ describe('checkInYap', () => {
         olusturma_zamani: '2026-08-14T10:00:00Z',
         bitis_zamani: '2026-08-14T14:00:00Z',
         konum: 'POINT(28.979 41.015)',
-        gizli_mi: false,
+        bulunurluk: 'herkese_acik',
       },
       error: null,
     })
 
-    const sonuc = await checkInYap('mekan-1', { lat: 41.015, lng: 28.979 }, 'guzel bir yer', 'kullanici-1/123.jpg')
+    const sonuc = await checkInYap('mekan-1', 41.015, 28.979, 'guzel bir yer', 'kullanici-1/123.jpg')
 
     expect(supabase.rpc).toHaveBeenCalledWith('check_in_yap', {
       p_mekan_id: 'mekan-1',
@@ -29,7 +29,7 @@ describe('checkInYap', () => {
       p_lng: 28.979,
       p_not_metni: 'guzel bir yer',
       p_fotograf: 'kullanici-1/123.jpg',
-      p_gizli_mi: false,
+      p_bulunurluk: 'herkese_acik',
     })
     expect(sonuc).toEqual({
       id: 'checkin-1',
@@ -39,7 +39,7 @@ describe('checkInYap', () => {
       olusturmaZamani: '2026-08-14T10:00:00Z',
       bitisZamani: '2026-08-14T14:00:00Z',
       canliMi: true,
-      gizliMi: false,
+      bulunurluk: 'herkese_acik',
     })
   })
 
@@ -48,10 +48,10 @@ describe('checkInYap', () => {
       data: null,
       error: { message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' },
     })
-    await expect(checkInYap('mekan-1', { lat: 41.5, lng: 29.5 })).rejects.toThrow('Mekana cok uzaksin')
+    await expect(checkInYap('mekan-1', 41.5, 29.5)).rejects.toThrow('Mekana cok uzaksin')
   })
 
-  it('gizli check-in bayragini rpc parametresi olarak gonderir', async () => {
+  it('gizli bulunurluk degerini rpc parametresi olarak gonderir', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({
       data: {
         id: 'checkin-1',
@@ -63,12 +63,12 @@ describe('checkInYap', () => {
         olusturma_zamani: '2026-08-16T10:00:00Z',
         bitis_zamani: '2026-08-16T14:00:00Z',
         konum: 'POINT(28.979 41.015)',
-        gizli_mi: true,
+        bulunurluk: 'gizli',
       },
       error: null,
     })
 
-    const sonuc = await checkInYap('mekan-1', { lat: 41.015, lng: 28.979 }, undefined, undefined, true)
+    const sonuc = await checkInYap('mekan-1', 41.015, 28.979, undefined, undefined, 'gizli')
 
     expect(supabase.rpc).toHaveBeenCalledWith('check_in_yap', {
       p_mekan_id: 'mekan-1',
@@ -76,9 +76,18 @@ describe('checkInYap', () => {
       p_lng: 28.979,
       p_not_metni: null,
       p_fotograf: null,
-      p_gizli_mi: true,
+      p_bulunurluk: 'gizli',
     })
-    expect(sonuc.gizliMi).toBe(true)
+    expect(sonuc.bulunurluk).toBe('gizli')
+  })
+
+  it('bulunurluk degerini RPC-ye gecirir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: { id: 'ci-1' }, error: null })
+    await checkInYap('mekan-1', 39, 35, null, null, 'takipcilerim')
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'check_in_yap',
+      expect.objectContaining({ p_bulunurluk: 'takipcilerim' })
+    )
   })
 })
 
@@ -104,7 +113,7 @@ describe('suAnBurdakileriGetir', () => {
         {
           id: 'checkin-1', mekan_id: 'mekan-1', kullanici_id: 'kullanici-2', not_metni: null, fotograf: null,
           olusturma_zamani: '2026-08-14T10:00:00Z', bitis_zamani: '2026-08-14T14:00:00Z',
-          konum: 'POINT(28.979 41.015)', kullanici_adi: 'Ada', gizli_mi: false,
+          konum: 'POINT(28.979 41.015)', kullanici_adi: 'Ada', bulunurluk: 'herkese_acik',
         },
       ],
       error: null,
@@ -119,7 +128,7 @@ describe('suAnBurdakileriGetir', () => {
     expect(sonuc[0].kullaniciAdi).toBe('Ada')
     expect(sonuc[0].kullaniciId).toBe('kullanici-2')
     expect(sonuc[0].canliMi).toBe(true)
-    expect(sonuc[0].gizliMi).toBe(false)
+    expect(sonuc[0].bulunurluk).toBe('herkese_acik')
   })
 })
 
@@ -130,7 +139,7 @@ describe('mekanAnilariniGetir', () => {
         {
           id: 'checkin-2', mekan_id: 'mekan-1', kullanici_id: 'kullanici-3', not_metni: 'guzel', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, kullanici_adi: 'Berk', gizli_mi: true,
+          konum: null, kullanici_adi: 'Berk', bulunurluk: 'gizli',
         },
       ],
       error: null,
@@ -143,7 +152,7 @@ describe('mekanAnilariniGetir', () => {
 
     expect(sonuc[0].kullaniciAdi).toBe('Berk')
     expect(sonuc[0].canliMi).toBe(false)
-    expect(sonuc[0].gizliMi).toBe(true)
+    expect(sonuc[0].bulunurluk).toBe('gizli')
   })
 })
 
@@ -154,7 +163,7 @@ describe('kullanicininAnilariniGetir', () => {
         {
           id: 'checkin-3', mekan_id: 'mekan-1', not_metni: 'harika', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, gizli_mi: false, mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
+          konum: null, bulunurluk: 'herkese_acik', mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
         },
       ],
       error: null,
@@ -169,7 +178,7 @@ describe('kullanicininAnilariniGetir', () => {
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
     expect(sonuc[0].mekanKonumu).toEqual({ lat: 41.015, lng: 28.979 })
-    expect(sonuc[0].gizliMi).toBe(false)
+    expect(sonuc[0].bulunurluk).toBe('herkese_acik')
   })
 })
 
