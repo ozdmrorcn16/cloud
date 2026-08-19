@@ -286,6 +286,33 @@ eklenecek bir ozellik degil. Sonuclari:
 - Taciz, takip ve sahte hesap senaryolari icin engelleme/sikayet akisi ilk
   surumde olmali.
 
+- 2026-08-19 — **claude-mem kapatildi; oturumlar arasi hafiza tamamen
+  depodaki dosyalara birakildi.** Eklentinin `UserPromptSubmit` hook'u her
+  mesajda 37700 portundaki worker'a ulasmaya calisiyor ve ulasamayinca
+  **mesaji bloke ediyordu** ("claude-mem worker unreachable for 102
+  consecutive hooks"). Worker bu makinede hic baslamiyordu, cunku onu kuran
+  `SessionStart` hook'u ayarlardan cikarilmisti. Bu, kullaniciyi hicbir sey
+  yazamaz hale getiren bir ariza; worker'i yeniden baslatmak da kalici cozum
+  degil, cunku bir sonraki basarisizlikta ayni blokaj geri gelir.
+
+  Kapatma **proje ayarinda** (`.claude/settings.json`) yapildi ki depoyla
+  birlikte tasinsin; ayrica `.claude/settings.local.json` icinde de `false`
+  duruyor (ikinci emniyet, gitignored).
+
+  **Hicbir bilgi kaybedilmedi.** Kapatmadan once veritabaninin WAL'i ana
+  dosyaya islendi (4.2 MB veri orada bekliyordu) ve tam kopya
+  `~/.claude-mem/backups/claude-mem-2026-08-19-tam.db` olarak alindi:
+  820 gozlem, `pragma integrity_check` = ok. Bu kopya **depoya konmadi**,
+  cunku depo artik public ve veritabani ham oturum icerigi tasiyor.
+  Depodaki eski `docs/hafiza/claude-mem-yedek.db` (181 gozlem, maskelenmis)
+  oldugu yerde kaliyor.
+
+  Sureklilik zaten claude-mem'e degil su uce dayaniyordu ve dayanmaya devam
+  ediyor: `CLAUDE.md` (her oturum basinda otomatik yuklenir),
+  `docs/konusma-gunlugu.md`, ve `.claude/hooks/oturum-kaydet.py` tarafindan
+  yazilan oturum dokumleri. Ucu de dosya tabanli, bloke etmiyor ve git'te
+  duruyor.
+
 ## Eklentiler
 
 Hepsi `.claude/settings.json` icinde **proje kapsaminda** tanimli, yani yeni
@@ -299,9 +326,12 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - `security-guidance@claude-code-plugins` — her duzenlemeyi guvenlik acigi
   kaliplarina karsi tarayan hook tabanli eklenti (komut enjeksiyonu, sizmis
   anahtar, vb.). Slash komutu yok, arka planda calisir.
-- `claude-mem@thedotmack` — oturumlar arasi kalici hafiza. `~/.claude-mem`
-  altinda SQLite + chroma; 37700 portunda bir worker calisir.
-  `/claude-mem:mem-search`, `/claude-mem:learn-codebase` gibi ~20 beceri.
+- `claude-mem@thedotmack` — **KAPATILDI (2026-08-19).** Oturumlar arasi
+  hafiza eklentisiydi; `~/.claude-mem` altinda SQLite + chroma tutuyor ve
+  37700 portunda bir worker calistiriyordu. `UserPromptSubmit` hook'u
+  worker'a ulasamadiginda **mesaji bloke ettigi** icin kapatildi — asagidaki
+  karara bak. Verisi duruyor, kaybedilmedi.
+
 - `no-ai-slop` (petergyang/no-ai-slop) — market eklentisi **degil**, tek dosyalik
   beceri. Repoya dogrudan kopyalandi: `.claude/skills/no-ai-slop/`. Yaziyi 20+
   "AI slop" kalibindan temizler, sesini korur. `/no-ai-slop <metin>` duzeltir,
