@@ -65,6 +65,25 @@ async function main() {
   const { data: buyukHarfli } = await a.rpc('kullanici_adi_musait_mi', { p_ad: 'ORCUN' })
   esitMi(buyukHarfli, false, 'bicime uymayan ad musait sayilmaz')
 
+  console.log('\n--- Task 4: kullanici_adi_degistir ---')
+  const { error: bicimHatasi } = await a.rpc('kullanici_adi_degistir', {
+    p_yeni_ad: 'GECERSIZ AD',
+  })
+  esitMi(
+    bicimHatasi?.message?.includes('kurallara uymuyor') ?? false,
+    true,
+    'bicime uymayan ad reddediliyor'
+  )
+
+  const { error: ayniAdHatasi } = await a.rpc('kullanici_adi_degistir', {
+    p_yeni_ad: kendiAd,
+  })
+  esitMi(
+    ayniAdHatasi?.message?.includes('Zaten bu kullanici adini') ?? false,
+    true,
+    'ayni ad yeniden yazilinca 30 gunluk hak harcanmiyor'
+  )
+
   sonucuBildirVeCik()
 }
 
