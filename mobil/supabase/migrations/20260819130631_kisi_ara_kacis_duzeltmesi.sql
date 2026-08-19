@@ -1,3 +1,11 @@
+-- GECERSIZ: bu migrasyon hatali bir kacis yazimi iceriyor
+-- (E'\' / E'\\' — E onekli dize, niyet edilen davranisi uretmiyor).
+-- Hemen ardindaki 20260819130917_kisi_ara_override.sql bu fonksiyonu
+-- dogru kacis yazimiyla yeniden tanimlar ve bunu gecersiz kilar.
+-- Dosya silinmedi cunku uzak veritabaninda uygulanmis olarak kayitli;
+-- silmek yerel ve uzak migrasyon gecmisini birbirinden ayirirdi.
+-- Buradaki kacis yazimini ornek almayin.
+
 create or replace function public.kisi_ara(p_metin text)
 returns table (id uuid, kullanici_adi text, ad text, fotograf text)
 language plpgsql
