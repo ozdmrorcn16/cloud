@@ -61,6 +61,19 @@ npm run test:gorunurluk        # gercek veritabani, 10 senaryo
 
 Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
+### Devam eden is: Faz 3a — bag ve gorunurluk kademeleri
+
+Oturum token siniri yuzunden kesildi. **Yeni oturumda once
+`docs/faz3a-devam-notu.md` dosyasini oku** — nerede kalindigi, testlerin
+hali, bilerek acik birakilan kirik pencereler ve ortam tuzaklari orada.
+
+Kisaca: dal `claude/faz3a-bag`, 18 gorevden 8'i uygulandi, Task 8
+incelenmeyi bekliyor. Spec ve plan
+`docs/superpowers/specs/2026-08-19-faz3a-bag-design.md` ve
+`docs/superpowers/plans/2026-08-19-faz3a-bag.md`. Yurutme defteri
+`.superpowers/sdd/2026-08-19-faz3a-bag/progress.md` (git'e girmiyor ama
+diskte duruyor).
+
 ## Uygulama fikri
 
 **Konum tabanli sosyal uygulama.** Kullanicilar arkadas buluyor, arkadas
