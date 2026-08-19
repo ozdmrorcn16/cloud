@@ -35,7 +35,9 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/uygulama-fikri-o3tuda`
+- **Calisma dali:** `claude/faz2b-guvenlik` (2026-08-19'da kullanicinin
+  acik istegiyle `origin`'e push edildi; bulut oturumlari artik kodu
+  gorebiliyor)
 - **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
 
 ## Uygulama fikri
@@ -121,12 +123,36 @@ profilde anilari gorme/haritada acma/silme.
    yakalanmamisti cunku hepsi Supabase'i mock'luyor. Cozum: ad
    `check_inler`'e denormalize edildi (karar #18).
 
-**Henuz yapilmayan tek dogrulama:** uygulamayi tarayicida ucdan uca
-elle calistirmak (`cd mobil && npx expo start --web`). Butun testler
-mock tabanli oldugu icin ucuncu kusur ancak canli veritabani
-sorgusuyla ortaya cikti — iki farkli hesapla ayni mekana check-in
-yapip birbirini gorup gormediklerini denemek, birlestirmeden once
-yapilmasi onerilen sey.
+Faz 2a'nin "elle ucdan uca dogrulama" borcu Faz 2b'de kismen kapandi:
+artik canli veritabanina karsi calisan bir gorunurluk test paketi var
+(`npm run test:gorunurluk`), yani RLS kurallari mock'a degil gercek
+veritabanina soruluyor. Geriye kalan tek borc, arayuzu iki hesapla
+tarayicida elle gezmek.
+
+**Faz 2b TAMAMLANDI** (2026-08-19). Spec:
+`docs/superpowers/specs/2026-08-16-faz2b-guvenlik-ve-yogunluk-design.md`,
+plan: `docs/superpowers/plans/2026-08-16-faz2b-guvenlik-ve-yogunluk.md`.
+18 gorev, dal `claude/faz2b-guvenlik`. 28 test paketi / 115 Jest testi
+yesil, ayrica canli veritabanina karsi 10 senaryoluk gorunurluk testi
+(`npm run test:gorunurluk`) tam gecti.
+
+Calisan islevler: gizli check-in (`gizli_mi`) ve varsayilan gizlilik
+tercihi, ani gorunurlugu secimi, cift tarafli ve sessiz engelleme
+(gecmis anilari da kapsar), sikayet akisi, baskasinin profili
+(`security definer` RPC ile, dogum tarihi acilmadan), mekan yogunlugu
+sayisi (kim oldugu gorunmeden), 1-5 km yaricap ayari, ana ekrandan
+gizlilik ayarlarina erisim. Gizli bir check-in aniya donusurken
+(hem "ayrildim" hem 4 saatlik pg_cron yolunda) gorunurlugu de
+`'kimse'` yapiliyor.
+
+**Faz 2b'nin elle dogrulanmayan kismi:** Task 17 Step 5'teki iki hesapli
+tarayici gezintisi (iki test numarasiyla ayni mekana check-in →
+birbirini gorme → engelleme → gormeme → yogunluk sayisinin ikisinde de
+ayni kalmasi). Dev sunucusunun ayaga kalktigi ve web paketinin hatasiz
+derlendigi dogrulandi (1088 modul), ama etkilesimli adimlar bir insan
+gerektirdigi icin yapilmadi. Ayni senaryolarin veritabani tarafi
+gorunurluk testlerinde zaten kapsaniyor; acikta kalan yalnizca arayuz
+kablolamasi.
 
 **Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
 demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
@@ -140,6 +166,12 @@ yukleme betiginin gercek veriyle ilk kez calistirilmasi
 (`araclar/README.md`), check-in fotografi silinince Storage'da kalan
 oksuz dosya, ag hatasi mesajinin sadece bir ekranda Turkcelestirilmis
 olmasi.
+
+**Faz 2b'den sonra sirada** iki bagimsiz is var: **moderasyon paneli**
+(uygulamanin icinde degil, `sikayetler` tablosunu okuyan ayri bir web
+sayfasi; kendi kucuk planini alacak) ve **Faz 3 — bag ve sohbet** ya da
+**Faz 4 — gelir**. Faz 4'un kisi listesi Faz 2b'nin guvenlik
+altyapisinin uzerine oturacak.
 
 ### Bastan tasarima girmesi gereken kisit
 
