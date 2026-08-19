@@ -54,8 +54,11 @@ async function main() {
   esitMi(musaitHatasi, null, 'musait_mi cagrilabiliyor')
   esitMi(alinmis, false, 'var olan ad musait degil')
 
+  // Zaman damgali dinamik ad, kimsenin alamasi imkansiz.
+  // Sabit ad kullanirsan, biri gercekten onu aldiginda test kirilir.
+  const olmayanAd = `musait_${Date.now()}`.slice(0, 20)
   const { data: bos } = await a.rpc('kullanici_adi_musait_mi', {
-    p_ad: 'hicbir.zaman.alinmaz',
+    p_ad: olmayanAd,
   })
   esitMi(bos, true, 'alinmamis ad musait')
 
