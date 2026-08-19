@@ -42,6 +42,14 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-19 — [2026-08-19-cc4a8373.md](oturumlar/2026-08-19-cc4a8373.md) — uygulamamıza kaldıgımız yerden burdan devam edebilirmiyiz
+- 2026-08-19 — [2026-08-19-ab99deca.md](oturumlar/2026-08-19-ab99deca.md) — bu
+- 2026-08-19 — [2026-08-19-9b6cdd9b.md](oturumlar/2026-08-19-9b6cdd9b.md) — <local-command-stdout>Login successful</local-command-stdout>
+- 2026-08-19 — [2026-08-19-64e6494e.md](oturumlar/2026-08-19-64e6494e.md) — bu oturumdan kaldıgımız yerden devam edelim uygulamamıza
+- 2026-08-19 — [2026-08-19-639e055b.md](oturumlar/2026-08-19-639e055b.md) — bu oturumdan devam edebilirmiyiz
+- 2026-08-19 — [2026-08-19-604558c5.md](oturumlar/2026-08-19-604558c5.md) — oldumu
+- 2026-08-19 — [2026-08-19-5fa52514.md](oturumlar/2026-08-19-5fa52514.md) — git fetch origin yap, sonra claude/faz2b-guvenlik dalına geç ve git push -u orig…
+- 2026-08-17 — [2026-08-17-639e055b.md](oturumlar/2026-08-17-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-16 — [2026-08-16-639e055b.md](oturumlar/2026-08-16-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-15 — [2026-08-15-639e055b.md](oturumlar/2026-08-15-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-14 — [2026-08-14-9ff6ffed.md](oturumlar/2026-08-14-9ff6ffed.md) — kaldığımız yere geri aç
@@ -380,3 +388,29 @@ Kararlarin tam listesi ve gerekceleri:
     Supabase'i mock'lamasiydi. Bu fazda korunan sey dogrudan guvenlik
     oldugu icin kuralin gercekten uygulandigini mock'la kanitlayamayiz.
     Ayri bir kosum: `npm run test:gorunurluk`.
+
+### Faz 2c beyin firtinasi (2026-08-19)
+
+Spec: `docs/superpowers/specs/2026-08-19-faz2c-kimlik-ve-kisi-arama-design.md`.
+Gerekcelerin tamami orada; asagisi ozet.
+
+29. **Kullanici adi, `ad` alaninin yerine gecmez; ek bir kimliktir.**
+    `ad` isim soyisimi tasir, `kullanici_adi` benzersizdir. Yerine
+    gecirmek, `ad`'in `check_inler` icine kopyalanmasi (karar #18)
+    yuzunden her ad degisikliginde gecmis kayitlari toplu guncelleme
+    isi dogururdu.
+30. **Isim soyisim tek alanda (`ad`) kalir**, ayri `soyad` sutunu
+    acilmaz. Soyisim yazmak zorunlu degil.
+31. **Kullanici adi bicimi `^[a-z0-9._]{3,20}$`**, kucuk harfle
+    saklanir, benzersizlik buyuk/kucuk harf duyarsizdir. Turkce harf
+    kabul edilmiyor: gozle ayirt edilemeyen iki hesap taklit icin
+    acik kapi olurdu.
+32. **Kisi aramasi herkese aciktir ama kapatilabilir.**
+    `aramada_gorunsun` varsayilan `true`. Kapatma secenegi olmasaydi
+    takip edilmek istemeyen kullaniciya tek secenek hesabi kapatmak
+    kalirdi.
+33. **Kullanici adi 30 gunde bir degistirilebilir, birakilan ad hemen
+    serbest kalir.** Rezerve tablosu YAGNI geregi reddedildi; kural
+    tek bir tarih sutunuyla tutuluyor ve sunucuda zorlaniyor.
+34. **Mekan ekranlarinda gorunen isim degismez**; kullanici adi
+    profil ekranlarinda gosterilir. Karar #29'un dogal sonucu.
