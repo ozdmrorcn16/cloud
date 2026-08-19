@@ -242,6 +242,19 @@ async function main() {
     'olmayan istek yanitlanamiyor'
   )
 
+  console.log('\n--- Task 8: check_in_yap bulunurluk ---')
+  const { error: gecersizBulunurluk } = await a.rpc('check_in_yap', {
+    p_mekan_id: '00000000-0000-0000-0000-000000000000',
+    p_lat: 39.0,
+    p_lng: 35.0,
+    p_bulunurluk: 'sadece_annem',
+  })
+  esitMi(
+    gecersizBulunurluk?.message?.includes('Gecersiz bulunurluk') ?? false,
+    true,
+    'gecersiz bulunurluk degeri reddediliyor'
+  )
+
   sonucuBildirVeCik()
 }
 
