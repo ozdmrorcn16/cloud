@@ -192,6 +192,16 @@ async function main() {
   })
   esitMi(bagRpcHatasi !== null, true, 'bag yardimcisi istemciye RPC olarak acilmamis')
 
+  console.log('\n--- Faz 3a Task 4: check_inler.bulunurluk ---')
+  const { error: bulunurlukOkuma } = await a
+    .from('check_inler')
+    .select('id, bulunurluk, gorunurluk')
+    .limit(1)
+  esitMi(bulunurlukOkuma, null, 'bulunurluk sutunu okunabiliyor')
+
+  const { error: gizliMiHatasi } = await a.from('check_inler').select('gizli_mi').limit(1)
+  esitMi(gizliMiHatasi !== null, true, 'gizli_mi sutunu artik yok')
+
   sonucuBildirVeCik()
 }
 
