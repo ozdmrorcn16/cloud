@@ -183,6 +183,15 @@ async function main() {
     .insert({ gonderen_id: aId, alan_id: bId })
   esitMi(sohbetYazma?.code === '42501', true, 'sohbet_istekleri tablosuna dogrudan yazilamiyor')
 
+  console.log('\n--- Task 3: bag.takip_ediyor_mu ---')
+  // Fonksiyon bag semasinda oldugu icin PostgREST uzerinden RPC olarak
+  // cagrilamamali; cagrilabiliyorsa sema ayrimi ise yaramiyor demektir.
+  const { error: bagRpcHatasi } = await a.rpc('takip_ediyor_mu', {
+    p_takip_eden: aId,
+    p_takip_edilen: bId,
+  })
+  esitMi(bagRpcHatasi !== null, true, 'bag yardimcisi istemciye RPC olarak acilmamis')
+
   sonucuBildirVeCik()
 }
 
