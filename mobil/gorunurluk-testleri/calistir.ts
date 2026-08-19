@@ -397,14 +397,19 @@ async function main() {
     const { data: bProfil } = await b.from('profiller').select('kullanici_adi, ad').single()
     const { kullanici_adi: bAdi, ad: bIsim } = bProfil as { kullanici_adi: string; ad: string }
 
-    const { data: adaGore } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    // Tam deger kullaniliyor (kisaltma degil): bir onek "kull" gibi
+    // baska hesaplarla da paylasilan bir onek olabilir (varsayilan
+    // kullanici_adi bicimi "kullanici_<8 hane>"), bu yuzden kisa bir
+    // dilim "B'yi bulduk" yerine "bu onekle baslayan biri var" demis
+    // olurdu. Tam deger, ozellikle B'nin id'siyle eslesmeyi kanitlar.
+    const { data: adaGore } = await a.rpc('kisi_ara', { p_metin: bAdi })
     esitMi(
       ((adaGore ?? []) as { id: string }[]).some((s) => s.id === bId),
       true,
       'kullanici adiyla bulunur'
     )
 
-    const { data: isimeGore } = await a.rpc('kisi_ara', { p_metin: bIsim.slice(0, 3) })
+    const { data: isimeGore } = await a.rpc('kisi_ara', { p_metin: bIsim })
     esitMi(
       ((isimeGore ?? []) as { id: string }[]).some((s) => s.id === bId),
       true,
@@ -414,7 +419,7 @@ async function main() {
     const { data: kisa } = await a.rpc('kisi_ara', { p_metin: 'b' })
     esitMi((kisa ?? []).length, 0, 'tek karakterlik arama bos doner')
 
-    const { data: kendisi } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    const { data: kendisi } = await a.rpc('kisi_ara', { p_metin: bAdi })
     esitMi(
       ((kendisi ?? []) as { id: string }[]).some((s) => s.id === aId),
       false,
@@ -427,7 +432,7 @@ async function main() {
     const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
 
     await b.from('profiller').update({ aramada_gorunsun: false }).eq('id', bId)
-    const { data: kapali } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    const { data: kapali } = await a.rpc('kisi_ara', { p_metin: bAdi })
     esitMi(
       ((kapali ?? []) as { id: string }[]).some((s) => s.id === bId),
       false,
@@ -435,7 +440,7 @@ async function main() {
     )
 
     await b.from('profiller').update({ aramada_gorunsun: true }).eq('id', bId)
-    const { data: acik } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    const { data: acik } = await a.rpc('kisi_ara', { p_metin: bAdi })
     esitMi(
       ((acik ?? []) as { id: string }[]).some((s) => s.id === bId),
       true,
@@ -449,17 +454,35 @@ async function main() {
     const { data: aProfil } = await a.from('profiller').select('kullanici_adi').single()
     const aAdi = (aProfil as { kullanici_adi: string }).kullanici_adi
 
+    // Pozitif saglama: engellemeden ONCE her iki taraf da digerini
+    // aramada gercekten buluyor mu? Bu kontrol olmadan asagidaki
+    // negatif sonuc (goremez) arama zaten hicbir zaman bulamiyor
+    // olsaydi da "gecti" gorunurdu.
+    const { data: oncesiA } = await a.rpc('kisi_ara', { p_metin: bAdi })
+    esitMi(
+      ((oncesiA ?? []) as { id: string }[]).some((s) => s.id === bId),
+      true,
+      "saglama: engellemeden once A, B'yi aramada buluyor"
+    )
+
+    const { data: oncesiB } = await b.rpc('kisi_ara', { p_metin: aAdi })
+    esitMi(
+      ((oncesiB ?? []) as { id: string }[]).some((s) => s.id === aId),
+      true,
+      "saglama: engellemeden once B, A'yi aramada buluyor"
+    )
+
     await a.rpc('engelle', { p_kullanici_id: bId })
     t.engellemeler.push({ istemci: a, engellenenId: bId })
 
-    const { data: aninGorusu } = await a.rpc('kisi_ara', { p_metin: bAdi.slice(0, 4) })
+    const { data: aninGorusu } = await a.rpc('kisi_ara', { p_metin: bAdi })
     esitMi(
       ((aninGorusu ?? []) as { id: string }[]).some((s) => s.id === bId),
       false,
       'engelleyen, engelledigini aramada goremez'
     )
 
-    const { data: bninGorusu } = await b.rpc('kisi_ara', { p_metin: aAdi.slice(0, 4) })
+    const { data: bninGorusu } = await b.rpc('kisi_ara', { p_metin: aAdi })
     esitMi(
       ((bninGorusu ?? []) as { id: string }[]).some((s) => s.id === aId),
       false,
