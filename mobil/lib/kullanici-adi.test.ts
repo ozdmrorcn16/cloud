@@ -1,7 +1,17 @@
+import { supabase } from './supabase'
+
+jest.mock('./supabase', () => ({
+  supabase: { rpc: jest.fn() },
+}))
+
+const mockRpc = supabase.rpc as jest.Mock
+
 import {
   KULLANICI_ADI_KURALI,
   kullaniciAdiniNormallestir,
   kullaniciAdiGecerliMi,
+  kullaniciAdiMusaitMi,
+  kullaniciAdiniDegistir,
 } from './kullanici-adi'
 
 describe('kullaniciAdiniNormallestir', () => {
@@ -46,5 +56,46 @@ describe('kullaniciAdiGecerliMi', () => {
 
   it('kural metni kullaniciya kurali aciklar', () => {
     expect(KULLANICI_ADI_KURALI).toContain('3-20')
+  })
+})
+
+describe('kullaniciAdiMusaitMi', () => {
+  beforeEach(() => mockRpc.mockReset())
+
+  it('RPC true donerse true doner', async () => {
+    mockRpc.mockResolvedValue({ data: true, error: null })
+    await expect(kullaniciAdiMusaitMi('orcun')).resolves.toBe(true)
+    expect(mockRpc).toHaveBeenCalledWith('kullanici_adi_musait_mi', { p_ad: 'orcun' })
+  })
+
+  it('adi normallestirerek gonderir', async () => {
+    mockRpc.mockResolvedValue({ data: false, error: null })
+    await kullaniciAdiMusaitMi('  Orcun  ')
+    expect(mockRpc).toHaveBeenCalledWith('kullanici_adi_musait_mi', { p_ad: 'orcun' })
+  })
+
+  it('RPC hata dondururse hatayi firlatir', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
+    await expect(kullaniciAdiMusaitMi('orcun')).rejects.toThrow('Kimlik dogrulamasi gerekli')
+  })
+})
+
+describe('kullaniciAdiniDegistir', () => {
+  beforeEach(() => mockRpc.mockReset())
+
+  it("normallestirilmis adi RPC'ye gonderir", async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null })
+    await kullaniciAdiniDegistir(' Orcun.Ozdemir ')
+    expect(mockRpc).toHaveBeenCalledWith('kullanici_adi_degistir', {
+      p_yeni_ad: 'orcun.ozdemir',
+    })
+  })
+
+  it('sunucudan gelen 30 gun mesajini oldugu gibi firlatir', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: 'Kullanici adini 30 gunde bir degistirebilirsin. Kalan sure: 12 gun' },
+    })
+    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('Kalan sure: 12 gun')
   })
 })

@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 // Bicim veritabaninda da ayni sekilde kisitli
 // (profiller_kullanici_adi_bicim). Buradaki kopya yalnizca kullaniciya
 // sunucuya gitmeden hizli geri bildirim vermek icin var; asil zorlayici
@@ -13,4 +15,19 @@ export function kullaniciAdiniNormallestir(ham: string): string {
 
 export function kullaniciAdiGecerliMi(ad: string): boolean {
   return DESEN.test(ad)
+}
+
+export async function kullaniciAdiMusaitMi(ad: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('kullanici_adi_musait_mi', {
+    p_ad: kullaniciAdiniNormallestir(ad),
+  })
+  if (error) throw new Error(error.message)
+  return data as boolean
+}
+
+export async function kullaniciAdiniDegistir(yeniAd: string): Promise<void> {
+  const { error } = await supabase.rpc('kullanici_adi_degistir', {
+    p_yeni_ad: kullaniciAdiniNormallestir(yeniAd),
+  })
+  if (error) throw new Error(error.message)
 }
