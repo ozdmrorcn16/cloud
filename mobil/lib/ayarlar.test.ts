@@ -4,6 +4,7 @@ import {
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
+  kullaniciAdiDurumunuGetir,
 } from './ayarlar'
 import { supabase } from './supabase'
 
@@ -90,5 +91,49 @@ describe('aramadaGorunsunAyarla', () => {
 
     expect(update).toHaveBeenCalledWith({ aramada_gorunsun: false })
     expect(eq).toHaveBeenCalledWith('id', 'kullanici-1')
+  })
+})
+
+describe('kullaniciAdiDurumunuGetir', () => {
+  it('hic degistirilmemis adin gelecek degisim tarihi null doner', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({
+      data: { kullanici_adi: 'orcun', kullanici_adi_degistirildi: null },
+      error: null,
+    })
+    const eq = jest.fn().mockReturnValue({ maybeSingle })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock).mockReturnValue({ select })
+
+    const durum = await kullaniciAdiDurumunuGetir()
+
+    expect(durum.kullaniciAdi).toBe('orcun')
+    expect(durum.sonrakiDegisimTarihi).toBeNull()
+    expect(supabase.from).toHaveBeenCalledWith('profiller')
+  })
+
+  it('degistirilmis adin sonraki degisim tarihini 30 gun sonrasina hesaplar', async () => {
+    const degisimTarihi = '2026-08-01T00:00:00.000Z'
+    const maybeSingle = jest.fn().mockResolvedValue({
+      data: { kullanici_adi: 'orcun', kullanici_adi_degistirildi: degisimTarihi },
+      error: null,
+    })
+    const eq = jest.fn().mockReturnValue({ maybeSingle })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock).mockReturnValue({ select })
+
+    const durum = await kullaniciAdiDurumunuGetir()
+
+    expect(durum.sonrakiDegisimTarihi).toEqual(
+      new Date(new Date(degisimTarihi).getTime() + 30 * 24 * 60 * 60 * 1000)
+    )
+  })
+
+  it('hata donerse firlatir', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Sunucuya ulasilamadi' } })
+    const eq = jest.fn().mockReturnValue({ maybeSingle })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock).mockReturnValue({ select })
+
+    await expect(kullaniciAdiDurumunuGetir()).rejects.toThrow('Sunucuya ulasilamadi')
   })
 })

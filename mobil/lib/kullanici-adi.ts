@@ -29,5 +29,16 @@ export async function kullaniciAdiniDegistir(yeniAd: string): Promise<void> {
   const { error } = await supabase.rpc('kullanici_adi_degistir', {
     p_yeni_ad: kullaniciAdiniNormallestir(yeniAd),
   })
-  if (error) throw new Error(error.message)
+  if (error) {
+    // Sunucudaki on kontrol yarisi kaybederse ham Postgres kisit hatasi
+    // (ornegin "duplicate key value violates unique constraint ...")
+    // kullaniciya sizmasin diye kod'a gore anlasilir mesaja ceviriyoruz.
+    if (error.code === '23505') {
+      throw new Error('Bu kullanici adi alinmis, baska bir tane dene.')
+    }
+    if (error.code === '23514') {
+      throw new Error(KULLANICI_ADI_KURALI)
+    }
+    throw new Error(error.message)
+  }
 }

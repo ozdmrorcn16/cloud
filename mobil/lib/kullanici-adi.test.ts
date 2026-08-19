@@ -98,4 +98,28 @@ describe('kullaniciAdiniDegistir', () => {
     })
     await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('Kalan sure: 12 gun')
   })
+
+  it('ham kisit ihlali (23505) yerine anlasilir mesaj firlatir', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: {
+        code: '23505',
+        message: 'duplicate key value violates unique constraint "profiller_kullanici_adi_benzersiz"',
+      },
+    })
+    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow(
+      'Bu kullanici adi alinmis, baska bir tane dene.'
+    )
+  })
+
+  it('ham check kisiti ihlali (23514) yerine kural metnini firlatir', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: {
+        code: '23514',
+        message: 'new row for relation "profiller" violates check constraint "profiller_kullanici_adi_bicim"',
+      },
+    })
+    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow(KULLANICI_ADI_KURALI)
+  })
 })

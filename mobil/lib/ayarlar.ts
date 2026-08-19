@@ -47,6 +47,31 @@ export async function aramadaGorunsunAyarla(deger: boolean): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000
+
+export async function kullaniciAdiDurumunuGetir(): Promise<{
+  kullaniciAdi: string
+  sonrakiDegisimTarihi: Date | null
+}> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('kullanici_adi, kullanici_adi_degistirildi')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+
+  const satir = data as
+    | { kullanici_adi: string; kullanici_adi_degistirildi: string | null }
+    | null
+
+  const sonrakiDegisimTarihi = satir?.kullanici_adi_degistirildi
+    ? new Date(new Date(satir.kullanici_adi_degistirildi).getTime() + OTUZ_GUN_MS)
+    : null
+
+  return { kullaniciAdi: satir?.kullanici_adi ?? '', sonrakiDegisimTarihi }
+}
+
 export async function aniGorunurlugunuAyarla(
   deger: 'herkese_acik' | 'kimse'
 ): Promise<void> {

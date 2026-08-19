@@ -6,6 +6,7 @@ import {
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
+  kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import {
   KULLANICI_ADI_KURALI,
@@ -14,17 +15,29 @@ import {
   kullaniciAdiniDegistir,
 } from '../../../lib/kullanici-adi'
 
+function tarihiBicimlendir(tarih: Date): string {
+  const gun = String(tarih.getDate()).padStart(2, '0')
+  const ay = String(tarih.getMonth() + 1).padStart(2, '0')
+  const yil = tarih.getFullYear()
+  return `${gun}.${ay}.${yil}`
+}
+
 export default function AyarlarEkrani() {
   const [varsayilanGizli, setVarsayilanGizli] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yeniKullaniciAdi, setYeniKullaniciAdi] = useState('')
   const [kullaniciAdiSonucu, setKullaniciAdiSonucu] = useState<string | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
+  const [kullaniciAdiDurumu, setKullaniciAdiDurumu] = useState<{
+    kullaniciAdi: string
+    sonrakiDegisimTarihi: Date | null
+  } | null>(null)
 
   async function ayarlariYukle() {
     try {
       setVarsayilanGizli(await varsayilanGizliyiGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
+      setKullaniciAdiDurumu(await kullaniciAdiDurumunuGetir())
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
@@ -89,6 +102,16 @@ export default function AyarlarEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.altBaslik}>Hesap</Text>
+      {kullaniciAdiDurumu && (
+        <Text style={stiller.ipucu}>Kullanici adin: @{kullaniciAdiDurumu.kullaniciAdi}</Text>
+      )}
+      {kullaniciAdiDurumu?.sonrakiDegisimTarihi &&
+        kullaniciAdiDurumu.sonrakiDegisimTarihi > new Date() && (
+          <Text style={stiller.ipucu}>
+            Tekrar degistirebilecegin tarih:{' '}
+            {tarihiBicimlendir(kullaniciAdiDurumu.sonrakiDegisimTarihi)}
+          </Text>
+        )}
       <TextInput
         style={stiller.girdi}
         placeholder="Yeni kullanici adi"

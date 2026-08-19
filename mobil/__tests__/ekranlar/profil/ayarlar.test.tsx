@@ -6,6 +6,7 @@ import {
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
+  kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import { kullaniciAdiniDegistir } from '../../../lib/kullanici-adi'
 
@@ -15,6 +16,7 @@ jest.mock('../../../lib/ayarlar', () => ({
   aniGorunurlugunuAyarla: jest.fn(),
   aramadaGorunsunGetir: jest.fn(),
   aramadaGorunsunAyarla: jest.fn(),
+  kullaniciAdiDurumunuGetir: jest.fn(),
 }))
 
 jest.mock('../../../lib/kullanici-adi', () => ({
@@ -29,6 +31,10 @@ beforeEach(() => {
   ;(aniGorunurlugunuAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(aramadaGorunsunGetir as jest.Mock).mockResolvedValue(true)
   ;(aramadaGorunsunAyarla as jest.Mock).mockResolvedValue(undefined)
+  ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
+    kullaniciAdi: 'orcun',
+    sonrakiDegisimTarihi: null,
+  })
 })
 
 describe('AyarlarEkrani', () => {
@@ -102,5 +108,27 @@ describe('AyarlarEkrani', () => {
     await fireEvent(screen.getByLabelText('Aramada gorunurluk'), 'valueChange', false)
 
     await waitFor(() => expect(aramadaGorunsunAyarla).toHaveBeenCalledWith(false))
+  })
+
+  it('mevcut kullanici adini gosterir', async () => {
+    await render(<AyarlarEkrani />)
+    expect(await screen.findByText('Kullanici adin: @orcun')).toBeTruthy()
+  })
+
+  it('sonraki degisim tarihi gelecekteyse gosterir', async () => {
+    const sonrakiTarih = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+    ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
+      kullaniciAdi: 'orcun',
+      sonrakiDegisimTarihi: sonrakiTarih,
+    })
+
+    await render(<AyarlarEkrani />)
+
+    const gun = String(sonrakiTarih.getDate()).padStart(2, '0')
+    const ay = String(sonrakiTarih.getMonth() + 1).padStart(2, '0')
+    const yil = sonrakiTarih.getFullYear()
+    expect(
+      await screen.findByText(`Tekrar degistirebilecegin tarih: ${gun}.${ay}.${yil}`)
+    ).toBeTruthy()
   })
 })
