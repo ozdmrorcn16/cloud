@@ -38,7 +38,25 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - **Calisma dali:** `claude/faz2b-guvenlik` (2026-08-19'da kullanicinin
   acik istegiyle `origin`'e push edildi; bulut oturumlari artik kodu
   gorebiliyor)
-- **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
+- **Asama:** Faz 2b tamamlandi (18/18 gorev). Sirada moderasyon paneli
+  ya da Faz 3.
+
+### Yerelden devam (2026-08-19'dan sonra tek yol bu)
+
+Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
+terminalinde surer. Yeni oturumda:
+
+```bash
+cd ~/projects/cloud            # Windows'ta: cd C:\Users\orcns\projects\cloud
+git fetch origin
+git checkout claude/faz2b-guvenlik
+git pull origin claude/faz2b-guvenlik
+cd mobil && npm install        # node_modules repoda degil
+npm test                       # mock tabanli suite
+npm run test:gorunurluk        # gercek veritabani, 10 senaryo
+```
+
+Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
 ## Uygulama fikri
 
@@ -153,6 +171,13 @@ derlendigi dogrulandi (1088 modul), ama etkilesimli adimlar bir insan
 gerektirdigi icin yapilmadi. Ayni senaryolarin veritabani tarafi
 gorunurluk testlerinde zaten kapsaniyor; acikta kalan yalnizca arayuz
 kablolamasi.
+
+**Faz 2b'de hala yapilmamis elle dogrulama** (plan Task 17 Step 5, "Atlama"
+notu var): iki tarayici penceresinde iki test numarasiyla
+(`+905550000000` ve `+905550000001`, kod `123456`) ayni mekana check-in →
+birbirinizi goruyor musunuz → biri digerini engelliyor → artik gormuyor
+musunuz → yogunluk sayisi ikisinde de ayni mi. Faz 2a'da tam bu adim
+atlandigi icin canli veritabaninda hic calismayan bir ekran uretilmisti.
 
 **Faz 1'den devreden temizlik isleri** (hicbiri acil degil): kullanilmayan
 demo bagimliliklarinin (`@expo/ui`, `expo-symbols`, `expo-image` vb.) ve
@@ -290,3 +315,18 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   (`docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`)
   guncellendi: "Yas politikasi" bolumu, `profiller` tablosundaki `yas_bandi`
   alani ve "yakindakiler" sorgusundaki yas bandi filtresi kaldirildi.
+- 2026-08-19 — **Bulut oturumlarinin hepsi kapatildi; tek oturumla, yalnizca
+  kullanicinin kendi terminalinden devam edilecek.** Ayni anda acik duran
+  15 bulut/kopru oturumu is parcalanmasina yol aciyordu (ayni is iki ayri
+  dalda birikmisti: `claude/faz2b-guvenlik` ve
+  `claude/burden-devam-edelim-ucxayd`, ikisi de `fc82f4d`). Bundan sonra
+  tek calisma dali `claude/faz2b-guvenlik`.
+- 2026-08-19 — **`.claude/settings.json` artik yalniz Windows'a gore
+  ayarli; bulutta acilan oturumda bozuluyor.** Iki belirti: (1) `claude-mem`
+  `enabledPlugins` icinde acik ama onu kuran `SessionStart` hook'u
+  (`eklentileri-kur.sh`) settings.json'dan cikarilmis — Linux konteynerinde
+  worker (port 37700) hic baslamiyor, eklentinin `UserPromptSubmit` hook'u
+  ust uste basarisiz olup mesaji **bloke ediyor**. (2) `Stop`/`SessionEnd`
+  oturum kaydi hook'lari `C:/Users/orcns/.../python.exe` yolunu gosterdigi
+  icin bulutta hic calismiyor. Yerelde ikisi de dogru; sorun yalnizca
+  bulut oturumu acildiginda cikiyor. Cozum: bulutta oturum acma.
