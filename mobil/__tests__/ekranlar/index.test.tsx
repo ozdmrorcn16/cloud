@@ -41,4 +41,10 @@ describe('AnaEkran', () => {
     await fireEvent.press(screen.getByText('Gizlilik ayarlari'))
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/ayarlar')
   })
+
+  it('kisi ara butonuna basinca /kisiler rotasina yonlendirir', async () => {
+    await render(<AnaEkran />)
+    await fireEvent.press(screen.getByText('Kisi ara'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/kisiler')
+  })
 })

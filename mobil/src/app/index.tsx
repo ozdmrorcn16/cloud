@@ -18,6 +18,9 @@ export default function AnaEkran() {
       <Pressable style={stiller.buton} onPress={() => router.push('/mekanlar')}>
         <Text style={stiller.butonYazi}>Mekanlari kesfet</Text>
       </Pressable>
+      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/kisiler')}>
+        <Text style={stiller.ikincilButonYazi}>Kisi ara</Text>
+      </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/anilar')}>
         <Text style={stiller.ikincilButonYazi}>Anilarim</Text>
       </Pressable>
