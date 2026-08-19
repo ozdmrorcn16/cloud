@@ -39,9 +39,13 @@ adim yeterli; gerisini yerel Claude halleder.
 5. **Projeyi indir.** Claude acildiktan sonra ona sunu yaz:
 
    > https://github.com/ozdmrorcn16/cloud deposunu klonla,
-   > claude/code-review-plugin-jvgabq dalina gec, sonra
+   > claude/yeni-oturumdan-devam-wjff86 dalina gec, sonra
    > docs/yerel-kuruluma-gecis.md dosyasini oku ve kalan kurulum adimlarini
    > sen yap
+
+   Dal adi onemli: butun ilerleme 2026-08-19'da bu dalda toplandi. Eski
+   dallarda (`code-review-plugin-jvgabq`, `uygulama-fikri-o3tuda`) calisma
+   yapma.
 
 **Sik takilinan yer:** `npm` komutu taninmiyorsa Node.js kurulumu
 tamamlanmamis ya da PowerShell eski ortami tasiyordur. PowerShell'i kapatip
@@ -179,19 +183,25 @@ istersen lazim olur.
 
 ## 8. Kaldigimiz yer
 
-`CLAUDE.md` → "Siradaki adim" bolumu:
+**Dal:** `claude/yeni-oturumdan-devam-wjff86`. 2026-08-19'da dagilmis
+dallardaki her sey bu dalda birlestirildi; guncel durum yalnizca burada.
+
+**Karar (2026-08-19):** Bundan sonrasi bulutta degil, kullanicinin kendi
+bilgisayarindaki terminalde yapilacak. Bulut oturumu yalnizca hafiza ve
+dokuman icin kullanilacak; kod yazilmayacak.
 
 Tasarim onaylandi ve
 `docs/superpowers/specs/2026-08-11-konum-tabanli-sosyal-uygulama-design.md`
 dosyasinda. Sirada **Faz 1'in uygulama plani** var: kayit, telefon dogrulama,
 profil olusturma, oturum.
 
-Yeni oturumda soyle demen yeterli:
+Yerel terminalde Claude'u acip soyle demen yeterli:
 
 > Faz 1'in uygulama planini yazalim.
 
 Tasarimi bastan tartismaya gerek yok; kararlar spec'te, gerekceleriyle
-birlikte.
+birlikte. Plan yazildiktan sonra sirasiyla: Expo projesi kurulumu, Supabase
+projesi, veritabani semasi, kayit akisi.
 
 ## Mobil gelistirme icin ayrica gerekenler
 

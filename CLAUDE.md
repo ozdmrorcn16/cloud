@@ -58,7 +58,9 @@ ekliyor, konum belirtiyor ve sohbet ediyor.
 
 ### Yerel kuruluma gecis
 
-Gelistirme kullanicinin kendi bilgisayarina tasiniyor. Adim adim rehber:
+**Karar 2026-08-19: gelistirme bulutta yapilmayacak.** Kod, Expo projesi ve
+Supabase kurulumu kullanicinin kendi bilgisayarindaki terminalde yazilacak.
+Bulut oturumlari yalnizca hafiza, dokuman ve tasarim icin. Adim adim rehber:
 `docs/yerel-kuruluma-gecis.md`. claude-mem hafizasinin (181 gozlem) yedegi
 `docs/hafiza/claude-mem-yedek.db` icinde; maskelenmis ve sikistirilmis kopya.
 
@@ -118,6 +120,10 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
   kullanilacak.
+- 2026-08-19 — Gelistirme kullanicinin bilgisayarindaki terminale tasindi.
+  Bulut konteynerinde kod yazilmayacak; oradan yalnizca hafiza ve dokuman
+  guncellenecek. Sebep: mobil uygulama simulator, cihaz denemesi ve magaza
+  yuklemesi gerektiriyor.
 - 2026-08-19 — Calisma birden fazla dala dagilmisti; en ilerideki dal
   (`claude/code-review-plugin-jvgabq`, 12 Agustos'a kadar) yeni oturum dali
   `claude/yeni-oturumdan-devam-wjff86` icine birlestirildi. Bundan sonra tek
