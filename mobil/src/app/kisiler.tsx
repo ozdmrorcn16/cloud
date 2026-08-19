@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { View, Text, TextInput, Image, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { kisiAra, type KisiSonucu } from '../../lib/kisi-ara'
@@ -14,8 +14,15 @@ export default function KisilerEkrani() {
   const [sonuclar, setSonuclar] = useState<KisiSonucu[]>([])
   const [durum, setDurum] = useState<string | null>(null)
 
+  // Her arama istegine artan bir sira numarasi veriyoruz. Cevap dondugunde
+  // hala en son istek miyiz diye bakiyoruz; degilsek sonucu atiyoruz.
+  // Aksi halde yavas donen eski bir istek, yeni sorgunun sonuclarinin
+  // uzerine yazabilir.
+  const sonIstekRef = useRef(0)
+
   async function metinDegisti(yeni: string) {
     setMetin(yeni)
+    const istekNo = ++sonIstekRef.current
 
     if (yeni.trim().length < 2) {
       setSonuclar([])
@@ -25,9 +32,11 @@ export default function KisilerEkrani() {
 
     try {
       const bulunanlar = await kisiAra(yeni)
+      if (istekNo !== sonIstekRef.current) return
       setSonuclar(bulunanlar)
       setDurum(bulunanlar.length === 0 ? 'Kimse bulunamadi.' : null)
     } catch (e) {
+      if (istekNo !== sonIstekRef.current) return
       setSonuclar([])
       setDurum(e instanceof Error ? e.message : 'Bir sorun olustu')
     }

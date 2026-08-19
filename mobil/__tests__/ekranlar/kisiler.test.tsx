@@ -63,4 +63,35 @@ describe('KisilerEkrani', () => {
 
     await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k1'))
   })
+
+  it('gec donen eski arama, yeni aramanin sonuclarinin uzerine yazmaz', async () => {
+    let ilkiCoz: (deger: unknown) => void = () => {}
+    const ilkSoz = new Promise((coz) => { ilkiCoz = coz })
+
+    ;(kisiAra as jest.Mock)
+      .mockImplementationOnce(() => ilkSoz)
+      .mockResolvedValueOnce([
+        { id: 'k2', kullaniciAdi: 'ikinci', ad: 'Ikinci Kisi', fotograf: null },
+      ])
+
+    await render(<KisilerEkrani />)
+    const kutu = screen.getByPlaceholderText('Kullanici adi ya da isim')
+
+    // Bilerek await edilmiyor: handler henuz cozulmemis bir soze bagli
+    // kaldigi surece, `await fireEvent.changeText(...)`'in kullandigi
+    // act() sarmalayicisi o soz cozulene kadar sonsuza kadar bekliyor.
+    // Bu yuzden olaylari ates edip sonucu findByText/waitFor ile bekliyoruz.
+    fireEvent.changeText(kutu, 'ilk')
+    fireEvent.changeText(kutu, 'ikinci')
+
+    expect(await screen.findByText('ikinci')).toBeTruthy()
+
+    // Simdi eski istek geri donuyor; ekrani degistirmemeli.
+    ilkiCoz([{ id: 'k1', kullaniciAdi: 'birinci', ad: 'Birinci Kisi', fotograf: null }])
+
+    await waitFor(() => {
+      expect(screen.queryByText('birinci')).toBeNull()
+      expect(screen.getByText('ikinci')).toBeTruthy()
+    })
+  })
 })
