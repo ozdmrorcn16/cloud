@@ -384,6 +384,15 @@ async function main() {
       'ilk cagri ya kabul edilir ya da yalnizca 30 gun kuraliyla reddedilir'
     )
 
+    if (ilkHata === null) {
+      const { data: sonrasi } = await b.from('profiller').select('kullanici_adi').single()
+      esitMi(
+        (sonrasi as { kullanici_adi: string }).kullanici_adi,
+        ilkAd,
+        'degistirme basarili oldugunda ad gercekten guncelleniyor'
+      )
+    }
+
     const ikinciAd = `${ilkAd}x`.slice(0, 20)
     const { error: ikinciHata } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: ikinciAd })
     esitMi(

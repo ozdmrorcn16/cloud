@@ -32,7 +32,7 @@ async function main() {
     .from('profiller')
     .update({ kullanici_adi: 'dogrudan_yazim' })
     .eq('id', aId)
-  esitMi(adHatasi !== null, true, 'kullanici_adi dogrudan guncellenemiyor')
+  esitMi(adHatasi?.code === '42501', true, 'kullanici_adi dogrudan guncellenemiyor')
 
   const { error: gorunurlukHatasi } = await a
     .from('profiller')
@@ -114,7 +114,8 @@ async function main() {
   const jokerKonumu = [...bAdi].findIndex((karakter, sira) => sira >= 2 && karakter !== '_')
   const jokerDeseni = bAdi.slice(0, jokerKonumu) + '_'
 
-  const { data: jokerSonuc } = await a.rpc('kisi_ara', { p_metin: jokerDeseni })
+  const { data: jokerSonuc, error: jokerHata } = await a.rpc('kisi_ara', { p_metin: jokerDeseni })
+  esitMi(jokerHata, null, 'joker probu cagrilabiliyor')
   esitMi(
     ((jokerSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
     false,
@@ -126,13 +127,32 @@ async function main() {
   // bir escape dizisi gibi yorumlanip "kulla" gibi davranir ve B doner.
   // Alt cizgi testi bu hatayi GORMEZ, cunku alt cizgiyi kaciran replace
   // her iki surumde de calisiyor.
-  const tersBoluDeseni = bAdi.slice(0, 4) + '\\' + bAdi.slice(4, 5)
+  // Konum sabit degil (joker testindeki gibi): alt cizgiyle ayni sebep
+  // gecerli, bAdi'nin 4. karakteri alt cizgi olursa (ornegin
+  // test_<zaman damgasi> biciminde) sabit 4. indeks kullanmak iddiayi
+  // her iki surumde de "gecti" gosterirdi.
+  const tbKonumu = [...bAdi].findIndex((k, i) => i >= 2 && k !== '_' && k !== '\\')
+  const tersBoluDeseni = bAdi.slice(0, tbKonumu) + '\\' + bAdi[tbKonumu]
 
-  const { data: tersBoluSonuc } = await a.rpc('kisi_ara', { p_metin: tersBoluDeseni })
+  const { data: tersBoluSonuc, error: tersBoluHata } = await a.rpc('kisi_ara', {
+    p_metin: tersBoluDeseni,
+  })
+  esitMi(tersBoluHata, null, 'ters bolu probu cagrilabiliyor')
   esitMi(
     ((tersBoluSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
     false,
     'ters bolu escape dizisi olarak yorumlanmiyor'
+  )
+
+  // Saglama: yukaridaki iki negatif iddia "hicbir sey bulunamiyor"
+  // diyor ama kisi_ara'nin gercekten bir sey BULABILDIGINI hic
+  // dogrulamiyordu. Tam kullanici adiyla arama B'yi donmeli.
+  const { data: tamAdSonuc, error: tamAdHata } = await a.rpc('kisi_ara', { p_metin: bAdi })
+  esitMi(tamAdHata, null, 'tam ad probu cagrilabiliyor')
+  esitMi(
+    ((tamAdSonuc ?? []) as { id: string }[]).some((s) => s.id === bId),
+    true,
+    "saglama: tam kullanici adiyla arama B'yi buluyor"
   )
 
   console.log('\n--- Task 6: baskasinin_profili ---')
