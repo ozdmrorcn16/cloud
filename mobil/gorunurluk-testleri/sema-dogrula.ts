@@ -84,6 +84,22 @@ async function main() {
     'ayni ad yeniden yazilinca 30 gunluk hak harcanmiyor'
   )
 
+  console.log('\n--- Task 5: kisi_ara ---')
+  const { data: kisaSonuc, error: kisaHata } = await a.rpc('kisi_ara', { p_metin: 'a' })
+  esitMi(kisaHata, null, 'kisi_ara cagrilabiliyor')
+  esitMi((kisaSonuc ?? []).length, 0, 'tek karakterlik arama bos doner')
+
+  const { data: uzunSonuc, error: uzunHata } = await a.rpc('kisi_ara', {
+    p_metin: kendiAd.slice(0, 4),
+  })
+  esitMi(uzunHata, null, 'iki karakterden uzun arama hata vermiyor')
+  esitMi(Array.isArray(uzunSonuc), true, 'arama dizi doner')
+  esitMi(
+    ((uzunSonuc ?? []) as { id: string }[]).some((s) => s.id === aId),
+    false,
+    'arama cagiranin kendisini sonuclara koymaz'
+  )
+
   sonucuBildirVeCik()
 }
 
