@@ -102,26 +102,71 @@ cd mobil
 supabase db push
 ```
 
-- [ ] **Step 4: Dogrula**
+- [ ] **Step 4: Sema dogrulama betigini olustur**
 
-```bash
-supabase db query "select column_name, is_nullable, column_default from information_schema.columns where table_name = 'profiller' and column_name in ('kullanici_adi','kullanici_adi_degistirildi','aramada_gorunsun') order by column_name;" --linked
+Bu depoda uzaktaki veritabanina serbest SQL calistiran bir arac yok
+(`supabase` CLI'sinda `db query` diye bir alt komut bulunmuyor, `psql`
+de kurulu degil). Sema ve yetki dogrulamalari bu yuzden uygulamanin
+kullandigi yoldan — Supabase istemcisiyle — yapiliyor. Betik Task 2-6
+boyunca buyuyecek.
+
+`mobil/gorunurluk-testleri/sema-dogrula.ts` olustur:
+
+```ts
+import { ikiKullaniciIleBaglan, esitMi, sonucuBildirVeCik } from './yardimcilar'
+
+const KULLANICI_ADI_DESENI = /^[a-z0-9._]{3,20}$/
+
+async function main() {
+  const { a, aId } = await ikiKullaniciIleBaglan()
+
+  console.log('\n--- Task 1: kullanici adi sutunlari ---')
+  const { data, error } = await a
+    .from('profiller')
+    .select('id, kullanici_adi, kullanici_adi_degistirildi, aramada_gorunsun')
+    .eq('id', aId)
+    .single()
+
+  esitMi(error, null, 'uc yeni sutun okunabiliyor')
+
+  const satir = data as {
+    kullanici_adi: string
+    kullanici_adi_degistirildi: string | null
+    aramada_gorunsun: boolean
+  }
+  esitMi(
+    KULLANICI_ADI_DESENI.test(satir.kullanici_adi ?? ''),
+    true,
+    `mevcut profilin kullanici adi bicime uyuyor (${satir.kullanici_adi})`
+  )
+  esitMi(typeof satir.aramada_gorunsun, 'boolean', 'aramada_gorunsun boolean')
+  esitMi(satir.aramada_gorunsun, true, 'aramada_gorunsun varsayilani true')
+
+  sonucuBildirVeCik()
+}
+
+main()
 ```
 
-Expected: uc satir. `aramada_gorunsun` → `NO` / `true`,
-`kullanici_adi` → `NO`, `kullanici_adi_degistirildi` → `YES`.
+`mobil/package.json` icindeki `scripts` bolumune ekle:
 
-```bash
-supabase db query "select id, kullanici_adi from public.profiller;" --linked
+```json
+"test:sema": "tsx --env-file=.env gorunurluk-testleri/sema-dogrula.ts"
 ```
 
-Expected: mevcut her satirin `kullanici_<8 hane>` bicimli bir adi var,
-hicbiri bos degil.
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Dogrula**
 
 ```bash
-git add mobil/supabase/migrations
+cd mobil
+npm run test:sema
+```
+
+Expected: dort `OK` satiri ve `Butun gorunurluk dogrulamalari gecti.`
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add mobil/supabase/migrations mobil/gorunurluk-testleri/sema-dogrula.ts mobil/package.json
 git commit -m "mobil: profiller tablosuna kullanici adi ve arama gorunurlugu sutunlari"
 ```
 
@@ -172,12 +217,33 @@ yazarken buraya bakilmali.
 ```bash
 cd mobil
 supabase db push
-supabase db query "select column_name from information_schema.column_privileges where table_name = 'profiller' and grantee = 'authenticated' and privilege_type = 'UPDATE' order by column_name;" --linked
 ```
 
-Expected: tam olarak alti satir — `ad`, `aramada_gorunsun`,
-`biyografi`, `dogum_tarihi`, `fotograflar`, `varsayilan_gizli`.
-`kullanici_adi` ve `kullanici_adi_degistirildi` listede **olmamali**.
+`gorunurluk-testleri/sema-dogrula.ts` icine, `sonucuBildirVeCik()`
+cagrisindan once:
+
+```ts
+  console.log('\n--- Task 2: sutun duzeyinde update yetkisi ---')
+  const { error: adHatasi } = await a
+    .from('profiller')
+    .update({ kullanici_adi: 'dogrudan_yazim' })
+    .eq('id', aId)
+  esitMi(adHatasi !== null, true, 'kullanici_adi dogrudan guncellenemiyor')
+
+  const { error: gorunurlukHatasi } = await a
+    .from('profiller')
+    .update({ aramada_gorunsun: true })
+    .eq('id', aId)
+  esitMi(gorunurlukHatasi, null, 'aramada_gorunsun dogrudan guncellenebiliyor')
+```
+
+```bash
+npm run test:sema
+```
+
+Expected: iki yeni `OK` satiri. `kullanici_adi dogrudan
+guncellenemiyor` satiri `HATA` donerse yetki migrasyonu uygulanmamis
+demektir — 30 gun kurali o durumda hicbir sey ifade etmez, devam etme.
 
 - [ ] **Step 3: Commit**
 
@@ -245,11 +311,41 @@ mevcut adini yazmaz.
 ```bash
 cd mobil
 supabase db push
-supabase db query "select prosecdef, proacl::text from pg_proc where proname = 'kullanici_adi_musait_mi';" --linked
 ```
 
-Expected: `prosecdef = true`, `proacl` icinde `authenticated=X` var,
-`anon` yok.
+`gorunurluk-testleri/sema-dogrula.ts` icine, `sonucuBildirVeCik()`
+cagrisindan once:
+
+```ts
+  console.log('
+--- Task 3: kullanici_adi_musait_mi ---')
+  const { data: kendiProfil } = await a
+    .from('profiller')
+    .select('kullanici_adi')
+    .eq('id', aId)
+    .single()
+  const kendiAd = (kendiProfil as { kullanici_adi: string }).kullanici_adi
+
+  const { data: alinmis, error: musaitHatasi } = await a.rpc('kullanici_adi_musait_mi', {
+    p_ad: kendiAd,
+  })
+  esitMi(musaitHatasi, null, 'musait_mi cagrilabiliyor')
+  esitMi(alinmis, false, 'var olan ad musait degil')
+
+  const { data: bos } = await a.rpc('kullanici_adi_musait_mi', {
+    p_ad: 'hicbir.zaman.alinmaz',
+  })
+  esitMi(bos, true, 'alinmamis ad musait')
+
+  const { data: buyukHarfli } = await a.rpc('kullanici_adi_musait_mi', { p_ad: 'ORCUN' })
+  esitMi(buyukHarfli, false, 'bicime uymayan ad musait sayilmaz')
+```
+
+```bash
+npm run test:sema
+```
+
+Expected: dort yeni `OK` satiri.
 
 - [ ] **Step 3: Commit**
 
@@ -346,10 +442,39 @@ grant execute on function public.kullanici_adi_degistir to authenticated;
 ```bash
 cd mobil
 supabase db push
-supabase db query "select prosecdef from pg_proc where proname = 'kullanici_adi_degistir';" --linked
 ```
 
-Expected: `prosecdef = true`.
+`gorunurluk-testleri/sema-dogrula.ts` icine, `sonucuBildirVeCik()`
+cagrisindan once. Iki kontrol de **30 gunluk hakki harcamaz**, cunku
+ikisi de hata yoluyla doner:
+
+```ts
+  console.log('
+--- Task 4: kullanici_adi_degistir ---')
+  const { error: bicimHatasi } = await a.rpc('kullanici_adi_degistir', {
+    p_yeni_ad: 'GECERSIZ AD',
+  })
+  esitMi(
+    bicimHatasi?.message?.includes('kurallara uymuyor') ?? false,
+    true,
+    'bicime uymayan ad reddediliyor'
+  )
+
+  const { error: ayniAdHatasi } = await a.rpc('kullanici_adi_degistir', {
+    p_yeni_ad: kendiAd,
+  })
+  esitMi(
+    ayniAdHatasi?.message?.includes('Zaten bu kullanici adini') ?? false,
+    true,
+    'ayni ad yeniden yazilinca 30 gunluk hak harcanmiyor'
+  )
+```
+
+```bash
+npm run test:sema
+```
+
+Expected: iki yeni `OK` satiri.
 
 - [ ] **Step 3: Commit**
 
@@ -444,10 +569,35 @@ grant execute on function public.kisi_ara to authenticated;
 ```bash
 cd mobil
 supabase db push
-supabase db query "select proname, prosecdef from pg_proc where proname = 'kisi_ara';" --linked
 ```
 
-Expected: bir satir, `prosecdef = true`.
+`gorunurluk-testleri/sema-dogrula.ts` icine, `sonucuBildirVeCik()`
+cagrisindan once:
+
+```ts
+  console.log('
+--- Task 5: kisi_ara ---')
+  const { data: kisaSonuc, error: kisaHata } = await a.rpc('kisi_ara', { p_metin: 'a' })
+  esitMi(kisaHata, null, 'kisi_ara cagrilabiliyor')
+  esitMi((kisaSonuc ?? []).length, 0, 'tek karakterlik arama bos doner')
+
+  const { data: uzunSonuc, error: uzunHata } = await a.rpc('kisi_ara', {
+    p_metin: kendiAd.slice(0, 4),
+  })
+  esitMi(uzunHata, null, 'iki karakterden uzun arama hata vermiyor')
+  esitMi(Array.isArray(uzunSonuc), true, 'arama dizi doner')
+  esitMi(
+    ((uzunSonuc ?? []) as { id: string }[]).some((s) => s.id === aId),
+    false,
+    'arama cagiranin kendisini sonuclara koymaz'
+  )
+```
+
+```bash
+npm run test:sema
+```
+
+Expected: bes yeni `OK` satiri.
 
 - [ ] **Step 3: Commit**
 
@@ -517,11 +667,31 @@ grant execute on function public.baskasinin_profili to authenticated;
 ```bash
 cd mobil
 supabase db push
-supabase db query "select pg_get_function_result(oid) from pg_proc where proname = 'baskasinin_profili';" --linked
 ```
 
-Expected: donen tipte `kullanici_adi text` gorunuyor, `dogum_tarihi`
-gorunmuyor.
+`gorunurluk-testleri/sema-dogrula.ts` icine, `sonucuBildirVeCik()`
+cagrisindan once (bu blok `b` ve `bId` degiskenlerini de kullandigi
+icin `ikiKullaniciIleBaglan()` cagrisinin donusunden `b, bId` de
+alinmali):
+
+```ts
+  console.log('
+--- Task 6: baskasinin_profili ---')
+  const { data: profilSatirlari, error: profilHatasi } = await a.rpc('baskasinin_profili', {
+    p_kullanici_id: bId,
+  })
+  esitMi(profilHatasi, null, 'baskasinin_profili cagrilabiliyor')
+
+  const ilk = ((profilSatirlari ?? []) as Record<string, unknown>[])[0] ?? {}
+  esitMi('kullanici_adi' in ilk, true, 'donen satirda kullanici_adi var')
+  esitMi('dogum_tarihi' in ilk, false, 'donen satirda dogum tarihi yok')
+```
+
+```bash
+npm run test:sema
+```
+
+Expected: uc yeni `OK` satiri.
 
 - [ ] **Step 3: Commit**
 
@@ -1993,11 +2163,12 @@ git commit -m "mobil: kimlik ve arama icin gercek veritabani senaryolari"
 ```bash
 cd mobil
 npm test
+npm run test:sema
 npm run test:gorunurluk
 ```
 
 Expected: Jest tarafinda butun paketler yesil (yeni testlerle birlikte
-yaklasik 35 paket), gorunurluk paketinde butun senaryolar `OK`.
+yaklasik 35 paket), sema ve gorunurluk paketlerinde butun satirlar `OK`.
 
 - [ ] **Step 2: Uygulamanin gercekten acildigini dogrula**
 
