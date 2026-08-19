@@ -1,15 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, TextInput, Pressable, Image, StyleSheet, Switch } from 'react-native'
+import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
-import { checkInYap } from '../../../lib/checkin'
+import { checkInYap, type Bulunurluk } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
-import { varsayilanGizliyiGetir } from '../../../lib/ayarlar'
+import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
+
+const SECENEKLER: { deger: Bulunurluk; etiket: string; aciklama: string }[] = [
+  { deger: 'herkese_acik', etiket: 'Herkese acik', aciklama: 'Buradakiler ve takipcilerin gorur' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim', aciklama: 'Buradaki yabancilar gormez' },
+  { deger: 'gizli', etiket: 'Gizli', aciklama: 'Kimse gormez' },
+]
 
 export default function CheckInEkrani() {
   const router = useRouter()
@@ -19,17 +25,17 @@ export default function CheckInEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
-  const [gizliMi, setGizliMi] = useState(false)
+  const [bulunurluk, setBulunurluk] = useState<Bulunurluk>('herkese_acik')
   const [ilkKullanimUyarisi, setIlkKullanimUyarisi] = useState(false)
-  // Kullanici gizlilik tercihini elle degistirdiyse (switch veya ilk kullanim
-  // uyarisindaki "Gizli yap"), gec gelen varsayilanGizliyiGetir() yaniti bu
-  // secimin uzerine yazmasin.
-  const gizliManuelDegisti = useRef(false)
+  // Kullanici bulunurluk tercihini elle degistirdiyse (secenek satiri veya ilk
+  // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
+  // yaniti bu secimin uzerine yazmasin.
+  const bulunurlukManuelDegisti = useRef(false)
 
   useEffect(() => {
-    varsayilanGizliyiGetir()
+    varsayilanBulunurluguGetir()
       .then((deger) => {
-        if (!gizliManuelDegisti.current) setGizliMi(deger)
+        if (!bulunurlukManuelDegisti.current) setBulunurluk(deger)
       })
       .catch(() => {})
     AsyncStorage.getItem(ILK_UYARI_ANAHTARI).then((deger) => {
@@ -37,13 +43,13 @@ export default function CheckInEkrani() {
     })
   }, [])
 
-  function gizliMiDegistir(deger: boolean) {
-    gizliManuelDegisti.current = true
-    setGizliMi(deger)
+  function bulunurlukDegistir(deger: Bulunurluk) {
+    bulunurlukManuelDegisti.current = true
+    setBulunurluk(deger)
   }
 
   async function ilkUyariKapat(gizliSecildi: boolean) {
-    if (gizliSecildi) gizliMiDegistir(true)
+    if (gizliSecildi) bulunurlukDegistir('gizli')
     setIlkKullanimUyarisi(false)
     await AsyncStorage.setItem(ILK_UYARI_ANAHTARI, 'true')
   }
@@ -75,7 +81,7 @@ export default function CheckInEkrani() {
         }
       }
 
-      await checkInYap(mekanId, konum, notMetni.trim() || undefined, yuklenenFotoYolu, gizliMi)
+      await checkInYap(mekanId, konum.lat, konum.lng, notMetni.trim() || undefined, yuklenenFotoYolu, bulunurluk)
       router.replace(`/mekanlar/${mekanId}`)
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
@@ -125,14 +131,20 @@ export default function CheckInEkrani() {
       </Pressable>
       {yerelFotoUri && <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} />}
 
-      <View style={stiller.satir}>
-        <Text style={stiller.etiket}>Gizli check-in</Text>
-        <Switch
-          accessibilityLabel="Gizli check-in"
-          value={gizliMi}
-          onValueChange={gizliMiDegistir}
-        />
-      </View>
+      <Text style={stiller.altBaslik}>Seni kim gorsun</Text>
+      {SECENEKLER.map((secenek) => (
+        <Pressable
+          key={secenek.deger}
+          accessibilityLabel={`Bulunurluk: ${secenek.deger}${
+            bulunurluk === secenek.deger ? ', secili' : ''
+          }`}
+          style={[stiller.secenek, bulunurluk === secenek.deger && stiller.secenekSecili]}
+          onPress={() => bulunurlukDegistir(secenek.deger)}
+        >
+          <Text style={stiller.secenekEtiketi}>{secenek.etiket}</Text>
+          <Text style={stiller.secenekAciklamasi}>{secenek.aciklama}</Text>
+        </Pressable>
+      ))}
 
       {uyari && <Text style={stiller.uyari}>{uyari}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -150,11 +162,13 @@ const stiller = StyleSheet.create({
   cokSatirli: { minHeight: 80, textAlignVertical: 'top' },
   fotoButonu: { padding: 12, alignItems: 'center', marginBottom: 12 },
   fotoButonuYazi: { color: '#0645ad' },
-  satir: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 12, marginBottom: 12,
+  altBaslik: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
+  secenek: {
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 8,
   },
-  etiket: { fontSize: 16 },
+  secenekSecili: { borderColor: '#111', backgroundColor: '#f2f2f2' },
+  secenekEtiketi: { fontSize: 16, fontWeight: '600' },
+  secenekAciklamasi: { fontSize: 13, color: '#666', marginTop: 2 },
   uyariMetni: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
   ikincilButon: { padding: 14, alignItems: 'center', marginTop: 12 },
   ikincilButonYazi: { color: '#0645ad', fontWeight: '600' },
