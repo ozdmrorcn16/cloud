@@ -7,6 +7,7 @@
 
 | | |
 |---|---|
+| **Klasor** | `uygulama/` |
 | **Asama** | Beklemede — fikrin icerigi henuz anlatilmadi |
 | **Dal** | `claude/uygulama-fikri-o3tuda` (hafiza katmani burada kuruldu) |
 

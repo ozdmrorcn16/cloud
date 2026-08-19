@@ -4,7 +4,8 @@
 > Diger projeler: [`uygulama-fikri.md`](uygulama-fikri.md)
 
 Fikirden yayina kadar her adimi kendi yapan video uretim hatti.
-Kullanim rehberi: [`../../README.md`](../../README.md)
+Klasor: `youtube-otomasyonu/`
+Kullanim rehberi: [`../../youtube-otomasyonu/README.md`](../../youtube-otomasyonu/README.md)
 
 ## Durum
 
@@ -16,6 +17,8 @@ Kullanim rehberi: [`../../README.md`](../../README.md)
 | **Test** | 49 test geciyor (`pytest -q`), gercek mp4 ureten tumlesim testi dahil |
 
 ## Kapsam
+
+Butun komutlar `youtube-otomasyonu/` klasorunden calistirilir.
 
 konu sec -> senaryo yaz -> seslendir -> gorsel bul -> altyazili montaj ->
 kapak uret -> YouTube'a yukle. Tek komut: `python -m otomasyon tam-akis`.
@@ -38,13 +41,13 @@ kapak uret -> YouTube'a yukle. Tek komut: `python -m otomasyon tam-akis`.
 
 | Yol | Rolu |
 |---|---|
-| `otomasyon/akis.py` | Adimlarin orkestrasyonu; her adim tek basina da calisir |
-| `otomasyon/montaj.py` | ffmpeg islemleri, kapak uretimi |
-| `otomasyon/altyazi.py` | SRT (yan dosya) + ASS (goruntuye gomulen) |
-| `otomasyon/saglayicilar/` | metin, ses, gorsel, yukleme adaptorleri |
-| `otomasyon/gecmis.py` | Islenen konularin kaydi (tekrar engelleme) |
-| `konfig/kanal.yaml` | Tum ayarlar |
-| `scripts/youtube-yetki.py` | Bir kerelik OAuth, refresh token uretir |
+| `youtube-otomasyonu/otomasyon/akis.py` | Adimlarin orkestrasyonu; her adim tek basina da calisir |
+| `youtube-otomasyonu/otomasyon/montaj.py` | ffmpeg islemleri, kapak uretimi |
+| `youtube-otomasyonu/otomasyon/altyazi.py` | SRT (yan dosya) + ASS (goruntuye gomulen) |
+| `youtube-otomasyonu/otomasyon/saglayicilar/` | metin, ses, gorsel, yukleme adaptorleri |
+| `youtube-otomasyonu/otomasyon/gecmis.py` | Islenen konularin kaydi (tekrar engelleme) |
+| `youtube-otomasyonu/konfig/kanal.yaml` | Tum ayarlar |
+| `youtube-otomasyonu/scripts/youtube-yetki.py` | Bir kerelik OAuth, refresh token uretir |
 
 ## Kararlar
 

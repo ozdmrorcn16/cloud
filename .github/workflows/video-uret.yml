@@ -34,6 +34,9 @@ jobs:
   uret:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: youtube-otomasyonu
     steps:
       - uses: actions/checkout@v4
 
@@ -89,10 +92,10 @@ jobs:
         with:
           name: video-${{ github.run_number }}
           path: |
-            cikti/**/*.mp4
-            cikti/**/kapak.jpg
-            cikti/**/senaryo.txt
-            cikti/**/altyazi.srt
+            youtube-otomasyonu/cikti/**/*.mp4
+            youtube-otomasyonu/cikti/**/kapak.jpg
+            youtube-otomasyonu/cikti/**/senaryo.txt
+            youtube-otomasyonu/cikti/**/altyazi.srt
           retention-days: 14
           if-no-files-found: warn
 

@@ -9,8 +9,9 @@ from pathlib import Path
 
 import pytest
 
-KOK = Path(__file__).resolve().parent.parent
-HOOK = KOK / ".claude" / "hooks" / "oturum-kaydet.py"
+PROJE = Path(__file__).resolve().parent.parent      # youtube-otomasyonu/
+DEPO = PROJE.parent                                  # depo koku
+HOOK = DEPO / ".claude" / "hooks" / "oturum-kaydet.py"
 
 
 @pytest.fixture(scope="module")

@@ -1,14 +1,14 @@
-# Sirlar
+# Sirlar (hangi proje klasorunde olursa olsun)
 .env
-konfig/token.json
+**/konfig/token.json
 *.client_secret.json
 
 # Uretim ciktilari (video/ses/gorsel) depoda tutulmaz
 cikti/
-varliklar/gorseller/*
-!varliklar/gorseller/.gitkeep
-varliklar/muzik/*
-!varliklar/muzik/.gitkeep
+youtube-otomasyonu/varliklar/gorseller/*
+!youtube-otomasyonu/varliklar/gorseller/.gitkeep
+youtube-otomasyonu/varliklar/muzik/*
+!youtube-otomasyonu/varliklar/muzik/.gitkeep
 
 # Python
 .venv/

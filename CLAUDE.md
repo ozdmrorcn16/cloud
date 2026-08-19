@@ -6,10 +6,14 @@ indeks ve ortak kurallardir.
 
 ## Projeler
 
-| Proje | Kayit | Durum |
-|---|---|---|
-| YouTube otomasyonu | [`docs/projeler/youtube-otomasyonu.md`](docs/projeler/youtube-otomasyonu.md) | Calisiyor; YouTube yetkilendirmesi bekleniyor |
-| Uygulama fikri | [`docs/projeler/uygulama-fikri.md`](docs/projeler/uygulama-fikri.md) | Beklemede; fikrin icerigi henuz anlatilmadi |
+| Proje | Klasor | Kayit | Durum |
+|---|---|---|---|
+| YouTube otomasyonu | `youtube-otomasyonu/` | [`docs/projeler/youtube-otomasyonu.md`](docs/projeler/youtube-otomasyonu.md) | Calisiyor; YouTube yetkilendirmesi bekleniyor |
+| Uygulama | `uygulama/` | [`docs/projeler/uygulama-fikri.md`](docs/projeler/uygulama-fikri.md) | Beklemede; fikrin icerigi henuz anlatilmadi |
+
+Her proje **kendi klasorunde** durur: kendi kodu, bagimliliklari, ayarlari ve
+`.env` dosyasi. Birinin dosyalarina digerinden dokunulmaz. Depo kokunde yalnizca
+ortak seyler bulunur: `CLAUDE.md`, `docs/`, `.claude/`, `.github/`.
 
 **Onemli:** Bu ikisi ayri islerdir. YouTube otomasyonu, kullanicinin anlatacagi
 uygulama fikrinin karsiligi *degildir*. Yeni bir is baslarsa ona da
