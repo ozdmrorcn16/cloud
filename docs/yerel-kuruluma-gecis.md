@@ -39,7 +39,7 @@ adim yeterli; gerisini yerel Claude halleder.
 5. **Projeyi indir.** Claude acildiktan sonra ona sunu yaz:
 
    > https://github.com/ozdmrorcn16/cloud deposunu klonla,
-   > claude/code-review-plugin-jvgabq dalina gec, sonra
+   > claude/faz2b-guvenlik dalina gec, sonra
    > docs/yerel-kuruluma-gecis.md dosyasini oku ve kalan kurulum adimlarini
    > sen yap
 
@@ -91,7 +91,7 @@ de mevcut.
 ```sh
 git clone https://github.com/ozdmrorcn16/cloud.git
 cd cloud
-git checkout claude/code-review-plugin-jvgabq
+git checkout claude/faz2b-guvenlik
 ```
 
 Bu dalda tasarim spec'i ve butun oturum kayitlari var.
