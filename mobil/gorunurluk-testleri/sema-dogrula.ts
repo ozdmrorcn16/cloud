@@ -172,7 +172,16 @@ async function main() {
   const { error: takipYazma } = await a
     .from('takipler')
     .insert({ takip_eden_id: aId, takip_edilen_id: bId })
-  esitMi(takipYazma !== null, true, 'takipler tablosuna dogrudan yazilamiyor')
+  esitMi(takipYazma?.code === '42501', true, 'takipler tablosuna dogrudan yazilamiyor')
+
+  console.log('\n--- Task 2: sohbet_istekleri tablosu ---')
+  const { error: sohbetOkuma } = await a.from('sohbet_istekleri').select('gonderen_id').limit(1)
+  esitMi(sohbetOkuma, null, 'sohbet_istekleri tablosu okunabiliyor')
+
+  const { error: sohbetYazma } = await a
+    .from('sohbet_istekleri')
+    .insert({ gonderen_id: aId, alan_id: bId })
+  esitMi(sohbetYazma?.code === '42501', true, 'sohbet_istekleri tablosuna dogrudan yazilamiyor')
 
   sonucuBildirVeCik()
 }
