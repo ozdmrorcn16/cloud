@@ -255,6 +255,18 @@ async function main() {
     'gecersiz bulunurluk degeri reddediliyor'
   )
 
+  console.log('\n--- Task 9 duzeltme: istek_gunlugu ---')
+  // RLS acik, politika yok: gercekte calistirilip gozlemlendi. Select
+  // hata vermiyor ama hicbir satir donmuyor (data bos dizi, error null);
+  // Postgres'in RLS + politikasiz tablo davranisi budur, varsayilmadi.
+  const { data: gunlukSatirlari } = await a.from('istek_gunlugu').select('id').limit(1)
+  esitMi(gunlukSatirlari, [], 'istek_gunlugu tablosuna dogrudan select bos donuyor')
+
+  const { error: gunlukYazmaHatasi } = await a
+    .from('istek_gunlugu')
+    .insert({ gonderen_id: aId })
+  esitMi(gunlukYazmaHatasi?.code === '42501', true, 'istek_gunlugu tablosuna dogrudan yazilamiyor')
+
   sonucuBildirVeCik()
 }
 
