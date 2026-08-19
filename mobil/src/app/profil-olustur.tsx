@@ -6,16 +6,46 @@ import { supabase } from '../../lib/supabase'
 import { onSekizAltindaMi } from '../../lib/yas'
 import { fotografYukle } from '../../lib/fotograf-yukle'
 import { useOturum } from '../../lib/oturum'
+import {
+  KULLANICI_ADI_KURALI,
+  kullaniciAdiGecerliMi,
+  kullaniciAdiniNormallestir,
+  kullaniciAdiMusaitMi,
+} from '../../lib/kullanici-adi'
 
 export default function ProfilOlusturEkrani() {
   const router = useRouter()
   const { profilKontrolunuYenile } = useOturum()
   const [ad, setAd] = useState('')
+  const [kullaniciAdi, setKullaniciAdi] = useState('')
+  const [kullaniciAdiDurumu, setKullaniciAdiDurumu] = useState<string | null>(null)
   const [dogumTarihiMetni, setDogumTarihiMetni] = useState('')
   const [biyografi, setBiyografi] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [fotografUrileri, setFotografUrileri] = useState<string[]>([])
+
+  async function kullaniciAdiDegisti(metin: string) {
+    setKullaniciAdi(metin)
+    const normal = kullaniciAdiniNormallestir(metin)
+
+    if (normal.length === 0) {
+      setKullaniciAdiDurumu(null)
+      return
+    }
+    if (!kullaniciAdiGecerliMi(normal)) {
+      setKullaniciAdiDurumu(KULLANICI_ADI_KURALI)
+      return
+    }
+    try {
+      const musait = await kullaniciAdiMusaitMi(normal)
+      setKullaniciAdiDurumu(
+        musait ? 'Bu kullanici adi musait.' : 'Bu kullanici adi alinmis, baska bir tane dene.'
+      )
+    } catch {
+      setKullaniciAdiDurumu(null)
+    }
+  }
 
   async function fotografEkle() {
     const sonuc = await ImagePicker.launchImageLibraryAsync({
@@ -47,6 +77,16 @@ export default function ProfilOlusturEkrani() {
       return
     }
 
+    const kullaniciAdiNormal = kullaniciAdiniNormallestir(kullaniciAdi)
+    if (!kullaniciAdiGecerliMi(kullaniciAdiNormal)) {
+      // Ayni mesaj zaten kullanici adi alaninin altinda ipucu olarak
+      // gosteriliyorsa hata banner'inda tekrar etmeye gerek yok.
+      if (kullaniciAdiDurumu !== KULLANICI_ADI_KURALI) {
+        setHata(KULLANICI_ADI_KURALI)
+      }
+      return
+    }
+
     setGonderiliyor(true)
     try {
       const { data: kullaniciVerisi } = await supabase.auth.getUser()
@@ -66,13 +106,18 @@ export default function ProfilOlusturEkrani() {
       const { error } = await supabase.from('profiller').insert({
         id: kullaniciId,
         ad: ad.trim(),
+        kullanici_adi: kullaniciAdiNormal,
         dogum_tarihi: dogumTarihiMetni,
         biyografi: biyografi.trim() || null,
         fotograflar: fotografYollari,
       })
 
       if (error) {
-        setHata(error.message)
+        setHata(
+          error.code === '23505'
+            ? 'Bu kullanici adi alinmis, baska bir tane dene.'
+            : error.message
+        )
         return
       }
 
@@ -91,6 +136,14 @@ export default function ProfilOlusturEkrani() {
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>Profilini olustur</Text>
       <TextInput style={stiller.girdi} placeholder="Adin" value={ad} onChangeText={setAd} />
+      <TextInput
+        style={stiller.girdi}
+        placeholder="Kullanici adi"
+        autoCapitalize="none"
+        value={kullaniciAdi}
+        onChangeText={kullaniciAdiDegisti}
+      />
+      {kullaniciAdiDurumu && <Text style={stiller.ipucu}>{kullaniciAdiDurumu}</Text>}
       <TextInput
         style={stiller.girdi}
         placeholder="YYYY-AA-GG"
@@ -126,6 +179,7 @@ const stiller = StyleSheet.create({
   cokSatirli: { height: 80, textAlignVertical: 'top' },
   fotografButonu: { padding: 12, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 12, alignItems: 'center' },
   hata: { color: '#c00', marginBottom: 12 },
+  ipucu: { color: '#555', marginBottom: 12 },
   buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
   butonYazi: { color: '#fff', fontWeight: '600' },
 })
