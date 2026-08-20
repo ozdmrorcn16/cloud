@@ -1289,9 +1289,17 @@ async function main() {
     // bile ayni metinle gelirdi ve senaryo yine gecerdi.
     //
     // "Engelli AMA bagli" durumu genel RPC'lerle kurulamaz: engelle()
-    // iki yondeki takip ve sohbet satirlarini kosulsuz siliyor (senaryo
-    // 38 bunu ayrica iddia ediyor). Bu yuzden bag, yonetici istemcisiyle
-    // dogrudan takipler tablosuna yaziliyor.
+    // iki yondeki takip ve sohbet satirlarini KOSULSUZ siliyor
+    // (20260819194743_engelle_baglari_kaldir.sql). Bu yuzden bag,
+    // yonetici istemcisiyle dogrudan takipler tablosuna yaziliyor.
+    //
+    // DIKKAT - senaryonun butun degeri bu ayrintida: engelle() kendi
+    // calistiginda bu satirlari da siler, yani bagi yalnizca ENGELDEN
+    // ONCE yazmak yetmez. O halde ikinci gonderim sirasinda cift hem
+    // engelli hem BAGSIZ olurdu ve engelleme dali silinse bile red
+    // yine gelirdi. Bu yuzden bag, engelden SONRA bir kez daha yazilir
+    // ve yazildigi ayrica dogrulanir; ancak o zaman redin tek olasi
+    // sebebi engel olur.
     const yonetici = yoneticiIstemcisi()
     esitMi(
       yonetici !== null,
@@ -1329,12 +1337,52 @@ async function main() {
     const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
     esitMi(engelHata, null, "A, B'yi engelleyebiliyor")
 
+    // engelle() bagi da sildi. Bu bir temizlik iddiasi DEGIL, senaryonun
+    // kurulumunun bir parcasi: asagida bagi yeniden yazmamiz gerektigini
+    // kanitlayan sey bu.
+    const engelSonrasiBag = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(
+      engelSonrasiBag,
+      [],
+      'ara durum: engelle, yonetici istemcisiyle yazilan iki takip satirini da sildi'
+    )
+
+    // Bag YENIDEN kuruluyor: cift artik hem ENGELLI hem BAGLI. Redin
+    // tek olasi sebebi bundan sonra engeldir.
+    const { error: yenidenEkleHata } = await yonetici.from('takipler').insert([
+      { takip_eden_id: aId, takip_edilen_id: bId, durum: 'kabul' },
+      { takip_eden_id: bId, takip_edilen_id: aId, durum: 'kabul' },
+    ])
+    esitMi(
+      yenidenEkleHata,
+      null,
+      'kurulum: engelden SONRA karsilikli kabul satirlari yeniden yazildi'
+    )
+
+    const engelliyken = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(
+      engelliyken.length,
+      2,
+      'kurulum: cift su an hem ENGELLI hem BAGLI (iki kabul satiri yerinde)'
+    )
+
+    const engelliykenSohbet = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(
+      engelliykenSohbet,
+      [],
+      'kurulum: sohbet bagi yok, yani yazma yetkisinin tek kaynagi karsilikli takip'
+    )
+
     const { data, error } = await b.rpc('mesaj_gonder', {
       p_kullanici_id: aId,
       p_metin: 'senaryo 37 - engelliyken mesaj denemesi',
     })
     esitMi(data ?? null, null, 'engelliyken gonderim basarisiz oldugu icin konusma id donmuyor')
-    esitMi(error !== null, true, "engellenen B, A'ya mesaj gonderemez")
+    esitMi(
+      error !== null,
+      true,
+      "BAGLI olmasina ragmen engellenen B, A'ya mesaj gonderemez (engelleme dali)"
+    )
     esitMi(
       error?.message ?? null,
       bagsizHataMetni,
@@ -1347,23 +1395,15 @@ async function main() {
     const engelKalan = await engellemeSatirlari(a, aId, bId)
     esitMi(engelKalan, [], 'temizlik: engelleme satiri gercekten gitti')
 
-    // Once gercek davranis iddia ediliyor (engelle iki takip satirini da
-    // sildi), sonra emniyet olarak yonetici istemcisiyle yazilan satirlar
-    // acikca siliniyor - boylece bu iddia dusse bile senaryo kalinti
-    // birakmaz ve son kontrol bunu ayrica dogruluyor.
-    const engelSonrasiTakip = await ikiYonTakipSatirlari(a, aId, bId)
-    esitMi(
-      engelSonrasiTakip,
-      [],
-      'temizlik: engelleme, yonetici istemcisiyle yazilan iki takip satirini da sildi'
-    )
-
+    // engeli_kaldir bu satirlari SILMEZ: onlari engelden sonra biz
+    // yazdik. Yonetici istemcisiyle acikca siliniyor ve gittikleri
+    // ayrica iddia ediliyor.
     const { error: silHata } = await yonetici
       .from('takipler')
       .delete()
       .in('takip_eden_id', [aId, bId])
       .in('takip_edilen_id', [aId, bId])
-    esitMi(silHata, null, 'temizlik: yonetici istemcisiyle artik silme cagrisi hatasiz')
+    esitMi(silHata, null, 'temizlik: yeniden yazilan takip satirlari yonetici istemcisiyle silindi')
 
     const sonKontrol = await ikiYonTakipSatirlari(a, aId, bId)
     esitMi(sonKontrol, [], 'temizlik: A-B arasinda hicbir takip satiri kalmadi')

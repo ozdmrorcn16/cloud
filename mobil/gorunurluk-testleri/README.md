@@ -167,17 +167,22 @@ sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
   yazamaz; hata mesaji "mesaj gonderemezsin" iceriyor ve hicbir
   konusma satiri olusmuyor. Bu senaryonun yakaladigi hata metni,
   37 ve 39'da birebir karsilastirma icin saklaniyor.
-- **37 - Engelli yazamaz, hata AYNI.** Engelin TEK degisken olmasi icin
-  once GERCEK bir karsilikli bag kurulur ve o bagla B'nin A'ya
-  yazabildigi gosterilir (pozitif saglama); ancak ondan sonra A, B'yi
-  engeller ve B artik yazamaz. Hata mesaji senaryo 36'daki bagsizlik
-  hatasiyla **birebir ayni** (Faz 2b sessizlik ilkesi: "engellendin"
-  ile "bagsizsin" ayirt edilmiyor). Bagi genel RPC'lerle kurmak mumkun
-  degil - `engelle` iki yondeki takip ve sohbet satirlarini kosulsuz
-  siliyor, yani "engelli AMA bagli" durumu istemciyle uretilemiyor -
-  bu yuzden iki `kabul` satiri yonetici istemcisiyle dogrudan
-  `takipler`e yazilir ve senaryo sonunda yine yonetici istemcisiyle
-  temizlenip gittigi dogrulanir.
+- **37 - Engelli yazamaz, hata AYNI.** Engelin TEK degisken olmasi
+  gerekiyor, yoksa senaryo yalnizca 36'yi tekrar eder. Akis: (1) iki
+  `kabul` satiri yonetici istemcisiyle dogrudan `takipler`e yazilir -
+  bagi genel RPC'lerle kurmak ise yaramaz, cunku `engelle` iki yondeki
+  takip ve sohbet satirlarini kosulsuz siliyor; (2) bu bagla B'nin
+  A'ya yazabildigi gosterilir (pozitif saglama); (3) A, B'yi engeller;
+  (4) **engellemenin bagi da sildigi ayrica dogrulanir ve bag yonetici
+  istemcisiyle YENIDEN yazilir** - kritik adim bu, yoksa ikinci
+  denemede cift hem engelli hem bagsiz olur ve red engelden degil
+  bagsizliktan gelirdi; (5) cift artik hem ENGELLI hem BAGLI (iki
+  `kabul` satiri yerinde, sohbet bagi yok - yani yazma yetkisinin tek
+  kaynagi karsilikli takip) ve B yine yazamaz. Hata mesaji senaryo
+  36'daki bagsizlik hatasiyla **birebir ayni** (Faz 2b sessizlik
+  ilkesi: "engellendin" ile "bagsizsin" ayirt edilmiyor). Temizlik:
+  `engeli_kaldir` engelden sonra yazilan satirlari SILMEZ, bu yuzden
+  onlar yonetici istemcisiyle acikca silinir ve gittikleri dogrulanir.
 - **38 - Engelleme konusmayi gizler.** Engellemeden once B hem kendi
   hem A'nin mesajini goruyor (pozitif kontrol); A, B'yi engelleyince
   B artik yalnizca kendi mesajini goruyor, A'nin mesajlari `mesajlar`
