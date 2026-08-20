@@ -444,6 +444,15 @@ async function main() {
   })
   esitMi(yazabilirRpcHatasi !== null, true, 'bag yazma kapisi istemciye RPC olarak acilmamis')
 
+  console.log('\n--- Faz 3b Task 7: mesaj_gonder ---')
+  // revoke from public, anon: cagri gorunun icine hic girmeden
+  // PostgREST/PostgreSQL yetki katmaninda reddedilmeli (42501).
+  const { error: anonMesajHatasi } = await anon.rpc('mesaj_gonder', {
+    p_kullanici_id: bId,
+    p_metin: 'merhaba',
+  })
+  esitMi(anonMesajHatasi?.code, '42501', 'kimliksiz mesaj_gonder cagrisi reddediliyor')
+
   sonucuBildirVeCik()
 }
 
