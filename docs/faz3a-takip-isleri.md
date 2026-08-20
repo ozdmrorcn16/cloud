@@ -35,75 +35,78 @@ Test numaralari `05550000000` ve `05550000001`, sifre `mobil/.env`
 icindeki `TEST_HESAP_SIFRESI`. Gezinti bitince sunucuyu kapat - acik
 kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
 
-## 2. Bilerek yapilmayan iki ozellik
+## 2. Kapatildi (2026-08-20)
 
-Ikisi de final incelemede bulundu. Ikisi de **kirik** bir sey degil,
-**eksik** ozellik: ne spec ne plan bunlari istiyor. Faz kapanisinda
-gozden gecirilmemis yuzey acmamak icin disarida birakildilar; karar
-kullanicinin.
+Bu bolumdeki iki eksik ozellik ve asagidaki kucuk maddelerin cogu
+kapatildi. Uc gorevlik bir turda yapildi, her biri ayrica incelendi.
 
-### 2a. Gonderilmis sohbet istegi geri cekilemiyor
+### 2a. Gonderilmis sohbet istegi geri cekilebiliyor - KAPANDI
 
-`sohbet_istegini_yanitla` yalnizca `alan_id = auth.uid()` satirlarini
-esliyor, `sohbet_istekleri` tablosunda insert/delete politikasi yok ve
-baska hicbir RPC o tabloya dokunmuyor. Yani B, A'ya sohbet istegi
-gonderdikten sonra geri alamiyor: istek A yanitlayana ya da biri
-digerini engelleyene kadar A'nin kutusunda duruyor ve
-`sohbet_istegi_gonder` surekli "Istegin zaten gonderilmis" diyor.
+Yeni `public.sohbet_istegini_geri_cek(p_kullanici_id)` RPC'si yalnizca
+gonderenin KENDI `beklemede` satirini siliyor. Ekranlarda bekleyen giden
+istek artik hareketsiz metin degil, "Istegi geri cek" butonu; takip icin
+`takibi_birak` (zaten `durum`a bakmadan siliyordu), sohbet icin yeni RPC.
 
-Cekirdek riski yabancilarla istenmeyen temas olan bir uygulamada
-"yanlislikla gonderdim, geri al" onemsiz bir eksik degil.
+**Onemli degismezlik:** geri cekme gunluk istek kotasini IADE ETMIYOR.
+`istek_gunlugu` ekle-only kaliyor ve RPC ona dokunmuyor. Iade etseydi
+"gonder -> geri cek -> sayac dussun -> tekrarla" ile gunluk 50 istek
+tavani tamamen atlatilirdi; tavanin bu bicimi Faz 3a'da tam olarak bu
+istismari kapatmak icin secilmisti. Bu ozelligi ileride degistiren
+herkes bunu korumali.
 
-Takip istegi tarafinda ilkel mevcut: `takibi_birak` `durum`a bakmadan
-siliyor. Ama hicbir ekran onu bekleyen bir istek icin cagirmiyor -
-`baglar.tsx` giden istekleri hareketsiz metin olarak, `kullanici/[id].tsx`
-"Istek gonderildi"yi `Pressable` degil `View` olarak ciziyor.
+### 2b. `bagDurumunuGetir` gelen yonu de okuyor - KAPANDI
 
-Gerekecek: `sohbet_istegini_geri_cek` RPC'si + iki ekranda bekleyen
-durumun basilabilir hale gelmesi.
+Donus tipi genisletildi (mevcut alanlar korundu): `takip`, `sohbet`
+yaninda artik `gelenTakip`, `gelenSohbet` da var. Dort sorgu
+`Promise.all` ile paralel. Profilde gelen bekleyen istek icin "Kabul et"
+/ "Reddet" butonlari ve `Kabul edersen check-in'lerini gorebilecek.`
+metni geliyor.
 
-### 2b. `bagDurumunuGetir` yalnizca giden yonu okuyor
+**Dikkat - takip TEK YONLU, sohbet SIMETRIK.** Birinin seni takip
+ediyor olmasi senin onu takip ettigin anlamina gelmez, dolayisiyla
+`gelenTakip` `kabul` ya da `beklemede` iken profilde "Takip et"
+gostermek DOGRU. Sohbet oyle degil: kabul edilmis bir sohbet iki taraf
+icin de aciktir, o yuzden "Sohbet acik" hem `sohbet` hem `gelenSohbet`
+`kabul` oldugunda cikiyor. Bu ayrimi bozmak bu turda iki kez az kalsin
+yapilan hataydi.
 
-`lib/bag.ts` iliskiyi yalnizca "ben baslatan miyim" yonunden okuyor.
-Karsi taraf sana istek gondermisse profilinde yine "Takip et" gorunuyor
-ve basinca caprazlanmis bir bekleyen cift olusuyor - onlarinkini kabul
-etmek yerine.
+### Kapatilan kucuk maddeler
 
-Gerekecek: gelen yonun de okunmasi ve profilde bir "Kabul et" akisi.
+- Uc RPC'de (`ani_gorunurlugunu_ayarla`, `check_in_yap`,
+  `sikayet_gonder`) `x not in (...)` kontrolu NULL girdide sessizce
+  atlaniyordu; hepsi `is null or` ile guclendirildi. `sikayet_gonder`'in
+  `p_sebep` ve `p_hedef_id` parametrelerine de dogrulama eklendi.
+- `check_inler` uzerindeki olu `"kendi check-in'ini guncelleyebilir"`
+  UPDATE politikasi dusuruldu. Artik hicbir sey vermiyordu ama
+  "kullanicilar kendi check-in'lerini guncelleyebilir" diye okunuyordu;
+  birisi ona bakip sutun yetkisini geri verirse kritik konum acigi
+  yeniden acilirdi.
+- `istek_gunlugu` icin gunluk budama isi eklendi (`istek-gunlugu-buda`,
+  her gun 04:00, **2 gunden** eskiyi siler). 1 gun degil 2: tavan 24
+  saatlik kayan pencereyi sayiyor, tam 1 gunde budamak sinirdaki
+  satirlari erken silip kotayi gevsetirdi.
+- Ayarlardaki "Butun anilarimi kim gorsun" satirinin altina aciklama
+  notu eklendi: secilen deger her aniya oldugu gibi uygulanmiyor, gizli
+  check-in'den gelenler kapali kaliyor.
+- `bagDurumunuGetir`'in iki ardisik sorgusu `Promise.all` ile
+  paralellesti.
 
-## 3. Kucuk, kapatilmamis maddeler
+## 3. Hala acik kucuk maddeler
 
-- `ani_gorunurlugunu_ayarla(p_deger)` icindeki
-  `p_deger not in (...)` kontrolu `p_deger` NULL oldugunda NULL'a
-  dusuyor, yani gecersiz-deger korumasi atlaniyor. Elle yazilmis bir
-  `rpc(..., { p_deger: null })` cagrisi guncellemeye ulasip
-  `gorunurluk` sutunundaki `not null` kisitina carpiyor ve dostane mesaj
-  yerine ham `23502` donduruyor. Kismi yazma yok, gorunurluk genislemesi
-  yok, gizlilik etkisi yok. `p_deger is null or p_deger not in (...)`
-  kapatir. Ayni desen `check_in_yap` icinde de var.
-- `check_inler` uzerindeki `"kendi check-in'ini guncelleyebilir"` UPDATE
-  politikasi hala duruyor ama UPDATE **yetkisi** kaldirildigi icin artik
-  olu. Hicbir sey vermiyor. **Ama ileride okuyan birini yaniltabilir:**
-  "kullanicilar kendi check-in'lerini guncelleyebilir" diye okunuyor, ki
-  bu tam da final incelemenin curuttugu inanc. Birisi bu politikaya
-  bakip sutun yetkisini geri verirse kritik acik yeniden acilir. Ayri
-  bir migrasyonda dusurulmesi oneriliyor.
-- Ayarlardaki "Butun anilarimi kim gorsun" secimi, RPC bazi satirlari
-  daha dar bir degere kelepceledigi halde **istenen** degeri secili
-  gosteriyor (`gizli` kokenli bir ani `kimse` kalirken "Herkes gorsun"
-  secili gorunuyor). Toplu islemin dogasi geregi tek bir dogru deger
-  gostermek mumkun degil; satirin altina kisa bir aciklama notu
-  belirsizligi kaldirirdi.
 - `lib/bag-listeleri.ts` icindeki `kimlikleriOku` bes parametresinden
   ucu ayni tipte ve benzer adli string; konumsal bir yer degistirme
   sessizce derlenir. Dosya bir daha acildiginda nesne argumanina
   gecirilmesi iyi olur.
-- `istek_gunlugu` satirlari suresiz birikiyor; 1 gunden eski satirlari
-  silen bir pg_cron isi yok. Kullanici basina gunde en fazla 50 satir
-  oldugu icin hacim onemsiz, ama tablo bir daha ellendiginde eklenebilir.
 - Ana ekran rozeti, yalnizca `.length` icin `bag_kisileri` RPC'siyle tam
   kisi kayitlarini cozuyor (kategori basina bir gidis-donus). Ana ekran
   acilisi yavaslarsa "yalnizca say" yolu eklenebilir.
+- `kullanici/[id].tsx` ve `baglar.tsx` bazi stilleri birebir
+  tekrarliyor. Kod tabaninin mevcut ekran basi stil uslubuyla tutarli;
+  ortak modul acmak istenirse ayri bir is.
+- Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
+  yapilmadi (asagida, bolum 4). Istek gonderen senaryolarin hesaplari
+  donusumlu kullanmasi ya da paketin kendi kotasini yonetici anahtariyla
+  temizlemesi gerekirdi.
 
 ## 4. Faz 3a'da ogrenilen ve bir daha kesfedilmemesi gereken seyler
 
