@@ -30,42 +30,43 @@ defteri.**
 | 13 Mesaj kutusu ekrani | tamam, incelendi (`565cde0`) |
 | 14 Konusma ekrani | tamam, incelendi (`1f474d3`) |
 | 15-16 Ana ekran + profil butonu | tamam, toplu incelendi (`fcfb0fe`, `383b158`) |
-| 17 Canli senaryolar | **BASLADI, YARIM** - asagi bak |
+| 17 Canli senaryolar | **uygulandi (`ce8caec`), INCELENMEDI** |
 | 18 Kapanis | baslanmadi |
 
-Faz commit sayisi: 16 (arti guvenlik duzeltmesi `f4a6840`).
+Faz commit sayisi: 17 (arti guvenlik duzeltmesi `f4a6840` ve bu not).
 
-## Devam noktasi: Gorev 17
+## Devam noktasi: Gorev 17'nin INCELEMESI
 
-Bir alt ajan Gorev 17'yi yaziyordu ve **commit atmadan oturum kesildi**.
-HEAD hala Gorev 16'da (`383b158`). Yani:
+Gorev 17 tamamlandi ve commit'lendi (`ce8caec`, 696 satir: `calistir.ts`
+ve `README.md`). **Ama incelenmedi** - oturum, uygulayicinin raporu
+geldikten hemen sonra kesildi.
 
-1. `git log --oneline` ile HEAD'in nerede oldugunu **once dogrula**. Eger
-   Gorev 17'nin commit'i varsa is tamamlanmis demektir; yoksa bastan
-   yaptirilmali.
-2. `git status` ile calisma agacinda yarim kalmis degisiklik var mi bak.
-   Varsa incele: yarim bir senaryo dosyasi, tamamlanmamis bir temizlik
-   birakmis olabilir.
-3. Gorev 17 yeniden gonderilecekse brief'i
-   `.superpowers/sdd/2026-08-20-faz3b-birebir-sohbet/task-17-brief.md`
-   icinde hazir duruyor.
+Yeni oturum once inceleme paketini uretip inceleyiciyi gondermeli:
 
-**Gorev 17'nin isi:** karsilikli takip degisikliginin bozdugu eski
-senaryolari onarmak (19-28 arasi) ve 13 yeni senaryo eklemek (32-44).
-Plan bunlari tablo halinde veriyor.
+```bash
+bash "C:/Users/orcns/.claude/plugins/cache/claude-plugins-official/superpowers/6.3.0/skills/subagent-driven-development/scripts/review-package"   docs/superpowers/plans/2026-08-20-faz3b-birebir-sohbet.md 383b158 ce8caec
+```
 
-**Gorev 17 gonderilirken sart kosulan kurallar** (yeniden gonderilecekse
-aynen tekrarlanmali):
+(Aralik `383b158..ce8caec`; arada duran `f4a6840` ve `b65e353` salt
+belge/guvenlik commit'leri, diff'e girmesinler diye degil - girseler de
+zararsiz, ama temiz aralik budur. Uygulayicinin raporu
+`.superpowers/sdd/2026-08-20-faz3b-birebir-sohbet/task-17-report.md`.)
 
-- Hicbir iddia gecsin diye zayiflatilmayacak. Kural degistiyse iddia
-  yeni kurali AYNI SERTLIKTE soyleyecek. Kod yanlissa bu gercek bir
-  bulgudur, raporlanir.
-- Her negatif iddianin POZITIF KONTROLU olacak. "C goremez" iddiasi, C
-  hic kurulmadiysa da gecer.
-- Her senaryo kendi olusturdugunu temizler, temizlik `esitMi` ile
-  iddia edilir. Konusmalar yonetici istemcisiyle silinir.
-- Paket olabildigince AZ calistirilir (kota, asagida).
-- `--tavan` bayragi ASLA kullanilmaz.
+**Incelemede ozellikle sorulmasi gerekenler:**
+
+1. **Hicbir iddia zayiflatildi mi?** Diff'teki silinen satirlarda kaybolan
+   her iddia tek tek hesaba katilmali. Uygulayici "yalnizca senaryo 28
+   yapisal olarak bozuktu, 19-27 ve 30-31 gercekten degisiklik
+   gerektirmiyordu" diyor - bu iddia dogrulanmali, cunku kolay yol
+   senaryolari sessizce gevsetmekti.
+2. **13 yeni senaryonun her birinin POZITIF KONTROLU var mi?** Negatif
+   iddialar kurulum hic olusmadiginda da gecer.
+3. **Temizlik gercekten iddia ediliyor mu** (`esitMi` ile), yoksa sessiz
+   mi birakilmis?
+4. Uygulayici "hicbir kod hatasi bulmadim, her sey belgelenen davranisla
+   ortusuyordu" diyor. Bu rahatlatici bir sonuc; kaynaktan dogrulanmali.
+
+Inceleme temizse Gorev 18 (kapanis) kalir.
 
 ## Testlerin su anki hali
 
@@ -75,10 +76,14 @@ Kontrolorun kendi olctugu degerler (Gorev 16 sonrasi):
 - `npm run test:sema` -> **69 dogrulama**, sifir hata
 - `npx tsc --noEmit` -> **tam olarak 5** onceden var olan hata
   (`@types/node` kurulu degil; rota-agaci.test.ts'te dort, calistir.ts'te bir)
-- `npm run test:gorunurluk` -> **su an KIRIK ve bu beklenen.** Gorev 2
-  takibi karsilikli yapti, 19-28 arasi senaryolar hala tek yonlu takip
-  varsayiyor ve `takipciyi_cikar` RPC'sini cagiriyor (o RPC dusuruldu).
-  Gorev 17 onaracak. Sakin iddia zayiflatarak gecirmeye calisma.
+- `npm run test:gorunurluk` -> **189 dogrulama, sifir hata** (Gorev 17
+  sonrasi). Senaryo 29 varsayilan kosumda ATLANDI olarak gorunur, bu
+  dogru: gunluk tavan senaryosu yalnizca `--tavan` bayragiyla calisir ve
+  o bayrak KULLANILMAZ.
+
+  Not: bu deger uygulayicinin kosumundan; kontrolor bagimsiz olarak
+  yeniden kosturmadi (oturum kesildi). Inceleme sonrasi bir kez
+  dogrulamak iyi olur.
 
 ## Veritabaninin durumu
 
@@ -128,10 +133,11 @@ dogrulanmali.
 - **`test:gorunurluk` kendi kotasini tuketiyor.** Senaryolari gercek
   takip ve sohbet istegi gonderiyor, bunlar gunluk 50 tavanindan
   dusuyor, tavan ekle-only tabloyu sayiyor ve istemci silemiyor. Gorev
-  1'de kosucuya yonetici anahtariyla temizlik eklendi; anahtar artik
-  `.env`'de oldugu icin **calisiyor olmali** ama bu HENUZ
-  DOGRULANMADI (Gorev 1 sirasinda anahtar yoktu). Gorev 18'de dogrula.
-  Bir dusme gorursen once kotayi kontrol et, kodu degil.
+  1'de kosucuya yonetici anahtariyla temizlik eklendi. **Bu artik
+  DOGRULANDI:** Gorev 17'nin kosumundan sonra `istek_gunlugu` 0 satirda
+  kaldi, yani temizlik gercekten calisti. Gorev 1'in acik birakilan
+  boslugu boylece kapandi. Bir dusme gorursen yine de once kotayi
+  kontrol et, kodu degil.
 - **Calisan bir `expo start --web` sunucusu** tam Jest kosumlarinda
   araliklarla 5000 ms render zaman asimlari uretiyor. Tam kosumdan once
   kapat.
