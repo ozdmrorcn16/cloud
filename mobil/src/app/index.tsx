@@ -1,13 +1,22 @@
+import { useEffect, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
+import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 
 export default function AnaEkran() {
   const router = useRouter()
+  const [bekleyenSayisi, setBekleyenSayisi] = useState(0)
 
   async function cikisYap() {
     await supabase.auth.signOut()
   }
+
+  useEffect(() => {
+    gelenIstekleriGetir()
+      .then((istekler) => setBekleyenSayisi(istekler.takip.length + istekler.sohbet.length))
+      .catch(() => setBekleyenSayisi(0))
+  }, [])
 
   return (
     <View style={stiller.kapsayici}>
@@ -20,6 +29,12 @@ export default function AnaEkran() {
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/kisiler')}>
         <Text style={stiller.ikincilButonYazi}>Kisi ara</Text>
+      </Pressable>
+      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/baglar')}>
+        <View style={stiller.baglarIcerik}>
+          <Text style={stiller.ikincilButonYazi}>Baglar</Text>
+          {bekleyenSayisi > 0 && <Text style={stiller.rozet}>{bekleyenSayisi}</Text>}
+        </View>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/anilar')}>
         <Text style={stiller.ikincilButonYazi}>Anilarim</Text>
@@ -42,6 +57,17 @@ const stiller = StyleSheet.create({
   butonYazi: { color: '#fff', fontWeight: '600' },
   ikincilButon: { padding: 14, alignItems: 'center', width: '100%' },
   ikincilButonYazi: { color: '#111', fontWeight: '600' },
+  baglarIcerik: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rozet: {
+    color: '#fff',
+    backgroundColor: '#c00',
+    fontSize: 12,
+    fontWeight: '700',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    overflow: 'hidden',
+  },
   cikisButonu: { padding: 14, alignItems: 'center' },
   cikisYazi: { color: '#c00' },
 })
