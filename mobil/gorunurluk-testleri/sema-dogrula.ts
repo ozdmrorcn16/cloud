@@ -374,6 +374,24 @@ async function main() {
     'sikayet_gonder(p_hedef_id: null) dostane mesaj donduruyor'
   )
 
+  console.log('\n--- Faz 3b Task 9: sikayet_gonder mesaj hedef turu ---')
+  // p_hedef_tur: 'mesaj' artik gecerli bir hedef turu (Task 9'dan once
+  // burada 'Gecersiz sikayet hedefi' donerdi, ayni mesaji p_sebep: null
+  // kontrolu de dondurur). p_sebep bilerek null birakiliyor: cagri
+  // sebep kontrolune kadar ilerleyip ORADA duruyor, bu da tur kontrolunu
+  // gectigini kanitliyor ama sikayetler tablosuna hicbir satir yazmiyor.
+  const { error: mesajTuruHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: 'mesaj',
+    p_hedef_id: bId,
+    p_sebep: null,
+  })
+  esitMi(mesajTuruHatasi?.code, 'P0001', "sikayet_gonder(p_hedef_tur: 'mesaj') ham 23502 degil")
+  esitMi(
+    mesajTuruHatasi?.message,
+    'Sikayet sebebi belirtilmeli',
+    "sikayet_gonder p_hedef_tur='mesaj' artik tur kontrolunu geciyor (sebep kontrolune ulasiyor)"
+  )
+
   console.log('\n--- Faz 3b Task 3-5: konusmalar, konusma_uyeleri, mesajlar dogrudan yazma ---')
   // Uc tablo da RLS acik ve authenticated'tan insert/update/delete
   // revoke edilmis; yazma tamamen ileriki RPC'ler uzerinden olacak.
