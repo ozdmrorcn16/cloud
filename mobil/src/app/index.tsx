@@ -3,10 +3,12 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
+import { konusmalarimiGetir } from '../../lib/sohbet'
 
 export default function AnaEkran() {
   const router = useRouter()
   const [bekleyenSayisi, setBekleyenSayisi] = useState(0)
+  const [okunmamisMesajSayisi, setOkunmamisMesajSayisi] = useState(0)
 
   async function cikisYap() {
     await supabase.auth.signOut()
@@ -20,6 +22,11 @@ export default function AnaEkran() {
       gelenIstekleriGetir()
         .then((istekler) => setBekleyenSayisi(istekler.takip.length + istekler.sohbet.length))
         .catch(() => setBekleyenSayisi(0))
+      konusmalarimiGetir()
+        .then((konusmalar) =>
+          setOkunmamisMesajSayisi(konusmalar.reduce((toplam, k) => toplam + k.okunmamis, 0))
+        )
+        .catch(() => setOkunmamisMesajSayisi(0))
     }, [])
   )
 
@@ -39,6 +46,12 @@ export default function AnaEkran() {
         <View style={stiller.baglarIcerik}>
           <Text style={stiller.ikincilButonYazi}>Baglar</Text>
           {bekleyenSayisi > 0 && <Text style={stiller.rozet}>{bekleyenSayisi}</Text>}
+        </View>
+      </Pressable>
+      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/mesajlar')}>
+        <View style={stiller.baglarIcerik}>
+          <Text style={stiller.ikincilButonYazi}>Mesajlar</Text>
+          {okunmamisMesajSayisi > 0 && <Text style={stiller.rozet}>{okunmamisMesajSayisi}</Text>}
         </View>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/anilar')}>

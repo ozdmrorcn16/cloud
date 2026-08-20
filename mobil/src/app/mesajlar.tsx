@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { konusmalarimiGetir, konusmayiGizle, type Konusma } from '../../lib/sohbet'
 
 export default function MesajlarEkrani() {
@@ -17,9 +17,15 @@ export default function MesajlarEkrani() {
     }
   }
 
-  useEffect(() => {
-    konusmalariYukle()
-  }, [])
+  // useEffect yalnizca ilk acilista bir kez cekiyordu: kullanici bir
+  // konusmayi acip okuyup geri donunce okunmamis rozeti eski deger de
+  // kaliyordu. useFocusEffect ekran her odaklandiginda yeniden cekiyor
+  // (ana ekranin "Baglar" rozetiyle ayni desen).
+  useFocusEffect(
+    useCallback(() => {
+      konusmalariYukle()
+    }, [])
+  )
 
   // Iyimser guncelleme deseni: durumu yalnizca await cozuldukten SONRA
   // degistiriyoruz. Boylece basarisiz bir gizleme, satiri listeden

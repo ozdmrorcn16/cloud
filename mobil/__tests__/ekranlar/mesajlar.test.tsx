@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import MesajlarEkrani from '../../src/app/mesajlar'
 import { konusmalarimiGetir, konusmayiGizle } from '../../lib/sohbet'
 import type { Konusma } from '../../lib/sohbet'
@@ -9,8 +9,20 @@ jest.mock('../../lib/sohbet', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+// useFocusEffect'i gercek useEffect gibi (mount'ta bir kez) davranacak
+// sekilde taklit ediyoruz, ayrica sonuncu geri cagirmayi testlerin
+// "yeniden odaklanma" simule edebilmesi icin disariya biriktiriyoruz. Set
+// kullaniyoruz cunku bu ekranda konusma listesi her cekiste yeni bir dizi
+// referansi aldigi icin (sayi rozetindeki gibi ayni deger bailout'u yok)
+// bilesen birden fazla kez render olabiliyor; ayni useCallback referansi
+// her render'da tekrar kaydedilirse dizi cogalirdi, Set bunu tekillestirir.
+let mockOdakGeriCagirmalari = new Set<() => void>()
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush }),
+  useFocusEffect: (effect: () => void) => {
+    mockOdakGeriCagirmalari.add(effect)
+    require('react').useEffect(effect, [])
+  },
 }))
 
 function konusma(ustune: Partial<Konusma> = {}): Konusma {
@@ -29,6 +41,7 @@ function konusma(ustune: Partial<Konusma> = {}): Konusma {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockOdakGeriCagirmalari = new Set<() => void>()
 })
 
 describe('MesajlarEkrani', () => {
@@ -95,5 +108,23 @@ describe('MesajlarEkrani', () => {
     await render(<MesajlarEkrani />)
 
     expect(await screen.findByText('Henuz bir konusman yok')).toBeTruthy()
+  })
+
+  it('ekrana yeniden odaklaninca listeyi tekrar ceker (useFocusEffect, tek seferlik useEffect degil)', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
+
+    await render(<MesajlarEkrani />)
+    await waitFor(() => expect(konusmalarimiGetir).toHaveBeenCalledTimes(1))
+    expect(await screen.findByText('Orcun Ozdemir')).toBeTruthy()
+
+    // konusma acilip okunmus, geri donulmus gibi: okunmamis sayisi
+    // degisti VE ekran yeniden odaklandi. useEffect (deps: []) olsaydi
+    // bu ikinci cagriyi hic yapmazdi - liste bayat kalirdi.
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma({ okunmamis: 0 })])
+    await act(async () => {
+      mockOdakGeriCagirmalari.forEach((geriCagirma) => geriCagirma())
+    })
+
+    await waitFor(() => expect(konusmalarimiGetir).toHaveBeenCalledTimes(2))
   })
 })
