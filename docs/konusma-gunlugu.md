@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-08-20 — [2026-08-20-869a9560.md](oturumlar/2026-08-20-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
+- 2026-08-20 — [2026-08-20-74f56f7b.md](oturumlar/2026-08-20-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-19 — [2026-08-19-cc4a8373.md](oturumlar/2026-08-19-cc4a8373.md) — uygulamamıza kaldıgımız yerden burdan devam edebilirmiyiz
 - 2026-08-19 — [2026-08-19-ab99deca.md](oturumlar/2026-08-19-ab99deca.md) — bu
 - 2026-08-19 — [2026-08-19-aafc33c7.md](oturumlar/2026-08-19-aafc33c7.md) — youtube otomasyon fikrine burdan devam edebilirmiyiz
@@ -464,3 +465,52 @@ Gerekcelerin tamami orada; asagisi ozet.
     bakmasi tercih edildi. Iki durum makinesinin tekrarina karsi
     onlem: ikisi de ayni `bag.takip_ediyor_mu()` yardimcisini ve ayni
     RPC bicimini paylasir.
+
+### Faz 3b beyin firtinasi (2026-08-20)
+
+Spec: `docs/superpowers/specs/2026-08-20-faz3b-birebir-sohbet-design.md`.
+Gerekcelerin tamami orada; asagisi ozet. Bu bolumdeki ilk karar Faz 3a'nin
+bag modelini degistiriyor.
+
+42. **Takip artik karsilikli.** Faz 3a'da kabul yalnizca A->B satirini
+    yaziyordu; artik kabul iki yonu de yaziyor ve takip bir "bag" oluyor.
+    Sonuclari: `takipcilerim` gorunurluk kademesi "beni takip edenler"
+    degil "karsilikli bagli oldugum kisiler" demek, bagi koparmak iki
+    yonu birden siliyor ve `takipciyi_cikar` RPC'si dusuruldu. Sema
+    degismedi; degisen tek sey satirlarin ne zaman yazildigi.
+    Karsiliklilik tek bir yerde, kabul RPC'sinde kuruluyor - `takipler`
+    tablosuna yalnizca `security definer` RPC'ler yazabildigi icin
+    ikinci satiri atlayan bir yol yok. Sirali cift tutan tek satirli bir
+    bag tablosu degerlendirildi ve reddedildi: gorunurluk politikasini,
+    alti RPC'yi ve iki ekrani yeniden yazmak demekti, karsiliginda
+    yalnizca semasal zarafet veriyordu.
+43. **Yazma kapisi: karsilikli takip VEYA kabul edilmis sohbet istegi.**
+    Ust spec "takip edince yazabilirsin" diyordu ve takip o zaman tek
+    yonluydu; bu, bir takip istegini kabul edenin istemeden mesaj
+    kutusunu da acmasi demekti. Takip karsilikli olunca sorun ortadan
+    kalkiyor. Iki yol da kaliyor: takip istegi kabulu kalici bag verir
+    (check-in gorunurlugu **ve** mesajlasma), sohbet istegi kabulu
+    yalnizca konusma acar - bag kurulmaz, konum acilmaz.
+44. **Konusmayi silmek istegi tuketmiyor.** Ust spec "silen taraf icin
+    kaybolur ve yeniden yazmak icin yeni istek gerekir" diyordu; yerine
+    yaygin mesajlasma davranisi secildi: silmek yalnizca kendi tarafta
+    gizler, karsi taraf yazinca konusma geri gelir. Bedeli acikca kabul
+    edildi - gizlemek istenmeyen mesaji durdurmuyor; onun araci
+    engelleme, ve engelleme zaten sessiz ve tam. Kullaniciya "sil" degil
+    "gizle" denmesinin sebebi de bu.
+45. **Yetki her mesajda olculuyor, konusma acilirken bir kez degil.** Bag
+    koparsa (takibi birakma, istegi geri cekme, engelleme) konusma
+    salt-okunur oluyor: gecmis duruyor, yeni mesaj yazilamiyor; bag
+    yeniden kurulursa yazma aciliyor. Gerekce: Faz 3a'da tam bu sinifta
+    iki gercek acik cikti - bir kural yalnizca giriste kontrol
+    edildiginde, durum sonradan degisince kural delinmis oluyor.
+    Konusmanin tamamen silinmesi reddedildi: karsi taraf, senin bagi
+    koparman yuzunden kendi gecmisini de kaybederdi.
+46. **Okunmamis sayisi var, okundu bilgisi yok.** Uye basina bir
+    `son_okuma` zaman damgasi yetiyor. Karsi tarafa "ne zaman okudun"
+    gitmiyor: gizlilik yuzeyi aciyor, bu uygulamanin cekirdek ilkesiyle
+    gerilimli ve ayrica bir kapatma tercihi gerektirirdi.
+47. **Gorunurluk kademesinin ekran metni `takipcilerim` kaliyor.**
+    Veritabani degeri de ayni. "Baglantilarim" onerildi ve reddedildi
+    (kullanicinin tercihi); boylece veri degeri ile ekran metni
+    ayrismiyor.

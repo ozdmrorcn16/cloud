@@ -6,6 +6,16 @@ incelemenin bulgulari da kapatildi. Bu dosya, **bilerek** yapilmayanlari
 ve gelecege birakilanlari tutar. Ayrinti icin `CLAUDE.md` icindeki
 "Faz 3a TAMAMLANDI" bolumune bak.
 
+> **Faz 3b bu dosyanin bag modelini degistirdi (2026-08-20, karar #42).**
+> Takip artik **karsilikli**: kabul edilen bir takip istegi `takipler`
+> tablosuna iki satir birden yaziyor (A->B ve B->A), `takibi_birak` iki
+> yonu birden siliyor ve `takipciyi_cikar` RPC'si ile istemcideki
+> `takipciyiCikar` sarmalayicisi dusuruldu. Asagidaki metinde "takip tek
+> yonlu" varsayimina dayanan yerler bu turda duzeltildi; yine de bu
+> dosyayi Faz 3a'nin kaydi olarak okurken karsilikliligi akilda tut.
+> Faz 3b'nin kendi takip isleri ayri dosyada:
+> `docs/faz3b-takip-isleri.md`.
+
 ## 1. Yapilmamis elle dogrulama (en onemli acik)
 
 Iki hesapla tarayicida gezinme hic yapilmadi; etkilesimli oldugu ve
@@ -19,7 +29,8 @@ Dogrulanmasi gereken bes senaryo:
    gorunur ve yaninda "Kabul edersen check-in'lerini gorebilecek." yazar.
 2. B kabul eder; A, B'nin canli check-in'ini **mekana gitmeden** gorur.
 3. B `bulunurluk = 'gizli'` ile check-in yapar; A goremez.
-4. B, A'yi takipcilerinden cikarir; A yine goremez.
+4. B bagi birakir (`takibi_birak`; Faz 3b'den beri iki yonu de
+   siler); A yine goremez.
 5. A, B'yi engeller; iki tarafta da bag kaybolur.
 
 Bu bes senaryonun **veritabani tarafi** `npm run test:gorunurluk`
@@ -62,13 +73,16 @@ yaninda artik `gelenTakip`, `gelenSohbet` da var. Dort sorgu
 / "Reddet" butonlari ve `Kabul edersen check-in'lerini gorebilecek.`
 metni geliyor.
 
-**Dikkat - takip TEK YONLU, sohbet SIMETRIK.** Birinin seni takip
-ediyor olmasi senin onu takip ettigin anlamina gelmez, dolayisiyla
-`gelenTakip` `kabul` ya da `beklemede` iken profilde "Takip et"
-gostermek DOGRU. Sohbet oyle degil: kabul edilmis bir sohbet iki taraf
-icin de aciktir, o yuzden "Sohbet acik" hem `sohbet` hem `gelenSohbet`
-`kabul` oldugunda cikiyor. Bu ayrimi bozmak bu turda iki kez az kalsin
-yapilan hataydi.
+**Dikkat - Faz 3a'da takip TEK YONLU, sohbet SIMETRIKTI; Faz 3b'den
+beri IKISI DE SIMETRIK.** Faz 3a'da birinin seni takip ediyor olmasi
+senin onu takip ettigin anlamina gelmiyordu, dolayisiyla `gelenTakip`
+`kabul` iken profilde "Takip et" gostermek dogruydu. Faz 3b karsilikli
+takibe gecince bu durum artik olusamiyor: kabul iki satiri birden
+yazdigi icin `gelenTakip` `kabul` ise `takip` de `kabul`. Profil ekrani
+takip butonlarini `takip` alanina bakarak seciyor, `gelenTakip` yalnizca
+gelen **bekleyen** istek icin kullaniliyor. Sohbette durum bastan beri
+ayni: kabul edilmis bir sohbet iki taraf icin de aciktir, o yuzden
+"Sohbet acik" hem `sohbet` hem `gelenSohbet` `kabul` oldugunda cikiyor.
 
 ### Kapatilan kucuk maddeler
 
@@ -103,10 +117,13 @@ yapilan hataydi.
 - `kullanici/[id].tsx` ve `baglar.tsx` bazi stilleri birebir
   tekrarliyor. Kod tabaninin mevcut ekran basi stil uslubuyla tutarli;
   ortak modul acmak istenirse ayri bir is.
-- Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
-  yapilmadi (asagida, bolum 4). Istek gonderen senaryolarin hesaplari
-  donusumlu kullanmasi ya da paketin kendi kotasini yonetici anahtariyla
-  temizlemesi gerekirdi.
+- ~~Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
+  yapilmadi.~~ **Faz 3b Gorev 1'de kapandi:** paket artik her kosumun
+  basinda `kotayiTemizle()` ile test hesaplarinin `istek_gunlugu`
+  satirlarini yonetici anahtariyla siliyor. Asagidaki bolum 4'un
+  "gunde ~8 kez calistirilabilir" maddesi bu yuzden artik yalnizca
+  `SUPABASE_SERVICE_ROLE_KEY` **yokken** gecerli; anahtar `mobil/.env`
+  icinde ve gitignored.
 
 ## 4. Faz 3a'da ogrenilen ve bir daha kesfedilmemesi gereken seyler
 
@@ -126,7 +143,10 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
   maddesi **gecersiz**. Bu fazdaki en degerli dogrulamalarin cogu
   bununla yapildi (yetki kontrolleri, politika govdeleri, cron gecmisi).
 - **`test:gorunurluk` kendi kendini zehirliyor; gunde ~8 kez
-  calistirilabilir.** Paketin senaryolari gercek takip ve sohbet istegi
+  calistirilabilir.** (Faz 3b Gorev 1'den beri yalnizca
+  `SUPABASE_SERVICE_ROLE_KEY` yoksa gecerli; anahtar varken paket kendi
+  kotasini her kosumun basinda temizliyor. Mekanizmayi anlamak icin yine
+  de okunmali.) Paketin senaryolari gercek takip ve sohbet istegi
   gonderiyor, bunlar da gunluk 50 istek tavanindan dusuyor. Tavan
   ekle-only `istek_gunlugu` tablosunu sayiyor ve istemci o satirlari
   **tasarim geregi** silemiyor (RLS acik, politika yok). Yani her kosum

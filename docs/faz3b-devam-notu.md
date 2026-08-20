@@ -1,5 +1,13 @@
 # Faz 3b - devam notu (2026-08-20)
 
+> **FAZ KAPANDI (2026-08-20).** 18 gorevin hepsi bitti ve incelendi;
+> Gorev 18 (kapanis) tamamlandi. Bu dosya artik bir "devam noktasi"
+> degil, **fazin tarihsel gunlugu**: hangi commit hangi gorev, testlerin
+> ara degerleri, ortam tuzaklari ve faz sirasinda yasanan guvenlik olayi
+> burada. Guncel durum icin `CLAUDE.md` icindeki "Faz 3b TAMAMLANDI"
+> bolumune, kalan isler icin `docs/faz3b-takip-isleri.md` dosyasina bak.
+> Asagidaki "devam noktasi" ve "yapilacak" ifadeleri o gunun kaydidir.
+
 Oturum token siniri yuzunden kesildi. Bu dosya yeni oturumun nereden
 devam edecegini anlatir. **Once bunu oku, sonra asagida adi gecen
 defteri.**
