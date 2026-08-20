@@ -34,7 +34,9 @@ Dogrulanmasi gereken bes senaryo:
 5. A, B'yi engeller; iki tarafta da bag kaybolur.
 
 Bu bes senaryonun **veritabani tarafi** `npm run test:gorunurluk`
-icindeki 82 dogrulamada zaten kapsaniyor (ozellikle senaryo 19-28 ve 31).
+icinde zaten kapsaniyor (ozellikle senaryo 19-28 ve 31). Paket Faz 3a
+kapanisinda 82 dogrulama kosuyordu; Faz 3b kapanisinda 44 senaryo / 216
+dogrulama.
 Acikta kalan yalnizca arayuz kablolamasinin gozle dogrulanmasi.
 
 Nasil calistirilir:
@@ -119,11 +121,16 @@ ayni: kabul edilmis bir sohbet iki taraf icin de aciktir, o yuzden
   ortak modul acmak istenirse ayri bir is.
 - ~~Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
   yapilmadi.~~ **Faz 3b Gorev 1'de kapandi:** paket artik her kosumun
-  basinda `kotayiTemizle()` ile test hesaplarinin `istek_gunlugu`
-  satirlarini yonetici anahtariyla siliyor. Asagidaki bolum 4'un
-  "gunde ~8 kez calistirilabilir" maddesi bu yuzden artik yalnizca
+  **sonunda**, `temizle()` icinden cagrilan `kotayiTemizle()` ile test
+  hesaplarinin `istek_gunlugu` satirlarini yonetici anahtariyla siliyor
+  (`gorunurluk-testleri/yardimcilar.ts`). Asagidaki bolum 4'un "gunde ~8
+  kez calistirilabilir" maddesi bu yuzden artik yalnizca
   `SUPABASE_SERVICE_ROLE_KEY` **yokken** gecerli; anahtar `mobil/.env`
-  icinde ve gitignored.
+  icinde ve gitignored. **Dikkat:** temizlik kosumun sonunda oldugu ve
+  `finally` icinde OLMADIGI icin, `senaryo()` sarmalayicisinin disinda
+  bir hata (ornegin baglanma asamasinda) kosumu `temizle()`ye hic
+  vardirmaz; boyle bir kosumun biraktigi satirlar bir sonraki kosumda
+  kendiliginden temizlenmez, elle silmek gerekir.
 
 ## 4. Faz 3a'da ogrenilen ve bir daha kesfedilmemesi gereken seyler
 
@@ -145,13 +152,15 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
 - **`test:gorunurluk` kendi kendini zehirliyor; gunde ~8 kez
   calistirilabilir.** (Faz 3b Gorev 1'den beri yalnizca
   `SUPABASE_SERVICE_ROLE_KEY` yoksa gecerli; anahtar varken paket kendi
-  kotasini her kosumun basinda temizliyor. Mekanizmayi anlamak icin yine
-  de okunmali.) Paketin senaryolari gercek takip ve sohbet istegi
-  gonderiyor, bunlar da gunluk 50 istek tavanindan dusuyor. Tavan
-  ekle-only `istek_gunlugu` tablosunu sayiyor ve istemci o satirlari
-  **tasarim geregi** silemiyor (RLS acik, politika yok). Yani her kosum
-  kotadan yiyor ve birikiyor; kota dolunca senaryo 19, 21, 22, 24, 26 ve
-  28 zincirleme duser ve paket **yanlis alarm** verir.
+  kotasini her kosumun **sonunda**, `temizle()` icinde temizliyor -
+  yarida kalan bir kosum oraya varamaz ve kotayi kirli birakir.
+  Mekanizmayi anlamak icin yine de okunmali.) Paketin senaryolari
+  gercek takip ve sohbet istegi gonderiyor, bunlar da gunluk 50 istek
+  tavanindan dusuyor. Tavan ekle-only `istek_gunlugu` tablosunu sayiyor
+  ve istemci o satirlari **tasarim geregi** silemiyor (RLS acik,
+  politika yok). Yani her kosum kotadan yiyor ve birikiyor; kota dolunca
+  senaryo 19, 21, 22, 24, 26 ve 28 zincirleme duser ve paket **yanlis
+  alarm** verir.
 
   2026-08-20'de tam bunu yasadik: uc saatte on kosum yapilmis, hesap
   50/50'ye dayanmis, bir alt ajan bunu "migrasyonum bir seyi kirdi mi"
@@ -172,10 +181,15 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
   Bu silme urun degismezligini bozmuyor: ekle-only ozelligi ISTEMCIYE
   karsi zorlanan bir kural ve o kural yerinde kaliyor. Kalici cozum,
   istek gonderen senaryolarin hesaplari donusumlu kullanmasi ya da
-  paketin kendi kotasini yonetici anahtariyla temizlemesi olurdu; ikisi
-  de yapilmadi.
+  paketin kendi kotasini yonetici anahtariyla temizlemesi olurdu.
+  **Ikincisi Faz 3b Gorev 1'de yapildi** (`kotayiTemizle()`, kosumun
+  sonunda); hesap donusumu yapilmadi ve anahtarsiz ortamda bu paragrafin
+  tamami hala gecerli.
 
-- `npm run test:gorunurluk --tavan` ayrica ve **bilerek** yikici: tek
+- `npm run test:gorunurluk -- --tavan` ayrica ve **bilerek** yikici:
+  bayrak `--` ile gecirilmeli; `npm run test:gorunurluk --tavan` bicimini
+  npm kendi yapilandirmasi sanip yutuyor ve betige hic ulastirmiyor
+  (`calistir.ts` `process.argv`'ye bakiyor). Tek
   kosumda 50 kalici satir yaziyor, yani gunun geri kalanini tek basina
   bitiriyor. Yalnizca tavan davranisini dogrulamak icin, bilerek
   calistirilir.

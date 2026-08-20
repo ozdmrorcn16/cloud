@@ -46,7 +46,8 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - **Guncelleme (2026-08-20, Faz 3a kapanisi):** Calisma dali su an
   `claude/faz3a-bag`. Faz 3a (bag: takip/sohbet istekleri, uc kademeli
   gorunurluk) tamamlandi (18/18 gorev, hepsi incelendi) - asagidaki
-  "Devam eden is" basligindaki 8/18 notu artik gecersiz. Ayrinti asagida
+  "ARSIV - Faz 3a'nin ortasinda yazilmis devam notu" basligindaki 8/18
+  notu artik gecersiz. Ayrinti asagida
   "Faz 3a TAMAMLANDI" bolumunde.
 
 - **Guncelleme (2026-08-20, Faz 3b kapanisi):** Calisma dali su an
@@ -67,16 +68,26 @@ terminalinde surer. Yeni oturumda:
 ```bash
 cd ~/projects/cloud            # Windows'ta: cd C:\Users\orcns\projects\cloud
 git fetch origin
-git checkout claude/faz2b-guvenlik
-git pull origin claude/faz2b-guvenlik
+git checkout claude/faz3b-sohbet
+git pull origin claude/faz3b-sohbet
 cd mobil && npm install        # node_modules repoda degil
-npm test                       # mock tabanli suite
-npm run test:gorunurluk        # gercek veritabani, 10 senaryo
+npx jest --runInBand           # mock tabanli suite (39 paket / 289 test)
+npm run test:sema              # gercek veritabani, sema ve yetkiler (69 dogrulama)
+npm run test:gorunurluk        # gercek veritabani, 44 senaryo / 216 dogrulama
+npx tsc --noEmit               # bes onceden var olan hata beklenir
 ```
+
+Dal adi guncel kalmali: en son calisilan dal `claude/faz3b-sohbet`
+(2026-08-20, Faz 3b kapanisi). Sayilar Faz 3b kapanisindaki degerler.
 
 Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
-### Devam eden is: Faz 3a - bag ve gorunurluk kademeleri
+### ARSIV - Faz 3a'nin ortasinda yazilmis devam notu (GECERSIZ)
+
+**Bu bolum tarihsel bir kayittir; aktif is DEGILDIR.** Faz 3a
+2026-08-20'de 18/18 gorevle kapandi, ardindan Faz 3b de kapandi. Guncel
+durum icin "Faz 3a TAMAMLANDI" ve "Faz 3b TAMAMLANDI" bolumlerine bak.
+Asagisi yazildigi gunun kaydidir.
 
 Oturum token siniri yuzunden kesildi. **Yeni oturumda once
 `docs/faz3a-devam-notu.md` dosyasini oku** - nerede kalindigi, testlerin
@@ -302,7 +313,8 @@ sutunlar: `check_inler.bulunurluk`, `profiller.varsayilan_bulunurluk`
 (eski `check_inler.gizli_mi` ve `profiller.varsayilan_gizli` dusuruldu).
 Yeni ozel sema yardimcilari: `bag.takip_ediyor_mu`, `bag.ani_gorunurlugu`,
 `bag.istek_on_kontrol`. Yeni genel RPC'ler: `takip_istegi_gonder`,
-`takip_istegini_yanitla`, `takibi_birak`, `takipciyi_cikar`,
+`takip_istegini_yanitla`, `takibi_birak`, `takipciyi_cikar`
+(Faz 3b'de dusuruldu),
 `sohbet_istegi_gonder`, `sohbet_istegini_yanitla`, `bag_kisileri`;
 `engelle` iki yondeki takip/sohbet kayitlarini da silecek sekilde
 genisletildi; `check_in_yap` ve `check_inden_ayril` uc kademeli modele

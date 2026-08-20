@@ -46,8 +46,10 @@ Sohbet ekrani sikayeti soyle aciyor:
     router.push(`/sikayet?hedefTur=mesaj&hedefId=${sikayetHedefId}`)
 
 Yani `sikayetler.hedef_id` mesaj id'si degil, **konusma** id'si (konusma
-henuz kurulmamissa kullanici id'si). Diger iki sikayet turunde (`profil`,
-`ani`) o alan sikayet edilen seyin tam id'sini tasiyor. Sonucu:
+henuz kurulmamissa kullanici id'si). Diger iki sikayet turunde
+(`kullanici` ve `check_in`; uc turun tam listesi `lib/sikayet.ts` ve
+`sikayet_gonder` govdesinde) o alan sikayet edilen seyin tam id'sini
+tasiyor. Sonucu:
 `sikayetler` tablosunu okuyacak moderasyon paneli hangi mesajin sikayet
 edildigini bulamaz; elinde yalnizca konusmanin tamami olur.
 
@@ -159,7 +161,10 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
   anahtar olmadan gurultulu duser. Anahtar `mobil/.env` icinde ve
   gitignored; degeri hicbir belgeye, teste ya da commit mesajina
   yazilmaz.
-- `npm run test:gorunurluk --tavan` gunun geri kalani icin hala yikici:
+- `npm run test:gorunurluk -- --tavan` gunun geri kalani icin hala
+  yikici. Bayrak `--` ile gecirilmeli: `npm run test:gorunurluk --tavan`
+  bicimini npm kendi yapilandirmasi sanip yutuyor ve betige hic
+  ulastirmiyor (`calistir.ts` `process.argv`'ye bakiyor). Yikiciligi:
   tek kosumda test hesabinin ekle-only istek gunlugune 50 kalici satir
   yaziyor. Yalnizca tavan davranisini dogrulamak icin, bilerek
   calistirilir.
