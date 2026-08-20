@@ -162,6 +162,17 @@ describe('AyarlarEkrani', () => {
     expect(await screen.findByText('Kullanici adin: @orcun')).toBeTruthy()
   })
 
+  it('ani gorunurlugu bolumunde gizli check-in istisnasini aciklayan bir not gosterir', async () => {
+    await render(<AyarlarEkrani />)
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
+
+    expect(
+      screen.getByText(
+        "Bu secim butun anilarina uygulanir, ama gizli check-in'den donusen anilar bu ayardan etkilenmez ve kapali kalir."
+      )
+    ).toBeTruthy()
+  })
+
   it('sonraki degisim tarihi gelecekteyse gosterir', async () => {
     const sonrakiTarih = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
     ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({

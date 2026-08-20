@@ -6,7 +6,13 @@ import {
   takipcilerimiGetir,
   takipEttiklerimiGetir,
 } from '../../lib/bag-listeleri'
-import { takipIsteginiYanitla, sohbetIsteginiYanitla, takibiBirak, takipciyiCikar } from '../../lib/bag'
+import {
+  takipIsteginiYanitla,
+  sohbetIsteginiYanitla,
+  takibiBirak,
+  takipciyiCikar,
+  sohbetIsteginiGeriCek,
+} from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
 import type { BagKisi } from '../../lib/bag'
 
@@ -84,6 +90,26 @@ export default function BaglarEkrani() {
     try {
       await takibiBirak(kullaniciId)
       setTakipEdilenler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
+  }
+
+  async function gidenTakipIsteginiGeriCekEt(kullaniciId: string) {
+    try {
+      await takibiBirak(kullaniciId)
+      setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
+  }
+
+  async function gidenSohbetIsteginiGeriCekEt(kullaniciId: string) {
+    try {
+      await sohbetIsteginiGeriCek(kullaniciId)
+      setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
@@ -182,7 +208,10 @@ export default function BaglarEkrani() {
       <Text style={stiller.bolumBaslik}>Giden istekler</Text>
       <FlatList
         scrollEnabled={false}
-        data={[...gidenTakip, ...gidenSohbet]}
+        data={[
+          ...gidenTakip.map((k) => ({ ...k, tur: 'takip' as const })),
+          ...gidenSohbet.map((k) => ({ ...k, tur: 'sohbet' as const })),
+        ]}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
@@ -190,7 +219,16 @@ export default function BaglarEkrani() {
               <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
               <Text style={stiller.ad}>{item.ad}</Text>
             </View>
-            <Text style={stiller.pasifDurum}>Istek gonderildi</Text>
+            <Pressable
+              style={stiller.kucukButon}
+              onPress={() =>
+                item.tur === 'takip'
+                  ? gidenTakipIsteginiGeriCekEt(item.id)
+                  : gidenSohbetIsteginiGeriCekEt(item.id)
+              }
+            >
+              <Text style={stiller.kucukButonYazi}>Geri cek</Text>
+            </Pressable>
           </View>
         )}
         ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen gonderilmis istek yok</Text>}
@@ -265,7 +303,6 @@ const stiller = StyleSheet.create({
   kucukButonYazi: { color: '#0645ad', fontWeight: '600', fontSize: 13 },
   kucukTehlikeliButon: { borderWidth: 1, borderColor: '#c00', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 },
   kucukTehlikeliButonYazi: { color: '#c00', fontWeight: '600', fontSize: 13 },
-  pasifDurum: { color: '#666' },
   bosDurum: { color: '#666', paddingVertical: 8 },
   durum: { color: '#666', marginTop: 24, textAlign: 'center' },
   hata: { color: '#c00', marginBottom: 12 },

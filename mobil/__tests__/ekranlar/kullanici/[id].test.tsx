@@ -7,8 +7,11 @@ import { profilFotograflariUrl } from '../../../lib/fotograf-url'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
+  takipIsteginiYanitla,
   takibiBirak,
   sohbetIstegiGonder,
+  sohbetIsteginiYanitla,
+  sohbetIsteginiGeriCek,
 } from '../../../lib/bag'
 
 jest.mock('../../../lib/profil', () => ({ baskasininProfiliniGetir: jest.fn() }))
@@ -27,6 +30,7 @@ jest.mock('../../../lib/bag', () => ({
   takipciyiCikar: jest.fn(),
   sohbetIstegiGonder: jest.fn(),
   sohbetIsteginiYanitla: jest.fn(),
+  sohbetIsteginiGeriCek: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -45,7 +49,9 @@ beforeEach(() => {
   ;(profilFotograflariUrl as jest.Mock).mockImplementation((yollar: string[]) =>
     Promise.resolve(yollar.map((yol) => `https://ornek/imzali/${yol}`))
   )
-  ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+  ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+    takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
+  })
 })
 
 describe('KullaniciProfiliEkrani', () => {
@@ -237,7 +243,7 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Takip et'))
 
     await waitFor(() => expect(takipIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Istek gonderildi')).toBeTruthy()
+    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
   })
 
   it('takip ediyorken birakma butonunu gosterir', async () => {
@@ -269,7 +275,7 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Takibi birak')).toBeNull()
   })
 
-  it('sohbet iste butonuna basinca dogru id ile cagirir ve istek gonderildi gosterir', async () => {
+  it('sohbet iste butonuna basinca dogru id ile cagirir ve geri cek butonu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
     ;(sohbetIstegiGonder as jest.Mock).mockResolvedValue(undefined)
 
@@ -277,17 +283,139 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Sohbet iste'))
 
     await waitFor(() => expect(sohbetIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Istek gonderildi')).toBeTruthy()
+    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
-  it('sohbet beklemedeyken istek gonderildi gosterir', async () => {
+  it('sohbet beklemedeyken geri cek butonu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'beklemede' })
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Istek gonderildi')).toBeTruthy()
+    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
     expect(await screen.findByText('Takibi birak')).toBeTruthy()
+  })
+
+  it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'beklemede', sohbet: 'yok' })
+    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+
+    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
+    expect(await screen.findByText('Takip et')).toBeTruthy()
+  })
+
+  it('sohbet beklemedeyken geri cek basinca sohbetIsteginiGeriCek cagirir ve sohbet iste gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'beklemede' })
+    ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+
+    await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('kullanici-2'))
+    expect(await screen.findByText('Sohbet iste')).toBeTruthy()
+  })
+
+  it('sohbet istegini geri cekme basarisiz olursa hata gosterir ve durumu degistirmez', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'beklemede' })
+    ;(sohbetIsteginiGeriCek as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('Istegi geri cek')).toBeTruthy()
+    expect(screen.queryByText('Sohbet iste')).toBeNull()
+  })
+
+  it('gelen takip istegi icin kabul et ve reddet butonlarini ve aciklamayi gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'beklemede', gelenSohbet: 'yok',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Kabul et')).toBeTruthy()
+    expect(screen.getByText('Reddet')).toBeTruthy()
+    expect(screen.getByText("Kabul edersen check-in'lerini gorebilecek.")).toBeTruthy()
+  })
+
+  it('gelen takip istegini kabul edince dogru id ile yanitlar ve blok kaybolur', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'beklemede', gelenSohbet: 'yok',
+    })
+    ;(takipIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Kabul et'))
+
+    await waitFor(() => expect(takipIsteginiYanitla).toHaveBeenCalledWith('kullanici-2', true))
+    await waitFor(() => expect(screen.queryByText('Kabul et')).toBeNull())
+  })
+
+  it('gelen takip istegini reddedince dogru id ile yanitlar ve blok kaybolur', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'beklemede', gelenSohbet: 'yok',
+    })
+    ;(takipIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Reddet'))
+
+    await waitFor(() => expect(takipIsteginiYanitla).toHaveBeenCalledWith('kullanici-2', false))
+    await waitFor(() => expect(screen.queryByText('Reddet')).toBeNull())
+  })
+
+  it('gelen takip istegini yanitlama basarisiz olursa hata gosterir ve blok kalir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'beklemede', gelenSohbet: 'yok',
+    })
+    ;(takipIsteginiYanitla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Kabul et'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('Kabul et')).toBeTruthy()
+  })
+
+  it('gelen sohbet istegi icin kabul et ve reddet butonlarini gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Kabul et')).toBeTruthy()
+    expect(screen.getByText('Reddet')).toBeTruthy()
+  })
+
+  it('gelen sohbet istegini kabul edince dogru id ile yanitlar', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',
+    })
+    ;(sohbetIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Kabul et'))
+
+    await waitFor(() => expect(sohbetIsteginiYanitla).toHaveBeenCalledWith('kullanici-2', true))
+    await waitFor(() => expect(screen.queryByText('Kabul et')).toBeNull())
+  })
+
+  it('gelen sohbet istegini reddedince dogru id ile yanitlar', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',
+    })
+    ;(sohbetIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Reddet'))
+
+    await waitFor(() => expect(sohbetIsteginiYanitla).toHaveBeenCalledWith('kullanici-2', false))
+    await waitFor(() => expect(screen.queryByText('Reddet')).toBeNull())
   })
 
   it('sohbet kabul edilmisse sohbet acik gosterir', async () => {

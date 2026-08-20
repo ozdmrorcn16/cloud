@@ -11,6 +11,7 @@ import {
   sohbetIsteginiYanitla,
   takibiBirak,
   takipciyiCikar,
+  sohbetIsteginiGeriCek,
 } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
 
@@ -26,6 +27,7 @@ jest.mock('../../lib/bag', () => ({
   sohbetIsteginiYanitla: jest.fn(),
   takibiBirak: jest.fn(),
   takipciyiCikar: jest.fn(),
+  sohbetIsteginiGeriCek: jest.fn(),
 }))
 
 jest.mock('../../lib/engelleme', () => ({
@@ -149,6 +151,48 @@ describe('BaglarEkrani', () => {
     await render(<BaglarEkrani />)
 
     expect(await screen.findByText('mert')).toBeTruthy()
+  })
+
+  it('giden takip istegini geri ceker', async () => {
+    ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'k3', kullaniciAdi: 'mert', ad: 'Mert D' }],
+      sohbet: [],
+    })
+    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Geri cek'))
+
+    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k3'))
+    await waitFor(() => expect(screen.queryByText('mert')).toBeNull())
+  })
+
+  it('giden sohbet istegini geri ceker', async () => {
+    ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [],
+      sohbet: [{ id: 'k6', kullaniciAdi: 'deniz', ad: 'Deniz K' }],
+    })
+    ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Geri cek'))
+
+    await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('k6'))
+    await waitFor(() => expect(screen.queryByText('deniz')).toBeNull())
+  })
+
+  it('giden istegi geri cekme basarisiz olursa hata gosterir ve satiri listeden kaldirmaz', async () => {
+    ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'k3', kullaniciAdi: 'mert', ad: 'Mert D' }],
+      sohbet: [],
+    })
+    ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Geri cek'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('mert')).toBeTruthy()
   })
 
   it('takip ettiklerimi listeler ve takibi birakabilirim', async () => {

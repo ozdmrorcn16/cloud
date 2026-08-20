@@ -8,9 +8,11 @@ import { profilFotograflariUrl } from '../../../lib/fotograf-url'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
+  takipIsteginiYanitla,
   takibiBirak,
   sohbetIstegiGonder,
-  type BagDurumu,
+  sohbetIsteginiYanitla,
+  sohbetIsteginiGeriCek,
 } from '../../../lib/bag'
 
 export default function KullaniciProfiliEkrani() {
@@ -19,7 +21,9 @@ export default function KullaniciProfiliEkrani() {
   const [profil, setProfil] = useState<BaskaProfil | null>(null)
   const [fotografUrlleri, setFotografUrlleri] = useState<string[]>([])
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
-  const [bagDurum, setBagDurum] = useState<{ takip: BagDurumu; sohbet: BagDurumu } | null>(null)
+  const [bagDurum, setBagDurum] = useState<Awaited<ReturnType<typeof bagDurumunuGetir>> | null>(
+    null
+  )
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
@@ -94,6 +98,40 @@ export default function KullaniciProfiliEkrani() {
     }
   }
 
+  async function sohbetIsteginiGeriCekEt() {
+    try {
+      await sohbetIsteginiGeriCek(id)
+      setBagDurum((onceki) => (onceki ? { ...onceki, sohbet: 'yok' } : onceki))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
+  }
+
+  async function takipIstegineYanitVer(kabul: boolean) {
+    try {
+      await takipIsteginiYanitla(id, kabul)
+      setBagDurum((onceki) =>
+        onceki ? { ...onceki, gelenTakip: kabul ? 'kabul' : 'yok' } : onceki
+      )
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
+  }
+
+  async function sohbetIstegineYanitVer(kabul: boolean) {
+    try {
+      await sohbetIsteginiYanitla(id, kabul)
+      setBagDurum((onceki) =>
+        onceki ? { ...onceki, gelenSohbet: kabul ? 'kabul' : 'yok' } : onceki
+      )
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+    }
+  }
+
   if (yukleniyor) {
     return (
       <View style={stiller.kapsayici}>
@@ -136,9 +174,9 @@ export default function KullaniciProfiliEkrani() {
           </Pressable>
         )}
         {bagDurum?.takip === 'beklemede' && (
-          <View style={stiller.pasifButon}>
-            <Text style={stiller.pasifButonYazi}>Istek gonderildi</Text>
-          </View>
+          <Pressable style={stiller.pasifButon} onPress={takibiBirakEt}>
+            <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
+          </Pressable>
         )}
         {bagDurum?.takip === 'kabul' && (
           <Pressable style={stiller.anahtarliButon} onPress={takibiBirakEt}>
@@ -152,9 +190,9 @@ export default function KullaniciProfiliEkrani() {
           </Pressable>
         )}
         {bagDurum?.sohbet === 'beklemede' && (
-          <View style={stiller.pasifButon}>
-            <Text style={stiller.pasifButonYazi}>Istek gonderildi</Text>
-          </View>
+          <Pressable style={stiller.pasifButon} onPress={sohbetIsteginiGeriCekEt}>
+            <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
+          </Pressable>
         )}
         {bagDurum?.sohbet === 'kabul' && (
           <View style={stiller.pasifButon}>
@@ -162,6 +200,33 @@ export default function KullaniciProfiliEkrani() {
           </View>
         )}
       </View>
+
+      {bagDurum?.gelenTakip === 'beklemede' && (
+        <View style={stiller.gelenIstekBlok}>
+          <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
+          <View style={stiller.bagButonlari}>
+            <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(true)}>
+              <Text style={stiller.kucukButonYazi}>Kabul et</Text>
+            </Pressable>
+            <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(false)}>
+              <Text style={stiller.kucukButonYazi}>Reddet</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {bagDurum?.gelenSohbet === 'beklemede' && (
+        <View style={stiller.gelenIstekBlok}>
+          <View style={stiller.bagButonlari}>
+            <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(true)}>
+              <Text style={stiller.kucukButonYazi}>Kabul et</Text>
+            </Pressable>
+            <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(false)}>
+              <Text style={stiller.kucukButonYazi}>Reddet</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       <Text style={stiller.bolumBaslik}>Anilar</Text>
       <FlatList
@@ -200,6 +265,10 @@ const stiller = StyleSheet.create({
   durum: { color: '#666', marginTop: 24, textAlign: 'center' },
   hata: { color: '#c00', marginBottom: 12 },
   bagButonlari: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  gelenIstekBlok: { marginBottom: 16 },
+  aciklama: { color: '#555', marginBottom: 8 },
+  kucukButon: { borderWidth: 1, borderColor: '#0645ad', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 },
+  kucukButonYazi: { color: '#0645ad', fontWeight: '600', fontSize: 13 },
   birincilButon: { flex: 1, backgroundColor: '#0645ad', borderRadius: 8, padding: 12, alignItems: 'center' },
   birincilButonYazi: { color: '#fff', fontWeight: '600' },
   pasifButon: { flex: 1, backgroundColor: '#eee', borderRadius: 8, padding: 12, alignItems: 'center' },

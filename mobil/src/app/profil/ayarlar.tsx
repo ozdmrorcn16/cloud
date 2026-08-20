@@ -185,6 +185,10 @@ export default function AyarlarEkrani() {
       </View>
 
       <Text style={stiller.altBaslik}>Butun anilarimi kim gorsun</Text>
+      <Text style={stiller.ipucu}>
+        Bu secim butun anilarina uygulanir, ama gizli check-in'den donusen anilar bu ayardan
+        etkilenmez ve kapali kalir.
+      </Text>
       <View style={stiller.butonSatiri}>
         {ANI_GORUNURLUK_SECENEKLERI.map((secenek) => (
           <Pressable
