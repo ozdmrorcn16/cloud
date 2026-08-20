@@ -203,6 +203,17 @@ export default function KullaniciProfiliEkrani() {
         )}
       </View>
 
+      {(bagDurum?.takip === 'kabul' ||
+        bagDurum?.sohbet === 'kabul' ||
+        bagDurum?.gelenSohbet === 'kabul') && (
+        <Pressable
+          style={stiller.birincilButon}
+          onPress={() => router.push(`/sohbet/${id}`)}
+        >
+          <Text style={stiller.birincilButonYazi}>Mesaj gonder</Text>
+        </Pressable>
+      )}
+
       {bagDurum?.gelenTakip === 'beklemede' && (
         <View style={stiller.gelenIstekBlok}>
           <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
