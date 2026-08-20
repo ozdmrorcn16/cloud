@@ -112,6 +112,22 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
 - `mesajlari_getir`'e negatif `p_limit` verilince ham Postgres hatasi
   uretiyor, Turkce bir mesaj degil. Istemci bu degeri hic gondermiyor,
   yani bugun yalnizca dogrudan RPC cagrisiyla goruluyor.
+- `mobil/src/app/kullanici/[id].tsx:231-242`'deki gelen SOHBET istegi
+  blogunda hicbir riza/aciklama metni yok. Gelen TAKIP istegi blogunda
+  "Kabul edersen birbirinizin check-in'lerini gorebilir ve
+  mesajlasabilirsiniz." cumlesi var; sohbet istegi blogunda karsiligi
+  yok, yani kullanici sohbet istegini kabul edince ne verdigini
+  okumadan kabul ediyor. Faz 3b oncesinden gelen bir bosluk. Metin
+  takip istegininkiyle AYNI olmamali: sohbet istegini kabul etmek
+  karsilikli takip acmiyor, yalnizca yazma kanali aciyor.
+- `mobil/baglar.tsx:140-141`'deki riza cumlesi ("Kabul edersen
+  birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")
+  yalnizca "Gelen istekler" basliginin altinda duruyor, ama ayni
+  bolumun asagisinda ayri bir "Sohbet istekleri" listesi de var ve o
+  listenin kendi riza metni yok. Sohbet istegini kabul etmek karsilikli
+  takip acmadigi icin cumle o listeye okunursa FAZLA vaat ediyor.
+  Sapma "az uyarma" degil "cok uyarma" yonunde, yani zararsiz - ama iki
+  istek turunun riza metni ayrilmali.
 
 ## 4. Derinlemesine savunma ve temizlik
 
@@ -121,14 +137,18 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
   yalnizca `authenticated` rolunde, PostgREST `bag` semasini sunmuyor),
   ama bu iki koruma da yapilandirmaya bagli; `revoke` fonksiyonun
   kendisine bagli olurdu.
-- `mesaj_gonder`'in `update konusma_uyeleri` adimi KOSULSUZ calisiyor:
-  gizlenmemis bir konusmada bile her mesaj iki satiri bosuna yeniden
-  yaziyor. Islevsel sorun degil, gereksiz yuk. **Duzeltme (nihai
+- `mesaj_gonder`'in `update konusma_uyeleri` adimi KOSULSUZ calisiyor,
+  `kullanici_id` filtresi yok. Islevsel sorun degil. **Duzeltme (nihai
   inceleme):** bu maddenin eski hali "her mesaj iki UPDATE olayini daha
   Realtime'a yayiyor" diyordu; bu YANLIS. `supabase_realtime`
   yayininda canli veritabaninda yalnizca `public.mesajlar` var, yani
-  `konusma_uyeleri` UPDATE'leri hicbir yere yayilmiyor. Var olmayan bir
-  fan-out'u duzeltmeye oturulmasin.
+  `konusma_uyeleri` UPDATE'leri hicbir yere yayilmiyor. **Ikinci
+  duzeltme (nihai inceleme, son tur):** "her mesaj iki satiri bosuna
+  yeniden yaziyor" ifadesi de ABARTILI.
+  `20260820133817_mesaj_gonder.sql:71-74`'e gore gondericinin
+  satirindaki `son_okuma = now()` her mesajda GEREKLI - kendi mesaji
+  okunmamis sayilmasin diye. Gereksiz olan yalnizca `gizlendi_mi =
+  false`: konusma zaten acikken bu sutun bosuna yaziliyor.
 - `sikayet_gonder`'in `revoke`/`grant` satirlari arguman imzasi yazmiyor,
   tek asiri yukleme olduguna guveniyor. Ikinci bir asiri yukleme
   eklenirse kirilgan.
@@ -161,6 +181,11 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
 - Senaryo 37'de `engelliyken` okumasi yalnizca satir SAYISINI olcuyor,
   `durum` alanini yeniden okumuyor; `'kabul'` degeri insert yukunden ve
   hatasiz insert iddiasindan geliyor.
+- `gorunurluk-testleri/yardimcilar.ts:144` icinde bir em dash (U+2014)
+  var: `devam eder` ile `boylece` arasinda kullanilmis. Proje kisiti em
+  dash'i yasakliyor (duz `-` kullanilmali). Tek karakterlik duzeltme
+  ama kod dosyasinda; buraya kalan is olarak kaydedildi, dosyaya
+  DOKUNULMADI.
 - `.claude/hooks/oturum-kaydet.py` icindeki `sorted(set(degerler), ...)`
   esit uzunluktaki degerler arasinda sirayi belirsizlestiriyor.
   Maskeleme dogrulugunu etkilemiyor (hepsi yine degistiriliyor).
