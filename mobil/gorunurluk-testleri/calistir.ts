@@ -9,11 +9,12 @@ import {
   type Temizlenecekler,
 } from './yardimcilar'
 
-// --tavan: yalnizca senaryo 29'u (gunluk istek tavani) calistirir. Bu
-// senaryo A'nin istek_gunlugu kaydina 50'ye yakin KALICI (silinemeyen)
-// satir ekliyor; varsayilan kosumda calissaydi bir sonraki normal kosum
-// senaryo 19/20/26/28'in A'dan gonderdigi istekleri tavana takilarak
-// bozardi. Bu yuzden ayri, acikca isaretlenmis bir bayrakla calisiyor.
+// --tavan: senaryo 29'u (gunluk istek tavani) TAM KOSUMA EKLER, otuz
+// senaryonun hepsi calisir (yalnizca 29'u degil). Bu senaryo A'nin
+// istek_gunlugu kaydina 50'ye yakin KALICI (silinemeyen) satir ekliyor;
+// varsayilan kosumda calissaydi bir sonraki normal kosum senaryo
+// 19/20/26/28'in A'dan gonderdigi istekleri tavana takilarak bozardi.
+// Bu yuzden ayri, acikca isaretlenmis bir bayrakla calisiyor.
 const TAVAN_MODU = process.argv.includes('--tavan')
 
 // Iki test mekani birbirinden >500 m (check-in yaricapi) uzakta, boylece
@@ -588,7 +589,7 @@ async function main() {
 
   // Senaryo 18, kendi ic mantigi geregi A -> B blogunu yeniden kurarak
   // bitiyor (deferred cleanup icin t.engellemeler'e eklendi). Bag ve
-  // bulunurluk senaryolari (19-28) bu bloktan bagimsiz baslamali —
+  // bulunurluk senaryolari (19-28) bu bloktan bagimsiz baslamali;
   // aksi halde takip_istegi_gonder her seferinde "Bu kullanici
   // bulunamadi" ile reddedilir ve asagidaki senaryolarin hicbiri
   // gercek anlamda calismamis olur. Ayni desen (11 oncesi) yukarida da
@@ -637,21 +638,32 @@ async function main() {
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
     t.checkInler.push({ istemci: b, id: bCi })
 
-    await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    t.takipler.push({ istemci: a, hedefId: bId })
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'senaryo 20 on kosulu: A istegi gonderebiliyor')
 
     esitMi(
       await aniGorulebiliyorMu(a, bCi),
       false,
       "istek beklemedeyken A, B'nin canli check-in'ini goremez"
     )
+
+    // Senaryo 21'in kendi taze istegini gonderebilmesi icin burada hemen
+    // temizleniyor (final temizle()'ye birakilmiyor) — ayni desen senaryo
+    // 19'da da kullanildi. Bu satir eklenmeden once senaryo 21'in kendi
+    // gonder cagrisi burada birakilan bekleyen istege carpip
+    // "Istegin zaten gonderilmis" hatasi veriyordu; hata destructure
+    // edilmedigi icin sessizce yutuluyordu (Item 2'nin duzeltmesiyle
+    // ortaya cikan gercek bir senaryolar-arasi durum sizintisiydi).
+    const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(temizlikHatasi, null, 'senaryo 20 kendi istegini temizleyebiliyor')
   })
 
   await senaryo('21 - Kabul edilince uzaktan gorunur', async () => {
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
     t.checkInler.push({ istemci: b, id: bCi })
 
-    await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'senaryo 21 on kosulu: A istegi gonderebiliyor')
     t.takipler.push({ istemci: a, hedefId: bId })
 
     esitMi(
@@ -686,6 +698,12 @@ async function main() {
     t.checkInler.push({ istemci: c, id: cCi })
 
     esitMi(
+      await aniGorulebiliyorMu(c, cCi),
+      true,
+      'saglama: C kendi canli check-in-ini gorebiliyor (istemcisi gercekten okuyor)'
+    )
+
+    esitMi(
       await aniGorulebiliyorMu(a, bCi),
       true,
       "saglama: takipcisi olan A, B'nin takipcilerim check-in'ini gorur"
@@ -699,6 +717,18 @@ async function main() {
   })
 
   await senaryo("23 - 'gizli' kimseye gorunmez", async () => {
+    // Senaryo 22'nin biraktigi cCi'ye sessizce miras alinmiyor: bu
+    // senaryo tek basina okundugunda "C mekandaydi" onkosulu kanitsiz
+    // kalmasin diye C icin taze bir check-in aciyor ve C'nin gercekten
+    // canli oldugunu esitMi ile ayrica dogruluyor.
+    const cCi = await checkInYap(c, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
+    t.checkInler.push({ istemci: c, id: cCi })
+    esitMi(
+      await aniGorulebiliyorMu(c, cCi),
+      true,
+      'saglama: C bu senaryoda gercekten mekanda ve canli'
+    )
+
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
     t.checkInler.push({ istemci: b, id: bCi })
 
@@ -823,7 +853,7 @@ async function main() {
     // Senaryo 24'un koydugu blok hala etkili; yeni bir takip iliskisi
     // kurabilmek icin gecici olarak kaldiriyoruz. t.engellemeler zaten
     // bu ciftin engeli_kaldir'ini final temizle()'ye biriktirdi, o
-    // yuzden burada tekrar t.engellemeler'e eklemiyoruz — ayni cagrinin
+    // yuzden burada tekrar t.engellemeler'e eklemiyoruz; ayni cagrinin
     // iki kez calismasi zararsiz (delete, satir yoksa da hata vermez).
     const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
     if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
@@ -904,11 +934,17 @@ async function main() {
       { auth: { persistSession: false, autoRefreshToken: false } }
     )
 
+    // Yalnizca "bir hata olustu" iddiasi, adi degismis bir RPC ya da
+    // yanlis yazilmis bir parametreyle de gecerdi (bkz. Task 17'nin
+    // p_gizli_mi/p_bulunurluk hatasi). Hata KODU iddia ediliyor; kod
+    // canli veritabanina karsi gozlemlenerek dogrulandi: her iki cagri
+    // da 42501 ("permission denied for function ...") donuyor, ayni
+    // kodu sema-dogrula.ts'teki RLS iddialari da kullaniyor.
     const { error: istekHata } = await anonim.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(istekHata !== null, true, 'kimliksiz takip_istegi_gonder cagrisi reddedilir')
+    esitMi(istekHata?.code, '42501', 'kimliksiz takip_istegi_gonder cagrisi 42501 ile reddedilir')
 
     const { error: kisilerHata } = await anonim.rpc('bag_kisileri', { p_kimlikler: [bId] })
-    esitMi(kisilerHata !== null, true, 'kimliksiz bag_kisileri cagrisi reddedilir')
+    esitMi(kisilerHata?.code, '42501', 'kimliksiz bag_kisileri cagrisi 42501 ile reddedilir')
   })
 
   await temizle(t)
