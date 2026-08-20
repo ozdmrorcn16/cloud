@@ -13,6 +13,7 @@ function testHesapSifresi(): string {
 
 const TEST_A = { telefon: '+905550000000', sifre: testHesapSifresi() }
 const TEST_B = { telefon: '+905550000001', sifre: testHesapSifresi() }
+const TEST_C = { telefon: '+905550000002' }
 
 async function kullaniciIleBaglan(telefon: string, sifre: string) {
   const istemci = createClient(URL, ANON, {
@@ -41,6 +42,40 @@ export async function ikiKullaniciIleBaglan() {
   const a = await kullaniciIleBaglan(TEST_A.telefon, TEST_A.sifre)
   const b = await kullaniciIleBaglan(TEST_B.telefon, TEST_B.sifre)
   return { a: a.istemci, b: b.istemci, aId: a.id, bId: b.id }
+}
+
+/**
+ * Ucuncu hesap yalnizca "takipci olmayan ama ayni mekanda bulunan
+ * yabanci" rolu icin gerekli: takipcilerim ve gizli kademelerinin
+ * mekandaki yabanciyi disari birakip birakmadigi baska turlu
+ * olculemiyor.
+ */
+export async function ucuncuKullaniciIleBaglan() {
+  const c = await kullaniciIleBaglan(TEST_C.telefon, testHesapSifresi())
+
+  // A ve B'nin profil satiri onceki fazlardan (kayit ekrani uzerinden)
+  // zaten var; C bu betik disinda hic kayit olmadi, profil satirini
+  // ilk kosumda burada olusturmamiz gerekiyor. `dogum_tarihi` sutunu
+  // 18 yas kisitina tabi (bkz. profiller tablosu), sabit bir gecmis
+  // tarih kullaniliyor.
+  const { data: mevcut, error: selErr } = await c.istemci
+    .from('profiller')
+    .select('id')
+    .eq('id', c.id)
+    .limit(1)
+  if (selErr) throw new Error(`C profil sorgu hatasi: ${selErr.message}`)
+
+  if (!mevcut || mevcut.length === 0) {
+    const { error: eklemeHatasi } = await c.istemci.from('profiller').insert({
+      id: c.id,
+      ad: 'Ucuncu Test Kullanici',
+      kullanici_adi: `kullanici_${c.id.slice(0, 8)}`,
+      dogum_tarihi: '2000-01-01',
+    })
+    if (eklemeHatasi) throw new Error(`C profil olusturma hatasi: ${eklemeHatasi.message}`)
+  }
+
+  return { c: c.istemci, cId: c.id }
 }
 
 let basarisiz = 0
@@ -80,10 +115,11 @@ export function sonucuBildirVeCik() {
 export type Temizlenecekler = {
   checkInler: { istemci: SupabaseClient; id: string }[]
   engellemeler: { istemci: SupabaseClient; engellenenId: string }[]
+  takipler: { istemci: SupabaseClient; hedefId: string }[]
 }
 
 export function bosTemizlenecekler(): Temizlenecekler {
-  return { checkInler: [], engellemeler: [] }
+  return { checkInler: [], engellemeler: [], takipler: [] }
 }
 
 /**
@@ -107,6 +143,13 @@ export async function temizle(t: Temizlenecekler) {
     const { error } = await istemci.rpc('engeli_kaldir', { p_kullanici_id: engellenenId })
     if (error) {
       console.error(`  temizlik: engelleme (-> ${engellenenId}) kaldirilamadi: ${error.message}`)
+    }
+  }
+
+  for (const { istemci, hedefId } of t.takipler) {
+    const { error } = await istemci.rpc('takibi_birak', { p_kullanici_id: hedefId })
+    if (error) {
+      console.error(`  temizlik: takip (-> ${hedefId}) birakilamadi: ${error.message}`)
     }
   }
 

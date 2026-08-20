@@ -1,12 +1,20 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import {
   ikiKullaniciIleBaglan,
+  ucuncuKullaniciIleBaglan,
   esitMi,
   sonucuBildirVeCik,
   bosTemizlenecekler,
   temizle,
   type Temizlenecekler,
 } from './yardimcilar'
+
+// --tavan: yalnizca senaryo 29'u (gunluk istek tavani) calistirir. Bu
+// senaryo A'nin istek_gunlugu kaydina 50'ye yakin KALICI (silinemeyen)
+// satir ekliyor; varsayilan kosumda calissaydi bir sonraki normal kosum
+// senaryo 19/20/26/28'in A'dan gonderdigi istekleri tavana takilarak
+// bozardi. Bu yuzden ayri, acikca isaretlenmis bir bayrakla calisiyor.
+const TAVAN_MODU = process.argv.includes('--tavan')
 
 // Iki test mekani birbirinden >500 m (check-in yaricapi) uzakta, boylece
 // "farkli mekanda canli gorunmez" senaryosu gercekten farkli mekanlarla
@@ -42,16 +50,16 @@ async function checkInYap(
   mekanId: string,
   lat: number,
   lng: number,
-  gizliMi = false
-) {
+  bulunurluk = 'herkese_acik'
+): Promise<string> {
   const { data, error } = await istemci.rpc('check_in_yap', {
     p_mekan_id: mekanId,
     p_lat: lat,
     p_lng: lng,
-    p_gizli_mi: gizliMi,
+    p_bulunurluk: bulunurluk,
   })
   if (error) throw new Error(`check-in hatasi: ${error.message}`)
-  return data as { id: string; konum: string | null }
+  return (data as { id: string }).id
 }
 
 async function canliSakinIdleri(istemci: SupabaseClient, mekanId: string) {
@@ -106,11 +114,11 @@ async function main() {
 
   await senaryo('1 - Ayni mekanda karsilikli canli gorunurluk', async () => {
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
-    t.checkInler.push({ istemci: a, id: aCi.id })
-    aCheckIn1Id = aCi.id
+    t.checkInler.push({ istemci: a, id: aCi })
+    aCheckIn1Id = aCi
 
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
-    t.checkInler.push({ istemci: b, id: bCi.id })
+    t.checkInler.push({ istemci: b, id: bCi })
 
     const aGorenler = await canliSakinIdleri(a, mekan1)
     esitMi(aGorenler, [aId, bId].sort(), 'A, ayni mekanda B\'yi (ve kendini) gorur')
@@ -122,7 +130,7 @@ async function main() {
   await senaryo('2 - Farkli mekanda canli gorunmez', async () => {
     // B mekan-2'ye gecer; check_in_yap onceki aktif check-in'ini kapatir.
     const bCi2 = await checkInYap(b, mekan2, MEKAN_2.lat, MEKAN_2.lng)
-    t.checkInler.push({ istemci: b, id: bCi2.id })
+    t.checkInler.push({ istemci: b, id: bCi2 })
 
     // A hala mekan-1'de canli; mekan-2'nin canli sakinlerini sorguladiginda
     // kendi canli check-in'i mekan-2'de olmadigi icin hicbir sey gormemeli.
@@ -169,10 +177,10 @@ async function main() {
   await senaryo('5 - Engelleme canli gorunurlugu keser', async () => {
     // Her ikisi de mekan-1'de canli olsun (yeni check-in, oncekini kapatir).
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
-    t.checkInler.push({ istemci: a, id: aCi.id })
-    aCheckIn2Id = aCi.id
+    t.checkInler.push({ istemci: a, id: aCi })
+    aCheckIn2Id = aCi
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
-    t.checkInler.push({ istemci: b, id: bCi.id })
+    t.checkInler.push({ istemci: b, id: bCi })
 
     // Engellemeden once: karsilikli gorunur oldugunu dogrula.
     const oncekiAGorenler = await canliSakinIdleri(a, mekan1)
@@ -273,8 +281,8 @@ async function main() {
 
   await senaryo('9 - Gizli check-in yogunluk sayisina dahildir', async () => {
     // A, gizli bir check-in yapar (mekan-1'deki onceki canli check-in'ini kapatir).
-    const aGizliCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, true)
-    t.checkInler.push({ istemci: a, id: aGizliCi.id })
+    const aGizliCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
+    t.checkInler.push({ istemci: a, id: aGizliCi })
 
     const { data: goru, error } = await b.rpc('yakin_mekanlar_yogunluk', {
       p_lat: MEKAN_1.lat,
@@ -299,29 +307,29 @@ async function main() {
     if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
 
     // Bolum 1: gizli check-in -> ayrildim -> ani kimseye gorunmemeli.
-    const aGizliCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, true)
-    t.checkInler.push({ istemci: a, id: aGizliCi.id })
+    const aGizliCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
+    t.checkInler.push({ istemci: a, id: aGizliCi })
 
-    const { error: ayril1Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aGizliCi.id })
+    const { error: ayril1Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aGizliCi })
     if (ayril1Err) throw new Error(`check_inden_ayril hatasi (gizli): ${ayril1Err.message}`)
 
-    const bGizliAniGorurMu = await aniGorulebiliyorMu(b, aGizliCi.id)
+    const bGizliAniGorurMu = await aniGorulebiliyorMu(b, aGizliCi)
     esitMi(bGizliAniGorurMu, false, 'B, gizli check-in\'ten donusen aniyi goremez')
 
-    const aGizliAniGorurMu = await aniGorulebiliyorMu(a, aGizliCi.id)
+    const aGizliAniGorurMu = await aniGorulebiliyorMu(a, aGizliCi)
     esitMi(aGizliAniGorurMu, true, 'A, kendi gizli anisini (ani haline gelmis olsa da) hala gorur')
 
     // Bolum 2 (ters yon kontrolu): gizli OLMAYAN check-in -> ayrildim ->
     // ani yine herkese_acik gorunmeli. Bu kontrol olmadan senaryo, kuralin
     // yalniz gizli check-in'leri kapattigini degil, her aniyi kapattigini
     // da (yanlislikla) "gecti" sayabilirdi.
-    const aAcikCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, false)
-    t.checkInler.push({ istemci: a, id: aAcikCi.id })
+    const aAcikCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
+    t.checkInler.push({ istemci: a, id: aAcikCi })
 
-    const { error: ayril2Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aAcikCi.id })
+    const { error: ayril2Err } = await a.rpc('check_inden_ayril', { p_check_in_id: aAcikCi })
     if (ayril2Err) throw new Error(`check_inden_ayril hatasi (acik): ${ayril2Err.message}`)
 
-    const bAcikAniGorurMu = await aniGorulebiliyorMu(b, aAcikCi.id)
+    const bAcikAniGorurMu = await aniGorulebiliyorMu(b, aAcikCi)
     esitMi(bAcikAniGorurMu, true, 'B, gizli OLMAYAN check-in\'ten donusen aniyi gorur (kural sadece gizlileri kapatiyor)')
 
     // Bloku geri kur.
@@ -576,6 +584,331 @@ async function main() {
       const { error: silmeHatasi } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
       esitMi(silmeHatasi, null, 'test dosyasi silinebiliyor')
     }
+  })
+
+  // Senaryo 18, kendi ic mantigi geregi A -> B blogunu yeniden kurarak
+  // bitiyor (deferred cleanup icin t.engellemeler'e eklendi). Bag ve
+  // bulunurluk senaryolari (19-28) bu bloktan bagimsiz baslamali —
+  // aksi halde takip_istegi_gonder her seferinde "Bu kullanici
+  // bulunamadi" ile reddedilir ve asagidaki senaryolarin hicbiri
+  // gercek anlamda calismamis olur. Ayni desen (11 oncesi) yukarida da
+  // kullanildi.
+  const { error: bagOncesiKaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+  if (bagOncesiKaldirErr) {
+    throw new Error(`senaryo 19 oncesi engeli_kaldir hatasi: ${bagOncesiKaldirErr.message}`)
+  }
+
+  await senaryo('19 - Istek gonderilir', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'A istegi gonderebiliyor')
+
+    const { data: aGorusu, error: aHata } = await a
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+    if (aHata) throw new Error(`A takip sorgu hatasi: ${aHata.message}`)
+    esitMi(
+      (aGorusu ?? []).map((r) => r.durum),
+      ['beklemede'],
+      'A, kendi gonderdigi istegi takipler-de beklemede olarak gorur'
+    )
+
+    const { data: bGorusu, error: bHata } = await b
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+    if (bHata) throw new Error(`B takip sorgu hatasi: ${bHata.message}`)
+    esitMi(
+      (bGorusu ?? []).map((r) => r.durum),
+      ['beklemede'],
+      "B, A'nin gonderdigi istegi takipler-de beklemede olarak gorur"
+    )
+
+    // Senaryo 20/21'in ayni A->B ciftiyle temiz baslayabilmesi icin
+    // burada hemen temizleniyor (final temizle()'ye birakilmiyor).
+    const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(temizlikHatasi, null, 'senaryo 19 kendi istegini temizleyebiliyor')
+  })
+
+  await senaryo('20 - Kabul edilmeden uzaktan gorunmez', async () => {
+    // B mekan-1'de canli; A hicbir yere check-in yapmamis, yani "uzakta".
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    t.takipler.push({ istemci: a, hedefId: bId })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      false,
+      "istek beklemedeyken A, B'nin canli check-in'ini goremez"
+    )
+  })
+
+  await senaryo('21 - Kabul edilince uzaktan gorunur', async () => {
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    t.takipler.push({ istemci: a, hedefId: bId })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      false,
+      'saglama: kabulden once goremiyor'
+    )
+
+    const { error: kabulHatasi } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHatasi, null, 'B istegi kabul edebiliyor')
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      true,
+      "kabulden sonra A, B'nin canli check-in'ini mekana gitmeden goruyor"
+    )
+  })
+
+  // Senaryo 21'in sonunda A -> B takibi 'kabul' durumunda ve kalici;
+  // senaryo 22/23/24 bu takibi kullaniyor. Ucuncu hesap yalnizca burada
+  // gerekiyor (bkz. yardimcilar.ts'teki ucuncuKullaniciIleBaglan yorumu).
+  const { c, cId } = await ucuncuKullaniciIleBaglan()
+
+  await senaryo("22 - 'takipcilerim' yabanciyi disari birakir", async () => {
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    const cCi = await checkInYap(c, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
+    t.checkInler.push({ istemci: c, id: cCi })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      true,
+      "saglama: takipcisi olan A, B'nin takipcilerim check-in'ini gorur"
+    )
+
+    esitMi(
+      await aniGorulebiliyorMu(c, bCi),
+      false,
+      "C, B'nin takipcisi olmadigi icin ayni mekanda olsa da takipcilerim check-in'i goremez"
+    )
+  })
+
+  await senaryo("23 - 'gizli' kimseye gorunmez", async () => {
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      false,
+      "A, B'yi takip ediyor olsa da B'nin gizli check-in'ini goremez"
+    )
+
+    esitMi(
+      await aniGorulebiliyorMu(c, bCi),
+      false,
+      "C, ayni mekanda olsa da B'nin gizli check-in'ini goremez"
+    )
+
+    esitMi(
+      await aniGorulebiliyorMu(b, bCi),
+      true,
+      'saglama: B kendi gizli check-in-ini hala gorur'
+    )
+  })
+
+  await senaryo('24 - Engelleme takibi kaldirir', async () => {
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      true,
+      "saglama: engellemeden once A, takipcisi oldugu B'nin takipcilerim check-in'ini gorur"
+    )
+
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
+    if (engelHata) throw new Error(`engelle hatasi: ${engelHata.message}`)
+    t.engellemeler.push({ istemci: a, engellenenId: bId })
+
+    const { data: takipSatiri, error: takipHata } = await a
+      .from('takipler')
+      .select('takip_eden_id')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+    if (takipHata) throw new Error(`takip sorgu hatasi: ${takipHata.message}`)
+    esitMi(takipSatiri, [], "A, B'yi engelledikten sonra takipler satiri kayboluyor")
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      false,
+      "A, B'yi engelledikten sonra artik B'nin check-in'ini goremez"
+    )
+  })
+
+  await senaryo('25 - Engelliyken istek gonderilemez', async () => {
+    // Senaryo 24'ten beri A, B'yi engellemis durumda (cift yonlu kontrol
+    // oldugu icin hangi taraf gonderirse gondersin reddedilir).
+    const { error } = await b.rpc('takip_istegi_gonder', { p_kullanici_id: aId })
+    esitMi(error !== null, true, "B, kendisini engellemis A'ya istek gonderemez")
+    esitMi(
+      error?.message?.includes('bulunamadi') ?? false,
+      true,
+      'hata mesaji "bulunamadi" iceriyor'
+    )
+    esitMi(
+      error?.message?.includes('engellendin') ?? false,
+      false,
+      'hata mesaji "engellendin" demiyor (sessizlik ilkesi)'
+    )
+  })
+
+  await senaryo('26 - Baskasinin istegi kabul edilemez', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: cId })
+    esitMi(gonderHata, null, "A, C'ye istek gonderebiliyor")
+
+    const { error: kabulHata } = await a.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: cId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata !== null, true, 'A, kendi gonderdigi istegi kabul edemez (yalnizca alici kabul edebilir)')
+
+    const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: cId })
+    esitMi(temizlikHatasi, null, 'senaryo 26 kendi istegini temizleyebiliyor')
+  })
+
+  await senaryo('27 - Ani donusumu genisletmez', async () => {
+    const bTakipCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
+    t.checkInler.push({ istemci: b, id: bTakipCi })
+
+    const { error: ayril1Hata } = await b.rpc('check_inden_ayril', { p_check_in_id: bTakipCi })
+    if (ayril1Hata) throw new Error(`check_inden_ayril hatasi: ${ayril1Hata.message}`)
+
+    const { data: takipSonrasi, error: takipSonrasiHata } = await b
+      .from('check_inler')
+      .select('gorunurluk')
+      .eq('id', bTakipCi)
+      .single()
+    if (takipSonrasiHata) throw new Error(`sorgu hatasi: ${takipSonrasiHata.message}`)
+    esitMi(
+      (takipSonrasi as { gorunurluk: string }).gorunurluk,
+      'takipcilerim',
+      "'takipcilerim' check-in ayrilinca ani 'takipcilerim' kalir (genislemez)"
+    )
+
+    const bGizliCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
+    t.checkInler.push({ istemci: b, id: bGizliCi })
+
+    const { error: ayril2Hata } = await b.rpc('check_inden_ayril', { p_check_in_id: bGizliCi })
+    if (ayril2Hata) throw new Error(`check_inden_ayril hatasi: ${ayril2Hata.message}`)
+
+    const { data: gizliSonrasi, error: gizliSonrasiHata } = await b
+      .from('check_inler')
+      .select('gorunurluk')
+      .eq('id', bGizliCi)
+      .single()
+    if (gizliSonrasiHata) throw new Error(`sorgu hatasi: ${gizliSonrasiHata.message}`)
+    esitMi(
+      (gizliSonrasi as { gorunurluk: string }).gorunurluk,
+      'kimse',
+      "'gizli' check-in ayrilinca ani 'kimse' olur (daralir)"
+    )
+  })
+
+  await senaryo('28 - Takipciyi cikarinca akis kesilir', async () => {
+    // Senaryo 24'un koydugu blok hala etkili; yeni bir takip iliskisi
+    // kurabilmek icin gecici olarak kaldiriyoruz. t.engellemeler zaten
+    // bu ciftin engeli_kaldir'ini final temizle()'ye biriktirdi, o
+    // yuzden burada tekrar t.engellemeler'e eklemiyoruz — ayni cagrinin
+    // iki kez calismasi zararsiz (delete, satir yoksa da hata vermez).
+    const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
+
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    if (gonderHata) throw new Error(`takip_istegi_gonder hatasi: ${gonderHata.message}`)
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    if (kabulHata) throw new Error(`takip_istegini_yanitla hatasi: ${kabulHata.message}`)
+
+    const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
+    t.checkInler.push({ istemci: b, id: bCi })
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      true,
+      "saglama: takipciyken A, B'nin takipcilerim check-in'ini gorur"
+    )
+
+    const { error: cikarHata } = await b.rpc('takipciyi_cikar', { p_kullanici_id: aId })
+    esitMi(cikarHata, null, "B, A'yi takipcilikten cikarabiliyor")
+
+    const { data: takipSatiri, error: takipSorguHata } = await a
+      .from('takipler')
+      .select('takip_eden_id')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+    if (takipSorguHata) throw new Error(`takip sorgu hatasi: ${takipSorguHata.message}`)
+    esitMi(takipSatiri, [], "B, A'yi cikardiktan sonra takipler satiri kayboluyor")
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bCi),
+      false,
+      "B, A'yi cikardiktan sonra A artik B'nin check-in'ini goremez"
+    )
+  })
+
+  if (TAVAN_MODU) {
+    await senaryo('29 - Gunluk tavan', async () => {
+      // istek_gunlugu ekle-only oldugu icin (silinen istekler sayaci
+      // dusurmuyor), A'nin gunluk sayaci nereden basliyorsa basla,
+      // dongu hatayla karsilasana kadar gonderip hemen temizliyor.
+      // Boylece hem gercek FK'li bir hedefe (B) gonderiliyor hem de
+      // "zaten gonderilmis" catismasi olmadan tekrar tekrar denenebiliyor.
+      let sonHata: { message: string } | null = null
+      for (let i = 0; i < 55; i++) {
+        const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+        if (gonderHata) {
+          sonHata = gonderHata
+          break
+        }
+        const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+        if (birakHata) {
+          throw new Error(`takibi_birak hatasi (dongu ${i}): ${birakHata.message}`)
+        }
+      }
+
+      esitMi(sonHata !== null, true, 'gunluk tavan asilinca istek reddediliyor')
+      esitMi(
+        sonHata?.message?.includes('istek sinirina') ?? false,
+        true,
+        'hata mesaji "istek sinirina" iceriyor'
+      )
+    })
+  } else {
+    console.log(
+      "\n--- Senaryo: 29 - Gunluk tavan --- ATLANDI (--tavan bayragiyla ayrica calistirilir; A'nin gunluk sayacina kalici satir ekledigi icin varsayilan kosumda calismaz)"
+    )
+  }
+
+  await senaryo('30 - Kimliksiz cagrilar reddedilir', async () => {
+    const anonim = createClient(
+      process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    )
+
+    const { error: istekHata } = await anonim.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(istekHata !== null, true, 'kimliksiz takip_istegi_gonder cagrisi reddedilir')
+
+    const { error: kisilerHata } = await anonim.rpc('bag_kisileri', { p_kimlikler: [bId] })
+    esitMi(kisilerHata !== null, true, 'kimliksiz bag_kisileri cagrisi reddedilir')
   })
 
   await temizle(t)
