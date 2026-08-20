@@ -43,6 +43,11 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - **Guncelleme (2026-08-19, Faz 2c kapanisi):** Calisma dali su an
   `claude/faz2c-kimlik`. Faz 2c (kimlik ve kisi arama) tamamlandi
   (16/16 gorev). Ayrinti asagida "Faz 2c TAMAMLANDI" bolumunde.
+- **Guncelleme (2026-08-20, Faz 3a kapanisi):** Calisma dali su an
+  `claude/faz3a-bag`. Faz 3a (bag: takip/sohbet istekleri, uc kademeli
+  gorunurluk) tamamlandi (18/18 gorev, hepsi incelendi) — asagidaki
+  "Devam eden is" basligindaki 8/18 notu artik gecersiz. Ayrinti asagida
+  "Faz 3a TAMAMLANDI" bolumunde.
 
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
@@ -272,6 +277,58 @@ ikinci denemede 30 gun mesaji almasi; A, B'yi engelleyince ikisinin de
 birbirini aramada bulamamasi. Bu senaryolarin veritabani tarafi
 `npm run test:gorunurluk` icindeki 7 yeni senaryoda zaten kapsaniyor;
 acikta kalan yalnizca arayuz kablolamasinin elle dogrulanmasi.
+
+**Faz 3a TAMAMLANDI** (2026-08-20). Spec:
+`docs/superpowers/specs/2026-08-19-faz3a-bag-design.md`, plan:
+`docs/superpowers/plans/2026-08-19-faz3a-bag.md`. 18 gorev, dal
+`claude/faz3a-bag`, hepsi incelendi. `npx jest --runInBand` ile 36 test
+paketi / 216 test yesil, `npm run test:sema` ile 40 dogrulama yesil,
+`npm run test:gorunurluk` ile 79 dogrulama yesil sifir basarisizlikla
+(senaryo 29 varsayilan kosumda bilerek ATLANDI gosteriliyor — gunluk
+tavan senaryosu, ayri `--tavan` bayragiyla calisiyor).
+
+Yeni tablolar: `takipler`, `sohbet_istekleri`, `istek_gunlugu`. Yeni
+sutunlar: `check_inler.bulunurluk`, `profiller.varsayilan_bulunurluk`
+(eski `check_inler.gizli_mi` ve `profiller.varsayilan_gizli` dusuruldu).
+Yeni ozel sema yardimcilari: `bag.takip_ediyor_mu`, `bag.ani_gorunurlugu`,
+`bag.istek_on_kontrol`. Yeni genel RPC'ler: `takip_istegi_gonder`,
+`takip_istegini_yanitla`, `takibi_birak`, `takipciyi_cikar`,
+`sohbet_istegi_gonder`, `sohbet_istegini_yanitla`, `bag_kisileri`;
+`engelle` iki yondeki takip/sohbet kayitlarini da silecek sekilde
+genisletildi; `check_in_yap` ve `check_inden_ayril` uc kademeli modele
+gecti. Canli varlik icin uc kademe: `herkese_acik` / `takipcilerim` /
+`gizli`; anilar icin uc kademe: `herkese_acik` / `takipcilerim` /
+`kimse`. Yeni istemci modulleri `lib/bag.ts` ve `lib/bag-listeleri.ts`;
+`lib/checkin.ts` ve `lib/ayarlar.ts` uc kademeli modele tasindi. Yeni
+ekran `baglar`; degisen ekranlar: check-in, ayarlar, baskasinin profili,
+ana ekran.
+
+**Faz 3a'nin elle dogrulanmayan kismi:** iki hesapla tarayicida gezinme
+(Task 18 Step 3) yapilmadi (etkilesimli, insan gerektiriyor).
+Dogrulanmasi gereken bes senaryo: A, B'nin profilinden takip istegi
+gonderir ve B'nin "Baglar" ekraninda istegi gorur; B kabul edince A,
+B'nin canli check-in'ini mekana gitmeden gorur; B `bulunurluk = 'gizli'`
+ile check-in yapinca A goremez; B, A'yi takipcilerinden cikarinca A yine
+goremez; A, B'yi engelleyince iki tarafta da bag kaybolur. Bu bes
+senaryonun veritabani tarafi `npm run test:gorunurluk` icindeki 79
+dogrulamada zaten kapsaniyor (ozellikle senaryo 19-28); acikta kalan
+yalnizca arayuz kablolamasinin elle dogrulanmasi.
+
+**Faz 3a'da ogrenilen ortam tuzaklari:**
+- `npx tsc --noEmit` bu fazin dogrulama setinin bir parcasi. Jest bu
+  sinif hatayi goremiyor: ekran testleri `lib` modullerini mock'luyor,
+  bu yuzden degisen bir fonksiyon imzasi uygulamayi iki gorev boyunca
+  derlenemez halde birakti ama 185 test yesil kaldi. Taban durum
+  `@types/node` kurulu olmadigi icin var olan bes onceden gelen hata.
+- Calisan bir `expo start --web` sunucusu tam Jest kosumlariyla islemci
+  icin yarisir ve araliklarla 5000 ms render-timeout hatalari dogurur.
+  Tam kosumdan once kapatilmali.
+- Supabase MCP sunucusu baglaniyken canli veritabanina dogrudan SQL
+  erisimi veriyor. "Uzaktan SQL calistirmanin yolu yok" diyen eski not
+  gecersiz.
+- `test:gorunurluk --tavan` gunun geri kalani icin yikici: test
+  hesabinin ekle-only istek gunlugune 50 kalici satir yaziyor, istemci
+  bunlari tasarim geregi silemiyor.
 
 ### Bastan tasarima girmesi gereken kisit
 

@@ -42,13 +42,17 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-20 — [2026-08-20-869a9560.md](oturumlar/2026-08-20-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
 - 2026-08-19 — [2026-08-19-cc4a8373.md](oturumlar/2026-08-19-cc4a8373.md) — uygulamamıza kaldıgımız yerden burdan devam edebilirmiyiz
 - 2026-08-19 — [2026-08-19-ab99deca.md](oturumlar/2026-08-19-ab99deca.md) — bu
+- 2026-08-19 — [2026-08-19-aafc33c7.md](oturumlar/2026-08-19-aafc33c7.md) — youtube otomasyon fikrine burdan devam edebilirmiyiz
 - 2026-08-19 — [2026-08-19-9b6cdd9b.md](oturumlar/2026-08-19-9b6cdd9b.md) — <local-command-stdout>Login successful</local-command-stdout>
+- 2026-08-19 — [2026-08-19-869a9560.md](oturumlar/2026-08-19-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
 - 2026-08-19 — [2026-08-19-64e6494e.md](oturumlar/2026-08-19-64e6494e.md) — bu oturumdan kaldıgımız yerden devam edelim uygulamamıza
 - 2026-08-19 — [2026-08-19-639e055b.md](oturumlar/2026-08-19-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-19 — [2026-08-19-604558c5.md](oturumlar/2026-08-19-604558c5.md) — oldumu
 - 2026-08-19 — [2026-08-19-5fa52514.md](oturumlar/2026-08-19-5fa52514.md) — git fetch origin yap, sonra claude/faz2b-guvenlik dalına geç ve git push -u orig…
+- 2026-08-19 — [2026-08-19-45beda08.md](oturumlar/2026-08-19-45beda08.md) — UserPromptSubmit operation blocked by hook: [export PATH="$($SHELL -lc 'echo $PA…
 - 2026-08-17 — [2026-08-17-639e055b.md](oturumlar/2026-08-17-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-16 — [2026-08-16-639e055b.md](oturumlar/2026-08-16-639e055b.md) — bu oturumdan devam edebilirmiyiz
 - 2026-08-15 — [2026-08-15-639e055b.md](oturumlar/2026-08-15-639e055b.md) — bu oturumdan devam edebilirmiyiz
@@ -414,3 +418,49 @@ Gerekcelerin tamami orada; asagisi ozet.
     tek bir tarih sutunuyla tutuluyor ve sunucuda zorlaniyor.
 34. **Mekan ekranlarinda gorunen isim degismez**; kullanici adi
     profil ekranlarinda gosterilir. Karar #29'un dogal sonucu.
+
+### Faz 3a beyin firtinasi (2026-08-19)
+
+Spec: `docs/superpowers/specs/2026-08-19-faz3a-bag-design.md`.
+Gerekcelerin tamami orada; asagisi ozet.
+
+35. **Faz 3 dorde bolundu:** 3a bag (istek akisi, gorunurluk
+    kademeleri), 3b birebir sohbet, 3c mekan odalari, 3d bildirimler.
+    Bu dort parca birbirinden gercekten bagimsiz (bildirim altyapisi
+    mesajlasmadan, mekan odasi birebir sohbetten farkli kurallar
+    tasiyor) — Faz 2'nin 2a/2b bolunmesindeki mantik burada da gecerli.
+36. **3a'da istek akisi var, mesaj ekrani 3b'de.** Sohbet istegi kabul
+    edilince "sohbet acik" durumu kaydedilir ama yazacak yer gelmez.
+    Takip ve sohbet istegi ayni akisi ve ayni ekranlari paylastigi icin
+    birlikte tasarlanmalari, 3b'nin yalnizca mesajlasmaya odaklanmasini
+    sagliyor.
+37. **Red sonrasi yeniden istek sinirsiz.** Reddedilen istek satiri
+    silinir, gonderen hemen yenisini yollayabilir. Israrci davranisa
+    karsi koruma engelleme; ayrica toplu taramayi engelleyen gunluk bir
+    istek tavani var (50, iki tur birlikte sayilir). Alternatifler
+    (kalici red, 30 gunluk bekleme) degerlendirildi ve reddedildi.
+38. **Takip, takipciye canli check-in'i uzaktan gorme hakki verir.**
+    Takip edilen kisi bir yere check-in yaptiginda, takipci nerede
+    olursa olsun gorur (kisinin sectigi bulunurluk kademesine bagli).
+    Bu, takibi kabul etmeyi ciddi bir karar haline getiriyor;
+    karsiliklari: kabul ekraninda ne verildiginin yazmasi, takipciyi
+    cikarabilme, ve engellemenin takibi de kaldirmasi.
+39. **Check-in bulunurlugu uc kademeli bir merdiven:** `herkese_acik`
+    (mekandakiler + takipciler) > `takipcilerim` (yalnizca takipciler)
+    > `gizli` (kimse). Iki eksenli okuma (mekan/uzak ayri) ve dort
+    kademeli model reddedildi: kullanicinin kimin gordugunu
+    kestirebilmesi, denetimin son zerresinden daha degerli. Bu karar
+    Faz 2b karar #25'i degistirdi: uzaktan gorunme yuzeyi olmadan
+    "gizli check-in mekanda yine gorunur" kurali gecerliydi, bu faz
+    uzaktan gorunmeyi (takipciler) ilk kez yarattigi icin `gizli`
+    artik kimseye gorunmuyor.
+40. **Varsayilan bulunurluk `herkese_acik`.** Bugunku davranis birebir
+    korunur, mevcut kullanicilar icin hicbir sey sessizce degismez.
+    Kullanici varsayilani ayarlardan degistirebilir.
+41. **Takip ve sohbet istekleri ayri tablolarda** (`takipler`,
+    `sohbet_istekleri`), ust spec'in taslagindaki gibi. Tek tablo +
+    `tur` sutunu alternatifi degerlendirildi; takip cizgesinin kendi
+    dar tablosunda durmasi ve gorunurluk sorgusunun dogrudan ona
+    bakmasi tercih edildi. Iki durum makinesinin tekrarina karsi
+    onlem: ikisi de ayni `bag.takip_ediyor_mu()` yardimcisini ve ayni
+    RPC bicimini paylasir.
