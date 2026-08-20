@@ -451,6 +451,17 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
+  it('kendi istegim beklemedeyken gelen sohbet istegi kabul edilmisse sohbet acik gosterir, geri cek gostermez', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'beklemede', gelenTakip: 'yok', gelenSohbet: 'kabul',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Sohbet acik')).toBeTruthy()
+    expect(screen.queryByText('Istegi geri cek')).toBeNull()
+  })
+
   it('gelen sohbet istegi beklemedeyken sohbet iste butonu gorunmez', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',

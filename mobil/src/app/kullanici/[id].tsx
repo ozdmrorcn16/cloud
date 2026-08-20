@@ -191,7 +191,7 @@ export default function KullaniciProfiliEkrani() {
               <Text style={stiller.birincilButonYazi}>Sohbet iste</Text>
             </Pressable>
           )}
-        {bagDurum?.sohbet === 'beklemede' && (
+        {bagDurum?.sohbet === 'beklemede' && bagDurum?.gelenSohbet !== 'kabul' && (
           <Pressable style={stiller.pasifButon} onPress={sohbetIsteginiGeriCekEt}>
             <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
           </Pressable>
