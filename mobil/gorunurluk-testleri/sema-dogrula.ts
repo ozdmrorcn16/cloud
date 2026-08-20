@@ -1,4 +1,4 @@
-import { ikiKullaniciIleBaglan, esitMi, sonucuBildirVeCik } from './yardimcilar'
+import { ikiKullaniciIleBaglan, anonIstemciOlustur, esitMi, sonucuBildirVeCik } from './yardimcilar'
 
 const KULLANICI_ADI_DESENI = /^[a-z0-9._]{3,20}$/
 
@@ -334,6 +334,44 @@ async function main() {
     sikayetNullHatasi?.message,
     'Gecersiz sikayet hedefi',
     'sikayet_gonder(null) dostane mesaj donduruyor'
+  )
+
+  console.log('\n--- Faz 3a takip isleri Gorev 1: sohbet_istegini_geri_cek ---')
+  // Kimliksiz istemci: revoke from public, anon fonksiyona hic erisim
+  // vermiyor, cagri gorunun icine bile girmeden PostgREST/PostgreSQL
+  // yetki katmaninda reddediliyor (gercekte gozlemlendi: 42501,
+  // "permission denied for function sohbet_istegini_geri_cek").
+  const anon = anonIstemciOlustur()
+  const { error: anonGeriCekHatasi } = await anon.rpc('sohbet_istegini_geri_cek', {
+    p_kullanici_id: bId,
+  })
+  esitMi(anonGeriCekHatasi?.code, '42501', 'kimliksiz sohbet_istegini_geri_cek cagrisi reddediliyor')
+
+  console.log('\n--- Faz 3a takip isleri Gorev 1: sikayet_gonder dogrulama ---')
+  // Gercekte gozlemlendi: her ikisi de P0001 (dostane raise exception),
+  // sikayetler tablosunun `not null` kisitina carpan ham 23502 degil.
+  const { error: sebepNullHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: 'kullanici',
+    p_hedef_id: bId,
+    p_sebep: null,
+  })
+  esitMi(sebepNullHatasi?.code, 'P0001', 'sikayet_gonder(p_sebep: null) ham 23502 degil')
+  esitMi(
+    sebepNullHatasi?.message,
+    'Sikayet sebebi belirtilmeli',
+    'sikayet_gonder(p_sebep: null) dostane mesaj donduruyor'
+  )
+
+  const { error: hedefIdNullHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: 'kullanici',
+    p_hedef_id: null,
+    p_sebep: 'test',
+  })
+  esitMi(hedefIdNullHatasi?.code, 'P0001', 'sikayet_gonder(p_hedef_id: null) ham 23502 degil')
+  esitMi(
+    hedefIdNullHatasi?.message,
+    'Gecersiz sikayet hedefi',
+    'sikayet_gonder(p_hedef_id: null) dostane mesaj donduruyor'
   )
 
   sonucuBildirVeCik()

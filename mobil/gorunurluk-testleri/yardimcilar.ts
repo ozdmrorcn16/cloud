@@ -45,6 +45,17 @@ export async function ikiKullaniciIleBaglan() {
 }
 
 /**
+ * Oturum acmamis (kimliksiz) bir istemci. Yalnizca "kimliksiz cagri
+ * reddediliyor" testleri icin: security definer fonksiyonlarin ilk
+ * satirdaki `auth.uid() is null` kontrolunu gercekten calistirir.
+ */
+export function anonIstemciOlustur(): SupabaseClient {
+  return createClient(URL, ANON, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+/**
  * Ucuncu hesap yalnizca "takipci olmayan ama ayni mekanda bulunan
  * yabanci" rolu icin gerekli: takipcilerim ve gizli kademelerinin
  * mekandaki yabanciyi disari birakip birakmadigi baska turlu
