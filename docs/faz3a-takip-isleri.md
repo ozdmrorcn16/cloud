@@ -122,10 +122,40 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
   atilabiliyor. Eski notlardaki "uzaktan SQL calistirmanin yolu yok"
   maddesi **gecersiz**. Bu fazdaki en degerli dogrulamalarin cogu
   bununla yapildi (yetki kontrolleri, politika govdeleri, cron gecmisi).
-- `npm run test:gorunurluk --tavan` gunun geri kalani icin yikici: test
-  hesabinin ekle-only istek gunlugune 50 kalici satir yaziyor ve istemci
-  bunlari tasarim geregi silemiyor. Yalnizca yonetici erisimiyle
-  temizlenebiliyor.
+- **`test:gorunurluk` kendi kendini zehirliyor; gunde ~8 kez
+  calistirilabilir.** Paketin senaryolari gercek takip ve sohbet istegi
+  gonderiyor, bunlar da gunluk 50 istek tavanindan dusuyor. Tavan
+  ekle-only `istek_gunlugu` tablosunu sayiyor ve istemci o satirlari
+  **tasarim geregi** silemiyor (RLS acik, politika yok). Yani her kosum
+  kotadan yiyor ve birikiyor; kota dolunca senaryo 19, 21, 22, 24, 26 ve
+  28 zincirleme duser ve paket **yanlis alarm** verir.
+
+  2026-08-20'de tam bunu yasadik: uc saatte on kosum yapilmis, hesap
+  50/50'ye dayanmis, bir alt ajan bunu "migrasyonum bir seyi kirdi mi"
+  diye arastirmak zorunda kalmisti. Bir dusme gorursen **once kotayi
+  kontrol et**, kodu degil.
+
+  Olcmek icin:
+
+      select count(*) from public.istek_gunlugu
+      where gonderen_id = '<A hesabinin id>'
+        and olusturuldu > now() - interval '1 day';
+
+  Temizlemek icin (yalnizca yonetici erisimiyle; Supabase MCP bagliysa
+  `execute_sql` ile):
+
+      delete from public.istek_gunlugu where gonderen_id = '<A hesabinin id>';
+
+  Bu silme urun degismezligini bozmuyor: ekle-only ozelligi ISTEMCIYE
+  karsi zorlanan bir kural ve o kural yerinde kaliyor. Kalici cozum,
+  istek gonderen senaryolarin hesaplari donusumlu kullanmasi ya da
+  paketin kendi kotasini yonetici anahtariyla temizlemesi olurdu; ikisi
+  de yapilmadi.
+
+- `npm run test:gorunurluk --tavan` ayrica ve **bilerek** yikici: tek
+  kosumda 50 kalici satir yaziyor, yani gunun geri kalanini tek basina
+  bitiriyor. Yalnizca tavan davranisini dogrulamak icin, bilerek
+  calistirilir.
 - Uygulanmis bir migrasyon dosyasini duzenlemek ise yaramaz; `db push`
   yalnizca daha once calistirmadigi dosyalari calistirir. Duzeltme her
   zaman yeni dosyayla.
