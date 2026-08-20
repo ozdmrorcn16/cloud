@@ -436,6 +436,14 @@ async function main() {
     'mesajlar tablosuna dogrudan update reddediliyor'
   )
 
+  console.log('\n--- Faz 3b Task 6: bag.yazabilir_mi ---')
+  // Fonksiyon bag semasinda oldugu icin PostgREST uzerinden RPC olarak
+  // cagrilamamali; cagrilabiliyorsa sema ayrimi ise yaramiyor demektir.
+  const { error: yazabilirRpcHatasi } = await a.rpc('yazabilir_mi', {
+    p_hedef: bId,
+  })
+  esitMi(yazabilirRpcHatasi !== null, true, 'bag yazma kapisi istemciye RPC olarak acilmamis')
+
   sonucuBildirVeCik()
 }
 
