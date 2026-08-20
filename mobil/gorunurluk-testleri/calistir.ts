@@ -648,7 +648,7 @@ async function main() {
     )
 
     // Senaryo 21'in kendi taze istegini gonderebilmesi icin burada hemen
-    // temizleniyor (final temizle()'ye birakilmiyor) — ayni desen senaryo
+    // temizleniyor (final temizle()'ye birakilmiyor); ayni desen senaryo
     // 19'da da kullanildi. Bu satir eklenmeden once senaryo 21'in kendi
     // gonder cagrisi burada birakilan bekleyen istege carpip
     // "Istegin zaten gonderilmis" hatasi veriyordu; hata destructure
