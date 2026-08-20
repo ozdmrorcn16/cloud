@@ -426,6 +426,42 @@ describe('KullaniciProfiliEkrani', () => {
     expect(await screen.findByText('Sohbet acik')).toBeTruthy()
   })
 
+  it('gelen sohbet istegini yanitlama basarisiz olursa hata gosterir ve blok kalir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',
+    })
+    ;(sohbetIsteginiYanitla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Kabul et'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('Kabul et')).toBeTruthy()
+    expect(screen.getByText('Reddet')).toBeTruthy()
+  })
+
+  it('gelen sohbet istegi kabul edilmisse ben istek gondermemis olsam bile sohbet acik gosterir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'kabul',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Sohbet acik')).toBeTruthy()
+    expect(screen.queryByText('Sohbet iste')).toBeNull()
+  })
+
+  it('gelen sohbet istegi beklemedeyken sohbet iste butonu gorunmez', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'beklemede',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Kabul et')).toBeTruthy())
+    expect(screen.queryByText('Sohbet iste')).toBeNull()
+  })
+
   it('takibi birakma basarisiz olursa hata gosterir ve durumu degistirmez', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))

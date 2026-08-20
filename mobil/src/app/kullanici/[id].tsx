@@ -184,17 +184,19 @@ export default function KullaniciProfiliEkrani() {
           </Pressable>
         )}
 
-        {bagDurum?.sohbet === 'yok' && (
-          <Pressable style={stiller.birincilButon} onPress={sohbetIste}>
-            <Text style={stiller.birincilButonYazi}>Sohbet iste</Text>
-          </Pressable>
-        )}
+        {bagDurum?.sohbet === 'yok' &&
+          bagDurum?.gelenSohbet !== 'kabul' &&
+          bagDurum?.gelenSohbet !== 'beklemede' && (
+            <Pressable style={stiller.birincilButon} onPress={sohbetIste}>
+              <Text style={stiller.birincilButonYazi}>Sohbet iste</Text>
+            </Pressable>
+          )}
         {bagDurum?.sohbet === 'beklemede' && (
           <Pressable style={stiller.pasifButon} onPress={sohbetIsteginiGeriCekEt}>
             <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
           </Pressable>
         )}
-        {bagDurum?.sohbet === 'kabul' && (
+        {(bagDurum?.sohbet === 'kabul' || bagDurum?.gelenSohbet === 'kabul') && (
           <View style={stiller.pasifButon}>
             <Text style={stiller.pasifButonYazi}>Sohbet acik</Text>
           </View>

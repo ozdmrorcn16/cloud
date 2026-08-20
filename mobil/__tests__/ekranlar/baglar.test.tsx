@@ -181,6 +181,51 @@ describe('BaglarEkrani', () => {
     await waitFor(() => expect(screen.queryByText('deniz')).toBeNull())
   })
 
+  it('giden sohbet istegi geri cekme basarisiz olursa hata gosterir ve satiri listeden kaldirmaz', async () => {
+    ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [],
+      sohbet: [{ id: 'k6', kullaniciAdi: 'deniz', ad: 'Deniz K' }],
+    })
+    ;(sohbetIsteginiGeriCek as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Geri cek'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('deniz')).toBeTruthy()
+  })
+
+  it('ayni kisiye hem takip hem sohbet istegi gonderilmisse giden istekler listesinde iki ayri satir gorunur', async () => {
+    ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'k7', kullaniciAdi: 'mert', ad: 'Mert D' }],
+      sohbet: [{ id: 'k7', kullaniciAdi: 'mert', ad: 'Mert D' }],
+    })
+    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
+    ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<BaglarEkrani />)
+
+    const gonderilenSatirlar = await screen.findAllByText('mert')
+    expect(gonderilenSatirlar).toHaveLength(2)
+
+    const geriCekButonlari = screen.getAllByText('Geri cek')
+    expect(geriCekButonlari).toHaveLength(2)
+
+    // Ilk satir gidenTakip'ten geliyor (data dizisinde takip once ekleniyor).
+    await fireEvent.press(geriCekButonlari[0])
+    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k7'))
+    expect(sohbetIsteginiGeriCek).not.toHaveBeenCalled()
+
+    // Yalnizca takip satiri kalkmis olmali; sohbet satiri hala orada ve
+    // kendi isleyicisine bagli kalmis olmali (bilesik anahtar sayesinde
+    // React iki satiri karistirmiyor).
+    await waitFor(() => expect(screen.getAllByText('mert')).toHaveLength(1))
+    const kalanButon = screen.getByText('Geri cek')
+    await fireEvent.press(kalanButon)
+    await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('k7'))
+    await waitFor(() => expect(screen.queryByText('mert')).toBeNull())
+  })
+
   it('giden istegi geri cekme basarisiz olursa hata gosterir ve satiri listeden kaldirmaz', async () => {
     ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({
       takip: [{ id: 'k3', kullaniciAdi: 'mert', ad: 'Mert D' }],

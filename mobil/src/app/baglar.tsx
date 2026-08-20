@@ -212,7 +212,7 @@ export default function BaglarEkrani() {
           ...gidenTakip.map((k) => ({ ...k, tur: 'takip' as const })),
           ...gidenSohbet.map((k) => ({ ...k, tur: 'sohbet' as const })),
         ]}
-        keyExtractor={(k) => k.id}
+        keyExtractor={(item) => `${item.id}-${item.tur}`}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
             <View style={stiller.kisiBilgisi}>
