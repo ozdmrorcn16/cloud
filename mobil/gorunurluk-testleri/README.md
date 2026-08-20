@@ -150,7 +150,9 @@ sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
   satir olmadigi ayrica dogrulaniyor.
 - **33 - Bagi koparmak iki satiri da siler.** Senaryo 32'nin biraktigi
   karsilikli bagi kullanir; A `takibi_birak` cagirinca TEK cagriyla
-  iki yonun ikisi de gidiyor.
+  iki yonun ikisi de gidiyor. On kosul olarak bagin IKI satirinin da
+  gercekten durdugu burada ayrica sorulur - boylece 32 tek satir
+  yazsaydi bu senaryo yaniltici bir OK basmaz.
 - **34 - Karsilikli takipliler yazabilir.** Bag kurulunca A, `mesaj_gonder`
   ile B'ye yazabiliyor; B bu mesaji `mesajlari_getir` ile gercekten
   okuyabildigini gosteriyor (pozitif kontrol). Senaryo kendi bagini ve
@@ -165,10 +167,17 @@ sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
   yazamaz; hata mesaji "mesaj gonderemezsin" iceriyor ve hicbir
   konusma satiri olusmuyor. Bu senaryonun yakaladigi hata metni,
   37 ve 39'da birebir karsilastirma icin saklaniyor.
-- **37 - Engelli yazamaz, hata AYNI.** A, B'yi engelleyince B yazamaz;
-  hata mesaji senaryo 36'daki bagsizlik hatasiyla **birebir ayni**
-  (Faz 2b sessizlik ilkesi: "engellendin" ile "bagsizsin" ayirt
-  edilmiyor).
+- **37 - Engelli yazamaz, hata AYNI.** Engelin TEK degisken olmasi icin
+  once GERCEK bir karsilikli bag kurulur ve o bagla B'nin A'ya
+  yazabildigi gosterilir (pozitif saglama); ancak ondan sonra A, B'yi
+  engeller ve B artik yazamaz. Hata mesaji senaryo 36'daki bagsizlik
+  hatasiyla **birebir ayni** (Faz 2b sessizlik ilkesi: "engellendin"
+  ile "bagsizsin" ayirt edilmiyor). Bagi genel RPC'lerle kurmak mumkun
+  degil - `engelle` iki yondeki takip ve sohbet satirlarini kosulsuz
+  siliyor, yani "engelli AMA bagli" durumu istemciyle uretilemiyor -
+  bu yuzden iki `kabul` satiri yonetici istemcisiyle dogrudan
+  `takipler`e yazilir ve senaryo sonunda yine yonetici istemcisiyle
+  temizlenip gittigi dogrulanir.
 - **38 - Engelleme konusmayi gizler.** Engellemeden once B hem kendi
   hem A'nin mesajini goruyor (pozitif kontrol); A, B'yi engelleyince
   B artik yalnizca kendi mesajini goruyor, A'nin mesajlari `mesajlar`
@@ -176,7 +185,10 @@ sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
 - **39 - Bag kopunca salt-okunur.** Bagli A mesaj gonderir; bagi
   koparinca (`takibi_birak`) gecmis (`mesajlari_getir`) hala
   okunabiliyor ama yeni mesaj denemesi 36'daki AYNI hatayla
-  reddediliyor (karar 45: yetki her mesajda olculuyor).
+  reddediliyor (karar 45: yetki her mesajda olculuyor). `konusmalarim`
+  satirindaki `yazilabilir_mi` alani da burada olculuyor: bag varken
+  `true`, bag koptuktan sonra `false` - istemcinin yazma kutusunu acip
+  kapatan alan boylece canli veritabaninda dogrulanmis oluyor.
 - **40 - Iki yol ayni konusmaya cikar.** Once sohbet istegiyle
   mesajlasip sonra ayrica takiplesince, iki `mesaj_gonder` cagrisi
   AYNI konusma id'sini donuyor ve A'nin `konusmalarim` listesinde B
@@ -196,10 +208,18 @@ sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
   bunu bag kontrolunden ONCE reddeder ("Kendine mesaj gonderemezsin")
   ve hicbir konusma satiri olusmuyor.
 
-Bu bloktaki her senaryo (32, 34, 35, 38, 39, 40, 41, 42) kendi
-olusturdugu takip/sohbet baglarini ve mesajlasma satirlarini kendi
-icinde temizler; hicbir temizlik adimi sessiz degildir, hepsi `esitMi`
-ile dogrulanir. `konusmalar` (ve CASCADE ile `konusma_uyeleri`,
+Bu bloktaki senaryolar (34, 35, 37, 38, 39, 40, 41, 42) kendi
+olusturdugu takip/sohbet baglarini, engellemeleri ve mesajlasma
+satirlarini kendi icinde temizler; hicbir temizlik adimi sessiz
+degildir, hepsi `esitMi` ile dogrulanir - "hata donmedi" degil, "satir
+gercekten gitti" iddia edilir.
+
+**Tek istisna senaryo 32:** kurdugu karsilikli bagi BILEREK temizlemez,
+senaryo 33'e birakir. 33'un iddiasi (tek `takibi_birak` cagrisiyla iki
+satirin da gitmesi) tam olarak o bagi gerektiriyor; 33 bagi koparir ve
+gittigini dogrular, yani blok yine kalintisiz kapanir.
+
+`konusmalar` (ve CASCADE ile `konusma_uyeleri`,
 `mesajlar`) satirlarini silmenin tek yolu asagidaki "Kota temizligi ve
 konusma silme yetkisi" bolumunde anlatilan yonetici istemcisidir -
 sirasiyla RPC'lerle konusan A/B istemcilerinin bu tabloda hicbir yazma
