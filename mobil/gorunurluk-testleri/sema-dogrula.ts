@@ -309,6 +309,8 @@ async function main() {
     'ani_gorunurlugunu_ayarla(null) dostane mesaj donduruyor'
   )
 
+  // check_in_yap(null): mesaj iddiasi NULL korumanin varligini kanitlar. Kod
+  // iddiasi yeterli degildir: p_mekan_id gecersiz olunca 'Mekan bulunamadi' de P0001 doner.
   const { error: checkinNullHatasi } = await a.rpc('check_in_yap', {
     p_mekan_id: '00000000-0000-0000-0000-000000000000',
     p_lat: 39.0,
