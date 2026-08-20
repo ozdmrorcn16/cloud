@@ -26,7 +26,7 @@ veritabaninda hic calismayan bir ekran yayinlanmisti.
 Dogrulanmasi gereken bes senaryo:
 
 1. A, B'nin profilinden "Takip et" der; B'nin "Baglar" ekraninda istek
-   gorunur ve yaninda "Kabul edersen check-in'lerini gorebilecek." yazar.
+   gorunur ve yaninda "Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz." yazar.
 2. B kabul eder; A, B'nin canli check-in'ini **mekana gitmeden** gorur.
 3. B `bulunurluk = 'gizli'` ile check-in yapar; A goremez.
 4. B bagi birakir (`takibi_birak`; Faz 3b'den beri iki yonu de
@@ -36,7 +36,10 @@ Dogrulanmasi gereken bes senaryo:
 Bu bes senaryonun **veritabani tarafi** `npm run test:gorunurluk`
 icinde zaten kapsaniyor (ozellikle senaryo 19-28 ve 31). Paket Faz 3a
 kapanisinda 82 dogrulama kosuyordu; Faz 3b kapanisinda 44 senaryo / 216
-dogrulama.
+dogrulama. (82 rakami fazin **gercek** son halidir: 79 degeri
+`CLAUDE.md`'nin Faz 3a bolumu ilk yazildigi andaki degerdi, sonra gelen
+final inceleme dalgasi `b0f03c9` uc dogrulama daha ekledi. CLAUDE.md o
+tarihte guncellenmemisti, artik 82 yaziyor.)
 Acikta kalan yalnizca arayuz kablolamasinin gozle dogrulanmasi.
 
 Nasil calistirilir:
@@ -72,7 +75,7 @@ herkes bunu korumali.
 Donus tipi genisletildi (mevcut alanlar korundu): `takip`, `sohbet`
 yaninda artik `gelenTakip`, `gelenSohbet` da var. Dort sorgu
 `Promise.all` ile paralel. Profilde gelen bekleyen istek icin "Kabul et"
-/ "Reddet" butonlari ve `Kabul edersen check-in'lerini gorebilecek.`
+/ "Reddet" butonlari ve `Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.`
 metni geliyor.
 
 **Dikkat - Faz 3a'da takip TEK YONLU, sohbet SIMETRIKTI; Faz 3b'den
@@ -129,8 +132,12 @@ ayni: kabul edilmis bir sohbet iki taraf icin de aciktir, o yuzden
   icinde ve gitignored. **Dikkat:** temizlik kosumun sonunda oldugu ve
   `finally` icinde OLMADIGI icin, `senaryo()` sarmalayicisinin disinda
   bir hata (ornegin baglanma asamasinda) kosumu `temizle()`ye hic
-  vardirmaz; boyle bir kosumun biraktigi satirlar bir sonraki kosumda
-  kendiliginden temizlenmez, elle silmek gerekir.
+  vardirmaz. Boyle bir kosumun biraktigi satirlari **bir sonraki tam
+  kosum kendiliginden temizler** - `kotayiTemizle()` zaman filtresi
+  olmadan `.in('gonderen_id', kimlikler)` ile siliyor. Asil zarar
+  baska: o satirlar bir sonraki kosumun **senaryolari boyunca** kotayi
+  kirli tutar ve gunluk 50 istek tavaninda yanlis alarma yol acabilir.
+  Elle silmek yalnizca o kosumu kurtarmak istenirse gerekir.
 
 ## 4. Faz 3a'da ogrenilen ve bir daha kesfedilmemesi gereken seyler
 

@@ -65,7 +65,7 @@ describe('BaglarEkrani', () => {
 
     await render(<BaglarEkrani />)
     expect(
-      await screen.findByText("Kabul edersen check-in'lerini gorebilecek.")
+      await screen.findByText("Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")
     ).toBeTruthy()
   })
 

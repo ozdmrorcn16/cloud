@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import {
@@ -12,6 +12,11 @@ import {
 } from '../../../lib/sohbet'
 
 const KAPALI_KAPI_NOTU = 'Bu kisiye su an mesaj gonderemezsin.'
+
+// Iyimser eklenen (henuz sunucuda karsiligi olmayan) satirlar. Sunucu
+// satirlarindan `yerelMi` ile ayirt ediliyorlar; Realtime yansimasi
+// gelince yerini gercek satira birakiyorlar.
+type ListeMesaji = Mesaj & { yerelMi?: boolean }
 
 function hataMesaji(e: unknown): string {
   if (e instanceof TypeError && e.message === 'Network request failed') {
@@ -30,10 +35,11 @@ export default function SohbetEkrani() {
   // sunucudaki mesaj_gonder zaten tek yetkili kapi.
   const [konusmaSatiri, setKonusmaSatiri] = useState<Konusma | null>(null)
   const [konusmaId, setKonusmaId] = useState<string | null>(null)
-  const [mesajlar, setMesajlar] = useState<Mesaj[]>([])
+  const [mesajlar, setMesajlar] = useState<ListeMesaji[]>([])
   const [metin, setMetin] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
+  const yerelSayac = useRef(0)
 
   useEffect(() => {
     let iptalEdildi = false
@@ -71,9 +77,41 @@ export default function SohbetEkrani() {
   useEffect(() => {
     if (!konusmaId) return
     return mesajlaraAbonelOl(konusmaId, (gelenMesaj) => {
-      setMesajlar((mevcut) => [gelenMesaj, ...mevcut])
+      // Birebir konusmada iki uye var, dolayisiyla gonderen karsi
+      // tarafin id'siyse mesaj bize gelmis demektir; degilse kendi
+      // mesajimizin yansimasidir.
+      const karsiTaraftan = gelenMesaj.gonderenId === kullaniciId
+
+      setMesajlar((mevcut) => {
+        // Ayni satir iki kez yansirsa ikinci balonu uretme.
+        if (mevcut.some((m) => m.id === gelenMesaj.id)) return mevcut
+
+        if (!karsiTaraftan) {
+          // Kendi mesajimiz zaten iyimser olarak eklendi. Yansima
+          // gelince o yerel satiri sunucu satiriyla degistiriyoruz;
+          // aksi halde ayni mesaj iki balon olarak gorunurdu. Eslesme
+          // metin uzerinden yapiliyor cunku mesaj_gonder yalnizca
+          // konusma id'sini donuyor, mesaj id'sini degil.
+          const sira = mevcut.findIndex((m) => m.yerelMi && m.metin === gelenMesaj.metin)
+          if (sira !== -1) {
+            const kopya = mevcut.slice()
+            kopya[sira] = gelenMesaj
+            return kopya
+          }
+        }
+
+        return [gelenMesaj, ...mevcut]
+      })
+
+      if (karsiTaraftan) {
+        // Ekran acikken gelen mesaj kullanicinin gozunun onunde okundu;
+        // son_okuma ilerlemezse ana ekrandaki rozet okunmus mesajlari
+        // saymaya devam ederdi. Bu arka plan cagrisinin hatasi
+        // kullanicinin yapabilecegi bir sey degil, ekrana tasinmiyor.
+        konusmayiOkunduIsaretle(konusmaId).catch(() => {})
+      }
     })
-  }, [konusmaId])
+  }, [konusmaId, kullaniciId])
 
   const yazilabilirMi = konusmaSatiri ? konusmaSatiri.yazilabilirMi : true
   const gonderilecekMetin = metin.trim()
@@ -85,33 +123,58 @@ export default function SohbetEkrani() {
     // da ayni garantiyi veriyor.
     if (!gonderMumkun) return
     const oncekiKonusmaId = konusmaId
+    const yerelId = `yerel:${yerelSayac.current++}`
     setGonderiliyor(true)
+    // Iyimser ekleme: mesaj sunucu yanitini beklemeden listede belirsin.
+    // Onceden yalnizca Realtime yansitinca goruluyordu ve davranis
+    // tutarsizdi (konusmayi acan ilk gonderimde gecmis yeniden cekildigi
+    // icin hemen, sonrakilerde gecikmeli). gonderenId yerel satirda
+    // kullanilmiyor; ekranda yalnizca metin cizdiriliyor.
+    setMesajlar((mevcut) => [
+      {
+        id: yerelId,
+        gonderenId: '',
+        metin: gonderilecekMetin,
+        olusturuldu: new Date().toISOString(),
+        yerelMi: true,
+      },
+      ...mevcut,
+    ])
     try {
       const yeniKonusmaId = await mesajGonder(kullaniciId, gonderilecekMetin)
       setMetin('')
       setHata(null)
       if (!oncekiKonusmaId) {
-        // Konusma bu gonderimle ilk kez olustu: gonderilen mesaji gormek
-        // icin gecmisi yeniden cekiyoruz, abonelik bu konusmaId'ye asagidaki
-        // efektle sonradan baglanacak.
+        // Konusma listede yoktu: ya bu gonderimle ilk kez olustu ya da
+        // gizlenmis bir konusma yeniden acildi. Ikinci durumda gecmis
+        // var, o yuzden sunucudan cekiyoruz; donen liste iyimser satiri
+        // da kapsadigi icin yerini tumden aliyor. Abonelik bu
+        // konusmaId'ye yukaridaki efektle sonradan baglanacak.
         const gecmis = await mesajlariGetir(yeniKonusmaId)
         setMesajlar(gecmis)
         setKonusmaId(yeniKonusmaId)
       }
     } catch (e) {
       setHata(hataMesaji(e))
+      // Gonderilemeyen mesaj listede kalmasin.
+      setMesajlar((mevcut) => mevcut.filter((m) => m.id !== yerelId))
     } finally {
       setGonderiliyor(false)
     }
   }
 
+  // Konusma henuz yokken elimizde bir konusma id'si yok; o durumda
+  // sikayet KULLANICI hakkinda aciliyor. Boyle olmazsa 'mesaj' etiketli
+  // bir sikayet satirinda konusma id'si yerine kullanici id'si dururdu
+  // ve moderasyon paneli ikisini ayirt edemezdi.
+  const sikayetHedefTur = konusmaId ? 'mesaj' : 'kullanici'
   const sikayetHedefId = konusmaId ?? kullaniciId
 
   return (
     <View style={stiller.kapsayici}>
       <View style={stiller.ustBar}>
         <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? 'Sohbet'}</Text>
-        <Pressable onPress={() => router.push(`/sikayet?hedefTur=mesaj&hedefId=${sikayetHedefId}`)}>
+        <Pressable onPress={() => router.push(`/sikayet?hedefTur=${sikayetHedefTur}&hedefId=${sikayetHedefId}`)}>
           <Text style={stiller.sikayetButonu}>Sikayet et</Text>
         </Pressable>
       </View>

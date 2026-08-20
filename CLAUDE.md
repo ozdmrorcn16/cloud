@@ -302,11 +302,15 @@ acikta kalan yalnizca arayuz kablolamasinin elle dogrulanmasi.
 **Faz 3a TAMAMLANDI** (2026-08-20). Spec:
 `docs/superpowers/specs/2026-08-19-faz3a-bag-design.md`, plan:
 `docs/superpowers/plans/2026-08-19-faz3a-bag.md`. 18 gorev, dal
-`claude/faz3a-bag`, hepsi incelendi. `npx jest --runInBand` ile 36 test
-paketi / 216 test yesil, `npm run test:sema` ile 40 dogrulama yesil,
-`npm run test:gorunurluk` ile 79 dogrulama yesil sifir basarisizlikla
-(senaryo 29 varsayilan kosumda bilerek ATLANDI gosteriliyor - gunluk
-tavan senaryosu, ayri `--tavan` bayragiyla calisiyor).
+`claude/faz3a-bag`, hepsi incelendi. Fazin **son** dogrulama degerleri
+(final inceleme dalgasi `b0f03c9` dahil): `npx jest --runInBand` ile 36
+test paketi / 224 test yesil, `npm run test:sema` ile 42 dogrulama
+yesil, `npm run test:gorunurluk` ile 82 dogrulama yesil sifir
+basarisizlikla (senaryo 29 varsayilan kosumda bilerek ATLANDI
+gosteriliyor - gunluk tavan senaryosu, ayri `--tavan` bayragiyla
+calisiyor). Bu bolum ilk yazildiginda 216 / 40 / 79 yaziyordu; o
+degerler final incelemeden ONCEKI anin degerleriydi ve
+`docs/faz3a-takip-isleri.md` ile celisiyorlardi.
 
 Yeni tablolar: `takipler`, `sohbet_istekleri`, `istek_gunlugu`. Yeni
 sutunlar: `check_inler.bulunurluk`, `profiller.varsayilan_bulunurluk`

@@ -42,14 +42,14 @@ onemli olan bunun **karar verilmeden** miras alinmamasi.
 
 Sohbet ekrani sikayeti soyle aciyor:
 
+    const sikayetHedefTur = konusmaId ? 'mesaj' : 'kullanici'
     const sikayetHedefId = konusmaId ?? kullaniciId
-    router.push(`/sikayet?hedefTur=mesaj&hedefId=${sikayetHedefId}`)
+    router.push(`/sikayet?hedefTur=${sikayetHedefTur}&hedefId=${sikayetHedefId}`)
 
-Yani `sikayetler.hedef_id` mesaj id'si degil, **konusma** id'si (konusma
-henuz kurulmamissa kullanici id'si). Diger iki sikayet turunde
-(`kullanici` ve `check_in`; uc turun tam listesi `lib/sikayet.ts` ve
-`sikayet_gonder` govdesinde) o alan sikayet edilen seyin tam id'sini
-tasiyor. Sonucu:
+Yani `sikayetler.hedef_id` mesaj id'si degil, **konusma** id'si. Diger
+iki sikayet turunde (`kullanici` ve `check_in`; uc turun tam listesi
+`lib/sikayet.ts` ve `sikayet_gonder` govdesinde) o alan sikayet edilen
+seyin tam id'sini tasiyor. Sonucu:
 `sikayetler` tablosunu okuyacak moderasyon paneli hangi mesajin sikayet
 edildigini bulamaz; elinde yalnizca konusmanin tamami olur.
 
@@ -59,6 +59,14 @@ olarak sikayete mesaj id'si eklemek (ekranda mesaj basina sikayet),
 gecmisini okumasini kabullenmek var. Ucu de savunulabilir; sessizce
 oldugu gibi birakmak savunulabilir degil, cunku panel yazan kisi alanin
 tam id tasidigini varsayar.
+
+**Maddenin tip karisikligi kismi KAPANDI (nihai inceleme, Madde 4).**
+Konusma henuz yokken ekran `hedefTur='mesaj'` ile bir **kullanici**
+id'si yolluyordu: `'mesaj'` etiketli bir satirda `konusmalar` yerine
+`auth.users`a ait bir id duruyordu ve moderasyon paneli ikisini ayirt
+edemezdi. Artik konusma yokken sikayet `hedefTur='kullanici'` ile
+aciliyor. Yukarida anlatilan asil eksik yerinde duruyor: konusma varken
+hangi **mesaj** oldugu hala kayboluyor.
 
 ## 2. Yapilmamis elle dogrulama
 
@@ -94,12 +102,13 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
 
 ## 3. Kullaniciya gorunen kucuk kusurlar
 
-- **Gonderilen mesaj iyimser olarak listeye eklenmiyor** ve bu TUTARSIZ:
-  konusmayi olusturan ilk gonderimde liste yeniden cekiliyor, sonraki
-  gonderimlerde cekilmiyor ve mesaj yalnizca Realtime geri yansitinca
-  beliriyor. Kullanici bazen kendi mesajini hemen goruyor, bazen
-  gormuyor - bu, her seferinde beklemekten daha kafa karistirici. Testi
-  de yok.
+- ~~**Gonderilen mesaj iyimser olarak listeye eklenmiyor** ve bu
+  TUTARSIZ.~~ **KAPANDI (nihai inceleme, Madde 3).** Sohbet ekrani
+  mesaji artik sunucu yanitini beklemeden listeye koyuyor; gonderim
+  reddedilirse satir geri aliniyor. Realtime yansimasi gelince yerel
+  satir sunucu satiriyla **degistiriliyor** (metin eslesmesiyle),
+  boylece ayni mesaj iki balon olarak gorunmuyor. Dort yeni ekran
+  testi bunu kapsiyor.
 - `mesajlari_getir`'e negatif `p_limit` verilince ham Postgres hatasi
   uretiyor, Turkce bir mesaj degil. Istemci bu degeri hic gondermiyor,
   yani bugun yalnizca dogrudan RPC cagrisiyla goruluyor.
@@ -112,9 +121,14 @@ kalan bir dev sunucusu tam Jest kosumlarinda zaman asimi uretiyor.
   yalnizca `authenticated` rolunde, PostgREST `bag` semasini sunmuyor),
   ama bu iki koruma da yapilandirmaya bagli; `revoke` fonksiyonun
   kendisine bagli olurdu.
-- `mesaj_gonder`'in `update konusma_uyeleri` adimi KOSULSUZ calisiyor,
-  yani her mesaj iki UPDATE olayini daha Realtime'a yayiyor. Islevsel
-  sorun degil, gereksiz yuk.
+- `mesaj_gonder`'in `update konusma_uyeleri` adimi KOSULSUZ calisiyor:
+  gizlenmemis bir konusmada bile her mesaj iki satiri bosuna yeniden
+  yaziyor. Islevsel sorun degil, gereksiz yuk. **Duzeltme (nihai
+  inceleme):** bu maddenin eski hali "her mesaj iki UPDATE olayini daha
+  Realtime'a yayiyor" diyordu; bu YANLIS. `supabase_realtime`
+  yayininda canli veritabaninda yalnizca `public.mesajlar` var, yani
+  `konusma_uyeleri` UPDATE'leri hicbir yere yayilmiyor. Var olmayan bir
+  fan-out'u duzeltmeye oturulmasin.
 - `sikayet_gonder`'in `revoke`/`grant` satirlari arguman imzasi yazmiyor,
   tek asiri yukleme olduguna guveniyor. Ikinci bir asiri yukleme
   eklenirse kirilgan.

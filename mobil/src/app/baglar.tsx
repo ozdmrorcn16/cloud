@@ -138,7 +138,7 @@ export default function BaglarEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
-      <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
+      <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.</Text>
       <FlatList
         scrollEnabled={false}
         data={gelenTakip}

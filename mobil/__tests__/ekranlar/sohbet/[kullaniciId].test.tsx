@@ -88,7 +88,7 @@ describe('SohbetEkrani', () => {
     })
   })
 
-  it('gonderme reddedilirse hata mesaji gorunur ve yazilan metin giris alaninda kalir', async () => {
+  it('gonderme reddedilirse hata gorunur, metin girdide kalir ve iyimser satir listeden kalkar', async () => {
     ;(mesajGonder as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<SohbetEkrani />)
@@ -98,6 +98,9 @@ describe('SohbetEkrani', () => {
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByPlaceholderText('Bir mesaj yaz...').props.value).toBe('Merhaba')
+    // Iyimser eklenen satir geri alinmali: gonderilemeyen mesaj
+    // gonderilmis gibi durmasin.
+    expect(screen.queryAllByTestId('mesaj-metni')).toHaveLength(0)
   })
 
   it('bos ya da yalnizca bosluk metinle gonder butonu etkin degil', async () => {
@@ -159,6 +162,18 @@ describe('SohbetEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=konusma-1')
   })
 
+  it('konusma henuz yokken sikayet hedef_tur=kullanici ile aciliyor', async () => {
+    // Elde konusma id'si yok. Eskiden bu durumda da hedefTur=mesaj
+    // gonderiliyordu, yani 'mesaj' etiketli satira bir KULLANICI id'si
+    // yaziliyordu ve moderasyon paneli ikisini ayirt edemiyordu.
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<SohbetEkrani />)
+    await fireEvent.press(await screen.findByText('Sikayet et'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
+  })
+
   it('abonelik konusma id ile kuruluyor ve gelen mesaj listeye eklenir', async () => {
     let geldiCallback: ((m: Mesaj) => void) | null = null
     ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((konusmaId, geldi) => {
@@ -178,6 +193,129 @@ describe('SohbetEkrani', () => {
     })
 
     expect(await screen.findByText('Yeni gelen mesaj')).toBeTruthy()
+  })
+
+  it('gonderilen mesaj Realtime yansimasini beklemeden listede gorunur', async () => {
+    // Abonelik kuruluyor ama geri cagri hic tetiklenmiyor: sunucudan
+    // hicbir yansima gelmiyor. Konusma zaten var, yani gecmis de
+    // yeniden cekilmiyor. Eski davranista bu senaryoda ekranda hicbir
+    // balon olmazdi; simdi iyimser ekleme sayesinde var.
+    let geldiCallback: ((m: Mesaj) => void) | null = null
+    ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((_konusmaId, geldi) => {
+      geldiCallback = geldi
+      return bosAbonelikIptali
+    })
+    ;(mesajGonder as jest.Mock).mockResolvedValue('konusma-1')
+
+    await render(<SohbetEkrani />)
+    ;(mesajlariGetir as jest.Mock).mockClear()
+
+    const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
+    await fireEvent.changeText(girdi, 'Merhaba')
+    await fireEvent.press(screen.getByText('Gonder'))
+
+    await waitFor(() => {
+      expect(mesajGonder).toHaveBeenCalledWith('kullanici-2', 'Merhaba')
+    })
+
+    const satirlar = await screen.findAllByTestId('mesaj-metni')
+    expect(satirlar.map((s) => s.props.children)).toEqual(['Merhaba'])
+    // Satir gecmisin yeniden cekilmesinden gelmis olamaz...
+    expect(mesajlariGetir).not.toHaveBeenCalled()
+    // ...ve Realtime'dan da gelmis olamaz.
+    expect(geldiCallback).not.toBeNull()
+  })
+
+  it('kendi mesajimizin Realtime yansimasi ikinci bir balon uretmez', async () => {
+    let geldiCallback: ((m: Mesaj) => void) | null = null
+    ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((_konusmaId, geldi) => {
+      geldiCallback = geldi
+      return bosAbonelikIptali
+    })
+    ;(mesajGonder as jest.Mock).mockResolvedValue('konusma-1')
+
+    await render(<SohbetEkrani />)
+    const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
+    await fireEvent.changeText(girdi, 'Merhaba')
+    await fireEvent.press(screen.getByText('Gonder'))
+
+    await waitFor(() => {
+      expect(mesajGonder).toHaveBeenCalled()
+    })
+    expect(await screen.findAllByTestId('mesaj-metni')).toHaveLength(1)
+
+    // Sunucu ayni mesaji geri yansitiyor. Gonderen biziz, yani
+    // gonderenId karsi tarafin id'si DEGIL.
+    await act(async () => {
+      geldiCallback!(mesaj({ id: 'm-sunucu', gonderenId: 'ben', metin: 'Merhaba' }))
+    })
+
+    const satirlar = screen.getAllByTestId('mesaj-metni')
+    expect(satirlar.map((s) => s.props.children)).toEqual(['Merhaba'])
+  })
+
+  it('ekran acikken karsi taraftan mesaj gelince konusma yeniden okundu isaretlenir', async () => {
+    let geldiCallback: ((m: Mesaj) => void) | null = null
+    ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((_konusmaId, geldi) => {
+      geldiCallback = geldi
+      return bosAbonelikIptali
+    })
+
+    await render(<SohbetEkrani />)
+    await waitFor(() => {
+      expect(konusmayiOkunduIsaretle).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      geldiCallback!(mesaj({ id: 'm-yeni', gonderenId: 'kullanici-2', metin: 'Yeni gelen' }))
+    })
+
+    // Ikinci cagri: mesaj kullanicinin gozunun onunde okundu, sayac
+    // ekran acikken de ilerlemeli.
+    await waitFor(() => {
+      expect(konusmayiOkunduIsaretle).toHaveBeenCalledTimes(2)
+    })
+    expect(konusmayiOkunduIsaretle).toHaveBeenLastCalledWith('konusma-1')
+  })
+
+  it('kendi mesajimizin yansimasi konusmayi yeniden okundu isaretlemez', async () => {
+    let geldiCallback: ((m: Mesaj) => void) | null = null
+    ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((_konusmaId, geldi) => {
+      geldiCallback = geldi
+      return bosAbonelikIptali
+    })
+
+    await render(<SohbetEkrani />)
+    await waitFor(() => {
+      expect(konusmayiOkunduIsaretle).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      geldiCallback!(mesaj({ id: 'm-benim', gonderenId: 'ben', metin: 'Kendi mesajim' }))
+    })
+
+    expect(konusmayiOkunduIsaretle).toHaveBeenCalledTimes(1)
+  })
+
+  it('konusma bu gonderimle acildiysa iyimser satir sunucu gecmisiyle degisir, mukerrer olmaz', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajGonder as jest.Mock).mockResolvedValue('konusma-9')
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm-sunucu', gonderenId: 'ben', metin: 'Merhaba' }),
+    ])
+
+    await render(<SohbetEkrani />)
+    const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
+    await fireEvent.changeText(girdi, 'Merhaba')
+    await fireEvent.press(screen.getByText('Gonder'))
+
+    await waitFor(() => {
+      expect(mesajlariGetir).toHaveBeenCalledWith('konusma-9')
+    })
+    await waitFor(() => {
+      const satirlar = screen.getAllByTestId('mesaj-metni')
+      expect(satirlar.map((s) => s.props.children)).toEqual(['Merhaba'])
+    })
   })
 
   it('ekran kapaninca abonelik iptal edilir', async () => {
