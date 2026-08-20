@@ -82,18 +82,14 @@ export async function gidenIstekleriGetir(): Promise<{ takip: BagKisi[]; sohbet:
   }
 }
 
+// Takip artik karsilikli yazildigi icin (kabul iki yonu de yazar) "kimin
+// beni takip ettigi" ve "kimi takip ettigim" ayni kume oldu. Eskiden
+// bunlarin ayri fonksiyonu vardi (takipEttiklerimiGetir); tek liste
+// kaldigi icin kaldirildi, ekran bu fonksiyonu kullaniyor.
 export async function takipcilerimiGetir(): Promise<BagKisi[]> {
   const benimId = await kendiKullaniciId()
   const kimlikler = await kimlikleriOku(
     'takipler', 'takip_eden_id', 'takip_edilen_id', benimId, 'kabul'
-  )
-  return kisileriCoz(kimlikler)
-}
-
-export async function takipEttiklerimiGetir(): Promise<BagKisi[]> {
-  const benimId = await kendiKullaniciId()
-  const kimlikler = await kimlikleriOku(
-    'takipler', 'takip_edilen_id', 'takip_eden_id', benimId, 'kabul'
   )
   return kisileriCoz(kimlikler)
 }

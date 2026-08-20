@@ -3,7 +3,6 @@ import {
   gelenIstekleriGetir,
   gidenIstekleriGetir,
   takipcilerimiGetir,
-  takipEttiklerimiGetir,
 } from './bag-listeleri'
 
 jest.mock('./supabase', () => ({
@@ -91,13 +90,11 @@ describe('takipcilerimiGetir', () => {
       { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y' },
     ])
   })
-})
 
-describe('takipEttiklerimiGetir', () => {
   it('RPC hatasini firlatir', async () => {
-    ;(supabase.from as jest.Mock).mockReturnValueOnce(tabloDondur([{ takip_edilen_id: 'k3' }]))
+    ;(supabase.from as jest.Mock).mockReturnValueOnce(tabloDondur([{ takip_eden_id: 'k3' }]))
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
 
-    await expect(takipEttiklerimiGetir()).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(takipcilerimiGetir()).rejects.toThrow('Kimlik dogrulamasi gerekli')
   })
 })
