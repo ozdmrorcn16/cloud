@@ -453,6 +453,49 @@ async function main() {
   })
   esitMi(anonMesajHatasi?.code, '42501', 'kimliksiz mesaj_gonder cagrisi reddediliyor')
 
+  console.log("\n--- Faz 3b Task 8: okuma RPC'leri ---")
+  // Dorddu de revoke from public, anon: cagri gorunun icine hic girmeden
+  // PostgREST/PostgreSQL yetki katmaninda reddedilmeli (42501). Canli
+  // mesaj satiri gerektirmeyen tek ucuz iddia bu - satir gerektiren
+  // senaryolar (okunmamis sayaci, sayfalama, gizleme) sonraki gorevin isi.
+  const { error: anonKonusmalarimHatasi } = await anon.rpc('konusmalarim')
+  esitMi(anonKonusmalarimHatasi?.code, '42501', 'kimliksiz konusmalarim cagrisi reddediliyor')
+
+  const { error: anonMesajlariGetirHatasi } = await anon.rpc('mesajlari_getir', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(anonMesajlariGetirHatasi?.code, '42501', 'kimliksiz mesajlari_getir cagrisi reddediliyor')
+
+  const { error: anonOkunduHatasi } = await anon.rpc('konusmayi_okundu_isaretle', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(
+    anonOkunduHatasi?.code,
+    '42501',
+    'kimliksiz konusmayi_okundu_isaretle cagrisi reddediliyor'
+  )
+
+  const { error: anonGizleHatasi } = await anon.rpc('konusmayi_gizle', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(anonGizleHatasi?.code, '42501', 'kimliksiz konusmayi_gizle cagrisi reddediliyor')
+
+  // Uyeligi olmayan bir konusma id'siyle mesajlari_getir: gercek uyesi
+  // olunan bir konusma yaratmadan da "Konusma bulunamadi" dostane hatasi
+  // dogrulanabilir - engelleme kontrolu ayni hatayi paylastigi icin
+  // bu tek basina hangi dalin tetiklendigini ayirt etmiyor, ama RPC'nin
+  // canli veritabaninda gercekten calistigini ve dostane hata dondugunu
+  // (ham exception degil) gosteriyor.
+  const { error: uyelikYokHatasi } = await a.rpc('mesajlari_getir', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(uyelikYokHatasi?.code, 'P0001', 'mesajlari_getir(uyesi olunmayan konusma) P0001 donuyor')
+  esitMi(
+    uyelikYokHatasi?.message,
+    'Konusma bulunamadi',
+    'mesajlari_getir(uyesi olunmayan konusma) dostane mesaj donduruyor'
+  )
+
   sonucuBildirVeCik()
 }
 
