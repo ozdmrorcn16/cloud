@@ -39,6 +39,15 @@ SIR_KALIPLARI = [
     re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
     re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
     re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
+    # Supabase'in yeni bicim anahtarlari. `sb_secret_` GERCEK bir sir:
+    # RLS'i asar ve butun veriye erisir. 2026-08-20'de bir tanesi
+    # konusmaya yapistirildi ve buradaki kalip listesinde karsiligi
+    # olmadigi icin oturum dokumune duz metin yazildi; depo public
+    # oldugu icin push edilseydi sizacakti. `sb_publishable_` gizli
+    # degil (uygulama paketinde zaten gidiyor) ama ayirt etmeyi
+    # kolaylastirmak icin o da maskeleniyor.
+    re.compile(r"sb_secret_[A-Za-z0-9_\-]{16,}"),        # Supabase gizli anahtar
+    re.compile(r"sb_publishable_[A-Za-z0-9_\-]{16,}"),   # Supabase acik anahtar
     # JWT parcalari (Supabase anon/service anahtarlari dahil). Her
     # base64url parcasi ayri ayri maskelenir; nokta ile ayrilmis uc
     # parcanin tamamini tek kalipla yakalamak, kirpilmis kayitlarda
