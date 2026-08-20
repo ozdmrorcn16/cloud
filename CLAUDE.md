@@ -49,6 +49,21 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   "Devam eden is" basligindaki 8/18 notu artik gecersiz. Ayrinti asagida
   "Faz 3a TAMAMLANDI" bolumunde.
 
+- **DEVAM EDEN IS (2026-08-20, Faz 3b):** Calisma dali su an
+  `claude/faz3b-sohbet`. Faz 3b (birebir sohbet) 18 gorevden **16'si
+  bitti ve incelendi**; Gorev 17 (canli senaryolar) yarim kaldi, Gorev
+  18 (kapanis) baslamadi. Faz 3a birlestirilip
+  `claude/faz2c-kimlik`'e push edildi; 3b onun ucundan ayrildi.
+
+  **Yeni oturum once `docs/faz3b-devam-notu.md` dosyasini okusun** —
+  nerede kalindigi, hangi commit hangi gorev, testlerin su anki
+  degerleri, bilerek kirik birakilanlar, ortam tuzaklari ve bu
+  oturumda yasanan guvenlik olayi orada.
+
+  **Onemli:** `npm run test:gorunurluk` su an KIRIK ve bu BEKLENEN —
+  takip karsilikli hale geldi, eski senaryolar hala tek yonlu
+  varsayiyor. Gorev 17 onaracak. Iddia zayiflatarak gecirilmeyecek.
+
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
 Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
