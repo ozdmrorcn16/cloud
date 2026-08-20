@@ -162,11 +162,14 @@ async function main() {
   await senaryo('4 - gorunurluk = kimse olan ani gizlenir', async () => {
     if (!aCheckIn1Id) throw new Error('senaryo 1 A check-in id\'si yok, onkosul basarisiz')
 
-    const { error } = await a
-      .from('check_inler')
-      .update({ gorunurluk: 'kimse' })
-      .eq('id', aCheckIn1Id)
-    if (error) throw new Error(`gorunurluk guncelleme hatasi: ${error.message}`)
+    // Madde 1'in revoke'undan sonra check_inler'a dogrudan update artik
+    // reddediliyor (bkz. sema-dogrula.ts). Tek yazma yolu
+    // ani_gorunurlugunu_ayarla RPC'si; bu noktada A'nin tek anisi
+    // aCheckIn1Id oldugu icin RPC'nin butun anilarina uygulanmasi bu
+    // satiri hedefliyor demek. 'kimse' zaten en dar deger oldugu icin
+    // kelepce onu aynen geciriyor (daraltma degil, esitlik).
+    const { error } = await a.rpc('ani_gorunurlugunu_ayarla', { p_deger: 'kimse' })
+    if (error) throw new Error(`ani_gorunurlugunu_ayarla hatasi: ${error.message}`)
 
     const bGorenAnilar = await anilariGetir(b, aId, mekan1)
     esitMi(bGorenAnilar.map((r) => r.id), [], 'B, gorunurluk=kimse olan aniyi goremez')
@@ -945,6 +948,55 @@ async function main() {
 
     const { error: kisilerHata } = await anonim.rpc('bag_kisileri', { p_kimlikler: [bId] })
     esitMi(kisilerHata?.code, '42501', 'kimliksiz bag_kisileri cagrisi 42501 ile reddedilir')
+  })
+
+  await senaryo("31 - ani_gorunurlugunu_ayarla genisletmeyi kelepceler", async () => {
+    // Madde 2'nin asil kanitladigi sey: check_inler'a dogrudan yazma
+    // artik reddedildigi icin (Madde 1) ayarlardaki "Herkes gorsun"
+    // eylemi bu RPC'ye tasindi. RPC gizli kokenli bir aniyi ASLA
+    // 'herkese_acik'a genisletmemeli; bag.ani_gorunurlugu bu kelepceyi
+    // ('gizli' -> her zaman 'kimse') zaten uyguluyordu, burada RPC'nin
+    // gercekten o yardimciyi cagirdigini uctan uca dogruluyoruz.
+    const bGizliCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'gizli')
+    t.checkInler.push({ istemci: b, id: bGizliCi })
+
+    const { error: ayrilHata } = await b.rpc('check_inden_ayril', { p_check_in_id: bGizliCi })
+    if (ayrilHata) throw new Error(`check_inden_ayril hatasi: ${ayrilHata.message}`)
+
+    const { data: ayrildiktanSonra, error: sorguHata1 } = await b
+      .from('check_inler')
+      .select('gorunurluk')
+      .eq('id', bGizliCi)
+      .single()
+    if (sorguHata1) throw new Error(`sorgu hatasi: ${sorguHata1.message}`)
+    esitMi(
+      (ayrildiktanSonra as { gorunurluk: string }).gorunurluk,
+      'kimse',
+      "on kosul: gizli check-in'ten donen ani 'kimse' ile basliyor"
+    )
+
+    const { error: ayarlaHata } = await b.rpc('ani_gorunurlugunu_ayarla', {
+      p_deger: 'herkese_acik',
+    })
+    if (ayarlaHata) throw new Error(`ani_gorunurlugunu_ayarla hatasi: ${ayarlaHata.message}`)
+
+    const { data: genisletmeSonrasi, error: sorguHata2 } = await b
+      .from('check_inler')
+      .select('gorunurluk')
+      .eq('id', bGizliCi)
+      .single()
+    if (sorguHata2) throw new Error(`sorgu hatasi: ${sorguHata2.message}`)
+    esitMi(
+      (genisletmeSonrasi as { gorunurluk: string }).gorunurluk,
+      'kimse',
+      "'Herkes gorsun' cagrisindan sonra bile gizli kokenli ani 'kimse' kaliyor (genislemiyor)"
+    )
+
+    esitMi(
+      await aniGorulebiliyorMu(a, bGizliCi),
+      false,
+      'A, genisletme denemesinden sonra bile bu aniyi goremez'
+    )
   })
 
   await temizle(t)

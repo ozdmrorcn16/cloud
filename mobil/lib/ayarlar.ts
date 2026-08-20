@@ -76,10 +76,10 @@ export async function kullaniciAdiDurumunuGetir(): Promise<{
 export async function aniGorunurlugunuAyarla(
   deger: AniGorunurlugu
 ): Promise<void> {
-  const id = await kendiKullaniciId()
-  const { error } = await supabase
-    .from('check_inler')
-    .update({ gorunurluk: deger })
-    .eq('kullanici_id', id)
+  // check_inler'a dogrudan yazma yetkisi yok (Faz 3a final inceleme
+  // Madde 1). Tek yol bu RPC; sunucuda her satiri kendi bulunurluk
+  // degerine gore kelepceliyor, boylece bu eylem gizli check-in'lerden
+  // donen anilari asla genisletemiyor.
+  const { error } = await supabase.rpc('ani_gorunurlugunu_ayarla', { p_deger: deger })
   if (error) throw new Error(error.message)
 }

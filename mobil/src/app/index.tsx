@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 
@@ -12,11 +12,16 @@ export default function AnaEkran() {
     await supabase.auth.signOut()
   }
 
-  useEffect(() => {
-    gelenIstekleriGetir()
-      .then((istekler) => setBekleyenSayisi(istekler.takip.length + istekler.sohbet.length))
-      .catch(() => setBekleyenSayisi(0))
-  }, [])
+  // useEffect yalnizca ilk acilista bir kez cekiyordu: kullanici /baglar
+  // ekranina gidip istekleri kabul edip geri donunce rozet eski deger de
+  // kaliyordu. useFocusEffect ekran her odaklandiginda yeniden cekiyor.
+  useFocusEffect(
+    useCallback(() => {
+      gelenIstekleriGetir()
+        .then((istekler) => setBekleyenSayisi(istekler.takip.length + istekler.sohbet.length))
+        .catch(() => setBekleyenSayisi(0))
+    }, [])
+  )
 
   return (
     <View style={stiller.kapsayici}>

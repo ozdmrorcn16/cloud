@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
+import { View, Text, FlatList, Pressable, ScrollView, StyleSheet } from 'react-native'
 import {
   gelenIstekleriGetir,
   gidenIstekleriGetir,
@@ -114,12 +114,20 @@ export default function BaglarEkrani() {
   }
 
   return (
-    <View style={stiller.kapsayici}>
+    // Bes FlatList ve alti baslik tek bir View'da flex:1 icinde ustuste
+    // duruyordu; kapsayici kaydirilamadigi icin son bolumler ("Takipcilerim",
+    // "Takip ettiklerim") telefonda kirpilip erisilemez oluyordu (final
+    // inceleme Madde 4). En az riskli duzeltme: butun icerigi tek bir
+    // ScrollView'a al, ic FlatList'lerin hepsine scrollEnabled={false} ver.
+    // Boylece dis kaydirma tek elden yonetiliyor, ic listeler kendi
+    // icinde kaydirmaya calismiyor.
+    <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
       <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
       <FlatList
+        scrollEnabled={false}
         data={gelenTakip}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
@@ -146,6 +154,7 @@ export default function BaglarEkrani() {
 
       <Text style={stiller.altBaslik}>Sohbet istekleri</Text>
       <FlatList
+        scrollEnabled={false}
         data={gelenSohbet}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
@@ -172,6 +181,7 @@ export default function BaglarEkrani() {
 
       <Text style={stiller.bolumBaslik}>Giden istekler</Text>
       <FlatList
+        scrollEnabled={false}
         data={[...gidenTakip, ...gidenSohbet]}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
@@ -188,6 +198,7 @@ export default function BaglarEkrani() {
 
       <Text style={stiller.bolumBaslik}>Takipcilerim</Text>
       <FlatList
+        scrollEnabled={false}
         data={takipciler}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
@@ -211,6 +222,7 @@ export default function BaglarEkrani() {
 
       <Text style={stiller.bolumBaslik}>Takip ettiklerim</Text>
       <FlatList
+        scrollEnabled={false}
         data={takipEdilenler}
         keyExtractor={(k) => k.id}
         renderItem={({ item }) => (
@@ -226,12 +238,14 @@ export default function BaglarEkrani() {
         )}
         ListEmptyComponent={<Text style={stiller.bosDurum}>Henuz kimseyi takip etmiyorsun</Text>}
       />
-    </View>
+    </ScrollView>
   )
 }
 
 const stiller = StyleSheet.create({
   kapsayici: { flex: 1, padding: 16 },
+  kaydirici: { flex: 1 },
+  icerik: { padding: 16 },
   bolumBaslik: { fontSize: 18, fontWeight: '600', marginTop: 20, marginBottom: 4 },
   altBaslik: { fontSize: 15, fontWeight: '600', marginTop: 12, marginBottom: 4, color: '#555' },
   aciklama: { color: '#555', marginBottom: 8 },

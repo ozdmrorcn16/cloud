@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import AnaEkran from '../../src/app/index'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
@@ -12,13 +12,22 @@ jest.mock('../../lib/bag-listeleri', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+// useFocusEffect'i gercek useEffect gibi (mount'ta bir kez) davranacak
+// sekilde taklit ediyoruz, ayrica sonuncu geri cagirmayi testlerin
+// "yeniden odaklanma" simule edebilmesi icin disariya biriktiriyoruz.
+let mockOdakGeriCagirmalari: (() => void)[] = []
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush }),
+  useFocusEffect: (effect: () => void) => {
+    mockOdakGeriCagirmalari.push(effect)
+    require('react').useEffect(effect, [])
+  },
 }))
 
 describe('AnaEkran', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockOdakGeriCagirmalari = []
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
   })
 
@@ -90,5 +99,26 @@ describe('AnaEkran', () => {
     })
     expect(screen.getByText('Baglar')).toBeTruthy()
     expect(screen.queryByText(/^\d+$/)).toBeNull()
+  })
+
+  it('ekrana yeniden odaklaninca sayaci tekrar ceker (useFocusEffect, tek seferlik useEffect degil)', async () => {
+    await render(<AnaEkran />)
+    await waitFor(() => expect(gelenIstekleriGetir).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText(/^\d+$/)).toBeNull()
+
+    // /baglar ekranindan istekler kabul edilip geri donulmus gibi:
+    // sayi degisti VE ekran yeniden odaklandi. useEffect (deps: [])
+    // olsaydi bu ikinci cagriyi hic yapmazdi - rozet bayat kalirdi
+    // (final inceleme Madde 9).
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O' }],
+      sohbet: [],
+    })
+    await act(async () => {
+      mockOdakGeriCagirmalari.forEach((geriCagirma) => geriCagirma())
+    })
+
+    await waitFor(() => expect(gelenIstekleriGetir).toHaveBeenCalledTimes(2))
+    expect(screen.getByText('1')).toBeTruthy()
   })
 })

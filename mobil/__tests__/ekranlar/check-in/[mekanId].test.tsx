@@ -130,6 +130,54 @@ describe('CheckInEkrani', () => {
     expect(await screen.findByLabelText('Bulunurluk: gizli, secili')).toBeTruthy()
   })
 
+  it('varsayilan bulunurluk cozulmeden gonder butonu devre disi kalir', async () => {
+    let cozBekleneni: (deger: 'herkese_acik') => void = () => {}
+    ;(varsayilanBulunurluguGetir as jest.Mock).mockReturnValue(
+      new Promise((resolve) => {
+        cozBekleneni = resolve
+      })
+    )
+    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
+
+    await render(<CheckInEkrani />)
+    const buttons = screen.getAllByText('Check-in yap')
+    // Cozulmeden basiliyor: buton devre disi oldugu ve checkInYapButonu
+    // da erken donduugu icin checkInYap hic cagrilmamali.
+    await fireEvent.press(buttons[buttons.length - 1])
+    expect(checkInYap).not.toHaveBeenCalled()
+
+    cozBekleneni('herkese_acik')
+    // Yalnizca "cagrildi mi" beklemek yetmez: mock zaten ilk render'da
+    // cagrildi. Butonun gercekten etkinlestigini (secenegin secili
+    // gorunmesini) beklemek gerekiyor, yoksa ikinci basis hala
+    // devre disiyken gerceklesir.
+    await waitFor(() =>
+      expect(screen.getByLabelText('Bulunurluk: herkese_acik, secili')).toBeTruthy()
+    )
+
+    await fireEvent.press(buttons[buttons.length - 1])
+    await waitFor(() => expect(checkInYap).toHaveBeenCalled())
+  })
+
+  it('profil okumasi basarisiz olursa gizliye duser, herkese_acik gondermez', async () => {
+    ;(varsayilanBulunurluguGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
+
+    await render(<CheckInEkrani />)
+    await waitFor(() => {
+      expect(screen.getByLabelText('Bulunurluk: gizli, secili')).toBeTruthy()
+    })
+
+    const buttons = screen.getAllByText('Check-in yap')
+    await fireEvent.press(buttons[buttons.length - 1])
+
+    await waitFor(() => {
+      expect(checkInYap).toHaveBeenCalledWith(
+        'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli'
+      )
+    })
+  })
+
   it('ilk check-in uyarisini gosterir ve oradan gizliye cevrilebilir', async () => {
     await AsyncStorage.removeItem('ilk-checkin-uyarisi-gosterildi')
     ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')

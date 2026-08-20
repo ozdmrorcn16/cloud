@@ -267,6 +267,32 @@ async function main() {
     .insert({ gonderen_id: aId })
   esitMi(gunlukYazmaHatasi?.code === '42501', true, 'istek_gunlugu tablosuna dogrudan yazilamiyor')
 
+  console.log('\n--- Final inceleme Madde 1/2: check_inler sutun yetkisi ---')
+  // Kod, varsayilmadan, canli veritabaninda gozlemlendi: her iki durumda
+  // da 42501 ("permission denied for table check_inler") donuyor - ayni
+  // kod profiller icin yukarida kullanilan kodla ayni.
+  const { error: gorunurlukYazmaHatasi } = await a
+    .from('check_inler')
+    .update({ gorunurluk: 'herkese_acik' })
+    .eq('kullanici_id', aId)
+  esitMi(
+    gorunurlukYazmaHatasi?.code === '42501',
+    true,
+    'check_inler.gorunurluk dogrudan guncellenemiyor'
+  )
+
+  // Kritik olan bu: mekan_id'yi dogrudan degistirebilmek, mekan kapisini
+  // taklit edip suresiz canli check-in okumaya izin veriyordu (Madde 1).
+  const { error: mekanIdYazmaHatasi } = await a
+    .from('check_inler')
+    .update({ mekan_id: '00000000-0000-0000-0000-000000000000' })
+    .eq('kullanici_id', aId)
+  esitMi(
+    mekanIdYazmaHatasi?.code === '42501',
+    true,
+    'check_inler.mekan_id dogrudan guncellenemiyor (mekan kapisi taklit edilemiyor)'
+  )
+
   sonucuBildirVeCik()
 }
 

@@ -12,6 +12,7 @@ jest.mock('./supabase', () => ({
   supabase: {
     auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) },
     from: jest.fn(),
+    rpc: jest.fn(),
   },
 }))
 
@@ -45,16 +46,22 @@ describe('varsayilanBulunurluguAyarla', () => {
 })
 
 describe('aniGorunurlugunuAyarla', () => {
-  it('kullanicinin butun check-in satirlarini gunceller', async () => {
-    const eq = jest.fn().mockResolvedValue({ error: null })
-    const update = jest.fn().mockReturnValue({ eq })
-    ;(supabase.from as jest.Mock).mockReturnValue({ update })
+  it('ani_gorunurlugunu_ayarla RPC-sini cagirir (dogrudan update degil)', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ error: null })
 
     await aniGorunurlugunuAyarla('kimse')
 
-    expect(supabase.from).toHaveBeenCalledWith('check_inler')
-    expect(update).toHaveBeenCalledWith({ gorunurluk: 'kimse' })
-    expect(eq).toHaveBeenCalledWith('kullanici_id', 'kullanici-1')
+    expect(supabase.rpc).toHaveBeenCalledWith('ani_gorunurlugunu_ayarla', { p_deger: 'kimse' })
+    // check_inler'a dogrudan update yetkisi kaldirildi (Faz 3a final
+    // inceleme Madde 1); bu fonksiyon artik hicbir sekilde .from()
+    // cagirmamali.
+    expect(supabase.from).not.toHaveBeenCalled()
+  })
+
+  it('RPC hata donerse firlatir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ error: { message: 'Gecersiz gorunurluk degeri' } })
+
+    await expect(aniGorunurlugunuAyarla('kimse')).rejects.toThrow('Gecersiz gorunurluk degeri')
   })
 })
 

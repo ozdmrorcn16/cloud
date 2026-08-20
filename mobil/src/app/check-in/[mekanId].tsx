@@ -25,7 +25,12 @@ export default function CheckInEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
-  const [bulunurluk, setBulunurluk] = useState<Bulunurluk>('herkese_acik')
+  // null = varsayilan henuz cozulmedi. Bu sure boyunca gonder butonu
+  // devre disi: cozulmeden basilirsa ya da profil okumasi (agdaki bir
+  // sorun yuzunden) basarisiz olursa, kullanicinin secmedigi 'herkese_acik'
+  // yayinlanmamali - o kademe artik yalnizca "bu mekandakiler" degil,
+  // mekan ARTI HER YERDEKI butun takipciler demek.
+  const [bulunurluk, setBulunurluk] = useState<Bulunurluk | null>(null)
   const [ilkKullanimUyarisi, setIlkKullanimUyarisi] = useState(false)
   // Kullanici bulunurluk tercihini elle degistirdiyse (secenek satiri veya ilk
   // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
@@ -37,7 +42,13 @@ export default function CheckInEkrani() {
       .then((deger) => {
         if (!bulunurlukManuelDegisti.current) setBulunurluk(deger)
       })
-      .catch(() => {})
+      .catch(() => {
+        // Profil okumasi basarisiz oldu: sessizce en genis degerde
+        // birakmak yerine en dar degere (gizli) dusuyoruz. Kullanici
+        // isterse elle genisletebilir, ama varsayilan asla onun
+        // secmedigi bir yayin genisligine kaymamali.
+        if (!bulunurlukManuelDegisti.current) setBulunurluk('gizli')
+      })
     AsyncStorage.getItem(ILK_UYARI_ANAHTARI).then((deger) => {
       if (!deger) setIlkKullanimUyarisi(true)
     })
@@ -62,6 +73,10 @@ export default function CheckInEkrani() {
   }
 
   async function checkInYapButonu() {
+    // Buton zaten disabled={bulunurluk === null} ile korunuyor; bu ikinci
+    // koruma, disabled prop'a guvenmeden fireEvent.press gibi dogrudan
+    // tetiklemelere karsi da ayni garantiyi veriyor.
+    if (bulunurluk === null) return
     setHata(null)
     setGonderiliyor(true)
     try {
@@ -148,7 +163,11 @@ export default function CheckInEkrani() {
 
       {uyari && <Text style={stiller.uyari}>{uyari}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
-      <Pressable style={stiller.buton} onPress={checkInYapButonu} disabled={gonderiliyor}>
+      <Pressable
+        style={stiller.buton}
+        onPress={checkInYapButonu}
+        disabled={gonderiliyor || bulunurluk === null}
+      >
         <Text style={stiller.butonYazi}>{gonderiliyor ? 'Check-in yapiliyor...' : 'Check-in yap'}</Text>
       </Pressable>
     </View>

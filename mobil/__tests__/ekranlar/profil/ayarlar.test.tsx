@@ -55,6 +55,46 @@ describe('AyarlarEkrani', () => {
     )
   })
 
+  it('secili varsayilan bulunurluk cipinin metni okunabilir kontrastta (beyaz)', async () => {
+    await render(<AyarlarEkrani />)
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
+
+    // beforeEach varsayilan_bulunurluk = 'herkese_acik' donuyor, yani
+    // secili olan cip 'Herkese acik'.
+    const seciliCip = await screen.findByLabelText('Varsayilan bulunurluk: herkese_acik, secili')
+    expect(seciliCip).toHaveStyle({ backgroundColor: '#111' })
+    expect(screen.getByText('Herkese acik')).toHaveStyle({ color: '#fff' })
+  })
+
+  it('ani gorunurlugu secimi tikladiktan sonra secili olarak gosterilir', async () => {
+    await render(<AyarlarEkrani />)
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
+
+    // Baslangicta hicbir ani-gorunurlugu cipi secili degil (bu bir
+    // sunucu tercihi degil, toplu bir eylem - bkz. bilesen yorumu).
+    expect(screen.queryByLabelText(/Ani gorunurlugu: .*, secili/)).toBeNull()
+
+    await fireEvent.press(screen.getByText('Kimse gormesin'))
+    await waitFor(() =>
+      expect(screen.getByLabelText('Ani gorunurlugu: kimse, secili')).toBeTruthy()
+    )
+    expect(screen.getByText('Kimse gormesin')).toHaveStyle({ color: '#fff' })
+  })
+
+  it('ani gorunurlugu kaydetme basarisiz olursa secili gosterimi geri alir', async () => {
+    ;(aniGorunurlugunuAyarla as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<AyarlarEkrani />)
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
+
+    await fireEvent.press(screen.getByText('Kimse gormesin'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
+    })
+    expect(screen.queryByLabelText(/Ani gorunurlugu: .*, secili/)).toBeNull()
+  })
+
   it('anilari kimseye kapatinca kaydeder', async () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())

@@ -8,7 +8,7 @@ import {
   aramadaGorunsunAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
-import type { Bulunurluk } from '../../../lib/checkin'
+import type { Bulunurluk, AniGorunurlugu } from '../../../lib/checkin'
 import {
   KULLANICI_ADI_KURALI,
   kullaniciAdiGecerliMi,
@@ -22,6 +22,12 @@ const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
   { deger: 'gizli', etiket: 'Gizli' },
 ]
 
+const ANI_GORUNURLUK_SECENEKLERI: { deger: AniGorunurlugu; etiket: string }[] = [
+  { deger: 'herkese_acik', etiket: 'Herkes gorsun' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim gorsun' },
+  { deger: 'kimse', etiket: 'Kimse gormesin' },
+]
+
 function tarihiBicimlendir(tarih: Date): string {
   const gun = String(tarih.getDate()).padStart(2, '0')
   const ay = String(tarih.getMonth() + 1).padStart(2, '0')
@@ -31,6 +37,11 @@ function tarihiBicimlendir(tarih: Date): string {
 
 export default function AyarlarEkrani() {
   const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk>('herkese_acik')
+  // Bu bir sunucudan gelen kalici tercih degil (RPC her cagrildiginda
+  // butun anilara uygulanan toplu bir eylem) - son basarili secimi
+  // gostermek icin yalnizca yerel. Baslangicta null: henuz hicbir secim
+  // yapilmadi, hicbir cip secili gorunmemeli.
+  const [aniGorunurluk, setAniGorunurluk] = useState<AniGorunurlugu | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [yeniKullaniciAdi, setYeniKullaniciAdi] = useState('')
   const [kullaniciAdiSonucu, setKullaniciAdiSonucu] = useState<string | null>(null)
@@ -94,11 +105,14 @@ export default function AyarlarEkrani() {
     }
   }
 
-  async function aniGorunurluguDegistir(deger: 'herkese_acik' | 'takipcilerim' | 'kimse') {
+  async function aniGorunurluguDegistir(deger: AniGorunurlugu) {
+    const onceki = aniGorunurluk
+    setAniGorunurluk(deger)
     try {
       await aniGorunurlugunuAyarla(deger)
       setHata(null)
     } catch (e) {
+      setAniGorunurluk(onceki)
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
     }
   }
@@ -140,13 +154,23 @@ export default function AyarlarEkrani() {
         {VARSAYILAN_SECENEKLERI.map((secenek) => (
           <Pressable
             key={secenek.deger}
+            accessibilityLabel={`Varsayilan bulunurluk: ${secenek.deger}${
+              varsayilanBulunurluk === secenek.deger ? ', secili' : ''
+            }`}
             style={[
               stiller.buton,
               varsayilanBulunurluk === secenek.deger && stiller.butonSecili,
             ]}
             onPress={() => varsayilanDegisti(secenek.deger)}
           >
-            <Text style={stiller.butonMetni}>{secenek.etiket}</Text>
+            <Text
+              style={[
+                stiller.butonMetni,
+                varsayilanBulunurluk === secenek.deger && stiller.butonMetniSecili,
+              ]}
+            >
+              {secenek.etiket}
+            </Text>
           </Pressable>
         ))}
       </View>
@@ -162,24 +186,28 @@ export default function AyarlarEkrani() {
 
       <Text style={stiller.altBaslik}>Butun anilarimi kim gorsun</Text>
       <View style={stiller.butonSatiri}>
-        <Pressable
-          style={stiller.buton}
-          onPress={() => aniGorunurluguDegistir('herkese_acik')}
-        >
-          <Text style={stiller.butonMetni}>Herkes gorsun</Text>
-        </Pressable>
-        <Pressable
-          style={stiller.buton}
-          onPress={() => aniGorunurluguDegistir('takipcilerim')}
-        >
-          <Text style={stiller.butonMetni}>Sadece takipcilerim gorsun</Text>
-        </Pressable>
-        <Pressable
-          style={stiller.buton}
-          onPress={() => aniGorunurluguDegistir('kimse')}
-        >
-          <Text style={stiller.butonMetni}>Kimse gormesin</Text>
-        </Pressable>
+        {ANI_GORUNURLUK_SECENEKLERI.map((secenek) => (
+          <Pressable
+            key={secenek.deger}
+            accessibilityLabel={`Ani gorunurlugu: ${secenek.deger}${
+              aniGorunurluk === secenek.deger ? ', secili' : ''
+            }`}
+            style={[
+              stiller.buton,
+              aniGorunurluk === secenek.deger && stiller.butonSecili,
+            ]}
+            onPress={() => aniGorunurluguDegistir(secenek.deger)}
+          >
+            <Text
+              style={[
+                stiller.butonMetni,
+                aniGorunurluk === secenek.deger && stiller.butonMetniSecili,
+              ]}
+            >
+              {secenek.etiket}
+            </Text>
+          </Pressable>
+        ))}
       </View>
     </View>
   )
@@ -201,6 +229,10 @@ const stiller = StyleSheet.create({
   },
   butonSecili: { backgroundColor: '#111' },
   butonMetni: { color: '#0645ad', fontWeight: '600' },
+  // #111 zemin uzerinde onceki mavi (#0645ad) yaklasik 2.2:1 kontrast
+  // veriyordu (esik 4.5:1) ve bu cip kullanicinin gizlilik tercihinin
+  // TEK gostergesiydi. Beyaz metin #111 uzerinde ~19:1 kontrast verir.
+  butonMetniSecili: { color: '#fff' },
   hata: { color: '#c00', marginBottom: 12 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 8 },
   ipucu: { color: '#555', marginBottom: 12 },

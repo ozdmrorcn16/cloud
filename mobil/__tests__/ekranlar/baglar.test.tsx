@@ -173,6 +173,35 @@ describe('BaglarEkrani', () => {
     expect(await screen.findByText('ayse')).toBeTruthy()
   })
 
+  it('disarida tek bir kaydirici var ve butun ic listeler kendi kaydirmasini kapatiyor', async () => {
+    // Bes FlatList tek bir View'da flex:1 icinde ustuste durdugunda dis
+    // kaydirma yoktu ve son bolumler ("Takipcilerim", "Takip ettiklerim")
+    // telefonda kirpilip erisilemez oluyordu (final inceleme Madde 4).
+    // Duzeltme: tek bir ScrollView + her FlatList'te scrollEnabled=false.
+    await render(<BaglarEkrani />)
+    await waitFor(() => expect(gelenIstekleriGetir).toHaveBeenCalled())
+
+    const kok = screen.root
+    if (!kok) throw new Error('render kok elemani yok')
+
+    // Dis kaydirici tam olarak kok eleman (screen.root); testID'siyle
+    // kanitlaniyor.
+    expect(kok.props.testID).toBe('baglar-kaydirici')
+
+    // FlatList kendi host RCTScrollView'ina indiriyor; ic kaydirmanin
+    // gercekten kapali oldugunu (yalnizca prop olarak GECMEDIGINI degil,
+    // rendered agacta da gorunecegini) bu seviyede dogruluyoruz.
+    // includeSelf: false (varsayilan) oldugu icin kok kendisi bu listeye
+    // girmiyor, yalnizca 5 ic FlatList'in host'lari giriyor.
+    const icKaydiricilar = kok.queryAll(
+      (dugum) => dugum.type === 'RCTScrollView'
+    )
+    expect(icKaydiricilar).toHaveLength(5)
+    for (const dugum of icKaydiricilar) {
+      expect(dugum.props.scrollEnabled).toBe(false)
+    }
+  })
+
   it('yanitlama hatasinda hata bandini gosterir ve satiri listeden kaldirmaz', async () => {
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
       takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O' }],
