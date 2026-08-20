@@ -211,3 +211,73 @@ gonderme reddediliyor ama gecmis duruyor**.
 `docs/faz3a-takip-isleri.md` icinde duruyor. En onemlisi: **iki hesapla
 elle tarayici gezintisi hic yapilmadi.** Kullanici bunu bilerek erteledi.
 Faz 3b de ayni borcu ekliyor.
+
+---
+
+## Faz boyunca alinan kararlar (kontrolor, kullaniciya sorulmadan)
+
+Bu kararlar SDD yurutme defterinde tutuluyordu; defter faz kapaninca
+silindigi icin buraya tasindi. Her biri, kullaniciya sorup beklemek
+yerine karara baglanmis bir noktadir. Yanlis olani varsa geri alinabilir.
+
+**Plan on taramasinda (uygulama baslamadan):**
+
+1. Faz 3a'da T4-T8 ve T11-T13 arasinda gorulen toplu gonderim deseni bu
+   fazda da kabul edildi.
+2. T3'un politika tanimi T4'e alindi; T3 yalnizca tabloyu kuruyor
+   (plan yazilirken cozuldu).
+3. `mesajlari_getir`'in engelleme kontrolu T8'in gonderimine SART olarak
+   eklendi.
+
+**Gorev 1 - kota temizligi:** yonetici anahtarli yolun o an
+dogrulanamamis olmasi gorevi BLOKE ETMEDI. Gerekce: kod anahtar gelince
+kendiliginden calisiyor, zarif dusme dogrulandi, ve silme SQL'inin
+anlambilimi MCP uzerinden uc kez fiilen calistirilarak kanitlandi.
+Dogrulanmamis olan yalnizca kablolamaydi. (Sonradan Gorev 17'de anahtar
+geldi ve temizlik dort ardisik kosumda gercekten calisti.)
+
+**Gorev 8 - `mesajlari_getir`'in tek uyeli engelleme kontrolu:** SIMDI
+duzeltilmedi. Dogru duzeltme cok uyeli bir kontrol ve o Faz 3c'nin isi;
+o an yalnizca kod yorumu eklemek, gercek duzeltme yapilmadan sahte guven
+verirdi. Bunun yerine faz kapanis belgesine BELIRGIN uyari olarak
+girdi - `docs/faz3b-takip-isleri.md`'nin ilk maddesi.
+
+**Gorev 13 - iki bulgu sonraki gorevlere tasindi:** `as never` rota
+kacisi rotayi kuran goreve (14), bayat okunmamis rozeti ise zaten
+`useFocusEffect` desenine dokunan goreve (15).
+
+**Gorev 17 - uc Minor fix turuna alindi:** senaryo 33'un kendi pozitif
+kontrolu, `yazilabilir_mi`nin hicbir senaryoda olculmemesi, ve README'nin
+senaryo 32 icin fazla sey soylemesi. Ikincisi ozellikle onemliydi:
+istemcinin yazma kutusunu acip kapatan alan canli veritabanina karsi hic
+olculmuyordu.
+
+**Gorev 17 - `env_sirlari()` genislemesi fix turuna alindi ama AYRI
+commit olarak.** Gorevin kapsami disindaydi (baska dosya) ama guvenlik
+ve "sirlar asla depoya girmez" kurali geregi ertelenmedi.
+
+**Gorev 18 - brief'in uc dosyasina dorduncusu eklendi:**
+`docs/faz3b-takip-isleri.md`. Gerekce: faz boyunca incelemelerde bulunan
+16 ertelenen madde yalnizca silinecek bir calisma dizininde duruyordu.
+
+**Gorev 18 - toplu em dash donusumu YAPILMADI.** `CLAUDE.md`'de 45,
+`docs/konusma-gunlugu.md`'de 95 em dash var, cogu tarihsel metinden.
+Yalnizca faz belgeleme commit'lerinin ekledigi bes tanesi duzeltildi.
+Gerekce: kapanis commit'inin okunabilirligi, kisitin gecmise donuk
+uygulanmasindan daha degerli. Ayri bir bicim isi olarak duruyor.
+
+**Gorev 18 - bayat bloklar duzeltildi:** yeni oturuma verilen komut
+blogu (yanlis dal, "10 senaryo") ve gecersiz kalmis "Devam eden is"
+basliklari. Bayat bir devam notu bir sonraki oturumu dogrudan yanlis
+yonlendirir.
+
+**Nihai inceleme - alti bulgu tek fix dalgasina alindi**, ve ertelenenler
+listesindeki iyimser-gonderim tutarsizligi da ayni dalgaya katildi
+(ayni yirmi satirda yasiyor, dosya zaten acilacakti).
+
+**Kullaniciya SORULAN tek sey:** `docs/oturumlar/` altinda birikmis 34
+oturum dokumunun depoya alinip alinmayacagi. Depo public, dokumler ham
+konusma icerigi tasiyor ve bu fazda bir sir maskeleme olayi yasandi;
+disari donuk ve geri alinamaz bir adim oldugu icin ajan karari
+verilmedi. Kullanici "once tara, sonra commit'le" dedi; tarama yapildi
+(sifir sir eslesmesi) ve dokumler `89bc01d` ile alindi.
