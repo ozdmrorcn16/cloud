@@ -106,6 +106,7 @@ async function senaryo(isim: string, fn: () => Promise<void>) {
 async function main() {
   const { a, b, aId, bId } = await ikiKullaniciIleBaglan()
   const t: Temizlenecekler = bosTemizlenecekler()
+  t.hesapKimlikleri.push(aId, bId)
 
   const mekan1 = await mekanGetirVeyaOlustur(a, MEKAN_1.ad, MEKAN_1.lat, MEKAN_1.lng)
   const mekan2 = await mekanGetirVeyaOlustur(a, MEKAN_2.ad, MEKAN_2.lat, MEKAN_2.lng)
@@ -692,6 +693,7 @@ async function main() {
   // senaryo 22/23/24 bu takibi kullaniyor. Ucuncu hesap yalnizca burada
   // gerekiyor (bkz. yardimcilar.ts'teki ucuncuKullaniciIleBaglan yorumu).
   const { c, cId } = await ucuncuKullaniciIleBaglan()
+  t.hesapKimlikleri.push(cId)
 
   await senaryo("22 - 'takipcilerim' yabanciyi disari birakir", async () => {
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')

@@ -127,10 +127,15 @@ export type Temizlenecekler = {
   checkInler: { istemci: SupabaseClient; id: string }[]
   engellemeler: { istemci: SupabaseClient; engellenenId: string }[]
   takipler: { istemci: SupabaseClient; hedefId: string }[]
+  // Test hesaplarinin kullanici id'leri. checkInler/engellemeler/takipler
+  // gibi tek tek biriktirilmiyor; calistir.ts basinda a/b, sonrasinda c
+  // baglandikca dogrudan doldurulur. Tek amaci temizle()'nin sonunda
+  // kotayiTemizle()'ye gecirilmek.
+  hesapKimlikleri: string[]
 }
 
 export function bosTemizlenecekler(): Temizlenecekler {
-  return { checkInler: [], engellemeler: [], takipler: [] }
+  return { checkInler: [], engellemeler: [], takipler: [], hesapKimlikleri: [] }
 }
 
 /**
@@ -167,5 +172,47 @@ export async function temizle(t: Temizlenecekler) {
   console.log(
     '  Not: test mekanlari silinmedi (mekanlar tablosunda delete politikasi yok, kalicidirlar ve yeniden kullanilirlar).'
   )
+
+  await kotayiTemizle(t.hesapKimlikleri.filter(Boolean))
+
   console.log('Temizlik bitti.')
+}
+
+// Yonetici istemcisi YALNIZCA test kosucusu icindir. Uygulama kodu bu
+// anahtari hicbir yerde kullanmaz. Anahtar yoksa null doner ve cagiran
+// taraf temizligi atlar - faz bloke olmaz, yalnizca uyari basilir.
+export function yoneticiIstemcisi(): SupabaseClient | null {
+  const anahtar = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!anahtar) return null
+  return createClient(URL, anahtar, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+// Gorunurluk paketinin senaryolari gercek istek gonderiyor ve bunlar
+// gunluk 50 istek tavanindan dusuyor. Tavan ekle-only `istek_gunlugu`
+// tablosunu sayiyor; istemci o satirlari TASARIM GEREGI silemiyor
+// (RLS acik, politika yok) - tavanin atlatilamaz olmasinin sebebi bu.
+// Bu yuzden temizlik yonetici anahtariyla yapilir ve YALNIZCA test
+// hesaplarinin satirlarini hedefler.
+//
+// Urun degismezligi bozulmuyor: ekle-only olmasi ISTEMCIYE karsi
+// zorlanan bir kural ve o kural yerinde kaliyor.
+export async function kotayiTemizle(kimlikler: string[]): Promise<void> {
+  const yonetici = yoneticiIstemcisi()
+  if (!yonetici) {
+    console.warn(
+      '\n  UYARI: SUPABASE_SERVICE_ROLE_KEY yok, istek kotasi temizlenmedi.\n' +
+        '  Paket gunde ~8 kosumdan sonra kota yuzunden YANLIS ALARM verir.\n' +
+        '  Bir dusme gorursen once kotayi kontrol et, kodu degil.\n'
+    )
+    return
+  }
+  const { error } = await yonetici
+    .from('istek_gunlugu')
+    .delete()
+    .in('gonderen_id', kimlikler)
+  if (error) {
+    console.error('  Kota temizligi basarisiz:', error.message)
+  }
 }
