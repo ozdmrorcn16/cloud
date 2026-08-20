@@ -44,10 +44,7 @@ export default function MesajlarEkrani() {
           <View style={stiller.satir}>
             <Pressable
               style={stiller.icerik}
-              // /sohbet/[id] rotasi bir sonraki gorevde (Task 14) olusturuluyor.
-              // Simdilik expo-router'in turetilmis rota turleri bu yolu
-              // taniMiyor; tip denetimini gecici olarak devre disi birakiyoruz.
-              onPress={() => router.push(`/sohbet/${item.kisiId}` as never)}
+              onPress={() => router.push(`/sohbet/${item.kisiId}`)}
             >
               <View style={stiller.ustSatir}>
                 <Text style={stiller.ad}>{item.ad}</Text>

@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-export type SikayetHedefTuru = 'kullanici' | 'check_in'
+export type SikayetHedefTuru = 'kullanici' | 'check_in' | 'mesaj'
 
 export const SIKAYET_SEBEPLERI = [
   { anahtar: 'taciz', etiket: 'Taciz veya rahatsiz etme' },
