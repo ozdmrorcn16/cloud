@@ -3,7 +3,6 @@ import {
   takipIstegiGonder,
   takipIsteginiYanitla,
   takibiBirak,
-  takipciyiCikar,
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
   sohbetIsteginiGeriCek,
@@ -85,24 +84,16 @@ describe('takipIsteginiYanitla', () => {
   })
 })
 
+// takipciyiCikar (eskiden 'takipciyi_cikar' RPC-sini cagiriyordu) kaldirildi.
+// Kabul artik iki yonu de yazdigi icin ('takip edilen' ve 'takip eden' ayni
+// anda 'kabul' oluyor), bagi koparmanin tek yolu takibiBirak - o da sunucu
+// tarafinda iki satiri birden siliyor. Ayri bir "takipciyi cikar" cagrisina
+// artik gerek yok.
 describe('takibiBirak', () => {
   it('RPC-yi cagirir', async () => {
     mockRpc.mockResolvedValue({ error: null })
     await takibiBirak('kisi-1')
     expect(mockRpc).toHaveBeenCalledWith('takibi_birak', { p_kullanici_id: 'kisi-1' })
-  })
-})
-
-describe('takipciyiCikar', () => {
-  it('RPC-yi dogru ad ve parametreyle cagirir', async () => {
-    mockRpc.mockResolvedValue({ error: null })
-    await takipciyiCikar('kisi-1')
-    expect(mockRpc).toHaveBeenCalledWith('takipciyi_cikar', { p_kullanici_id: 'kisi-1' })
-  })
-
-  it('sunucu hatasini oldugu gibi firlatir', async () => {
-    mockRpc.mockResolvedValue({ error: { message: 'Yetkisiz islem' } })
-    await expect(takipciyiCikar('kisi-1')).rejects.toThrow('Yetkisiz islem')
   })
 })
 

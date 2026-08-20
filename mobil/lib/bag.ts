@@ -32,10 +32,6 @@ export async function takibiBirak(kullaniciId: string): Promise<void> {
   await rpcCagir('takibi_birak', { p_kullanici_id: kullaniciId })
 }
 
-export async function takipciyiCikar(kullaniciId: string): Promise<void> {
-  await rpcCagir('takipciyi_cikar', { p_kullanici_id: kullaniciId })
-}
-
 export async function sohbetIstegiGonder(kullaniciId: string): Promise<void> {
   await rpcCagir('sohbet_istegi_gonder', { p_kullanici_id: kullaniciId })
 }
