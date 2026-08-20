@@ -374,6 +374,68 @@ async function main() {
     'sikayet_gonder(p_hedef_id: null) dostane mesaj donduruyor'
   )
 
+  console.log('\n--- Faz 3b Task 3-5: konusmalar, konusma_uyeleri, mesajlar dogrudan yazma ---')
+  // Uc tablo da RLS acik ve authenticated'tan insert/update/delete
+  // revoke edilmis; yazma tamamen ileriki RPC'ler uzerinden olacak.
+  // Kod gercekte gozlemlendi: 42501 ("permission denied for table
+  // ..."), digerleriyle ayni kod.
+  const { error: konusmalarInsertHatasi } = await a.from('konusmalar').insert({ tur: 'birebir' })
+  esitMi(
+    konusmalarInsertHatasi?.code === '42501',
+    true,
+    'konusmalar tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: konusmalarUpdateHatasi } = await a
+    .from('konusmalar')
+    .update({ tur: 'mekan_odasi' })
+    .eq('id', '00000000-0000-0000-0000-000000000000')
+  esitMi(
+    konusmalarUpdateHatasi?.code === '42501',
+    true,
+    'konusmalar tablosuna dogrudan update reddediliyor'
+  )
+
+  const { error: uyeleriInsertHatasi } = await a
+    .from('konusma_uyeleri')
+    .insert({ konusma_id: '00000000-0000-0000-0000-000000000000', kullanici_id: aId })
+  esitMi(
+    uyeleriInsertHatasi?.code === '42501',
+    true,
+    'konusma_uyeleri tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: uyeleriUpdateHatasi } = await a
+    .from('konusma_uyeleri')
+    .update({ gizlendi_mi: true })
+    .eq('kullanici_id', aId)
+  esitMi(
+    uyeleriUpdateHatasi?.code === '42501',
+    true,
+    'konusma_uyeleri tablosuna dogrudan update reddediliyor'
+  )
+
+  const { error: mesajlarInsertHatasi } = await a.from('mesajlar').insert({
+    konusma_id: '00000000-0000-0000-0000-000000000000',
+    gonderen_id: aId,
+    metin: 'merhaba',
+  })
+  esitMi(
+    mesajlarInsertHatasi?.code === '42501',
+    true,
+    'mesajlar tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: mesajlarUpdateHatasi } = await a
+    .from('mesajlar')
+    .update({ metin: 'degistirildi' })
+    .eq('gonderen_id', aId)
+  esitMi(
+    mesajlarUpdateHatasi?.code === '42501',
+    true,
+    'mesajlar tablosuna dogrudan update reddediliyor'
+  )
+
   sonucuBildirVeCik()
 }
 
