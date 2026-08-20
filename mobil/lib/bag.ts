@@ -44,34 +44,64 @@ export async function sohbetIsteginiYanitla(kullaniciId: string, kabul: boolean)
   await rpcCagir('sohbet_istegini_yanitla', { p_kullanici_id: kullaniciId, p_kabul: kabul })
 }
 
+export async function sohbetIsteginiGeriCek(kullaniciId: string): Promise<void> {
+  await rpcCagir('sohbet_istegini_geri_cek', { p_kullanici_id: kullaniciId })
+}
+
+function durumOku(satir: { durum: BagDurumu } | null): BagDurumu {
+  return (satir?.durum ?? 'yok') as BagDurumu
+}
+
 /**
  * Baskasinin profilinde hangi butonun gosterilecegini belirler.
- * Iki tabloya ayri ayri bakiyor; tablolarin RLS'i zaten yalnizca
+ * Dort tabloya ayri ayri bakiyor: benim ona (giden) ve onun bana (gelen)
+ * yonlerini hem takip hem sohbet icin. Tablolarin RLS'i zaten yalnizca
  * kendi taraf oldugumuz satirlari gosteriyor.
  */
-export async function bagDurumunuGetir(
-  kullaniciId: string
-): Promise<{ takip: BagDurumu; sohbet: BagDurumu }> {
+export async function bagDurumunuGetir(kullaniciId: string): Promise<{
+  takip: BagDurumu
+  sohbet: BagDurumu
+  gelenTakip: BagDurumu
+  gelenSohbet: BagDurumu
+}> {
   const benimId = await kendiKullaniciId()
 
-  const { data: takipSatiri, error: takipHatasi } = await supabase
-    .from('takipler')
-    .select('durum')
-    .eq('takip_eden_id', benimId)
-    .eq('takip_edilen_id', kullaniciId)
-    .maybeSingle()
-  if (takipHatasi) throw new Error(takipHatasi.message)
+  const [takipSonuc, sohbetSonuc, gelenTakipSonuc, gelenSohbetSonuc] = await Promise.all([
+    supabase
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', benimId)
+      .eq('takip_edilen_id', kullaniciId)
+      .maybeSingle(),
+    supabase
+      .from('sohbet_istekleri')
+      .select('durum')
+      .eq('gonderen_id', benimId)
+      .eq('alan_id', kullaniciId)
+      .maybeSingle(),
+    supabase
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', kullaniciId)
+      .eq('takip_edilen_id', benimId)
+      .maybeSingle(),
+    supabase
+      .from('sohbet_istekleri')
+      .select('durum')
+      .eq('gonderen_id', kullaniciId)
+      .eq('alan_id', benimId)
+      .maybeSingle(),
+  ])
 
-  const { data: sohbetSatiri, error: sohbetHatasi } = await supabase
-    .from('sohbet_istekleri')
-    .select('durum')
-    .eq('gonderen_id', benimId)
-    .eq('alan_id', kullaniciId)
-    .maybeSingle()
-  if (sohbetHatasi) throw new Error(sohbetHatasi.message)
+  if (takipSonuc.error) throw new Error(takipSonuc.error.message)
+  if (sohbetSonuc.error) throw new Error(sohbetSonuc.error.message)
+  if (gelenTakipSonuc.error) throw new Error(gelenTakipSonuc.error.message)
+  if (gelenSohbetSonuc.error) throw new Error(gelenSohbetSonuc.error.message)
 
   return {
-    takip: ((takipSatiri as { durum: BagDurumu } | null)?.durum ?? 'yok') as BagDurumu,
-    sohbet: ((sohbetSatiri as { durum: BagDurumu } | null)?.durum ?? 'yok') as BagDurumu,
+    takip: durumOku(takipSonuc.data as { durum: BagDurumu } | null),
+    sohbet: durumOku(sohbetSonuc.data as { durum: BagDurumu } | null),
+    gelenTakip: durumOku(gelenTakipSonuc.data as { durum: BagDurumu } | null),
+    gelenSohbet: durumOku(gelenSohbetSonuc.data as { durum: BagDurumu } | null),
   }
 }

@@ -6,6 +6,7 @@ import {
   takipciyiCikar,
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
+  sohbetIsteginiGeriCek,
   bagDurumunuGetir,
 } from './bag'
 
@@ -25,6 +26,25 @@ const mockRpc = supabase.rpc as jest.Mock
 function zincirOlustur(maybeSingle: jest.Mock) {
   return {
     select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }),
+  }
+}
+
+// Kolon-sutun cagrilarini sirayla kaydeden zincir. Hangi .eq() cagrisinin
+// hangi kolon/deger ciftiyle yapildigini dogrulamak icin: bir kolon takasi
+// (ornegin takip_eden_id/takip_edilen_id ters yazilmasi) burada yakalanir.
+function izleyenZincirOlustur(maybeSingle: jest.Mock, kayit: Array<[string, unknown]>) {
+  return {
+    select: () => ({
+      eq: (kolon1: string, deger1: unknown) => {
+        kayit.push([kolon1, deger1])
+        return {
+          eq: (kolon2: string, deger2: unknown) => {
+            kayit.push([kolon2, deger2])
+            return { maybeSingle }
+          },
+        }
+      },
+    }),
   }
 }
 
@@ -127,59 +147,190 @@ describe('sohbetIsteginiYanitla', () => {
 })
 
 describe('bagDurumunuGetir', () => {
-  it('iki tablodan durumlari birlestirir', async () => {
-    const takipMaybe = jest.fn().mockResolvedValue({ data: { durum: 'kabul' }, error: null })
-    const sohbetMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
-    const zincir = (maybeSingle: jest.Mock) => ({
-      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }),
-    })
+  // Sirasi bagDurumunuGetir'in kendi sorgu sirasiyla eslesmeli: takip,
+  // sohbet, gelenTakip, gelenSohbet (bkz. lib/bag.ts).
+  function dortSorguyuKur(sonuclar: {
+    durum: string | null
+    error: { message: string } | null
+  }[]) {
+    const maybeler = sonuclar.map((s) =>
+      jest.fn().mockResolvedValue({
+        data: s.durum === null ? null : { durum: s.durum },
+        error: s.error,
+      })
+    )
     ;(supabase.from as jest.Mock)
-      .mockReturnValueOnce(zincir(takipMaybe))
-      .mockReturnValueOnce(zincir(sohbetMaybe))
+      .mockReturnValueOnce(zincirOlustur(maybeler[0]))
+      .mockReturnValueOnce(zincirOlustur(maybeler[1]))
+      .mockReturnValueOnce(zincirOlustur(maybeler[2]))
+      .mockReturnValueOnce(zincirOlustur(maybeler[3]))
+    return maybeler
+  }
+
+  it('dort tablo sorgusundan durumlari birlestirir', async () => {
+    dortSorguyuKur([
+      { durum: 'kabul', error: null },
+      { durum: null, error: null },
+      { durum: 'beklemede', error: null },
+      { durum: null, error: null },
+    ])
 
     await expect(bagDurumunuGetir('kisi-1')).resolves.toEqual({
       takip: 'kabul',
       sohbet: 'yok',
+      gelenTakip: 'beklemede',
+      gelenSohbet: 'yok',
     })
   })
 
-  it("'beklemede' durumunu iki tablo icin de dogru okur", async () => {
-    const takipMaybe = jest.fn().mockResolvedValue({ data: { durum: 'beklemede' }, error: null })
-    const sohbetMaybe = jest.fn().mockResolvedValue({ data: { durum: 'beklemede' }, error: null })
-    ;(supabase.from as jest.Mock)
-      .mockReturnValueOnce(zincirOlustur(takipMaybe))
-      .mockReturnValueOnce(zincirOlustur(sohbetMaybe))
+  it("'beklemede' durumunu dort tablo icin de dogru okur", async () => {
+    dortSorguyuKur([
+      { durum: 'beklemede', error: null },
+      { durum: 'beklemede', error: null },
+      { durum: 'beklemede', error: null },
+      { durum: 'beklemede', error: null },
+    ])
 
     await expect(bagDurumunuGetir('kisi-1')).resolves.toEqual({
       takip: 'beklemede',
       sohbet: 'beklemede',
+      gelenTakip: 'beklemede',
+      gelenSohbet: 'beklemede',
     })
   })
 
   it('takip sorgusu hata dondurunce firlatir', async () => {
-    const takipMaybe = jest
-      .fn()
-      .mockResolvedValue({ data: null, error: { message: 'takipler sorgu hatasi' } })
-    ;(supabase.from as jest.Mock).mockReturnValueOnce(zincirOlustur(takipMaybe))
+    dortSorguyuKur([
+      { durum: null, error: { message: 'takipler sorgu hatasi' } },
+      { durum: null, error: null },
+      { durum: null, error: null },
+      { durum: null, error: null },
+    ])
 
     await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('takipler sorgu hatasi')
   })
 
   it('sohbet sorgusu hata dondurunce firlatir', async () => {
-    const takipMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
-    const sohbetMaybe = jest
-      .fn()
-      .mockResolvedValue({ data: null, error: { message: 'sohbet_istekleri sorgu hatasi' } })
-    ;(supabase.from as jest.Mock)
-      .mockReturnValueOnce(zincirOlustur(takipMaybe))
-      .mockReturnValueOnce(zincirOlustur(sohbetMaybe))
+    dortSorguyuKur([
+      { durum: null, error: null },
+      { durum: null, error: { message: 'sohbet_istekleri sorgu hatasi' } },
+      { durum: null, error: null },
+      { durum: null, error: null },
+    ])
 
     await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('sohbet_istekleri sorgu hatasi')
+  })
+
+  it('gelen takip sorgusu hata dondurunce firlatir', async () => {
+    dortSorguyuKur([
+      { durum: null, error: null },
+      { durum: null, error: null },
+      { durum: null, error: { message: 'gelen takip sorgu hatasi' } },
+      { durum: null, error: null },
+    ])
+
+    await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('gelen takip sorgu hatasi')
+  })
+
+  it('gelen sohbet sorgusu hata dondurunce firlatir', async () => {
+    dortSorguyuKur([
+      { durum: null, error: null },
+      { durum: null, error: null },
+      { durum: null, error: null },
+      { durum: null, error: { message: 'gelen sohbet sorgu hatasi' } },
+    ])
+
+    await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('gelen sohbet sorgu hatasi')
   })
 
   it("oturum yoksa 'Oturum bulunamadi' firlatir", async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({ data: { user: null } })
 
     await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('Oturum bulunamadi')
+  })
+
+  // Bu testler asil riski hedef alir: gelenTakip/gelenSohbet giden sorgunun
+  // ayna gorunumu degil, ters yon. Sutunlar (takip_eden_id/takip_edilen_id,
+  // gonderen_id/alan_id) yer degistirirse burada yakalanmali.
+  it('takip sorgusu dogru yonde sorgulanir: ben takip_eden, o takip_edilen', async () => {
+    const kayit: Array<[string, unknown]> = []
+    const maybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    ;(supabase.from as jest.Mock).mockReturnValueOnce(izleyenZincirOlustur(maybe, kayit))
+    ;(supabase.from as jest.Mock).mockReturnValue(zincirOlustur(jest.fn().mockResolvedValue({ data: null, error: null })))
+
+    await bagDurumunuGetir('kisi-1')
+
+    expect(kayit).toEqual([
+      ['takip_eden_id', 'ben'],
+      ['takip_edilen_id', 'kisi-1'],
+    ])
+  })
+
+  it('sohbet sorgusu dogru yonde sorgulanir: ben gonderen, o alan', async () => {
+    const kayit: Array<[string, unknown]> = []
+    const bosMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    const izlenenMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    ;(supabase.from as jest.Mock)
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(izleyenZincirOlustur(izlenenMaybe, kayit))
+      .mockReturnValue(zincirOlustur(bosMaybe))
+
+    await bagDurumunuGetir('kisi-1')
+
+    expect(kayit).toEqual([
+      ['gonderen_id', 'ben'],
+      ['alan_id', 'kisi-1'],
+    ])
+  })
+
+  it('gelen takip sorgusu ters yonde sorgulanir: o takip_eden, ben takip_edilen', async () => {
+    const kayit: Array<[string, unknown]> = []
+    const bosMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    const izlenenMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    ;(supabase.from as jest.Mock)
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(izleyenZincirOlustur(izlenenMaybe, kayit))
+      .mockReturnValue(zincirOlustur(bosMaybe))
+
+    await bagDurumunuGetir('kisi-1')
+
+    expect(kayit).toEqual([
+      ['takip_eden_id', 'kisi-1'],
+      ['takip_edilen_id', 'ben'],
+    ])
+  })
+
+  it('gelen sohbet sorgusu ters yonde sorgulanir: o gonderen, ben alan', async () => {
+    const kayit: Array<[string, unknown]> = []
+    const bosMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    const izlenenMaybe = jest.fn().mockResolvedValue({ data: null, error: null })
+    ;(supabase.from as jest.Mock)
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(zincirOlustur(bosMaybe))
+      .mockReturnValueOnce(izleyenZincirOlustur(izlenenMaybe, kayit))
+
+    await bagDurumunuGetir('kisi-1')
+
+    expect(kayit).toEqual([
+      ['gonderen_id', 'kisi-1'],
+      ['alan_id', 'ben'],
+    ])
+  })
+})
+
+describe('sohbetIsteginiGeriCek', () => {
+  it('RPC-yi dogru ad ve parametreyle cagirir', async () => {
+    mockRpc.mockResolvedValue({ error: null })
+    await sohbetIsteginiGeriCek('kisi-1')
+    expect(mockRpc).toHaveBeenCalledWith('sohbet_istegini_geri_cek', { p_kullanici_id: 'kisi-1' })
+  })
+
+  it('sunucu hatasini oldugu gibi firlatir', async () => {
+    mockRpc.mockResolvedValue({ error: { message: 'Geri cekilecek istek bulunamadi' } })
+    await expect(sohbetIsteginiGeriCek('kisi-1')).rejects.toThrow(
+      'Geri cekilecek istek bulunamadi'
+    )
   })
 })
