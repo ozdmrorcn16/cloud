@@ -4,13 +4,11 @@ import {
   gelenIstekleriGetir,
   gidenIstekleriGetir,
   takipcilerimiGetir,
-  takipEttiklerimiGetir,
 } from '../../lib/bag-listeleri'
 import {
   takipIsteginiYanitla,
   sohbetIsteginiYanitla,
   takibiBirak,
-  takipciyiCikar,
   sohbetIsteginiGeriCek,
 } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
@@ -22,24 +20,21 @@ export default function BaglarEkrani() {
   const [gidenTakip, setGidenTakip] = useState<BagKisi[]>([])
   const [gidenSohbet, setGidenSohbet] = useState<BagKisi[]>([])
   const [takipciler, setTakipciler] = useState<BagKisi[]>([])
-  const [takipEdilenler, setTakipEdilenler] = useState<BagKisi[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
   async function verileriYukle() {
     try {
-      const [gelen, giden, takipcilerVerisi, takipEdilenlerVerisi] = await Promise.all([
+      const [gelen, giden, takipcilerVerisi] = await Promise.all([
         gelenIstekleriGetir(),
         gidenIstekleriGetir(),
         takipcilerimiGetir(),
-        takipEttiklerimiGetir(),
       ])
       setGelenTakip(gelen.takip)
       setGelenSohbet(gelen.sohbet)
       setGidenTakip(giden.takip)
       setGidenSohbet(giden.sohbet)
       setTakipciler(takipcilerVerisi)
-      setTakipEdilenler(takipEdilenlerVerisi)
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
@@ -76,20 +71,12 @@ export default function BaglarEkrani() {
     }
   }
 
-  async function takipciyiCikarEt(kullaniciId: string) {
-    try {
-      await takipciyiCikar(kullaniciId)
-      setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
-    }
-  }
-
-  async function takibiBirakEt(kullaniciId: string) {
+  // Takip artik karsilikli yazildigi icin bagi koparmanin tek yolu bu:
+  // takibiBirak sunucu tarafinda iki yonu birden siliyor.
+  async function bagiKoparEt(kullaniciId: string) {
     try {
       await takibiBirak(kullaniciId)
-      setTakipEdilenler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
+      setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
@@ -124,7 +111,6 @@ export default function BaglarEkrani() {
       setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setTakipEdilenler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
@@ -146,12 +132,13 @@ export default function BaglarEkrani() {
     // inceleme Madde 4). En az riskli duzeltme: butun icerigi tek bir
     // ScrollView'a al, ic FlatList'lerin hepsine scrollEnabled={false} ver.
     // Boylece dis kaydirma tek elden yonetiliyor, ic listeler kendi
-    // icinde kaydirmaya calismiyor.
+    // icinde kaydirmaya calismiyor. (Takip karsilikli olunca "Takip
+    // ettiklerim" listesi kaldirildi, simdi dort FlatList var.)
     <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
-      <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
+      <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.</Text>
       <FlatList
         scrollEnabled={false}
         data={gelenTakip}
@@ -246,8 +233,8 @@ export default function BaglarEkrani() {
               <Text style={stiller.ad}>{item.ad}</Text>
             </View>
             <View style={stiller.butonlar}>
-              <Pressable style={stiller.kucukButon} onPress={() => takipciyiCikarEt(item.id)}>
-                <Text style={stiller.kucukButonYazi}>Cikar</Text>
+              <Pressable style={stiller.kucukButon} onPress={() => bagiKoparEt(item.id)}>
+                <Text style={stiller.kucukButonYazi}>Bagi kopar</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
                 <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>
@@ -256,25 +243,6 @@ export default function BaglarEkrani() {
           </View>
         )}
         ListEmptyComponent={<Text style={stiller.bosDurum}>Henuz takipcin yok</Text>}
-      />
-
-      <Text style={stiller.bolumBaslik}>Takip ettiklerim</Text>
-      <FlatList
-        scrollEnabled={false}
-        data={takipEdilenler}
-        keyExtractor={(k) => k.id}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <View style={stiller.kisiBilgisi}>
-              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
-              <Text style={stiller.ad}>{item.ad}</Text>
-            </View>
-            <Pressable style={stiller.kucukButon} onPress={() => takibiBirakEt(item.id)}>
-              <Text style={stiller.kucukButonYazi}>Takibi birak</Text>
-            </Pressable>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Henuz kimseyi takip etmiyorsun</Text>}
       />
     </ScrollView>
   )

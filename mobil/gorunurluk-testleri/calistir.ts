@@ -6,6 +6,7 @@ import {
   sonucuBildirVeCik,
   bosTemizlenecekler,
   temizle,
+  yoneticiIstemcisi,
   type Temizlenecekler,
 } from './yardimcilar'
 
@@ -94,6 +95,103 @@ async function aniGorulebiliyorMu(istemci: SupabaseClient, checkInId: string): P
   return (data as { id: string }[]).length > 0
 }
 
+type KonusmaSatiri = {
+  konusma_id: string
+  kisi_id: string
+  kullanici_adi: string
+  ad: string
+  son_mesaj: string | null
+  son_mesaj_zamani: string | null
+  okunmamis: number
+  yazilabilir_mi: boolean
+}
+
+// Iki yon de ayri sorgulanip birlestiriliyor: "x ile y arasinda hicbir
+// takip satiri yok" gibi bir on kosulun/temizlik dogrulamasinin, iki
+// yonelimden yalnizca birine bakip digerini kacirmasini onlemek icin.
+async function ikiYonTakipSatirlari(istemci: SupabaseClient, x: string, y: string) {
+  const { data: xy, error: xyHata } = await istemci
+    .from('takipler')
+    .select('takip_eden_id')
+    .eq('takip_eden_id', x)
+    .eq('takip_edilen_id', y)
+  if (xyHata) throw new Error(`takip sorgu hatasi: ${xyHata.message}`)
+
+  const { data: yx, error: yxHata } = await istemci
+    .from('takipler')
+    .select('takip_eden_id')
+    .eq('takip_eden_id', y)
+    .eq('takip_edilen_id', x)
+  if (yxHata) throw new Error(`takip sorgu hatasi: ${yxHata.message}`)
+
+  return [...(xy ?? []), ...(yx ?? [])]
+}
+
+// Ayni desen sohbet_istekleri icin.
+async function ikiYonSohbetSatirlari(istemci: SupabaseClient, x: string, y: string) {
+  const { data: xy, error: xyHata } = await istemci
+    .from('sohbet_istekleri')
+    .select('gonderen_id')
+    .eq('gonderen_id', x)
+    .eq('alan_id', y)
+  if (xyHata) throw new Error(`sohbet sorgu hatasi: ${xyHata.message}`)
+
+  const { data: yx, error: yxHata } = await istemci
+    .from('sohbet_istekleri')
+    .select('gonderen_id')
+    .eq('gonderen_id', y)
+    .eq('alan_id', x)
+  if (yxHata) throw new Error(`sohbet sorgu hatasi: ${yxHata.message}`)
+
+  return [...(xy ?? []), ...(yx ?? [])]
+}
+
+// engellemeler icin ayni sey YAPILAMAZ: select politikasi yalnizca
+// "engelleyen_id = auth.uid()" satirlarini aciyor, yani karsi yon her
+// zaman bos donerdi ve "iki yon de temiz" iddiasi yariya kadar sahte
+// olurdu. Bu yuzden sorgu bilerek tek yonlu ve her zaman ENGELLEYEN
+// tarafin istemcisiyle yapiliyor.
+async function engellemeSatirlari(
+  istemci: SupabaseClient,
+  engelleyenId: string,
+  engellenenId: string
+) {
+  const { data, error } = await istemci
+    .from('engellemeler')
+    .select('engelleyen_id')
+    .eq('engelleyen_id', engelleyenId)
+    .eq('engellenen_id', engellenenId)
+  if (error) throw new Error(`engelleme sorgu hatasi: ${error.message}`)
+  return data ?? []
+}
+
+// mesaj_gonder'in yazdigi konusmalar/konusma_uyeleri/mesajlar satirlarini
+// silmenin TEK yolu: istemcinin konusmalar uzerinde delete yetkisi yok
+// (insert/update/delete authenticated'dan geri alindi, Faz 3b Task 3-5).
+// Yonetici istemcisiyle siliniyor ve silmenin GERCEKTEN calistigi ayrica
+// bir select ile dogrulaniyor - yalnizca "hata donmedi" degil, "satir
+// artik yok" iddia ediliyor. konusma_uyeleri ve mesajlar CASCADE ile
+// birlikte gidiyor (Faz 3b Task 3 semasi).
+async function konusmaTemizleVeDogrula(konusmaId: string) {
+  const yonetici = yoneticiIstemcisi()
+  esitMi(
+    yonetici !== null,
+    true,
+    'temizlik: yonetici istemcisi (service role) mevcut, konusma silinebilir'
+  )
+  if (!yonetici) return
+
+  const { error: silHata } = await yonetici.from('konusmalar').delete().eq('id', konusmaId)
+  esitMi(silHata, null, 'temizlik: konusma yonetici istemcisiyle silinebiliyor')
+
+  const { data: kalan, error: kontrolHata } = await yonetici
+    .from('konusmalar')
+    .select('id')
+    .eq('id', konusmaId)
+  if (kontrolHata) throw new Error(`konusma kontrol sorgu hatasi: ${kontrolHata.message}`)
+  esitMi(kalan, [], 'temizlik: konusma gercekten silinmis (dogrulama, sessiz birakilmiyor)')
+}
+
 async function senaryo(isim: string, fn: () => Promise<void>) {
   console.log(`\n--- Senaryo: ${isim} ---`)
   try {
@@ -106,6 +204,7 @@ async function senaryo(isim: string, fn: () => Promise<void>) {
 async function main() {
   const { a, b, aId, bId } = await ikiKullaniciIleBaglan()
   const t: Temizlenecekler = bosTemizlenecekler()
+  t.hesapKimlikleri.push(aId, bId)
 
   const mekan1 = await mekanGetirVeyaOlustur(a, MEKAN_1.ad, MEKAN_1.lat, MEKAN_1.lng)
   const mekan2 = await mekanGetirVeyaOlustur(a, MEKAN_2.ad, MEKAN_2.lat, MEKAN_2.lng)
@@ -692,6 +791,7 @@ async function main() {
   // senaryo 22/23/24 bu takibi kullaniyor. Ucuncu hesap yalnizca burada
   // gerekiyor (bkz. yardimcilar.ts'teki ucuncuKullaniciIleBaglan yorumu).
   const { c, cId } = await ucuncuKullaniciIleBaglan()
+  t.hesapKimlikleri.push(cId)
 
   await senaryo("22 - 'takipcilerim' yabanciyi disari birakir", async () => {
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
@@ -852,7 +952,7 @@ async function main() {
     )
   })
 
-  await senaryo('28 - Takipciyi cikarinca akis kesilir', async () => {
+  await senaryo('28 - Bagi koparinca akis kesilir', async () => {
     // Senaryo 24'un koydugu blok hala etkili; yeni bir takip iliskisi
     // kurabilmek icin gecici olarak kaldiriyoruz. t.engellemeler zaten
     // bu ciftin engeli_kaldir'ini final temizle()'ye biriktirdi, o
@@ -876,24 +976,24 @@ async function main() {
     esitMi(
       await aniGorulebiliyorMu(a, bCi),
       true,
-      "saglama: takipciyken A, B'nin takipcilerim check-in'ini gorur"
+      "saglama: bagliyken A, B'nin takipcilerim check-in'ini gorur"
     )
 
-    const { error: cikarHata } = await b.rpc('takipciyi_cikar', { p_kullanici_id: aId })
-    esitMi(cikarHata, null, "B, A'yi takipcilikten cikarabiliyor")
+    // Takip artik karsilikli (karar 42): kabul YUKARIDA iki satir yazdi
+    // (A->B ve B->A, ikisi de 'kabul'). takipciyi_cikar dusuruldu -
+    // takibi_birak ile ayni ise indigi icin (Faz 3b Task 2) - dolayisiyla
+    // "yalnizca tek yonu sil" diye ayri bir RPC kalmadi: bagi kopartmak
+    // HER ZAMAN iki yonu birden siliyor.
+    const { error: birakHata } = await b.rpc('takibi_birak', { p_kullanici_id: aId })
+    esitMi(birakHata, null, 'B bagi koparabiliyor')
 
-    const { data: takipSatiri, error: takipSorguHata } = await a
-      .from('takipler')
-      .select('takip_eden_id')
-      .eq('takip_eden_id', aId)
-      .eq('takip_edilen_id', bId)
-    if (takipSorguHata) throw new Error(`takip sorgu hatasi: ${takipSorguHata.message}`)
-    esitMi(takipSatiri, [], "B, A'yi cikardiktan sonra takipler satiri kayboluyor")
+    const kalanlar = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(kalanlar, [], 'B bagi kopardiktan sonra iki yon de (A->B ve B->A) takipler\'den gitti')
 
     esitMi(
       await aniGorulebiliyorMu(a, bCi),
       false,
-      "B, A'yi cikardiktan sonra A artik B'nin check-in'ini goremez"
+      "bag koptuktan sonra A artik B'nin check-in'ini goremez"
     )
   })
 
@@ -996,6 +1096,681 @@ async function main() {
       await aniGorulebiliyorMu(a, bGizliCi),
       false,
       'A, genisletme denemesinden sonra bile bu aniyi goremez'
+    )
+  })
+
+  // 32-44: Faz 3b (birebir sohbet). Bu noktada A-B arasinda hicbir bag
+  // yok (senaryo 28 kopardi) ve hicbir engel yok (28'in preamble'i
+  // kaldirdi). bagsizHataMetni, 36'da yakalanip 37 ve 39'da BIREBIR
+  // karsilastirilacak (sessizlik ilkesi: "engellendin" ile "bagsizsin"
+  // ayni hatayi verir).
+  let bagsizHataMetni: string | null = null
+
+  await senaryo('32 - Kabul iki satir yazar', async () => {
+    // Pozitif kontrol / on kosul: bu iddianin degerli olmasi icin
+    // basta gercekten HICBIR takip satiri olmamali - aksi halde
+    // asagidaki "iki satir" sayimi onceki bir kosumdan kalan satirlari
+    // sayiyor olabilirdi.
+    const oncesi = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(oncesi, [], 'on kosul: A-B arasinda hicbir takip satiri yok')
+
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'B istegi kabul edebiliyor')
+
+    const { data: abSatiri, error: abHata } = await a
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+    if (abHata) throw new Error(`A->B sorgu hatasi: ${abHata.message}`)
+    esitMi((abSatiri ?? []).map((r) => r.durum), ['kabul'], "A->B satiri 'kabul' durumunda")
+
+    const { data: baSatiri, error: baHata } = await a
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', bId)
+      .eq('takip_edilen_id', aId)
+    if (baHata) throw new Error(`B->A sorgu hatasi: ${baHata.message}`)
+    esitMi(
+      (baSatiri ?? []).map((r) => r.durum),
+      ['kabul'],
+      "B->A ayna satiri da kendiliginden 'kabul' durumunda yazildi (karar 42)"
+    )
+  })
+
+  await senaryo('33 - Bagi koparmak iki satiri da siler', async () => {
+    // Senaryo 32'nin biraktigi karsilikli bagi (iki 'kabul' satiri)
+    // kullaniyor. On kosul BURADA da soruluyor: 32 kabul kolunda tek
+    // satir yazsaydi (gercek bir hata) 32 gurultulu duserdi ama kosum
+    // durmadigi icin asagidaki "iki yonun ikisi de gitti" iddiasi
+    // yaniltici bir OK basardi. Bu iki satirlik on kosul 33'u kendi
+    // basina ayakta tutuyor.
+    const oncesi = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(oncesi.length, 2, "on kosul: 32'nin kurdugu karsilikli bagin IKI satiri da duruyor")
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'A bagi koparabiliyor')
+
+    const kalanlar = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(kalanlar, [], 'tek cagriyla iki yonun ikisi de takipler\'den gitti')
+  })
+
+  await senaryo('34 - Karsilikli takipliler yazabilir', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor (karsilikli bag kuruldu)')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 34 - karsilikli takip mesaji',
+    })
+    esitMi(mesajHata, null, "karsilikli takipli A, B'ye mesaj gonderebiliyor")
+
+    const { data: bGorusu, error: getirHata } = await b.rpc('mesajlari_getir', {
+      p_konusma_id: konusmaId,
+    })
+    if (getirHata) throw new Error(`mesajlari_getir hatasi: ${getirHata.message}`)
+    esitMi(
+      ((bGorusu ?? []) as { metin: string }[]).some(
+        (m) => m.metin === 'senaryo 34 - karsilikli takip mesaji'
+      ),
+      true,
+      "B, A'nin gonderdigi mesaji gercekten goruyor"
+    )
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'temizlik: bag koparilabiliyor')
+
+    const takipKalan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKalan, [], "temizlik: iki yonun ikisi de takipler'den gercekten gitti")
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('35 - Sohbet istegiyle baglananlar yazabilir', async () => {
+    // On kosul: takip bagi yok (34 sonunda koparildi).
+    const takipKontrol = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKontrol, [], 'on kosul: A-B arasinda takip bagi yok')
+
+    const { error: gonderHata } = await a.rpc('sohbet_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'A sohbet istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('sohbet_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'B sohbet istegini kabul edebiliyor')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 35 - sohbet istegi mesaji',
+    })
+    esitMi(mesajHata, null, "takip olmadan, kabul edilmis sohbet istegiyle A mesaj gonderebiliyor")
+
+    const { data: bGorusu, error: getirHata } = await b.rpc('mesajlari_getir', {
+      p_konusma_id: konusmaId,
+    })
+    if (getirHata) throw new Error(`mesajlari_getir hatasi: ${getirHata.message}`)
+    esitMi(
+      ((bGorusu ?? []) as { metin: string }[]).some((m) => m.metin === 'senaryo 35 - sohbet istegi mesaji'),
+      true,
+      'B, mesaji gercekten goruyor'
+    )
+
+    // Temizlik: kabul edilmis bir sohbet istegini kaldiran ayri bir RPC
+    // yok (sohbet_istegini_geri_cek yalnizca HALA beklemede olan istegi
+    // kaldirir). engelle() iki yonu de kosulsuz siler; hemen ardindan
+    // engeli_kaldir() engeli kaldirir, net etki yalnizca sohbet bagini
+    // kaldirmak olur.
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
+    esitMi(engelHata, null, 'temizlik: gecici engelleme ile sohbet bagi kaldirilabiliyor')
+
+    const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    esitMi(kaldirHata, null, 'temizlik: engel kaldirilabiliyor')
+
+    const sohbetKalan = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(sohbetKalan, [], 'temizlik: sohbet_istekleri satiri gercekten gitti')
+
+    const engelKalan = await engellemeSatirlari(a, aId, bId)
+    esitMi(engelKalan, [], 'temizlik: gecici engelleme satiri gercekten gitti')
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('36 - Bagsiz kisi yazamaz', async () => {
+    // On kosul: takip yok, sohbet istegi yok (35 kendi bagini kaldirdi).
+    const takipKontrol = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKontrol, [], 'on kosul: takip bagi yok')
+
+    const sohbetKontrol = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(sohbetKontrol, [], 'on kosul: sohbet bagi yok')
+
+    const { data, error } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 36 - bagsiz mesaj denemesi',
+    })
+    esitMi(data ?? null, null, 'bagsiz gonderim basarisiz oldugu icin konusma id donmuyor')
+    esitMi(error !== null, true, "bagsiz A, B'ye mesaj gonderemez")
+    esitMi(
+      error?.message?.includes('mesaj gonderemezsin') ?? false,
+      true,
+      'hata mesaji "mesaj gonderemezsin" iceriyor'
+    )
+    bagsizHataMetni = error?.message ?? null
+
+    // error MUTLAKA destructure edilip firlatiliyor: aksi halde
+    // konusmalarim tamamen kirilsa `data` null gelir, `(liste ?? [])`
+    // bos diziye duser ve asagidaki negatif iddia vakumda gecerdi.
+    const { data: liste, error: listeHata } = await a.rpc('konusmalarim')
+    if (listeHata) throw new Error(`konusmalarim hatasi: ${listeHata.message}`)
+    esitMi(
+      ((liste ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId),
+      false,
+      'basarisiz gonderim hicbir konusma satiri olusturmadi'
+    )
+  })
+
+  await senaryo('37 - Engelli yazamaz, hata AYNI', async () => {
+    // Bu senaryonun ayirt edici olabilmesi icin ENGELIN tek degisken
+    // olmasi sart. Engeli BAGSIZ bir ciftin uzerine koymak yeterli
+    // degildi: 36 zaten "bagsiz yazamaz"i kanitliyor, yani bag
+    // yokken red, bag.yazabilir_mi'nin engelleme dali tamamen silinse
+    // bile ayni metinle gelirdi ve senaryo yine gecerdi.
+    //
+    // "Engelli AMA bagli" durumu genel RPC'lerle kurulamaz: engelle()
+    // iki yondeki takip ve sohbet satirlarini KOSULSUZ siliyor
+    // (20260819194743_engelle_baglari_kaldir.sql). Bu yuzden bag,
+    // yonetici istemcisiyle dogrudan takipler tablosuna yaziliyor.
+    //
+    // DIKKAT - senaryonun butun degeri bu ayrintida: engelle() kendi
+    // calistiginda bu satirlari da siler, yani bagi yalnizca ENGELDEN
+    // ONCE yazmak yetmez. O halde ikinci gonderim sirasinda cift hem
+    // engelli hem BAGSIZ olurdu ve engelleme dali silinse bile red
+    // yine gelirdi. Bu yuzden bag, engelden SONRA bir kez daha yazilir
+    // ve yazildigi ayrica dogrulanir; ancak o zaman redin tek olasi
+    // sebebi engel olur.
+    const yonetici = yoneticiIstemcisi()
+    esitMi(
+      yonetici !== null,
+      true,
+      'yonetici istemcisi (service role) mevcut, engelli-AMA-bagli durum kurulabilir'
+    )
+    if (!yonetici) return
+
+    const oncesi = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(oncesi, [], 'on kosul: baslangicta A-B arasinda hicbir takip satiri yok')
+
+    const { error: ekleHata } = await yonetici.from('takipler').insert([
+      { takip_eden_id: aId, takip_edilen_id: bId, durum: 'kabul' },
+      { takip_eden_id: bId, takip_edilen_id: aId, durum: 'kabul' },
+    ])
+    esitMi(ekleHata, null, 'kurulum: karsilikli kabul satirlari yonetici istemcisiyle yazildi')
+
+    const kurulan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(kurulan.length, 2, 'kurulum: iki yonlu bag gercekten kuruldu (istemci de goruyor)')
+
+    // POZITIF SAGLAMA: engel KONMADAN once ayni cift yazabiliyor.
+    // Bu olmadan asagidaki red, engelden degil bozuk bir kurulumdan
+    // geliyor olabilirdi.
+    const { data: konusmaId, error: oncekiHata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'senaryo 37 - engel konmadan once',
+    })
+    esitMi(oncekiHata, null, "saglama: engel KONMADAN once bagli B, A'ya yazabiliyor")
+    esitMi(
+      typeof konusmaId === 'string',
+      true,
+      'saglama: basarili gonderim gercek bir konusma id donduruyor'
+    )
+
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
+    esitMi(engelHata, null, "A, B'yi engelleyebiliyor")
+
+    // engelle() bagi da sildi. Bu bir temizlik iddiasi DEGIL, senaryonun
+    // kurulumunun bir parcasi: asagida bagi yeniden yazmamiz gerektigini
+    // kanitlayan sey bu.
+    const engelSonrasiBag = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(
+      engelSonrasiBag,
+      [],
+      'ara durum: engelle, yonetici istemcisiyle yazilan iki takip satirini da sildi'
+    )
+
+    // Bag YENIDEN kuruluyor: cift artik hem ENGELLI hem BAGLI. Redin
+    // tek olasi sebebi bundan sonra engeldir.
+    const { error: yenidenEkleHata } = await yonetici.from('takipler').insert([
+      { takip_eden_id: aId, takip_edilen_id: bId, durum: 'kabul' },
+      { takip_eden_id: bId, takip_edilen_id: aId, durum: 'kabul' },
+    ])
+    esitMi(
+      yenidenEkleHata,
+      null,
+      'kurulum: engelden SONRA karsilikli kabul satirlari yeniden yazildi'
+    )
+
+    const engelliyken = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(
+      engelliyken.length,
+      2,
+      'kurulum: cift su an hem ENGELLI hem BAGLI (iki kabul satiri yerinde)'
+    )
+
+    const engelliykenSohbet = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(
+      engelliykenSohbet,
+      [],
+      'kurulum: sohbet bagi yok, yani yazma yetkisinin tek kaynagi karsilikli takip'
+    )
+
+    const { data, error } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'senaryo 37 - engelliyken mesaj denemesi',
+    })
+    esitMi(data ?? null, null, 'engelliyken gonderim basarisiz oldugu icin konusma id donmuyor')
+    esitMi(
+      error !== null,
+      true,
+      "BAGLI olmasina ragmen engellenen B, A'ya mesaj gonderemez (engelleme dali)"
+    )
+    esitMi(
+      error?.message ?? null,
+      bagsizHataMetni,
+      "hata mesaji, senaryo 36'daki bagsizlik hatasiyla BIREBIR ayni (sessizlik ilkesi)"
+    )
+
+    const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    esitMi(kaldirHata, null, 'temizlik: engel kaldirilabiliyor')
+
+    const engelKalan = await engellemeSatirlari(a, aId, bId)
+    esitMi(engelKalan, [], 'temizlik: engelleme satiri gercekten gitti')
+
+    // engeli_kaldir bu satirlari SILMEZ: onlari engelden sonra biz
+    // yazdik. Yonetici istemcisiyle acikca siliniyor ve gittikleri
+    // ayrica iddia ediliyor.
+    const { error: silHata } = await yonetici
+      .from('takipler')
+      .delete()
+      .in('takip_eden_id', [aId, bId])
+      .in('takip_edilen_id', [aId, bId])
+    esitMi(silHata, null, 'temizlik: yeniden yazilan takip satirlari yonetici istemcisiyle silindi')
+
+    const sonKontrol = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(sonKontrol, [], 'temizlik: A-B arasinda hicbir takip satiri kalmadi')
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('38 - Engelleme konusmayi gizler', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+
+    const { data: konusmaId, error: aMesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: "senaryo 38 - A'nin mesaji",
+    })
+    esitMi(aMesajHata, null, 'A mesaj gonderebiliyor')
+
+    const { error: bMesajHata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: "senaryo 38 - B'nin mesaji",
+    })
+    esitMi(bMesajHata, null, 'B de mesaj gonderebiliyor')
+
+    // Pozitif kontrol: engellemeden ONCE B, kendi mesaji YANINDA A'nin
+    // mesajini da goruyor mu? Bu olmadan asagidaki "goremiyor" iddiasi,
+    // konusmanin zaten hic gorunmedigi bozuk bir kurulumdan da gelebilirdi.
+    const { data: oncesi, error: oncesiHata } = await b
+      .from('mesajlar')
+      .select('gonderen_id')
+      .eq('konusma_id', konusmaId)
+    if (oncesiHata) throw new Error(`mesaj sorgu hatasi: ${oncesiHata.message}`)
+    esitMi(
+      (oncesi ?? []).map((m) => m.gonderen_id).sort(),
+      [aId, bId].sort(),
+      "saglama: engellemeden once B hem kendi hem A'nin mesajini gorur"
+    )
+
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
+    esitMi(engelHata, null, "A, B'yi engelleyebiliyor")
+
+    const { data: sonrasi, error: sonrasiHata } = await b
+      .from('mesajlar')
+      .select('gonderen_id')
+      .eq('konusma_id', konusmaId)
+    if (sonrasiHata) throw new Error(`mesaj sorgu hatasi (sonrasi): ${sonrasiHata.message}`)
+    esitMi(
+      (sonrasi ?? []).map((m) => m.gonderen_id),
+      [bId],
+      "B, A'nin mesajlarini artik goremiyor, ama kendi mesaji hala goruluyor"
+    )
+
+    const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    esitMi(kaldirHata, null, 'temizlik: engel kaldirilabiliyor (bu, takip bagini geri getirmez)')
+
+    const engelKalan = await engellemeSatirlari(a, aId, bId)
+    esitMi(engelKalan, [], 'temizlik: engelleme satiri gercekten gitti')
+
+    // engelle() takip bagini da kosulsuz sildi (Faz 3a karar); ayri bir
+    // takibi_birak cagrisina gerek yok, yalnizca dogruluyoruz.
+    const takipKontrol = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKontrol, [], 'temizlik: engelleme takip bagini da kaldirmisti')
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('39 - Bag kopunca salt-okunur', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 39 - bag kopmadan once',
+    })
+    esitMi(mesajHata, null, 'bagli A mesaj gonderebiliyor')
+
+    // Pozitif kontrol: bag kopmadan once A gecmisi okuyabiliyor mu?
+    const { data: oncesi, error: oncesiHata } = await a.rpc('mesajlari_getir', {
+      p_konusma_id: konusmaId,
+    })
+    if (oncesiHata) throw new Error(`mesajlari_getir hatasi: ${oncesiHata.message}`)
+    esitMi((oncesi ?? []).length, 1, 'saglama: bag varken A gecmisi okuyabiliyor')
+
+    // yazilabilir_mi, istemci ekraninin yazma kutusunu acip kapatan alan.
+    // Once bag VARKEN true oldugu gosteriliyor; asagida bag koptuktan
+    // sonra false'a dondugu iddia ediliyor. Yalnizca "false" iddiasi
+    // olsaydi, alan her zaman false donse de gecerdi.
+    const { data: kutuBagliyken, error: kutuBagliykenHata } = await a.rpc('konusmalarim')
+    if (kutuBagliykenHata) throw new Error(`konusmalarim hatasi: ${kutuBagliykenHata.message}`)
+    const satirBagliyken = ((kutuBagliyken ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === bId)
+    esitMi(
+      satirBagliyken?.yazilabilir_mi,
+      true,
+      'saglama: bag varken konusmalarim satirinda yazilabilir_mi = true'
+    )
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'A bagi koparabiliyor')
+
+    const kalanlar = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(kalanlar, [], "bag koptuktan sonra iki yon de takipler'den gitti")
+
+    const { data: kutuKopunca, error: kutuKopuncaHata } = await a.rpc('konusmalarim')
+    if (kutuKopuncaHata) throw new Error(`konusmalarim hatasi: ${kutuKopuncaHata.message}`)
+    const satirKopunca = ((kutuKopunca ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === bId)
+    esitMi(
+      satirKopunca !== undefined,
+      true,
+      'bag koptuktan sonra konusma mesaj kutusunda DURUYOR (salt-okunur, kaybolmuyor)'
+    )
+    esitMi(
+      satirKopunca?.yazilabilir_mi,
+      false,
+      'bag koptuktan sonra yazilabilir_mi = false (istemcide yazma kutusu kapanir)'
+    )
+
+    const { data: sonrasi, error: sonrasiHata } = await a.rpc('mesajlari_getir', {
+      p_konusma_id: konusmaId,
+    })
+    if (sonrasiHata) throw new Error(`mesajlari_getir hatasi (sonrasi): ${sonrasiHata.message}`)
+    esitMi((sonrasi ?? []).length, 1, 'bag koptuktan sonra bile gecmis okunabiliyor (salt-okunur)')
+
+    const { data: yeniData, error: yeniHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 39 - bag koptuktan sonra',
+    })
+    esitMi(yeniData ?? null, null, 'reddedilen gonderim konusma id dondurmuyor')
+    esitMi(yeniHata !== null, true, 'bag koptuktan sonra yeni mesaj gonderme reddediliyor')
+    esitMi(
+      yeniHata?.message ?? null,
+      bagsizHataMetni,
+      "red mesaji senaryo 36'daki bagsizlik hatasiyla ayni"
+    )
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('40 - Iki yol ayni konusmaya cikar', async () => {
+    // On kosul: temiz, hicbir bag yok (39 takip bagini kopardi; sohbet
+    // istegi bu ciftte bu noktaya kadar hic acilmadi).
+    const sohbetOncesi = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(sohbetOncesi, [], 'on kosul: sohbet bagi yok')
+
+    // Yol 1: sohbet istegiyle mesajlas.
+    const { error: sohbetGonderHata } = await a.rpc('sohbet_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(sohbetGonderHata, null, 'A sohbet istegi gonderebiliyor')
+
+    const { error: sohbetKabulHata } = await b.rpc('sohbet_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(sohbetKabulHata, null, 'B sohbet istegini kabul edebiliyor')
+
+    const { data: konusmaId1, error: mesaj1Hata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 40 - sohbet istegi yoluyla',
+    })
+    esitMi(mesaj1Hata, null, 'sohbet istegi yoluyla mesaj gonderiliyor')
+
+    // Yol 2: ayrica takiples (karsilikli bag).
+    const { error: takipGonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(takipGonderHata, null, 'A ayrica takip istegi de gonderebiliyor')
+
+    const { error: takipKabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(takipKabulHata, null, 'B takip istegini de kabul edebiliyor')
+
+    const { data: konusmaId2, error: mesaj2Hata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'senaryo 40 - takip yoluyla',
+    })
+    esitMi(mesaj2Hata, null, 'takip yoluyla da mesaj gonderiliyor')
+
+    esitMi(konusmaId2, konusmaId1, "iki yol da AYNI konusma id'sine cikiyor (birebir_anahtar benzersiz)")
+
+    const { data: aListesi, error: aListesiHata } = await a.rpc('konusmalarim')
+    if (aListesiHata) throw new Error(`konusmalarim hatasi: ${aListesiHata.message}`)
+    const bIleOlanlar = ((aListesi ?? []) as KonusmaSatiri[]).filter((k) => k.kisi_id === bId)
+    esitMi(bIleOlanlar.length, 1, "A'nin konusmalarim listesinde B ile TEK satir var (iki degil)")
+
+    // Temizlik: tek cagriyla hem sohbet hem takip bagini kaldir. Bu, iki
+    // bagi birden birakan tek senaryo; her uc tablonun da bosaldigi
+    // ayri ayri dogrulaniyor, hicbiri baska bir senaryonun on kosuluna
+    // birakilmiyor.
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
+    esitMi(engelHata, null, 'temizlik: gecici engelleme ile iki bag birden kaldirilabiliyor')
+
+    const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
+    esitMi(kaldirHata, null, 'temizlik: engel kaldirilabiliyor')
+
+    const takipKalan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKalan, [], 'temizlik: takipler tablosunda iki yonde de satir kalmadi')
+
+    const sohbetKalan = await ikiYonSohbetSatirlari(a, aId, bId)
+    esitMi(sohbetKalan, [], 'temizlik: sohbet_istekleri tablosunda iki yonde de satir kalmadi')
+
+    const engelKalan = await engellemeSatirlari(a, aId, bId)
+    esitMi(engelKalan, [], 'temizlik: gecici engelleme satiri gercekten gitti')
+
+    await konusmaTemizleVeDogrula(konusmaId1 as string)
+  })
+
+  await senaryo('41 - Gizlenen konusma geri gelir', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 41 - ilk mesaj',
+    })
+    esitMi(mesajHata, null, 'A mesaj gonderebiliyor')
+
+    // Pozitif kontrol: gizlemeden once A'nin kutusunda B gercekten var mi?
+    const { data: gizlemeOncesi, error: gizlemeOncesiHata } = await a.rpc('konusmalarim')
+    if (gizlemeOncesiHata) throw new Error(`konusmalarim hatasi: ${gizlemeOncesiHata.message}`)
+    esitMi(
+      ((gizlemeOncesi ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId),
+      true,
+      "saglama: gizlemeden once A'nin kutusunda B var"
+    )
+
+    const { error: gizleHata } = await a.rpc('konusmayi_gizle', { p_konusma_id: konusmaId })
+    esitMi(gizleHata, null, 'A konusmayi gizleyebiliyor')
+
+    const { data: gizlemeSonrasi, error: gizlemeSonrasiHata } = await a.rpc('konusmalarim')
+    if (gizlemeSonrasiHata) throw new Error(`konusmalarim hatasi: ${gizlemeSonrasiHata.message}`)
+    esitMi(
+      ((gizlemeSonrasi ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId),
+      false,
+      "gizledikten sonra A'nin kutusunda B artik yok"
+    )
+
+    const { error: bMesajHata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: "senaryo 41 - B'nin cevabi",
+    })
+    esitMi(bMesajHata, null, 'B yazinca gonderim basarili oluyor')
+
+    const { data: bYazincaSonrasi, error: bYazincaSonrasiHata } = await a.rpc('konusmalarim')
+    if (bYazincaSonrasiHata) throw new Error(`konusmalarim hatasi: ${bYazincaSonrasiHata.message}`)
+    esitMi(
+      ((bYazincaSonrasi ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId),
+      true,
+      "B yazinca konusma A'nin kutusunda tekrar goruluyor"
+    )
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'temizlik: bag koparilabiliyor')
+
+    const takipKalan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKalan, [], "temizlik: iki yonun ikisi de takipler'den gercekten gitti")
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('42 - Okunmamis sayisi dogru', async () => {
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+
+    const { data: konusmaId, error: mesaj1Hata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'senaryo 42 - birinci mesaj',
+    })
+    esitMi(mesaj1Hata, null, 'B ilk mesaji gonderebiliyor')
+
+    const { error: mesaj2Hata } = await b.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'senaryo 42 - ikinci mesaj',
+    })
+    esitMi(mesaj2Hata, null, 'B ikinci mesaji gonderebiliyor')
+
+    const { data: okumadan, error: okumadanHata } = await a.rpc('konusmalarim')
+    if (okumadanHata) throw new Error(`konusmalarim hatasi: ${okumadanHata.message}`)
+    const satirOkumadan = ((okumadan ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === bId)
+    esitMi(satirOkumadan?.okunmamis, 2, "A'nin okunmamis sayaci 2 (B iki mesaj yazdi)")
+    esitMi(
+      satirOkumadan?.son_mesaj,
+      'senaryo 42 - ikinci mesaj',
+      'saglama: son_mesaj gercekten ikinci mesaja isaret ediyor (dogru satir sayiliyor)'
+    )
+
+    const { error: isaretleHata } = await a.rpc('konusmayi_okundu_isaretle', {
+      p_konusma_id: konusmaId,
+    })
+    esitMi(isaretleHata, null, 'A konusmayi okundu isaretleyebiliyor')
+
+    const { data: okuduktanSonra, error: okuduktanSonraHata } = await a.rpc('konusmalarim')
+    if (okuduktanSonraHata) throw new Error(`konusmalarim hatasi: ${okuduktanSonraHata.message}`)
+    const satirOkuduktanSonra = ((okuduktanSonra ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === bId)
+    esitMi(satirOkuduktanSonra?.okunmamis, 0, 'okundu isaretlenince sayac sifirlaniyor')
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'temizlik: bag koparilabiliyor')
+
+    // 42, bag kuran SON senaryo: buradaki temizligi kosum icinde baska
+    // hicbir senaryonun on kosulu kapatmiyor, bu yuzden satirlarin
+    // gittigi burada acikca soruluyor.
+    const takipKalan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKalan, [], "temizlik: iki yonun ikisi de takipler'den gercekten gitti")
+
+    await konusmaTemizleVeDogrula(konusmaId as string)
+  })
+
+  await senaryo('43 - Kimliksiz cagrilar reddedilir', async () => {
+    const anonim = createClient(
+      process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    )
+
+    const { error: mesajHata } = await anonim.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'kimliksiz deneme',
+    })
+    esitMi(mesajHata?.code, '42501', 'kimliksiz mesaj_gonder cagrisi 42501 ile reddedilir')
+
+    const { error: listeHata } = await anonim.rpc('konusmalarim')
+    esitMi(listeHata?.code, '42501', 'kimliksiz konusmalarim cagrisi 42501 ile reddedilir')
+  })
+
+  await senaryo('44 - Kendine mesaj yok', async () => {
+    const { data, error } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: aId,
+      p_metin: 'kendime mesaj',
+    })
+    esitMi(data ?? null, null, 'kendine gonderim basarisiz oldugu icin konusma id donmuyor')
+    esitMi(error !== null, true, 'A kendine mesaj gonderemez')
+    esitMi(
+      error?.message?.includes('Kendine mesaj gonderemezsin') ?? false,
+      true,
+      'hata mesaji "Kendine mesaj gonderemezsin" iceriyor'
+    )
+
+    // error yine destructure ediliyor: sessizce yutulsaydi konusmalarim
+    // kirildiginda bos dizi donerdi ve asagidaki negatif iddia vakumda
+    // gecerdi.
+    const { data: liste, error: listeHatasi } = await a.rpc('konusmalarim')
+    if (listeHatasi) throw new Error(`konusmalarim hatasi: ${listeHatasi.message}`)
+    esitMi(
+      ((liste ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === aId),
+      false,
+      'basarisiz kendine-gonderim hicbir konusma satiri olusturmadi'
     )
   })
 

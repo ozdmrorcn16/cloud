@@ -4,13 +4,11 @@ import {
   gelenIstekleriGetir,
   gidenIstekleriGetir,
   takipcilerimiGetir,
-  takipEttiklerimiGetir,
 } from '../../lib/bag-listeleri'
 import {
   takipIsteginiYanitla,
   sohbetIsteginiYanitla,
   takibiBirak,
-  takipciyiCikar,
   sohbetIsteginiGeriCek,
 } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
@@ -19,14 +17,12 @@ jest.mock('../../lib/bag-listeleri', () => ({
   gelenIstekleriGetir: jest.fn(),
   gidenIstekleriGetir: jest.fn(),
   takipcilerimiGetir: jest.fn(),
-  takipEttiklerimiGetir: jest.fn(),
 }))
 
 jest.mock('../../lib/bag', () => ({
   takipIsteginiYanitla: jest.fn(),
   sohbetIsteginiYanitla: jest.fn(),
   takibiBirak: jest.fn(),
-  takipciyiCikar: jest.fn(),
   sohbetIsteginiGeriCek: jest.fn(),
 }))
 
@@ -38,7 +34,6 @@ function bosListeleriKur() {
   ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
   ;(gidenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
-  ;(takipEttiklerimiGetir as jest.Mock).mockResolvedValue([])
 }
 
 beforeEach(() => {
@@ -53,7 +48,6 @@ describe('BaglarEkrani', () => {
       sohbet: [],
     })
     ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
-    ;(takipEttiklerimiGetir as jest.Mock).mockResolvedValue([])
     ;(takipIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
@@ -68,25 +62,41 @@ describe('BaglarEkrani', () => {
       sohbet: [],
     })
     ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
-    ;(takipEttiklerimiGetir as jest.Mock).mockResolvedValue([])
 
     await render(<BaglarEkrani />)
     expect(
-      await screen.findByText("Kabul edersen check-in'lerini gorebilecek.")
+      await screen.findByText("Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")
     ).toBeTruthy()
   })
 
-  it('takipciyi cikarir', async () => {
+  it('bagi koparir', async () => {
+    // Takip artik karsilikli yazildigi icin takipcilerimiGetir ve eskiden
+    // ayri olan "takip ettiklerim" ayni kumeyi donduruyor; ekranda tek
+    // liste var ve tek islem "Bagi kopar" - o da takibiBirak'i cagirip
+    // sunucu tarafinda iki yonu birden siliyor.
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
     ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
       { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y' },
     ])
-    ;(takipEttiklerimiGetir as jest.Mock).mockResolvedValue([])
-    ;(takipciyiCikar as jest.Mock).mockResolvedValue(undefined)
+    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Cikar'))
-    await waitFor(() => expect(takipciyiCikar).toHaveBeenCalledWith('k2'))
+    await fireEvent.press(await screen.findByText('Bagi kopar'))
+    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
+  })
+
+  it('bag koparma basarisiz olursa hata gosterir ve satiri listeden kaldirmaz', async () => {
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
+      { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y' },
+    ])
+    ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+
+    await render(<BaglarEkrani />)
+    await fireEvent.press(await screen.findByText('Bagi kopar'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('ayse')).toBeTruthy()
   })
 
   it('gelen istegi reddeder', async () => {
@@ -240,18 +250,6 @@ describe('BaglarEkrani', () => {
     expect(screen.getByText('mert')).toBeTruthy()
   })
 
-  it('takip ettiklerimi listeler ve takibi birakabilirim', async () => {
-    ;(takipEttiklerimiGetir as jest.Mock).mockResolvedValue([
-      { id: 'k4', kullaniciAdi: 'burak', ad: 'Burak S' },
-    ])
-    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
-
-    await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Takibi birak'))
-
-    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k4'))
-  })
-
   it('takipcilerimi listeler', async () => {
     ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
       { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y' },
@@ -264,9 +262,11 @@ describe('BaglarEkrani', () => {
 
   it('disarida tek bir kaydirici var ve butun ic listeler kendi kaydirmasini kapatiyor', async () => {
     // Bes FlatList tek bir View'da flex:1 icinde ustuste durdugunda dis
-    // kaydirma yoktu ve son bolumler ("Takipcilerim", "Takip ettiklerim")
-    // telefonda kirpilip erisilemez oluyordu (final inceleme Madde 4).
-    // Duzeltme: tek bir ScrollView + her FlatList'te scrollEnabled=false.
+    // kaydirma yoktu ve son bolum ("Takipcilerim") telefonda kirpilip
+    // erisilemez oluyordu (final inceleme Madde 4). Duzeltme: tek bir
+    // ScrollView + her FlatList'te scrollEnabled=false. Takip artik
+    // karsilikli oldugu icin eskiden ayri olan "Takip ettiklerim" listesi
+    // kaldirildi ve FlatList sayisi dorde dustu.
     await render(<BaglarEkrani />)
     await waitFor(() => expect(gelenIstekleriGetir).toHaveBeenCalled())
 
@@ -281,11 +281,11 @@ describe('BaglarEkrani', () => {
     // gercekten kapali oldugunu (yalnizca prop olarak GECMEDIGINI degil,
     // rendered agacta da gorunecegini) bu seviyede dogruluyoruz.
     // includeSelf: false (varsayilan) oldugu icin kok kendisi bu listeye
-    // girmiyor, yalnizca 5 ic FlatList'in host'lari giriyor.
+    // girmiyor, yalnizca 4 ic FlatList'in host'lari giriyor.
     const icKaydiricilar = kok.queryAll(
       (dugum) => dugum.type === 'RCTScrollView'
     )
-    expect(icKaydiricilar).toHaveLength(5)
+    expect(icKaydiricilar).toHaveLength(4)
     for (const dugum of icKaydiricilar) {
       expect(dugum.props.scrollEnabled).toBe(false)
     }

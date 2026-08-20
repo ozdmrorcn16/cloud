@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-
 import AnaEkran from '../../src/app/index'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
+import { konusmalarimiGetir } from '../../lib/sohbet'
 
 jest.mock('../../lib/supabase', () => ({
   supabase: { auth: { signOut: jest.fn().mockResolvedValue({ error: null }) } },
@@ -9,6 +10,10 @@ jest.mock('../../lib/supabase', () => ({
 
 jest.mock('../../lib/bag-listeleri', () => ({
   gelenIstekleriGetir: jest.fn(),
+}))
+
+jest.mock('../../lib/sohbet', () => ({
+  konusmalarimiGetir: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -29,6 +34,7 @@ describe('AnaEkran', () => {
     jest.clearAllMocks()
     mockOdakGeriCagirmalari = []
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
   })
 
   it('cikis yap butonuna basinca signOut cagirir', async () => {
@@ -67,6 +73,48 @@ describe('AnaEkran', () => {
     await render(<AnaEkran />)
     await fireEvent.press(screen.getByText('Baglar'))
     expect(mockRouterPush).toHaveBeenCalledWith('/baglar')
+  })
+
+  it('mesajlar butonuna basinca /mesajlar rotasina yonlendirir', async () => {
+    await render(<AnaEkran />)
+    await fireEvent.press(screen.getByText('Mesajlar'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/mesajlar')
+  })
+
+  it('okunmamis mesaj yokken Mesajlar butonunun yaninda sayi gosterilmez', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
+      { konusmaId: 'k1', kisiId: 'u1', kullaniciAdi: 'orcun', ad: 'Orcun O', sonMesaj: null,
+        sonMesajZamani: null, okunmamis: 0, yazilabilirMi: true },
+    ])
+    await render(<AnaEkran />)
+    await waitFor(() => {
+      expect(konusmalarimiGetir).toHaveBeenCalled()
+    })
+    expect(screen.getByText('Mesajlar')).toBeTruthy()
+    expect(screen.queryByText(/^\d+$/)).toBeNull()
+  })
+
+  it('okunmamis mesaj varsa Mesajlar butonunun yaninda toplam gosterilir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
+      { konusmaId: 'k1', kisiId: 'u1', kullaniciAdi: 'orcun', ad: 'Orcun O', sonMesaj: null,
+        sonMesajZamani: null, okunmamis: 2, yazilabilirMi: true },
+      { konusmaId: 'k2', kisiId: 'u2', kullaniciAdi: 'ayse', ad: 'Ayse A', sonMesaj: null,
+        sonMesajZamani: null, okunmamis: 5, yazilabilirMi: true },
+    ])
+    await render(<AnaEkran />)
+    await waitFor(() => {
+      expect(screen.getByText('7')).toBeTruthy()
+    })
+  })
+
+  it('konusmalarimiGetir reddedilirse ekran yine cizilir ve sayi gorunmez', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockRejectedValue(new Error('Oturum bulunamadi'))
+    await render(<AnaEkran />)
+    await waitFor(() => {
+      expect(konusmalarimiGetir).toHaveBeenCalled()
+    })
+    expect(screen.getByText('Mesajlar')).toBeTruthy()
+    expect(screen.queryByText(/^\d+$/)).toBeNull()
   })
 
   it('bekleyen istek yokken Baglar butonunun yaninda sayi gosterilmez', async () => {

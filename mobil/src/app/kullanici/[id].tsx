@@ -180,7 +180,7 @@ export default function KullaniciProfiliEkrani() {
         )}
         {bagDurum?.takip === 'kabul' && (
           <Pressable style={stiller.anahtarliButon} onPress={takibiBirakEt}>
-            <Text style={stiller.anahtarliButonYazi}>Takibi birak</Text>
+            <Text style={stiller.anahtarliButonYazi}>Bagi kopar</Text>
           </Pressable>
         )}
 
@@ -203,9 +203,20 @@ export default function KullaniciProfiliEkrani() {
         )}
       </View>
 
+      {(bagDurum?.takip === 'kabul' ||
+        bagDurum?.sohbet === 'kabul' ||
+        bagDurum?.gelenSohbet === 'kabul') && (
+        <Pressable
+          style={stiller.birincilButon}
+          onPress={() => router.push(`/sohbet/${id}`)}
+        >
+          <Text style={stiller.birincilButonYazi}>Mesaj gonder</Text>
+        </Pressable>
+      )}
+
       {bagDurum?.gelenTakip === 'beklemede' && (
         <View style={stiller.gelenIstekBlok}>
-          <Text style={stiller.aciklama}>Kabul edersen check-in'lerini gorebilecek.</Text>
+          <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.</Text>
           <View style={stiller.bagButonlari}>
             <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(true)}>
               <Text style={stiller.kucukButonYazi}>Kabul et</Text>

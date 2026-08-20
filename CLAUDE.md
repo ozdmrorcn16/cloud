@@ -45,9 +45,20 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   (16/16 gorev). Ayrinti asagida "Faz 2c TAMAMLANDI" bolumunde.
 - **Guncelleme (2026-08-20, Faz 3a kapanisi):** Calisma dali su an
   `claude/faz3a-bag`. Faz 3a (bag: takip/sohbet istekleri, uc kademeli
-  gorunurluk) tamamlandi (18/18 gorev, hepsi incelendi) — asagidaki
-  "Devam eden is" basligindaki 8/18 notu artik gecersiz. Ayrinti asagida
+  gorunurluk) tamamlandi (18/18 gorev, hepsi incelendi) - asagidaki
+  "ARSIV - Faz 3a'nin ortasinda yazilmis devam notu" basligindaki 8/18
+  notu artik gecersiz. Ayrinti asagida
   "Faz 3a TAMAMLANDI" bolumunde.
+
+- **Guncelleme (2026-08-20, Faz 3b kapanisi):** Calisma dali su an
+  `claude/faz3b-sohbet`. Faz 3b (birebir sohbet) tamamlandi (18/18
+  gorev, hepsi incelendi). Faz 3a birlestirilip `claude/faz2c-kimlik`'e
+  push edildi; 3b onun ucundan ayrildi. Ayrinti asagida "Faz 3b
+  TAMAMLANDI" bolumunde. Fazin gunu gunune gunlugu (hangi commit hangi
+  gorev, ortam tuzaklari, faz sirasinda yasanan guvenlik olayi)
+  `docs/faz3b-devam-notu.md` icinde durur; artik bir "devam noktasi"
+  degil, tarihsel kayit. Kalan takip isleri:
+  `docs/faz3b-takip-isleri.md`.
 
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
@@ -57,19 +68,29 @@ terminalinde surer. Yeni oturumda:
 ```bash
 cd ~/projects/cloud            # Windows'ta: cd C:\Users\orcns\projects\cloud
 git fetch origin
-git checkout claude/faz2b-guvenlik
-git pull origin claude/faz2b-guvenlik
+git checkout claude/faz3b-sohbet
+git pull origin claude/faz3b-sohbet
 cd mobil && npm install        # node_modules repoda degil
-npm test                       # mock tabanli suite
-npm run test:gorunurluk        # gercek veritabani, 10 senaryo
+npx jest --runInBand           # mock tabanli suite (39 paket / 289 test)
+npm run test:sema              # gercek veritabani, sema ve yetkiler (69 dogrulama)
+npm run test:gorunurluk        # gercek veritabani, 44 senaryo / 216 dogrulama
+npx tsc --noEmit               # bes onceden var olan hata beklenir
 ```
+
+Dal adi guncel kalmali: en son calisilan dal `claude/faz3b-sohbet`
+(2026-08-20, Faz 3b kapanisi). Sayilar Faz 3b kapanisindaki degerler.
 
 Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
-### Devam eden is: Faz 3a — bag ve gorunurluk kademeleri
+### ARSIV - Faz 3a'nin ortasinda yazilmis devam notu (GECERSIZ)
+
+**Bu bolum tarihsel bir kayittir; aktif is DEGILDIR.** Faz 3a
+2026-08-20'de 18/18 gorevle kapandi, ardindan Faz 3b de kapandi. Guncel
+durum icin "Faz 3a TAMAMLANDI" ve "Faz 3b TAMAMLANDI" bolumlerine bak.
+Asagisi yazildigi gunun kaydidir.
 
 Oturum token siniri yuzunden kesildi. **Yeni oturumda once
-`docs/faz3a-devam-notu.md` dosyasini oku** — nerede kalindigi, testlerin
+`docs/faz3a-devam-notu.md` dosyasini oku** - nerede kalindigi, testlerin
 hali, bilerek acik birakilan kirik pencereler ve ortam tuzaklari orada.
 
 Kisaca: dal `claude/faz3a-bag`, 18 gorevden 8'i uygulandi, Task 8
@@ -281,18 +302,23 @@ acikta kalan yalnizca arayuz kablolamasinin elle dogrulanmasi.
 **Faz 3a TAMAMLANDI** (2026-08-20). Spec:
 `docs/superpowers/specs/2026-08-19-faz3a-bag-design.md`, plan:
 `docs/superpowers/plans/2026-08-19-faz3a-bag.md`. 18 gorev, dal
-`claude/faz3a-bag`, hepsi incelendi. `npx jest --runInBand` ile 36 test
-paketi / 216 test yesil, `npm run test:sema` ile 40 dogrulama yesil,
-`npm run test:gorunurluk` ile 79 dogrulama yesil sifir basarisizlikla
-(senaryo 29 varsayilan kosumda bilerek ATLANDI gosteriliyor — gunluk
-tavan senaryosu, ayri `--tavan` bayragiyla calisiyor).
+`claude/faz3a-bag`, hepsi incelendi. Fazin **son** dogrulama degerleri
+(final inceleme dalgasi `b0f03c9` dahil): `npx jest --runInBand` ile 36
+test paketi / 224 test yesil, `npm run test:sema` ile 42 dogrulama
+yesil, `npm run test:gorunurluk` ile 82 dogrulama yesil sifir
+basarisizlikla (senaryo 29 varsayilan kosumda bilerek ATLANDI
+gosteriliyor - gunluk tavan senaryosu, ayri `--tavan` bayragiyla
+calisiyor). Bu bolum ilk yazildiginda 216 / 40 / 79 yaziyordu; o
+degerler final incelemeden ONCEKI anin degerleriydi ve
+`docs/faz3a-takip-isleri.md` ile celisiyorlardi.
 
 Yeni tablolar: `takipler`, `sohbet_istekleri`, `istek_gunlugu`. Yeni
 sutunlar: `check_inler.bulunurluk`, `profiller.varsayilan_bulunurluk`
 (eski `check_inler.gizli_mi` ve `profiller.varsayilan_gizli` dusuruldu).
 Yeni ozel sema yardimcilari: `bag.takip_ediyor_mu`, `bag.ani_gorunurlugu`,
 `bag.istek_on_kontrol`. Yeni genel RPC'ler: `takip_istegi_gonder`,
-`takip_istegini_yanitla`, `takibi_birak`, `takipciyi_cikar`,
+`takip_istegini_yanitla`, `takibi_birak`, `takipciyi_cikar`
+(Faz 3b'de dusuruldu),
 `sohbet_istegi_gonder`, `sohbet_istegini_yanitla`, `bag_kisileri`;
 `engelle` iki yondeki takip/sohbet kayitlarini da silecek sekilde
 genisletildi; `check_in_yap` ve `check_inden_ayril` uc kademeli modele
@@ -329,6 +355,69 @@ yalnizca arayuz kablolamasinin elle dogrulanmasi.
 - `test:gorunurluk --tavan` gunun geri kalani icin yikici: test
   hesabinin ekle-only istek gunlugune 50 kalici satir yaziyor, istemci
   bunlari tasarim geregi silemiyor.
+
+**Faz 3b bu bolumu iki noktada gecersiz kildi:** takip artik KARSILIKLI
+(kabul iki satir yaziyor) ve `takipciyi_cikar` RPC'si dusuruldu. Ayrinti
+asagida "Faz 3b TAMAMLANDI" bolumunde.
+
+**Faz 3b TAMAMLANDI** (2026-08-20). Spec:
+`docs/superpowers/specs/2026-08-20-faz3b-birebir-sohbet-design.md`, plan:
+`docs/superpowers/plans/2026-08-20-faz3b-birebir-sohbet.md`. 18 gorev,
+dal `claude/faz3b-sohbet`, hepsi incelendi. Kapanista kosulan dort
+dogrulama: `npx jest --runInBand` ile 39 test paketi / 289 test yesil;
+`npm run test:sema` ile 69 dogrulama yesil; `npm run test:gorunurluk`
+ile 44 senaryo / 216 dogrulama yesil, sifir basarisizlik (senaryo 29
+varsayilan kosumda bilerek ATLANDI gosteriliyor - gunluk tavan
+senaryosu, ayri `--tavan` bayragiyla calisiyor); `npx tsc --noEmit`
+yalnizca bes onceden var olan hatada kaldi (hepsi `@types/node`
+yoklugundan).
+
+**Faz 3a'nin bag modelini degistiren karar (karar #42): takip artik
+KARSILIKLI.** Faz 3a'da kabul edilen bir takip istegi `takipler`
+tablosuna tek satir (A->B) yaziyordu; artik kabul IKI satir birden
+yaziyor (A->B ve B->A, ikisi de `kabul`). Sonuclari: `takipcilerim`
+gorunurluk kademesi "beni takip edenler" degil "karsilikli bagli oldugum
+kisiler" demek; `takibi_birak` iki yonu birden siliyor; `takipciyi_cikar`
+RPC'si ve istemcideki `takipciyiCikar` sarmalayicisi DUSURULDU; `baglar`
+ekrani iki ayri liste yerine tek takip listesi gosteriyor. `takipler`
+tablosunun semasi degismedi, degisen tek sey satirlarin ne zaman
+yazildigi; karsiliklilik yalnizca kabul RPC'sinde kuruluyor ve tabloya
+baska yazma yolu yok. **Faz 3a belgelerinde "takip tek yonlu" diyen her
+ifade artik gecersizdir.**
+
+Yeni tablolar: `konusmalar`, `konusma_uyeleri`, `mesajlar`. Yeni ozel
+sema yardimcisi: `bag.yazabilir_mi` - tek yazma kapisi; karsilikli takip
+VEYA kabul edilmis sohbet istegi yaziyor olmayi saglar. Yeni genel
+RPC'ler: `mesaj_gonder` (bul-ya-olustur), `konusmalarim`,
+`mesajlari_getir`, `konusmayi_okundu_isaretle`, `konusmayi_gizle`;
+`sikayet_gonder` artik `'mesaj'` turunu de kabul ediyor; `mesajlar`
+tablosu Realtime yayininda. Yazma yetkisi **her mesajda** yeniden
+olculuyor, konusma acilirken bir kez degil: bag koparsa konusma
+salt-okunur oluyor, gecmis silinmiyor. Konusmayi "gizle" yalnizca kendi
+tarafta calisiyor; karsi taraf yazinca konusma geri geliyor. Yeni istemci
+modulu `lib/sohbet.ts`; `lib/bag.ts`'ten `takipciyiCikar` cikarildi. Yeni
+ekranlar: `mesajlar` (mesaj kutusu) ve `sohbet/[kullaniciId]` (konusma);
+degisen ekranlar: ana ekran (mesajlar girisi + okunmamis rozeti),
+`baglar`, baskasinin profili (mesaj gonder butonu).
+
+**Faz 3b'nin elle dogrulanmayan kismi:** iki hesapla tarayicida gezinme
+yine yapilmadi (etkilesimli, insan gerektiriyor). Dogrulanmasi gerekenler:
+karsilikli bag kurulunca profildeki "Mesaj gonder" butonunun acilmasi;
+gonderilen mesajin karsi tarafta Realtime ile belirmesi; ana ekrandaki
+okunmamis rozetinin artmasi ve konusma acilinca sifirlanmasi; konusmayi
+gizlemenin yalnizca kendi tarafta calismasi ve karsi taraf yazinca geri
+gelmesi; bag koptuktan sonra gecmisin okunabilir ama yazma alaninin
+kapali olmasi. Bunlarin veritabani tarafi `npm run test:gorunurluk`
+icindeki 44 senaryoda kapsaniyor; acikta kalan yalnizca arayuz
+kablolamasinin gozle dogrulanmasi.
+
+**Faz 3b'den kalan takip isleri:** `docs/faz3b-takip-isleri.md`. O
+dosyanin ilk iki maddesi gelecekteki bir isi yanlis yone sokabilecek
+cinsten: birincisi Faz 3c (mekan odalari) grup sohbetini ayni okuma
+RPC'sine baglarsa engellemenin sessizce kirilabilecegini, ikincisi
+mesaj sikayetinin hangi mesaja ait oldugunun `sikayetler` tablosundan
+okunamadigini anlatiyor. Faz 3c'ye ya da moderasyon paneline
+baslamadan once okunmali.
 
 ### Bastan tasarima girmesi gereken kisit
 

@@ -6,6 +6,16 @@ incelemenin bulgulari da kapatildi. Bu dosya, **bilerek** yapilmayanlari
 ve gelecege birakilanlari tutar. Ayrinti icin `CLAUDE.md` icindeki
 "Faz 3a TAMAMLANDI" bolumune bak.
 
+> **Faz 3b bu dosyanin bag modelini degistirdi (2026-08-20, karar #42).**
+> Takip artik **karsilikli**: kabul edilen bir takip istegi `takipler`
+> tablosuna iki satir birden yaziyor (A->B ve B->A), `takibi_birak` iki
+> yonu birden siliyor ve `takipciyi_cikar` RPC'si ile istemcideki
+> `takipciyiCikar` sarmalayicisi dusuruldu. Asagidaki metinde "takip tek
+> yonlu" varsayimina dayanan yerler bu turda duzeltildi; yine de bu
+> dosyayi Faz 3a'nin kaydi olarak okurken karsilikliligi akilda tut.
+> Faz 3b'nin kendi takip isleri ayri dosyada:
+> `docs/faz3b-takip-isleri.md`.
+
 ## 1. Yapilmamis elle dogrulama (en onemli acik)
 
 Iki hesapla tarayicida gezinme hic yapilmadi; etkilesimli oldugu ve
@@ -16,14 +26,20 @@ veritabaninda hic calismayan bir ekran yayinlanmisti.
 Dogrulanmasi gereken bes senaryo:
 
 1. A, B'nin profilinden "Takip et" der; B'nin "Baglar" ekraninda istek
-   gorunur ve yaninda "Kabul edersen check-in'lerini gorebilecek." yazar.
+   gorunur ve yaninda "Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz." yazar.
 2. B kabul eder; A, B'nin canli check-in'ini **mekana gitmeden** gorur.
 3. B `bulunurluk = 'gizli'` ile check-in yapar; A goremez.
-4. B, A'yi takipcilerinden cikarir; A yine goremez.
+4. B bagi birakir (`takibi_birak`; Faz 3b'den beri iki yonu de
+   siler); A yine goremez.
 5. A, B'yi engeller; iki tarafta da bag kaybolur.
 
 Bu bes senaryonun **veritabani tarafi** `npm run test:gorunurluk`
-icindeki 82 dogrulamada zaten kapsaniyor (ozellikle senaryo 19-28 ve 31).
+icinde zaten kapsaniyor (ozellikle senaryo 19-28 ve 31). Paket Faz 3a
+kapanisinda 82 dogrulama kosuyordu; Faz 3b kapanisinda 44 senaryo / 216
+dogrulama. (82 rakami fazin **gercek** son halidir: 79 degeri
+`CLAUDE.md`'nin Faz 3a bolumu ilk yazildigi andaki degerdi, sonra gelen
+final inceleme dalgasi `b0f03c9` uc dogrulama daha ekledi. CLAUDE.md o
+tarihte guncellenmemisti, artik 82 yaziyor.)
 Acikta kalan yalnizca arayuz kablolamasinin gozle dogrulanmasi.
 
 Nasil calistirilir:
@@ -59,16 +75,19 @@ herkes bunu korumali.
 Donus tipi genisletildi (mevcut alanlar korundu): `takip`, `sohbet`
 yaninda artik `gelenTakip`, `gelenSohbet` da var. Dort sorgu
 `Promise.all` ile paralel. Profilde gelen bekleyen istek icin "Kabul et"
-/ "Reddet" butonlari ve `Kabul edersen check-in'lerini gorebilecek.`
+/ "Reddet" butonlari ve `Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.`
 metni geliyor.
 
-**Dikkat - takip TEK YONLU, sohbet SIMETRIK.** Birinin seni takip
-ediyor olmasi senin onu takip ettigin anlamina gelmez, dolayisiyla
-`gelenTakip` `kabul` ya da `beklemede` iken profilde "Takip et"
-gostermek DOGRU. Sohbet oyle degil: kabul edilmis bir sohbet iki taraf
-icin de aciktir, o yuzden "Sohbet acik" hem `sohbet` hem `gelenSohbet`
-`kabul` oldugunda cikiyor. Bu ayrimi bozmak bu turda iki kez az kalsin
-yapilan hataydi.
+**Dikkat - Faz 3a'da takip TEK YONLU, sohbet SIMETRIKTI; Faz 3b'den
+beri IKISI DE SIMETRIK.** Faz 3a'da birinin seni takip ediyor olmasi
+senin onu takip ettigin anlamina gelmiyordu, dolayisiyla `gelenTakip`
+`kabul` iken profilde "Takip et" gostermek dogruydu. Faz 3b karsilikli
+takibe gecince bu durum artik olusamiyor: kabul iki satiri birden
+yazdigi icin `gelenTakip` `kabul` ise `takip` de `kabul`. Profil ekrani
+takip butonlarini `takip` alanina bakarak seciyor, `gelenTakip` yalnizca
+gelen **bekleyen** istek icin kullaniliyor. Sohbette durum bastan beri
+ayni: kabul edilmis bir sohbet iki taraf icin de aciktir, o yuzden
+"Sohbet acik" hem `sohbet` hem `gelenSohbet` `kabul` oldugunda cikiyor.
 
 ### Kapatilan kucuk maddeler
 
@@ -103,10 +122,22 @@ yapilan hataydi.
 - `kullanici/[id].tsx` ve `baglar.tsx` bazi stilleri birebir
   tekrarliyor. Kod tabaninin mevcut ekran basi stil uslubuyla tutarli;
   ortak modul acmak istenirse ayri bir is.
-- Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
-  yapilmadi (asagida, bolum 4). Istek gonderen senaryolarin hesaplari
-  donusumlu kullanmasi ya da paketin kendi kotasini yonetici anahtariyla
-  temizlemesi gerekirdi.
+- ~~Gorunurluk paketinin kendi kotasini tuketmesine kalici cozum
+  yapilmadi.~~ **Faz 3b Gorev 1'de kapandi:** paket artik her kosumun
+  **sonunda**, `temizle()` icinden cagrilan `kotayiTemizle()` ile test
+  hesaplarinin `istek_gunlugu` satirlarini yonetici anahtariyla siliyor
+  (`gorunurluk-testleri/yardimcilar.ts`). Asagidaki bolum 4'un "gunde ~8
+  kez calistirilabilir" maddesi bu yuzden artik yalnizca
+  `SUPABASE_SERVICE_ROLE_KEY` **yokken** gecerli; anahtar `mobil/.env`
+  icinde ve gitignored. **Dikkat:** temizlik kosumun sonunda oldugu ve
+  `finally` icinde OLMADIGI icin, `senaryo()` sarmalayicisinin disinda
+  bir hata (ornegin baglanma asamasinda) kosumu `temizle()`ye hic
+  vardirmaz. Boyle bir kosumun biraktigi satirlari **bir sonraki tam
+  kosum kendiliginden temizler** - `kotayiTemizle()` zaman filtresi
+  olmadan `.in('gonderen_id', kimlikler)` ile siliyor. Asil zarar
+  baska: o satirlar bir sonraki kosumun **senaryolari boyunca** kotayi
+  kirli tutar ve gunluk 50 istek tavaninda yanlis alarma yol acabilir.
+  Elle silmek yalnizca o kosumu kurtarmak istenirse gerekir.
 
 ## 4. Faz 3a'da ogrenilen ve bir daha kesfedilmemesi gereken seyler
 
@@ -126,12 +157,17 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
   maddesi **gecersiz**. Bu fazdaki en degerli dogrulamalarin cogu
   bununla yapildi (yetki kontrolleri, politika govdeleri, cron gecmisi).
 - **`test:gorunurluk` kendi kendini zehirliyor; gunde ~8 kez
-  calistirilabilir.** Paketin senaryolari gercek takip ve sohbet istegi
-  gonderiyor, bunlar da gunluk 50 istek tavanindan dusuyor. Tavan
-  ekle-only `istek_gunlugu` tablosunu sayiyor ve istemci o satirlari
-  **tasarim geregi** silemiyor (RLS acik, politika yok). Yani her kosum
-  kotadan yiyor ve birikiyor; kota dolunca senaryo 19, 21, 22, 24, 26 ve
-  28 zincirleme duser ve paket **yanlis alarm** verir.
+  calistirilabilir.** (Faz 3b Gorev 1'den beri yalnizca
+  `SUPABASE_SERVICE_ROLE_KEY` yoksa gecerli; anahtar varken paket kendi
+  kotasini her kosumun **sonunda**, `temizle()` icinde temizliyor -
+  yarida kalan bir kosum oraya varamaz ve kotayi kirli birakir.
+  Mekanizmayi anlamak icin yine de okunmali.) Paketin senaryolari
+  gercek takip ve sohbet istegi gonderiyor, bunlar da gunluk 50 istek
+  tavanindan dusuyor. Tavan ekle-only `istek_gunlugu` tablosunu sayiyor
+  ve istemci o satirlari **tasarim geregi** silemiyor (RLS acik,
+  politika yok). Yani her kosum kotadan yiyor ve birikiyor; kota dolunca
+  senaryo 19, 21, 22, 24, 26 ve 28 zincirleme duser ve paket **yanlis
+  alarm** verir.
 
   2026-08-20'de tam bunu yasadik: uc saatte on kosum yapilmis, hesap
   50/50'ye dayanmis, bir alt ajan bunu "migrasyonum bir seyi kirdi mi"
@@ -152,10 +188,15 @@ Bunlar `CLAUDE.md` icinde de var; burada ozet:
   Bu silme urun degismezligini bozmuyor: ekle-only ozelligi ISTEMCIYE
   karsi zorlanan bir kural ve o kural yerinde kaliyor. Kalici cozum,
   istek gonderen senaryolarin hesaplari donusumlu kullanmasi ya da
-  paketin kendi kotasini yonetici anahtariyla temizlemesi olurdu; ikisi
-  de yapilmadi.
+  paketin kendi kotasini yonetici anahtariyla temizlemesi olurdu.
+  **Ikincisi Faz 3b Gorev 1'de yapildi** (`kotayiTemizle()`, kosumun
+  sonunda); hesap donusumu yapilmadi ve anahtarsiz ortamda bu paragrafin
+  tamami hala gecerli.
 
-- `npm run test:gorunurluk --tavan` ayrica ve **bilerek** yikici: tek
+- `npm run test:gorunurluk -- --tavan` ayrica ve **bilerek** yikici:
+  bayrak `--` ile gecirilmeli; `npm run test:gorunurluk --tavan` bicimini
+  npm kendi yapilandirmasi sanip yutuyor ve betige hic ulastirmiyor
+  (`calistir.ts` `process.argv`'ye bakiyor). Tek
   kosumda 50 kalici satir yaziyor, yani gunun geri kalanini tek basina
   bitiriyor. Yalnizca tavan davranisini dogrulamak icin, bilerek
   calistirilir.

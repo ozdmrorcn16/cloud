@@ -90,7 +90,7 @@ bolumunde.
   engelledikten sonra artik indiremiyor. Senaryo, kendi ic mantigi
   geregi A -> B blogunu kurulu birakarak bitiyor (bkz. asagidaki not).
 
-19-30: Faz 3a (bag: takip, sohbet istegi, uc kademeli bulunurluk):
+19-31: Faz 3a (bag: takip, sohbet istegi, uc kademeli bulunurluk):
 
 - **19 — Istek gonderilir.** A, B'ye takip istegi gonderir; hem A hem B
   `takipler` tablosunda satiri `beklemede` durumunda gorur. Senaryo
@@ -125,14 +125,145 @@ bolumunde.
   yapip ayrilinca ani `kimse` olur (daralir). `bag.ani_gorunurlugu`
   yardimcisini dogrudan degil, `check_inden_ayril` uzerinden dolayli
   test ediyor.
-- **28 — Takipciyi cikarinca akis kesilir.** B, A'yi takipcilikten
-  cikarinca (`takipciyi_cikar`) `takipler` satiri kayboluyor ve A
-  artik B'nin `takipcilerim` check-in'ini goremiyor.
+- **28 - Bagi koparinca akis kesilir.** Faz 3b'de karsilikli takibe
+  gore guncellendi (bkz. asagidaki "Faz 3b'de neyin degistigi"):
+  B, `takibi_birak` cagirinca (eski `takipciyi_cikar` artik yok) hem
+  A->B hem B->A satiri `takipler`den kayboluyor ve A artik B'nin
+  `takipcilerim` check-in'ini goremiyor.
 - **29 — Gunluk tavan.** Bkz. asagidaki "--tavan bayragi" bolumu;
   varsayilan kosumda calismaz.
 - **30 — Kimliksiz cagrilar reddedilir.** Oturum acmamis ham bir anon
   istemciyle `takip_istegi_gonder` ve `bag_kisileri` cagrilari hata
   doner.
+- **31 - `ani_gorunurlugunu_ayarla` genisletmeyi kelepceler.** Gizli
+  kokenli bir ani (`check_inden_ayril` ile 'gizli'den donusmus, yani
+  gorunurlugu 'kimse') RPC ile 'herkese_acik'a genisletilmeye
+  calisilir; `bag.ani_gorunurlugu` yardimcisi bunu engelledigi icin
+  deger 'kimse' olarak kaliyor ve A anisi hala goremiyor.
+
+32-44: Faz 3b (birebir sohbet: mesaj gonderme, mesaj kutusu, okunmamis
+sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):
+
+- **32 - Kabul iki satir yazar.** A istek gonderir, B kabul eder;
+  `takipler`de hem A->B hem B->A satiri `kabul` durumunda beliriyor
+  (karar 42). On kosul olarak, gonderilmeden once ciftin arasinda hic
+  satir olmadigi ayrica dogrulaniyor.
+- **33 - Bagi koparmak iki satiri da siler.** Senaryo 32'nin biraktigi
+  karsilikli bagi kullanir; A `takibi_birak` cagirinca TEK cagriyla
+  iki yonun ikisi de gidiyor. On kosul olarak bagin IKI satirinin da
+  gercekten durdugu burada ayrica sorulur - boylece 32 tek satir
+  yazsaydi bu senaryo yaniltici bir OK basmaz.
+- **34 - Karsilikli takipliler yazabilir.** Bag kurulunca A, `mesaj_gonder`
+  ile B'ye yazabiliyor; B bu mesaji `mesajlari_getir` ile gercekten
+  okuyabildigini gosteriyor (pozitif kontrol). Senaryo kendi bagini ve
+  olusturdugu konusmayi (yonetici istemcisiyle) temizler.
+- **35 - Sohbet istegiyle baglananlar yazabilir.** Takip bagi YOKKEN,
+  yalnizca kabul edilmis bir sohbet istegiyle A, B'ye yazabiliyor.
+  Kabul edilmis bir sohbet istegini kaldiran ayri bir RPC olmadigi icin
+  (`sohbet_istegini_geri_cek` yalnizca beklemedeki istegi kaldirir)
+  temizlik gecici bir engelle/engeli_kaldir cifti ile yapiliyor - net
+  etki yalnizca sohbet baginin kalkmasi.
+- **36 - Bagsiz kisi yazamaz.** Ne takip ne sohbet bagi varken A, B'ye
+  yazamaz; hata mesaji "mesaj gonderemezsin" iceriyor ve hicbir
+  konusma satiri olusmuyor. Bu senaryonun yakaladigi hata metni,
+  37 ve 39'da birebir karsilastirma icin saklaniyor.
+- **37 - Engelli yazamaz, hata AYNI.** Engelin TEK degisken olmasi
+  gerekiyor, yoksa senaryo yalnizca 36'yi tekrar eder. Akis: (1) iki
+  `kabul` satiri yonetici istemcisiyle dogrudan `takipler`e yazilir -
+  bagi genel RPC'lerle kurmak ise yaramaz, cunku `engelle` iki yondeki
+  takip ve sohbet satirlarini kosulsuz siliyor; (2) bu bagla B'nin
+  A'ya yazabildigi gosterilir (pozitif saglama); (3) A, B'yi engeller;
+  (4) **engellemenin bagi da sildigi ayrica dogrulanir ve bag yonetici
+  istemcisiyle YENIDEN yazilir** - kritik adim bu, yoksa ikinci
+  denemede cift hem engelli hem bagsiz olur ve red engelden degil
+  bagsizliktan gelirdi; (5) cift artik hem ENGELLI hem BAGLI (iki
+  `kabul` satiri yerinde, sohbet bagi yok - yani yazma yetkisinin tek
+  kaynagi karsilikli takip) ve B yine yazamaz. Hata mesaji senaryo
+  36'daki bagsizlik hatasiyla **birebir ayni** (Faz 2b sessizlik
+  ilkesi: "engellendin" ile "bagsizsin" ayirt edilmiyor). Temizlik:
+  `engeli_kaldir` engelden sonra yazilan satirlari SILMEZ, bu yuzden
+  onlar yonetici istemcisiyle acikca silinir ve gittikleri dogrulanir.
+- **38 - Engelleme konusmayi gizler.** Engellemeden once B hem kendi
+  hem A'nin mesajini goruyor (pozitif kontrol); A, B'yi engelleyince
+  B artik yalnizca kendi mesajini goruyor, A'nin mesajlari `mesajlar`
+  tablosunun RLS'i tarafindan filtreleniyor.
+- **39 - Bag kopunca salt-okunur.** Bagli A mesaj gonderir; bagi
+  koparinca (`takibi_birak`) gecmis (`mesajlari_getir`) hala
+  okunabiliyor ama yeni mesaj denemesi 36'daki AYNI hatayla
+  reddediliyor (karar 45: yetki her mesajda olculuyor). `konusmalarim`
+  satirindaki `yazilabilir_mi` alani da burada olculuyor: bag varken
+  `true`, bag koptuktan sonra `false` - istemcinin yazma kutusunu acip
+  kapatan alan boylece canli veritabaninda dogrulanmis oluyor.
+- **40 - Iki yol ayni konusmaya cikar.** Once sohbet istegiyle
+  mesajlasip sonra ayrica takiplesince, iki `mesaj_gonder` cagrisi
+  AYNI konusma id'sini donuyor ve A'nin `konusmalarim` listesinde B
+  ile yalnizca TEK satir var (`birebir_anahtar` benzersizligi).
+- **41 - Gizlenen konusma geri gelir.** A, `konusmayi_gizle` cagirinca
+  B `konusmalarim` listesinden kayboluyor (gizlemeden once orada
+  oldugu ayrica dogrulanmis); B yazinca `mesaj_gonder` iki uyenin de
+  bayragini indirdigi icin konusma A'nin listesinde tekrar beliriyor
+  (karar 44).
+- **42 - Okunmamis sayisi dogru.** B iki mesaj yazinca A'nin
+  `konusmalarim` satirinda `okunmamis = 2` (ve `son_mesaj` gercekten
+  ikinci mesaja isaret ediyor); A `konusmayi_okundu_isaretle`
+  cagirinca sayac `0`a doner.
+- **43 - Kimliksiz cagrilar reddedilir.** Oturum acmamis ham bir anon
+  istemciyle `mesaj_gonder` ve `konusmalarim` cagrilari hata doner.
+- **44 - Kendine mesaj yok.** A, kendine `mesaj_gonder` cagirir; RPC
+  bunu bag kontrolunden ONCE reddeder ("Kendine mesaj gonderemezsin")
+  ve hicbir konusma satiri olusmuyor.
+
+Bu bloktaki senaryolar (34, 35, 37, 38, 39, 40, 41, 42) kendi
+olusturdugu takip/sohbet baglarini, engellemeleri ve mesajlasma
+satirlarini kendi icinde temizler; hicbir temizlik adimi sessiz
+degildir, hepsi `esitMi` ile dogrulanir - "hata donmedi" degil, "satir
+gercekten gitti" iddia edilir.
+
+**Tek istisna senaryo 32:** kurdugu karsilikli bagi BILEREK temizlemez,
+senaryo 33'e birakir. 33'un iddiasi (tek `takibi_birak` cagrisiyla iki
+satirin da gitmesi) tam olarak o bagi gerektiriyor; 33 bagi koparir ve
+gittigini dogrular, yani blok yine kalintisiz kapanir.
+
+`konusmalar` (ve CASCADE ile `konusma_uyeleri`,
+`mesajlar`) satirlarini silmenin tek yolu asagidaki "Kota temizligi ve
+konusma silme yetkisi" bolumunde anlatilan yonetici istemcisidir -
+sirasiyla RPC'lerle konusan A/B istemcilerinin bu tabloda hicbir yazma
+yetkisi yok (insert/update/delete `authenticated`den geri alindi).
+
+### Faz 3b'de neyin degistigi
+
+**Takip artik karsilikli** (karar 42, `docs/superpowers/specs/2026-08-20-faz3b-birebir-sohbet-design.md`).
+Eskiden kabul yalnizca A->B satirini yaziyordu; artik `takip_istegini_yanitla`
+kabul kolunda ayna satiriyi (B->A, `kabul`) de kendiliginden yaziyor, ve
+`takibi_birak` iki yonu birden siliyor. **`takipciyi_cikar` RPC'si
+dusuruldu** - `takibi_birak` ile ayni ise indigi icin. 19-30 arasindaki
+senaryolarin cogu bundan etkilenmedi (kabul sonrasi row-count iddiasi
+tasimiyorlardi), ama senaryo 28 iki degisikligi birden gerektirdi:
+`takipciyi_cikar` cagrisi `takibi_birak`'a cevrildi, ve "takipler satiri
+kayboluyor" iddiasi tek yon yerine **iki** yonu de kapsayacak sekilde
+genisletildi (bkz. yukarida senaryo 28 ve 32/33).
+
+**Kota temizligi artik gercekten calisiyor.** `mobil/.env` icine
+`SUPABASE_SERVICE_ROLE_KEY` eklendi ve `yardimcilar.ts`teki
+`yoneticiIstemcisi()`/`kotayiTemizle()` (Faz 3b Task 1) artik her
+kosumun sonunda test hesaplarinin `istek_gunlugu` satirlarini gercekten
+siliyor. Bu, "paket gunde ~8 kosumdan sonra kota yuzunden yanlis alarm
+verir" sorununu ortadan kaldiriyor - asagidaki "--tavan bayragi"
+bolumundeki uyari, `--tavan`in KENDISI icin hala gecerli (o bayrak
+bilerek tavana **carpana kadar** gonderim yapar), ama artik normal
+kosumlar arasinda kota birikmiyor.
+
+**Kota temizligi ve konusma silme yetkisi.** Ayni yonetici istemcisi
+(`yoneticiIstemcisi()`), Faz 3b'nin messaging senaryolarinin
+olusturdugu `konusmalar` satirlarini silmek icin de kullaniliyor:
+`konusmalar`, `konusma_uyeleri`, `mesajlar` uc tablosunun ucunde de
+`authenticated` rolunden insert/update/delete geri alindi (yalnizca
+`select` var), yani A/B istemcileriyle konusma silinemez.
+`konusmaTemizleVeDogrula()` (calistir.ts) yonetici istemcisiyle siler
+VE ardindan bir select ile satirin gercekten gittigini dogrular -
+yalnizca "hata donmedi" degil, "artik yok" iddia edilir.
+`SUPABASE_SERVICE_ROLE_KEY` tanimli degilse bu adim `esitMi` ile
+GURULTULU sekilde basarisiz olur (sessizce atlanmaz).
 
 ### --tavan bayragi
 

@@ -39,6 +39,15 @@ SIR_KALIPLARI = [
     re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
     re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
     re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
+    # Supabase'in yeni bicim anahtarlari. `sb_secret_` GERCEK bir sir:
+    # RLS'i asar ve butun veriye erisir. 2026-08-20'de bir tanesi
+    # konusmaya yapistirildi ve buradaki kalip listesinde karsiligi
+    # olmadigi icin oturum dokumune duz metin yazildi; depo public
+    # oldugu icin push edilseydi sizacakti. `sb_publishable_` gizli
+    # degil (uygulama paketinde zaten gidiyor) ama ayirt etmeyi
+    # kolaylastirmak icin o da maskeleniyor.
+    re.compile(r"sb_secret_[A-Za-z0-9_\-]{16,}"),        # Supabase gizli anahtar
+    re.compile(r"sb_publishable_[A-Za-z0-9_\-]{16,}"),   # Supabase acik anahtar
     # JWT parcalari (Supabase anon/service anahtarlari dahil). Her
     # base64url parcasi ayri ayri maskelenir; nokta ile ayrilmis uc
     # parcanin tamamini tek kalipla yakalamak, kirpilmis kayitlarda
@@ -52,20 +61,90 @@ SIR_KALIPLARI = [
 ]
 
 
-def env_sirlari(kok: Path) -> list[str]:
-    """.env dosyasindaki degerler: kayitlarda bunlar da gizlenir."""
-    dosya = kok / ".env"
-    if not dosya.exists():
-        return []
-    degerler = []
-    for satir in dosya.read_text(encoding="utf-8", errors="replace").splitlines():
-        satir = satir.strip()
-        if not satir or satir.startswith("#") or "=" not in satir:
+# .env taramasinda atlanan dizinler ve sinirlar. node_modules'u atlamak
+# sadece hiz meselesi degil: hook her Stop olayinda calisiyor, yuz binlerce
+# dosyayi gezmek kaydi gozle gorulur sekilde geciktirirdi.
+ENV_ATLANAN_DIZINLER = {
+    "node_modules",
+    ".git",
+    ".expo",
+    ".next",
+    "dist",
+    "build",
+    "coverage",
+    "vendor",
+    "__pycache__",
+    ".venv",
+}
+ENV_MAKS_DOSYA = 20
+ENV_MAKS_DERINLIK = 3
+
+
+def env_dosyalari(kok: Path) -> list[Path]:
+    """Depo kokundeki ve alt dizinlerdeki .env dosyalarini bulur.
+
+    Genislikten once koku ekler, sonra siniri asmayan bir genislik-oncelikli
+    gezinti yapar; ATLANAN dizinlere hic girilmez.
+    """
+    bulunanlar: list[Path] = []
+    kok_env = kok / ".env"
+    if kok_env.is_file():
+        bulunanlar.append(kok_env)
+
+    sira: list[tuple[Path, int]] = [(kok, 0)]
+    while sira and len(bulunanlar) < ENV_MAKS_DOSYA:
+        dizin, derinlik = sira.pop(0)
+        try:
+            girdiler = sorted(dizin.iterdir())
+        except OSError:
             continue
-        deger = satir.partition("=")[2].strip().strip('"').strip("'")
-        if len(deger) >= 8:
-            degerler.append(deger)
-    return sorted(degerler, key=len, reverse=True)
+        for girdi in girdiler:
+            if len(bulunanlar) >= ENV_MAKS_DOSYA:
+                break
+            try:
+                if girdi.name == ".env" and girdi.is_file():
+                    if girdi != kok_env:
+                        bulunanlar.append(girdi)
+                elif (
+                    derinlik < ENV_MAKS_DERINLIK
+                    and girdi.name not in ENV_ATLANAN_DIZINLER
+                    and girdi.is_dir()
+                    and not girdi.is_symlink()
+                ):
+                    sira.append((girdi, derinlik + 1))
+            except OSError:
+                continue
+    return bulunanlar
+
+
+def env_sirlari(kok: Path) -> list[str]:
+    """.env dosyalarindaki degerler: kayitlarda bunlar da gizlenir.
+
+    Yalnizca depo kokundeki .env degil, alt dizinlerdekiler de okunur.
+    Gercek bir olay bunu gerektirdi: 2026-08-20'de konusmaya yapistirilan
+    Supabase yonetici anahtari `mobil/.env` icindeydi, kokte degil - yani
+    "kalip listesinde olmasa bile .env'deki degerler maskelenir" emniyeti
+    tam o anahtar icin hic devrede degildi. Okunan degerlerin KENDISI
+    hicbir yere yazilmaz; yalnizca gizle() icinde arama-degistirme
+    girdisi olarak kullanilir.
+    """
+    degerler = []
+    for dosya in env_dosyalari(kok):
+        try:
+            icerik = dosya.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for satir in icerik.splitlines():
+            satir = satir.strip()
+            if not satir or satir.startswith("#") or "=" not in satir:
+                continue
+            deger = satir.partition("=")[2].strip().strip('"').strip("'")
+            if len(deger) >= 8:
+                degerler.append(deger)
+    # set(): ayni deger birden fazla .env icinde olabilir. Uzundan kisaya
+    # sirali kaliyor ki uzun bir sir, onun parcasi olan kisa bir degerden
+    # once maskelensin.
+    return sorted(set(degerler), key=len, reverse=True)
 
 
 def gizle(metin: str, ek_sirlar: list[str] | None = None) -> str:

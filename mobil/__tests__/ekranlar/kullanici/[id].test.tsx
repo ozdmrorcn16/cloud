@@ -249,7 +249,7 @@ describe('KullaniciProfiliEkrani', () => {
   it('takip ediyorken birakma butonunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
-    expect(await screen.findByText('Takibi birak')).toBeTruthy()
+    expect(await screen.findByText('Bagi kopar')).toBeTruthy()
   })
 
   it('sunucu hatasini gosterir', async () => {
@@ -268,11 +268,11 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Takibi birak'))
+    await fireEvent.press(await screen.findByText('Bagi kopar'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Takip et')).toBeTruthy()
-    expect(screen.queryByText('Takibi birak')).toBeNull()
+    expect(screen.queryByText('Bagi kopar')).toBeNull()
   })
 
   it('sohbet iste butonuna basinca dogru id ile cagirir ve geri cek butonu gosterir', async () => {
@@ -293,7 +293,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
 
     expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
-    expect(await screen.findByText('Takibi birak')).toBeTruthy()
+    expect(await screen.findByText('Bagi kopar')).toBeTruthy()
   })
 
   it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
@@ -339,7 +339,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(await screen.findByText('Kabul et')).toBeTruthy()
     expect(screen.getByText('Reddet')).toBeTruthy()
-    expect(screen.getByText("Kabul edersen check-in'lerini gorebilecek.")).toBeTruthy()
+    expect(screen.getByText("Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")).toBeTruthy()
   })
 
   it('gelen takip istegini kabul edince dogru id ile yanitlar ve blok kaybolur', async () => {
@@ -478,10 +478,10 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Takibi birak'))
+    await fireEvent.press(await screen.findByText('Bagi kopar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Takibi birak')).toBeTruthy()
+    expect(screen.getByText('Bagi kopar')).toBeTruthy()
     expect(screen.queryByText('Takip et')).toBeNull()
   })
 
@@ -497,5 +497,47 @@ describe('KullaniciProfiliEkrani', () => {
     expect(await screen.findByText('Bugunluk istek sinirina ulastin')).toBeTruthy()
     expect(screen.getByText('Sohbet iste')).toBeTruthy()
     expect(screen.queryByText('Istek gonderildi')).toBeNull()
+  })
+
+  it('karsilikli takip varken mesaj gonder butonu gorunur ve sohbet rotasina yonlendirir', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Mesaj gonder'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kullanici-2')
+  })
+
+  it('kabul edilmis sohbet istegi varken mesaj gonder butonu gorunur', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'kabul', gelenTakip: 'yok', gelenSohbet: 'yok',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Mesaj gonder')).toBeTruthy()
+  })
+
+  it('gelen sohbet istegi kabul edilmisse mesaj gonder butonu gorunur', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'kabul',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Mesaj gonder')).toBeTruthy()
+  })
+
+  it('hicbir bag yokken mesaj gonder butonu gorunmez', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await waitFor(() => screen.getByText('Ada'))
+
+    expect(screen.queryByText('Mesaj gonder')).toBeNull()
   })
 })

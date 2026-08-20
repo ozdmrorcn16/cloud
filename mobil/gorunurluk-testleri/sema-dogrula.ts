@@ -374,6 +374,146 @@ async function main() {
     'sikayet_gonder(p_hedef_id: null) dostane mesaj donduruyor'
   )
 
+  console.log('\n--- Faz 3b Task 9: sikayet_gonder mesaj hedef turu ---')
+  // p_hedef_tur: 'mesaj' artik gecerli bir hedef turu (Task 9'dan once
+  // burada 'Gecersiz sikayet hedefi' donerdi, ayni mesaji p_sebep: null
+  // kontrolu de dondurur). p_sebep bilerek null birakiliyor: cagri
+  // sebep kontrolune kadar ilerleyip ORADA duruyor, bu da tur kontrolunu
+  // gectigini kanitliyor ama sikayetler tablosuna hicbir satir yazmiyor.
+  const { error: mesajTuruHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: 'mesaj',
+    p_hedef_id: bId,
+    p_sebep: null,
+  })
+  esitMi(mesajTuruHatasi?.code, 'P0001', "sikayet_gonder(p_hedef_tur: 'mesaj') ham 23502 degil")
+  esitMi(
+    mesajTuruHatasi?.message,
+    'Sikayet sebebi belirtilmeli',
+    "sikayet_gonder p_hedef_tur='mesaj' artik tur kontrolunu geciyor (sebep kontrolune ulasiyor)"
+  )
+
+  console.log('\n--- Faz 3b Task 3-5: konusmalar, konusma_uyeleri, mesajlar dogrudan yazma ---')
+  // Uc tablo da RLS acik ve authenticated'tan insert/update/delete
+  // revoke edilmis; yazma tamamen ileriki RPC'ler uzerinden olacak.
+  // Kod gercekte gozlemlendi: 42501 ("permission denied for table
+  // ..."), digerleriyle ayni kod.
+  const { error: konusmalarInsertHatasi } = await a.from('konusmalar').insert({ tur: 'birebir' })
+  esitMi(
+    konusmalarInsertHatasi?.code === '42501',
+    true,
+    'konusmalar tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: konusmalarUpdateHatasi } = await a
+    .from('konusmalar')
+    .update({ tur: 'mekan_odasi' })
+    .eq('id', '00000000-0000-0000-0000-000000000000')
+  esitMi(
+    konusmalarUpdateHatasi?.code === '42501',
+    true,
+    'konusmalar tablosuna dogrudan update reddediliyor'
+  )
+
+  const { error: uyeleriInsertHatasi } = await a
+    .from('konusma_uyeleri')
+    .insert({ konusma_id: '00000000-0000-0000-0000-000000000000', kullanici_id: aId })
+  esitMi(
+    uyeleriInsertHatasi?.code === '42501',
+    true,
+    'konusma_uyeleri tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: uyeleriUpdateHatasi } = await a
+    .from('konusma_uyeleri')
+    .update({ gizlendi_mi: true })
+    .eq('kullanici_id', aId)
+  esitMi(
+    uyeleriUpdateHatasi?.code === '42501',
+    true,
+    'konusma_uyeleri tablosuna dogrudan update reddediliyor'
+  )
+
+  const { error: mesajlarInsertHatasi } = await a.from('mesajlar').insert({
+    konusma_id: '00000000-0000-0000-0000-000000000000',
+    gonderen_id: aId,
+    metin: 'merhaba',
+  })
+  esitMi(
+    mesajlarInsertHatasi?.code === '42501',
+    true,
+    'mesajlar tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: mesajlarUpdateHatasi } = await a
+    .from('mesajlar')
+    .update({ metin: 'degistirildi' })
+    .eq('gonderen_id', aId)
+  esitMi(
+    mesajlarUpdateHatasi?.code === '42501',
+    true,
+    'mesajlar tablosuna dogrudan update reddediliyor'
+  )
+
+  console.log('\n--- Faz 3b Task 6: bag.yazabilir_mi ---')
+  // Fonksiyon bag semasinda oldugu icin PostgREST uzerinden RPC olarak
+  // cagrilamamali; cagrilabiliyorsa sema ayrimi ise yaramiyor demektir.
+  const { error: yazabilirRpcHatasi } = await a.rpc('yazabilir_mi', {
+    p_hedef: bId,
+  })
+  esitMi(yazabilirRpcHatasi !== null, true, 'bag yazma kapisi istemciye RPC olarak acilmamis')
+
+  console.log('\n--- Faz 3b Task 7: mesaj_gonder ---')
+  // revoke from public, anon: cagri gorunun icine hic girmeden
+  // PostgREST/PostgreSQL yetki katmaninda reddedilmeli (42501).
+  const { error: anonMesajHatasi } = await anon.rpc('mesaj_gonder', {
+    p_kullanici_id: bId,
+    p_metin: 'merhaba',
+  })
+  esitMi(anonMesajHatasi?.code, '42501', 'kimliksiz mesaj_gonder cagrisi reddediliyor')
+
+  console.log("\n--- Faz 3b Task 8: okuma RPC'leri ---")
+  // Dorddu de revoke from public, anon: cagri gorunun icine hic girmeden
+  // PostgREST/PostgreSQL yetki katmaninda reddedilmeli (42501). Canli
+  // mesaj satiri gerektirmeyen tek ucuz iddia bu - satir gerektiren
+  // senaryolar (okunmamis sayaci, sayfalama, gizleme) sonraki gorevin isi.
+  const { error: anonKonusmalarimHatasi } = await anon.rpc('konusmalarim')
+  esitMi(anonKonusmalarimHatasi?.code, '42501', 'kimliksiz konusmalarim cagrisi reddediliyor')
+
+  const { error: anonMesajlariGetirHatasi } = await anon.rpc('mesajlari_getir', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(anonMesajlariGetirHatasi?.code, '42501', 'kimliksiz mesajlari_getir cagrisi reddediliyor')
+
+  const { error: anonOkunduHatasi } = await anon.rpc('konusmayi_okundu_isaretle', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(
+    anonOkunduHatasi?.code,
+    '42501',
+    'kimliksiz konusmayi_okundu_isaretle cagrisi reddediliyor'
+  )
+
+  const { error: anonGizleHatasi } = await anon.rpc('konusmayi_gizle', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(anonGizleHatasi?.code, '42501', 'kimliksiz konusmayi_gizle cagrisi reddediliyor')
+
+  // Uyeligi olmayan bir konusma id'siyle mesajlari_getir: gercek uyesi
+  // olunan bir konusma yaratmadan da "Konusma bulunamadi" dostane hatasi
+  // dogrulanabilir - engelleme kontrolu ayni hatayi paylastigi icin
+  // bu tek basina hangi dalin tetiklendigini ayirt etmiyor, ama RPC'nin
+  // canli veritabaninda gercekten calistigini ve dostane hata dondugunu
+  // (ham exception degil) gosteriyor.
+  const { error: uyelikYokHatasi } = await a.rpc('mesajlari_getir', {
+    p_konusma_id: '00000000-0000-0000-0000-000000000000',
+  })
+  esitMi(uyelikYokHatasi?.code, 'P0001', 'mesajlari_getir(uyesi olunmayan konusma) P0001 donuyor')
+  esitMi(
+    uyelikYokHatasi?.message,
+    'Konusma bulunamadi',
+    'mesajlari_getir(uyesi olunmayan konusma) dostane mesaj donduruyor'
+  )
+
   sonucuBildirVeCik()
 }
 
