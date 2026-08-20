@@ -293,6 +293,47 @@ async function main() {
     'check_inler.mekan_id dogrudan guncellenemiyor (mekan kapisi taklit edilemiyor)'
   )
 
+  console.log('\n--- Sertlestirme: NULL parametre korumasi ---')
+  // `x not in (...)` x NULL oldugunda NULL doner (true degil), yani
+  // korumasiz bir `if` sessizce atlanirdi ve deger sutunun `not null`
+  // kisitina carpip ham 23502 dondururdu. Uc RPC de `is null or` ile
+  // guclendirildi; burada dostane Turkce mesajin (kod P0001) hala
+  // dondugu dogrulaniyor, ham 23502 degil.
+  const { error: aniNullHatasi } = await a.rpc('ani_gorunurlugunu_ayarla', {
+    p_deger: null,
+  })
+  esitMi(aniNullHatasi?.code, 'P0001', 'ani_gorunurlugunu_ayarla(null) ham 23502 degil')
+  esitMi(
+    aniNullHatasi?.message,
+    'Gecersiz gorunurluk degeri',
+    'ani_gorunurlugunu_ayarla(null) dostane mesaj donduruyor'
+  )
+
+  const { error: checkinNullHatasi } = await a.rpc('check_in_yap', {
+    p_mekan_id: '00000000-0000-0000-0000-000000000000',
+    p_lat: 39.0,
+    p_lng: 35.0,
+    p_bulunurluk: null,
+  })
+  esitMi(checkinNullHatasi?.code, 'P0001', 'check_in_yap(null) ham 23502 degil')
+  esitMi(
+    checkinNullHatasi?.message,
+    'Gecersiz bulunurluk degeri',
+    'check_in_yap(null) dostane mesaj donduruyor'
+  )
+
+  const { error: sikayetNullHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: null,
+    p_hedef_id: '00000000-0000-0000-0000-000000000000',
+    p_sebep: 'test',
+  })
+  esitMi(sikayetNullHatasi?.code, 'P0001', 'sikayet_gonder(null) ham 23502 degil')
+  esitMi(
+    sikayetNullHatasi?.message,
+    'Gecersiz sikayet hedefi',
+    'sikayet_gonder(null) dostane mesaj donduruyor'
+  )
+
   sonucuBildirVeCik()
 }
 
