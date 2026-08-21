@@ -616,9 +616,46 @@ async function main() {
     .eq('jeton', paylasilanJeton)
   esitMi((aSonrasi ?? []).length, 0, "A'nin jetonu cihaz devri sonrasi silindi")
 
+  // A'nin satirinin silindigini kanitlamak B'nin satir EDINDIGINI kanitlamaz
+  // - jeton_kaydet basarisiz olup hicbir yeni satir yaratmasa bile A'nin
+  // satiri yine silinmis olurdu. B'nin satirinin gercekten var oldugu ve
+  // beklenen platformu tasidigi burada ayrica dogrulaniyor.
+  const { data: bDevirSonrasi } = await b
+    .from('bildirim_jetonlari')
+    .select('jeton, platform')
+    .eq('jeton', paylasilanJeton)
+  esitMi((bDevirSonrasi ?? []).length, 1, "B'nin jetonu cihaz devri sonrasi gercekten var")
+  esitMi(
+    ((bDevirSonrasi ?? [])[0] as { platform: string } | undefined)?.platform,
+    'android',
+    "B'nin satiri kaydettigi platformu tasiyor"
+  )
+
   console.log('\n--- Bildirimler Task 1: jeton_sil ---')
+  // Capraz kullanici silme: A, B'nin jetonunu silmeye calisir. RPC gorunmez
+  // sekilde basarili doner (kendi satirin yoksa hata yok, tasarim geregi)
+  // ama B'nin satirini SILMEMELI - pozitif kontrolle dogrulaniyor.
+  const { error: aCaprazSilHatasi } = await a.rpc('jeton_sil', { p_jeton: paylasilanJeton })
+  esitMi(aCaprazSilHatasi, null, "A'nin capraz jeton_sil cagrisi hatasiz doner")
+
+  const { data: bCaprazSonrasi } = await b
+    .from('bildirim_jetonlari')
+    .select('jeton')
+    .eq('jeton', paylasilanJeton)
+  esitMi(
+    (bCaprazSonrasi ?? []).length,
+    1,
+    "B'nin satiri A'nin capraz silme denemesinden sonra hala yerinde"
+  )
+
   const { error: bSilHatasi } = await b.rpc('jeton_sil', { p_jeton: paylasilanJeton })
   esitMi(bSilHatasi, null, "B kendi jetonunu siliyor")
+
+  const { data: bSilSonrasi } = await b
+    .from('bildirim_jetonlari')
+    .select('jeton')
+    .eq('jeton', paylasilanJeton)
+  esitMi((bSilSonrasi ?? []).length, 0, "B'nin jetonu kendi silme cagrisindan sonra gercekten yok")
 
   // Cikis akisinda mukerrer cagri olabilir (ag hatasi sonrasi yeniden
   // deneme gibi); satir zaten yoksa da hata donmemeli.
