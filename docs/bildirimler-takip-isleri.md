@@ -66,3 +66,12 @@ calismasini engellemiyor.
   cogul okuma + cogul gonderme zaten hazir; ama `mesajlari_getir`'in
   engelleme kontrolu hala tek uyeli (Faz 3b takip isleri madde 1a). Ikisi
   birlikte gozden gecirilmeli.
+
+11. **Sir rotasyonunun ~60 sn korluk penceresi.** `index.ts siriOku`'da
+    `tazele=true` cagrisi bile 60 sn'lik tazeleme kisitina takiliyor;
+    yani Vault'ta sir dondurulduginde ~1 dakika boyunca gelen bildirimler
+    eslesmeyip 401 alip dusuyor. DoS korumasi acisindan istenen davranis,
+    ama rotasyonun bir dakikalik korluk penceresi oldugu bilinmeli. Zorunlu
+    tazelemeyi kisittan muaf tutmak (yalnizca eslesmeyen-sir yolunda, istek
+    basina degil olay basina) bu pencereyi kapatabilir - ama o zaman DoS
+    yuzeyi biraz acilir. Nihai dal incelemesi minor olarak isaretledi.
