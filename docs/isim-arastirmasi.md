@@ -93,14 +93,24 @@ kategoride kullanilan bir uygulama bulundu.
 | ShowUp | DOLU | Dort ayri uygulama; biri konum tabanli tanisma ("meet, date, find people near you") |
 | Sponto | DOLU | Sponto "Just Meet Already" - hizli tanisma uygulamasi |
 | Wavo | DOLU | Wavo dating ("meet people nearby"), Wavo Live Chat, Wavo Health, Wavo PRO, Wavo muzik |
-| Unsolo | TEMIZ | Bu isimde uygulama cikmadi. un + solo, iki morfem de uluslararasi; "yalniz gelmekten cikmak" |
+| Unsolo | TEMIZ | Bu isimde uygulama cikmadi. un + solo, iki morfem de uluslararasi; "yalniz gelmekten cikmak". Kullanici pano turunda gecti |
+| TapIn | DOLU | TapIn Network ("ayni mekanda su an kim var"), TapIn konum tabanli, TapTap Social, TAP - Find Your People, +3. BIREBIR RAKIPLER |
+| Rollcall | DOLU | Locket'in Rollcall ozelligi, Roll Call AI, RollCall Parent, roll.to |
 | Toka | ZAYIF | Toki Social Map (yerel etkinlik kesfi) ses olarak fazla yakin; Toca Boca marka golgesi |
 | Neon | ZAYIF | NeonConnect var; ayrica nightlife alani cok dolu |
 | Bench | ZAYIF | Kategoride eslesme yok ama The Bench (dating manager) var ve Bench buyuk bir marka (muhasebe, giyim) - tescil riski yuksek |
 
+**Isim kabini (2026-08-21):** tek tek oneri yontemi birakildi; kullaniciya
+etkilesimli deneme sayfasi verildi (ayni Artifact adresinde). Istedigi
+ismi yazip acilis/simge/mekan ekraninda goruyor, begendiklerini
+yildizlayip sohbete yapistiriyor. Kullanicinin son yonlendirmesi:
+**"check-in ile alakali bir sey"** - kabine check-in ailesi grubu
+eklendi (Arrivo, Guestlist, Stamp, Pinned, Venn, Checka - hicbiri
+kontrol edilmedi; TapIn ve Rollcall kontrol edildi ve DOLU).
+
 **Yanmis kokler** (bu kelimelerle baslayan hicbir sey denenmesin):
 `meet`, `near`, `spot`, `drop`, `social`, `buzz`, `hop`, `huddle`,
-`lobby`, `table`, `face`, `same`.
+`lobby`, `table`, `face`, `same`, `tap`, `roll`.
 
 ## Ayakta kalanlar
 
@@ -124,6 +134,9 @@ yakin ya da birebir ayni isi yapan uygulamalar:
 | **NOITE** | Orada olan insanlardan gelen guncellemelerle barlarin canli durumu |
 | **SpotCheck - Crowd Tracker** | Yakindaki mekanlarin canli kalabalik seviyesi - bizim yogunluk ozelligimiz |
 | **Swarm (Foursquare)** | Check-in, mekan gecmisi, arkadaslarin nerede oldugu - referans nokta |
+| **TapIn Network** | "Su anda seninle ayni mekanda kim var - barlar, partiler, festivaller"; tap gonder, karsilik gelirse eslesme - birebir |
+| **TapTap Social** | Mekan bazli akis: ayni anda check-in yapanlar birbirini gorur; kadin-baslatmali tap - birebir, guvenlik modeli bile benzer |
+| **TAP - Find Your People** | "Bir kafede, parkta, barda oldugun yerden spontane sohbet baslat" |
 | Roost Social | Konum tabanli sosyal mesajlasma, 2026'da hizli buyudu |
 | Drop Socials | Yakindakileri kesfet, sosyal hesap degis tokusu |
 | Buzzly | Yerel sosyal kesif, yakindaki insanlar |
