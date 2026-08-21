@@ -688,14 +688,17 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
 
   // Sema PostgREST'e acilmadigi icin sir_oku hicbir istemciden
   // cagrilamamali - yetki katmanindan once bu katman reddetmeli.
+  // PGRST106 acikca bekleniyor: "herhangi bir hata" kabul edersek, ag
+  // hatasi ya da yanlis yazilmis bir fonksiyon adi da iddiayi gecirir ve
+  // sir gercekten acilsa bile test yesil kalir.
   const { error: authSirHatasi } = await a.schema('bildirim').rpc('sir_oku')
   esitMi(
-    authSirHatasi !== null,
-    true,
+    authSirHatasi?.code,
+    'PGRST106',
     'authenticated istemci bildirim.sir_oku cagiramiyor (sema acik degil)'
   )
   const { error: anonSirHatasi } = await anon.schema('bildirim').rpc('sir_oku')
-  esitMi(anonSirHatasi !== null, true, 'kimliksiz istemci bildirim.sir_oku cagiramiyor')
+  esitMi(anonSirHatasi?.code, 'PGRST106', 'kimliksiz istemci bildirim.sir_oku cagiramiyor')
 
   // Dogrulama penceresinin kendisi de kapali olmali.
   const { error: authOzetHatasi } = await a.rpc('bildirim_kurulum_ozeti')
@@ -724,7 +727,19 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
     sir_oku_anon: boolean
     sir_oku_authenticated: boolean
     sir_oku_service_role: boolean
+    olay_gonder_anon: boolean
+    olay_gonder_authenticated: boolean
+    olay_gonder_aktor_alani: boolean
+    olay_gonder_search_path: string | null
     pg_net_kurulu: boolean
+    net_usage_anon: boolean
+    net_usage_authenticated: boolean
+    net_kuyruk_anon: boolean | null
+    net_kuyruk_authenticated: boolean | null
+    net_yanit_anon: boolean | null
+    net_yanit_authenticated: boolean | null
+    net_usage_postgres: boolean
+    net_kuyruk_postgres_insert: boolean | null
     tetikleyiciler: Record<string, string>
   }
 
@@ -739,6 +754,49 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   esitMi(ozet.sir_oku_anon, false, 'anon sir_oku CAGIRAMIYOR')
   esitMi(ozet.sir_oku_authenticated, false, 'authenticated sir_oku CAGIRAMIYOR')
   esitMi(ozet.sir_oku_service_role, true, 'service_role sir_oku cagirabiliyor')
+
+  esitMi(ozet.olay_gonder_anon, false, 'anon olay_gonder CAGIRAMIYOR')
+  esitMi(ozet.olay_gonder_authenticated, false, 'authenticated olay_gonder CAGIRAMIYOR')
+
+  // aktor_id: T3 "alici == aktor ise gonderme" kuralini buna dayandiriyor;
+  // alan payload'dan dusesse butun oz-bildirim korumasi sessizce kalkar.
+  esitMi(ozet.olay_gonder_aktor_alani, true, 'olay_gonder payload a aktor_id koyuyor')
+  // search_path sertlestirmesi: `public` aramasi kalmamali.
+  esitMi(
+    (ozet.olay_gonder_search_path ?? '').startsWith('search_path='),
+    true,
+    'olay_gonder search_path ayarli'
+  )
+  esitMi(
+    (ozet.olay_gonder_search_path ?? '').includes('public'),
+    false,
+    'olay_gonder search_path public icermiyor'
+  )
+
+  // Sir pg_net kuyrugunda (net.http_request_queue.headers) DUZ METIN
+  // duruyor. Kurulusta bu tablolar PUBLIC'e ALL veriyor ve sirri gizleyen
+  // tek sey PostgREST'in expose listesi oluyordu - tek config dugmesi.
+  // Asagidaki bayraklarin hepsi false kalmali.
+  esitMi(ozet.net_usage_anon, false, 'anon net semasini kullanamiyor')
+  esitMi(ozet.net_usage_authenticated, false, 'authenticated net semasini kullanamiyor')
+  esitMi(ozet.net_kuyruk_anon, false, 'anon net.http_request_queue okuyamiyor (sir baslikta)')
+  esitMi(
+    ozet.net_kuyruk_authenticated,
+    false,
+    'authenticated net.http_request_queue okuyamiyor (sir baslikta)'
+  )
+  esitMi(ozet.net_yanit_anon, false, 'anon net._http_response okuyamiyor')
+  esitMi(ozet.net_yanit_authenticated, false, 'authenticated net._http_response okuyamiyor')
+
+  // Pozitif kontrol: kilit topyekun degil. olay_gonder'in sahibi postgres
+  // ve kuyruga INSERT yetkisi PUBLIC uzerinden geliyordu; duz bir revoke
+  // butun bildirim yolunu sessizce kirardi.
+  esitMi(ozet.net_usage_postgres, true, 'postgres net semasini hala kullanabiliyor')
+  esitMi(
+    ozet.net_kuyruk_postgres_insert,
+    true,
+    'postgres net.http_request_queue tablosuna hala yazabiliyor'
+  )
 
   const tetikleyiciler = ozet.tetikleyiciler ?? {}
   const tanim = (ad: string) => tetikleyiciler[ad] ?? ''
@@ -807,11 +865,10 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   )
 
   // Beklenmeyen bir tetikleyici eklenmis mi: bes olay disinda bildirim
-  // ureten bir yol olmamali (karar 49).
-  const bildirimTetikleyicileri = Object.entries(tetikleyiciler)
-    .filter(([, def]) => def.includes('bildirim.olay_gonder()'))
-    .map(([ad]) => ad)
-    .sort()
+  // ureten bir yol olmamali (karar 49). Ozet artik tabloya gore degil
+  // FONKSIYONA gore (tgfoid) suzuyor, yani public semasindaki HERHANGI
+  // bir tabloya eklenecek altinci bir tetikleyici de bu listeye duser.
+  const bildirimTetikleyicileri = Object.keys(tetikleyiciler).sort()
   esitMi(
     bildirimTetikleyicileri,
     [
