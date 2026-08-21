@@ -571,3 +571,52 @@ Push bildirim sistemi eklendi. Spec:
     - Edge Function'daki cogul-alici yolu (`konusmaDigerUyeleri`) diskte
       kalabilir (savunma amacli, zararsiz), ama pratikte hep tek alici
       isler.
+
+## Moderasyon paneli tasarimi (2026-08-22)
+
+Spec: `docs/superpowers/specs/2026-08-22-moderasyon-paneli-design.md`.
+Beyin firtinasi kararlari (moderator modeli, tam yonetim konsolu
+kapsami, mesaj sikayetinin kaldirilmasi, dilimlere bolme)
+`docs/moderasyon-paneli-devam-notu.md` icinde duruyordu; spec o notun
+"konusulmayan" listesini asagidaki yedi kararla kapatti.
+
+55. **Panelde service-role anahtari YOK.** Devam notu "panel
+    service-role ile her seyi gorecek" varsayimiyla yazilmisti; spec bu
+    varsayimi degistirdi. Service-role butun RLS'i atlayan tek bir
+    kimlik bilgisi: sizarsa kademe yok, `auth.uid()` olmadigi icin
+    denetim izi sentetik olur, ve panel bir daha yerelin disina
+    cikamaz. Yerine moderator siradan bir kullanici olarak giris yapar,
+    panel yalnizca herkese acik `anon` anahtarini tasir, butun erisim
+    `security definer` moderator RPC'lerinden gecer.
+56. **Yonetici kimligi: uygulama hesabindan AYRI bir hesap + zorunlu
+    TOTP, ve AAL2 veritabaninda zorlanir.** Yetki kapisi
+    `auth.jwt()->>'aal' = 'aal2'` ve `moderatorler` tablosunda satir
+    olmasini birlikte arar; yalnizca parolayla alinmis bir oturum
+    hicbir moderator RPC'sini cagiramaz. Panelin MFA ekranini atlamasi
+    bir sey degistirmez. Moderator hesabinin `profiller` satiri yok,
+    boylece kisi aramasina ve bag grafigine karismiyor.
+57. **"Askiya alma" veritabaninda zorlanir**, `moderasyon.hesap_aktif_mi`
+    yardimcisiyla ve ayri bir `hesap_durumlari` tablosuyla. Satirin
+    YOKLUGU aktif demek, boylece henuz profili olmayan yeni kullanici
+    hicbir kapiya takilmiyor. Bilinen sinir: service-role olmadigi icin
+    mevcut Auth oturumu iptal edilemiyor, jeton suresi dolana kadar
+    (1 saat) gecerli kaliyor - o sure boyunca yazamiyor ve kimseye
+    gorunmuyor.
+58. **Panel ayri bir web uygulamasi**, depoda `panel/` altinda: Vite +
+    React + TypeScript, sunucu bileseni yok. Expo web uzerine
+    bindirilmedi (yonlendirme/oturum/paket yapilandirmasini iki urun
+    icin birden tasimak pahali). Ilk dilimde yalnizca yerelde calisir.
+59. **Moderator ozel mesaj okuyamaz, hicbir dilimde.** `mesajlar` ve
+    `konusmalar` tablolarina bakan hicbir panel RPC'si yok ve
+    olmayacak. Karar 3'un (mesaj sikayetinin kaldirilmasi) dogal
+    devami.
+60. **"Kaldirma" ilk dilimde GIZLEME olarak uygulaniyor.** Onaylanmis
+    envanterin bilincli DARALMASI: kalici silme geri alinamaz ve
+    fotografin Storage'dan da silinmesini gerektirir. Gizleme guvenlik
+    ihtiyacini aninda karsiliyor, geri alinabilir ve izde duruyor.
+    Gizlenen icerik sahibine de gorunmuyor.
+61. **Denetim izi ekleme-only; moderator dahil kimse silemez.**
+    `moderasyon_kayitlari` uzerinde `update`/`delete` hicbir role
+    verilmiyor. Aksiyonlarin yani sira kullanici detayinin
+    GORUNTULENMESI de kaydediliyor (kisisel veriye erisim izi); liste
+    gezinmesi kaydedilmiyor.

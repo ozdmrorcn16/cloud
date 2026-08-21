@@ -1,11 +1,16 @@
 # Moderasyon paneli - devam notu (2026-08-22)
 
-Bu is BASLAMADI. Beyin firtinasinin ortasinda duruldu; asagidaki
-kararlar KONUSULDU VE ONAYLANDI ama henuz spec yazilmadi, hicbir kod
-yazilmadi, veritabanina dokunulmadi.
+**GUNCELLEME (2026-08-22): SPEC YAZILDI.**
+`docs/superpowers/specs/2026-08-22-moderasyon-paneli-design.md`.
+Asagidaki kararlarin hepsi spec'e tasindi ve bu notun acik biraktigi
+dort soru karar 55-61 ile kapatildi (`docs/konusma-gunlugu.md`).
+Bu dosya artik BASLANGIC NOKTASI DEGIL, tarihsel kayittir: guncel
+tasarim icin spec'i oku. Tek onemli sapma spec'in karar 55'idir:
+asagida "panel service-role ile her seyi gorecek" diye gecen varsayim
+DEGISTI, panelde service-role anahtari yok.
 
-**Yeni oturum buradan devam etsin.** Sonraki adim: bu kararlara dayanan
-spec'i yazmak (`docs/superpowers/specs/`), sonra plan, sonra uygulama.
+Hicbir kod yazilmadi, veritabanina dokunulmadi. Sonraki adim:
+kullanicinin spec'i onaylamasi, ardindan uygulama plani.
 
 ## Verilen kararlar (kullanicinin onayiyla)
 

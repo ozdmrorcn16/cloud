@@ -489,15 +489,22 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 
 ## Kararlar
 
-- 2026-08-22 - **SIRADAKI IS: moderasyon paneli.** Beyin firtinasi
-  yapildi ve kararlar alindi ama is BASLAMADI (spec yok, kod yok).
-  **Yeni oturum once `docs/moderasyon-paneli-devam-notu.md` okusun** -
-  moderator modeli, onaylanmis envanter (ILK/SONRA dilimleri) ve
-  mesaj sikayeti karari orada. Ozet: tek moderator (simdilik),
-  kapsam TAM YONETIM KONSOLU (kullanicinin istegi: "her seye hakim
-  olmam gerek"), ve **mesaj sikayeti tamamen kaldiriliyor** - sohbet
-  ekraninda yalnizca "kullaniciyi sikayet et" kalacak. Sonraki adim
-  spec yazmak.
+- 2026-08-22 - **SIRADAKI IS: moderasyon paneli. SPEC YAZILDI, kod
+  yazilmadi.** Spec:
+  `docs/superpowers/specs/2026-08-22-moderasyon-paneli-design.md`.
+  Beyin firtinasi kararlari `docs/moderasyon-paneli-devam-notu.md`
+  icinde (tek moderator simdilik, kapsam TAM YONETIM KONSOLU, mesaj
+  sikayeti tamamen kaldiriliyor). Spec o notun acik biraktigi dort
+  soruyu karar 55-61 ile kapatti (`docs/konusma-gunlugu.md`):
+  **panelde service-role YOK** (moderator siradan kullanici olarak
+  girer, erisim `security definer` RPC'lerden gecer), yonetici kimligi
+  AYRI hesap + zorunlu TOTP ve **AAL2 veritabaninda zorlanir**,
+  "askiya alma" `hesap_durumlari` tablosu + `moderasyon.hesap_aktif_mi`
+  ile butun yazma kapilarinda ve gorunurluk yollarinda zorlanir, panel
+  `panel/` altinda ayri bir Vite + React uygulamasi, moderator ozel
+  mesaj okumaz, "kaldirma" ilk dilimde GIZLEME olarak gelir, denetim
+  izi ekleme-only. Sonraki adim: kullanicinin spec'i onaylamasi,
+  ardindan `superpowers:writing-plans` ile uygulama plani.
 
 - 2026-08-22 - **Grup sohbeti, "mekan odasi" ve COK UYELI konusma fikri
   tamamen ve kalici olarak kaldirildi.** Uygulama yalnizca birebir;
