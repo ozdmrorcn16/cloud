@@ -1,14 +1,17 @@
-import { render, waitFor } from '@testing-library/react-native'
+import { render, waitFor, act } from '@testing-library/react-native'
 import type { ReactNode } from 'react'
 import KokLayout from '../../src/app/_layout'
 import { useOturum } from '../../lib/oturum'
+import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
 const mockRouterReplace = jest.fn()
+const mockRouterPush = jest.fn()
 let mockSegments: string[] = []
+const mockDinleyiciyiKaldir = jest.fn()
 
 jest.mock('expo-router', () => ({
   Slot: () => null,
-  useRouter: () => ({ replace: mockRouterReplace }),
+  useRouter: () => ({ replace: mockRouterReplace, push: mockRouterPush }),
   useSegments: () => mockSegments,
 }))
 
@@ -19,8 +22,11 @@ jest.mock('../../lib/oturum', () => ({
 
 jest.mock('../../lib/bildirim', () => ({
   bildirimleriBaslat: jest.fn().mockResolvedValue(undefined),
-  bildirimeDokunmaDinle: jest.fn(() => () => {}),
+  bildirimeDokunmaDinle: jest.fn(() => mockDinleyiciyiKaldir),
 }))
+
+const mockBaslat = bildirimleriBaslat as jest.Mock
+const mockDokunmaDinle = bildirimeDokunmaDinle as jest.Mock
 
 describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
   beforeEach(() => {
@@ -111,5 +117,71 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     await render(<KokLayout />)
 
     expect(mockRouterReplace).not.toHaveBeenCalled()
+  })
+
+  it('oturum ve profil hazir iken bildirimleri baslatir ve dokunma dinleyicisi kurar', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: true,
+      yukleniyor: false,
+    })
+    mockSegments = ['(tabs)']
+
+    await render(<KokLayout />)
+
+    await waitFor(() => {
+      expect(mockBaslat).toHaveBeenCalledWith('kullanici-1')
+    })
+    expect(mockDokunmaDinle).toHaveBeenCalled()
+  })
+
+  it('oturum yokken bildirimleri baslatmaz', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: null,
+      profilVarMi: null,
+      yukleniyor: false,
+    })
+    mockSegments = ['(auth)']
+
+    await render(<KokLayout />)
+
+    expect(mockBaslat).not.toHaveBeenCalled()
+    expect(mockDokunmaDinle).not.toHaveBeenCalled()
+  })
+
+  it('oturum var ama profil yokken bildirimleri baslatmaz', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: false,
+      yukleniyor: false,
+    })
+    mockSegments = ['profil-olustur']
+
+    await render(<KokLayout />)
+
+    expect(mockBaslat).not.toHaveBeenCalled()
+    expect(mockDokunmaDinle).not.toHaveBeenCalled()
+  })
+
+  it('unmount olunca dokunma dinleyicisini kaldirir', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: true,
+      yukleniyor: false,
+    })
+    mockSegments = ['(tabs)']
+
+    const { unmount } = await render(<KokLayout />)
+    await waitFor(() => {
+      expect(mockDokunmaDinle).toHaveBeenCalled()
+    })
+    expect(mockDinleyiciyiKaldir).not.toHaveBeenCalled()
+
+    // unmount pasif effect temizligini flush etsin diye act icinde.
+    await act(async () => {
+      unmount()
+    })
+
+    expect(mockDinleyiciyiKaldir).toHaveBeenCalled()
   })
 })

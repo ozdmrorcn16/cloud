@@ -102,6 +102,13 @@ describe('bildirimJetonunuSil', () => {
     expect(mockRpc).not.toHaveBeenCalled()
   })
 
+  it('gercek cihaz degilse jetonu almaz ve RPC cagirmaz', async () => {
+    mockIsDevice = false
+    await bildirimJetonunuSil()
+    expect(mockJetonAl).not.toHaveBeenCalled()
+    expect(mockRpc).not.toHaveBeenCalled()
+  })
+
   it('cihazda jetonu alip jeton_sil-i cagirir', async () => {
     mockJetonAl.mockResolvedValue({ data: 'ExponentPushToken[abc]' })
     mockRpc.mockResolvedValue({ error: null })
@@ -145,6 +152,19 @@ describe('bildirimeDokunmaDinle', () => {
     mockDinle.mockReturnValue({ remove: jest.fn() })
     bildirimeDokunmaDinle(yonlendir)
     dinleyiciyiCalistir({ tur: 'baska' })
+    expect(yonlendir).not.toHaveBeenCalled()
+  })
+
+  it('data alani hic yoksa (undefined) firlatmadan sessizce gecer', () => {
+    const yonlendir = jest.fn()
+    mockDinle.mockReturnValue({ remove: jest.fn() })
+    bildirimeDokunmaDinle(yonlendir)
+    const geriCagirim = mockDinle.mock.calls[0][0]
+    // content.data yok (expo tipinde opsiyonel) - Edge Function disindan
+    // gelen bozuk bir push bunu tetikleyebilir.
+    expect(() =>
+      geriCagirim({ notification: { request: { content: {} } } })
+    ).not.toThrow()
     expect(yonlendir).not.toHaveBeenCalled()
   })
 

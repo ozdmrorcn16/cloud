@@ -3,9 +3,21 @@ import AnaEkran from '../../src/app/index'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { konusmalarimiGetir } from '../../lib/sohbet'
+import { bildirimJetonunuSil } from '../../lib/bildirim'
+
+// Cikis akisinin sirasini (once jeton sil, sonra signOut) ayirt edici
+// olarak dogrulamak icin ortak cagri-sirasi dizisi.
+const mockCagriSirasi: string[] = []
 
 jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { signOut: jest.fn().mockResolvedValue({ error: null }) } },
+  supabase: {
+    auth: {
+      signOut: jest.fn(async () => {
+        mockCagriSirasi.push('signOut')
+        return { error: null }
+      }),
+    },
+  },
 }))
 
 jest.mock('../../lib/bag-listeleri', () => ({
@@ -17,7 +29,9 @@ jest.mock('../../lib/sohbet', () => ({
 }))
 
 jest.mock('../../lib/bildirim', () => ({
-  bildirimJetonunuSil: jest.fn().mockResolvedValue(undefined),
+  bildirimJetonunuSil: jest.fn(async () => {
+    mockCagriSirasi.push('jetonSil')
+  }),
 }))
 
 const mockRouterPush = jest.fn()
@@ -39,6 +53,7 @@ describe('AnaEkran', () => {
     mockOdakGeriCagirmalari = []
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    mockCagriSirasi.length = 0
   })
 
   it('cikis yap butonuna basinca signOut cagirir', async () => {
@@ -47,6 +62,16 @@ describe('AnaEkran', () => {
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
+  })
+
+  it('cikista jeton_sil signOut-tan ONCE cagrilir', async () => {
+    await render(<AnaEkran />)
+    await fireEvent.press(screen.getByText('Cikis yap'))
+    await waitFor(() => {
+      expect(supabase.auth.signOut).toHaveBeenCalled()
+    })
+    expect(bildirimJetonunuSil).toHaveBeenCalled()
+    expect(mockCagriSirasi).toEqual(['jetonSil', 'signOut'])
   })
 
   it('mekanlara git butonuna basinca /mekanlar rotasina yonlendirir', async () => {

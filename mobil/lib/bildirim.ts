@@ -21,9 +21,17 @@ type BildirimData = {
   kullaniciId?: string
 }
 
-// data.tur'e gore uygulama ici rota uretir. Bilinmeyen tur icin null
-// doner (yonlendirme yapilmaz).
-function rotaUret(data: BildirimData): string | null {
+// Web'de push yok; gercek cihaz olmayan ortamda (emulator/simulator)
+// jeton alinamaz. Iki fonksiyonun ortak on kosulu.
+function calisabilirMi(): boolean {
+  return Platform.OS !== 'web' && Device.isDevice
+}
+
+// data.tur'e gore uygulama ici rota uretir. Bilinmeyen tur ya da hic
+// data tasimayan (uygulamanin Edge Function'i disindan gelen, bozuk)
+// bildirim icin null doner (yonlendirme yapilmaz).
+function rotaUret(data: BildirimData | undefined | null): string | null {
+  if (!data) return null
   if (data.tur === 'mesaj' && data.kullaniciId) {
     return `/sohbet/${data.kullaniciId}`
   }
@@ -47,8 +55,7 @@ function rotaUret(data: BildirimData): string | null {
 //   5. jeton_kaydet RPC'siyle sunucuya yaz
 export async function bildirimleriBaslat(_kullaniciId: string): Promise<void> {
   try {
-    if (Platform.OS === 'web') return
-    if (!Device.isDevice) return
+    if (!calisabilirMi()) return
 
     const mevcut = await Notifications.getPermissionsAsync()
     let izinVar = mevcut.granted
@@ -73,8 +80,7 @@ export async function bildirimleriBaslat(_kullaniciId: string): Promise<void> {
 // alinamazsa ya da RPC patlarsa sessizce gecer; mukerrer cagri zararsiz.
 export async function bildirimJetonunuSil(): Promise<void> {
   try {
-    if (Platform.OS === 'web') return
-    if (!Device.isDevice) return
+    if (!calisabilirMi()) return
 
     const jetonSonucu = await Notifications.getExpoPushTokenAsync()
     const jeton = jetonSonucu.data
@@ -92,9 +98,15 @@ export function bildirimeDokunmaDinle(yonlendir: (rota: string) => void): () => 
   if (Platform.OS === 'web') return () => {}
 
   const abonelik = Notifications.addNotificationResponseReceivedListener((olay) => {
-    const data = olay.notification.request.content.data as BildirimData
-    const rota = rotaUret(data)
-    if (rota) yonlendir(rota)
+    // Savunma: bozuk/eksik bildirim data'si dinleyiciyi (dolayisiyla
+    // uygulamayi) dusurmemeli.
+    try {
+      const data = olay.notification.request.content.data as BildirimData | undefined
+      const rota = rotaUret(data)
+      if (rota) yonlendir(rota)
+    } catch {
+      // Yonlendirme hatasi yutulur.
+    }
   })
 
   return () => abonelik.remove()
