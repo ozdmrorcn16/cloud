@@ -1,0 +1,30 @@
+# Mekan verisini ayda bir Overture'un en guncel yayinindan tazeler.
+# Gerekli repo secret'lari (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_URL               - Supabase proje adresi
+#   SUPABASE_SERVICE_ROLE_KEY  - yonetici anahtari (upsert icin)
+# Elle tetikleme: Actions sekmesi -> "mekan verisini tazele" -> Run workflow.
+name: mekan verisini tazele
+
+on:
+  schedule:
+    - cron: "17 3 3 * *"   # her ayin 3'u, 03:17 UTC
+  workflow_dispatch:
+
+jobs:
+  tazele:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bagimliliklar
+        run: pip install --quiet duckdb supabase
+      - name: Indir (en guncel yayini kendisi bulur)
+        run: python araclar/mekan-yukle-overture.py indir
+      - name: Yukle (gers_id upsert)
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python araclar/mekan-yukle-overture.py yukle

@@ -2,8 +2,8 @@
 
 Kullanim:
     1) python araclar/mekan-yukle-overture.py indir
-       Overture'un guncel yayinindan Turkiye kesitini yerel parquet'e
-       indirir (canli veritabanina dokunmaz).
+       En guncel Overture yayinini KENDISI BULUR ve Turkiye kesitini
+       yerel parquet'e indirir (canli veritabanina dokunmaz).
     2) python araclar/mekan-yukle-overture.py yukle
        Yerel parquet'i mekanlar tablosuna gers_id uzerinden UPSERT eder.
        Ayni betik ayda bir yeniden kosulup veriyi tazeler.
@@ -18,8 +18,32 @@ Lisans: Overture verisi CDLA-Permissive 2.0. Uygulamada
 import os
 import sys
 
-RELEASE = "2026-08-19.0"
-S3_YOL = f"s3://overturemaps-us-west-2/release/{RELEASE}/theme=places/type=place/*.parquet"
+# Sürüm elle sabitlenmez: en guncel Overture yayini otomatik bulunur.
+# Gerekirse OVERTURE_RELEASE ortam degiskeniyle sabitlenebilir.
+def s3_yolu(release):
+    return f"s3://overturemaps-us-west-2/release/{release}/theme=places/type=place/*.parquet"
+
+
+def en_yeni_release(con):
+    """Bugunden geriye dogru aylik yayin adaylarini yoklar, ilk bulunani doner."""
+    from datetime import date, timedelta
+
+    zorla = os.environ.get("OVERTURE_RELEASE")
+    if zorla:
+        print(f"Ortamdan sabitlenen release: {zorla}")
+        return zorla
+    bugun = date.today()
+    for geri in range(0, 75):
+        aday = (bugun - timedelta(days=geri)).isoformat() + ".0"
+        try:
+            con.execute(
+                f"SELECT 1 FROM read_parquet('{s3_yolu(aday)}') LIMIT 1"
+            ).fetchall()
+            print(f"En guncel release bulundu: {aday}")
+            return aday
+        except Exception:
+            continue
+    raise RuntimeError("Son 75 gunde hicbir Overture yayini bulunamadi")
 YEREL_PARQUET = os.path.join(os.path.dirname(__file__), "overture-tr.parquet")
 
 # Turkiye'yi kapsayan kutu. Sinir komsularindan tasan az sayida satir
@@ -54,7 +78,8 @@ def indir():
     con = duckdb.connect()
     con.execute("INSTALL httpfs; LOAD httpfs;")
     con.execute("SET s3_region='us-west-2';")
-    print(f"Overture {RELEASE} taraniyor (Turkiye kutusu)...")
+    release = en_yeni_release(con)
+    print(f"Overture {release} taraniyor (Turkiye kutusu)...")
     con.execute(f"""
         COPY (
           WITH ham AS (
@@ -66,7 +91,7 @@ def indir():
                    bbox.ymin AS lat,
                    addresses[1].freeform AS adres,
                    addresses[1].country AS ulke
-            FROM read_parquet('{S3_YOL}')
+            FROM read_parquet('{s3_yolu(release)}')
             WHERE bbox.xmin >= {XMIN} AND bbox.xmax <= {XMAX}
               AND bbox.ymin >= {YMIN} AND bbox.ymax <= {YMAX}
               AND names.primary IS NOT NULL

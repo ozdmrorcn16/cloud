@@ -119,7 +119,7 @@ export default function MekanAramaEkrani() {
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
         <Text style={stiller.ekleButonuYazi}>Mekan bulamadin mi? Ekle</Text>
       </Pressable>
-      <Text style={stiller.atif}>Mekan verileri © OpenStreetMap katkida bulunanlar</Text>
+      <Text style={stiller.atif}>Mekan verileri: Overture Maps Foundation ve katkida bulunanlar</Text>
     </View>
   )
 }
