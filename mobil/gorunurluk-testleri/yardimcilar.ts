@@ -3,6 +3,15 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 const URL = process.env.EXPO_PUBLIC_SUPABASE_URL!
 const ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 
+/**
+ * Proje REST ucu ve anon anahtari. supabase-js'in kapsayamadigi
+ * dogrulamalar icin disari veriliyor: istemci kutuphanesi `Accept-Profile`
+ * gibi ham basliklari ayarlamaya izin vermiyor, o proplar `fetch` ile
+ * atiliyor (bkz. sema-dogrula.ts, net semasi expose probu).
+ */
+export const PROJE_URL = URL
+export const ANON_ANAHTAR = ANON
+
 function testHesapSifresi(): string {
   const sifre = process.env.TEST_HESAP_SIFRESI
   if (!sifre) {

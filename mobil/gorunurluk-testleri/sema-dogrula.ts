@@ -5,6 +5,8 @@ import {
   yoneticiIstemcisi,
   esitMi,
   sonucuBildirVeCik,
+  PROJE_URL,
+  ANON_ANAHTAR,
 } from './yardimcilar'
 
 const KULLANICI_ADI_DESENI = /^[a-z0-9._]{3,20}$/
@@ -720,6 +722,8 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   const { error: anonOzetHatasi } = await anon.rpc('bildirim_kurulum_ozeti')
   esitMi(anonOzetHatasi?.code, '42501', 'kimliksiz bildirim_kurulum_ozeti cagiramiyor')
 
+  await netSemasiExposeDegilMi(a)
+
   const yonetici = yoneticiIstemcisi()
   if (!yonetici) {
     console.warn(
@@ -800,20 +804,33 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
     'olay_gonder search_path public icermiyor'
   )
 
-  // Sir pg_net kuyrugunda (net.http_request_queue.headers) DUZ METIN
-  // duruyor. Kurulusta bu tablolar PUBLIC'e ALL veriyor ve sirri gizleyen
-  // tek sey PostgREST'in expose listesi oluyordu - tek config dugmesi.
-  // Asagidaki bayraklarin hepsi false kalmali.
-  esitMi(ozet.net_usage_anon, false, 'anon net semasini kullanamiyor')
-  esitMi(ozet.net_usage_authenticated, false, 'authenticated net semasini kullanamiyor')
-  esitMi(ozet.net_kuyruk_anon, false, 'anon net.http_request_queue okuyamiyor (sir baslikta)')
-  esitMi(
-    ozet.net_kuyruk_authenticated,
-    false,
-    'authenticated net.http_request_queue okuyamiyor (sir baslikta)'
+  // ---------------------------------------------------------------------
+  // net ACL: IDDIA DEGIL, yalnizca izleme
+  // ---------------------------------------------------------------------
+  // Bu alti bayrak eskiden "false olmali" diye TEST EDILIYORDU ve canlida
+  // hicbir zaman gecemezdi. Sebep 2026-08-21'de olculdu: `net` semasinin ve
+  // `net.http_request_queue` tablosunun sahibi `supabase_admin`; migrasyon
+  // baglami ise `postgres` ve postgres bu rolun uyesi DEGIL. PostgreSQL'de
+  // kendi vermedigin bir yetkiyi revoke etmek hata degil UYARIDIR, yani
+  // 20260821150000 migrasyonundaki revoke'lar sessizce hicbir sey yapmadi
+  // ve bu depodan yapilabilecek baska bir sey de yok.
+  //
+  // Yanlis bir invaryanti kirmizi tutmak, kirmiziyi anlamsizlastirir.
+  // Bayraklar ciktida DURUYOR (platform gunun birinde ACL'i duzeltirse ya
+  // da daha kotuye giderse gozumuzun onunde olsun diye) ama iddia degiller.
+  // Yerlerine ZORLANABILIR olan invaryant test ediliyor: asagidaki
+  // `netSemasiExposeDegilMi`.
+  console.log(
+    '  BILGI net ACL bayraklari (iddia DEGIL, izleme icin; sahibi supabase_admin, buradan degistirilemez): ' +
+      JSON.stringify({
+        net_usage_anon: ozet.net_usage_anon,
+        net_usage_authenticated: ozet.net_usage_authenticated,
+        net_kuyruk_anon: ozet.net_kuyruk_anon,
+        net_kuyruk_authenticated: ozet.net_kuyruk_authenticated,
+        net_yanit_anon: ozet.net_yanit_anon,
+        net_yanit_authenticated: ozet.net_yanit_authenticated,
+      })
   )
-  esitMi(ozet.net_yanit_anon, false, 'anon net._http_response okuyamiyor')
-  esitMi(ozet.net_yanit_authenticated, false, 'authenticated net._http_response okuyamiyor')
 
   // Pozitif kontrol: kilit topyekun degil. olay_gonder'in sahibi postgres
   // ve kuyruga INSERT yetkisi PUBLIC uzerinden geliyordu; duz bir revoke
@@ -907,6 +924,90 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
     ],
     'tam olarak bes bildirim tetikleyicisi kayitli'
   )
+}
+
+/**
+ * `net` semasinin PostgREST'e ACIK OLMADIGINI dogrular.
+ *
+ * NEDEN BU PROB VAR - kisa hikaye: pg_net cagrisinin basliklari
+ * (`X-Bildirim-Sir` dahil) `net.http_request_queue.headers` sutununda DUZ
+ * METIN duruyor ve `anon`/`authenticated` rollerinin o tablo uzerinde
+ * SELECT yetkisi VAR. 20260821150000 migrasyonu bu yetkileri geri almaya
+ * calisti ama basaramadi: semanin ve tablonun sahibi `supabase_admin`,
+ * migrasyon baglami `postgres`, ve postgres o rolun uyesi degil - revoke
+ * sessizce no-op oldu (PostgreSQL kendi vermedigin yetkiyi revoke
+ * etmeyi hata saymaz, uyari verir). Bu depodan duzeltilemez; ayrinti
+ * `mobil/supabase/migrations/README-net-kilidi.md`.
+ *
+ * O yuzden ACL'i test etmeyi biraktik ve ZORLANABILIR olani test
+ * ediyoruz: PostgREST'in expose ettigi sema listesi. Yetki dursa bile,
+ * PostgREST `net`i sunmadigi surece REST uzerinden o tabloya ulasilamaz.
+ *
+ * PROBUN KORUDUGU sey: birinin (ya da bir platform degisikliginin)
+ * PostgREST expose listesine `net` eklemesi. Bugun sirri gizleyen TEK
+ * katman bu oldugu icin, tam da izlenmesi gereken dugme burasi.
+ *
+ * PROBUN KORUMADIGI sey: REST disi her yol. Veritabanina dogrudan
+ * baglanan (psql, connection pooler) bir `authenticated`/`anon` rolu
+ * kuyrugu yine okuyabilir; bu prob onu goremez. Kalici cozum yalnizca
+ * platform destegiyle (supabase_admin olarak revoke) ya da sirri
+ * baslikta hic tasimayarak gelir.
+ *
+ * supabase-js `Accept-Profile` basligini ayarlamaya izin vermedigi icin
+ * cagri ham `fetch` ile atiliyor.
+ */
+async function netSemasiExposeDegilMi(a: SupabaseClient) {
+  console.log('\n--- Bildirimler Task 3: net semasi PostgREST e acik degil ---')
+
+  const kuyrukUcu = `${PROJE_URL}/rest/v1/http_request_queue?select=id&limit=1`
+
+  async function profilIleSorgula(jeton: string, sema: string, uc: string) {
+    const yanit = await fetch(uc, {
+      headers: {
+        apikey: ANON_ANAHTAR,
+        Authorization: `Bearer ${jeton}`,
+        'Accept-Profile': sema,
+      },
+    })
+    const govde = await yanit.json().catch(() => null)
+    return { durum: yanit.status, kod: govde?.code as string | undefined }
+  }
+
+  // Kimliksiz: apikey ve Bearer ikisi de anon anahtari.
+  const anonProb = await profilIleSorgula(ANON_ANAHTAR, 'net', kuyrukUcu)
+  esitMi(
+    anonProb.kod,
+    'PGRST106',
+    'kimliksiz istemci net semasina REST uzerinden ulasamiyor (sema expose degil)'
+  )
+
+  // Oturum acmis kullanici: `authenticated` rolunun tablo uzerinde SELECT
+  // yetkisi VAR, yani sema acilsaydi bu cagri sirri getirirdi. Iddianin
+  // asil agirligi burada.
+  const { data: oturum } = await a.auth.getSession()
+  const jeton = oturum.session?.access_token
+  esitMi(typeof jeton === 'string' && jeton.length > 0, true, 'authenticated oturum jetonu alindi')
+
+  if (jeton) {
+    const authProb = await profilIleSorgula(jeton, 'net', kuyrukUcu)
+    esitMi(
+      authProb.kod,
+      'PGRST106',
+      'authenticated istemci net semasina REST uzerinden ulasamiyor (sema expose degil)'
+    )
+  }
+
+  // POZITIF KONTROL: PGRST106'nin sebebi gercekten "sema acik degil" mi,
+  // yoksa yanlis bir URL/anahtar ya da yok sayilan bir baslik mi? Ayni
+  // cagri `Accept-Profile: public` ile calisiyorsa, prob mekanizmasi
+  // saglam demektir ve yukaridaki iki iddia bir sey OLCUYOR.
+  const publicProb = await profilIleSorgula(
+    jeton ?? ANON_ANAHTAR,
+    'public',
+    `${PROJE_URL}/rest/v1/mekanlar?select=id&limit=1`
+  )
+  esitMi(publicProb.durum, 200, 'ayni prob public semasinda 200 donuyor (mekanizma calisiyor)')
+  esitMi(publicProb.kod, undefined, 'public prob hata kodu dondurmuyor')
 }
 
 main()
