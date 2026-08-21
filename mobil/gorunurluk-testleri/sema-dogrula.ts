@@ -514,6 +514,117 @@ async function main() {
     'mesajlari_getir(uyesi olunmayan konusma) dostane mesaj donduruyor'
   )
 
+  console.log('\n--- Bildirimler Task 1: bildirim_jetonlari ---')
+  // RLS acik, yalnizca kendi satirlarini SELECT edebilirsin; insert/update/
+  // delete authenticated'dan tamamen geri alinmis, yazma yalnizca RPC ile.
+  const { error: jetonSelectHatasi } = await a
+    .from('bildirim_jetonlari')
+    .select('jeton')
+    .limit(1)
+  esitMi(jetonSelectHatasi, null, 'bildirim_jetonlari tablosu okunabiliyor')
+
+  const { error: jetonInsertHatasi } = await a
+    .from('bildirim_jetonlari')
+    .insert({ kullanici_id: aId, jeton: 'test-jeton', platform: 'ios' })
+  esitMi(
+    jetonInsertHatasi?.code === '42501',
+    true,
+    'bildirim_jetonlari tablosuna dogrudan insert reddediliyor'
+  )
+
+  const { error: jetonUpdateHatasi } = await a
+    .from('bildirim_jetonlari')
+    .update({ platform: 'android' })
+    .eq('kullanici_id', aId)
+  esitMi(
+    jetonUpdateHatasi?.code === '42501',
+    true,
+    'bildirim_jetonlari tablosuna dogrudan update reddediliyor'
+  )
+
+  const { error: jetonDeleteHatasi } = await a
+    .from('bildirim_jetonlari')
+    .delete()
+    .eq('kullanici_id', aId)
+  esitMi(
+    jetonDeleteHatasi?.code === '42501',
+    true,
+    'bildirim_jetonlari tablosuna dogrudan delete reddediliyor'
+  )
+
+  // revoke from public, anon: cagri govdeye hic girmeden PostgREST/
+  // PostgreSQL yetki katmaninda reddedilmeli (42501), digerleriyle ayni kod.
+  const { error: anonKaydetHatasi } = await anon.rpc('jeton_kaydet', {
+    p_jeton: 'anon-jeton',
+    p_platform: 'ios',
+  })
+  esitMi(anonKaydetHatasi?.code, '42501', 'kimliksiz jeton_kaydet cagrisi reddediliyor')
+
+  const { error: anonSilHatasi } = await anon.rpc('jeton_sil', { p_jeton: 'anon-jeton' })
+  esitMi(anonSilHatasi?.code, '42501', 'kimliksiz jeton_sil cagrisi reddediliyor')
+
+  console.log('\n--- Bildirimler Task 1: jeton_kaydet dogrulama ---')
+  const { error: bosJetonHatasi } = await a.rpc('jeton_kaydet', {
+    p_jeton: '',
+    p_platform: 'ios',
+  })
+  esitMi(
+    bosJetonHatasi?.message?.includes('Jeton bos olamaz') ?? false,
+    true,
+    'bos jeton reddediliyor'
+  )
+
+  const { error: gecersizPlatformHatasi } = await a.rpc('jeton_kaydet', {
+    p_jeton: 'gecerli-jeton',
+    p_platform: 'windows',
+  })
+  esitMi(
+    gecersizPlatformHatasi?.message?.includes('Gecersiz platform') ?? false,
+    true,
+    'gecersiz platform reddediliyor'
+  )
+
+  console.log('\n--- Bildirimler Task 1: jeton benzersizligi ve cihaz devri ---')
+  // Zaman damgali jeton: baska bir kosumla ya da onceki kalintiyla
+  // catismasin diye, sabit bir deger kullanmiyoruz.
+  const paylasilanJeton = `paylasilan-${Date.now()}`
+
+  const { error: aKaydetHatasi } = await a.rpc('jeton_kaydet', {
+    p_jeton: paylasilanJeton,
+    p_platform: 'ios',
+  })
+  esitMi(aKaydetHatasi, null, "A jeton kaydediyor")
+
+  const { data: aOncesi } = await a
+    .from('bildirim_jetonlari')
+    .select('jeton')
+    .eq('jeton', paylasilanJeton)
+  esitMi((aOncesi ?? []).length, 1, "A'nin jetonu kayda gectikten sonra gorunuyor")
+
+  // B ayni jetonu kaydedince, cihazi devraldigi varsayilir: A'nin ayni
+  // jetonla kayitli satiri silinmeli, yoksa devredilen cihaz iki hesaba da
+  // bildirim gonderirdi.
+  const { error: bKaydetHatasi } = await b.rpc('jeton_kaydet', {
+    p_jeton: paylasilanJeton,
+    p_platform: 'android',
+  })
+  esitMi(bKaydetHatasi, null, "B ayni jetonu devraliyor")
+
+  const { data: aSonrasi } = await a
+    .from('bildirim_jetonlari')
+    .select('jeton')
+    .eq('jeton', paylasilanJeton)
+  esitMi((aSonrasi ?? []).length, 0, "A'nin jetonu cihaz devri sonrasi silindi")
+
+  console.log('\n--- Bildirimler Task 1: jeton_sil ---')
+  const { error: bSilHatasi } = await b.rpc('jeton_sil', { p_jeton: paylasilanJeton })
+  esitMi(bSilHatasi, null, "B kendi jetonunu siliyor")
+
+  // Cikis akisinda mukerrer cagri olabilir (ag hatasi sonrasi yeniden
+  // deneme gibi); satir zaten yoksa da hata donmemeli.
+  const { error: bMukerrerSilHatasi } = await b.rpc('jeton_sil', { p_jeton: paylasilanJeton })
+  esitMi(bMukerrerSilHatasi, null, 'mukerrer jeton_sil cagrisi zararsiz')
+
   sonucuBildirVeCik()
 }
 
