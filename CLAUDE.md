@@ -489,6 +489,31 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 
 ## Kararlar
 
+- 2026-08-21 - **Bildirimler (push) mini-fazi tamamlandi.** Spec:
+  `docs/superpowers/specs/2026-08-21-bildirimler-design.md`, plan 5 gorev.
+  Uygulama kapaliyken telefona dusen bildirimler: yeni mesaj, takip
+  istegi, sohbet istegi, istek kabulu. Icerik TASIMAZ, yalnizca ad
+  ("Deniz sana mesaj gonderdi") - karar 48, kullanicinin karari.
+  Mimari: `mesajlar`/`takipler`/`sohbet_istekleri` INSERT/UPDATE -> AFTER
+  trigger (`bildirim.olay_gonder`) -> pg_net ile Edge Function
+  `bildirim-gonder` -> Vault sirri dogrulanir, KAYNAK SATIRI dogrulanir
+  (kimlik taklidi engeli), alici cikarilir, ad okunur, Expo Push API'ye
+  iletilir, DeviceNotRegistered jetonlari silinir. Sunucu tarafi canli
+  UCTAN UCA dogrulandi (gercek takip istegi -> Expo cagrisi -> olu jeton
+  temizligi). Yeni tablo `bildirim_jetonlari` (RPC ile yazma: jeton_kaydet
+  advisory-lock atomik, jeton_sil idempotent). Ozel sema `bildirim`
+  (sir_oku yalnizca service_role). Istemci `lib/bildirim.ts`
+  (expo-notifications, web'de sessiz atlar, cihaz-degil/izin-red hata
+  yutar), `_layout.tsx` ve `index.tsx`e baglandi.
+  Testler: jest 40 paket / 316 test, test:sema 129, test:gorunurluk 216,
+  tsc 5 taban - dordu de sifir hata (kontrolor bagimsiz olctu).
+  ACIK BORCLAR: `docs/bildirimler-takip-isleri.md`. En onemli ikisi:
+  (1) gercek cihazda ilk bildirim hic gorulmedi - EAS derlemesine kaldi
+  (Expo Go/web uzak push desteklemiyor); (2) `net` semasi kilidi platform
+  yuzunden zorlanamiyor, sir kuyruga cleartext yaziliyor, tek koruma
+  PostgREST'in `net`i expose etmemesi + Edge Function'in kaynak
+  dogrulamasi (`README-net-kilidi.md`).
+
 - 2026-08-21 - **Calisma adi Wherio; KALICI DEGIL.** Kullanici once
   Wherio'yu secti, ayni gun "isim degisikligi olabilir, kalici olmasin;
   isim ve tasarimi sonraya alalim" dedi. Nihai isim ve gorsel kimlik

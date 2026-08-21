@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-21 — [2026-08-21-74f56f7b.md](oturumlar/2026-08-21-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-20 — [2026-08-20-869a9560.md](oturumlar/2026-08-20-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
 - 2026-08-20 — [2026-08-20-74f56f7b.md](oturumlar/2026-08-20-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-19 — [2026-08-19-cc4a8373.md](oturumlar/2026-08-19-cc4a8373.md) — uygulamamıza kaldıgımız yerden burdan devam edebilirmiyiz
@@ -514,3 +515,36 @@ bag modelini degistiriyor.
     Veritabani degeri de ayni. "Baglantilarim" onerildi ve reddedildi
     (kullanicinin tercihi); boylece veri degeri ile ekran metni
     ayrismiyor.
+
+## Bildirimler mini-fazi (2026-08-21)
+
+Push bildirim sistemi eklendi. Spec:
+`docs/superpowers/specs/2026-08-21-bildirimler-design.md`. Kararlar:
+
+48. **Bildirim icerik tasimaz, yalnizca ad.** "Deniz sana mesaj gonderdi"
+    - mesajin kendisi kilit ekranina asla dusmuyor. Kullanicinin karari.
+    Yabancilarla tanistiran bir uygulamada dogru denge: kimin yazdigi
+    gorulur, ne yazdigi gorulmez.
+49. **Dort olay bildirim uretir:** yeni mesaj, takip istegi, sohbet
+    istegi, istek kabulu. Baska hicbir sey. "Baska hicbir olay" bir kacak
+    kontroluyle (test:sema, tgfoid tabanli) baglayici.
+50. **Engelleme icin ikinci kontrol katmani yok.** Bildirim ureten her
+    olay zaten `bag.yazabilir_mi` / `istek_on_kontrol` yazma kapisindan
+    gecmis bir INSERT/UPDATE; engellenen kisi olay uretemedigi icin
+    bildirim de uretemez. Fonksiyon yeniden kontrol etmez.
+51. **Uctan uca teslim gercek cihaz gerektiriyor; bu faz sunucu yolunu
+    dogruladi, cihazi cihaz derlemesine birakti.** Expo Go ve web uzak
+    push desteklemiyor. Sunucu zinciri (tetikleyici -> pg_net -> Edge
+    Function -> sir + kaynak dogrulama -> Expo cagrisi -> olu jeton
+    temizligi) canli, gercek bir olayla dogrulandi; eksik olan yalnizca
+    bir telefonun jeton uretip bildirimi almasi.
+52. **Payload yalnizca isaretci (id) tasir; icerigi ve aliciyi Edge
+    Function kendisi okur, ve KAYNAK SATIRINI dogrular.** Iki sebep:
+    (a) pg_net kuyrugu ve HTTP loglari kisisel veri tasimasin; (b) sir
+    sizsa bile - ki `net` semasi kilidi platform yuzunden zorlanamiyor -
+    saldirgan olmamis bir olay uyduramaz (belirli birini adiyla taklit
+    eden sahte bildirim). Kaynak dogrulamasi bu ikinci kapi.
+53. **Paylasilan sir veritabaninin ICINDE uretildi (Vault), konusmadan
+    hic gecmedi.** Faz 3b'de bir yonetici anahtari konusmaya yapistirilip
+    oturum kaydina dusmustu; o dersin uygulamasi. Sirri ne kontrolor ne
+    uygulayici gordu.
