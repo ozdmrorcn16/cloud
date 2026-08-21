@@ -11,11 +11,11 @@ Faz 3a'dan devreden maddeler ayri dosyada: `docs/faz3a-takip-isleri.md`.
 ## 1. Gelecekteki bir isi YANLIS YONE SOKABILECEK iki madde
 
 Bu iki madde listenin geri kalanindan farkli: ikisi de bugun zararsiz,
-ama ikisi de **baska bir isin** varsayimini sessizce bozabilir. Ilkini
-Faz 3c'yi (mekan odalari) yazan, ikincisini moderasyon panelini yazan
-okumali.
+Ikincisi (mesaj sikayeti) moderasyon panelini yazani ilgilendiriyor.
+Ilki artik bir RISK degil, kodun DAYANDIGI bir INVARYANT - asagida
+aciklandi.
 
-### 1a. `mesajlari_getir`'in engelleme kontrolu grup sohbetinde kirilir
+### 1a. `mesajlari_getir` her konusmanin TAM IKI UYELI olduguna dayanir (kalici invaryant)
 
 `public.mesajlari_getir` `security definer`, yani `mesajlar` tablosunun
 RLS'ini (dolayisiyla `not gizli.engelli_mi(...)` kosulunu) tamamen
@@ -28,15 +28,15 @@ zorlaniyor - ve orada "karsi uye" soyle bulunuyor:
     limit 1;
 
 `limit 1` var, `tur = 'birebir'` filtresi yok. Bugun zararsiz, cunku bu
-fazda her konusmanin tam iki uyesi var ve "diger uye" tek. Faz 3c grup
-odalarini ayni RPC'ye baglarsa yalnizca **rastgele** bir uyenin engel
-durumu kontrol edilir ve grup sohbetinde engelleme sessizce kirilir.
+fazda her konusmanin tam iki uyesi var ve "diger uye" tek.
+`limit 1` bu yuzden dogru.
 
-Iki cikis yolu var, ikisi de kabul edilebilir: ya bu RPC'ye `tur =
-'birebir'` on kosulu konur ve gruplar icin ayri bir okuma RPC'si yazilir,
-ya da kontrol "herhangi bir uye" degil "engelli olan bir uye var mi"
-seklinde `exists` ile yeniden yazilir. Karar Faz 3c'nin tasarimina ait;
-onemli olan bunun **karar verilmeden** miras alinmamasi.
+**Kullanicinin karari (2026-08-22): GRUP SOHBETI HIC OLMAYACAK, ve
+"mekan odasi" ozelligi de HIC OLMAYACAK.** Bu yuzden ikiden fazla uyeli
+bir konusma turu de gelmeyecek. Dolayisiyla `limit 1` bir kirilma riski
+degil, kalici olarak dogru bir varsayim. Bu madde artik "ilerideki bir
+isi yanlis yone sokabilir" listesinde DEGIL; yalnizca kodun neden `limit
+1` kullandigini belgeliyor. Yapilacak bir sey yok.
 
 ### 1b. Mesaj sikayeti hangi mesaja ait oldugunu tasimiyor
 

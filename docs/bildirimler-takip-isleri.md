@@ -62,9 +62,11 @@ calismasini engellemiyor.
 
 ## Ertelenmesi dogru (baska fazin isi)
 
-- Grup konusmalari (Faz 3c) gelince: Edge Function'in `konusmaDigerUyeleri`
-  cogul okuma + cogul gonderme zaten hazir; ama `mesajlari_getir`'in
-  engelleme kontrolu hala tek uyeli (Faz 3b takip isleri madde 1a). Ikisi
+- Ileride ikiden fazla uyeli bir konusma turu gelirse: Edge Function'in
+  `konusmaDigerUyeleri` cogul okuma + cogul gonderme zaten hazir; ama
+  `mesajlari_getir`'in engelleme kontrolu hala tek uyeli (Faz 3b takip
+  isleri madde 1a). (Mekan odalari grup sohbeti DEGIL, bu riski tasimaz.)
+  Ikisi
   birlikte gozden gecirilmeli.
 
 11. **Sir rotasyonunun ~60 sn korluk penceresi.** `index.ts siriOku`'da

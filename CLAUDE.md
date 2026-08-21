@@ -413,11 +413,11 @@ kablolamasinin gozle dogrulanmasi.
 
 **Faz 3b'den kalan takip isleri:** `docs/faz3b-takip-isleri.md`. O
 dosyanin ilk iki maddesi gelecekteki bir isi yanlis yone sokabilecek
-cinsten: birincisi Faz 3c (mekan odalari) grup sohbetini ayni okuma
-RPC'sine baglarsa engellemenin sessizce kirilabilecegini, ikincisi
-mesaj sikayetinin hangi mesaja ait oldugunun `sikayetler` tablosundan
-okunamadigini anlatiyor. Faz 3c'ye ya da moderasyon paneline
-baslamadan once okunmali.
+cinsten: birincisi `mesajlari_getir`'in engelleme kontrolunun her
+konusmanin tam iki uyeli olduguna dayandigini belgeliyor (bu artik
+KALICI bir varsayim; asagidaki karara bak), ikincisi mesaj sikayetinin
+hangi mesaja ait oldugunun `sikayetler` tablosundan okunamadigini
+anlatiyor - ikincisi moderasyon panelini yazani ilgilendiriyor.
 
 ### Bastan tasarima girmesi gereken kisit
 

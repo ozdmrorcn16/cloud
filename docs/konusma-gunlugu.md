@@ -548,3 +548,26 @@ Push bildirim sistemi eklendi. Spec:
     hic gecmedi.** Faz 3b'de bir yonetici anahtari konusmaya yapistirilip
     oturum kaydina dusmustu; o dersin uygulamasi. Sirri ne kontrolor ne
     uygulayici gordu.
+
+## Grup sohbeti ve mekan odasi kesin olarak iptal (2026-08-22)
+
+54. **Grup sohbeti, "mekan odasi" ozelligi ve genel olarak COK UYELI
+    konusma fikri tamamen ve kalici olarak kaldirildi.** Kullanicinin
+    net karari: "grup sohbeti mekan odasi bunlarla alakali bir baglanti
+    varsa kaldir, olmayacak, hic olmayacak ... cok uyeli konusmada
+    olmayacak ... tamamen bu fikri kaldir." Sonuclari:
+    - Uygulama kalici olarak YALNIZCA BIREBIR. Her `konusmalar` satiri
+      tam iki uyeli; ikiden fazla uyeli bir konusma turu asla gelmeyecek.
+    - Bu, onceki belge notlarindaki "Faz 3c (mekan odalari) grup
+      sohbetini ayni RPC'ye baglarsa engelleme kirilir" uyarilarini
+      GECERSIZ kilar: risk yok, cunku cok uyeli konusma yok.
+      `mesajlari_getir`'deki `limit 1` bir kirilma degil, kalici olarak
+      dogru bir varsayim. Ayrinti `docs/faz3b-takip-isleri.md` madde 1a.
+    - Karar 35'teki "Faz 3 dorde bolundu: ... 3c mekan odalari ..."
+      listesindeki 3c KALDIRILDI. Yapilan fazlar: 3a bag, 3b birebir
+      sohbet, ve ayri bir mini-faz olarak bildirimler. 3c yok.
+    - Karar 5 ("mekan odasi ozelligi tamamen kaldirildi") zaten bu yonde
+      idi; bu karar onu kesinlestirip butun ileri atiflari da temizliyor.
+    - Edge Function'daki cogul-alici yolu (`konusmaDigerUyeleri`) diskte
+      kalabilir (savunma amacli, zararsiz), ama pratikte hep tek alici
+      isler.
