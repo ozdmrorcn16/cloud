@@ -5,7 +5,8 @@ arayisinda bugune kadar olculen her seyi tutuyor - hangi isimlerin dolu
 oldugu, neden elendikleri, ve yol boyunca cikan rakip listesi. Amac ayni
 aramalari bir daha yapmamak.
 
-**Durum: isim HENUZ SECILMEDI.**
+**Durum: onerilen isim DENK (2026-08-21), kullanici onayi bekleniyor.**
+Sunum sayfasi (Artifact): https://claude.ai/code/artifact/003b507b-0673-4aaa-b64c-1b2d6327e61c
 
 ## Konumlandirma kararlari (kullanicidan)
 
@@ -28,6 +29,28 @@ anlatmiyor. Facebook "yuz kitabi", Instagram "aninda telgraf", Swarm
 "suru". Ucu de urunun dunyasindan alinmis somut, siradan kelimeler.
 Dolayisiyla isim "yeni insanlarla tanisma"yi harfi harfine soylemek
 zorunda degil - zaten harfi harfine soyleyen butun kelimeler dolu.
+
+## Onerilen: Denk (2026-08-21)
+
+"Denk gelmek" = planlamadan ayni anda ayni yerde bulunmak - urunun
+cekirdek olayinin gunluk Turkcedeki adi. Ikinci anlami "esit/dengede"
+karsilikli takip ve iki tarafli onay modelini de tasiyor. Tek hece,
+sert kapanis (Swarm sinifi), okundugu gibi yaziliyor, D-E-N-K.
+Kullanicinin uc ornegiyle (Swarm/Instagram/Facebook) ayni kalip:
+amaci harfi harfine anlatmiyor, urunun dunyasindan siradan bir kelime.
+
+Musaitlik: kategorideki tek cakisma DENK.summit 2026 (Bavyera'da tek
+seferlik bir zirvenin etkinlik uygulamasi, tuketici sosyal degil).
+21 isimlik taramada cikan en temiz sonuc.
+
+Riskler: (1) marka sorgusu yapilmadi - TURKPATENT + WIPO sart, Almanca
+pazarlarda "denk" gunluk kelime ("dusun"), orasi ayrica bakilmali;
+(2) uluslararasi kullanici "denk gelmek" katmanini almaz, yalnizca kisa
+sert bir ses duyar; (3) denk.com kesin dolu, denk.app / getdenk.com
+gibi varyant gerekir.
+
+Elenen ikinci aday ayni turda: Toka ("tokalasmak") - Toki Social Map
+ile ses benzerligi yuzunden birakildi.
 
 ## Kontrol edilen isimler
 
@@ -59,6 +82,8 @@ kategoride kullanilan bir uygulama bulundu.
 | Smalltalk | DOLU | Bes ayri uygulama: small-talks, Small-Talk, Small Talk, smalltalks, SmallTalk AI |
 | Nexttable | DOLU | NexTable (restoran rezervasyon platformu) + sosyal yemek alani dolu: SocialTable, TableMesh, Meetable, TableUpp |
 | Newfaces | DOLU | NewFaces.io - "3 km yaricapta konum tabanli tanisma", birebir bizim urun |
+| Denk | TEMIZ | Tek cakisma DENK.summit 2026 etkinlik uygulamasi (Bavyera, tek seferlik zirve). Tuketici sosyal kategorisinde eslesme yok |
+| Toka | ZAYIF | Toki Social Map (yerel etkinlik kesfi) ses olarak fazla yakin; Toca Boca marka golgesi |
 | Neon | ZAYIF | NeonConnect var; ayrica nightlife alani cok dolu |
 | Bench | ZAYIF | Kategoride eslesme yok ama The Bench (dating manager) var ve Bench buyuk bir marka (muhasebe, giyim) - tescil riski yuksek |
 
