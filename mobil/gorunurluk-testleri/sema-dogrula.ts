@@ -700,6 +700,20 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   const { error: anonSirHatasi } = await anon.schema('bildirim').rpc('sir_oku')
   esitMi(anonSirHatasi?.code, 'PGRST106', 'kimliksiz istemci bildirim.sir_oku cagiramiyor')
 
+  // Task 3: `bildirim.sir_oku()` uzerine public semasindaki sarmalayici.
+  // Sarmalayici PostgREST'e ACIK bir semada duruyor (Edge Function siri
+  // baska turlu okuyamaz), yani onu koruyan tek sey ACL. Bu iki iddia o
+  // ACL'in yerinde oldugunu soyluyor: cagri govdeye hic girmeden yetki
+  // katmaninda reddedilmeli (42501).
+  const { error: authSarmalayiciHatasi } = await a.rpc('bildirim_siri_oku')
+  esitMi(
+    authSarmalayiciHatasi?.code,
+    '42501',
+    'authenticated bildirim_siri_oku cagiramiyor'
+  )
+  const { error: anonSarmalayiciHatasi } = await anon.rpc('bildirim_siri_oku')
+  esitMi(anonSarmalayiciHatasi?.code, '42501', 'kimliksiz bildirim_siri_oku cagiramiyor')
+
   // Dogrulama penceresinin kendisi de kapali olmali.
   const { error: authOzetHatasi } = await a.rpc('bildirim_kurulum_ozeti')
   esitMi(authOzetHatasi?.code, '42501', 'authenticated bildirim_kurulum_ozeti cagiramiyor')
@@ -714,6 +728,19 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
     )
     return
   }
+
+  // Pozitif kontrol: kilit topyekun degil. Sarmalayici service_role'den
+  // cagrilabiliyor VE bos olmayan bir sir donuyor - Edge Function'in sir
+  // dogrulamasi bu cagriya dayaniyor, sir yoksa fonksiyon her istegi
+  // 500 ile reddeder. Sirrin KENDISI degil, yalnizca "bos degil mi"
+  // bilgisi iddiaya giriyor: esitMi basarisizlikta gercek degeri basar.
+  const { data: sirVerisi, error: sirSarmalayiciHatasi } = await yonetici.rpc('bildirim_siri_oku')
+  esitMi(sirSarmalayiciHatasi, null, 'service_role bildirim_siri_oku cagirabiliyor')
+  esitMi(
+    typeof sirVerisi === 'string' && sirVerisi.length > 0,
+    true,
+    'bildirim_siri_oku bos olmayan bir sir donduruyor'
+  )
 
   const { data: ozetVerisi, error: ozetHatasi } = await yonetici.rpc('bildirim_kurulum_ozeti')
   esitMi(ozetHatasi, null, 'service_role bildirim_kurulum_ozeti cagirabiliyor')
