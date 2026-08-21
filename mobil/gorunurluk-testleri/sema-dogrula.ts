@@ -1,4 +1,11 @@
-import { ikiKullaniciIleBaglan, anonIstemciOlustur, esitMi, sonucuBildirVeCik } from './yardimcilar'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  ikiKullaniciIleBaglan,
+  anonIstemciOlustur,
+  yoneticiIstemcisi,
+  esitMi,
+  sonucuBildirVeCik,
+} from './yardimcilar'
 
 const KULLANICI_ADI_DESENI = /^[a-z0-9._]{3,20}$/
 
@@ -662,7 +669,160 @@ async function main() {
   const { error: bMukerrerSilHatasi } = await b.rpc('jeton_sil', { p_jeton: paylasilanJeton })
   esitMi(bMukerrerSilHatasi, null, 'mukerrer jeton_sil cagrisi zararsiz')
 
+  await bildirimTetikleyicileriniDogrula(a, anon)
+
   sonucuBildirVeCik()
+}
+
+/**
+ * Bildirimler Task 2: `bildirim` semasi, Vault sirri okuma fonksiyonu ve
+ * bes olay tetikleyicisi.
+ *
+ * Bunlarin hicbiri normal istemciden gorulemiyor (`bildirim` semasi
+ * PostgREST'e acik degil, pg_catalog'a da PostgREST uzerinden
+ * erisilemiyor). Bu yuzden kurulum, yalnizca service_role'un
+ * cagirabildigi `bildirim_kurulum_ozeti()` penceresinden okunuyor.
+ */
+async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: SupabaseClient) {
+  console.log('\n--- Bildirimler Task 2: sema, sir ve tetikleyiciler ---')
+
+  // Sema PostgREST'e acilmadigi icin sir_oku hicbir istemciden
+  // cagrilamamali - yetki katmanindan once bu katman reddetmeli.
+  const { error: authSirHatasi } = await a.schema('bildirim').rpc('sir_oku')
+  esitMi(
+    authSirHatasi !== null,
+    true,
+    'authenticated istemci bildirim.sir_oku cagiramiyor (sema acik degil)'
+  )
+  const { error: anonSirHatasi } = await anon.schema('bildirim').rpc('sir_oku')
+  esitMi(anonSirHatasi !== null, true, 'kimliksiz istemci bildirim.sir_oku cagiramiyor')
+
+  // Dogrulama penceresinin kendisi de kapali olmali.
+  const { error: authOzetHatasi } = await a.rpc('bildirim_kurulum_ozeti')
+  esitMi(authOzetHatasi?.code, '42501', 'authenticated bildirim_kurulum_ozeti cagiramiyor')
+  const { error: anonOzetHatasi } = await anon.rpc('bildirim_kurulum_ozeti')
+  esitMi(anonOzetHatasi?.code, '42501', 'kimliksiz bildirim_kurulum_ozeti cagiramiyor')
+
+  const yonetici = yoneticiIstemcisi()
+  if (!yonetici) {
+    console.warn(
+      '  UYARI: SUPABASE_SERVICE_ROLE_KEY yok; Task 2 kurulum dogrulamalari ATLANDI.\n' +
+        '  Sema, sir yetkileri ve tetikleyici kosullari DOGRULANMADI.'
+    )
+    return
+  }
+
+  const { data: ozetVerisi, error: ozetHatasi } = await yonetici.rpc('bildirim_kurulum_ozeti')
+  esitMi(ozetHatasi, null, 'service_role bildirim_kurulum_ozeti cagirabiliyor')
+  if (ozetHatasi) return
+
+  const ozet = ozetVerisi as {
+    sema_var: boolean
+    sema_usage_anon: boolean
+    sema_usage_authenticated: boolean
+    sema_usage_service_role: boolean
+    sir_oku_anon: boolean
+    sir_oku_authenticated: boolean
+    sir_oku_service_role: boolean
+    pg_net_kurulu: boolean
+    tetikleyiciler: Record<string, string>
+  }
+
+  esitMi(ozet.sema_var, true, 'bildirim semasi var')
+  esitMi(ozet.pg_net_kurulu, true, 'pg_net kurulu')
+
+  esitMi(ozet.sema_usage_anon, false, 'anon bildirim semasini kullanamiyor')
+  esitMi(ozet.sema_usage_authenticated, false, 'authenticated bildirim semasini kullanamiyor')
+  // Pozitif kontrol: yetkiler topyekun kapali degil, service_role acik.
+  esitMi(ozet.sema_usage_service_role, true, 'service_role bildirim semasini kullanabiliyor')
+
+  esitMi(ozet.sir_oku_anon, false, 'anon sir_oku CAGIRAMIYOR')
+  esitMi(ozet.sir_oku_authenticated, false, 'authenticated sir_oku CAGIRAMIYOR')
+  esitMi(ozet.sir_oku_service_role, true, 'service_role sir_oku cagirabiliyor')
+
+  const tetikleyiciler = ozet.tetikleyiciler ?? {}
+  const tanim = (ad: string) => tetikleyiciler[ad] ?? ''
+
+  // pg_get_triggerdef ciktisi tam CREATE TRIGGER metnidir; kosullari
+  // metin olarak dogruluyoruz.
+  const mesaj = tanim('mesaj_bildirimi')
+  esitMi(/AFTER INSERT ON public\.mesajlar/i.test(mesaj), true, 'mesaj_bildirimi: mesajlar AFTER INSERT')
+  esitMi(/bildirim\.olay_gonder\(\)/.test(mesaj), true, 'mesaj_bildirimi: bildirim.olay_gonder cagiriyor')
+  esitMi(/\bWHEN\b/i.test(mesaj), false, 'mesaj_bildirimi: kosulsuz (her mesaj bildirim uretir)')
+
+  // KRITIK: karsilikli takipte kabul, takipler'e durum='kabul' olan bir
+  // AYNA SATIR insert ediyor. WHEN kosulundaki 'beklemede' filtresi o
+  // satirin ikinci bir bildirim uretmesini engelleyen tek sey.
+  const takipIstegi = tanim('takip_istegi_bildirimi')
+  esitMi(
+    /AFTER INSERT ON public\.takipler/i.test(takipIstegi),
+    true,
+    'takip_istegi_bildirimi: takipler AFTER INSERT'
+  )
+  esitMi(
+    /WHEN \(\(?new\.durum = 'beklemede'/i.test(takipIstegi),
+    true,
+    "takip_istegi_bildirimi: WHEN new.durum = 'beklemede' (ayna satiri disliyor)"
+  )
+  esitMi(
+    /'kabul'/.test(takipIstegi),
+    false,
+    'takip_istegi_bildirimi: kosulda kabul gecmiyor (ayna satir kapsam disi)'
+  )
+
+  const takipKabul = tanim('takip_kabul_bildirimi')
+  esitMi(
+    /AFTER UPDATE ON public\.takipler/i.test(takipKabul),
+    true,
+    'takip_kabul_bildirimi: takipler AFTER UPDATE'
+  )
+  esitMi(
+    /old\.durum = 'beklemede'/i.test(takipKabul) && /new\.durum = 'kabul'/i.test(takipKabul),
+    true,
+    "takip_kabul_bildirimi: WHEN beklemede -> kabul"
+  )
+
+  const sohbetIstegi = tanim('sohbet_istegi_bildirimi')
+  esitMi(
+    /AFTER INSERT ON public\.sohbet_istekleri/i.test(sohbetIstegi),
+    true,
+    'sohbet_istegi_bildirimi: sohbet_istekleri AFTER INSERT'
+  )
+  esitMi(
+    /WHEN \(\(?new\.durum = 'beklemede'/i.test(sohbetIstegi),
+    true,
+    "sohbet_istegi_bildirimi: WHEN new.durum = 'beklemede'"
+  )
+
+  const sohbetKabul = tanim('sohbet_kabul_bildirimi')
+  esitMi(
+    /AFTER UPDATE ON public\.sohbet_istekleri/i.test(sohbetKabul),
+    true,
+    'sohbet_kabul_bildirimi: sohbet_istekleri AFTER UPDATE'
+  )
+  esitMi(
+    /old\.durum = 'beklemede'/i.test(sohbetKabul) && /new\.durum = 'kabul'/i.test(sohbetKabul),
+    true,
+    'sohbet_kabul_bildirimi: WHEN beklemede -> kabul'
+  )
+
+  // Beklenmeyen bir tetikleyici eklenmis mi: bes olay disinda bildirim
+  // ureten bir yol olmamali (karar 49).
+  const bildirimTetikleyicileri = Object.entries(tetikleyiciler)
+    .filter(([, def]) => def.includes('bildirim.olay_gonder()'))
+    .map(([ad]) => ad)
+    .sort()
+  esitMi(
+    bildirimTetikleyicileri,
+    [
+      'mesaj_bildirimi',
+      'sohbet_istegi_bildirimi',
+      'sohbet_kabul_bildirimi',
+      'takip_istegi_bildirimi',
+      'takip_kabul_bildirimi',
+    ],
+    'tam olarak bes bildirim tetikleyicisi kayitli'
+  )
 }
 
 main()
