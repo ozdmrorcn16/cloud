@@ -489,6 +489,22 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 
 ## Kararlar
 
+- 2026-08-22 - **SIRADAKI IS: moderasyon paneli.** Beyin firtinasi
+  yapildi ve kararlar alindi ama is BASLAMADI (spec yok, kod yok).
+  **Yeni oturum once `docs/moderasyon-paneli-devam-notu.md` okusun** -
+  moderator modeli, onaylanmis envanter (ILK/SONRA dilimleri) ve
+  mesaj sikayeti karari orada. Ozet: tek moderator (simdilik),
+  kapsam TAM YONETIM KONSOLU (kullanicinin istegi: "her seye hakim
+  olmam gerek"), ve **mesaj sikayeti tamamen kaldiriliyor** - sohbet
+  ekraninda yalnizca "kullaniciyi sikayet et" kalacak. Sonraki adim
+  spec yazmak.
+
+- 2026-08-22 - **Grup sohbeti, "mekan odasi" ve COK UYELI konusma fikri
+  tamamen ve kalici olarak kaldirildi.** Uygulama yalnizca birebir;
+  her konusma tam iki uyeli. Karar 54 (`docs/konusma-gunlugu.md`).
+  Eski belgelerdeki "Faz 3c (mekan odalari)" atiflari temizlendi;
+  `mesajlari_getir`'deki `limit 1` artik risk degil kalici invaryant.
+
 - 2026-08-21 - **Bildirimler (push) mini-fazi tamamlandi.** Spec:
   `docs/superpowers/specs/2026-08-21-bildirimler-design.md`, plan 5 gorev.
   Uygulama kapaliyken telefona dusen bildirimler: yeni mesaj, takip
