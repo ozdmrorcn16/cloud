@@ -13,3 +13,8 @@ mobil/node_modules/
 mobil/.env
 mobil/.expo/
 araclar/overture-tr.parquet
+
+# Yerel Claude ayarlarinin elle alinmis yedekleri (settings.local.json zaten
+# global ignore listesinde; yedekleri de depoya girmemeli).
+.claude/settings.local.json.yedek
+.claude/settings.local.json.*.yedek
