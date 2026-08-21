@@ -17,6 +17,11 @@ jest.mock('../../lib/oturum', () => ({
   useOturum: jest.fn(),
 }))
 
+jest.mock('../../lib/bildirim', () => ({
+  bildirimleriBaslat: jest.fn().mockResolvedValue(undefined),
+  bildirimeDokunmaDinle: jest.fn(() => () => {}),
+}))
+
 describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
   beforeEach(() => {
     jest.clearAllMocks()

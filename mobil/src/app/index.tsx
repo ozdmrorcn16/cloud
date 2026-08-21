@@ -4,6 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { konusmalarimiGetir } from '../../lib/sohbet'
+import { bildirimJetonunuSil } from '../../lib/bildirim'
 
 export default function AnaEkran() {
   const router = useRouter()
@@ -11,6 +12,10 @@ export default function AnaEkran() {
   const [okunmamisMesajSayisi, setOkunmamisMesajSayisi] = useState(0)
 
   async function cikisYap() {
+    // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
+    // kullaniciya ait bildirimler bu cihaza dusmesin. Hata yutulur,
+    // cikisi bloklamaz.
+    await bildirimJetonunuSil()
     await supabase.auth.signOut()
   }
 

@@ -16,6 +16,10 @@ jest.mock('../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
 }))
 
+jest.mock('../../lib/bildirim', () => ({
+  bildirimJetonunuSil: jest.fn().mockResolvedValue(undefined),
+}))
+
 const mockRouterPush = jest.fn()
 // useFocusEffect'i gercek useEffect gibi (mount'ta bir kez) davranacak
 // sekilde taklit ediyoruz, ayrica sonuncu geri cagirmayi testlerin
