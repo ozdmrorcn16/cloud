@@ -5,7 +5,13 @@ arayisinda bugune kadar olculen her seyi tutuyor - hangi isimlerin dolu
 oldugu, neden elendikleri, ve yol boyunca cikan rakip listesi. Amac ayni
 aramalari bir daha yapmamak.
 
-**Durum: SECILDI - WHERIO (2026-08-21, kullanicinin karari).**
+**Durum: CALISMA ADI WHERIO - KALICI DEGIL (2026-08-21).**
+
+Kullanici ayni gun kararini yumusatti: "Isim degisikligi olabilir, isim
+kalici olmasin. Isim ve tasarimi sonraya alip altyapi ve isleyisle devam
+edelim." Yani Wherio su an yalnizca calisma adi; nihai isim karari ve
+gorsel kimlik calismasi ERTELENDI. Bu dosya o gun geri donuldugunde
+kaldigi yerden devam etmek icin duruyor.
 
 Kullanici ismi kendisi koydu: "Uygulama adi wherio olucak." Tarama
 sonuclari kendisine sunuldu, kararini korudu. Bilinen riskler (karar
