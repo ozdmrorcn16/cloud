@@ -5,8 +5,15 @@ arayisinda bugune kadar olculen her seyi tutuyor - hangi isimlerin dolu
 oldugu, neden elendikleri, ve yol boyunca cikan rakip listesi. Amac ayni
 aramalari bir daha yapmamak.
 
-**Durum: onerilen isim DENK (2026-08-21), kullanici onayi bekleniyor.**
-Sunum sayfasi (Artifact): https://claude.ai/code/artifact/003b507b-0673-4aaa-b64c-1b2d6327e61c
+**Durum: isim ARANIYOR. Denk kullanici tarafindan REDDEDILDI (2026-08-21).**
+Teshis sorusuna verdigi cevap: rahatsiz eden sey **Turkce kelime olmasi** -
+"buyuk/uluslararasi uygulama ismi gibi durmuyor". Bu karar TURKCE KOKLU
+YONU TAMAMEN KAPATIYOR (Anda ve Denk bu yuzden iskaladi). Kalan alan:
+Ingilizce ya da uydurma, uluslararasi duran sesler.
+Ayrica uc kez ust uste tek-oneri iskalandi (Roost, Anda, Denk); yontem
+degisti: tek oneri degil PANO sunuluyor, secim icgudusune birakiliyor.
+Sunum sayfasi (Artifact, su an Denk halinde, secim degisince guncellenir):
+https://claude.ai/code/artifact/003b507b-0673-4aaa-b64c-1b2d6327e61c
 
 ## Konumlandirma kararlari (kullanicidan)
 
@@ -82,7 +89,11 @@ kategoride kullanilan bir uygulama bulundu.
 | Smalltalk | DOLU | Bes ayri uygulama: small-talks, Small-Talk, Small Talk, smalltalks, SmallTalk AI |
 | Nexttable | DOLU | NexTable (restoran rezervasyon platformu) + sosyal yemek alani dolu: SocialTable, TableMesh, Meetable, TableUpp |
 | Newfaces | DOLU | NewFaces.io - "3 km yaricapta konum tabanli tanisma", birebir bizim urun |
-| Denk | TEMIZ | Tek cakisma DENK.summit 2026 etkinlik uygulamasi (Bavyera, tek seferlik zirve). Tuketici sosyal kategorisinde eslesme yok |
+| Denk | TEMIZ ama REDDEDILDI | Musait; kullanici begenmedi (Turkce kelime, uluslararasi durmuyor) |
+| ShowUp | DOLU | Dort ayri uygulama; biri konum tabanli tanisma ("meet, date, find people near you") |
+| Sponto | DOLU | Sponto "Just Meet Already" - hizli tanisma uygulamasi |
+| Wavo | DOLU | Wavo dating ("meet people nearby"), Wavo Live Chat, Wavo Health, Wavo PRO, Wavo muzik |
+| Unsolo | TEMIZ | Bu isimde uygulama cikmadi. un + solo, iki morfem de uluslararasi; "yalniz gelmekten cikmak" |
 | Toka | ZAYIF | Toki Social Map (yerel etkinlik kesfi) ses olarak fazla yakin; Toca Boca marka golgesi |
 | Neon | ZAYIF | NeonConnect var; ayrica nightlife alani cok dolu |
 | Bench | ZAYIF | Kategoride eslesme yok ama The Bench (dating manager) var ve Bench buyuk bir marka (muhasebe, giyim) - tescil riski yuksek |
