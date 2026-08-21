@@ -5,14 +5,26 @@ arayisinda bugune kadar olculen her seyi tutuyor - hangi isimlerin dolu
 oldugu, neden elendikleri, ve yol boyunca cikan rakip listesi. Amac ayni
 aramalari bir daha yapmamak.
 
-**Durum: isim ARANIYOR. Denk kullanici tarafindan REDDEDILDI (2026-08-21).**
-Teshis sorusuna verdigi cevap: rahatsiz eden sey **Turkce kelime olmasi** -
-"buyuk/uluslararasi uygulama ismi gibi durmuyor". Bu karar TURKCE KOKLU
-YONU TAMAMEN KAPATIYOR (Anda ve Denk bu yuzden iskaladi). Kalan alan:
-Ingilizce ya da uydurma, uluslararasi duran sesler.
-Ayrica uc kez ust uste tek-oneri iskalandi (Roost, Anda, Denk); yontem
-degisti: tek oneri degil PANO sunuluyor, secim icgudusune birakiliyor.
-Sunum sayfasi (Artifact, su an Denk halinde, secim degisince guncellenir):
+**Durum: SECILDI - WHERIO (2026-08-21, kullanicinin karari).**
+
+Kullanici ismi kendisi koydu: "Uygulama adi wherio olucak." Tarama
+sonuclari kendisine sunuldu, kararini korudu. Bilinen riskler (karar
+verilirken masadaydi, sonradan kesfedilmis degil):
+
+- Google Play'de `com.wherio` paket adiyla "wherio: Live Friend Compass"
+  yayinda - Android'de kucuk, tek islevli bir arkadas-pusulasi uygulamasi,
+  ama kategorisi konum. Magaza adi/paket cakismasi ve marka itirazi riski
+  var; MAGAZAYA GONDERMEDEN ONCE TURKPATENT/WIPO sorgusu ve gerekirse
+  hukuki gorus sart.
+- Wherigo (Groundspeak'in GPS oyun markasi) fonetik olarak cok yakin.
+- "where" mahallesi kalabalik: Wheree, WhereTo, WHERE APP, WYA -
+  WhereYouAt, WhereAreYou, Wherer.
+
+Ismin lehine olanlar: "where" urunun sorusunun ta kendisi (kim nerede?);
+iki hece, -io bitisi teknolojik ve akici; Turkcede de Ingilizcede de
+kolay okunuyor (ver-i-o / WHERE-ee-oh).
+
+Sunum/deneme sayfasi (Artifact):
 https://claude.ai/code/artifact/003b507b-0673-4aaa-b64c-1b2d6327e61c
 
 ## Konumlandirma kararlari (kullanicidan)

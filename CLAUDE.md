@@ -489,6 +489,15 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 
 ## Kararlar
 
+- 2026-08-21 - **Uygulamanin adi belirlendi: Wherio.** Kullanicinin
+  kendi secimi. Konumlandirma: ayni anda ayni yerde olanlarin
+  check-in'le birbirini gorup tanismasi; isim "kim nerede?" sorusundan.
+  Bilinen risk: Google Play'de `com.wherio` adiyla kucuk bir
+  arkadas-pusulasi uygulamasi var; magazaya gondermeden once marka
+  sorgusu (TURKPATENT/WIPO) yapilacak. Arastirmanin tamami ve elenen
+  ~30 isim: `docs/isim-arastirmasi.md`. Kod tarafi henuz degismedi
+  (`app.json` hala `mobil`).
+
 - 2026-08-19 — **Push yasagi kaldirildi.** Is hem yerelde tutulacak hem
   GitHub'a itilecek. 2026-08-14'teki karar tek kopya riski dogurdugu icin
   degistirildi.
