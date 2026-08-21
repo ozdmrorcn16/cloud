@@ -1,0 +1,14 @@
+{
+  "//": "Edge Function'lar Deno'da calisiyor ve mobil/tsconfig.json'un disinda tutuluyor (npm:/Deno importlarini tsc cozemiyor). Tur denetimi ve birim testleri buradan: `cd mobil/supabase/functions && deno check bildirim-gonder/index.ts && deno test -A`.",
+  "lock": false,
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.0"
+  },
+  "tasks": {
+    "kontrol": "deno check bildirim-gonder/index.ts",
+    "test": "deno test --allow-net --allow-env"
+  },
+  "compilerOptions": {
+    "strict": true
+  }
+}

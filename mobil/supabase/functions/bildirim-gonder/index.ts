@@ -3,10 +3,19 @@
 // Akis: Postgres tetikleyicisi (bildirim.olay_gonder) pg_net ile buraya
 // POST atar; govde yalnizca isaretci (id'ler) tasir. Bu fonksiyon
 //   1) `X-Bildirim-Sir` basligini Vault'taki sirla karsilastirir,
-//   2) olaydan aliciyi cikarir (mesajda konusmanin diger uyesini okur),
-//   3) gonderenin adini `profiller`den alir,
-//   4) alicinin butun jetonlarini Expo Push API'ye yollar,
-//   5) "DeviceNotRegistered" donen jetonlari siler.
+//   2) olayin KAYNAK SATIRINI veritabaninda dogrular,
+//   3) aliciyi cikarir (mesajda konusmanin diger uyelerini okur),
+//   4) karsi tarafin adini `profiller`den alir,
+//   5) alicinin butun jetonlarini Expo Push API'ye yollar,
+//   6) "DeviceNotRegistered" donen jetonlari siler.
+//
+// (2) NEDEN VAR - guvenlik: payload'daki id'ler tek basina hicbir sey
+// kanitlamiyor. Sir sizarsa (net kilidi platform yuzunden zorlanamiyor,
+// bkz. migrations/README-net-kilidi.md) payload'a guvenen bir fonksiyon
+// "X seni takip etmek istiyor" gibi HIC OLMAMIS bir olayi kurbanin kilit
+// ekranina dusurebilirdi - belirli birini adiyla taklit eden taciz ya da
+// oltalama. Kaynak satiri dogrulaninca saldirganin yapabilecegi en fazla
+// sey, gercekten olmus cok yeni bir olayi yinelemek (zararsiz tekrar).
 //
 // GIZLILIK: bildirim metni ICERIK TASIMAZ (karar 48) - yalnizca ad.
 // Log'a sir, jeton degeri ya da mesaj icerigi YAZILMAZ; yalnizca olay
@@ -14,175 +23,25 @@
 //
 // DEPLOY NOTU: `verify_jwt` KAPALI olmali. Cagriyi pg_net yapiyor ve
 // elinde bir kullanici JWT'si yok; yetkilendirme tamamen asagidaki sir
-// dogrulamasina dayaniyor.
+// dogrulamasina dayaniyor. Beyan `mobil/supabase/config.toml` icinde
+// (`[functions.bildirim-gonder] verify_jwt = false`), boylece
+// `supabase functions deploy` de ayni ayarla dagitir.
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
+import {
+  bildirimGovdesi,
+  govdeyiCozumle,
+  hedefleriBelirle,
+  ozBildirimMi,
+  VARSAYILAN_AD,
+  type Olay,
+} from './saf.ts'
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 
 // Expo tek istekte en fazla 100 bildirim aliyor. Pratikte bir kullanicinin
 // jeton sayisi bunun cok altinda, ama sinir kodda dursun.
 const EXPO_PARTI_BOYU = 100
-
-// ---------------------------------------------------------------------
-// Olay sozlesmesi (bildirim.olay_gonder'in urettigi bes bicim)
-// ---------------------------------------------------------------------
-
-export type Olay =
-  | { olay: 'mesaj'; mesaj_id: string; konusma_id: string; gonderen_id: string; aktor_id: string | null }
-  | { olay: 'takip_istegi'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
-  | { olay: 'takip_kabul'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
-  | { olay: 'sohbet_istegi'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
-  | { olay: 'sohbet_kabul'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
-
-const UUID_DESENI = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-function uuidMi(deger: unknown): deger is string {
-  return typeof deger === 'string' && UUID_DESENI.test(deger)
-}
-
-/** `aktor_id` yoklugu ile null'i ayni sayiyoruz: ikisi de "aktor bilinmiyor". */
-function aktoruOku(kayit: Record<string, unknown>): string | null | undefined {
-  const ham = kayit.aktor_id
-  if (ham === null || ham === undefined) return null
-  return uuidMi(ham) ? ham : undefined // undefined = bicim hatasi
-}
-
-/**
- * Ham govdeyi sozlesmeye gore dogrular. Bicim bozuksa ya da olay
- * taninmiyorsa `null` doner (cagiran 400 verir).
- *
- * Saf fonksiyon: veritabanina ya da aga dokunmuyor.
- */
-export function govdeyiCozumle(ham: unknown): Olay | null {
-  if (typeof ham !== 'object' || ham === null || Array.isArray(ham)) return null
-  const k = ham as Record<string, unknown>
-
-  const aktor = aktoruOku(k)
-  if (aktor === undefined) return null
-
-  switch (k.olay) {
-    case 'mesaj':
-      if (!uuidMi(k.mesaj_id) || !uuidMi(k.konusma_id) || !uuidMi(k.gonderen_id)) return null
-      return {
-        olay: 'mesaj',
-        mesaj_id: k.mesaj_id,
-        konusma_id: k.konusma_id,
-        gonderen_id: k.gonderen_id,
-        aktor_id: aktor,
-      }
-
-    case 'takip_istegi':
-    case 'takip_kabul':
-      if (!uuidMi(k.takip_eden_id) || !uuidMi(k.takip_edilen_id)) return null
-      return {
-        olay: k.olay,
-        takip_eden_id: k.takip_eden_id,
-        takip_edilen_id: k.takip_edilen_id,
-        aktor_id: aktor,
-      }
-
-    case 'sohbet_istegi':
-    case 'sohbet_kabul':
-      if (!uuidMi(k.gonderen_id) || !uuidMi(k.hedef_id)) return null
-      return {
-        olay: k.olay,
-        gonderen_id: k.gonderen_id,
-        hedef_id: k.hedef_id,
-        aktor_id: aktor,
-      }
-
-    default:
-      return null
-  }
-}
-
-// ---------------------------------------------------------------------
-// Alici cikarimi
-// ---------------------------------------------------------------------
-
-export type Hedef = {
-  /** Bildirimi ALACAK kisi. */
-  aliciId: string
-  /** Adi metinde gecen ve istemcinin yonlendirmede kullandigi karsi taraf. */
-  karsiTarafId: string
-}
-
-/**
- * Olaydan aliciyi ve karsi tarafi cikarir.
- *
- * `mesaj` olayinda alici konusmanin DIGER uyesidir ve bu bilgi payload'da
- * yok; cagiran once veritabanindan okuyup `konusmaDigerUyeId` ile verir.
- * Diger dort olayda parametre kullanilmaz.
- *
- * Kurallar (kontrolor karari):
- *   mesaj         -> alici: konusmanin diger uyesi, karsi taraf: gonderen
- *   takip_istegi  -> alici: takip_edilen, karsi taraf: takip_eden
- *   takip_kabul   -> alici: takip_eden (istegi gonderen), karsi taraf: takip_edilen
- *   sohbet_istegi -> alici: hedef,      karsi taraf: gonderen
- *   sohbet_kabul  -> alici: gonderen,   karsi taraf: hedef
- *
- * Saf fonksiyon.
- */
-export function hedefiBelirle(olay: Olay, konusmaDigerUyeId: string | null): Hedef | null {
-  switch (olay.olay) {
-    case 'mesaj':
-      if (!konusmaDigerUyeId) return null
-      return { aliciId: konusmaDigerUyeId, karsiTarafId: olay.gonderen_id }
-    case 'takip_istegi':
-      return { aliciId: olay.takip_edilen_id, karsiTarafId: olay.takip_eden_id }
-    case 'takip_kabul':
-      return { aliciId: olay.takip_eden_id, karsiTarafId: olay.takip_edilen_id }
-    case 'sohbet_istegi':
-      return { aliciId: olay.hedef_id, karsiTarafId: olay.gonderen_id }
-    case 'sohbet_kabul':
-      return { aliciId: olay.gonderen_id, karsiTarafId: olay.hedef_id }
-  }
-}
-
-/**
- * Oz-bildirim kurali: kisi kendi eyleminin bildirimini almamali.
- *
- * Somut vaka: karsilikli takipte kabul eden tarafin ayna gecisi, kabul
- * edenin kendisini `takip_eden_id` yapiyor - o gecis icin alici == aktor
- * olur ve bildirim susmalidir.
- *
- * `aktorId` null ise (service role ya da dogrudan SQL yazmasi) aktor
- * bilinmiyordur; bu durumda gonderilir.
- *
- * Saf fonksiyon.
- */
-export function ozBildirimMi(aliciId: string, aktorId: string | null): boolean {
-  return aktorId !== null && aktorId === aliciId
-}
-
-// ---------------------------------------------------------------------
-// Metinler (karar 48: icerik yok, yalnizca ad)
-// ---------------------------------------------------------------------
-
-/** Profili okunamayan/olmayan kisi icin notr karsilik. */
-export const VARSAYILAN_AD = 'Biri'
-
-/**
- * Bildirim govdesini uretir. Mesaj olayinda bile mesajin KENDISI gecmez;
- * kilit ekranina yalnizca "kim" duser.
- *
- * Saf fonksiyon.
- */
-export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
-  switch (olay) {
-    case 'mesaj':
-      return `${ad} sana mesaj gonderdi`
-    case 'takip_istegi':
-      return `${ad} seni takip etmek istiyor`
-    case 'takip_kabul':
-      return `${ad} takip istegini kabul etti`
-    case 'sohbet_istegi':
-      return `${ad} sana sohbet istegi gonderdi`
-    case 'sohbet_kabul':
-      return `${ad} sohbet istegini kabul etti`
-  }
-}
 
 // ---------------------------------------------------------------------
 // Sir dogrulama
@@ -194,17 +53,21 @@ export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
 let sirOnbellek: string | null = null
 let sonSirOkumasi = 0
 
-// Eslesmeyen bir sir gorulunce onbellek en fazla bu araliga bir kez
-// tazeleniyor. Iki sey birden gerekiyordu: (a) sir Vault'ta donduruldugunde
-// fonksiyon yeniden dagitilmadan kendini toparlayabilsin, (b) rastgele
-// baslikla gelen bir saldirgan her istekte bir veritabani cagrisi
-// tetikleyemesin.
+// Onbellek en fazla bu araliga bir kez tazeleniyor - hem soguk yolda
+// (onbellek bos) hem de eslesmeyen bir sir gorulunce. Iki sey birden
+// gerekiyordu: (a) sir Vault'ta donduruldugunde fonksiyon yeniden
+// dagitilmadan kendini toparlayabilsin, (b) rastgele baslikla gelen bir
+// saldirgan - ya da veritabani gecici olarak okunamazken gelen bir yigin
+// istek - her cagrida bir veritabani sorgusu tetikleyemesin.
 const SIR_TAZELEME_ARALIGI_MS = 60_000
 
 async function siriOku(yonetici: SupabaseClient, tazele: boolean): Promise<string | null> {
-  const simdi = Date.now()
   if (sirOnbellek !== null && !tazele) return sirOnbellek
-  if (tazele && simdi - sonSirOkumasi < SIR_TAZELEME_ARALIGI_MS) return sirOnbellek
+
+  // Kisit HER IKI yola da uygulaniyor: soguk yolda da (onbellek bos)
+  // ard arda gelen istekler veritabanini dovmemeli.
+  const simdi = Date.now()
+  if (sonSirOkumasi !== 0 && simdi - sonSirOkumasi < SIR_TAZELEME_ARALIGI_MS) return sirOnbellek
 
   const { data, error } = await yonetici.rpc('bildirim_siri_oku')
   sonSirOkumasi = simdi
@@ -215,11 +78,24 @@ async function siriOku(yonetici: SupabaseClient, tazele: boolean): Promise<strin
     return sirOnbellek
   }
 
-  sirOnbellek = typeof data === 'string' && data.length > 0 ? data : null
+  // Bos/null okuma CALISAN onbellegi SILMEZ. Vault'ta gecici bir aksaklik
+  // ya da yanlislikla bosaltilmis bir satir, yasayan ornegin dogrulama
+  // yetenegini yok etmemeli; sir gercekten degistiyse zaten yeni deger
+  // gelir ve buraya yazilir.
+  if (typeof data === 'string' && data.length > 0) {
+    sirOnbellek = data
+  } else {
+    console.error('bildirim-gonder: sir bos donduruldu')
+  }
   return sirOnbellek
 }
 
-/** Uzunluk sizdirmayan sabit-zamanli karsilastirma. */
+/**
+ * Sabit-zamanli karsilastirma - UZUNLUK HARIC. Ilk satir uzunluklar
+ * farkliysa hemen doner, yani sirrin UZUNLUGU sizabilir; sizdirmadigi sey
+ * icerik: dongude erken cikis yok. Sir sabit uzunlukta uretilen rastgele
+ * bir dize oldugu icin uzunluk bilgisinin pratik degeri yok.
+ */
 function esitSir(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let fark = 0
@@ -228,27 +104,95 @@ function esitSir(a: string, b: string): boolean {
 }
 
 // ---------------------------------------------------------------------
+// Kaynak satiri dogrulama
+// ---------------------------------------------------------------------
+
+/**
+ * Olayin gercekten olup olmadigini veritabanina sorar.
+ *
+ * Payload'a guvenmek bir kimlik taklidi acigidir: sir bilen biri, olmamis
+ * bir takip istegini ya da baskasindan gelmis gibi gorunen bir mesaji
+ * kurbanin kilit ekranina dusurebilir. Burada her olay icin KAYNAK SATIR
+ * araniyor; bulunamazsa is yapilmiyor.
+ *
+ * Yarisma notu: pg_net cagriyi commit'ten sonra yaptigi icin satir bu
+ * noktada gorunur olmali. Satir aradan gecen surede degistiyse (istek
+ * geri cekildi, takip birakildi) dogrulama basarisiz olur ve bildirim
+ * gitmez - bu dogru davranis, artik gecerli olmayan bir olay bildirilmez.
+ */
+async function kaynakDogrula(yonetici: SupabaseClient, olay: Olay): Promise<boolean> {
+  try {
+    if (olay.olay === 'mesaj') {
+      const { data, error } = await yonetici
+        .from('mesajlar')
+        .select('id')
+        .eq('id', olay.mesaj_id)
+        .eq('konusma_id', olay.konusma_id)
+        .eq('gonderen_id', olay.gonderen_id)
+        .limit(1)
+      if (error) throw error
+      return (data ?? []).length > 0
+    }
+
+    if (olay.olay === 'takip_istegi' || olay.olay === 'takip_kabul') {
+      const { data, error } = await yonetici
+        .from('takipler')
+        .select('durum')
+        .eq('takip_eden_id', olay.takip_eden_id)
+        .eq('takip_edilen_id', olay.takip_edilen_id)
+        .eq('durum', olay.olay === 'takip_istegi' ? 'beklemede' : 'kabul')
+        .limit(1)
+      if (error) throw error
+      return (data ?? []).length > 0
+    }
+
+    // sohbet_istegi / sohbet_kabul. Tablodaki sutun adi `alan_id`,
+    // sozlesmedeki alan adi `hedef_id`.
+    const { data, error } = await yonetici
+      .from('sohbet_istekleri')
+      .select('durum')
+      .eq('gonderen_id', olay.gonderen_id)
+      .eq('alan_id', olay.hedef_id)
+      .eq('durum', olay.olay === 'sohbet_istegi' ? 'beklemede' : 'kabul')
+      .limit(1)
+    if (error) throw error
+    return (data ?? []).length > 0
+  } catch (e) {
+    const kod = (e as { code?: string })?.code
+    console.error('bildirim-gonder: kaynak satiri okunamadi', { olay: olay.olay, kod })
+    // Okuyamiyorsak dogrulayamiyoruz; dogrulanmamis olay islenmez.
+    return false
+  }
+}
+
+// ---------------------------------------------------------------------
 // Veritabani okumalari (service role; RLS atlanir)
 // ---------------------------------------------------------------------
 
-/** Birebir konusmada gonderen disindaki tek uye. */
-async function konusmaDigerUyesi(
+/**
+ * Konusmadaki gonderen DISINDAKI butun uyeler.
+ *
+ * `limit(1)` bilerek YOK: bugun konusmalar birebir oldugu icin liste tek
+ * elemanli, ama sinir kodda kalirsa grup konusmasi geldigi gun bildirim
+ * sessizce rastgele tek bir uyeye giderdi. Cogul okuyup cogul gondermek
+ * bugun de dogru, yarin da.
+ */
+async function konusmaDigerUyeleri(
   yonetici: SupabaseClient,
   konusmaId: string,
   gonderenId: string
-): Promise<string | null> {
+): Promise<string[]> {
   const { data, error } = await yonetici
     .from('konusma_uyeleri')
     .select('kullanici_id')
     .eq('konusma_id', konusmaId)
     .neq('kullanici_id', gonderenId)
-    .limit(1)
 
   if (error) {
-    console.error('bildirim-gonder: konusma uyesi okunamadi', { kod: error.code })
-    return null
+    console.error('bildirim-gonder: konusma uyeleri okunamadi', { kod: error.code })
+    return []
   }
-  return (data?.[0]?.kullanici_id as string | undefined) ?? null
+  return (data ?? []).map((s: { kullanici_id: string }) => s.kullanici_id)
 }
 
 /** Karsi tarafin gorunen adi; profil yoksa notr karsilik. */
@@ -280,10 +224,25 @@ async function jetonlariOku(yonetici: SupabaseClient, aliciId: string): Promise<
   return (data ?? []).map((s: { jeton: string }) => s.jeton)
 }
 
-/** Expo'nun "bu jeton artik gecerli degil" dedigi kayitlari temizler. */
-async function olecekJetonlariSil(yonetici: SupabaseClient, jetonlar: string[]): Promise<void> {
+/**
+ * Expo'nun "bu jeton artik gecerli degil" dedigi kayitlari temizler.
+ *
+ * `kullanici_id` filtresi SART: jeton global olarak benzersiz oldugu icin
+ * filtresiz bir delete, arada cihazi devralmis olan YENI sahibin taze
+ * satirini silerdi (jeton_kaydet devir sirasinda eski satiri silip
+ * yenisini yaziyor).
+ */
+async function olecekJetonlariSil(
+  yonetici: SupabaseClient,
+  aliciId: string,
+  jetonlar: string[]
+): Promise<void> {
   if (jetonlar.length === 0) return
-  const { error } = await yonetici.from('bildirim_jetonlari').delete().in('jeton', jetonlar)
+  const { error } = await yonetici
+    .from('bildirim_jetonlari')
+    .delete()
+    .eq('kullanici_id', aliciId)
+    .in('jeton', jetonlar)
   if (error) {
     console.error('bildirim-gonder: olu jeton silinemedi', { kod: error.code })
   }
@@ -415,7 +374,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
-  // 2) Govde.
+  // 2) Govde BICIMI.
   let ham: unknown
   try {
     ham = await req.json()
@@ -426,48 +385,66 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const olay = govdeyiCozumle(ham)
   if (!olay) return yanit(400, { hata: 'gecersiz olay' })
 
-  // 3) Alici.
-  const digerUye =
-    olay.olay === 'mesaj'
-      ? await konusmaDigerUyesi(yonetici, olay.konusma_id, olay.gonderen_id)
-      : null
+  // 3) Olay GERCEKTEN oldu mu. Sirdan sonraki ikinci kapi: sir sizsa bile
+  //    uydurma bir olay buradan gecemez.
+  if (!(await kaynakDogrula(yonetici, olay))) {
+    console.warn('bildirim-gonder: olay dogrulanamadi', { olay: olay.olay })
+    return yanit(200, { gonderildi: 0, neden: 'olay dogrulanamadi' })
+  }
 
-  const hedef = hedefiBelirle(olay, digerUye)
-  if (!hedef) {
+  // 4) Alicilar.
+  const digerUyeler =
+    olay.olay === 'mesaj'
+      ? await konusmaDigerUyeleri(yonetici, olay.konusma_id, olay.gonderen_id)
+      : []
+
+  const hedefler = hedefleriBelirle(olay, digerUyeler)
+  if (hedefler.length === 0) {
     console.log('bildirim-gonder: alici bulunamadi', { olay: olay.olay })
     return yanit(200, { gonderildi: 0, neden: 'alici yok' })
   }
 
-  if (ozBildirimMi(hedef.aliciId, olay.aktor_id)) {
-    console.log('bildirim-gonder: oz-bildirim atlandi', { olay: olay.olay, alici: hedef.aliciId })
+  const gonderilecekler = hedefler.filter((h) => !ozBildirimMi(h.aliciId, olay.aktor_id))
+  if (gonderilecekler.length === 0) {
+    console.log('bildirim-gonder: oz-bildirim atlandi', { olay: olay.olay })
     return yanit(200, { gonderildi: 0, neden: 'oz-bildirim' })
   }
 
-  // 4) Jetonlar.
-  const jetonlar = await jetonlariOku(yonetici, hedef.aliciId)
-  if (jetonlar.length === 0) {
-    console.log('bildirim-gonder: jeton yok', { olay: olay.olay, alici: hedef.aliciId })
-    return yanit(200, { gonderildi: 0, neden: 'jeton yok' })
+  // 5) Metin. Karsi taraf butun hedeflerde ayni kisi, ad bir kez okunuyor.
+  const ad = await adiOku(yonetici, gonderilecekler[0].karsiTarafId)
+  const govde = bildirimGovdesi(olay.olay, ad)
+
+  let toplamJeton = 0
+  let toplamOlu = 0
+  let hataVar = false
+
+  for (const hedef of gonderilecekler) {
+    const jetonlar = await jetonlariOku(yonetici, hedef.aliciId)
+    if (jetonlar.length === 0) {
+      console.log('bildirim-gonder: jeton yok', { olay: olay.olay, alici: hedef.aliciId })
+      continue
+    }
+
+    const { hata, olu } = await expoyaGonder(jetonlar, govde, {
+      tur: olay.olay,
+      kullaniciId: hedef.karsiTarafId,
+    })
+    await olecekJetonlariSil(yonetici, hedef.aliciId, olu)
+
+    toplamJeton += jetonlar.length
+    toplamOlu += olu.length
+    hataVar = hataVar || hata
+
+    console.log('bildirim-gonder: alici islendi', {
+      olay: olay.olay,
+      alici: hedef.aliciId,
+      jeton: jetonlar.length,
+      olu: olu.length,
+      hata,
+    })
   }
 
-  // 5) Metin ve gonderim.
-  const ad = await adiOku(yonetici, hedef.karsiTarafId)
-  const govde = bildirimGovdesi(olay.olay, ad)
-  const { hata, olu } = await expoyaGonder(jetonlar, govde, {
-    tur: olay.olay,
-    kullaniciId: hedef.karsiTarafId,
-  })
-
-  await olecekJetonlariSil(yonetici, olu)
-
-  console.log('bildirim-gonder: tamam', {
-    olay: olay.olay,
-    alici: hedef.aliciId,
-    jeton: jetonlar.length,
-    olu: olu.length,
-    hata,
-  })
-
-  if (hata) return yanit(500, { gonderildi: jetonlar.length - olu.length, hata: 'kismi basarisizlik' })
-  return yanit(200, { gonderildi: jetonlar.length - olu.length, olu: olu.length })
+  if (toplamJeton === 0) return yanit(200, { gonderildi: 0, neden: 'jeton yok' })
+  if (hataVar) return yanit(500, { gonderildi: toplamJeton - toplamOlu, hata: 'kismi basarisizlik' })
+  return yanit(200, { gonderildi: toplamJeton - toplamOlu, olu: toplamOlu })
 })

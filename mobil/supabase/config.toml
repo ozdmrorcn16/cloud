@@ -393,6 +393,16 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Bildirimler Task 3: "bildirim-gonder" fonksiyonunu pg_net tetikleyicisi
+# cagiriyor ve elinde bir kullanici JWT'si YOK. verify_jwt acik kalirsa her
+# cagri 401 alir, tetikleyicideki exception blogu hatayi yutar ve hicbir
+# yerde kirmizi yanmaz - bildirimler sessizce durur. Yetkilendirme bunun
+# yerine fonksiyon icindeki `X-Bildirim-Sir` dogrulamasi ve kaynak satiri
+# kontroluyle yapiliyor. Bu beyan olmadan `supabase functions deploy`
+# varsayilana (acik) doner.
+[functions.bildirim-gonder]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

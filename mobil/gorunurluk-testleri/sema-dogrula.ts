@@ -961,14 +961,16 @@ async function netSemasiExposeDegilMi(a: SupabaseClient) {
 
   const kuyrukUcu = `${PROJE_URL}/rest/v1/http_request_queue?select=id&limit=1`
 
-  async function profilIleSorgula(jeton: string, sema: string, uc: string) {
-    const yanit = await fetch(uc, {
-      headers: {
-        apikey: ANON_ANAHTAR,
-        Authorization: `Bearer ${jeton}`,
-        'Accept-Profile': sema,
-      },
-    })
+  // `sema` null ise `Accept-Profile` basligi hic GONDERILMEZ - pozitif
+  // kontrol tam olarak bu farki olcuyor.
+  async function profilIleSorgula(jeton: string, sema: string | null, uc: string) {
+    const basliklar: Record<string, string> = {
+      apikey: ANON_ANAHTAR,
+      Authorization: `Bearer ${jeton}`,
+    }
+    if (sema !== null) basliklar['Accept-Profile'] = sema
+
+    const yanit = await fetch(uc, { headers: basliklar })
     const govde = await yanit.json().catch(() => null)
     return { durum: yanit.status, kod: govde?.code as string | undefined }
   }
@@ -998,16 +1000,18 @@ async function netSemasiExposeDegilMi(a: SupabaseClient) {
   }
 
   // POZITIF KONTROL: PGRST106'nin sebebi gercekten "sema acik degil" mi,
-  // yoksa yanlis bir URL/anahtar ya da yok sayilan bir baslik mi? Ayni
-  // cagri `Accept-Profile: public` ile calisiyorsa, prob mekanizmasi
-  // saglam demektir ve yukaridaki iki iddia bir sey OLCUYOR.
-  const publicProb = await profilIleSorgula(
-    jeton ?? ANON_ANAHTAR,
-    'public',
-    `${PROJE_URL}/rest/v1/mekanlar?select=id&limit=1`
+  // yoksa yanlis bir URL/anahtar mi? AYNI uca `Accept-Profile` BASLIKSIZ
+  // gidiliyor: o zaman PostgREST varsayilan semaya (public) bakar,
+  // `http_request_queue` orada olmadigi icin PGRST205 ("tablo bulunamadi")
+  // doner. Iki farkli kod, tek degisken - basligin davranisi degistirdigi
+  // dogrudan gosterilmis oluyor. Basliksiz cagri da PGRST106 dondurseydi,
+  // yukaridaki iki iddia aslinda hicbir sey olcmuyor demekti.
+  const basliksizProb = await profilIleSorgula(jeton ?? ANON_ANAHTAR, null, kuyrukUcu)
+  esitMi(
+    basliksizProb.kod,
+    'PGRST205',
+    'ayni uc Accept-Profile BASLIKSIZ PGRST205 donuyor (baslik davranisi degistiriyor)'
   )
-  esitMi(publicProb.durum, 200, 'ayni prob public semasinda 200 donuyor (mekanizma calisiyor)')
-  esitMi(publicProb.kod, undefined, 'public prob hata kodu dondurmuyor')
 }
 
 main()

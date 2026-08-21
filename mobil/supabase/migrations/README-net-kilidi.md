@@ -68,11 +68,22 @@ Hicbiri tek basina yeterli degil; birlikte pratik riski kucultuyorlar.
    dogrudan baglanan (psql, connection pooler) bir `anon`/`authenticated`
    rolu kuyrugu yine okuyabilir.
 
-2. **Edge Function tarafindaki dogrulama.** Sirri ele geciren biri yine
-   de yalnizca "bildirim gonder" cagrisi yapabilir; fonksiyon aliciyi
-   payload'a degil veritabanina soruyor, bildirim metnine icerik
-   koymuyor (karar 48) ve oz-bildirim kuralini uyguluyor. Yani sirrin
-   sizmasi veri sizmasi degil, en fazla bildirim gurultusu demek.
+2. **Edge Function KAYNAK SATIRI dogruluyor.** Bu katmanin agirligi
+   burada. Fonksiyon payload'daki id'lere guvenmiyor: her olay icin
+   kaynak satiri service role ile ariyor - mesajda
+   `mesajlar(id, konusma_id, gonderen_id)`, isteklerde
+   `takipler` / `sohbet_istekleri` icinde ilgili cift ve beklenen
+   `durum`. Satir yoksa hicbir sey yapmiyor.
+
+   Onemi: bu dogrulama olmasaydi sirri ele geciren biri **hic olmamis**
+   bir olay uydurabilirdi - "X seni takip etmek istiyor" ya da
+   baskasindan gelmis gibi gorunen bir mesaj bildirimi kurbanin kilit
+   ekranina dusurulebilirdi. Bu gurultu degil, belirli birini adiyla
+   taklit eden taciz/oltalama olurdu. Kaynak satiri dogrulandigi icin
+   sir sizsa bile saldirganin yapabilecegi en fazla sey, gercekten
+   olmus cok yeni bir olayi yinelemek: ayni bildirimin tekrari,
+   zararsiz. Ustune fonksiyon bildirim metnine icerik koymuyor
+   (karar 48) ve oz-bildirim kuralini uyguluyor.
 
 3. **Sir rotasyonu ucuz.** Sir Vault'ta tek bir satir
    (`bildirim_siri`); degistirmek icin kod dagitimi gerekmiyor. Edge
