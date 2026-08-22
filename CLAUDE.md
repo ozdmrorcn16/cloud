@@ -82,6 +82,24 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   etkilesimli, insan gerektiriyor. Ayrinti asagida "Plan 1 TAMAMLANDI"
   bolumunde, kalan borclar `docs/plan1-takip-isleri.md` icinde.
 
+- **Guncelleme (2026-08-23):** Uc sey oldu, ucü de kayitli:
+  (1) **Uygulamanin adi SLOOIN, kesin** (karar 72) - app.json guncellendi
+  (name Slooin, slug/scheme slooin); alan adlari kontrol edildi, ana
+  uzantilar bosta, satin alma kullanicida. Marka tescili magaza oncesi is.
+  (2) **Gorsel kimlik belirlendi** (karar 73-74): beyaz + tek turuncu
+  vurgu (#FF6B1A), tam kanama fotograf kapaklari + karartma, cam rozetler,
+  yuzer gezinme cubugu, Bricolage Grotesque + Instrument Sans. Kanvas
+  calisma dosyalari `tasarim/slooin-kanvas/`, yayin "Slooin Tasarim"
+  Artifact'i. KARAR 74 ONEMLI: ekran metinleri DUZGUN TURKCE olacak
+  (aksanli); ASCII kurali yalnizca kod/yorum/commit icin. Uygulamanin
+  mevcut ASCII UI metinleri kimlik koda tasinirken cevrilecek.
+  SIRADAKI TASARIM ADIMI: kullanici kanvasa bakip onaylarsa kimligi
+  gercek uygulamaya tasima plani yazilacak.
+  (3) Expo SDK ici paketler 57.0.15'e hizalandi; expo-image config
+  plugin'i app.json'a girdi. Telefonda deneme Expo Go ile yapiliyor
+  (sunucu: `cd mobil && npx expo start`, telefonda `exp://<yerel-ip>:8081`);
+  kullanicinin telefonundaki Expo Go surumu eskiydi, guncellemesi istendi.
+
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
 Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
