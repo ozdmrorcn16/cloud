@@ -48,6 +48,14 @@ ne olacagi, kullanici haklari ve basvuru yolu.
 Kayit ekranindaki riza akisina baglanmasi ve magaza listelemesi icin
 URL'e konmasi henuz yapilmadi - ayri bir is.
 
+**Metnin icindeki basvuru kanali hala yer tutucu ve bu yayin oncesi
+BLOKE.** `docs/gizlilik-metni.md` madde "Basvuru yolu" bunu kendi
+icinde acikca soyluyor: somut bir destek kanali (e-posta, form) yok,
+satir gercek bir kanal degil, tek basina bir yer tutucu. Madde 1'in
+"KAPANDI" isareti metnin YAZILMIS ve OKUNABILIR olmasi icin gecerli;
+basvuru kanalinin gercek bir adrese baglanmasi ayri ve hala acik bir
+is, gercek kullaniciya acilmadan once tamamlanmali.
+
 ### 2. Acik riza, ozellikle konum icin (KVKK m.5) - EKSIK
 
 Isletim sisteminin konum izni ile KVKK anlaminda acik riza **ayni sey
@@ -86,11 +94,14 @@ Moderasyon paneli spec'i yeni veri depolari getiriyor
 ertelemek artik daha pahali. Spec'te onerilen sureler ve gerekceleri
 "Saklama sureleri" bolumunde.
 
-### 5. Silme hakki / hesabin silinmesi (KVKK m.11) - KAPSAMA ALINDI
+### 5. Silme hakki / hesabin silinmesi (KVKK m.11) - KAPANDI
 
 Kullanicinin 2026-08-22 karariyla hem **hesap silme** hem **hesap
-dondurma** kapsama girdi ve moderasyon paneli spec'inin Plan 1'inde yer
-aliyor (karar 66-70). Silme kalicidir, bekleme suresi yoktur; geri
+dondurma** kapsama girdi; Plan 1 2026-08-22'de kapandi ve ikisi de
+kodda calisiyor (karar 66-70, karar 70 sonradan geri alindi - asagida).
+Silme, `hesap-sil` Edge Function'i uzerinden calisiyor ve iki ayri
+canli turda (tam silme akisi + parola dogrulama yolunun kendisi)
+dogrulandi. Kalicidir, bekleme suresi yoktur; geri
 donmek isteyen sifirdan hesap acar. Dondurma, kararsiz kullanicinin
 ihtiyacini karsiladigi icin silmenin geri alinamaz olmasini mumkun
 kiliyor.

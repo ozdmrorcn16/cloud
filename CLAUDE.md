@@ -70,6 +70,18 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   degil, tarihsel kayit. Kalan takip isleri:
   `docs/faz3b-takip-isleri.md`.
 
+- **Guncelleme (2026-08-22, Plan 1 kapanisi):** Calisma dali su an
+  `claude/plan1-hesap-haklari`. **Plan 1 (hesap durumu temeli ve
+  kullanici haklari) TAMAMLANDI** - 18 gorevden 17'si uygulandi; Task 14
+  (kullanici adi rezervasyonu) uygulanip ayni oturumda **kullanici
+  karariyla GERI ALINDI** (karar 70), yani ozellik yok, ilgili tablo ve
+  RPC dusuruldu. **SIRADAKI IS: Plan 2 (moderasyon paneli).** Plan 2'ye
+  gecmeden once brief'te tanimli elle tarayici gezintisi
+  (dondur -> cikis -> giris -> otomatik geri acilma, askidaki hesap
+  ekrani, silme akisi, gizlilik ekrani) **kullaniciya birakildi** -
+  etkilesimli, insan gerektiriyor. Ayrinti asagida "Plan 1 TAMAMLANDI"
+  bolumunde, kalan borclar `docs/plan1-takip-isleri.md` icinde.
+
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
 Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
@@ -78,17 +90,20 @@ terminalinde surer. Yeni oturumda:
 ```bash
 cd ~/projects/cloud            # Windows'ta: cd C:\Users\orcns\projects\cloud
 git fetch origin
-git checkout claude/faz3b-sohbet
-git pull origin claude/faz3b-sohbet
+git checkout claude/plan1-hesap-haklari
+git pull origin claude/plan1-hesap-haklari
 cd mobil && npm install        # node_modules repoda degil
-npx jest --runInBand           # mock tabanli suite (39 paket / 289 test)
-npm run test:sema              # gercek veritabani, sema ve yetkiler (69 dogrulama)
-npm run test:gorunurluk        # gercek veritabani, 44 senaryo / 216 dogrulama
+npx jest --runInBand           # mock tabanli suite (44 paket / 359 test)
+npm run test:sema              # gercek veritabani, sema ve yetkiler (137 dogrulama)
+npm run test:gorunurluk        # gercek veritabani, 56 senaryo / 306 dogrulama
 npx tsc --noEmit               # bes onceden var olan hata beklenir
+cd supabase/functions && deno check hesap-sil/index.ts && deno check bildirim-gonder/index.ts && deno test --allow-net --allow-env
 ```
 
-Dal adi guncel kalmali: en son calisilan dal `claude/faz3b-sohbet`
-(2026-08-20, Faz 3b kapanisi). Sayilar Faz 3b kapanisindaki degerler.
+Dal adi guncel kalmali: en son calisilan dal `claude/plan1-hesap-haklari`
+(2026-08-22, Plan 1 kapanisi). Sayilar Plan 1 kapanisindaki degerler
+(senaryo 29 varsayilan kosumda bilerek ATLANDI gosterilir - gunluk
+tavan senaryosu; senaryo 57 kaldirildi, numara bosta).
 
 Bulutta oturum acma — sebebi asagidaki 2026-08-19 tarihli karar.
 
@@ -429,6 +444,71 @@ KALICI bir varsayim; asagidaki karara bak), ikincisi mesaj sikayetinin
 hangi mesaja ait oldugunun `sikayetler` tablosundan okunamadigini
 anlatiyor - ikincisi moderasyon panelini yazani ilgilendiriyor.
 
+**Plan 1 TAMAMLANDI** (2026-08-22). Spec:
+`docs/superpowers/specs/2026-08-22-moderasyon-paneli-design.md`
+("Hesap haklari: dondurma ve silme" bolumu, karar 55-70), plan:
+`docs/superpowers/plans/2026-08-22-plan1-hesap-durumu-ve-haklari.md`.
+Dal `claude/plan1-hesap-haklari`. 18 gorevden 17'si uygulandi; **Task
+14 (kullanici adi rezervasyonu) uygulanip ayni oturumda kullanici
+karariyla GERI ALINDI** (karar 70) - ilgili tablo, RPC ve budama isi
+veritabanindan dusuruldu, `kullanici_adi_musait_mi` rezervasyon oncesi
+haline dondu. 16 migrasyon (`20260822090000`den `20260822103000`e,
+kullanici adi rezervasyonunun ekleyip-sonra-kaldiran iki migrasyonu
+dahil), 1 yeni Edge Function (`hesap-sil`), 1 yeni istemci modulu
+(`lib/hesap.ts`), 3 yeni ekran (askidaki hesap, gizlilik metni, hesap
+silme), 12 yeni canli senaryo (45-56; senaryo 57 - rezervasyon testi -
+ozellikle birlikte kaldirildi, numara bosta).
+
+Kapanis dogrulamasi (bu oturum, Task 18): `npx jest --runInBand` 44
+paket / 359 test yesil; `npm run test:sema` 137 dogrulama, 0 hata;
+`npm run test:gorunurluk` 56 senaryo (29 bilerek ATLANDI - gunluk
+tavan) / 306 dogrulama, 0 hata; `npx tsc --noEmit` yalnizca bes
+onceden var olan `@types/node` hatasi; `deno check` iki Edge
+Function'da da temiz, `deno test` 17/17 yesil.
+
+Calisan islevler: `hesap_durumlari` tablosu (`askida` / `yasakli` /
+`dondurulmus`) ve `moderasyon.hesap_aktif_mi` yardimcisi; spec'teki 8
+yazma kapisinin (check_in_yap, mekan_ekle, kullanici_adi_degistir,
+bag.istek_on_kontrol, takip/sohbet istegini yanitla, bag.yazabilir_mi,
+profiller update politikasi, Storage profil-fotograflari insert
+politikasi) ve 5 gorunurluk yolunun (check_inler select, kisi_ara,
+baskasinin_profili, bag_kisileri, yakin_mekanlar_yogunluk) hepsi
+askiya alma/dondurma/yasaklamaya baglandi; `hesabimi_dondur` /
+`hesabimi_geri_ac` RPC'leri (geri acilma otomatik, girisde tetiklenir);
+`hesap-sil` Edge Function'i (parola sunucuda `signInWithPassword` ile
+dogrulanir, Storage fotograflari silinir, `auth.admin.deleteUser`
+cagrilir); mesajlarda gonderen, sikayetlerde sikayet eden anonimlesir
+(cascade yerine `set null`); tek uyeli konusma destegi
+(`mesajlari_getir`, `konusmalarim`, `bag.yazabilir_mi` uc okuyucu da
+duzeltildi); gizlilik metni (`docs/gizlilik-metni.md`) ve onu gosteren
+ekran (`Ayarlar > Gizlilik metni`).
+
+**Gercek hesap silme canli olarak IKI AYRI TURDA dogrulandi**
+(kontrolor tarafindan, atilabilir test hesaplariyla): tam silme akisi
+(yanlis parolayla red, dogru parolayla silme, ayni telefonla yeniden
+kayit) ve parola dogrulama yolunun kendisi (`signInWithPassword`
+sunucuda gercekten calisiyor). Brief'teki Step 3'un geri kalani -
+dondur -> cikis -> giris -> otomatik geri acilma, askidaki hesap
+ekrani, gizlilik ekrani - **kullaniciya birakildi**; etkilesimli,
+insan gerektiriyor.
+
+Oturum icinde kullanicinin verdigi kararlar: dondurulmus hesap geri
+acilinca canli check-in geri gelmez (yalnizca ani olarak kalir);
+kullanici adi rezervasyonu tamamen kaldirildi (karar 70, gerekce:
+ozellik hicbir yazma noktasinda zorlanmiyordu); hesap silme onayi
+yalnizca parola ile yapilir, kullanici adi onayi kaldirildi; gizli
+check-in yogunluk sayacinda gorunmeye devam eder (karar 71).
+
+Enforcement-noktasi denetiminde (Task 18 Step 2) bulunan uc test
+bosluğu: `bag.yazabilir_mi` (askidaki kullanici mesaj gonderemez,
+gate 6), `sohbet_istegini_yanitla`'nin askı kontrolu (gate 5'in yarisi
+- yalnizca `takip_istegini_yanitla` senaryo 48'de test edildi) ve
+Storage `profil-fotograflari` insert politikasi (gate 8) migrasyonlarda
+DOGRU uygulanmis ama `test:gorunurluk` icinde kendi senaryolari yok.
+Tam liste ve okuma kaniti `docs/plan1-takip-isleri.md` icinde.
+
+Kalan takip isleri: `docs/plan1-takip-isleri.md`.
+
 ### Bastan tasarima girmesi gereken kisit
 
 Yabancilarla konum paylasimi bu uygulamanin **cekirdek riski**, sonradan
@@ -498,6 +578,16 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   Onek, diger eklentilerle cakismasin diye `--prefix` ile secildi.
 
 ## Kararlar
+
+- 2026-08-22 - **Plan 1 (hesap durumu temeli ve kullanici haklari)
+  KAPANDI; SIRADAKI IS Plan 2 (moderasyon paneli).** Asagidaki
+  "SIRADAKI IS: moderasyon paneli. SPEC YAZILDI, kod yazilmadi." girdisi
+  artik kismen gecersiz - spec ve Plan 1 uygulandi, kod yazildi. Ayrinti
+  "Faz 3b'den kalan takip isleri" basligindan hemen sonraki "Plan 1
+  TAMAMLANDI" bolumunde. Ozet: 17/18 gorev (Task 14 uygulanip geri
+  alindi), dort otomatik kosum sifir hatayla yesil, gercek hesap silme
+  iki ayri canli turda dogrulandi, elle tarayici gezintisi kullaniciya
+  birakildi. Plan 2 baslamadan once o gezinti tamamlanmali.
 
 - 2026-08-22 - **SIRADAKI IS: moderasyon paneli. SPEC YAZILDI, kod
   yazilmadi.** Spec:

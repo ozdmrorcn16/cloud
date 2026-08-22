@@ -773,3 +773,64 @@ uyum listesindeki iki BLOKE madde plan 1'de kapaniyor ve panelin
     Sonucu: gizlilik metni bunu OLDUGU GIBI anlatmali - "kimseye
     gorunmez" demek yanlis beyan olur; dogrusu "kimligin gorunmez,
     mekanin anonim kisi sayacinda sayilirsin".
+
+## Plan 1 (hesap durumu temeli ve kullanici haklari) kapanisi (2026-08-22)
+
+18 gorevden 17'si uygulandi, dal `claude/plan1-hesap-haklari`. 16
+migrasyon (`20260822090000`den `20260822103000`e - kullanici adi
+rezervasyonunu ekleyip sonra kaldiran iki migrasyon dahil), 1 yeni
+Edge Function (`hesap-sil`), 1 yeni istemci modulu (`lib/hesap.ts`), 3
+yeni ekran, 12 yeni canli senaryo (45-56; 57 kaldirildi, numara
+bosta).
+
+**Karar 70 (yukarida "90 gun rezerve") oturum icinde iki kez daha
+degisti, son hali GERI ALINMA.** Once kullanicinin istegiyle 24 saate
+indirildi, sonra tamamen kaldirildi: ozellik uygulanip incelendiginde
+rezervasyonun hicbir YAZMA noktasinda (`kullanici_adi_degistir` RPC'si,
+kayittaki `profiller` insert'i) zorlanmadigi ortaya cikti - yalnizca
+`kullanici_adi_musait_mi` gostergesi tabloya bakiyordu, gercek yazma
+yollari hic bakmiyordu. Ozelligi tam zorlayici yapmak iki yazma yolunu
+daha degistirmeyi gerektirecekti; kullanici tamamini kaldirmayi secti.
+Sonuc: silinen bir kullanici adi ANINDA serbest kalir, taklit korumasi
+yok. Ilgili tablo, RPC ve budama isi veritabanindan dusuruldu.
+
+**Oturum icinde alinan diger kararlar:**
+
+- Dondurulmus hesap geri acilinca canli check-in GERI GELMEZ; yalnizca
+  ani olarak kalir. Gerekce: canli varlik zaten ~4 saatlik bir kavram,
+  iki hafta sonra donen birinin "su an burada" gorunmesi yanlis olurdu.
+- Hesap silme onayi yalnizca PAROLA ile yapilir; kullanici adi onayi
+  (karar 67'de yazan) kaldirildi - kullanici zaten kendi hesabinin
+  icinde ve kullanici adi herkese acik bir bilgi, gercek bir kapi
+  degildi. Parola sunucuda (`hesap-sil` Edge Function'i icinde
+  `signInWithPassword` ile) dogrulanir, istemcide degil.
+- Karar 71 (gizli check-in mekan sayacinda gorunur) bu oturumda
+  yeniden onaylandi, degismedi.
+
+**Dogrulama (Task 18, kapanis kosumu):** `npx jest --runInBand` 44
+paket / 359 test yesil; `npm run test:sema` 137 dogrulama, 0 hata;
+`npm run test:gorunurluk` 56 senaryo / 306 dogrulama, 0 hata (senaryo
+29 bilerek ATLANDI - gunluk tavan, `--tavan` bayragiyla ayrica
+calisir); `npx tsc --noEmit` yalnizca bes onceden var olan
+`@types/node` hatasi; `deno check hesap-sil/index.ts` ve
+`deno check bildirim-gonder/index.ts` temiz, `deno test` 17/17 yesil.
+
+**Gercek hesap silme canli olarak IKI AYRI TURDA dogrulandi** (atilabilir
+test hesaplariyla): tam silme akisi (yanlis parolayla red, dogru
+parolayla silme, ayni telefonla yeniden kayit) ve parola dogrulama
+yolunun kendisinin sunucuda gercekten calistigi. Brief'teki elle
+tarayici gezintisinin geri kalani (dondur -> cikis -> giris -> otomatik
+geri acilma, askidaki hesap ekrani, gizlilik ekrani) etkilesimli oldugu
+icin **kullaniciya birakildi**.
+
+**Enforcement-noktasi denetiminde bulunan uc test bosluğu** (Task 18
+Step 2, surec kontrolu - otomatik kacak kontrolu degil): spec'teki 8
+yazma kapisi ve 5 gorunurluk yolunun HEPSI migrasyonlarda dogru
+uygulanmis, ama ucunun `test:gorunurluk` icinde kendi senaryosu yok:
+`bag.yazabilir_mi` (askidaki kullanici mesaj gonderemez - gate 6),
+`sohbet_istegini_yanitla`'nin askı kontrolu (gate 5'in yalnizca
+`takip_istegini_yanitla` yarisi senaryo 48'de test edildi), ve Storage
+`profil-fotograflari` insert politikasi (gate 8). Ayrinti ve migrasyon
+kaniti `docs/plan1-takip-isleri.md` icinde.
+
+Kalan takip isleri: `docs/plan1-takip-isleri.md`.
