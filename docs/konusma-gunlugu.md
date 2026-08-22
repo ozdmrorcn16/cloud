@@ -859,3 +859,28 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     uzerinden elle bakilmali). Kullaniciya en az slooin.com'un (tercihen
     + slooin.app) hemen alinmasi onerildi; isim public depoda gorunur
     oldugu icin erken kayit ucuz bir sigorta. Satin alma kullanicida.
+
+### Gorsel kimlik calismasi basladi (2026-08-23)
+
+73. **Gorsel yon belirlendi: beyaz + turuncu, modern ve sade.** Surec:
+    kullanici once "Swarm x Instagram x Tinder arasi" dedi; ilk taslak
+    (mercan-pembe degrade) fazla renkli bulundu ("cok renkli, daha basit
+    kullanisli olmali, beyaz ve turuncu agirlikli"); ikinci sade surum de
+    yetersiz bulundu ("cok daha modern gelismis seviyede gorunmeli").
+    Nihai dil: beyaz zemin, TEK turuncu vurgu (#FF6B1A, yalnizca eylem
+    ve canlilik icin), tam kanama fotograf kapaklari uzerinde karartma +
+    beyaz yazi, cam (blur) rozetler, YUZER gezinme cubugu, Bricolage
+    Grotesque + Instrument Sans. Kelime markasi: siyah "slooin" + turuncu
+    nokta. Kanvas: tasarim/slooin-kanvas/ (calisma dosyalari) ve Artifact
+    "Slooin Tasarim".
+
+74. **EKRAN METINLERI DUZGUN TURKCE OLACAK (aksanli harflerle).**
+    Kullanicinin karari: "yazim yanlislari olmamali". Tasarim
+    taslaklarindaki ASCII Turkce ("Su an cevrende", "Kesfet") kullaniciya
+    yazim yanlisi olarak gorundu ve hakli: kod/yorum kurali (ASCII)
+    KULLANICIYA GORUNEN metinlere uygulanmamali. Sonuc: tasarimda butun
+    ekran metinleri duzgun Turkce (Şu an çevrende, Keşfet, Şimdi
+    buradasın). ONEMLI TAKIP ISI: uygulamanin KENDISI su an her yerde
+    ASCII Turkce metin gosteriyor; gorsel kimlik koda tasinirken UI
+    metinleri de duzgun Turkceye cevrilmeli. Kod/yorum/commit kurali
+    (ASCII) DEGISMIYOR - yalnizca kullaniciya gorunen string'ler.

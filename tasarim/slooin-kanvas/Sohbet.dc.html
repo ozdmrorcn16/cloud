@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Instrument Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #E85D0F; } a:hover { color: #c74d0a; }
+    @keyframes canliNokta { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FFFFFF; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 12px; padding: 58px 16px 14px 16px; border-bottom: 1px solid #F5F1EC">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17130F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <div style="width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(140deg, #FFD9BE, #F0A878); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #8A3C06">D</div>
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; color: #17130F">Deniz</div>
+      <div style="display: flex; align-items: center; gap: 5px">
+        <span style="width: 6px; height: 6px; border-radius: 999px; background: #FF6B1A; display: inline-block; animation: canliNokta 1.6s ease-in-out infinite"></span>
+        <span style="font-size: 12px; font-weight: 600; color: #E85D0F">Aynı mekândasınız</span>
+      </div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; padding: 20px 16px; overflow: hidden">
+
+    <div style="align-self: center; display: flex; align-items: center; gap: 6px; background: #FFF3EA; border-radius: 999px; padding: 7px 14px; margin-bottom: 12px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E85D0F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      <span style="font-size: 12px; font-weight: 600; color: #E85D0F">Moda Sahil Kahvesi'nde tanıştınız</span>
+    </div>
+
+    <div style="align-self: flex-start; max-width: 78%; background: #F4F1ED; border-radius: 20px 20px 20px 6px; padding: 12px 16px; font-size: 15px; color: #17130F; line-height: 1.45">Selam! Pencere kenarındaki masadayım, plak dinliyoruz.</div>
+
+    <div style="align-self: flex-end; max-width: 78%; background: #FF6B1A; border-radius: 20px 20px 6px 20px; padding: 12px 16px; font-size: 15px; color: #FFFFFF; line-height: 1.45; margin-top: 8px">Gördüm seni! Kahvemi alıp geliyorum.</div>
+
+    <div style="align-self: flex-start; max-width: 78%; background: #F4F1ED; border-radius: 20px 20px 20px 6px; padding: 12px 16px; font-size: 15px; color: #17130F; line-height: 1.45; margin-top: 8px">Sana da soğuk demleme söyledim, umarım seversin.</div>
+
+    <div style="align-self: flex-end; max-width: 78%; background: #FF6B1A; border-radius: 20px 20px 6px 20px; padding: 12px 16px; font-size: 15px; color: #FFFFFF; line-height: 1.45; margin-top: 8px">Harika seçim!</div>
+
+    <div style="align-self: flex-end; font-size: 11px; font-weight: 500; color: #A39B93; margin-top: 4px">Okundu · 14.32</div>
+
+  </div>
+
+  <div style="padding: 10px 16px 26px 16px">
+    <div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #EFEAE5; border-radius: 999px; padding: 7px 7px 7px 20px; box-shadow: 0 10px 30px rgba(23,19,15,0.08)">
+      <div style="flex-grow: 1; font-size: 15px; color: #A39B93">Mesaj yaz...</div>
+      <div style="width: 44px; height: 44px; border-radius: 999px; background: #FF6B1A; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(255,107,26,0.35)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Stil.dc.html", "x": 0, "y": 0, "w": 820, "h": 640, "title": "Gorsel kimlik" },
+    { "file": "Main.dc.html", "x": 0, "y": 780, "w": 390, "h": 844, "title": "Ana ekran - Kesfet" },
+    { "file": "Mekan.dc.html", "x": 470, "y": 780, "w": 390, "h": 844, "title": "Mekan detayi" },
+    { "file": "CheckIn.dc.html", "x": 940, "y": 780, "w": 390, "h": 844, "title": "Check-in ani" },
+    { "file": "Kisi.dc.html", "x": 1410, "y": 780, "w": 390, "h": 844, "title": "Baskasinin profili" },
+    { "file": "Sohbet.dc.html", "x": 1880, "y": 780, "w": 390, "h": 844, "title": "Sohbet" }
+  ],
+  "annotations": [
+    { "id": "yon-notu", "x": 860, "y": 40, "w": 300, "text": "Yon: beyaz + turuncu, modern.\nTam kanama fotograf kapaklari, uzerinde karartma ve beyaz yazi. Cam (blurlu) rozetler ve yuzer gezinme cubugu. Turuncu yalnizca eylem ve canlilik icin.\n\nFotograflar yer tutucu (sicak tonlu sahneler); gercek fotograf gelince ayni karartma kurali gecerli.\nEkran metinleri duzgun Turkce (kullanicinin karari)." }
+  ],
+  "launch": { "view": "canvas" }
+}
