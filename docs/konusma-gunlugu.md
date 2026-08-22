@@ -851,3 +851,11 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
 
     Marka tescili ve alan adi kontrolu YAPILMADI; magazaya cikis
     oncesi kalemleri (docs/isim-arastirmasi.md'deki surece eklenecek).
+
+    Ek (2026-08-23, ayni gun): alan adi kontrolu YAPILDI - RDAP ile
+    kayit otoritelerinden dogrudan soruldu. slooin.com, slooin.app,
+    slooin.net, slooin.co ve slooin.io HEPSI BOSTA (kayitsiz).
+    slooin.com.tr RDAP'la dogrulanamadi (TRABIS desteklemiyor; nic.tr
+    uzerinden elle bakilmali). Kullaniciya en az slooin.com'un (tercihen
+    + slooin.app) hemen alinmasi onerildi; isim public depoda gorunur
+    oldugu icin erken kayit ucuz bir sigorta. Satin alma kullanicida.
