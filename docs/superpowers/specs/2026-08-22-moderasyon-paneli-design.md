@@ -600,9 +600,19 @@ koymuyoruz, cunku o pencerenin karsiladigi ihtiyaci (kararsizlik,
 istegini geciktirmek, KVKK m.11 anlaminda da tercih edilen davranis
 degil: talep gecikmeden sonuclandirilmali.
 
-Yanlislikla silmeye karsi koruma sure degil **surtunmedir**: silme
-onayinda parola yeniden istenir ve kullanici kendi kullanici adini
-yazarak onaylar. Onay ekrani dondurmayi acikca alternatif olarak sunar.
+Yanlislikla silmeye karsi koruma sure degil **parola yeniden
+dogrulamasidir** (kullanicinin karari, 2026-08-22). Kullanici adi
+onayi KALDIRILDI: kullanici zaten kendi hesabinin icinde, ve kullanici
+adi herkese acik bir bilgi oldugu icin (`baskasinin_profili` ve
+`kisi_ara` donduruyor) gercek bir kapi degildi - yalnizca surtunmeydi.
+
+**Parola SUNUCUDA dogrulanir, istemcide degil.** `hesap-sil` Edge
+Function govdeden gelen parolayi anon istemciyle `signInWithPassword`
+cagirarak sinar; basarisizsa silme yapilmaz. Boylece istemci
+atlanamaz: calinmis bir oturum jetonu tek basina hesabi silmeye
+yetmez, parola da gerekir. Parola hicbir log satirina yazilmaz.
+
+Onay ekrani dondurmayi acikca alternatif olarak sunar.
 
 Islemi bir Edge Function yurutur (`hesap-sil`), cunku `auth.users`
 satirini silmek Admin API gerektirir ve bu yalnizca sunucu tarafinda
