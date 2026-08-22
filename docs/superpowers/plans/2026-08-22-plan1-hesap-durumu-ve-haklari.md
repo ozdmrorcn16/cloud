@@ -159,7 +159,7 @@ kaliplarini izleyerek en sona ekle:
 
   // hesap_durumlari'na authenticated yazamaz; yalnizca kendi satirini okur.
   {
-    const { error } = await aIstemci
+    const { error } = await a
       .from('hesap_durumlari')
       .insert({ kullanici_id: aId, durum: 'askida', gerekce: 'test' })
     esitMi(
@@ -170,7 +170,7 @@ kaliplarini izleyerek en sona ekle:
   }
 
   {
-    const { data, error } = await aIstemci
+    const { data, error } = await a
       .from('hesap_durumlari')
       .select('kullanici_id')
       .eq('kullanici_id', bId)
@@ -184,7 +184,7 @@ kaliplarini izleyerek en sona ekle:
 
   // moderasyon semasi PostgREST uzerinden sunulmuyor.
   {
-    const { error } = await aIstemci.rpc('hesap_aktif_mi', {
+    const { error } = await a.rpc('hesap_aktif_mi', {
       p_kullanici_id: bId,
     })
     esitMi(
@@ -379,7 +379,7 @@ cagiriyor). Bu yuzden ilk yazma gorevi bu.
       })
     esitMi(kurulumHata, null, '45 kurulum: aski satiri yazildi')
 
-    const { error } = await aIstemci.rpc('takip_istegi_gonder', {
+    const { error } = await a.rpc('takip_istegi_gonder', {
       p_kullanici_id: bId,
     })
     esitMi(error !== null, true, '45: askidaki A istek gonderemez')
@@ -404,7 +404,7 @@ cagiriyor). Bu yuzden ilk yazma gorevi bu.
       })
     esitMi(kurulumHata, null, '46 kurulum: aski satiri yazildi')
 
-    const { error } = await aIstemci.rpc('takip_istegi_gonder', {
+    const { error } = await a.rpc('takip_istegi_gonder', {
       p_kullanici_id: bId,
     })
     esitMi(error !== null, true, '46: askidaki B istek alamaz')
@@ -557,14 +557,14 @@ git commit -m "feat: askiya alma bag yazma kapilarina baglandi (istek ve mesaj)"
       })
     esitMi(kurulumHata, null, '47 kurulum: aski satiri yazildi')
 
-    const { error: checkInHata } = await aIstemci.rpc('check_in_yap', {
-      p_mekan_id: mekan1Id,
+    const { error: checkInHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
       p_lat: MEKAN_1.lat,
       p_lng: MEKAN_1.lng,
     })
     esitMi(checkInHata !== null, true, '47: askidaki A check-in yapamaz')
 
-    const { error: mekanHata } = await aIstemci.rpc('mekan_ekle', {
+    const { error: mekanHata } = await a.rpc('mekan_ekle', {
       p_ad: 'GORUNURLUK-TEST-ASKI-MEKAN',
       p_tur: 'test',
       p_lat: MEKAN_1.lat,
@@ -574,7 +574,7 @@ git commit -m "feat: askiya alma bag yazma kapilarina baglandi (istek ve mesaj)"
     })
     esitMi(mekanHata !== null, true, '47: askidaki A mekan ekleyemez')
 
-    const { error: adHata } = await aIstemci.rpc('kullanici_adi_degistir', {
+    const { error: adHata } = await a.rpc('kullanici_adi_degistir', {
       p_yeni_ad: 'aski_kacis_denemesi',
     })
     esitMi(adHata !== null, true, '47: askidaki A kullanici adi degistiremez')
@@ -819,8 +819,8 @@ git commit -m "feat: askiya alma check_in_yap, mekan_ekle ve kullanici_adi_degis
     }
 
     // A -> B bekleyen bir takip istegi kur (A aktifken).
-    await aIstemci.rpc('takibi_birak', { p_kullanici_id: bId })
-    const { error: istekHata } = await aIstemci.rpc('takip_istegi_gonder', {
+    await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    const { error: istekHata } = await a.rpc('takip_istegi_gonder', {
       p_kullanici_id: bId,
     })
     esitMi(istekHata, null, '48 kurulum: istek gonderildi')
@@ -836,14 +836,14 @@ git commit -m "feat: askiya alma check_in_yap, mekan_ekle ve kullanici_adi_degis
       })
     esitMi(kurulumHata, null, '48 kurulum: B askiya alindi')
 
-    const { error } = await bIstemci.rpc('takip_istegini_yanitla', {
+    const { error } = await b.rpc('takip_istegini_yanitla', {
       p_kullanici_id: aId,
       p_kabul: true,
     })
     esitMi(error !== null, true, '48: askidaki B istegi kabul edemez')
 
     await hesapDurumunuTemizle([bId])
-    await bIstemci.rpc('takip_istegini_yanitla', {
+    await b.rpc('takip_istegini_yanitla', {
       p_kullanici_id: aId,
       p_kabul: false,
     })
@@ -995,7 +995,7 @@ git commit -m "feat: askiya alma istek yanitlama RPC'lerine baglandi"
       console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
       return
     }
-    const { data: onceki, error: okumaHata } = await aIstemci
+    const { data: onceki, error: okumaHata } = await a
       .from('profiller')
       .select('biyografi')
       .eq('id', aId)
@@ -1013,12 +1013,12 @@ git commit -m "feat: askiya alma istek yanitlama RPC'lerine baglandi"
       })
     esitMi(kurulumHata, null, '49 kurulum: aski satiri yazildi')
 
-    const { error: yazmaHata } = await aIstemci
+    const { error: yazmaHata } = await a
       .from('profiller')
       .update({ biyografi: 'ASKIDA-DEGISTIRME-DENEMESI' })
       .eq('id', aId)
 
-    const { data: sonraki } = await aIstemci
+    const { data: sonraki } = await a
       .from('profiller')
       .select('biyografi')
       .eq('id', aId)
@@ -1129,10 +1129,10 @@ git commit -m "feat: askiya alma profil guncelleme ve fotograf yukleme politikal
       return
     }
     // B ayni mekana check-in yapsin (aktifken), A da ayni mekanda olsun.
-    const aCheckIn = await checkInYap(aIstemci, mekan1Id, MEKAN_1.lat, MEKAN_1.lng)
-    const bCheckIn = await checkInYap(bIstemci, mekan1Id, MEKAN_1.lat, MEKAN_1.lng)
+    const aCheckIn = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    const bCheckIn = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
 
-    const { data: oncesi, error: oncesiHata } = await aIstemci
+    const { data: oncesi, error: oncesiHata } = await a
       .from('check_inler')
       .select('id')
       .eq('id', bCheckIn)
@@ -1150,14 +1150,14 @@ git commit -m "feat: askiya alma profil guncelleme ve fotograf yukleme politikal
       })
     esitMi(kurulumHata, null, '50 kurulum: B askiya alindi')
 
-    const { data: sonrasi, error: sonrasiHata } = await aIstemci
+    const { data: sonrasi, error: sonrasiHata } = await a
       .from('check_inler')
       .select('id')
       .eq('id', bCheckIn)
     esitMi(sonrasiHata, null, '50: okuma hatasiz')
     esitMi((sonrasi ?? []).length, 0, '50: askidaki B\'nin check-in\'i A\'ya gorunmuyor')
 
-    const { data: kendi, error: kendiHata } = await bIstemci
+    const { data: kendi, error: kendiHata } = await b
       .from('check_inler')
       .select('id')
       .eq('id', bCheckIn)
@@ -1165,7 +1165,7 @@ git commit -m "feat: askiya alma profil guncelleme ve fotograf yukleme politikal
     esitMi((kendi ?? []).length, 1, '50: B kendi check-in\'ini hala goruyor')
 
     await hesapDurumunuTemizle([bId])
-    temizlenecekler.checkInler.push(aCheckIn, bCheckIn)
+    t.checkInler.push({ istemci: a, id: aCheckIn }, { istemci: b, id: bCheckIn })
   })
 ```
 
@@ -1261,7 +1261,7 @@ git commit -m "feat: askidaki kullanicinin check-in'leri gorunurlukten cikti"
       console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
       return
     }
-    const { data: bProfil, error: bProfilHata } = await bIstemci
+    const { data: bProfil, error: bProfilHata } = await b
       .from('profiller')
       .select('kullanici_adi')
       .eq('id', bId)
@@ -1280,7 +1280,7 @@ git commit -m "feat: askidaki kullanicinin check-in'leri gorunurlukten cikti"
       })
     esitMi(kurulumHata, null, '51 kurulum: B askiya alindi')
 
-    const { data: arama, error: aramaHata } = await aIstemci.rpc('kisi_ara', {
+    const { data: arama, error: aramaHata } = await a.rpc('kisi_ara', {
       p_metin: bAd,
     })
     esitMi(aramaHata, null, '51: arama hatasiz')
@@ -1290,7 +1290,7 @@ git commit -m "feat: askidaki kullanicinin check-in'leri gorunurlukten cikti"
       '51: askidaki B aramada cikmiyor'
     )
 
-    const { data: profil, error: profilHata } = await aIstemci.rpc(
+    const { data: profil, error: profilHata } = await a.rpc(
       'baskasinin_profili',
       { p_kullanici_id: bId }
     )
@@ -1298,7 +1298,7 @@ git commit -m "feat: askidaki kullanicinin check-in'leri gorunurlukten cikti"
     esitMi((profil ?? []).length, 0, '51: askidaki B\'nin profili acilmiyor')
 
     // Askidaki cagiran da arama yapamaz.
-    const { data: bAramasi, error: bAramaHata } = await bIstemci.rpc('kisi_ara', {
+    const { data: bAramasi, error: bAramaHata } = await b.rpc('kisi_ara', {
       p_metin: 'test',
     })
     esitMi(bAramaHata, null, '51: askidaki cagiran icin arama hatasiz')
@@ -1466,16 +1466,16 @@ git commit -m "feat: askidaki kullanici aramadan ve profil acmadan dusuruldu"
       console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
       return
     }
-    const bCheckIn = await checkInYap(bIstemci, mekan2Id, MEKAN_2.lat, MEKAN_2.lng)
+    const bCheckIn = await checkInYap(b, mekan2, MEKAN_2.lat, MEKAN_2.lng)
 
-    const { data: oncesi, error: oncesiHata } = await aIstemci.rpc(
+    const { data: oncesi, error: oncesiHata } = await a.rpc(
       'yakin_mekanlar_yogunluk',
       { p_lat: MEKAN_2.lat, p_lng: MEKAN_2.lng, p_yaricap_metre: 1000 }
     )
     esitMi(oncesiHata, null, '52 kurulum: yogunluk hatasiz')
     const oncekiSayi =
       ((oncesi ?? []) as { id: string; kisi_sayisi: number }[]).find(
-        (m) => m.id === mekan2Id
+        (m) => m.id === mekan2
       )?.kisi_sayisi ?? 0
     esitMi(oncekiSayi >= 1, true, '52 kurulum: mekan2 en az 1 kisi sayiyor')
 
@@ -1490,25 +1490,25 @@ git commit -m "feat: askidaki kullanici aramadan ve profil acmadan dusuruldu"
       })
     esitMi(kurulumHata, null, '52 kurulum: B askiya alindi')
 
-    const { data: sonrasi, error: sonrasiHata } = await aIstemci.rpc(
+    const { data: sonrasi, error: sonrasiHata } = await a.rpc(
       'yakin_mekanlar_yogunluk',
       { p_lat: MEKAN_2.lat, p_lng: MEKAN_2.lng, p_yaricap_metre: 1000 }
     )
     esitMi(sonrasiHata, null, '52: yogunluk hatasiz')
     const sonrakiSayi =
       ((sonrasi ?? []) as { id: string; kisi_sayisi: number }[]).find(
-        (m) => m.id === mekan2Id
+        (m) => m.id === mekan2
       )?.kisi_sayisi ?? 0
     esitMi(sonrakiSayi, oncekiSayi - 1, '52: askidaki B yogunlukta sayilmiyor')
 
-    const { data: liste, error: listeHata } = await aIstemci.rpc('bag_kisileri', {
+    const { data: liste, error: listeHata } = await a.rpc('bag_kisileri', {
       p_kimlikler: [bId],
     })
     esitMi(listeHata, null, '52: bag_kisileri hatasiz')
     esitMi((liste ?? []).length, 0, '52: askidaki B bag listesinde yok')
 
     await hesapDurumunuTemizle([bId])
-    temizlenecekler.checkInler.push(bCheckIn)
+    t.checkInler.push({ istemci: b, id: bCheckIn })
   })
 ```
 
@@ -1646,13 +1646,13 @@ git commit -m "feat: askidaki kullanici bag listesinden ve yogunluk sayacindan d
 
 ```ts
   await senaryo('53 - Dondurma ve otomatik geri acilma', async () => {
-    const { error: dondurHata } = await aIstemci.rpc('hesabimi_dondur', {
+    const { error: dondurHata } = await a.rpc('hesabimi_dondur', {
       p_gerekce: 'test',
     })
     esitMi(dondurHata, null, '53: A hesabini dondurebiliyor')
 
     // Dondurulmus A, B'ye gorunmuyor.
-    const { data: profil, error: profilHata } = await bIstemci.rpc(
+    const { data: profil, error: profilHata } = await b.rpc(
       'baskasinin_profili',
       { p_kullanici_id: aId }
     )
@@ -1660,20 +1660,20 @@ git commit -m "feat: askidaki kullanici bag listesinden ve yogunluk sayacindan d
     esitMi((profil ?? []).length, 0, '53: dondurulmus A profilde acilmiyor')
 
     // Dondurulmus A yazamiyor.
-    const { error: checkInHata } = await aIstemci.rpc('check_in_yap', {
-      p_mekan_id: mekan1Id,
+    const { error: checkInHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
       p_lat: MEKAN_1.lat,
       p_lng: MEKAN_1.lng,
     })
     esitMi(checkInHata !== null, true, '53: dondurulmus A check-in yapamiyor')
 
     // Geri acma calisiyor ve true donuyor.
-    const { data: acildi, error: acmaHata } = await aIstemci.rpc('hesabimi_geri_ac')
+    const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
     esitMi(acmaHata, null, '53: geri acma hatasiz')
     esitMi(acildi, true, '53: geri acma true donuyor')
 
     // Ikinci cagri false donuyor (silinecek satir yok).
-    const { data: tekrar, error: tekrarHata } = await aIstemci.rpc('hesabimi_geri_ac')
+    const { data: tekrar, error: tekrarHata } = await a.rpc('hesabimi_geri_ac')
     esitMi(tekrarHata, null, '53: ikinci geri acma hatasiz')
     esitMi(tekrar, false, '53: aktif hesapta geri acma false donuyor')
   })
@@ -1698,11 +1698,11 @@ git commit -m "feat: askidaki kullanici bag listesinden ve yogunluk sayacindan d
     // BU SENARYO OTOMATIK GERI ACILMANIN GUVENLIGIDIR. Istemci her
     // giriste hesabimi_geri_ac cagiriyor; bu cagri askiyi kaldirsaydi
     // moderasyon karari kullanicinin uygulamayi acmasiyla silinirdi.
-    const { data: acildi, error: acmaHata } = await aIstemci.rpc('hesabimi_geri_ac')
+    const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
     esitMi(acmaHata, null, '54: cagri hatasiz')
     esitMi(acildi, false, '54: aski kalkmadi, false dondu')
 
-    const { data: hala, error: halaHata } = await aIstemci
+    const { data: hala, error: halaHata } = await a
       .from('hesap_durumlari')
       .select('durum')
       .eq('kullanici_id', aId)
@@ -1710,7 +1710,7 @@ git commit -m "feat: askidaki kullanici bag listesinden ve yogunluk sayacindan d
     esitMi((hala ?? []).length, 1, '54: aski satiri yerinde duruyor')
 
     // Askidaki kullanici dondurmaya da ceviremez.
-    const { error: dondurHata } = await aIstemci.rpc('hesabimi_dondur', {
+    const { error: dondurHata } = await a.rpc('hesabimi_dondur', {
       p_gerekce: 'kacis denemesi',
     })
     esitMi(dondurHata !== null, true, '54: askidaki A hesabini donduramaz')
@@ -2457,52 +2457,30 @@ baskalari hakkinda actigi sikayetleri yok eder.
   - Istemci tarafinda silinmis karsi taraf **"Silinmis kullanici"**
     olarak gosterilir (tam metin, Task 18 elle dogrulamasinda aranir).
 
-- [ ] **Step 1: Sema dogrulamasina basarisiz kontrolleri ekle**
+- [ ] **Step 1: Sema degisikliginin elle dogrulama sorgularini not al**
 
-`mobil/gorunurluk-testleri/sema-dogrula.ts` sonuna:
+Bu gorevin sema tarafi otomatik test edilmiyor ve bu **bilincli bir
+karardir**: bu projede `information_schema`'yi istemciden okuyacak bir
+RPC yok, ve yalnizca bunun icin bir tane acmak yeni bir erisim yuzeyi
+demek olurdu. Hicbir sey iddia etmeyen bir test yazmak ise testten
+daha kotudur - yesil gorunur, hicbir sey korumaz.
 
-```ts
-  // --- Silmede kalanlar (Plan 1 Task 13) ---
-  // Bu iki sutun nullable OLMALI; degilse silme cascade ile icerigi
-  // goturur (spec karar 68).
-  {
-    const yonetici = yoneticiIstemcisi()
-    if (!yonetici) {
-      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
-    } else {
-      const { data, error } = await yonetici.rpc('exec_sql_okuma', {}).then(
-        () => ({ data: null, error: null }),
-        () => ({ data: null, error: null })
-      )
-      // Not: Bu projede genel bir SQL okuma RPC'si yok. Kontrol Supabase
-      // MCP `execute_sql` ile ya da elle su sorguyla yapilir:
-      //
-      //   select table_name, column_name, is_nullable
-      //   from information_schema.columns
-      //   where (table_name, column_name) in
-      //         (('mesajlar','gonderen_id'), ('sikayetler','sikayet_eden_id'));
-      //
-      // Beklenen: ikisi de is_nullable = 'YES'.
-      //
-      //   select conname, confdeltype from pg_constraint
-      //   where conrelid in ('public.mesajlar'::regclass,
-      //                      'public.sikayetler'::regclass)
-      //     and contype = 'f';
-      //
-      // Beklenen: ilgili iki kisitta confdeltype = 'n' (set null).
-      esitMi(error, null, 'silmede kalanlar: elle dogrulama notu okundu')
-      esitMi(data, null, 'silmede kalanlar: elle dogrulama notu okundu (2)')
-    }
-  }
+Otomatik kanit **Step 2'deki davranis senaryosudur**; sema tarafi
+Step 7'de elle dogrulanir. Su iki sorgu Step 7'de calistirilacak, simdi
+yalnizca not ediliyor:
+
+```sql
+select table_name, column_name, is_nullable
+  from information_schema.columns
+ where (table_name, column_name) in
+       (('mesajlar','gonderen_id'), ('sikayetler','sikayet_eden_id'));
+-- Beklenen: ikisi de is_nullable = 'YES'
+
+select conname, confdeltype from pg_constraint
+ where conrelid in ('public.mesajlar'::regclass, 'public.sikayetler'::regclass)
+   and contype = 'f';
+-- Beklenen: ilgili iki kisitta confdeltype = 'n' (set null)
 ```
-
-**Not:** Yukaridaki blok gercek bir otomatik kontrol degil, elle
-dogrulama talimatidir; bu projede `information_schema`'yi istemciden
-okuyacak bir RPC yok ve yalnizca bunun icin bir tane acmak yeni bir
-yuzey demek olurdu. Asil otomatik kanit Step 5'teki davranis
-senaryosudur. Uygulayan kisi Step 4'ten sonra yukaridaki iki SQL
-sorgusunu Supabase MCP `execute_sql` ile calistirip sonucu commit
-mesajina yazar.
 
 - [ ] **Step 2: Basarisiz davranis senaryosunu yaz**
 
@@ -2518,17 +2496,17 @@ mesajina yazar.
 
     // A ile C arasinda bir konusma kur (B'yi bozmuyoruz; C ucuncu
     // test hesabi). Once yazma yetkisi icin karsilikli bag.
-    const { error: istekHata } = await aIstemci.rpc('sohbet_istegi_gonder', {
+    const { error: istekHata } = await a.rpc('sohbet_istegi_gonder', {
       p_kullanici_id: cId,
     })
     esitMi(istekHata, null, '55 kurulum: sohbet istegi gonderildi')
-    const { error: kabulHata } = await cIstemci.rpc('sohbet_istegini_yanitla', {
+    const { error: kabulHata } = await c.rpc('sohbet_istegini_yanitla', {
       p_kullanici_id: aId,
       p_kabul: true,
     })
     esitMi(kabulHata, null, '55 kurulum: istek kabul edildi')
 
-    const { data: konusmaId, error: mesajHata } = await aIstemci.rpc('mesaj_gonder', {
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: cId,
       p_metin: 'silme oncesi mesaj',
     })
@@ -2546,7 +2524,7 @@ mesajina yazar.
     esitMi(silHata, null, '55 kurulum: C uyeligi kaldirildi')
 
     // Konusma listede KALMALI.
-    const { data: liste, error: listeHata } = await aIstemci.rpc('konusmalarim')
+    const { data: liste, error: listeHata } = await a.rpc('konusmalarim')
     esitMi(listeHata, null, '55: konusmalarim hatasiz')
     const satir = ((liste ?? []) as {
       konusma_id: string
@@ -2558,7 +2536,7 @@ mesajina yazar.
     esitMi(satir?.yazilabilir_mi, false, '55: konusma salt-okunur')
 
     // Gecmis OKUNABILIR kalmali.
-    const { data: mesajlar, error: getirHata } = await aIstemci.rpc(
+    const { data: mesajlar, error: getirHata } = await a.rpc(
       'mesajlari_getir',
       { p_konusma_id: konusmaId }
     )
@@ -2566,7 +2544,7 @@ mesajina yazar.
     esitMi((mesajlar ?? []).length >= 1, true, '55: gecmis okunabiliyor')
 
     // Yeni mesaj YAZILAMAMALI.
-    const { error: yeniHata } = await aIstemci.rpc('mesaj_gonder', {
+    const { error: yeniHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: cId,
       p_metin: 'silme sonrasi mesaj',
     })
@@ -2576,7 +2554,7 @@ mesajina yazar.
   })
 ```
 
-**Not:** Bu senaryo `cId` ve `cIstemci` degiskenlerini kullanir; bunlar
+**Not:** Bu senaryo `cId` ve `c` degiskenlerini kullanir; bunlar
 `ucuncuKullaniciIleBaglan()` ile kurulur ve dosyada zaten mevcuttur.
 
 - [ ] **Step 3: Basarisiz oldugunu dogrula**
@@ -2920,7 +2898,7 @@ git commit -m "feat: silmede mesaj ve sikayetler anonimlesir, tek uyeli konusma 
     }
     const test_ad = 'rezerve.test.ad'
 
-    const { data: oncesi, error: oncesiHata } = await aIstemci.rpc(
+    const { data: oncesi, error: oncesiHata } = await a.rpc(
       'kullanici_adi_musait_mi',
       { p_ad: test_ad }
     )
@@ -2935,7 +2913,7 @@ git commit -m "feat: silmede mesaj ve sikayetler anonimlesir, tek uyeli konusma 
       })
     esitMi(rezerveHata, null, '56 kurulum: rezervasyon yazildi')
 
-    const { data: sonrasi, error: sonrasiHata } = await aIstemci.rpc(
+    const { data: sonrasi, error: sonrasiHata } = await a.rpc(
       'kullanici_adi_musait_mi',
       { p_ad: test_ad }
     )
@@ -2943,7 +2921,7 @@ git commit -m "feat: silmede mesaj ve sikayetler anonimlesir, tek uyeli konusma 
     esitMi(sonrasi, false, '56: rezerve ad musait degil')
 
     // Rezervasyon tablosu istemciye kapali olmali.
-    const { error: okumaHata } = await aIstemci
+    const { error: okumaHata } = await a
       .from('kullanici_adi_rezervasyonlari')
       .select('kullanici_adi')
       .limit(1)
