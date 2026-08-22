@@ -2282,31 +2282,46 @@ async function main() {
     })
     esitMi(dondurHata, null, '53: A hesabini dondurebiliyor')
 
-    // Dondurulmus A, B'ye gorunmuyor.
-    const { data: profil, error: profilHata } = await b.rpc(
-      'baskasinin_profili',
-      { p_kullanici_id: aId }
-    )
-    esitMi(profilHata, null, '53: profil cagrisi hatasiz')
-    esitMi((profil ?? []).length, 0, '53: dondurulmus A profilde acilmiyor')
+    try {
+      // Dondurulmus A, B'ye gorunmuyor.
+      const { data: profil, error: profilHata } = await b.rpc(
+        'baskasinin_profili',
+        { p_kullanici_id: aId }
+      )
+      esitMi(profilHata, null, '53: profil cagrisi hatasiz')
+      esitMi((profil ?? []).length, 0, '53: dondurulmus A profilde acilmiyor')
 
-    // Dondurulmus A yazamiyor.
-    const { error: checkInHata } = await a.rpc('check_in_yap', {
-      p_mekan_id: mekan1,
-      p_lat: MEKAN_1.lat,
-      p_lng: MEKAN_1.lng,
-    })
-    esitMi(checkInHata !== null, true, '53: dondurulmus A check-in yapamiyor')
+      // Dondurulmus A yazamiyor.
+      const { error: checkInHata } = await a.rpc('check_in_yap', {
+        p_mekan_id: mekan1,
+        p_lat: MEKAN_1.lat,
+        p_lng: MEKAN_1.lng,
+      })
+      esitMi(checkInHata !== null, true, '53: dondurulmus A check-in yapamiyor')
+      esitMi(
+        checkInHata?.message ?? null,
+        'Hesabin su anda kullanilamiyor',
+        '53: check-in hatasi dogru mesaji tasiyor'
+      )
 
-    // Geri acma calisiyor ve true donuyor.
-    const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
-    esitMi(acmaHata, null, '53: geri acma hatasiz')
-    esitMi(acildi, true, '53: geri acma true donuyor')
+      // Geri acma calisiyor ve true donuyor.
+      const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
+      esitMi(acmaHata, null, '53: geri acma hatasiz')
+      esitMi(acildi, true, '53: geri acma true donuyor')
 
-    // Ikinci cagri false donuyor (silinecek satir yok).
-    const { data: tekrar, error: tekrarHata } = await a.rpc('hesabimi_geri_ac')
-    esitMi(tekrarHata, null, '53: ikinci geri acma hatasiz')
-    esitMi(tekrar, false, '53: aktif hesapta geri acma false donuyor')
+      // Ikinci cagri false donuyor (silinecek satir yok).
+      const { data: tekrar, error: tekrarHata } = await a.rpc('hesabimi_geri_ac')
+      esitMi(tekrarHata, null, '53: ikinci geri acma hatasiz')
+      esitMi(tekrar, false, '53: aktif hesapta geri acma false donuyor')
+    } finally {
+      // Geri acma zaten mutlu yolda calisti; burada tekrar cagirmak
+      // yalnizca yukaridaki blok bir istisna atip A'yi dondurulmus
+      // biraktiginda ise yariyor. Yonetici anahtari yoksa ikinci satir
+      // tek guvence: SUPABASE_SERVICE_ROLE_KEY olmadan uyari basip
+      // sessizce donuyor.
+      await a.rpc('hesabimi_geri_ac')
+      await hesapDurumunuTemizle([aId])
+    }
   })
 
   await senaryo('54 - Askidaki kullanici kendi askisini kaldiramaz', async () => {
@@ -2326,27 +2341,85 @@ async function main() {
       })
     esitMi(kurulumHata, null, '54 kurulum: A askiya alindi')
 
-    // BU SENARYO OTOMATIK GERI ACILMANIN GUVENLIGIDIR. Istemci her
-    // giriste hesabimi_geri_ac cagiriyor; bu cagri askiyi kaldirsaydi
-    // moderasyon karari kullanicinin uygulamayi acmasiyla silinirdi.
-    const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
-    esitMi(acmaHata, null, '54: cagri hatasiz')
-    esitMi(acildi, false, '54: aski kalkmadi, false dondu')
+    try {
+      // BU SENARYO OTOMATIK GERI ACILMANIN GUVENLIGIDIR. Istemci her
+      // giriste hesabimi_geri_ac cagiriyor; bu cagri askiyi kaldirsaydi
+      // moderasyon karari kullanicinin uygulamayi acmasiyla silinirdi.
+      const { data: acildi, error: acmaHata } = await a.rpc('hesabimi_geri_ac')
+      esitMi(acmaHata, null, '54: cagri hatasiz')
+      esitMi(acildi, false, '54: aski kalkmadi, false dondu')
 
-    const { data: hala, error: halaHata } = await a
+      const { data: hala, error: halaHata } = await a
+        .from('hesap_durumlari')
+        .select('durum')
+        .eq('kullanici_id', aId)
+      esitMi(halaHata, null, '54: durum okuma hatasiz')
+      esitMi((hala ?? []).length, 1, '54: aski satiri yerinde duruyor')
+      esitMi(
+        hala?.[0]?.durum ?? null,
+        'askida',
+        '54: aski durumu degismedi'
+      )
+
+      // Askidaki kullanici dondurmaya da ceviremez.
+      const { error: dondurHata } = await a.rpc('hesabimi_dondur', {
+        p_gerekce: 'kacis denemesi',
+      })
+      esitMi(dondurHata !== null, true, '54: askidaki A hesabini donduramaz')
+      esitMi(
+        dondurHata?.message ?? null,
+        'Hesabin zaten kullanilamaz durumda',
+        '54: dondurma hatasi dogru mesaji tasiyor'
+      )
+    } finally {
+      await hesapDurumunuTemizle([aId])
+    }
+  })
+
+  await senaryo('55 - Suresi dolmus askidaki kullanici hesabini dondurebilir', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { error: kurulumHata } = await yonetici
       .from('hesap_durumlari')
-      .select('durum')
-      .eq('kullanici_id', aId)
-    esitMi(halaHata, null, '54: durum okuma hatasiz')
-    esitMi((hala ?? []).length, 1, '54: aski satiri yerinde duruyor')
+      .insert({
+        kullanici_id: aId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() - 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: bId,
+      })
+    esitMi(kurulumHata, null, '55 kurulum: A suresi dolmus askiyla isaretlendi')
 
-    // Askidaki kullanici dondurmaya da ceviremez.
-    const { error: dondurHata } = await a.rpc('hesabimi_dondur', {
-      p_gerekce: 'kacis denemesi',
-    })
-    esitMi(dondurHata !== null, true, '54: askidaki A hesabini donduramaz')
+    try {
+      // hesap_aktif_mi aski_bitisi > now() bakiyor, yani bu satir
+      // aslinda AKTIF sayiliyor. hesabimi_dondur bunu kabul etmeli;
+      // ham `if exists` bunu reddederdi (Important-1, kod incelemesi).
+      const { error: dondurHata } = await a.rpc('hesabimi_dondur', {
+        p_gerekce: 'test',
+      })
+      esitMi(
+        dondurHata,
+        null,
+        '55: suresi dolmus askidaki A hesabini dondurebiliyor'
+      )
 
-    await hesapDurumunuTemizle([aId])
+      const { data: satir, error: satirHata } = await a
+        .from('hesap_durumlari')
+        .select('durum')
+        .eq('kullanici_id', aId)
+      esitMi(satirHata, null, '55: durum okuma hatasiz')
+      esitMi(
+        satir?.[0]?.durum ?? null,
+        'dondurulmus',
+        '55: eski askida satiri dondurulmus olarak degisti'
+      )
+    } finally {
+      await a.rpc('hesabimi_geri_ac')
+      await hesapDurumunuTemizle([aId])
+    }
   })
 
   await temizle(t)
