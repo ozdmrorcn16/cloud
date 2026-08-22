@@ -2019,7 +2019,7 @@ async function main() {
     await hesapDurumunuTemizle([aId])
   })
 
-  await senaryo('50 - Askidaki kullanicinin check-in\'i gorunmez', async () => {
+  await senaryo('50 - Askidaki kullanicinin check-in\'i ve anisi gorunmez', async () => {
     const yonetici = yoneticiIstemcisi()
     if (!yonetici) {
       console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
@@ -2027,42 +2027,95 @@ async function main() {
     }
     // B ayni mekana check-in yapsin (aktifken), A da ayni mekanda olsun.
     const aCheckIn = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
-    const bCheckIn = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    const bCheckIn1 = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
 
     const { data: oncesi, error: oncesiHata } = await a
       .from('check_inler')
       .select('id')
-      .eq('id', bCheckIn)
+      .eq('id', bCheckIn1)
     esitMi(oncesiHata, null, '50 kurulum: okuma hatasiz')
-    esitMi((oncesi ?? []).length, 1, '50 kurulum: A, B\'nin check-in\'ini goruyor')
+    esitMi((oncesi ?? []).length, 1, '50 kurulum: A, B\'nin CANLI check-in\'ini goruyor')
 
-    const { error: kurulumHata } = await yonetici
-      .from('hesap_durumlari')
-      .insert({
-        kullanici_id: bId,
-        durum: 'askida',
-        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
-        gerekce: 'test',
-        moderator_id: aId,
-      })
-    esitMi(kurulumHata, null, '50 kurulum: B askiya alindi')
+    // B kendi check-in'ini aniya cevirsin (konum null olur). Boylece
+    // politikanin CASE'indeki WHEN kolu (ani ekseni) de sinanabiliyor -
+    // kontrol case'ten ONCE oldugu icin iki kolu da kapsamali, ama bunu
+    // kanitlamak icin iki kolu da AYRI AYRI tetiklemek gerekiyor.
+    const { error: ayrilHata } = await b.rpc('check_inden_ayril', {
+      p_check_in_id: bCheckIn1,
+    })
+    esitMi(ayrilHata, null, '50 kurulum: B kendi check-in\'ini aniya cevirdi')
 
-    const { data: sonrasi, error: sonrasiHata } = await a
+    const { data: aniOncesi, error: aniOncesiHata } = await a
       .from('check_inler')
       .select('id')
-      .eq('id', bCheckIn)
-    esitMi(sonrasiHata, null, '50: okuma hatasiz')
-    esitMi((sonrasi ?? []).length, 0, '50: askidaki B\'nin check-in\'i A\'ya gorunmuyor')
+      .eq('id', bCheckIn1)
+    esitMi(aniOncesiHata, null, '50 kurulum: ani okuma hatasiz')
+    esitMi((aniOncesi ?? []).length, 1, '50 kurulum: A, B\'nin ANISINI goruyor (askidan once)')
 
-    const { data: kendi, error: kendiHata } = await b
+    // B'nin ikinci (yeni) check-in'i CANLI kolu askida durumundayken de
+    // sinamak icin ayri tutuluyor. check_in_yap'in "eski aktif check-in'i
+    // kapat" mantigi bCheckIn1'e dokunmaz, cunku onun konumu zaten null.
+    const bCheckIn2 = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+
+    const { data: canliOncesi, error: canliOncesiHata } = await a
       .from('check_inler')
       .select('id')
-      .eq('id', bCheckIn)
-    esitMi(kendiHata, null, '50: sahibi icin okuma hatasiz')
-    esitMi((kendi ?? []).length, 1, '50: B kendi check-in\'ini hala goruyor')
+      .eq('id', bCheckIn2)
+    esitMi(canliOncesiHata, null, '50 kurulum: ikinci canli okuma hatasiz')
+    esitMi(
+      (canliOncesi ?? []).length,
+      1,
+      '50 kurulum: A, B\'nin YENI CANLI check-in\'ini goruyor (askidan once)'
+    )
 
-    await hesapDurumunuTemizle([bId])
-    t.checkInler.push({ istemci: a, id: aCheckIn }, { istemci: b, id: bCheckIn })
+    try {
+      const { error: kurulumHata } = await yonetici
+        .from('hesap_durumlari')
+        .insert({
+          kullanici_id: bId,
+          durum: 'askida',
+          aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+          gerekce: 'test',
+          moderator_id: aId,
+        })
+      esitMi(kurulumHata, null, '50 kurulum: B askiya alindi')
+
+      const { data: aniSonrasi, error: aniSonrasiHata } = await a
+        .from('check_inler')
+        .select('id')
+        .eq('id', bCheckIn1)
+      esitMi(aniSonrasiHata, null, '50: ani okuma hatasiz')
+      esitMi((aniSonrasi ?? []).length, 0, '50: askidaki B\'nin ANISI A\'ya gorunmuyor')
+
+      const { data: canliSonrasi, error: canliSonrasiHata } = await a
+        .from('check_inler')
+        .select('id')
+        .eq('id', bCheckIn2)
+      esitMi(canliSonrasiHata, null, '50: canli okuma hatasiz')
+      esitMi(
+        (canliSonrasi ?? []).length,
+        0,
+        '50: askidaki B\'nin CANLI check-in\'i A\'ya gorunmuyor'
+      )
+
+      const { data: kendi, error: kendiHata } = await b
+        .from('check_inler')
+        .select('id')
+        .in('id', [bCheckIn1, bCheckIn2])
+      esitMi(kendiHata, null, '50: sahibi icin okuma hatasiz')
+      esitMi((kendi ?? []).length, 2, '50: B kendi anisini ve canli check-in\'ini hala goruyor')
+    } finally {
+      // Kurulum ile buraya kadar herhangi bir iddia atarsa (ag hatasi vb.)
+      // bile B'nin askida satiri KALICI olarak veritabaninda kalmamali -
+      // sonraki kosumda B'nin butun yazma senaryolarini coker.
+      await hesapDurumunuTemizle([bId])
+    }
+
+    t.checkInler.push(
+      { istemci: a, id: aCheckIn },
+      { istemci: b, id: bCheckIn1 },
+      { istemci: b, id: bCheckIn2 }
+    )
   })
 
   await temizle(t)
