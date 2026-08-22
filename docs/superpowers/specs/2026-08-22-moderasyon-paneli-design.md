@@ -511,6 +511,29 @@ bildirilmemis olmasi KVKK ve GDPR acisindan savunulamaz, ve magaza
 incelemesi de bu maddeyi arar. Yetkinin kendisi mesru; bildirilmemis
 olmasi degil.
 
+## Saklama sureleri (karar 65)
+
+Bu is uc yeni kisisel veri deposu getiriyor, dolayisiyla "gerekli oldugu
+sure kadar saklanir" ilkesinin karsiligi bu spec'te yaziliyor - ayri bir
+uyum isine ertelenmiyor. Silme, `istek_gunlugu` budamasiyla ayni kalipta
+gunluk bir `pg_cron` isiyle yapilir.
+
+| Veri | Sure | Gerekce |
+|---|---|---|
+| `moderasyon_kayitlari` | 2 yil | Erisim izinin kendisi bir koruma araci; bir itiraz ya da inceleme geldiginde geriye donuk cevap verebilmek icin makul bir pencere. Daha uzun saklamanin mesru bir gerekcesi yok |
+| Karara baglanmis `sikayetler` | Karardan 1 yil sonra | Tekrar eden suclu tespiti icin gecmis gerekiyor, ama suresiz degil. Karara baglanmamis sikayet silinmez |
+| Suresi dolmus `hesap_durumlari` satirlari | 90 gun | Askinin bittigi bilgisi kisa sure daha panelde gorunsun; kalici kayit zaten denetim izinde |
+
+Ucu de **oneridir** ve `docs/kvkk-uyum-listesi.md` madde 4 ile birlikte
+degerlendirilmelidir; sureler degisirse tek degisen `pg_cron` isinin
+araligidir.
+
+Bir sinir: hesap silme (KVKK m.11) bu isin kapsaminda **degil**, ama
+uyum listesinde **BLOKE** olarak isaretli. Bu spec'in `[SONRA]`
+diliminde durmasi ilk gercek kullaniciya kadar kabul edilebilir,
+sonrasinda degil. Plan bunu bir borc olarak degil, tarihli bir
+yukumluluk olarak tasimali.
+
 ## Moderator RPC'leri (ilk dilim)
 
 Hepsi `public` semasinda, `security definer`, ilk satirda yetki kapisi.

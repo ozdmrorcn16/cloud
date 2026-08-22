@@ -31,6 +31,16 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   once bir kez yasandi: gercek bir Pexels anahtari teste ornek deger
   olarak yazilip push edilmisti.)
 - Kullaniciyla Turkce konus.
+- **Gizlilik ve KVKK her adimda gozetilir** (kullanicinin karari,
+  2026-08-22): "Attigimiz her adimda ... gizlilik ilkeleri ve KVKK
+  kurallarini ihlal etmicek sekilde ilerlememiz gerek." Yeni bir is
+  kalemi tasarlarken `docs/kvkk-uyum-listesi.md` okunur ve guncellenir;
+  o dosyanin sonundaki dort soru (hangi veri, hangi dayanak, ne kadar
+  sure, kim gorur ve kaydediliyor mu) spec'te cevaplanir. Uyum sonradan
+  eklenen bir katman degil, her isin icinde tasinan bir kisittir.
+  Onemli ayrim: cozum isletmeci yetkisini KESMEK degil; yetki genis
+  kalir, uyum aydinlatma metni, denetim izi ve saklama suresi ile
+  saglanir.
 
 ## Proje durumu
 

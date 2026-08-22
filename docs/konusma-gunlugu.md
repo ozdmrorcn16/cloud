@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-22 — [2026-08-22-0f20b7f0.md](oturumlar/2026-08-22-0f20b7f0.md) — docs/moderasyon-paneli-devam-notu.md oku, moderasyon paneli spec'ini yaz
 - 2026-08-21 — [2026-08-21-74f56f7b.md](oturumlar/2026-08-21-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-21 — [2026-08-21-0f20b7f0.md](oturumlar/2026-08-21-0f20b7f0.md) — docs/moderasyon-paneli-devam-notu.md oku, moderasyon paneli spec'ini yaz
 - 2026-08-20 — [2026-08-20-869a9560.md](oturumlar/2026-08-20-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
@@ -656,3 +657,36 @@ gerek." Spec buna gore degistirildi.
 **Yan yukumluluk:** uygulamada gizlilik metni ekrani BUGUN YOK; mesaj
 okuma yetkisiyle ayni dilimde gelmesi sart. Ayrilirlarsa aradaki surede
 bildirilmemis bir okuma yetkisi calisir durumda olur.
+
+### Gizlilik ve KVKK: standing kural (2026-08-22)
+
+65. **Her adimda gizlilik ilkeleri ve KVKK gozetilecek.** Kullanicinin
+    ifadesi: "Attigimiz her adimda bu uygulamanin yapilis suresinde
+    gizlilik ilkeleri ve KVKK kurallarini ihlal etmicek sekilde
+    ilerlememiz gerek bu onemli buna dikkat et." Tek bir gorev icin
+    degil, projenin butunu icin gecerli bir kisit.
+
+    Mekanizmasi: `docs/kvkk-uyum-listesi.md`. Yeni bir is kalemi
+    tasarlanirken o dosya okunur ve guncellenir; sonundaki dort soru
+    (hangi kisisel veri, hangi hukuki dayanak, ne kadar sure, kim gorur
+    ve kaydediliyor mu) spec'te cevaplanir. Kural `CLAUDE.md` icindeki
+    "Claude icin kurallar" bolumune de yazildi.
+
+    Ilk envanterin ortaya cikardigi durum: veri guvenligi (KVKK m.12)
+    projenin en guclu tarafi (RLS, sutun yetkileri, Vault, AAL2,
+    service-role'suz panel), ama **iki madde BLOKE**: aydinlatma metni
+    hic yok (m.10) ve hesap silme yok (m.11 silme hakki). Uc madde
+    EKSIK: konum icin ayrik acik riza (OS izni ayni sey degil), yurt
+    disina aktarim belgelenmemis (Supabase Almanya, Expo Push ABD), ve
+    saklama/imha politikasi yok. Iki madde hukukcu onayi bekliyor
+    (aktarim mekanizmasi, VERBIS).
+
+    Moderasyon paneli spec'i buna gore guncellendi: gizlilik metni ve
+    ekrani zaten ilk dilime alinmisti (karar 63), simdi ayrica saklama
+    sureleri de spec'te yaziyor - denetim izi 2 yil, karara baglanmis
+    sikayet 1 yil, suresi dolmus aski kaydi 90 gun, `istek_gunlugu`
+    budamasiyla ayni `pg_cron` kalibinda.
+
+    Onemli ayrim ve karar 63 ile tutarlilik: uyumun yolu isletmeci
+    yetkisini kesmek DEGIL. Yetki genis kalir; uyum aydinlatma,
+    denetim izi ve saklama disiplini ile saglanir.
