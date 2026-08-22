@@ -1916,6 +1916,57 @@ async function main() {
     // karsilikli bir takip birakir. takibi_birak durum'a bakmadan iki
     // yonu de sildigi icin hem kirmizi hem yesil kosumda dogru calisir.
     await b.rpc('takibi_birak', { p_kullanici_id: aId })
+
+    // Ikinci bolum: KARSI TARAF (istegi gonderen) askidaysa da yanitlama
+    // basarili olmamali. A -> B beklemede bir istek kurup A'yi askiya
+    // aliyoruz; B aktifken kabul etmeye calisiyor.
+    const { error: istekHata2 } = await a.rpc('takip_istegi_gonder', {
+      p_kullanici_id: bId,
+    })
+    esitMi(istekHata2, null, '48b kurulum: istek gonderildi')
+
+    const { error: kurulumHata2 } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: aId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: bId,
+      })
+    esitMi(kurulumHata2, null, '48b kurulum: A askiya alindi')
+
+    const { error: error2 } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(
+      error2 !== null,
+      true,
+      '48b: aktif B, askidaki A\'nin istegini kabul edemez',
+    )
+
+    // Yalniz "hata dondu" demek yetmez: kismi bir yazma kalmadigini da
+    // dogruluyoruz.
+    const { data: kabulSatirlari, error: kontrolHata } = await yonetici
+      .from('takipler')
+      .select('durum')
+      .eq('takip_eden_id', aId)
+      .eq('takip_edilen_id', bId)
+      .eq('durum', 'kabul')
+    esitMi(kontrolHata, null, '48b kontrol: takipler sorgulanabildi')
+    esitMi(
+      kabulSatirlari?.length ?? -1,
+      0,
+      '48b: kabul edilmis satir olusmadi (kismi yazma yok)',
+    )
+
+    await hesapDurumunuTemizle([aId])
+    // Kirmizi kosumda (yeni kontrol henuz yokken) B'nin kabulu gercekten
+    // basarili olur ve karsilikli takip kurulur. takibi_birak durum'a
+    // bakmadan iki yonu de sildigi icin hem kirmizi hem yesil kosumda
+    // dogru toparlar.
+    await b.rpc('takibi_birak', { p_kullanici_id: aId })
   })
 
   await temizle(t)
