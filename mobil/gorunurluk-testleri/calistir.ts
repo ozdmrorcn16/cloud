@@ -7,6 +7,7 @@ import {
   bosTemizlenecekler,
   temizle,
   yoneticiIstemcisi,
+  hesapDurumunuTemizle,
   type Temizlenecekler,
 } from './yardimcilar'
 
@@ -1772,6 +1773,66 @@ async function main() {
       false,
       'basarisiz kendine-gonderim hicbir konusma satiri olusturmadi'
     )
+  })
+
+  await senaryo('45 - Askidaki kullanici istek gonderemez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: aId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: bId,
+      })
+    esitMi(kurulumHata, null, '45 kurulum: aski satiri yazildi')
+
+    const { error } = await a.rpc('takip_istegi_gonder', {
+      p_kullanici_id: bId,
+    })
+    esitMi(error !== null, true, '45: askidaki A istek gonderemez')
+
+    // Kapi henuz baglanmamisken (migration oncesi kirmizi kosum) bu
+    // cagri gercekten basariyla gecip A->B 'beklemede' bir takip satiri
+    // birakabiliyor. O satir temizlenmezse senaryo 46'nin kendi istegi
+    // "Istegin zaten gonderilmis" hatasina carpar ve 46 askida-hedef
+    // kontrolunu degil, bu alakasiz cift-gonderim korumasini test etmis
+    // olur (vakum halinde gecen bir dogrulama). takibi_birak migration
+    // sonrasi da zararsiz: satir hic olusmadigi icin sessizce hicbir
+    // sey silmez.
+    await a.rpc('takibi_birak', { p_kullanici_id: bId })
+
+    await hesapDurumunuTemizle([aId])
+  })
+
+  await senaryo('46 - Askidaki kisiye istek gonderilemez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: bId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: aId,
+      })
+    esitMi(kurulumHata, null, '46 kurulum: aski satiri yazildi')
+
+    const { error } = await a.rpc('takip_istegi_gonder', {
+      p_kullanici_id: bId,
+    })
+    esitMi(error !== null, true, '46: askidaki B istek alamaz')
+
+    await hesapDurumunuTemizle([bId])
   })
 
   await temizle(t)
