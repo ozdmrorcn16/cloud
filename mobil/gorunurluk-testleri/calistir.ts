@@ -2504,6 +2504,51 @@ async function main() {
     }
   })
 
+  await senaryo('57 - Rezerve kullanici adi musait gorunmez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const test_ad = 'rezerve.test.ad'
+
+    const { data: oncesi, error: oncesiHata } = await a.rpc(
+      'kullanici_adi_musait_mi',
+      { p_ad: test_ad }
+    )
+    esitMi(oncesiHata, null, '57 kurulum: musaitlik sorgusu hatasiz')
+    esitMi(oncesi, true, '57 kurulum: ad bastan musait')
+
+    const { error: rezerveHata } = await yonetici
+      .from('kullanici_adi_rezervasyonlari')
+      .insert({
+        kullanici_adi: test_ad,
+        serbest_kalma: new Date(Date.now() + 86_400_000).toISOString(),
+      })
+    esitMi(rezerveHata, null, '57 kurulum: rezervasyon yazildi')
+
+    try {
+      const { data: sonrasi, error: sonrasiHata } = await a.rpc(
+        'kullanici_adi_musait_mi',
+        { p_ad: test_ad }
+      )
+      esitMi(sonrasiHata, null, '57: musaitlik sorgusu hatasiz')
+      esitMi(sonrasi, false, '57: rezerve ad musait degil')
+
+      // Rezervasyon tablosu istemciye kapali olmali.
+      const { error: okumaHata } = await a
+        .from('kullanici_adi_rezervasyonlari')
+        .select('kullanici_adi')
+        .limit(1)
+      esitMi(okumaHata !== null, true, '57: rezervasyon tablosu istemciye kapali')
+    } finally {
+      await yonetici
+        .from('kullanici_adi_rezervasyonlari')
+        .delete()
+        .eq('kullanici_adi', test_ad)
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
