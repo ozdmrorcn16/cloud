@@ -403,6 +403,13 @@ deno_version = 2
 [functions.bildirim-gonder]
 verify_jwt = false
 
+# Hesap durumu ve haklari Task 15: "hesap-sil" fonksiyonunu GERCEK bir
+# kullanici, kendi JWT'siyle cagiriyor. bildirim-gonder'in tersine burada
+# verify_jwt ACIK kalmali: yetkilendirmenin tamami cagiranin kimligine
+# dayaniyor, fonksiyon govdeden gelen bir kimlige guvenmiyor.
+[functions.hesap-sil]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
