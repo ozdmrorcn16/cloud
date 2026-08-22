@@ -4,7 +4,7 @@ import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
 function YonlendirmeKontrolu() {
-  const { oturum, profilVarMi, yukleniyor } = useOturum()
+  const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
   const router = useRouter()
 
@@ -24,15 +24,26 @@ function YonlendirmeKontrolu() {
     if (yukleniyor) return
     const authGrubunda = segments[0] === '(auth)'
     const profilOlusturEkraninda = segments[0] === 'profil-olustur'
+    const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
       router.replace('/giris')
+    } else if (oturum && hesapDurumu && !hesapDurumuEkraninda) {
+      // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
+      // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
+      // olabilir) ve profil olusturma ekranina atilirsa orada da yazamadigi
+      // icin sikisir.
+      router.replace('/hesap-durumu')
     } else if (oturum && profilVarMi === false && !profilOlusturEkraninda) {
       router.replace('/profil-olustur')
-    } else if (oturum && profilVarMi && (authGrubunda || profilOlusturEkraninda)) {
+    } else if (
+      oturum &&
+      profilVarMi &&
+      (authGrubunda || profilOlusturEkraninda || hesapDurumuEkraninda)
+    ) {
       router.replace('/')
     }
-  }, [oturum, profilVarMi, yukleniyor, segments])
+  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments])
 
   return <Slot />
 }
