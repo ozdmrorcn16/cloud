@@ -96,9 +96,17 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   SIRADAKI TASARIM ADIMI: kullanici kanvasa bakip onaylarsa kimligi
   gercek uygulamaya tasima plani yazilacak.
   (3) Expo SDK ici paketler 57.0.15'e hizalandi; expo-image config
-  plugin'i app.json'a girdi. Telefonda deneme Expo Go ile yapiliyor
-  (sunucu: `cd mobil && npx expo start`, telefonda `exp://<yerel-ip>:8081`);
-  kullanicinin telefonundaki Expo Go surumu eskiydi, guncellemesi istendi.
+  plugin'i app.json'a girdi. **Telefonda deneme: Expo Go DENENDI VE
+  OLMADI** (surum uyumsuzlugu asilamadi); kullanicinin karariyla APK
+  yoluna (EAS build) gecilecek. MEVCUT DURUM: eas-cli calisiyor ama
+  GIRIS YAPILMAMIS (`npx eas-cli whoami` -> Not logged in), `eas.json`
+  yok, `app.json`da `android.package` ve `projectId` tanimsiz.
+  YENI OTURUMDA SIRA: (a) kullanicidan `! npx eas-cli login` ile giris
+  (Expo hesabi yoksa expo.dev'de ucretsiz acilir), (b) `android.package`
+  belirle (oneri: `com.slooin.app`), (c) `eas build:configure`,
+  (d) `eas build --profile preview --platform android` -> APK linki
+  telefona indirilip kurulur. Not: ilk derleme kuyrukta 10-30 dk
+  surebilir (ucretsiz katman).
 
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
