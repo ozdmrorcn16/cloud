@@ -1877,6 +1877,47 @@ async function main() {
     await hesapDurumunuTemizle([aId])
   })
 
+  await senaryo('48 - Askidaki kullanici istek kabul edemez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+
+    // A -> B bekleyen bir takip istegi kur (A aktifken).
+    await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    const { error: istekHata } = await a.rpc('takip_istegi_gonder', {
+      p_kullanici_id: bId,
+    })
+    esitMi(istekHata, null, '48 kurulum: istek gonderildi')
+
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: bId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: aId,
+      })
+    esitMi(kurulumHata, null, '48 kurulum: B askiya alindi')
+
+    const { error } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(error !== null, true, '48: askidaki B istegi kabul edemez')
+
+    await hesapDurumunuTemizle([bId])
+    // takip_istegini_yanitla(..., false) yalnizca durum='beklemede'
+    // satirini siler. Kirmizi kosumda (migrasyon henuz yokken) B'nin
+    // kabulu gercekten basarili olur, yani durum 'kabul' olur ve bu
+    // temizlik hicbir sey silmeden hata dondurup A-B arasinda
+    // karsilikli bir takip birakir. takibi_birak durum'a bakmadan iki
+    // yonu de sildigi icin hem kirmizi hem yesil kosumda dogru calisir.
+    await b.rpc('takibi_birak', { p_kullanici_id: aId })
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
