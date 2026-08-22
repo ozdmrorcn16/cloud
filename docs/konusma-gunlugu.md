@@ -749,3 +749,27 @@ zorlama noktalari, dondurma, silme, tek uyeli konusma duzeltmeleri,
 gizlilik metni ekrani. Plan 2: moderasyon paneli. Sira boyle cunku
 uyum listesindeki iki BLOKE madde plan 1'de kapaniyor ve panelin
 "askiya al" aksiyonu bu temel olmadan zaten anlamsiz.
+
+### Gizli check-in ve mekan sayaci (2026-08-22)
+
+71. **Gizli check-in mekanin kisi sayacinda GORUNUR, ama kisinin kimligi
+    gizli kalir.** Kullanicinin karari. Bu, Faz 2b'den beri var olan
+    davranisin bilincli olarak ONAYLANMASIDIR - kaza degil, karar.
+
+    Somut olarak: `yakin_mekanlar_yogunluk`un dondurdugu `kisi_sayisi`
+    bulunurluk kademesine bakmaz, yani `gizli` check-in de sayaci
+    artirir. Buna karsilik `check_inler` satirinin kendisi RLS ile
+    kapalidir (`bulunurluk = 'gizli'` hicbir gorunurluk koluna girmez),
+    yani kim oldugu, konumu ve notu kimseye gorunmez.
+
+    **Garantinin siniri acikca yazilsin:** varlik sayilabilir, kimlik
+    sizmaz. Cok az kisinin bulundugu bir mekanda sayacin 0'dan 1'e
+    cikmasi, oradaki bir gozlemciye "birisi gizli check-in yapti"
+    bilgisini verir. Kalabalikta bu bilgi anlamsizlasir. Kullanici bu
+    dengeyi bilerek kabul etti; alternatifi (gizli check-in'i sayacdan
+    dusurmek) mekan yogunlugu ozelligini gizli kullanicilar icin
+    yanlis gosterirdi.
+
+    Sonucu: gizlilik metni bunu OLDUGU GIBI anlatmali - "kimseye
+    gorunmez" demek yanlis beyan olur; dogrusu "kimligin gorunmez,
+    mekanin anonim kisi sayacinda sayilirsin".

@@ -20,7 +20,7 @@ bir danismana dogrulatilmalidir.
 | Telefon numarasi | `auth.users` | Kimlik belirleyici |
 | Ad, kullanici adi, biyografi, fotograflar | `profiller` | Dogrudan kimlik |
 | Dogum tarihi | `profiller.dogum_tarihi` | Tam tarih saklaniyor, yalnizca 18+ kontrolu icin gerekli (bkz. madde 8) |
-| **Konum** | `check_inler.konum` (geography point) | **Yuksek riskli.** Projenin cekirdek riski; KVKK'da ozel nitelikli degil ama takip/taciz senaryosunun kaynagi |
+| **Konum** | `check_inler.konum` (geography point) | **Yuksek riskli.** Projenin cekirdek riski; KVKK'da ozel nitelikli degil ama takip/taciz senaryosunun kaynagi. NOT: mekan listesi acilirken de cihaz konumu sunucuya gonderiliyor (`yakin_mekanlar_yogunluk`), check-in olmadan - saklanmiyor ama isleniyor; aydinlatma metni bunu belirtmek zorunda |
 | Mesaj icerigi | `mesajlar` | Haberlesme gizliligi (Anayasa m.22) |
 | Bag grafigi | `takipler`, `sohbet_istekleri`, `engellemeler` | Iliski verisi, cikarim gucu yuksek |
 | Cihaz bildirim jetonu | `bildirim_jetonlari` | Cihaz belirleyici |
