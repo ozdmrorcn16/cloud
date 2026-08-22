@@ -1969,6 +1969,56 @@ async function main() {
     await b.rpc('takibi_birak', { p_kullanici_id: aId })
   })
 
+  await senaryo('49 - Askidaki kullanici profilini degistiremez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { data: onceki, error: okumaHata } = await a
+      .from('profiller')
+      .select('biyografi')
+      .eq('id', aId)
+      .single()
+    esitMi(okumaHata, null, '49 kurulum: mevcut biyografi okundu')
+
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: aId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: bId,
+      })
+    esitMi(kurulumHata, null, '49 kurulum: aski satiri yazildi')
+
+    // RLS bir update'i eslesen satir bulamayinca hata DEGIL, sifir satir
+    // doner. Bu yuzden asil iddia yazmaHata'nin dolu olmasi degil,
+    // biyografinin DEGISMEMIS olmasi; yazmaHata yine de alinip await
+    // edilir, sadece bilgi amaclidir.
+    const { error: yazmaHata } = await a
+      .from('profiller')
+      .update({ biyografi: 'ASKIDA-DEGISTIRME-DENEMESI' })
+      .eq('id', aId)
+    void yazmaHata
+
+    const { data: sonraki, error: ikinciOkumaHata } = await a
+      .from('profiller')
+      .select('biyografi')
+      .eq('id', aId)
+      .single()
+    esitMi(ikinciOkumaHata, null, '49 kontrol: guncel biyografi okundu')
+
+    esitMi(
+      sonraki?.biyografi ?? null,
+      onceki?.biyografi ?? null,
+      '49: askidaki A biyografisini degistiremedi'
+    )
+
+    await hesapDurumunuTemizle([aId])
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
