@@ -12,7 +12,7 @@ import {
 } from '../../../lib/sohbet'
 import { useOturum } from '../../../lib/oturum'
 
-const KAPALI_KAPI_NOTU = 'Bu kisiye su an mesaj gonderemezsin.'
+const KAPALI_KAPI_NOTU = 'Bu kişiye şu an mesaj gönderemezsin.'
 
 // Iyimser eklenen (henuz sunucuda karsiligi olmayan) satirlar. Sunucu
 // satirlarindan `yerelMi` ile ayirt ediliyorlar; Realtime yansimasi
@@ -21,9 +21,9 @@ type ListeMesaji = Mesaj & { yerelMi?: boolean }
 
 function hataMesaji(e: unknown): string {
   if (e instanceof TypeError && e.message === 'Network request failed') {
-    return 'Internet baglantisi yok, tekrar dene'
+    return 'İnternet bağlantısı yok, tekrar dene'
   }
-  return e instanceof Error ? e.message : 'Bir sorun olustu'
+  return e instanceof Error ? e.message : 'Bir sorun oluştu'
 }
 
 export default function SohbetEkrani() {
@@ -178,7 +178,7 @@ export default function SohbetEkrani() {
       <View style={stiller.ustBar}>
         <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? 'Sohbet'}</Text>
         <Pressable onPress={() => router.push(`/sikayet?hedefTur=${sikayetHedefTur}&hedefId=${sikayetHedefId}`)}>
-          <Text style={stiller.sikayetButonu}>Sikayet et</Text>
+          <Text style={stiller.sikayetButonu}>Şikayet et</Text>
         </Pressable>
       </View>
 
@@ -199,7 +199,7 @@ export default function SohbetEkrani() {
             </View>
           )
         }}
-        ListEmptyComponent={<Text style={stiller.durum}>Henuz mesaj yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Henüz mesaj yok</Text>}
       />
 
       {yazilabilirMi ? (

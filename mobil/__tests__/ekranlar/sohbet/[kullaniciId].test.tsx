@@ -121,12 +121,12 @@ describe('SohbetEkrani', () => {
 
     expect(await screen.findByText('Eski mesaj')).toBeTruthy()
     expect(screen.queryByPlaceholderText('Bir mesaj yaz...')).toBeNull()
-    expect(screen.getByText('Bu kisiye su an mesaj gonderemezsin.')).toBeTruthy()
+    expect(screen.getByText('Bu kişiye şu an mesaj gönderemezsin.')).toBeTruthy()
   })
 
   it('konusma hic yoksa giris alani acik kalir ve ilk gonderme reddi hata olarak gorunur', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
-    ;(mesajGonder as jest.Mock).mockRejectedValue(new Error('Bu kisiye su an mesaj gonderemezsin.'))
+    ;(mesajGonder as jest.Mock).mockRejectedValue(new Error('Bu kişiye şu an mesaj gönderemezsin.'))
 
     await render(<SohbetEkrani />)
     expect(await screen.findByPlaceholderText('Bir mesaj yaz...')).toBeTruthy()
@@ -134,7 +134,7 @@ describe('SohbetEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Bir mesaj yaz...'), 'Merhaba')
     await fireEvent.press(screen.getByText('Gonder'))
 
-    expect(await screen.findByText('Bu kisiye su an mesaj gonderemezsin.')).toBeTruthy()
+    expect(await screen.findByText('Bu kişiye şu an mesaj gönderemezsin.')).toBeTruthy()
     expect(screen.getByPlaceholderText('Bir mesaj yaz...').props.value).toBe('Merhaba')
   })
 
@@ -157,7 +157,7 @@ describe('SohbetEkrani', () => {
 
   it('sikayet butonuna basinca sikayet ekranina hedef_tur=mesaj ile yonlendirir', async () => {
     await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Sikayet et'))
+    await fireEvent.press(await screen.findByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=konusma-1')
   })
@@ -169,7 +169,7 @@ describe('SohbetEkrani', () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
 
     await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Sikayet et'))
+    await fireEvent.press(await screen.findByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })

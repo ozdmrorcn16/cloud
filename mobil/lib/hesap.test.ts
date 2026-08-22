@@ -77,7 +77,7 @@ describe('hesapDurumunuGetir', () => {
 
   it('oturum yoksa firlatir (hesap sorunsuz ile karistirilmamali)', async () => {
     sahteSupabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: null })
-    await expect(hesapDurumunuGetir()).rejects.toThrow('Oturum bulunamadi')
+    await expect(hesapDurumunuGetir()).rejects.toThrow('Oturum bulunamadı')
   })
 })
 

@@ -15,7 +15,7 @@ export default function AnilarEkrani() {
       setAnilar(await kullanicininAnilariniGetir(kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -34,7 +34,7 @@ export default function AnilarEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Anilarim</Text>
+      <Text style={stiller.baslik}>Anılarım</Text>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <FlatList
         data={anilar}
@@ -50,7 +50,7 @@ export default function AnilarEkrani() {
             </Pressable>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.durum}>Henuz bir anin yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Henüz bir anın yok</Text>}
       />
     </View>
   )

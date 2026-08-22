@@ -21,7 +21,7 @@ export default function HesabiSilEkrani() {
 
   async function sil() {
     if (parola.trim() === '') {
-      setHata('Onaylamak icin parolani yaz.')
+      setHata('Onaylamak için parolanı yaz.')
       return
     }
     setCalisiyor(true)
@@ -43,7 +43,7 @@ export default function HesabiSilEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Hesabini sil</Text>
+      <Text style={stiller.baslik}>Hesabını sil</Text>
       <Text style={stiller.metin}>
         Geri donusu yok. Yeniden gelmek istersen sifirdan hesap acman
         gerekir.
@@ -55,12 +55,12 @@ export default function HesabiSilEkrani() {
 
       <Pressable style={stiller.ikincilButon} onPress={() => router.back()}>
         <Text style={stiller.ikincilButonMetni}>
-          Bunun yerine hesabimi dondur
+          Bunun yerine hesabımı dondur
         </Text>
       </Pressable>
 
       <Text style={stiller.etiket}>
-        Onaylamak icin parolani yaz
+        Onaylamak için parolanı yaz
       </Text>
       <TextInput
         style={stiller.girdi}
@@ -73,7 +73,7 @@ export default function HesabiSilEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.tehlikeButonu} onPress={sil} disabled={calisiyor}>
         <Text style={stiller.tehlikeButonMetni}>
-          Hesabimi kalici olarak sil
+          Hesabımı kalıcı olarak sil
         </Text>
       </Pressable>
     </View>

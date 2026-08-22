@@ -17,7 +17,7 @@ export default function MekanEkleEkrani() {
   useEffect(() => {
     cihazKonumunuAl()
       .then(setCihazKonumu)
-      .catch((e) => setHata(e instanceof Error ? e.message : 'Bir sorun olustu'))
+      .catch((e) => setHata(e instanceof Error ? e.message : 'Bir sorun oluştu'))
   }, [])
 
   useEffect(() => {
@@ -35,11 +35,11 @@ export default function MekanEkleEkrani() {
   async function ekle() {
     setHata(null)
     if (!cihazKonumu) {
-      setHata('Konum alinamadi, tekrar dene')
+      setHata('Konum alınamadı, tekrar dene')
       return
     }
     if (ad.trim().length === 0 || tur.trim().length === 0) {
-      setHata('Mekan adi ve turu gerekli')
+      setHata('Mekan adı ve türü gerekli')
       return
     }
 
@@ -54,7 +54,7 @@ export default function MekanEkleEkrani() {
       )
       router.replace(`/mekanlar/${yeniMekan.id}`)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
       setGonderiliyor(false)
     }
@@ -63,10 +63,10 @@ export default function MekanEkleEkrani() {
   return (
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>Yeni mekan ekle</Text>
-      <TextInput style={stiller.girdi} placeholder="Mekan adi" value={ad} onChangeText={setAd} />
+      <TextInput style={stiller.girdi} placeholder="Mekan adı" value={ad} onChangeText={setAd} />
       <TextInput
         style={stiller.girdi}
-        placeholder="Tur (kafe, bar, restoran, park...)"
+        placeholder="Tür (kafe, bar, restoran, park...)"
         value={tur}
         onChangeText={setTur}
       />

@@ -234,10 +234,10 @@ describe('bagDurumunuGetir', () => {
     await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('gelen sohbet sorgu hatasi')
   })
 
-  it("oturum yoksa 'Oturum bulunamadi' firlatir", async () => {
+  it("oturum yoksa 'Oturum bulunamadı' firlatir", async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({ data: { user: null } })
 
-    await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('Oturum bulunamadi')
+    await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('Oturum bulunamadı')
   })
 
   // Bu testler asil riski hedef alir: gelenTakip/gelenSohbet giden sorgunun

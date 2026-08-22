@@ -29,8 +29,8 @@ describe('MekanEkleEkrani', () => {
 
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adi'), 'Yeni Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tur (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Yeni Kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {
@@ -46,8 +46,8 @@ describe('MekanEkleEkrani', () => {
 
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adi'), 'Uzak Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tur (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Uzak Kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {
@@ -62,7 +62,7 @@ describe('MekanEkleEkrani', () => {
 
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adi'), 'Yeni Kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Yeni Kafe')
 
     await waitFor(() => {
       expect(screen.getByText('Bunlardan biri mi demek istedin?')).toBeTruthy()
@@ -76,12 +76,12 @@ describe('MekanEkleEkrani', () => {
 
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adi'), 'Yeni Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tur (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Yeni Kafe')
+    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {
-      expect(screen.getByText('Konum alinamadi, tekrar dene')).toBeTruthy()
+      expect(screen.getByText('Konum alınamadı, tekrar dene')).toBeTruthy()
     })
     expect(mekanEkle).not.toHaveBeenCalled()
   })

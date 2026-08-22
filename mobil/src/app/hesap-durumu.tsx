@@ -11,8 +11,8 @@ export default function HesapDurumuEkrani() {
 
   const baslik =
     hesapDurumu?.durum === 'yasakli'
-      ? 'Hesabin kalici olarak kapatildi'
-      : 'Hesabin askiya alindi'
+      ? 'Hesabın kalıcı olarak kapatıldı'
+      : 'Hesabın askıya alındı'
 
   async function cikisYap() {
     setCikisHatasi(null)
@@ -20,7 +20,7 @@ export default function HesapDurumuEkrani() {
       const { error } = await supabase.auth.signOut()
       if (error) setCikisHatasi(error.message)
     } catch (hata) {
-      setCikisHatasi(hata instanceof Error ? hata.message : 'Cikis yapilamadi')
+      setCikisHatasi(hata instanceof Error ? hata.message : 'Çıkış yapılamadı')
     }
   }
 
@@ -42,7 +42,7 @@ export default function HesapDurumuEkrani() {
         <Text style={stiller.ikincilButonMetni}>Yenile</Text>
       </Pressable>
       <Pressable style={stiller.buton} onPress={cikisYap}>
-        <Text style={stiller.butonMetni}>Cikis yap</Text>
+        <Text style={stiller.butonMetni}>Çıkış yap</Text>
       </Pressable>
     </View>
   )

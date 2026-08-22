@@ -43,11 +43,11 @@ export default function KisilerEkrani() {
       if (istekNo !== sonIstekRef.current) return
 
       setSonuclar(satirlar)
-      setDurum(satirlar.length === 0 ? 'Kimse bulunamadi.' : null)
+      setDurum(satirlar.length === 0 ? 'Kimse bulunamadı.' : null)
     } catch (e) {
       if (istekNo !== sonIstekRef.current) return
       setSonuclar([])
-      setDurum(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setDurum(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -55,7 +55,7 @@ export default function KisilerEkrani() {
     <View style={stiller.kapsayici}>
       <TextInput
         style={stiller.arama}
-        placeholder="Kullanici adi ya da isim"
+        placeholder="Kullanıcı adı ya da isim"
         autoCapitalize="none"
         value={metin}
         onChangeText={metinDegisti}

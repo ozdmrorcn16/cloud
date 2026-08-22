@@ -110,7 +110,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
 
     await waitFor(() => {
-      expect(screen.getByText('Bu profil bulunamadi')).toBeTruthy()
+      expect(screen.getByText('Bu profil bulunamadı')).toBeTruthy()
     })
   })
 
@@ -160,7 +160,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => {
       expect(engelle).toHaveBeenCalledWith('kullanici-2')
-      expect(screen.getByText('Bu profil bulunamadi')).toBeTruthy()
+      expect(screen.getByText('Bu profil bulunamadı')).toBeTruthy()
     })
   })
 
@@ -171,7 +171,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
-    await fireEvent.press(screen.getByText('Sikayet et'))
+    await fireEvent.press(screen.getByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
@@ -190,7 +190,7 @@ describe('KullaniciProfiliEkrani', () => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
     })
     expect(screen.getByText('Ada')).toBeTruthy()
-    expect(screen.queryByText('Bu profil bulunamadi')).toBeNull()
+    expect(screen.queryByText('Bu profil bulunamadı')).toBeNull()
   })
 
   it('yuklenirken bulunamadi mesajini gostermez', async () => {
@@ -202,7 +202,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(screen.queryByText('Bu profil bulunamadi')).toBeNull()
+    expect(screen.queryByText('Bu profil bulunamadı')).toBeNull()
 
     cozumlendir({ id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [] })
     await waitFor(() => {
@@ -243,13 +243,13 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Takip et'))
 
     await waitFor(() => expect(takipIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
+    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
   })
 
   it('takip ediyorken birakma butonunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
-    expect(await screen.findByText('Bagi kopar')).toBeTruthy()
+    expect(await screen.findByText('Bağı kopar')).toBeTruthy()
   })
 
   it('sunucu hatasini gosterir', async () => {
@@ -268,11 +268,11 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Bagi kopar'))
+    await fireEvent.press(await screen.findByText('Bağı kopar'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Takip et')).toBeTruthy()
-    expect(screen.queryByText('Bagi kopar')).toBeNull()
+    expect(screen.queryByText('Bağı kopar')).toBeNull()
   })
 
   it('sohbet iste butonuna basinca dogru id ile cagirir ve geri cek butonu gosterir', async () => {
@@ -283,7 +283,7 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Sohbet iste'))
 
     await waitFor(() => expect(sohbetIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
+    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
@@ -292,8 +292,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Istegi geri cek')).toBeTruthy()
-    expect(await screen.findByText('Bagi kopar')).toBeTruthy()
+    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
+    expect(await screen.findByText('Bağı kopar')).toBeTruthy()
   })
 
   it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
@@ -301,7 +301,7 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+    await fireEvent.press(await screen.findByText('İsteği geri çek'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Takip et')).toBeTruthy()
@@ -312,7 +312,7 @@ describe('KullaniciProfiliEkrani', () => {
     ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+    await fireEvent.press(await screen.findByText('İsteği geri çek'))
 
     await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Sohbet iste')).toBeTruthy()
@@ -323,10 +323,10 @@ describe('KullaniciProfiliEkrani', () => {
     ;(sohbetIsteginiGeriCek as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Istegi geri cek'))
+    await fireEvent.press(await screen.findByText('İsteği geri çek'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Istegi geri cek')).toBeTruthy()
+    expect(screen.getByText('İsteği geri çek')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
@@ -339,7 +339,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(await screen.findByText('Kabul et')).toBeTruthy()
     expect(screen.getByText('Reddet')).toBeTruthy()
-    expect(screen.getByText("Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")).toBeTruthy()
+    expect(screen.getByText("Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.")).toBeTruthy()
   })
 
   it('gelen takip istegini kabul edince dogru id ile yanitlar ve blok kaybolur', async () => {
@@ -423,7 +423,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet acik')).toBeTruthy()
+    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
   })
 
   it('gelen sohbet istegini yanitlama basarisiz olursa hata gosterir ve blok kalir', async () => {
@@ -447,7 +447,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet acik')).toBeTruthy()
+    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
@@ -458,8 +458,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet acik')).toBeTruthy()
-    expect(screen.queryByText('Istegi geri cek')).toBeNull()
+    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
+    expect(screen.queryByText('İsteği geri çek')).toBeNull()
   })
 
   it('gelen sohbet istegi beklemedeyken sohbet iste butonu gorunmez', async () => {
@@ -478,10 +478,10 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Bagi kopar'))
+    await fireEvent.press(await screen.findByText('Bağı kopar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Bagi kopar')).toBeTruthy()
+    expect(screen.getByText('Bağı kopar')).toBeTruthy()
     expect(screen.queryByText('Takip et')).toBeNull()
   })
 
@@ -505,7 +505,7 @@ describe('KullaniciProfiliEkrani', () => {
     })
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Mesaj gonder'))
+    await fireEvent.press(await screen.findByText('Mesaj gönder'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kullanici-2')
   })
@@ -517,7 +517,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Mesaj gonder')).toBeTruthy()
+    expect(await screen.findByText('Mesaj gönder')).toBeTruthy()
   })
 
   it('gelen sohbet istegi kabul edilmisse mesaj gonder butonu gorunur', async () => {
@@ -527,7 +527,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Mesaj gonder')).toBeTruthy()
+    expect(await screen.findByText('Mesaj gönder')).toBeTruthy()
   })
 
   it('hicbir bag yokken mesaj gonder butonu gorunmez', async () => {
@@ -538,6 +538,6 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
 
-    expect(screen.queryByText('Mesaj gonder')).toBeNull()
+    expect(screen.queryByText('Mesaj gönder')).toBeNull()
   })
 })

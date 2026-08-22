@@ -25,21 +25,21 @@ jest.mock('expo-router', () => ({
 describe('ProfilOlusturEkrani', () => {
   it('18 yas altinda dogum tarihinde hata gosterir', async () => {
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Adin'), 'Ada')
+    await fireEvent.changeText(screen.getByPlaceholderText('Adın'), 'Ada')
     await fireEvent.changeText(screen.getByPlaceholderText('YYYY-AA-GG'), '2015-01-01')
     await fireEvent.press(screen.getByText('Devam et'))
     await waitFor(() => {
-      expect(screen.getByText('Uygulamayi kullanmak icin 18 yasinda olmalisin')).toBeTruthy()
+      expect(screen.getByText('Uygulamayı kullanmak için 18 yaşında olmalısın')).toBeTruthy()
     })
     expect(supabase.from).not.toHaveBeenCalled()
   })
 
   it('gecerli bilgilerle profil olusturur ve ana ekrana yonlendirir', async () => {
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Adin'), 'Ada')
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi'), 'Orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Adın'), 'Ada')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'Orcun')
     await fireEvent.changeText(screen.getByPlaceholderText('YYYY-AA-GG'), '2000-01-01')
-    await fireEvent.changeText(screen.getByPlaceholderText('Kisa bir tanitim yaz'), 'Merhaba!')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kısa bir tanıtım yaz'), 'Merhaba!')
     await fireEvent.press(screen.getByText('Devam et'))
     await waitFor(() => {
       expect(supabase.from).toHaveBeenCalledWith('profiller')
@@ -52,8 +52,8 @@ describe('ProfilOlusturEkrani', () => {
 
   it('bicime uymayan kullanici adinda kurali gosterir ve kaydetmez', async () => {
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Adin'), 'Orcun Ozdemir')
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi'), 'or')
+    await fireEvent.changeText(screen.getByPlaceholderText('Adın'), 'Orcun Ozdemir')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'or')
     await fireEvent.changeText(screen.getByPlaceholderText('YYYY-AA-GG'), '1990-01-01')
     await fireEvent.press(screen.getByText('Devam et'))
 
@@ -64,17 +64,17 @@ describe('ProfilOlusturEkrani', () => {
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(false)
 
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi'), 'orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
-    expect(await screen.findByText('Bu kullanici adi alinmis, baska bir tane dene.')).toBeTruthy()
+    expect(await screen.findByText('Bu kullanıcı adı alınmış, başka bir tane dene.')).toBeTruthy()
   })
 
   it('musait kullanici adinda musait yazisini gosterir', async () => {
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(true)
 
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi'), 'orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
-    expect(await screen.findByText('Bu kullanici adi musait.')).toBeTruthy()
+    expect(await screen.findByText('Bu kullanıcı adı müsait.')).toBeTruthy()
   })
 })

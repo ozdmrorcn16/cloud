@@ -107,10 +107,10 @@ describe('MesajlarEkrani', () => {
 
     await render(<MesajlarEkrani />)
 
-    expect(await screen.findByText('Henuz bir konusman yok')).toBeTruthy()
+    expect(await screen.findByText('Henüz bir konuşman yok')).toBeTruthy()
   })
 
-  it('silinmis karsi taraf icin "Silinmis kullanici" gosterir', async () => {
+  it('silinmis karsi taraf icin "Silinmiş kullanıcı" gosterir', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
       konusma({
         kisiId: null,
@@ -124,7 +124,7 @@ describe('MesajlarEkrani', () => {
 
     await render(<MesajlarEkrani />)
 
-    expect(await screen.findByText('Silinmis kullanici')).toBeTruthy()
+    expect(await screen.findByText('Silinmiş kullanıcı')).toBeTruthy()
   })
 
   it('ekrana yeniden odaklaninca listeyi tekrar ceker (useFocusEffect, tek seferlik useEffect degil)', async () => {

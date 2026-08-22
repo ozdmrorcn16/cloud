@@ -15,10 +15,10 @@ describe('KayitEkrani', () => {
   it('gecersiz telefon numarasinda hata gosterir', async () => {
     await render(<KayitEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '123')
-    await fireEvent.changeText(screen.getByPlaceholderText('Sifre'), 'sifre1234')
-    await fireEvent.press(screen.getByText('Kayit ol'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'sifre1234')
+    await fireEvent.press(screen.getByText('Kayıt ol'))
     await waitFor(() => {
-      expect(screen.getByText('Gecerli bir telefon numarasi gir')).toBeTruthy()
+      expect(screen.getByText('Geçerli bir telefon numarası gir')).toBeTruthy()
     })
     expect(supabase.auth.signUp).not.toHaveBeenCalled()
   })
@@ -27,8 +27,8 @@ describe('KayitEkrani', () => {
     ;(supabase.auth.signUp as jest.Mock).mockResolvedValue({ data: {}, error: null })
     await render(<KayitEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '5551234567')
-    await fireEvent.changeText(screen.getByPlaceholderText('Sifre'), 'sifre1234')
-    await fireEvent.press(screen.getByText('Kayit ol'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'sifre1234')
+    await fireEvent.press(screen.getByText('Kayıt ol'))
     await waitFor(() => {
       expect(supabase.auth.signUp).toHaveBeenCalledWith({
         phone: '+905551234567',

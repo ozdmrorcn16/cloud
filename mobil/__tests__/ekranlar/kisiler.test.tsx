@@ -32,7 +32,7 @@ describe('KisilerEkrani', () => {
     ])
 
     await render(<KisilerEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'orc')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı ya da isim'), 'orc')
 
     expect(await screen.findByText('orcun')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
@@ -40,7 +40,7 @@ describe('KisilerEkrani', () => {
 
   it('iki karakterden kisa metinde uyari gosterir', async () => {
     await render(<KisilerEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'o')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı ya da isim'), 'o')
 
     expect(await screen.findByText('En az 2 karakter yaz.')).toBeTruthy()
     expect(kisiAra).not.toHaveBeenCalled()
@@ -50,9 +50,9 @@ describe('KisilerEkrani', () => {
     ;(kisiAra as jest.Mock).mockResolvedValue([])
 
     await render(<KisilerEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'zzz')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı ya da isim'), 'zzz')
 
-    expect(await screen.findByText('Kimse bulunamadi.')).toBeTruthy()
+    expect(await screen.findByText('Kimse bulunamadı.')).toBeTruthy()
   })
 
   it('sonuca basinca profile gider', async () => {
@@ -61,7 +61,7 @@ describe('KisilerEkrani', () => {
     ])
 
     await render(<KisilerEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'orc')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı ya da isim'), 'orc')
     await fireEvent.press(await screen.findByText('orcun'))
 
     await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k1'))
@@ -74,7 +74,7 @@ describe('KisilerEkrani', () => {
     ])
 
     await render(<KisilerEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanici adi ya da isim'), 'foto')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı ya da isim'), 'foto')
 
     expect(await screen.findByText('foto-var')).toBeTruthy()
     expect(screen.getByText('foto-yok')).toBeTruthy()
@@ -100,7 +100,7 @@ describe('KisilerEkrani', () => {
       ])
 
     await render(<KisilerEkrani />)
-    const kutu = screen.getByPlaceholderText('Kullanici adi ya da isim')
+    const kutu = screen.getByPlaceholderText('Kullanıcı adı ya da isim')
 
     // fireEvent.changeText yerine handler'i dogrudan cagiriyoruz: RNTL'in
     // fireEvent'i her cagriyi kendi act() kapsamiyla sarmaliyor ve iki

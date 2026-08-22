@@ -15,7 +15,7 @@ export default function GirisEkrani() {
     setHata(null)
     const eFormatli = eFormatinaCevir(telefon)
     if (!eFormatli) {
-      setHata('Gecerli bir telefon numarasi gir')
+      setHata('Geçerli bir telefon numarası gir')
       return
     }
 
@@ -32,7 +32,7 @@ export default function GirisEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Tekrar hos geldin</Text>
+      <Text style={stiller.baslik}>Tekrar hoş geldin</Text>
       <TextInput
         style={stiller.girdi}
         placeholder="05XX XXX XX XX"
@@ -42,17 +42,17 @@ export default function GirisEkrani() {
       />
       <TextInput
         style={stiller.girdi}
-        placeholder="Sifre"
+        placeholder="Şifre"
         secureTextEntry
         value={sifre}
         onChangeText={setSifre}
       />
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.buton} onPress={girisYap} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Giris yapiliyor...' : 'Giris yap'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Giriş yapılıyor...' : 'Giriş yap'}</Text>
       </Pressable>
       <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/kayit')}>
-        <Text style={stiller.baglanti}>Hesabin yok mu? Kayit ol</Text>
+        <Text style={stiller.baglanti}>Hesabın yok mu? Kayıt ol</Text>
       </Pressable>
     </View>
   )

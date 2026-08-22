@@ -37,19 +37,19 @@ export default function AnaEkran() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Hesabin hazir</Text>
+      <Text style={stiller.baslik}>Hesabın hazır</Text>
       <Text style={stiller.aciklama}>
-        Yakinindaki mekanlari kesfet, check-in yap.
+        Yakınındaki mekanları keşfet, check-in yap.
       </Text>
       <Pressable style={stiller.buton} onPress={() => router.push('/mekanlar')}>
-        <Text style={stiller.butonYazi}>Mekanlari kesfet</Text>
+        <Text style={stiller.butonYazi}>Mekanları keşfet</Text>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/kisiler')}>
-        <Text style={stiller.ikincilButonYazi}>Kisi ara</Text>
+        <Text style={stiller.ikincilButonYazi}>Kişi ara</Text>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/baglar')}>
         <View style={stiller.baglarIcerik}>
-          <Text style={stiller.ikincilButonYazi}>Baglar</Text>
+          <Text style={stiller.ikincilButonYazi}>Bağlar</Text>
           {bekleyenSayisi > 0 && <Text style={stiller.rozet}>{bekleyenSayisi}</Text>}
         </View>
       </Pressable>
@@ -60,13 +60,13 @@ export default function AnaEkran() {
         </View>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/anilar')}>
-        <Text style={stiller.ikincilButonYazi}>Anilarim</Text>
+        <Text style={stiller.ikincilButonYazi}>Anılarım</Text>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/ayarlar')}>
-        <Text style={stiller.ikincilButonYazi}>Gizlilik ayarlari</Text>
+        <Text style={stiller.ikincilButonYazi}>Gizlilik ayarları</Text>
       </Pressable>
       <Pressable style={stiller.cikisButonu} onPress={cikisYap}>
-        <Text style={stiller.cikisYazi}>Cikis yap</Text>
+        <Text style={stiller.cikisYazi}>Çıkış yap</Text>
       </Pressable>
     </View>
   )

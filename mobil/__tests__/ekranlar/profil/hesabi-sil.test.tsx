@@ -21,20 +21,20 @@ it('dondurmayi alternatif olarak sunar', async () => {
       'Geri donusu yok. Yeniden gelmek istersen sifirdan hesap acman gerekir.'
     )
   ).toBeTruthy()
-  expect(getByText('Bunun yerine hesabimi dondur')).toBeTruthy()
+  expect(getByText('Bunun yerine hesabımı dondur')).toBeTruthy()
 })
 
 it('parola yazilmadan silme calismaz', async () => {
   const { getByText } = await render(<HesabiSilEkrani />)
-  await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
+  await fireEvent.press(getByText('Hesabımı kalıcı olarak sil'))
   expect(sahteSil).not.toHaveBeenCalled()
-  expect(getByText('Onaylamak icin parolani yaz.')).toBeTruthy()
+  expect(getByText('Onaylamak için parolanı yaz.')).toBeTruthy()
 })
 
 it('dogru parolayla silme cagrilir', async () => {
   const { getByText, getByPlaceholderText } = await render(<HesabiSilEkrani />)
   await fireEvent.changeText(getByPlaceholderText('parolan'), 'dogruparola')
-  await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
+  await fireEvent.press(getByText('Hesabımı kalıcı olarak sil'))
   expect(sahteSil).toHaveBeenCalledWith('dogruparola')
 })
 
@@ -42,7 +42,7 @@ it('sunucu parolayi reddederse hata ekranda gorunur', async () => {
   sahteSil.mockRejectedValueOnce(new Error('Parola yanlis'))
   const { getByText, getByPlaceholderText } = await render(<HesabiSilEkrani />)
   await fireEvent.changeText(getByPlaceholderText('parolan'), 'yanlisparola')
-  await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
+  await fireEvent.press(getByText('Hesabımı kalıcı olarak sil'))
   expect(getByText('Parola yanlis')).toBeTruthy()
 })
 
@@ -53,7 +53,7 @@ it('basarisiz denemeden sonra parola alani temizlenir', async () => {
   const { getByText, getByPlaceholderText } = await render(<HesabiSilEkrani />)
   const girdi = getByPlaceholderText('parolan')
   await fireEvent.changeText(girdi, 'yanlisparola')
-  await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
+  await fireEvent.press(getByText('Hesabımı kalıcı olarak sil'))
   expect(getByText('Parola yanlis')).toBeTruthy()
   expect(girdi.props.value).toBe('')
 })

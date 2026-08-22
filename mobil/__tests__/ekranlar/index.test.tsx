@@ -58,7 +58,7 @@ describe('AnaEkran', () => {
 
   it('cikis yap butonuna basinca signOut cagirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Cikis yap'))
+    await fireEvent.press(screen.getByText('Çıkış yap'))
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
@@ -66,7 +66,7 @@ describe('AnaEkran', () => {
 
   it('cikista jeton_sil signOut-tan ONCE cagrilir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Cikis yap'))
+    await fireEvent.press(screen.getByText('Çıkış yap'))
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
@@ -76,31 +76,31 @@ describe('AnaEkran', () => {
 
   it('mekanlara git butonuna basinca /mekanlar rotasina yonlendirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Mekanlari kesfet'))
+    await fireEvent.press(screen.getByText('Mekanları keşfet'))
     expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar')
   })
 
   it('anilarim butonuna basinca /profil/anilar rotasina yonlendirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Anilarim'))
+    await fireEvent.press(screen.getByText('Anılarım'))
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/anilar')
   })
 
   it('ayarlar butonuna basinca /profil/ayarlar rotasina yonlendirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Gizlilik ayarlari'))
+    await fireEvent.press(screen.getByText('Gizlilik ayarları'))
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/ayarlar')
   })
 
   it('kisi ara butonuna basinca /kisiler rotasina yonlendirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Kisi ara'))
+    await fireEvent.press(screen.getByText('Kişi ara'))
     expect(mockRouterPush).toHaveBeenCalledWith('/kisiler')
   })
 
   it('baglar butonuna basinca /baglar rotasina yonlendirir', async () => {
     await render(<AnaEkran />)
-    await fireEvent.press(screen.getByText('Baglar'))
+    await fireEvent.press(screen.getByText('Bağlar'))
     expect(mockRouterPush).toHaveBeenCalledWith('/baglar')
   })
 
@@ -146,7 +146,7 @@ describe('AnaEkran', () => {
     expect(screen.queryByText(/^\d+$/)).toBeNull()
   })
 
-  it('bekleyen istek yokken Baglar butonunun yaninda sayi gosterilmez', async () => {
+  it('bekleyen istek yokken Bağlar butonunun yaninda sayi gosterilmez', async () => {
     await render(<AnaEkran />)
     await waitFor(() => {
       expect(gelenIstekleriGetir).toHaveBeenCalled()
@@ -154,7 +154,7 @@ describe('AnaEkran', () => {
     expect(screen.queryByText(/^\d+$/)).toBeNull()
   })
 
-  it('bekleyen istek varsa Baglar butonunun yaninda takip ve sohbet toplami gosterilir', async () => {
+  it('bekleyen istek varsa Bağlar butonunun yaninda takip ve sohbet toplami gosterilir', async () => {
     ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
       takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O' }],
       sohbet: [
@@ -168,13 +168,13 @@ describe('AnaEkran', () => {
     })
   })
 
-  it('bekleyen istek sorgusu basarisiz olursa Baglar metni yine de gorunur', async () => {
+  it('bekleyen istek sorgusu basarisiz olursa Bağlar metni yine de gorunur', async () => {
     ;(gelenIstekleriGetir as jest.Mock).mockRejectedValue(new Error('Oturum bulunamadi'))
     await render(<AnaEkran />)
     await waitFor(() => {
       expect(gelenIstekleriGetir).toHaveBeenCalled()
     })
-    expect(screen.getByText('Baglar')).toBeTruthy()
+    expect(screen.getByText('Bağlar')).toBeTruthy()
     expect(screen.queryByText(/^\d+$/)).toBeNull()
   })
 

@@ -108,7 +108,7 @@ describe('kullaniciAdiniDegistir', () => {
       },
     })
     await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow(
-      'Bu kullanici adi alinmis, baska bir tane dene.'
+      'Bu kullanıcı adı alınmış, başka bir tane dene.'
     )
   })
 

@@ -34,7 +34,7 @@ export async function kullaniciAdiniDegistir(yeniAd: string): Promise<void> {
     // (ornegin "duplicate key value violates unique constraint ...")
     // kullaniciya sizmasin diye kod'a gore anlasilir mesaja ceviriyoruz.
     if (error.code === '23505') {
-      throw new Error('Bu kullanici adi alinmis, baska bir tane dene.')
+      throw new Error('Bu kullanıcı adı alınmış, başka bir tane dene.')
     }
     if (error.code === '23514') {
       throw new Error(KULLANICI_ADI_KURALI)

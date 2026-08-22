@@ -13,75 +13,78 @@ import { ScrollView, Text, View, StyleSheet } from 'react-native'
 // belirsizlesir - docs/gizlilik-metni.md degisirse bu dizi de AYNI
 // TURDA guncellenmeli.
 //
+// Ekran metinleri karar 74 geregi duzgun Turkce (aksanli) yazilir;
+// ASCII kurali yalnizca kod, yorum ve commit metinleri icindir.
+//
 // Duzeltme gecmisi: docs/gizlilik-metni.md basindaki "Duzeltme
 // gecmisi" notuna bak (tur 1 ve tur 2, kod incelemesi).
 export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
   {
-    baslik: '1. Hangi verilerini isliyoruz',
+    baslik: '1. Hangi verilerini işliyoruz',
     paragraflar: [
-      'Telefon numaran (hesap ve dogrulama icin).',
-      'Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin.',
-      'Konumun - UC farkli sekilde: mekan ararken ve mekan eklerken cihaz konumun sunucuya gonderilir ama saklanmaz; check-in aktifken koordinatin saklanir, check-in aniya donusunce (en fazla ~4 saat sonra, ya da hemen "ayrildim" dediginde) koordinat silinir ve geriye yalnizca hangi mekanda oldugun kalir (tam ayrinti asagida, 3. maddede).',
-      'Gonderdigin ve aldigin mesajlarin icerigi.',
-      'Bag bilgin: kimi takip ettigin, kimlerle sohbet istegi alisverisinde bulundugun, kimi engelledigin.',
-      'Bildirim gonderebilmemiz icin cihazinin bildirim jetonu.',
-      'Sikayet ettigin ya da hakkinda sikayet edilen bilgiler.',
+      'Telefon numaran (hesap ve doğrulama için).',
+      'Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.',
+      'Konumun - üç farklı şekilde: mekan ararken ve mekan eklerken cihaz konumun sunucuya gönderilir ama saklanmaz; check-in aktifken koordinatın saklanır, check-in anıya dönüşünce (en fazla ~4 saat sonra, ya da hemen "ayrıldım" dediğinde) koordinat silinir ve geriye yalnızca hangi mekanda olduğun kalır (tam ayrıntı aşağıda, 3. maddede).',
+      'Gönderdiğin ve aldığın mesajların içeriği.',
+      'Bağ bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde bulunduğun, kimi engellediğin.',
+      'Bildirim göndermemiz için cihazının bildirim jetonu.',
+      'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.',
     ],
   },
   {
-    baslik: '2. Ne amacla isliyoruz',
+    baslik: '2. Ne amaçla işliyoruz',
     paragraflar: [
-      'Hesabini kurmak ve telefon numarani dogrulamak.',
-      'Yakinindaki mekanlari ve kisileri kesfetmeni saglamak.',
-      'Mesajlasmani saglamak.',
-      'Kotuye kullanimi (taciz, sahte hesap, uygunsuz icerik) onlemek ve incelemek.',
+      'Hesabını kurmak ve telefon numaranı doğrulamak.',
+      'Yakınındaki mekanları ve kişileri keşfetmeni sağlamak.',
+      'Mesajlaşmanı sağlamak.',
+      'Kötüye kullanımı (taciz, sahte hesap, uygunsuz içerik) önlemek ve incelemek.',
     ],
   },
   {
-    baslik: '3. Konum ozel olarak',
+    baslik: '3. Konum özel olarak',
     paragraflar: [
-      'Cihazinin konumu UC farkli sekilde kullanilir; bunlari karistirmamak onemli.',
-      'Mekan ararken: yakinindaki mekanlari gosterebilmemiz icin cihazinin konumu her mekan aramasinda sunucuya GONDERILIR. Bu konum SAKLANMAZ - yalnizca o anki sorguyu cevaplamak icin kullanilir, veritabaninda bir yere yazilmaz.',
-      'Yeni bir mekan eklerken: eklemek istedigin mekana gercekten yakin oldugunu dogrulamak icin cihazinin konumu gonderilir (~200 metre icinde olman gerekir). Bu konum da SAKLANMAZ - yalnizca bu yakinlik kontrolu icin kullanilir. Saklanan tek sey eklenen mekanin konumudur, senin o andaki konumun degil.',
-      'Check-in yaptiginda: check-in AKTIFKEN koordinatin saklanir. Ama bu gecici: check-in en fazla ~4 saat sonra (ya da hemen "ayrildim" dediginde) otomatik olarak aniya donusur, ve bu donusumde koordinat SILINIR (veritabaninda null\'a cekilir) - geriye yalnizca hangi mekanda oldugun kalir, tam koordinat degil.',
-      'Check-in aktifken saklanan koordinat, check-in icin sectigin bulunurluk kademesine gore paylasilir (bu, CANLI check-in icindir): Herkese acik - uygulamadaki herkes DEGIL, yalnizca ayni mekanda o an canli check-in\'i olanlar ya da karsilikli takiplerin gorur. Sadece takipcilerim - yalnizca karsilikli takiplerin gorur. Gizli - kimse gormez, check-in yalnizca kendi gecmisinde kalir.',
-      'Check-in aniya donustukten sonra (konum silindikten sonra), anin gorunurlugu AYRI bir uc kademedir ve "ayni mekanda canli olma" sarti yoktur: Herkese acik - uygulamadaki herkes gorur (aktif hesaplar, engelleme haric). Sadece takipcilerim - yalnizca karsilikli takiplerin gorur. Kimse - yalnizca kendi profilinde sen gorursun.',
-      'Gizli sectiginde kimligin kimseye gorunmez - moderasyon disinda. Ama bir istisna var: bulundugun mekanin herkese acik "kac kisi var" sayacina (yogunluk) bulunurluk kademenden BAGIMSIZ olarak dahil olursun. Yani kimligin gizli kalir, ama sayac senin varliginla artar - sakin bir mekanda sayac 0\'dan 1\'e ciktiginda oradaki biri "birisi var" bilgisini cikarabilir.',
+      'Cihazının konumu ÜÇ farklı şekilde kullanılır; bunları karıştırmamak önemli.',
+      'Mekan ararken: yakınındaki mekanları gösterebilmemiz için cihazının konumu her mekan aramasında sunucuya GÖNDERİLİR. Bu konum SAKLANMAZ - yalnızca o anki sorguyu cevaplamak için kullanılır, veritabanında bir yere yazılmaz.',
+      'Yeni bir mekan eklerken: eklemek istediğin mekana gerçekten yakın olduğunu doğrulamak için cihazının konumu gönderilir (~200 metre içinde olman gerekir). Bu konum da SAKLANMAZ - yalnızca bu yakınlık kontrolü için kullanılır. Saklanan tek şey eklenen mekanın konumudur, senin o andaki konumun değil.',
+      'Check-in yaptığında: check-in AKTİFKEN koordinatın saklanır. Ama bu geçici: check-in en fazla ~4 saat sonra (ya da hemen "ayrıldım" dediğinde) otomatik olarak anıya dönüşür, ve bu dönüşümde koordinat SİLİNİR (veritabanında null\'a çekilir) - geriye yalnızca hangi mekanda olduğun kalır, tam koordinat değil.',
+      'Check-in aktifken saklanan koordinat, check-in için seçtiğin bulunurluk kademesine göre paylaşılır (bu, CANLI check-in içindir): Herkese açık - uygulamadaki herkes DEĞİL, yalnızca aynı mekanda o an canlı check-in\'i olanlar ya da karşılıklı takiplerin görür. Sadece takipçilerim - yalnızca karşılıklı takiplerin görür. Gizli - kimse görmez, check-in yalnızca kendi geçmişinde kalır.',
+      'Check-in anıya dönüştükten sonra (konum silindikten sonra), anının görünürlüğü AYRI bir üç kademedir ve "aynı mekanda canlı olma" şartı yoktur: Herkese açık - uygulamadaki herkes görür (aktif hesaplar, engelleme hariç). Sadece takipçilerim - yalnızca karşılıklı takiplerin görür. Kimse - yalnızca kendi profilinde sen görürsün.',
+      'Gizli seçtiğinde kimliğin kimseye görünmez - moderasyon dışında. Ama bir istisna var: bulunduğun mekanın herkese açık "kaç kişi var" sayacına (yoğunluk) bulunurluk kademenden BAĞIMSIZ olarak dahil olursun. Yani kimliğin gizli kalır, ama sayaç senin varlığınla artar - sakin bir mekanda sayaç 0\'dan 1\'e çıktığında oradaki biri "birisi var" bilgisini çıkarabilir.',
     ],
   },
   {
-    baslik: '4. Moderasyon erisimi',
+    baslik: '4. Moderasyon erişimi',
     paragraflar: [
-      "Bir sikayet aldiginda ya da kotuye kullanim suphesiyle incelenirken, moderasyon ekibimiz profilini, check-in'lerini ve mesaj iceriklerini okuyabilir. Bu, bulunurluk kademen gizli olsa da gecerlidir.",
-      'Moderasyonun her erisimi kaydedilecek: kim, ne zaman, hangi kaydina baktigi bir denetim izinde tutulacak. Bu denetim izinin kendisi bugun henuz kurulmadi, moderasyon paneliyle birlikte gelecek.',
+      "Bir şikayet aldığında ya da kötüye kullanım şüphesiyle incelenirken, moderasyon ekibimiz profilini, check-in'lerini ve mesaj içeriklerini okuyabilir. Bu, bulunurluk kademen gizli olsa da geçerlidir.",
+      'Moderasyonun her erişimi kaydedilecek: kim, ne zaman, hangi kaydına baktığı bir denetim izinde tutulacak. Bu denetim izinin kendisi bugün henüz kurulmadı, moderasyon paneliyle birlikte gelecek.',
     ],
   },
   {
-    baslik: '5. Yurt disina aktarim',
+    baslik: '5. Yurt dışına aktarım',
     paragraflar: [
-      "Supabase (veritabani ve dosya depolama) sunuculari Almanya'da (eu-central-1 bolgesi). Butun kisisel verin Turkiye disinda, Avrupa Birligi sinirlari icinde tutulur.",
-      "Expo Push API (bildirim gonderimi) sunuculari Amerika Birlesik Devletleri'nde. Bildirim gonderirken cihazinin bildirim jetonu, kime gonderildigi bilgisi ve bildirimi tetikleyen kisinin adi buradan gecer (ornegin 'Deniz sana mesaj gonderdi' gibi). Mesajin metni bildirime hicbir zaman eklenmez, ama bir baskasinin adi da kisisel veridir ve bu aktarimin bir parcasidir.",
+      "Supabase (veritabanı ve dosya depolama) sunucuları Almanya'da (eu-central-1 bölgesi). Bütün kişisel verin Türkiye dışında, Avrupa Birliği sınırları içinde tutulur.",
+      "Expo Push API (bildirim gönderimi) sunucuları Amerika Birleşik Devletleri'nde. Bildirim gönderirken cihazının bildirim jetonu, kime gönderildiği bilgisi ve bildirimi tetikleyen kişinin adı buradan geçer (örneğin 'Deniz sana mesaj gönderdi' gibi). Mesajın metni bildirime hiçbir zaman eklenmez, ama bir başkasının adı da kişisel veridir ve bu aktarımın bir parçasıdır.",
     ],
   },
   {
-    baslik: '6. Saklama sureleri',
+    baslik: '6. Saklama süreleri',
     paragraflar: [
-      'Bugun gecerli olan otomatik silme/temizleme kurallari birden fazla (tek bir kural degil).',
-      'Suresi dolmus (90 gunden eski) hesap askiya alma kayitlari her gun otomatik olarak veritabanindan silinir (tam silme, arsivlenmez). Bu kayitlarin baska bir yerde saklanan bir kopyasi bugun yoktur.',
-      'Takip/sohbet istegi gunluk tavanini hesaplamak icin tutulan kayitlar 2 gunden eski satirlar her gun otomatik silinir.',
-      'Check-in koordinatin (3. maddede anlatildigi gibi) check-in aniya donustugunde otomatik olarak silinir - en fazla ~4 saat sonra.',
-      'Anilarin (check-in gecmisinin geri kalani), mesajlarin ve sikayetler icin bugun tam bir otomatik silme islemi yoktur - suresiz saklanirlar. "Gerekli oldugu sure kadar saklama" ilkesinin tam karsiligi henuz tamamlanmadi.',
-      'Planlanan (henuz uygulanmadi): moderasyon erisim kayitlarinin 2 yil, karara baglanmis sikayetlerin karardan 1 yil sonra silinmesi - bu, moderasyon paneliyle birlikte gelecek ve bugun icin gecerli degildir.',
-      'Hesabini silersen: profilin, anilarin, baglarin ve konusma listen kalici olarak silinir. Gonderdigin mesajlar silinmez ama gonderen kimligin koparilir. Senin actigin sikayetlerde kimlik bagi kopar; hakkinda acilan sikayetlerde ise kimlik bagi KOPMAZ, hedef kimligi moderasyon kaydinda kalir. Profil ve check-in fotograflarin depolama alanindan silinir.',
+      'Bugün geçerli olan otomatik silme/temizleme kuralları birden fazla (tek bir kural değil).',
+      'Süresi dolmuş (90 günden eski) hesap askıya alma kayıtları her gün otomatik olarak veritabanından silinir (tam silme, arşivlenmez). Bu kayıtların başka bir yerde saklanan bir kopyası bugün yoktur.',
+      'Takip/sohbet isteği günlük tavanını hesaplamak için tutulan kayıtlarda 2 günden eski satırlar her gün otomatik silinir.',
+      'Check-in koordinatın (3. maddede anlatıldığı gibi) check-in anıya dönüştüğünde otomatik olarak silinir - en fazla ~4 saat sonra.',
+      'Anılarının (check-in geçmişinin geri kalanı), mesajlarının ve şikayetlerin bugün tam bir otomatik silme işlemi yoktur - süresiz saklanırlar. "Gerekli olduğu süre kadar saklama" ilkesinin tam karşılığı henüz tamamlanmadı.',
+      'Planlanan (henüz uygulanmadı): moderasyon erişim kayıtlarının 2 yıl, karara bağlanmış şikayetlerin karardan 1 yıl sonra silinmesi - bu, moderasyon paneliyle birlikte gelecek ve bugün için geçerli değildir.',
+      'Hesabını silersen: profilin, anıların, bağların ve konuşma listen kalıcı olarak silinir. Gönderdiğin mesajlar silinmez ama gönderen kimliğin koparılır. Senin açtığın şikayetlerde kimlik bağı kopar; hakkında açılan şikayetlerde ise kimlik bağı KOPMAZ, hedef kimliği moderasyon kaydında kalır. Profil ve check-in fotoğrafların depolama alanından silinir.',
     ],
   },
   {
-    baslik: '7. Haklarin',
+    baslik: '7. Hakların',
     paragraflar: [
-      'Hesabini dondurabilirsin. Verilerin silinmez, gorunmez hale gelirsin; tekrar giris yaptiginda hesabin kendiliginden aktif olur.',
-      'Hesabini kalici olarak silebilirsin. Geri donusu yoktur; yeniden gelmek istersen sifirdan hesap acman gerekir.',
-      'Verilerinin bir kopyasini talep edebilirsin; bu talep icin bize ulasman gerekir.',
-      'Basvuru yolu: bugun icin somut bir destek kanali (e-posta, form) yayinda degil - bu, yayin oncesi eklenmesi gereken acik bir bosluktur.',
+      'Hesabını dondurabilirsin. Verilerin silinmez, görünmez hale gelirsin; tekrar giriş yaptığında hesabın kendiliğinden aktif olur.',
+      'Hesabını kalıcı olarak silebilirsin. Geri dönüşü yoktur; yeniden gelmek istersen sıfırdan hesap açman gerekir.',
+      'Verilerinin bir kopyasını talep edebilirsin; bu talep için bize ulaşman gerekir.',
+      'Başvuru yolu: bugün için somut bir destek kanalı (e-posta, form) yayında değil - bu, yayın öncesi eklenmesi gereken açık bir boşluktur.',
     ],
   },
 ]

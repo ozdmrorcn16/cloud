@@ -24,7 +24,7 @@ it('askida hesap icin sebep ve bitis tarihi gosterir', async () => {
     gerekce: 'Taciz bildirimleri',
   }
   const { getByText } = await render(<HesapDurumuEkrani />)
-  expect(getByText('Hesabin askiya alindi')).toBeTruthy()
+  expect(getByText('Hesabın askıya alındı')).toBeTruthy()
   expect(getByText(/Taciz bildirimleri/)).toBeTruthy()
 })
 
@@ -35,6 +35,6 @@ it('yasakli hesap icin bitis tarihi gostermez', async () => {
     gerekce: 'Tekrarlanan ihlal',
   }
   const { getByText, queryByText } = await render(<HesapDurumuEkrani />)
-  expect(getByText('Hesabin kalici olarak kapatildi')).toBeTruthy()
+  expect(getByText('Hesabın kalıcı olarak kapatıldı')).toBeTruthy()
   expect(queryByText(/Bitis/)).toBeNull()
 })

@@ -65,7 +65,7 @@ describe('BaglarEkrani', () => {
 
     await render(<BaglarEkrani />)
     expect(
-      await screen.findByText("Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.")
+      await screen.findByText("Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.")
     ).toBeTruthy()
   })
 
@@ -81,7 +81,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Bagi kopar'))
+    await fireEvent.press(await screen.findByText('Bağı kopar'))
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
   })
 
@@ -93,7 +93,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Bagi kopar'))
+    await fireEvent.press(await screen.findByText('Bağı kopar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('ayse')).toBeTruthy()
@@ -171,7 +171,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Geri cek'))
+    await fireEvent.press(await screen.findByText('Geri çek'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k3'))
     await waitFor(() => expect(screen.queryByText('mert')).toBeNull())
@@ -185,7 +185,7 @@ describe('BaglarEkrani', () => {
     ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Geri cek'))
+    await fireEvent.press(await screen.findByText('Geri çek'))
 
     await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('k6'))
     await waitFor(() => expect(screen.queryByText('deniz')).toBeNull())
@@ -199,7 +199,7 @@ describe('BaglarEkrani', () => {
     ;(sohbetIsteginiGeriCek as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Geri cek'))
+    await fireEvent.press(await screen.findByText('Geri çek'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('deniz')).toBeTruthy()
@@ -218,7 +218,7 @@ describe('BaglarEkrani', () => {
     const gonderilenSatirlar = await screen.findAllByText('mert')
     expect(gonderilenSatirlar).toHaveLength(2)
 
-    const geriCekButonlari = screen.getAllByText('Geri cek')
+    const geriCekButonlari = screen.getAllByText('Geri çek')
     expect(geriCekButonlari).toHaveLength(2)
 
     // Ilk satir gidenTakip'ten geliyor (data dizisinde takip once ekleniyor).
@@ -230,7 +230,7 @@ describe('BaglarEkrani', () => {
     // kendi isleyicisine bagli kalmis olmali (bilesik anahtar sayesinde
     // React iki satiri karistirmiyor).
     await waitFor(() => expect(screen.getAllByText('mert')).toHaveLength(1))
-    const kalanButon = screen.getByText('Geri cek')
+    const kalanButon = screen.getByText('Geri çek')
     await fireEvent.press(kalanButon)
     await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('k7'))
     await waitFor(() => expect(screen.queryByText('mert')).toBeNull())
@@ -244,7 +244,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Geri cek'))
+    await fireEvent.press(await screen.findByText('Geri çek'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('mert')).toBeTruthy()

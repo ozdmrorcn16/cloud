@@ -29,11 +29,11 @@ export default function DogrulaEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Telefonunu dogrula</Text>
+      <Text style={stiller.baslik}>Telefonunu doğrula</Text>
       <Text style={stiller.aciklama}>{telefon} numarasina gonderilen kodu gir</Text>
       <TextInput
         style={stiller.girdi}
-        placeholder="Dogrulama kodu"
+        placeholder="Doğrulama kodu"
         keyboardType="number-pad"
         value={kod}
         onChangeText={setKod}

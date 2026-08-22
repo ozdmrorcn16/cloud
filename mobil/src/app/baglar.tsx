@@ -37,7 +37,7 @@ export default function BaglarEkrani() {
       setTakipciler(takipcilerVerisi)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
       setYukleniyor(false)
     }
@@ -57,7 +57,7 @@ export default function BaglarEkrani() {
       }
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -67,7 +67,7 @@ export default function BaglarEkrani() {
       setGelenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -79,7 +79,7 @@ export default function BaglarEkrani() {
       setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -89,7 +89,7 @@ export default function BaglarEkrani() {
       setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -99,7 +99,7 @@ export default function BaglarEkrani() {
       setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -113,14 +113,14 @@ export default function BaglarEkrani() {
       setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
   if (yukleniyor) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.durum}>Yukleniyor...</Text>
+        <Text style={stiller.durum}>Yükleniyor...</Text>
       </View>
     )
   }
@@ -138,7 +138,7 @@ export default function BaglarEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
-      <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.</Text>
+      <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.</Text>
       <FlatList
         scrollEnabled={false}
         data={gelenTakip}
@@ -162,7 +162,7 @@ export default function BaglarEkrani() {
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen takip istegi yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen takip isteği yok</Text>}
       />
 
       <Text style={stiller.altBaslik}>Sohbet istekleri</Text>
@@ -189,7 +189,7 @@ export default function BaglarEkrani() {
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen sohbet istegi yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen sohbet isteği yok</Text>}
       />
 
       <Text style={stiller.bolumBaslik}>Giden istekler</Text>
@@ -214,14 +214,14 @@ export default function BaglarEkrani() {
                   : gidenSohbetIsteginiGeriCekEt(item.id)
               }
             >
-              <Text style={stiller.kucukButonYazi}>Geri cek</Text>
+              <Text style={stiller.kucukButonYazi}>Geri çek</Text>
             </Pressable>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen gonderilmis istek yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen gönderilmiş istek yok</Text>}
       />
 
-      <Text style={stiller.bolumBaslik}>Takipcilerim</Text>
+      <Text style={stiller.bolumBaslik}>Takipçilerim</Text>
       <FlatList
         scrollEnabled={false}
         data={takipciler}
@@ -234,7 +234,7 @@ export default function BaglarEkrani() {
             </View>
             <View style={stiller.butonlar}>
               <Pressable style={stiller.kucukButon} onPress={() => bagiKoparEt(item.id)}>
-                <Text style={stiller.kucukButonYazi}>Bagi kopar</Text>
+                <Text style={stiller.kucukButonYazi}>Bağı kopar</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
                 <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>
@@ -242,7 +242,7 @@ export default function BaglarEkrani() {
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Henuz takipcin yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>Henüz takipçin yok</Text>}
       />
     </ScrollView>
   )

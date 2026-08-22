@@ -78,13 +78,13 @@ describe('CheckInEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Bir not ekle (opsiyonel)'), 'not')
 
     // Fotograf sec
-    await fireEvent.press(screen.getByText('Fotograf ekle (opsiyonel)'))
+    await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
 
     const buttons = screen.getAllByText('Check-in yap')
     await fireEvent.press(buttons[buttons.length - 1])
 
     await waitFor(() => {
-      expect(screen.getByText('Fotograf yuklenemedi, notunla check-in yapildi')).toBeTruthy()
+      expect(screen.getByText('Fotoğraf yüklenemedi, notunla check-in yapıldı')).toBeTruthy()
     })
     // checkInYap fotografsiz cagirilmali
     expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'not', undefined, 'herkese_acik')
@@ -98,7 +98,7 @@ describe('CheckInEkrani', () => {
     await fireEvent.press(buttons[buttons.length - 1])
 
     await waitFor(() => {
-      expect(screen.getByText('Internet baglantisi yok, tekrar dene')).toBeTruthy()
+      expect(screen.getByText('İnternet bağlantısı yok, tekrar dene')).toBeTruthy()
     })
   })
 
@@ -109,7 +109,7 @@ describe('CheckInEkrani', () => {
     await render(<CheckInEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('Sadece takipcilerim'))
+    await fireEvent.press(screen.getByText('Sadece takipçilerim'))
     await fireEvent.press(screen.getByText('Check-in yap'))
 
     // notMetni ve fotograf bu senaryoda gercekten undefined (not yazilmadi,
@@ -127,7 +127,7 @@ describe('CheckInEkrani', () => {
   it('varsayilan bulunurlugu onceden secili gosterir', async () => {
     ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('gizli')
     await render(<CheckInEkrani />)
-    expect(await screen.findByLabelText('Bulunurluk: gizli, secili')).toBeTruthy()
+    expect(await screen.findByLabelText('Bulunurluk: gizli, seçili')).toBeTruthy()
   })
 
   it('varsayilan bulunurluk cozulmeden gonder butonu devre disi kalir', async () => {
@@ -152,7 +152,7 @@ describe('CheckInEkrani', () => {
     // gorunmesini) beklemek gerekiyor, yoksa ikinci basis hala
     // devre disiyken gerceklesir.
     await waitFor(() =>
-      expect(screen.getByLabelText('Bulunurluk: herkese_acik, secili')).toBeTruthy()
+      expect(screen.getByLabelText('Bulunurluk: herkese_acik, seçili')).toBeTruthy()
     )
 
     await fireEvent.press(buttons[buttons.length - 1])
@@ -165,7 +165,7 @@ describe('CheckInEkrani', () => {
 
     await render(<CheckInEkrani />)
     await waitFor(() => {
-      expect(screen.getByLabelText('Bulunurluk: gizli, secili')).toBeTruthy()
+      expect(screen.getByLabelText('Bulunurluk: gizli, seçili')).toBeTruthy()
     })
 
     const buttons = screen.getAllByText('Check-in yap')
@@ -185,7 +185,7 @@ describe('CheckInEkrani', () => {
 
     await render(<CheckInEkrani />)
     await waitFor(() => {
-      expect(screen.getByText('Bu check-in ne paylasiyor?')).toBeTruthy()
+      expect(screen.getByText('Bu check-in ne paylaşıyor?')).toBeTruthy()
     })
     await fireEvent.press(screen.getByText('Gizli yap'))
     await fireEvent.press(screen.getByText('Check-in yap'))

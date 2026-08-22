@@ -13,7 +13,7 @@ export default function MesajlarEkrani() {
       setKonusmalar(await konusmalarimiGetir())
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -36,7 +36,7 @@ export default function MesajlarEkrani() {
       setKonusmalar((mevcut) => mevcut.filter((k) => k.konusmaId !== konusmaId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -50,7 +50,7 @@ export default function MesajlarEkrani() {
           // Karsi taraf hesabini silmisse uyelik satiri yok; konusma
           // listede kalir ama kime ait oldugu artik bilinmiyor (spec
           // karar 69). Rota kullaniciId istiyor, null ile acilamaz.
-          const gorunenAd = item.ad ?? 'Silinmis kullanici'
+          const gorunenAd = item.ad ?? 'Silinmiş kullanıcı'
           const acilabilirMi = item.kisiId !== null
 
           return (
@@ -74,7 +74,7 @@ export default function MesajlarEkrani() {
             </View>
           )
         }}
-        ListEmptyComponent={<Text style={stiller.durum}>Henuz bir konusman yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Henüz bir konuşman yok</Text>}
       />
     </View>
   )

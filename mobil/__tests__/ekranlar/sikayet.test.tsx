@@ -26,7 +26,7 @@ describe('SikayetEkrani', () => {
 
     await render(<SikayetEkrani />)
     await fireEvent.press(screen.getByText('Taciz veya rahatsiz etme'))
-    await fireEvent.changeText(screen.getByPlaceholderText('Eklemek istedigin bir sey var mi?'), 'detay')
+    await fireEvent.changeText(screen.getByPlaceholderText('Eklemek istediğin bir şey var mı?'), 'detay')
     await fireEvent.press(screen.getByText('Gonder'))
 
     await waitFor(() => {
@@ -39,7 +39,7 @@ describe('SikayetEkrani', () => {
     await fireEvent.press(screen.getByText('Gonder'))
 
     await waitFor(() => {
-      expect(screen.getByText('Bir sebep sec')).toBeTruthy()
+      expect(screen.getByText('Bir sebep seç')).toBeTruthy()
     })
     expect(sikayetGonder).not.toHaveBeenCalled()
   })
@@ -52,7 +52,7 @@ describe('SikayetEkrani', () => {
     await fireEvent.press(screen.getByText('Gonder'))
 
     await waitFor(() => {
-      expect(screen.getByText('Sikayetin alindi')).toBeTruthy()
+      expect(screen.getByText('Şikayetin alındı')).toBeTruthy()
     })
   })
 })

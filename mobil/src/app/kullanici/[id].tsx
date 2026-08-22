@@ -40,7 +40,7 @@ export default function KullaniciProfiliEkrani() {
       setBagDurum(bagVerisi)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
       setYukleniyor(false)
     }
@@ -60,7 +60,7 @@ export default function KullaniciProfiliEkrani() {
       setHata(null)
       setProfil(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -74,7 +74,7 @@ export default function KullaniciProfiliEkrani() {
       setBagDurum((onceki) => (onceki ? { ...onceki, takip: 'beklemede' } : onceki))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -84,7 +84,7 @@ export default function KullaniciProfiliEkrani() {
       setBagDurum((onceki) => (onceki ? { ...onceki, takip: 'yok' } : onceki))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -94,7 +94,7 @@ export default function KullaniciProfiliEkrani() {
       setBagDurum((onceki) => (onceki ? { ...onceki, sohbet: 'beklemede' } : onceki))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -104,7 +104,7 @@ export default function KullaniciProfiliEkrani() {
       setBagDurum((onceki) => (onceki ? { ...onceki, sohbet: 'yok' } : onceki))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -116,7 +116,7 @@ export default function KullaniciProfiliEkrani() {
       )
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -128,14 +128,14 @@ export default function KullaniciProfiliEkrani() {
       )
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
   if (yukleniyor) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.durum}>Yukleniyor...</Text>
+        <Text style={stiller.durum}>Yükleniyor...</Text>
       </View>
     )
   }
@@ -144,7 +144,7 @@ export default function KullaniciProfiliEkrani() {
     return (
       <View style={stiller.kapsayici}>
         {hata && <Text style={stiller.hata}>{hata}</Text>}
-        <Text style={stiller.durum}>Bu profil bulunamadi</Text>
+        <Text style={stiller.durum}>Bu profil bulunamadı</Text>
       </View>
     )
   }
@@ -175,12 +175,12 @@ export default function KullaniciProfiliEkrani() {
         )}
         {bagDurum?.takip === 'beklemede' && (
           <Pressable style={stiller.pasifButon} onPress={takibiBirakEt}>
-            <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
+            <Text style={stiller.pasifButonYazi}>İsteği geri çek</Text>
           </Pressable>
         )}
         {bagDurum?.takip === 'kabul' && (
           <Pressable style={stiller.anahtarliButon} onPress={takibiBirakEt}>
-            <Text style={stiller.anahtarliButonYazi}>Bagi kopar</Text>
+            <Text style={stiller.anahtarliButonYazi}>Bağı kopar</Text>
           </Pressable>
         )}
 
@@ -193,12 +193,12 @@ export default function KullaniciProfiliEkrani() {
           )}
         {bagDurum?.sohbet === 'beklemede' && bagDurum?.gelenSohbet !== 'kabul' && (
           <Pressable style={stiller.pasifButon} onPress={sohbetIsteginiGeriCekEt}>
-            <Text style={stiller.pasifButonYazi}>Istegi geri cek</Text>
+            <Text style={stiller.pasifButonYazi}>İsteği geri çek</Text>
           </Pressable>
         )}
         {(bagDurum?.sohbet === 'kabul' || bagDurum?.gelenSohbet === 'kabul') && (
           <View style={stiller.pasifButon}>
-            <Text style={stiller.pasifButonYazi}>Sohbet acik</Text>
+            <Text style={stiller.pasifButonYazi}>Sohbet açık</Text>
           </View>
         )}
       </View>
@@ -210,13 +210,13 @@ export default function KullaniciProfiliEkrani() {
           style={stiller.birincilButon}
           onPress={() => router.push(`/sohbet/${id}`)}
         >
-          <Text style={stiller.birincilButonYazi}>Mesaj gonder</Text>
+          <Text style={stiller.birincilButonYazi}>Mesaj gönder</Text>
         </Pressable>
       )}
 
       {bagDurum?.gelenTakip === 'beklemede' && (
         <View style={stiller.gelenIstekBlok}>
-          <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini gorebilir ve mesajlasabilirsiniz.</Text>
+          <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.</Text>
           <View style={stiller.bagButonlari}>
             <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(true)}>
               <Text style={stiller.kucukButonYazi}>Kabul et</Text>
@@ -241,7 +241,7 @@ export default function KullaniciProfiliEkrani() {
         </View>
       )}
 
-      <Text style={stiller.bolumBaslik}>Anilar</Text>
+      <Text style={stiller.bolumBaslik}>Anılar</Text>
       <FlatList
         data={anilar}
         keyExtractor={(a) => a.id}
@@ -251,14 +251,14 @@ export default function KullaniciProfiliEkrani() {
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
           </Pressable>
         )}
-        ListEmptyComponent={<Text style={stiller.durum}>Henuz bir anisi yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Henüz bir anısı yok</Text>}
       />
 
       <Pressable style={stiller.tehlikeliButon} onPress={kullaniciyiEngelle}>
         <Text style={stiller.tehlikeliButonYazi}>Engelle</Text>
       </Pressable>
       <Pressable style={stiller.ikincilButon} onPress={sikayetEt}>
-        <Text style={stiller.ikincilButonYazi}>Sikayet et</Text>
+        <Text style={stiller.ikincilButonYazi}>Şikayet et</Text>
       </Pressable>
     </View>
   )

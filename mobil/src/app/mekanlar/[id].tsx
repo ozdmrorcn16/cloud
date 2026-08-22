@@ -29,7 +29,7 @@ export default function MekanDetayEkrani() {
       setKendiKullaniciId(kullaniciVerisi.data.user?.id ?? null)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -47,7 +47,7 @@ export default function MekanDetayEkrani() {
   return (
     <View style={stiller.kapsayici}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
-      <Text style={stiller.bolumBaslik}>Su an burada</Text>
+      <Text style={stiller.bolumBaslik}>Şu an burada</Text>
       <FlatList
         data={suAnBurdakiler}
         keyExtractor={(c) => c.id}
@@ -63,17 +63,17 @@ export default function MekanDetayEkrani() {
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
             {item.kullaniciId !== kendiKullaniciId && (
               <Pressable onPress={() => router.push(`/sikayet?hedefTur=check_in&hedefId=${item.id}`)}>
-                <Text style={stiller.sikayetLink}>Sikayet et</Text>
+                <Text style={stiller.sikayetLink}>Şikayet et</Text>
               </Pressable>
             )}
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.durum}>Su an kimse yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Şu an kimse yok</Text>}
       />
 
       {kendiCheckIni ? (
         <Pressable style={stiller.buton} onPress={() => ayril(kendiCheckIni.id)}>
-          <Text style={stiller.butonYazi}>Ayrildim</Text>
+          <Text style={stiller.butonYazi}>Ayrıldım</Text>
         </Pressable>
       ) : (
         <Pressable style={stiller.buton} onPress={() => router.push(`/check-in/${id}`)}>
@@ -81,7 +81,7 @@ export default function MekanDetayEkrani() {
         </Pressable>
       )}
 
-      <Text style={stiller.bolumBaslik}>Anilar</Text>
+      <Text style={stiller.bolumBaslik}>Anılar</Text>
       <FlatList
         data={anilar}
         keyExtractor={(c) => c.id}
@@ -97,12 +97,12 @@ export default function MekanDetayEkrani() {
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
             {item.kullaniciId !== kendiKullaniciId && (
               <Pressable onPress={() => router.push(`/sikayet?hedefTur=check_in&hedefId=${item.id}`)}>
-                <Text style={stiller.sikayetLink}>Sikayet et</Text>
+                <Text style={stiller.sikayetLink}>Şikayet et</Text>
               </Pressable>
             )}
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.durum}>Henuz bir ani yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Henüz bir anı yok</Text>}
       />
     </View>
   )

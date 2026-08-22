@@ -12,9 +12,9 @@ import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
 const SECENEKLER: { deger: Bulunurluk; etiket: string; aciklama: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkese acik', aciklama: 'Buradakiler ve takipcilerin gorur' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim', aciklama: 'Buradaki yabancilar gormez' },
-  { deger: 'gizli', etiket: 'Gizli', aciklama: 'Kimse gormez' },
+  { deger: 'herkese_acik', etiket: 'Herkese açık', aciklama: 'Buradakiler ve takipçilerin görür' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim', aciklama: 'Buradaki yabancılar görmez' },
+  { deger: 'gizli', etiket: 'Gizli', aciklama: 'Kimse görmez' },
 ]
 
 export default function CheckInEkrani() {
@@ -92,7 +92,7 @@ export default function CheckInEkrani() {
           }
         } catch {
           // Fotograf yuklenemezse check-in'i engelleme — notsuz/fotografsiz devam eder.
-          setUyari('Fotograf yuklenemedi, notunla check-in yapildi')
+          setUyari('Fotoğraf yüklenemedi, notunla check-in yapıldı')
         }
       }
 
@@ -100,9 +100,9 @@ export default function CheckInEkrani() {
       router.replace(`/mekanlar/${mekanId}`)
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
-        setHata('Internet baglantisi yok, tekrar dene')
+        setHata('İnternet bağlantısı yok, tekrar dene')
       } else {
-        setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+        setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
       }
     } finally {
       setGonderiliyor(false)
@@ -112,7 +112,7 @@ export default function CheckInEkrani() {
   if (ilkKullanimUyarisi) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.baslik}>Bu check-in ne paylasiyor?</Text>
+        <Text style={stiller.baslik}>Bu check-in ne paylaşıyor?</Text>
         <Text style={stiller.uyariMetni}>
           Check-in yaptiginda bulundugun mekan ve varsa yazdigin not, seni
           takip eden arkadaslarina gorunur olur. Check-in 4 saat sonra ya da
@@ -120,7 +120,7 @@ export default function CheckInEkrani() {
           check-in'i gizli yaparak sadece kendi profilinde tutabilirsin.
         </Text>
         <Pressable style={stiller.buton} onPress={() => ilkUyariKapat(false)}>
-          <Text style={stiller.butonYazi}>Anladim</Text>
+          <Text style={stiller.butonYazi}>Anladım</Text>
         </Pressable>
         <Pressable style={stiller.ikincilButon} onPress={() => ilkUyariKapat(true)}>
           <Text style={stiller.ikincilButonYazi}>Gizli yap</Text>
@@ -141,17 +141,17 @@ export default function CheckInEkrani() {
       />
       <Pressable style={stiller.fotoButonu} onPress={fotografSec}>
         <Text style={stiller.fotoButonuYazi}>
-          {yerelFotoUri ? 'Fotografi degistir' : 'Fotograf ekle (opsiyonel)'}
+          {yerelFotoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle (opsiyonel)'}
         </Text>
       </Pressable>
       {yerelFotoUri && <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} />}
 
-      <Text style={stiller.altBaslik}>Seni kim gorsun</Text>
+      <Text style={stiller.altBaslik}>Seni kim görsün</Text>
       {SECENEKLER.map((secenek) => (
         <Pressable
           key={secenek.deger}
           accessibilityLabel={`Bulunurluk: ${secenek.deger}${
-            bulunurluk === secenek.deger ? ', secili' : ''
+            bulunurluk === secenek.deger ? ', seçili' : ''
           }`}
           style={[stiller.secenek, bulunurluk === secenek.deger && stiller.secenekSecili]}
           onPress={() => bulunurlukDegistir(secenek.deger)}
@@ -168,7 +168,7 @@ export default function CheckInEkrani() {
         onPress={checkInYapButonu}
         disabled={gonderiliyor || bulunurluk === null}
       >
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Check-in yapiliyor...' : 'Check-in yap'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Check-in yapılıyor...' : 'Check-in yap'}</Text>
       </Pressable>
     </View>
   )

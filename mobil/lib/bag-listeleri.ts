@@ -6,7 +6,7 @@ type SunucuKisi = { id: string; kullanici_adi: string; ad: string }
 async function kendiKullaniciId(): Promise<string> {
   const { data } = await supabase.auth.getUser()
   const id = data.user?.id
-  if (!id) throw new Error('Oturum bulunamadi')
+  if (!id) throw new Error('Oturum bulunamadı')
   return id
 }
 

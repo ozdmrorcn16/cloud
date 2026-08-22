@@ -15,11 +15,11 @@ export default function KayitEkrani() {
     setHata(null)
     const eFormatli = eFormatinaCevir(telefon)
     if (!eFormatli) {
-      setHata('Gecerli bir telefon numarasi gir')
+      setHata('Geçerli bir telefon numarası gir')
       return
     }
     if (sifre.length < 8) {
-      setHata('Sifre en az 8 karakter olmali')
+      setHata('Şifre en az 8 karakter olmalı')
       return
     }
 
@@ -36,7 +36,7 @@ export default function KayitEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Hesap olustur</Text>
+      <Text style={stiller.baslik}>Hesap oluştur</Text>
       <TextInput
         style={stiller.girdi}
         placeholder="05XX XXX XX XX"
@@ -46,17 +46,17 @@ export default function KayitEkrani() {
       />
       <TextInput
         style={stiller.girdi}
-        placeholder="Sifre"
+        placeholder="Şifre"
         secureTextEntry
         value={sifre}
         onChangeText={setSifre}
       />
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.buton} onPress={kayitOl} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gonderiliyor...' : 'Kayit ol'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gonderiliyor...' : 'Kayıt ol'}</Text>
       </Pressable>
       <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/giris')}>
-        <Text style={stiller.baglanti}>Zaten hesabin var mi? Giris yap</Text>
+        <Text style={stiller.baglanti}>Zaten hesabın var mı? Giriş yap</Text>
       </Pressable>
     </View>
   )

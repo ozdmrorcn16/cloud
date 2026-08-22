@@ -4,7 +4,7 @@ import type { Bulunurluk, AniGorunurlugu } from './checkin'
 async function kendiKullaniciId(): Promise<string> {
   const { data } = await supabase.auth.getUser()
   const id = data.user?.id
-  if (!id) throw new Error('Oturum bulunamadi')
+  if (!id) throw new Error('Oturum bulunamadı')
   return id
 }
 

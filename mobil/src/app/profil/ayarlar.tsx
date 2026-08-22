@@ -20,15 +20,15 @@ import { hesabiDondur } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 
 const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkese acik' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim' },
+  { deger: 'herkese_acik', etiket: 'Herkese açık' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim' },
   { deger: 'gizli', etiket: 'Gizli' },
 ]
 
 const ANI_GORUNURLUK_SECENEKLERI: { deger: AniGorunurlugu; etiket: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkes gorsun' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipcilerim gorsun' },
-  { deger: 'kimse', etiket: 'Kimse gormesin' },
+  { deger: 'herkese_acik', etiket: 'Herkes görsün' },
+  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim görsün' },
+  { deger: 'kimse', etiket: 'Kimse görmesin' },
 ]
 
 function tarihiBicimlendir(tarih: Date): string {
@@ -62,7 +62,7 @@ export default function AyarlarEkrani() {
       // ama girisli bir ara durumda kalirdi (spec karar 66).
       await supabase.auth.signOut()
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
       setDondurmaOnayi(false)
     }
@@ -75,7 +75,7 @@ export default function AyarlarEkrani() {
       setKullaniciAdiDurumu(await kullaniciAdiDurumunuGetir())
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -87,10 +87,10 @@ export default function AyarlarEkrani() {
     }
     try {
       await kullaniciAdiniDegistir(normal)
-      setKullaniciAdiSonucu('Kullanici adin guncellendi.')
+      setKullaniciAdiSonucu('Kullanıcı adın güncellendi.')
       setYeniKullaniciAdi('')
     } catch (e) {
-      setKullaniciAdiSonucu(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setKullaniciAdiSonucu(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -102,7 +102,7 @@ export default function AyarlarEkrani() {
       setHata(null)
     } catch (e) {
       setAramadaGorunsun(oncekiDeger)
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -118,7 +118,7 @@ export default function AyarlarEkrani() {
       setHata(null)
     } catch (e) {
       setVarsayilanBulunurluk(onceki)
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -130,7 +130,7 @@ export default function AyarlarEkrani() {
       setHata(null)
     } catch (e) {
       setAniGorunurluk(onceki)
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -140,12 +140,12 @@ export default function AyarlarEkrani() {
     // butonu ekranin en dibinde kalip kaydirilamayabiliyordu. ScrollView'a
     // cevrildi.
     <ScrollView style={stiller.kaydirici} contentContainerStyle={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Gizlilik ayarlari</Text>
+      <Text style={stiller.baslik}>Gizlilik ayarları</Text>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.altBaslik}>Hesap</Text>
       {kullaniciAdiDurumu && (
-        <Text style={stiller.ipucu}>Kullanici adin: @{kullaniciAdiDurumu.kullaniciAdi}</Text>
+        <Text style={stiller.ipucu}>Kullanıcı adın: @{kullaniciAdiDurumu.kullaniciAdi}</Text>
       )}
       {kullaniciAdiDurumu?.sonrakiDegisimTarihi &&
         kullaniciAdiDurumu.sonrakiDegisimTarihi > new Date() && (
@@ -156,13 +156,13 @@ export default function AyarlarEkrani() {
         )}
       <TextInput
         style={stiller.girdi}
-        placeholder="Yeni kullanici adi"
+        placeholder="Yeni kullanıcı adı"
         autoCapitalize="none"
         value={yeniKullaniciAdi}
         onChangeText={setYeniKullaniciAdi}
       />
       <Pressable style={stiller.buton} onPress={kullaniciAdiniGuncelle}>
-        <Text style={stiller.butonMetni}>Kullanici adini degistir</Text>
+        <Text style={stiller.butonMetni}>Kullanıcı adını değiştir</Text>
       </Pressable>
       {kullaniciAdiSonucu ? (
         <Text style={stiller.ipucu}>{kullaniciAdiSonucu}</Text>
@@ -174,13 +174,13 @@ export default function AyarlarEkrani() {
         <Text style={stiller.butonMetni}>Gizlilik metni</Text>
       </Pressable>
 
-      <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayilan olarak</Text>
+      <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayılan olarak</Text>
       <View style={stiller.butonSatiri}>
         {VARSAYILAN_SECENEKLERI.map((secenek) => (
           <Pressable
             key={secenek.deger}
-            accessibilityLabel={`Varsayilan bulunurluk: ${secenek.deger}${
-              varsayilanBulunurluk === secenek.deger ? ', secili' : ''
+            accessibilityLabel={`Varsayılan bulunurluk: ${secenek.deger}${
+              varsayilanBulunurluk === secenek.deger ? ', seçili' : ''
             }`}
             style={[
               stiller.buton,
@@ -201,15 +201,15 @@ export default function AyarlarEkrani() {
       </View>
 
       <View style={stiller.satir}>
-        <Text style={stiller.etiket}>Beni aramada goster</Text>
+        <Text style={stiller.etiket}>Beni aramada göster</Text>
         <Switch
-          accessibilityLabel="Aramada gorunurluk"
+          accessibilityLabel="Aramada görünürlük"
           value={aramadaGorunsun}
           onValueChange={aramadaGorunsunDegisti}
         />
       </View>
 
-      <Text style={stiller.altBaslik}>Butun anilarimi kim gorsun</Text>
+      <Text style={stiller.altBaslik}>Bütün anılarımı kim görsün</Text>
       <Text style={stiller.ipucu}>
         Bu secim butun anilarina uygulanir, ama gizli check-in'den donusen anilar bu ayardan
         etkilenmez ve kapali kalir.
@@ -218,8 +218,8 @@ export default function AyarlarEkrani() {
         {ANI_GORUNURLUK_SECENEKLERI.map((secenek) => (
           <Pressable
             key={secenek.deger}
-            accessibilityLabel={`Ani gorunurlugu: ${secenek.deger}${
-              aniGorunurluk === secenek.deger ? ', secili' : ''
+            accessibilityLabel={`Anı görünürlüğü: ${secenek.deger}${
+              aniGorunurluk === secenek.deger ? ', seçili' : ''
             }`}
             style={[
               stiller.buton,
@@ -239,14 +239,14 @@ export default function AyarlarEkrani() {
         ))}
       </View>
 
-      <Text style={stiller.altBaslik}>Hesabi dondur</Text>
+      <Text style={stiller.altBaslik}>Hesabı dondur</Text>
       <Text style={stiller.ipucu}>
         Verilerin silinmez. Tekrar giris yaptiginda hesabin kendiliginden
         aktif olur.
       </Text>
       {!dondurmaOnayi ? (
         <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(true)}>
-          <Text style={stiller.butonMetni}>Hesabimi dondur</Text>
+          <Text style={stiller.butonMetni}>Hesabımı dondur</Text>
         </Pressable>
       ) : (
         <View style={stiller.butonSatiri}>
@@ -254,7 +254,7 @@ export default function AyarlarEkrani() {
             <Text style={stiller.butonMetni}>Evet, dondur</Text>
           </Pressable>
           <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(false)}>
-            <Text style={stiller.butonMetni}>Vazgec</Text>
+            <Text style={stiller.butonMetni}>Vazgeç</Text>
           </Pressable>
         </View>
       )}
@@ -263,7 +263,7 @@ export default function AyarlarEkrani() {
         style={stiller.buton}
         onPress={() => router.push('/profil/hesabi-sil')}
       >
-        <Text style={stiller.butonMetni}>Hesabimi sil</Text>
+        <Text style={stiller.butonMetni}>Hesabımı sil</Text>
       </Pressable>
     </ScrollView>
   )

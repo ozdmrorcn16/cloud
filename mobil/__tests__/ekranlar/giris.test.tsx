@@ -16,8 +16,8 @@ describe('GirisEkrani', () => {
     ;(supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({ data: {}, error: null })
     await render(<GirisEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '5551234567')
-    await fireEvent.changeText(screen.getByPlaceholderText('Sifre'), 'sifre1234')
-    await fireEvent.press(screen.getByText('Giris yap'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'sifre1234')
+    await fireEvent.press(screen.getByText('Giriş yap'))
     await waitFor(() => {
       expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
         phone: '+905551234567',
@@ -34,8 +34,8 @@ describe('GirisEkrani', () => {
     })
     await render(<GirisEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '5551234567')
-    await fireEvent.changeText(screen.getByPlaceholderText('Sifre'), 'yanlissifre')
-    await fireEvent.press(screen.getByText('Giris yap'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'yanlissifre')
+    await fireEvent.press(screen.getByText('Giriş yap'))
     await waitFor(() => {
       expect(screen.getByText('Invalid login credentials')).toBeTruthy()
     })

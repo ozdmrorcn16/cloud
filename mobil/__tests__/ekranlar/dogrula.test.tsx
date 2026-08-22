@@ -16,7 +16,7 @@ describe('DogrulaEkrani', () => {
   it('dogru kodla verifyOtp cagirir ve profil olusturmaya yonlendirir', async () => {
     ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue({ data: {}, error: null })
     await render(<DogrulaEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Dogrulama kodu'), '123456')
+    await fireEvent.changeText(screen.getByPlaceholderText('Doğrulama kodu'), '123456')
     await fireEvent.press(screen.getByText('Dogrula'))
     await waitFor(() => {
       expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
@@ -34,7 +34,7 @@ describe('DogrulaEkrani', () => {
       error: { message: 'Token has expired or is invalid' },
     })
     await render(<DogrulaEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Dogrulama kodu'), '000000')
+    await fireEvent.changeText(screen.getByPlaceholderText('Doğrulama kodu'), '000000')
     await fireEvent.press(screen.getByText('Dogrula'))
     await waitFor(() => {
       expect(screen.getByText('Token has expired or is invalid')).toBeTruthy()

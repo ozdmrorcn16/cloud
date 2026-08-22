@@ -17,7 +17,7 @@ export default function SikayetEkrani() {
 
   async function gonder() {
     if (!secilenSebep) {
-      setHata('Bir sebep sec')
+      setHata('Bir sebep seç')
       return
     }
     setHata(null)
@@ -26,7 +26,7 @@ export default function SikayetEkrani() {
       await sikayetGonder(hedefTur, hedefId, secilenSebep, aciklama.trim() || undefined)
       setGonderildi(true)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
       setGonderiliyor(false)
     }
@@ -35,8 +35,8 @@ export default function SikayetEkrani() {
   if (gonderildi) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.baslik}>Sikayetin alindi</Text>
-        <Text style={stiller.teyitMetni}>Bildirimin icin tesekkurler.</Text>
+        <Text style={stiller.baslik}>Şikayetin alındı</Text>
+        <Text style={stiller.teyitMetni}>Bildirimin için teşekkürler.</Text>
         <Pressable style={stiller.buton} onPress={() => router.back()}>
           <Text style={stiller.butonYazi}>Kapat</Text>
         </Pressable>
@@ -46,7 +46,7 @@ export default function SikayetEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Sikayet et</Text>
+      <Text style={stiller.baslik}>Şikayet et</Text>
 
       {SIKAYET_SEBEPLERI.map((sebep) => (
         <Pressable
@@ -63,7 +63,7 @@ export default function SikayetEkrani() {
 
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
-        placeholder="Eklemek istedigin bir sey var mi?"
+        placeholder="Eklemek istediğin bir şey var mı?"
         value={aciklama}
         onChangeText={setAciklama}
         multiline

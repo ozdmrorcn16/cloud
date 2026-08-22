@@ -56,7 +56,7 @@ describe('AyarlarEkrani', () => {
   it('varsayilan bulunurlugu degistirir', async () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
-    await fireEvent.press(screen.getByText('Sadece takipcilerim'))
+    await fireEvent.press(screen.getByText('Sadece takipçilerim'))
     await waitFor(() =>
       expect(varsayilanBulunurluguAyarla).toHaveBeenCalledWith('takipcilerim')
     )
@@ -64,7 +64,7 @@ describe('AyarlarEkrani', () => {
 
   it('anilari sadece takipcilere acar', async () => {
     await render(<AyarlarEkrani />)
-    await fireEvent.press(screen.getByText('Sadece takipcilerim gorsun'))
+    await fireEvent.press(screen.getByText('Sadece takipçilerim görsün'))
     await waitFor(() =>
       expect(aniGorunurlugunuAyarla).toHaveBeenCalledWith('takipcilerim')
     )
@@ -76,9 +76,9 @@ describe('AyarlarEkrani', () => {
 
     // beforeEach varsayilan_bulunurluk = 'herkese_acik' donuyor, yani
     // secili olan cip 'Herkese acik'.
-    const seciliCip = await screen.findByLabelText('Varsayilan bulunurluk: herkese_acik, secili')
+    const seciliCip = await screen.findByLabelText('Varsayılan bulunurluk: herkese_acik, seçili')
     expect(seciliCip).toHaveStyle({ backgroundColor: '#111' })
-    expect(screen.getByText('Herkese acik')).toHaveStyle({ color: '#fff' })
+    expect(screen.getByText('Herkese açık')).toHaveStyle({ color: '#fff' })
   })
 
   it('ani gorunurlugu secimi tikladiktan sonra secili olarak gosterilir', async () => {
@@ -87,13 +87,13 @@ describe('AyarlarEkrani', () => {
 
     // Baslangicta hicbir ani-gorunurlugu cipi secili degil (bu bir
     // sunucu tercihi degil, toplu bir eylem - bkz. bilesen yorumu).
-    expect(screen.queryByLabelText(/Ani gorunurlugu: .*, secili/)).toBeNull()
+    expect(screen.queryByLabelText(/Anı görünürlüğü: .*, seçili/)).toBeNull()
 
-    await fireEvent.press(screen.getByText('Kimse gormesin'))
+    await fireEvent.press(screen.getByText('Kimse görmesin'))
     await waitFor(() =>
-      expect(screen.getByLabelText('Ani gorunurlugu: kimse, secili')).toBeTruthy()
+      expect(screen.getByLabelText('Anı görünürlüğü: kimse, seçili')).toBeTruthy()
     )
-    expect(screen.getByText('Kimse gormesin')).toHaveStyle({ color: '#fff' })
+    expect(screen.getByText('Kimse görmesin')).toHaveStyle({ color: '#fff' })
   })
 
   it('ani gorunurlugu kaydetme basarisiz olursa secili gosterimi geri alir', async () => {
@@ -102,18 +102,18 @@ describe('AyarlarEkrani', () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('Kimse gormesin'))
+    await fireEvent.press(screen.getByText('Kimse görmesin'))
 
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
     })
-    expect(screen.queryByLabelText(/Ani gorunurlugu: .*, secili/)).toBeNull()
+    expect(screen.queryByLabelText(/Anı görünürlüğü: .*, seçili/)).toBeNull()
   })
 
   it('anilari kimseye kapatinca kaydeder', async () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
-    await fireEvent.press(screen.getByText('Kimse gormesin'))
+    await fireEvent.press(screen.getByText('Kimse görmesin'))
     await waitFor(() => {
       expect(aniGorunurlugunuAyarla).toHaveBeenCalledWith('kimse')
     })
@@ -132,7 +132,7 @@ describe('AyarlarEkrani', () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('Sadece takipcilerim'))
+    await fireEvent.press(screen.getByText('Sadece takipçilerim'))
 
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
@@ -144,22 +144,22 @@ describe('AyarlarEkrani', () => {
 
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanici adi'), 'yeniad')
-    await fireEvent.press(screen.getByText('Kullanici adini degistir'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanıcı adı'), 'yeniad')
+    await fireEvent.press(screen.getByText('Kullanıcı adını değiştir'))
 
     await waitFor(() => expect(kullaniciAdiniDegistir).toHaveBeenCalledWith('yeniad'))
-    expect(await screen.findByText('Kullanici adin guncellendi.')).toBeTruthy()
+    expect(await screen.findByText('Kullanıcı adın güncellendi.')).toBeTruthy()
   })
 
   it('sunucudan gelen 30 gun hatasini gosterir', async () => {
     ;(kullaniciAdiniDegistir as jest.Mock).mockRejectedValue(
-      new Error('Kullanici adini 30 gunde bir degistirebilirsin. Kalan sure: 12 gun')
+      new Error('Kullanıcı adıni 30 gunde bir degistirebilirsin. Kalan sure: 12 gun')
     )
 
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
-    await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanici adi'), 'yeniad')
-    await fireEvent.press(screen.getByText('Kullanici adini degistir'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Yeni kullanıcı adı'), 'yeniad')
+    await fireEvent.press(screen.getByText('Kullanıcı adını değiştir'))
 
     expect(await screen.findByText(/Kalan sure: 12 gun/)).toBeTruthy()
   })
@@ -167,14 +167,14 @@ describe('AyarlarEkrani', () => {
   it('aramada gorunurlugu kapatir', async () => {
     await render(<AyarlarEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
-    await fireEvent(screen.getByLabelText('Aramada gorunurluk'), 'valueChange', false)
+    await fireEvent(screen.getByLabelText('Aramada görünürlük'), 'valueChange', false)
 
     await waitFor(() => expect(aramadaGorunsunAyarla).toHaveBeenCalledWith(false))
   })
 
   it('mevcut kullanici adini gosterir', async () => {
     await render(<AyarlarEkrani />)
-    expect(await screen.findByText('Kullanici adin: @orcun')).toBeTruthy()
+    expect(await screen.findByText('Kullanıcı adın: @orcun')).toBeTruthy()
   })
 
   it('ani gorunurlugu bolumunde gizli check-in istisnasini aciklayan bir not gosterir', async () => {
@@ -209,7 +209,7 @@ describe('AyarlarEkrani', () => {
     const { getByText, queryByText } = await render(<AyarlarEkrani />)
 
     // Ilk dokunus yalnizca onay ister; hemen dondurmez.
-    await fireEvent.press(getByText('Hesabimi dondur'))
+    await fireEvent.press(getByText('Hesabımı dondur'))
     expect(sahteDondur).not.toHaveBeenCalled()
     expect(
       getByText(
@@ -234,23 +234,23 @@ describe('AyarlarEkrani', () => {
     sahteDondur.mockRejectedValue(new Error('ag hatasi'))
     const { getByText, queryByText } = await render(<AyarlarEkrani />)
 
-    await fireEvent.press(getByText('Hesabimi dondur'))
+    await fireEvent.press(getByText('Hesabımı dondur'))
     await fireEvent.press(getByText('Evet, dondur'))
 
     expect(await screen.findByText('ag hatasi')).toBeTruthy()
     expect(sahteCikis).not.toHaveBeenCalled()
     expect(queryByText('Evet, dondur')).toBeNull()
-    expect(getByText('Hesabimi dondur')).toBeTruthy()
+    expect(getByText('Hesabımı dondur')).toBeTruthy()
   })
 
   it('vazgec basinca onay ekrani kapanir ve hicbir sey dondurulmez', async () => {
     const { getByText, queryByText } = await render(<AyarlarEkrani />)
 
-    await fireEvent.press(getByText('Hesabimi dondur'))
-    await fireEvent.press(getByText('Vazgec'))
+    await fireEvent.press(getByText('Hesabımı dondur'))
+    await fireEvent.press(getByText('Vazgeç'))
 
     expect(sahteDondur).not.toHaveBeenCalled()
     expect(queryByText('Evet, dondur')).toBeNull()
-    expect(getByText('Hesabimi dondur')).toBeTruthy()
+    expect(getByText('Hesabımı dondur')).toBeTruthy()
   })
 })

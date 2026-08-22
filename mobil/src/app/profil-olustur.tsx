@@ -40,7 +40,7 @@ export default function ProfilOlusturEkrani() {
     try {
       const musait = await kullaniciAdiMusaitMi(normal)
       setKullaniciAdiDurumu(
-        musait ? 'Bu kullanici adi musait.' : 'Bu kullanici adi alinmis, baska bir tane dene.'
+        musait ? 'Bu kullanıcı adı müsait.' : 'Bu kullanıcı adı alınmış, başka bir tane dene.'
       )
     } catch {
       setKullaniciAdiDurumu(null)
@@ -63,17 +63,17 @@ export default function ProfilOlusturEkrani() {
     setHata(null)
 
     if (ad.trim().length === 0) {
-      setHata('Adini yaz')
+      setHata('Adını yaz')
       return
     }
 
     const dogumTarihi = new Date(dogumTarihiMetni)
     if (isNaN(dogumTarihi.getTime())) {
-      setHata('Gecerli bir dogum tarihi gir (YYYY-AA-GG)')
+      setHata('Geçerli bir doğum tarihi gir (YYYY-AA-GG)')
       return
     }
     if (onSekizAltindaMi(dogumTarihi)) {
-      setHata('Uygulamayi kullanmak icin 18 yasinda olmalisin')
+      setHata('Uygulamayı kullanmak için 18 yaşında olmalısın')
       return
     }
 
@@ -93,7 +93,7 @@ export default function ProfilOlusturEkrani() {
       const kullaniciId = kullaniciVerisi.user?.id
 
       if (!kullaniciId) {
-        setHata('Oturumun dusmus, tekrar giris yap')
+        setHata('Oturumun düşmüş, tekrar giriş yap')
         return
       }
 
@@ -115,7 +115,7 @@ export default function ProfilOlusturEkrani() {
       if (error) {
         setHata(
           error.code === '23505'
-            ? 'Bu kullanici adi alinmis, baska bir tane dene.'
+            ? 'Bu kullanıcı adı alınmış, başka bir tane dene.'
             : error.message
         )
         return
@@ -125,7 +125,7 @@ export default function ProfilOlusturEkrani() {
       router.replace('/')
     } catch (hataNesnesi) {
       const mesaj =
-        hataNesnesi instanceof Error ? hataNesnesi.message : 'Beklenmeyen bir hata olustu'
+        hataNesnesi instanceof Error ? hataNesnesi.message : 'Beklenmeyen bir hata oluştu'
       setHata(mesaj)
     } finally {
       setGonderiliyor(false)
@@ -134,11 +134,11 @@ export default function ProfilOlusturEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Profilini olustur</Text>
-      <TextInput style={stiller.girdi} placeholder="Adin" value={ad} onChangeText={setAd} />
+      <Text style={stiller.baslik}>Profilini oluştur</Text>
+      <TextInput style={stiller.girdi} placeholder="Adın" value={ad} onChangeText={setAd} />
       <TextInput
         style={stiller.girdi}
-        placeholder="Kullanici adi"
+        placeholder="Kullanıcı adı"
         autoCapitalize="none"
         value={kullaniciAdi}
         onChangeText={kullaniciAdiDegisti}
@@ -154,12 +154,12 @@ export default function ProfilOlusturEkrani() {
         <Text>
           {fotografUrileri.length > 0
             ? `${fotografUrileri.length} fotograf secildi`
-            : 'Fotograf ekle'}
+            : 'Fotoğraf ekle'}
         </Text>
       </Pressable>
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
-        placeholder="Kisa bir tanitim yaz"
+        placeholder="Kısa bir tanıtım yaz"
         value={biyografi}
         onChangeText={setBiyografi}
         multiline

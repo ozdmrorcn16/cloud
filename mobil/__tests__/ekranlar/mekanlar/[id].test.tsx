@@ -49,8 +49,8 @@ describe('MekanDetayEkrani', () => {
     ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
 
     await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Ayrildim'))
-    await fireEvent.press(screen.getByText('Ayrildim'))
+    await waitFor(() => screen.getByText('Ayrıldım'))
+    await fireEvent.press(screen.getByText('Ayrıldım'))
 
     await waitFor(() => {
       expect(checkIndenAyril).toHaveBeenCalledWith('checkin-1')
@@ -73,7 +73,7 @@ describe('MekanDetayEkrani', () => {
       expect(screen.getByText('Baskasi')).toBeTruthy()
     })
     expect(screen.getByText('Check-in yap')).toBeTruthy()
-    expect(screen.queryByText('Ayrildim')).toBeNull()
+    expect(screen.queryByText('Ayrıldım')).toBeNull()
   })
 
   it('check-in yap butonuna basinca check-in ekranina yonlendirir', async () => {
@@ -144,8 +144,8 @@ describe('MekanDetayEkrani', () => {
     ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Sikayet et'))
-    await fireEvent.press(screen.getByText('Sikayet et'))
+    await waitFor(() => screen.getByText('Şikayet et'))
+    await fireEvent.press(screen.getByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=check_in&hedefId=checkin-1')
   })
@@ -159,7 +159,7 @@ describe('MekanDetayEkrani', () => {
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Sen'))
 
-    expect(screen.queryByText('Sikayet et')).toBeNull()
+    expect(screen.queryByText('Şikayet et')).toBeNull()
   })
 
   it('baskasinin ani karti sikayet et baglantisi gosterir ve basinca sikayet ekranina yonlendirir', async () => {
@@ -169,8 +169,8 @@ describe('MekanDetayEkrani', () => {
     ])
 
     await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Sikayet et'))
-    await fireEvent.press(screen.getByText('Sikayet et'))
+    await waitFor(() => screen.getByText('Şikayet et'))
+    await fireEvent.press(screen.getByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=check_in&hedefId=checkin-2')
   })
@@ -184,6 +184,6 @@ describe('MekanDetayEkrani', () => {
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Sen'))
 
-    expect(screen.queryByText('Sikayet et')).toBeNull()
+    expect(screen.queryByText('Şikayet et')).toBeNull()
   })
 })

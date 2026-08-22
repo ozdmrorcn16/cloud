@@ -34,7 +34,7 @@ export default function MekanAramaEkrani() {
         )
         setMekanlar(sonuc)
       } catch (e) {
-        setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+        setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
       } finally {
         setYukleniyor(false)
       }
@@ -54,7 +54,7 @@ export default function MekanAramaEkrani() {
       setMekanlar(sonuc)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     }
   }
 
@@ -68,7 +68,7 @@ export default function MekanAramaEkrani() {
     await sorgulaVeGuncelle(arama, metre)
   }
 
-  if (yukleniyor) return <Text style={stiller.durum}>Yukleniyor...</Text>
+  if (yukleniyor) return <Text style={stiller.durum}>Yükleniyor...</Text>
   if (hata) return <Text style={stiller.hata}>{hata}</Text>
 
   return (
@@ -114,12 +114,12 @@ export default function MekanAramaEkrani() {
             <Text style={stiller.mekanTuru}>{item.tur}</Text>
           </Pressable>
         )}
-        ListEmptyComponent={<Text style={stiller.durum}>Yakinda mekan bulunamadi</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>Yakında mekan bulunamadı</Text>}
       />
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
-        <Text style={stiller.ekleButonuYazi}>Mekan bulamadin mi? Ekle</Text>
+        <Text style={stiller.ekleButonuYazi}>Mekan bulamadın mı? Ekle</Text>
       </Pressable>
-      <Text style={stiller.atif}>Mekan verileri: Overture Maps Foundation ve katkida bulunanlar</Text>
+      <Text style={stiller.atif}>Mekan verileri: Overture Maps Foundation ve katkıda bulunanlar</Text>
     </View>
   )
 }
