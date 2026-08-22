@@ -1,4 +1,4 @@
-import { hesapDurumunuGetir, hesabiDondur, hesabiGeriAc } from './hesap'
+import { hesapDurumunuGetir, hesabiDondur, hesabiGeriAc, hesabiSil } from './hesap'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -6,6 +6,7 @@ jest.mock('./supabase', () => ({
     from: jest.fn(),
     rpc: jest.fn(),
     auth: { getUser: jest.fn() },
+    functions: { invoke: jest.fn() },
   },
 }))
 
@@ -13,6 +14,7 @@ const sahteSupabase = supabase as unknown as {
   from: jest.Mock
   rpc: jest.Mock
   auth: { getUser: jest.Mock }
+  functions: { invoke: jest.Mock }
 }
 
 function zinciriKur(sonuc: { data: unknown; error: unknown }) {
@@ -103,5 +105,28 @@ describe('hesabiGeriAc', () => {
   it('hata yokken data false ise false doner (gercekten geri acilmadi)', async () => {
     sahteSupabase.rpc.mockResolvedValue({ data: false, error: null })
     await expect(hesabiGeriAc()).resolves.toBe(false)
+  })
+})
+
+describe('hesabiSil', () => {
+  it('uc noktayi parolayla cagirir', async () => {
+    sahteSupabase.functions = {
+      invoke: jest.fn().mockResolvedValue({ data: { silindi: true }, error: null }),
+    } as never
+    await hesabiSil('dogruparola')
+    expect(
+      (sahteSupabase as unknown as { functions: { invoke: jest.Mock } }).functions
+        .invoke
+    ).toHaveBeenCalledWith('hesap-sil', { body: { parola: 'dogruparola' } })
+  })
+
+  it('sunucu hatasini firlatir', async () => {
+    sahteSupabase.functions = {
+      invoke: jest.fn().mockResolvedValue({
+        data: { hata: 'Parola yanlis' },
+        error: { message: 'Edge Function returned a non-2xx status code' },
+      }),
+    } as never
+    await expect(hesabiSil('yanlisparola')).rejects.toThrow('Parola yanlis')
   })
 })

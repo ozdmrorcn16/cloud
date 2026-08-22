@@ -15,6 +15,7 @@ import {
   kullaniciAdiniNormallestir,
   kullaniciAdiniDegistir,
 } from '../../../lib/kullanici-adi'
+import { router } from 'expo-router'
 import { hesabiDondur } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 
@@ -249,6 +250,13 @@ export default function AyarlarEkrani() {
           </Pressable>
         </View>
       )}
+
+      <Pressable
+        style={stiller.buton}
+        onPress={() => router.push('/profil/hesabi-sil')}
+      >
+        <Text style={stiller.butonMetni}>Hesabimi sil</Text>
+      </Pressable>
     </View>
   )
 }

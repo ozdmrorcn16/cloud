@@ -45,3 +45,21 @@ export async function hesabiGeriAc(): Promise<boolean> {
   if (error) return false
   return data === true
 }
+
+// Silme, RPC degil Edge Function: auth.users satirini kaldirmak Admin
+// API gerektiriyor (spec karar 67). Parola dogrulamasi (Edge Function
+// icinde signInWithPassword ile) SUNUCUDA zorlaniyor - kullanici adi
+// herkese acik oldugu icin onu sormak gercek bir koruma degildi;
+// parolayi bilmeyen biri (ornegin calinmis bir oturum jetonuyla) hesabi
+// silemez.
+export async function hesabiSil(parola: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('hesap-sil', {
+    body: { parola },
+  })
+  if (error) {
+    // Edge Function 4xx dondugunde supabase-js genel bir mesaj veriyor;
+    // asil sebep govdededir ve kullaniciya onu gostermek gerekiyor.
+    const sunucuHatasi = (data as { hata?: string } | null)?.hata
+    throw new Error(sunucuHatasi ?? error.message)
+  }
+}

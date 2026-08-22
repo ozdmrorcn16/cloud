@@ -8,16 +8,7 @@
 // kapsanmiyor.
 
 import { assertEquals } from '@std/assert'
-import { fotografYollari, onayGecerliMi } from './saf.ts'
-
-Deno.test('onayGecerliMi: kullanici adi birebir eslesmeli', () => {
-  assertEquals(onayGecerliMi('deniz.k', 'deniz.k'), true)
-  assertEquals(onayGecerliMi('deniz.k', 'Deniz.K'), false)
-  assertEquals(onayGecerliMi('deniz.k', ' deniz.k '), true)
-  assertEquals(onayGecerliMi('deniz.k', 'baskasi'), false)
-  assertEquals(onayGecerliMi('deniz.k', ''), false)
-  assertEquals(onayGecerliMi('deniz.k', null), false)
-})
+import { fotografYollari } from './saf.ts'
 
 // Yollar gercek duzeni izliyor: `<kullaniciId>/<dosya>` (bkz.
 // lib/fotograf-yukle.ts, lib/checkin-fotograf-yukle.ts).

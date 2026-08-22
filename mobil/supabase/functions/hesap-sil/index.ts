@@ -2,13 +2,25 @@
 // gerektiriyor, bu yuzden Edge Function.
 //
 // Akis:
-//   1) Cagiranin JWT'si dogrulanir - KENDI hesabindan baskasini silemez.
-//   2) Onay metni kullanici adiyla karsilastirilir (yanlislikla silmeye
-//      karsi surtunme; spec karar 67'de bekleme suresi yerine bu var).
+//   1) Cagiranin JWT'si dogrulanir - KENDI hesabindan baskasini silemez;
+//      kimlik VE telefon buradan cikar.
+//   2) Govdeden gelen parola, cagiranin KENDI telefonuyla
+//      `signInWithPassword` denenerek SUNUCUDA dogrulanir. Bu istemci
+//      tarafinda ATLANAMAZ - fonksiyonun kendisi zorluyor.
 //   3) Silinecek Storage yollari TOPLANIR (henuz silinmez).
 //   4) auth.admin.deleteUser cagrilir; cascade kalani goturur.
 //   5) (4) basariliysa Storage'daki profil ve check-in fotograflari
 //      silinir.
+//
+// TASARIM DEGISIKLIGI (kullanici karari): onceki surumde onay metni
+// kullanici adiyla karsilastiriliyordu. Kullanici adi HERKESE ACIK
+// (baskasinin_profili, kisi_ara RPC'leri donduruyor), yani o kontrol
+// pratikte hicbir sey korumuyordu - yalnizca yanlislikla tiklamaya
+// karsi surtunmeydi. Parola dogrulamasi GERCEK bir guvenlik kapisi:
+// parolayi bilmeyen biri (ornegin calinmis bir oturum jetonuyla) hesabi
+// silemez. Kullanicinin gerekcesi: "silme islemi kullanici adina gerek
+// yok zaten kendi hesabi icerisinden yapacagi icin ama sifre istensin
+// guvenlik amacli."
 //
 // (3) NEDEN (4)'TEN ONCE: kullanici satiri gidince check_inler de
 // cascade ile gider ve fotograf yollarini bir daha okuyamayiz. Yollar
@@ -23,8 +35,8 @@
 // `deleteUser` basarili DONDUKTEN SONRA calisiyor; auth satiri hala
 // duruyorken fotograf kaybi olmuyor.
 //
-// NOT: kullanici adi rezervasyonu (eski adim 3) kullanici karariyla
-// tamamen kaldirildi; `moderasyon.kullanici_adini_rezerve_et` artik
+// NOT: kullanici adi rezervasyonu kullanici karariyla tamamen
+// kaldirildi; `moderasyon.kullanici_adini_rezerve_et` artik
 // veritabaninda YOK. Silinen kullanici adi aninda serbest kalir - bu
 // bilincli.
 //
@@ -39,11 +51,11 @@
 // YOK cunku onu pg_net cagiriyor (tarayici degil) - o kalip burada
 // gecerli degil.
 //
-// LOG: kullanici adi, telefon ya da mesaj icerigi YAZILMAZ; yalnizca
-// islem sonucu ve silinen/elenen dosya sayilari.
+// LOG: parola, telefon ya da mesaj icerigi YAZILMAZ; yalnizca islem
+// sonucu ve silinen/elenen dosya sayilari. Govde de loglanmaz.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { fotografYollari, onayGecerliMi } from './saf.ts'
+import { fotografYollari } from './saf.ts'
 
 // Bucket kimlikleri migrasyonlardan BIREBIR: dogrulama olmadan
 // tahmin edilmemeli. Kontrolor incelemesinde bulunan Critical (C1):
@@ -88,7 +100,8 @@ Deno.serve(async (istek: Request) => {
 
   const url = Deno.env.get('SUPABASE_URL')
   const servisAnahtari = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!url || !servisAnahtari) {
+  const anonAnahtari = Deno.env.get('SUPABASE_ANON_KEY')
+  if (!url || !servisAnahtari || !anonAnahtari) {
     console.error('hesap-sil: ortam degiskenleri eksik')
     return yanit({ hata: 'Sunucu yapilandirmasi eksik' }, 500)
   }
@@ -99,39 +112,63 @@ Deno.serve(async (istek: Request) => {
 
   // 1) Cagiran kim? Jeton service-role istemcisiyle dogrulaniyor. Govdeden
   // gelen bir kimlige ASLA guvenilmiyor - silinecek hesap yalnizca JWT'den
-  // cikan kimlik.
+  // cikan kimlik. Telefon da buradan cikar (2)'de parola dogrulamasi icin
+  // gerekli - govdeden gelen bir telefona da guvenilmiyor.
   const jeton = yetkiBasligi.replace(/^Bearer\s+/i, '')
   const { data: kullaniciVerisi, error: kullaniciHata } =
     await yonetici.auth.getUser(jeton)
   const kimlik = kullaniciVerisi?.user?.id
+  const telefon = kullaniciVerisi?.user?.phone
   if (kullaniciHata || !kimlik) {
     return yanit({ hata: 'Kimlik dogrulamasi gecersiz' }, 401)
   }
 
-  // 2) Onay metni.
-  let onay: string | null = null
+  // 2) Parola dogrulamasi - SUNUCUDA zorlanir, istemci atlayamaz.
+  let parola: string | null = null
   try {
     const govde = await istek.json()
-    onay = typeof govde?.onay === 'string' ? govde.onay : null
+    parola = typeof govde?.parola === 'string' ? govde.parola : null
   } catch {
-    onay = null
+    parola = null
+  }
+
+  if (!parola || parola.length === 0) {
+    return yanit({ hata: 'Parola gerekli' }, 400)
+  }
+
+  if (!telefon) {
+    // Savunmaci: bu projede butun hesaplar telefon + parola ile
+    // kimliklendirilir, ama JWT'den telefon cikmazsa parola dogrulamasi
+    // hic denenmemeli.
+    return yanit({ hata: 'Bu hesap parola ile dogrulanamiyor' }, 400)
+  }
+
+  // Ayri, ANON anahtarli bir istemci: cagiranin kendi telefonu ve
+  // govdeden gelen parolayla signInWithPassword denenir. Basarili olursa
+  // parola dogrudur. persistSession/autoRefreshToken kapali - bu
+  // istemcinin tek isi bir defalik dogrulama, oturum tutmuyor.
+  const dogrulamaIstemcisi = createClient(url, anonAnahtari, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { error: parolaHatasi } = await dogrulamaIstemcisi.auth.signInWithPassword({
+    phone: telefon,
+    password: parola,
+  })
+  if (parolaHatasi) {
+    // Parola da govde de loglanmiyor; sabit bir mesaj yeterli.
+    console.error('hesap-sil: parola dogrulanamadi')
+    return yanit({ hata: 'Parola yanlis' }, 400)
   }
 
   const { data: profil, error: profilHata } = await yonetici
     .from('profiller')
-    .select('kullanici_adi, fotograflar')
+    .select('fotograflar')
     .eq('id', kimlik)
     .maybeSingle()
 
   if (profilHata) {
     console.error('hesap-sil: profil okunamadi')
     return yanit({ hata: 'Hesap okunamadi' }, 500)
-  }
-
-  // Profili olmayan bir hesap (kayit yarida kalmis) da silinebilmeli;
-  // o durumda onay metni beklenmiyor.
-  if (profil && !onayGecerliMi(profil.kullanici_adi, onay)) {
-    return yanit({ hata: 'Onay metni kullanici adinla eslesmiyor' }, 400)
   }
 
   // 3) Silinecek yollarin TOPLANMASI. Yollar auth.users silinmeden ONCE

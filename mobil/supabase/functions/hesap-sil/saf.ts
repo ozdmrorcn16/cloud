@@ -1,22 +1,14 @@
 // Hesap durumu ve haklari Task 15: "hesap-sil" fonksiyonunun SAF mantigi.
 //
 // Neden ayri dosya: `index.ts` yuklendigi anda `Deno.serve` cagiriyor,
-// yani onu import eden bir test bir sunucu ayaga kaldirirdi. Onay metni
-// karsilastirmasi ve silinecek dosya yollarinin ayiklanmasi veritabanina
-// da aga da dokunmuyor; buraya alinip `index_test.ts` tarafindan dogrudan
-// test ediliyor.
+// yani onu import eden bir test bir sunucu ayaga kaldirirdi. Silinecek
+// dosya yollarinin ayiklanmasi veritabanina da aga da dokunmuyor; buraya
+// alinip `index_test.ts` tarafindan dogrudan test ediliyor.
 //
 // Buraya YALNIZCA saf kod girer. Veritabani, Storage ya da auth admin
-// API'sine dokunan her sey `index.ts` icinde kalir.
-
-// Onay metni kullanici adiyla BIREBIR eslesmeli. Buyuk/kucuk harf
-// esnekligi YOK: kullanici adlari zaten hep kucuk harf saklaniyor ve
-// bu bir yikici islemin son kapisi - esneklik burada guvenlik degil
-// risk.
-export function onayGecerliMi(kullaniciAdi: string, onay: string | null): boolean {
-  if (onay === null) return false
-  return onay.trim() === kullaniciAdi
-}
+// API'sine dokunan her sey `index.ts` icinde kalir. Parola dogrulamasi
+// (`signInWithPassword`) bir ag cagrisi oldugu icin burada DEGIL,
+// `index.ts` icinde ve canli dogrulamada sinaniyor.
 
 export type Yollar = {
   profil: string[]
