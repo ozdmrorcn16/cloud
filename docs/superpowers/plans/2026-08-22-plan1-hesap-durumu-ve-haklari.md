@@ -3060,7 +3060,7 @@ git commit -m "feat: silinen kullanici adi 24 saat rezerve edilir"
 - Modify: `mobil/supabase/config.toml`
 
 **Interfaces:**
-- Consumes: `moderasyon.kullanici_adini_rezerve_et` (Task 14); FK
+- Consumes: FK
   degisiklikleri (Task 13).
 - Produces: `POST /functions/v1/hesap-sil` uc noktasi.
   Yetkilendirme: cagiranin `Authorization: Bearer <kullanici JWT>`
@@ -3249,17 +3249,8 @@ Deno.serve(async (istek: Request) => {
     return yanit({ hata: 'Onay metni kullanici adinla eslesmiyor' }, 400)
   }
 
-  // 3) Kullanici adini rezerve et.
-  if (profil?.kullanici_adi) {
-    const { error: rezerveHata } = await yonetici.schema('moderasyon').rpc(
-      'kullanici_adini_rezerve_et',
-      { p_ad: profil.kullanici_adi }
-    )
-    if (rezerveHata) {
-      console.error('hesap-sil: kullanici adi rezerve edilemedi')
-      return yanit({ hata: 'Silme tamamlanamadi' }, 500)
-    }
-  }
+  // 3) ADIM KALDIRILDI: kullanici adi rezervasyonu (karar 70 geri alindi,
+  //    kullanicinin karari 2026-08-22). Silinen ad aninda serbest kalir.
 
   // 4) Storage temizligi. Yollar auth.users silinmeden ONCE toplanmali.
   const { data: checkInler, error: checkInHata } = await yonetici
