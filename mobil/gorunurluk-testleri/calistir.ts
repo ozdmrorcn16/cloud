@@ -2212,6 +2212,70 @@ async function main() {
     }
   })
 
+  await senaryo('52 - Askidaki kullanici listede ve yogunlukta sayilmaz', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const bCheckIn = await checkInYap(b, mekan2, MEKAN_2.lat, MEKAN_2.lng)
+    t.checkInler.push({ istemci: b, id: bCheckIn })
+
+    const { data: oncesi, error: oncesiHata } = await a.rpc(
+      'yakin_mekanlar_yogunluk',
+      { p_lat: MEKAN_2.lat, p_lng: MEKAN_2.lng, p_yaricap_metre: 1000 }
+    )
+    esitMi(oncesiHata, null, '52 kurulum: yogunluk hatasiz')
+    const oncekiSayi =
+      ((oncesi ?? []) as { id: string; kisi_sayisi: number }[]).find(
+        (m) => m.id === mekan2
+      )?.kisi_sayisi ?? 0
+    esitMi(oncekiSayi >= 1, true, '52 kurulum: mekan2 en az 1 kisi sayiyor')
+
+    const { data: listeOncesi, error: listeOncesiHata } = await a.rpc(
+      'bag_kisileri',
+      { p_kimlikler: [bId] }
+    )
+    esitMi(listeOncesiHata, null, '52 kurulum: bag_kisileri (askidan once) hatasiz')
+    esitMi(
+      (listeOncesi ?? []).length,
+      1,
+      '52 kurulum: B askidan once bag listesinde cikiyor'
+    )
+
+    try {
+      const { error: kurulumHata } = await yonetici
+        .from('hesap_durumlari')
+        .insert({
+          kullanici_id: bId,
+          durum: 'askida',
+          aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+          gerekce: 'test',
+          moderator_id: aId,
+        })
+      esitMi(kurulumHata, null, '52 kurulum: B askiya alindi')
+
+      const { data: sonrasi, error: sonrasiHata } = await a.rpc(
+        'yakin_mekanlar_yogunluk',
+        { p_lat: MEKAN_2.lat, p_lng: MEKAN_2.lng, p_yaricap_metre: 1000 }
+      )
+      esitMi(sonrasiHata, null, '52: yogunluk hatasiz')
+      const sonrakiSayi =
+        ((sonrasi ?? []) as { id: string; kisi_sayisi: number }[]).find(
+          (m) => m.id === mekan2
+        )?.kisi_sayisi ?? 0
+      esitMi(sonrakiSayi, oncekiSayi - 1, '52: askidaki B yogunlukta sayilmiyor')
+
+      const { data: liste, error: listeHata } = await a.rpc('bag_kisileri', {
+        p_kimlikler: [bId],
+      })
+      esitMi(listeHata, null, '52: bag_kisileri hatasiz')
+      esitMi((liste ?? []).length, 0, '52: askidaki B bag listesinde yok')
+    } finally {
+      await hesapDurumunuTemizle([bId])
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
