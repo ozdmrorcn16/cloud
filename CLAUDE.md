@@ -131,6 +131,38 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### Ekran metinleri duzgun Turkce'ye cevrildi (2026-08-23, commit b431d89)
+
+Kullanici uygulamayi tarayici yolundan telefonda test etti ve tek
+kusur olarak yazim yanlislarini bildirdi: arayuz bastan sona aksansiz
+yazilmisti. Karar 74 bunu zaten sart kosuyordu ama metinler hic
+cevrilmemisti. 21 ekran + 21 test dosyasinda 421 satir duzeltildi;
+`gizlilik.tsx` (hukuki metin) bastan yazildi; `lib/` icindeki hata
+metinleri de cevrildi, cunku ekranlar `e.message` degerini dogrudan
+basiyor.
+
+Kural netlesti: ASCII yalnizca kod, yorum ve commit metinleri icin.
+Kullanicinin gordugu HER metin aksanli yazilir. Yalnizca c, g, i, o,
+s, u aksanlari kullanilir; duzeltme isaretli harflere (a, i)
+girilmez - "mekan" ve "sikayet" oldugu gibi kalir.
+
+**Tuzak (yasandi):** toplu dize degistirme kod tanimlayicilarina
+tasar. "Adin" -> aksanli karsiligi kurali `kullaniciAdiniNormallestir`
+fonksiyon adinin icine girdi ve uygulamayi bozdu; ayni sekilde
+`BaglarEkrani`, `setSifre`, `AnilariniGetir`, `AnilarEkrani`,
+`setAnilar`, `gecmisAnilar` da bozuldu. Hepsi, dize sabitleri DISINDA
+aksanli harf arayan bir taramayla bulunup geri alindi. Boyle bir
+degisiklikten sonra o tarama mutlaka kosulmali.
+
+**Kalan borc:** veritabanindaki 32 `raise exception` metni hala
+aksansiz ("Mekana cok uzaksin (~500 m icinde olmalisin)" gibi). Bunlar
+ekranda `e.message` yoluyla gorunuyor. Duzeltmek yeni bir migrasyon ve
+`test:sema` / `test:gorunurluk` guncellemesi gerektiriyor - ayri bir
+is olarak birakildi.
+
+Dogrulama: jest 44 paket / 360 test yesil, tsc yalnizca bes onceden
+var olan @types/node hatasi.
+
 ### Telefonda deneme - TARAYICI YOLU (2026-08-23, kullanicinin karari)
 
 EAS/APK yolu **askiya alindi**: kullanici "expo disinda baska bir yolla
