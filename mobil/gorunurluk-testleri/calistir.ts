@@ -1835,6 +1835,48 @@ async function main() {
     await hesapDurumunuTemizle([bId])
   })
 
+  await senaryo('47 - Askidaki kullanici icerik uretemez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: aId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: bId,
+      })
+    esitMi(kurulumHata, null, '47 kurulum: aski satiri yazildi')
+
+    const { error: checkInHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
+      p_lat: MEKAN_1.lat,
+      p_lng: MEKAN_1.lng,
+    })
+    esitMi(checkInHata !== null, true, '47: askidaki A check-in yapamaz')
+
+    const { error: mekanHata } = await a.rpc('mekan_ekle', {
+      p_ad: 'GORUNURLUK-TEST-ASKI-MEKAN',
+      p_tur: 'test',
+      p_lat: MEKAN_1.lat,
+      p_lng: MEKAN_1.lng,
+      p_cihaz_lat: MEKAN_1.lat,
+      p_cihaz_lng: MEKAN_1.lng,
+    })
+    esitMi(mekanHata !== null, true, '47: askidaki A mekan ekleyemez')
+
+    const { error: adHata } = await a.rpc('kullanici_adi_degistir', {
+      p_yeni_ad: 'aski_kacis_denemesi',
+    })
+    esitMi(adHata !== null, true, '47: askidaki A kullanici adi degistiremez')
+
+    await hesapDurumunuTemizle([aId])
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
