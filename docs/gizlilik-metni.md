@@ -3,18 +3,32 @@
 Bu metin uygulama icinde `Ayarlar > Gizlilik metni` uzerinden okunur
 (`mobil/src/app/gizlilik.tsx`). Kaynak metin burasidir; ekrandaki metin
 bu dosyadan koda sabit olarak kopyalanir, ag baglantisi olmadan da
-okunabilmesi icin uzak bir kaynaktan cekilmez.
+okunabilmesi icin uzak bir kaynaktan cekilmez. Iki dosya kasitli olarak
+BIREBIR AYNI ICERIGI tasir - bu dosya guncellenirse ekran da (ve
+tersi) guncellenmelidir; aralarinda fark varsa hangisinin dogru
+oldugu belirsizlesir.
 
 Bu metin KVKK m.10 aydinlatma yukumlulugunu karsilar
 (`docs/kvkk-uyum-listesi.md` madde 1). Hukuki gorus degildir; gercek
 kullaniciya acilmadan once bir danismana dogrulatilmalidir (ayni
 dosyadaki not gecerlidir).
 
+**Duzeltme turu 1 notu (kod incelemesi sonrasi):** bu metnin ilk
+surumu birkac yerde yanlis ya da eksik beyanda bulunuyordu (mekan
+aramasinin da konum kullandigini soylemiyordu, saklama surelerini
+henuz uygulanmamisken kesin dille yaziyordu, sikayet kimlik bagini
+yanlis anlatiyordu, bildirim aktariminda gonderenin adinin gittigini
+soylemiyordu). Asagidaki metin koddan (RPC'ler, migrasyonlar, Edge
+Function) dogrulanarak duzeltildi; her madde ilgili kaynaga atif
+yapar.
+
 ## 1. Hangi verilerini isliyoruz
 
 - Telefon numaran (hesap ve dogrulama icin)
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
-- **Konumun** - yalnizca check-in yaptiginda
+- **Konumun** - iki farkli sekilde: mekan ararken SUNUCUYA GONDERILIR
+  ama SAKLANMAZ; check-in yaptiginda ise KALICI olarak saklanir
+  (ayrinti madde 3'te)
 - Gonderdigin ve aldigin mesajlarin icerigi
 - Bag bilgin: kimi takip ettigin, kimlerle sohbet istegi alisverisinde
   bulundugun, kimi engelledigin
@@ -24,23 +38,39 @@ dosyadaki not gecerlidir).
 ## 2. Ne amacla isliyoruz
 
 - Hesabini kurmak ve telefon numarani dogrulamak
-- Yakinindaki kisileri kesfetmeni saglamak
+- Yakinindaki mekanlari ve kisileri kesfetmeni saglamak
 - Mesajlasmani saglamak
 - Kotuye kullanimi (taciz, sahte hesap, uygunsuz icerik) onlemek ve
   incelemek
 
 ## 3. Konum ozel olarak
 
-Konumun yalnizca **check-in yaptiginda** paylasilir; check-in yapmadigin
-surece hicbir konum bilgin islenmez. Paylasilan konum, o check-in icin
-sectigin bulunurluk kademesine gore gorunur:
+Cihazinin konumu **iki farkli sekilde** kullanilir; bunlari
+karistirmamak onemli:
 
-- **Herkese acik:** uygulamadaki herkes gorur
-- **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
-- **Gizli:** kimse gormez, check-in yalnizca kendi gecmisinde kalir
+- **Mekan ararken:** yakinindaki mekanlari gosterebilmemiz icin
+  cihazinin konumu her mekan aramasinda (`Mekanlar` ekrani acildiginda
+  ve arama/yaricap degistikce) sunucuya **GONDERILIR**. Bu konum
+  **SAKLANMAZ** - yalnizca o anki sorguyu cevaplamak (hangi mekanlar
+  yakinda, hangi sirada) icin kullanilir, veritabaninda bir yere
+  yazilmaz. (Kod: `yakin_mekanlar_yogunluk` fonksiyonu konumu yalnizca
+  mesafe hesabinda kullanir, hicbir sutuna yazmaz.)
+- **Check-in yaptiginda:** konumun **KALICI** olarak saklanir. Bu
+  saklanan konum, check-in icin sectigin bulunurluk kademesine gore
+  paylasilir:
+  - **Herkese acik:** uygulamadaki herkes gorur
+  - **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
+  - **Gizli:** kimse gormez, check-in yalnizca kendi gecmisinde kalir
 
-`Gizli` sectiginde konumun kimseye gorunmez - moderasyon disinda (bkz.
-madde 4).
+`Gizli` sectiginde **kimligin** kimseye gorunmez - moderasyon disinda
+(bkz. madde 4). Ama bir istisna var: bulundugun mekanin herkese acik
+"kac kisi var" sayacina (yogunluk) bulunurluk kademenden BAGIMSIZ
+olarak dahil olursun. Yani kimligin gizli kalir, ama sayac senin
+varliginla artar - sakin bir mekanda sayac 0'dan 1'e ciktiginda
+oradaki biri "birisi var" bilgisini cikarabilir. (Kod:
+`yakin_mekanlar_yogunluk` icindeki `kisi_sayisi` alt sorgusu
+`bulunurluk`a hic bakmiyor, yalnizca aktif check-in ve aktif hesap
+kontrolu yapiyor.)
 
 ## 4. Moderasyon erisimi
 
@@ -50,9 +80,12 @@ okuyabilir.** Bu, bulunurluk kademen `gizli` olsa da mesaj icerigin
 `gizli` gorunse de gecerlidir - taciz ve kotuye kullanim iddialarini
 inceleyebilmek icin gereklidir.
 
-Moderasyonun **her erisimi kaydedilir**: kim, ne zaman, hangi kaydina
-baktigi denetim izinde tutulur. Bu erisim yalnizca bir sikayet ya da
-inceleme baglaminda kullanilir, gelisiguzel goz atma degildir.
+Moderasyonun **her erisimi kaydedilecek**: kim, ne zaman, hangi
+kaydina baktigi bir denetim izinde tutulacak. Bu erisim yalnizca bir
+sikayet ya da inceleme baglaminda kullanilir, gelisiguzel goz atma
+degildir. (Bu denetim izinin kendisi - `moderasyon_kayitlari` tablosu
+- bugun henuz kurulmadi; moderasyon paneliyle birlikte gelecek. Bkz.
+madde 6'daki not.)
 
 ## 5. Yurt disina aktarim
 
@@ -62,22 +95,31 @@ Verilerin iki ayri yerde islenir:
   (`eu-central-1` bolgesi). Butun kisisel verin Turkiye disinda, Avrupa
   Birligi sinirlari icinde tutulur.
 - **Expo Push API** (bildirim gonderimi): sunuculari **Amerika Birlesik
-  Devletleri**'nde. Bildirim gonderirken cihazinin bildirim jetonu ve
-  kime gonderildigi bilgisi buradan gecer. Bildirim **icerik tasimaz**
-  (mesaj metni bildirimde yer almaz, yalnizca "biri sana mesaj
-  gonderdi" gibi genel bir bilgilendirme gider).
+  Devletleri**'nde. Bildirim gonderirken cihazinin bildirim jetonu,
+  kime gonderildigi bilgisi ve bildirimi tetikleyen kisinin **adi**
+  buradan gecer - ornegin "Deniz sana mesaj gonderdi" gibi bir metin
+  gider. Mesajin kendi **METNI** bildirime hicbir zaman eklenmez, ama
+  baska bir kullanicinin adi da kisisel veridir ve bu aktarimin bir
+  parcasidir - "icerik tasimaz" ifadesi yalnizca mesaj metni icin
+  gecerlidir, "hicbir kisisel veri gitmiyor" anlamina gelmez.
 
 ## 6. Saklama sureleri
 
-- Anilarin (check-in gecmisin), mesajlarin ve sikayetler ilke olarak
-  "gerekli oldugu sure kadar" saklanir; kalici bir imha takvimi henuz
-  tamamlanmadi (bu, uyum listemizde acik bir madde olarak durur).
-- Moderasyon erisim kayitlari (kim, ne zaman, hangi kaydina baktigi):
-  **2 yil**.
-- Karara baglanmis sikayetler: karardan **1 yil** sonra silinir.
-  Karara baglanmamis sikayetler silinmez.
-- Suresi dolmus hesap askiya alma kayitlari: **90 gun** sonra panelden
-  kaldirilir; kalici kayit denetim izinde durmaya devam eder.
+**Bugun gecerli olan tek otomatik silme kurali:** suresi dolmus (90
+gunden eski) hesap askiya alma kayitlari her gun otomatik olarak
+veritabanindan **SILINIR** (tam silme, arsivlenmez). Bu kayitlarin
+baska bir yerde saklanan bir kopyasi bugun **yoktur**.
+
+Anilarin (check-in gecmisin), mesajlarin ve sikayetler icin bugun
+herhangi bir otomatik silme islemi **YOKTUR** - suresiz saklanirlar.
+"Gerekli oldugu sure kadar saklama" ilkesinin tam karsiligi henuz
+tamamlanmadi; bu KVKK uyum listemizde acik bir madde olarak durur.
+
+**Planlanan (henuz uygulanmadi):** moderasyon erisim kayitlarinin 2
+yil, karara baglanmis sikayetlerin karardan 1 yil sonra silinmesi. Bu
+sureler moderasyon paneliyle birlikte gelecek `moderasyon_kayitlari`
+tablosuna baglidir ve bugun icin gecerli DEGILDIR - o tablo henuz
+veritabaninda yok.
 
 ### Hesabini silersen ne olur
 
@@ -87,9 +129,13 @@ Verilerin iki ayri yerde islenir:
   ortak verisidir ve karsi tarafin gecmisini yarida kesmek dogru olmaz.
   Ancak gonderen kimligin konusmadan koparilir; karsi taraf mesaji
   gorur ama artik senin adina baglanmaz.
-- Hakkinda ya da senin actigin **sikayetler silinmez** - sikayet
-  ucuncu kisiler hakkinda da bilgi tasidigi icin tek tarafli silinemez.
-  Sikayet kaydindaki kimlik bagi kopar.
+- **Senin actigin sikayetler** silinmez, ama kimin actigi bilgisi
+  (kimlik bagi) **kopar** - kayitta artik kim actigi bilinmez.
+- **Hakkinda acilan sikayetler** de silinmez, ama bu sikayetlerde
+  kimlik bagi **KOPMAZ** - hedef kimligi moderasyon kaydinda kalmaya
+  devam eder. Bunun sebebi: tekrar eden kotuye kullanimi tespit
+  edebilmek (biri hesabini silip yeniden acarak gecmis sikayetlerinden
+  kurtulamamali).
 - Profil ve check-in fotograflarin depolama alanindan silinir.
 
 ## 7. Haklarin
@@ -102,6 +148,7 @@ Verilerin iki ayri yerde islenir:
 - **Verilerinin bir kopyasini talep edebilirsin.** Bu talep icin bugun
   uygulama icinde otomatik bir akis yok; bize ulasarak talep
   edebilirsin (asagidaki basvuru yolu).
-- **Basvuru yolu:** hesabinla ilgili bir talebin, sorunun ya da itirazin
-  varsa uygulama icindeki destek/sikayet akisi uzerinden ya da
-  hesabinla iliskili iletisim bilgin uzerinden bize ulasabilirsin.
+- **Basvuru yolu:** bugun icin somut bir destek kanali (e-posta,
+  form) yayinda degil - **bu, yayin oncesi eklenmesi gereken acik bir
+  bosluktur.** Eklenene kadar bu satir bir yer tutucudur, gercek bir
+  kanal degildir.
