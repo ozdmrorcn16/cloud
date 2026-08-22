@@ -193,6 +193,46 @@ Metadata (kimin kimle konustugu, mesaj sayisi, son mesaj zamani) ile
 icerik ayri tutulur: metadata kullanici detayinda gelir ve zaten oradaki
 iz kaydina dahildir, icerik ayri bir cagri ve ayri bir iz satiridir.
 
+### Karar 75 - Mesaj icerigine erisim iki kademeli: dar varsayilan, genis erisim ayri eylem
+
+Kullanicinin 2026-08-23'te onayladigi duzeltme. Karar 63 erisimi
+acti, ama kapsami acik birakti: kullanici detayindan herhangi bir
+konusma, ortada sikayet olmasa bile, tek gerekce alaniyla acilabiliyordu.
+KVKK m.4'un olcululuk ilkesi tam buna bakar - erisim amacla bagli ve
+sinirli olmali. Yetki KESILMIYOR; varsayilan daraliyor ve genis erisim
+bilincli bir eyleme donusuyor.
+
+**Kademe 1 - sikayet baglami (varsayilan).** Bir mesaj sikayetinden
+acilir. Sikayet edilen mesaj, oncesindeki 20 ve sonrasindaki 20 mesajla
+birlikte gosterilir. Baglam sunucuda hesaplanir; panel bir pencere
+genisligi soyleyemez. Iz turu: `mesaj_baglami`.
+
+**Kademe 2 - tam konusma (genis).** Konusmanin tamami acilir. Uc ek
+kosul: (a) ayri bir gerekce girilir - kademe 1'in gerekcesi devralinmaz,
+(b) ayri bir onay adimi gecilir ("bu kisinin butun konusmasini
+aciyorsun"), (c) denetim izine ayri bir tur olarak yazilir:
+`konusma_tam`. Kullanici detayindaki bir konusmayi acmak DAIMA kademe
+2'dir, cunku ortada bir sikayet baglami yoktur.
+
+Kademe 2'yi kaldirmak dusunulmedi: bir tacizcinin butun konusmasini
+gormek gercek bir moderasyon ihtiyacidir. Amac onu zorlastirmak degil,
+**kazara ve aliskanliktan** yapilmasini engellemek ve izde digerinden
+ayirt edilebilir kilmak.
+
+### Karar 76 - Sikayet formunda baglam bildirimi
+
+Bir mesaji sikayet eden kisi, gonderim ekraninda su bilgiyi gorur:
+sikayet edilen mesajin cevresindeki mesajlarin incelemeye acilacagi.
+Gerekce: kademe 1 baglami sikayet edenin kendi konusmasindan da
+mesaj tasir; bunun bildirilmemis olmasi, bildirilmis bir erisimi
+bildirilmemis hale getirir (karar 63'un kendi mantigi). Ayrica bu,
+kademe 1'i hukuki olarak en saglam zemine oturtur: veriyi incelemeye
+acan hareketi kisinin kendisi baslatir.
+
+Uygulama: sikayet ekraninda tek satirlik bir aciklama. Ayri bir onay
+kutusu YOK - sikayeti gondermek zaten iradi bir eylemdir, ek surtunme
+sikayet etmeyi caydirir ve bu istenmez.
+
 ### Karar 64 - Kullanici detayi gercekten HER SEYI gosterir
 
 "Her seye hakim olmam gerek" gereginin somut karsiligi. Kullanici

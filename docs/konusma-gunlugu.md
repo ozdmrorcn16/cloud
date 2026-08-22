@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-22 — [2026-08-22-906da1b5.md](oturumlar/2026-08-22-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
 - 2026-08-22 — [2026-08-22-0f20b7f0.md](oturumlar/2026-08-22-0f20b7f0.md) — docs/moderasyon-paneli-devam-notu.md oku, moderasyon paneli spec'ini yaz
 - 2026-08-21 — [2026-08-21-74f56f7b.md](oturumlar/2026-08-21-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-21 — [2026-08-21-0f20b7f0.md](oturumlar/2026-08-21-0f20b7f0.md) — docs/moderasyon-paneli-devam-notu.md oku, moderasyon paneli spec'ini yaz
