@@ -100,7 +100,7 @@ iki BLOKE maddeyi kapatiyor.
 | `20260822098000_dondurma_rpcleri.sql` | `hesabimi_dondur`, `hesabimi_geri_ac` |
 | `20260822099000_silmede_kalanlar_fk.sql` | `mesajlar` ve `sikayetler` FK'lari `set null` |
 | `20260822100000_tek_uyeli_konusma.sql` | `mesajlari_getir`, `konusmalarim`, `bag.yazabilir_mi` |
-| `20260822101000_kullanici_adi_rezervasyonu.sql` | Rezervasyon tablosu, `kullanici_adi_musait_mi`, budama isi |
+| ~~`20260822101000_kullanici_adi_rezervasyonu.sql`~~ | KALDIRILDI (karar 70 geri alindi). Uygulanmis dosya duruyor; `20260822102000` tabloyu, RPC'yi ve cron isini dusuruyor |
 
 **Yeni Edge Function:** `mobil/supabase/functions/hesap-sil/index.ts`
 (+ `saf.ts` saf yardimcilar, + `index_test.ts`), `bildirim-gonder`
@@ -2869,7 +2869,20 @@ git commit -m "feat: silmede mesaj ve sikayetler anonimlesir, tek uyeli konusma 
 
 ---
 
-## Task 14: Kullanici adi rezervasyonu
+## Task 14: Kullanici adi rezervasyonu - OZELLIK KALDIRILDI
+
+> **KULLANICININ KARARI (2026-08-22): bu ozellik tamamen kaldirildi.**
+> Once 90 gun olarak uygulandi, sonra 24 saate indirilmesi istendi,
+> ardindan komple kaldirilmasina karar verildi. Asagidaki gorev metni
+> TARIHSEL KAYITTIR; `20260822102000_kullanici_adi_rezervasyonu_kaldirildi.sql`
+> tabloyu, `moderasyon.kullanici_adini_rezerve_et` fonksiyonunu ve budama
+> cron isini dusuruyor, `kullanici_adi_musait_mi`yi rezervasyon oncesi
+> haline donduruyor. Senaryo 57 silindi.
+>
+> Sonucu: silinen kullanici adi ANINDA serbest kalir, taklit korumasi yok.
+> Ayrica inceleme, ozelligin zaten hicbir YAZMA noktasinda zorlanmadigini
+> gostermisti (`kullanici_adi_degistir` ve kayit insert'i tabloya hic
+> bakmiyordu), yani kaldirilan sey pratikte yalnizca bir gostergeydi.
 
 **Files:**
 - Create: `mobil/supabase/migrations/20260822101000_kullanici_adi_rezervasyonu.sql`
@@ -3153,7 +3166,6 @@ Expected: PASS, 4 test.
 //   1) Cagiranin JWT'si dogrulanir - KENDI hesabindan baskasini silemez.
 //   2) Onay metni kullanici adiyla karsilastirilir (yanlislikla silmeye
 //      karsi surtunme; spec karar 67'de bekleme suresi yerine bu var).
-//   3) Kullanici adi 24 saat rezerve edilir (taklit korumasi, karar 70).
 //   4) Storage'daki profil ve check-in fotograflari silinir.
 //   5) auth.admin.deleteUser cagrilir; cascade kalani goturur.
 //
@@ -3323,8 +3335,6 @@ test numarasini KULLANMA - onlar butun gorunurluk paketinin on kosulu):
 3. Dogru onay metniyle cagir: `{ "silindi": true }` beklenir.
 4. Ayni telefon numarasiyla yeniden kayit olunabildigini dogrula
    (spec karar 67: sifirdan yeni hesap).
-5. Eski kullanici adinin **alinamadigini** dogrula (karar 70,
-   24 saat rezerve).
 
 - [ ] **Step 9: Commit**
 
@@ -3827,7 +3837,7 @@ git push origin <calisilan dal>
 | 9 | Dondurma RPC'leri |
 | 10-12 | Istemci: `lib/hesap.ts`, oturum akisi, durum ekrani, ayarlar |
 | 13 | FK'lar `set null`, tek uyeli konusma |
-| 14 | Kullanici adi rezervasyonu |
+| 14 | ~~Kullanici adi rezervasyonu~~ KALDIRILDI (karar 70 geri alindi) |
 | 15-16 | `hesap-sil` Edge Function ve silme akisi |
 | 17 | Gizlilik metni ve ekrani |
 | 18 | Kapanis dogrulamasi |

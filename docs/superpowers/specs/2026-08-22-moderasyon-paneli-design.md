@@ -626,9 +626,9 @@ dondurmayla farki tek cumlede gosterilir:
 - **Sil:** geri donusu yok, yeniden gelmek istersen sifirdan hesap
   acman gerekir.
 
-Bunun karar 70 ile bir yan etkisi var: ayni kisi 24 saat dolmadan
-yeniden kayit olursa **eski kullanici adini alamaz**, cunku ad
-rezervede olur. Taklit korumasinin kacinilmaz bedeli; kabul ediliyor.
+Kullanici adi konusunda bir kisit YOK (karar 70 geri alindi): ayni
+kisi yeniden kayit olurken eski kullanici adini alabilir - ama o adi
+bu arada bir baskasi da almis olabilir.
 
 ### Karar 68 - Silmede ne gider, ne kalir
 
@@ -681,21 +681,28 @@ yone sokacak bir "kalici dogru". Uc okuyucu buna gore duzeltilir:
 Madde 1a bu spec ile birlikte guncellenir; invaryant artik "en fazla iki
 uye, silme sonrasi bir uye olabilir" seklindedir.
 
-### Karar 70 - Silinen kullanici adi 24 SAAT rezerve edilir
+### Karar 70 - GERI ALINDI: kullanici adi rezervasyonu YOK
 
-Kullanici adi hemen serbest kalirsa bir baskasi onu aninda alip silinen
-kisinin yerine gecebilir - tanisma uygulamasinda gercek bir taklit
-riski. Rezervasyon `kullanici_adi` ve `serbest_kalma` iki sutunlu kucuk
-bir tabloda tutulur, kisiyle **hicbir bagi olmadan**; sure dolunca
-gunluk budama isi satiri siler ve ad yeniden alinabilir hale gelir.
+Bu karar once "silinen kullanici adi 90 gun rezerve edilir" diyordu,
+sonra kullanicinin istegiyle 24 saate indirildi, sonra **tamamen
+kaldirildi** (kullanicinin karari, 2026-08-22).
 
-**Sure 24 saat (kullanicinin karari, 2026-08-22).** Ilk tasarim 90 gun
-onermisti; kullanici bunu cok uzun buldu. Denge acikca su yone kaydi:
-24 saat, adi aninda kapmaya calisan otomatik bir yeniden-kayit
-denemesini engeller ama kararli birini engellemez. Buna karsilik
-silinmis bir kisinin tanitici bilgisi veritabaninda yalnizca bir gun
-kalir - silme hakkinin ruhuna daha yakin. Bilincli bir tercih: taklit
-korumasi zayifliyor, veri minimizasyonu guclenıyor.
+Sonucu acikca yazilsin: **silinen bir kullanici adi ANINDA serbest
+kalir.** Bir baskasi o adi hemen alabilir ve silinen kisinin yerine
+gecebilir. Taklit korumasi yoktur.
+
+Kaldirmayi destekleyen bir bulgu: ozellik uygulanip incelendiginde,
+rezervasyonun hicbir YAZMA noktasinda zorlanmadigi ortaya cikti.
+`kullanici_adi_musait_mi` yalnizca arayuzun gosterge sorgusuydu; adin
+fiilen alindigi iki yol (`kullanici_adi_degistir` RPC'si ve kayit
+sirasindaki `profiller` insert'i) rezervasyon tablosuna hic bakmiyordu.
+Yani rezerve bir ad, dogrudan RPC cagrisiyla ya da kayit akisiyla
+alinabiliyordu. Ozelligi tam olarak zorlayici hale getirmek iki yazma
+yolunu daha degistirmeyi gerektirecekti; kullanici bunun yerine
+ozelligin tamamini kaldirmayi secti.
+
+Ilgili tablo, RPC ve budama isi veritabanindan dusuruldu;
+`kullanici_adi_musait_mi` rezervasyon oncesi haline donduruldu.
 
 ## Saklama sureleri (karar 65)
 
@@ -827,7 +834,7 @@ ikincisinin dayandigi temeli kuruyor.
   **butun** zorlama noktalari (8 yazma kapisi, 5 gorunurluk yolu)
 - Hesap dondurma ve otomatik geri acilma (karar 66)
 - Hesap silme: Edge Function, FK duzeltmeleri, Storage temizligi,
-  kullanici adi rezervasyonu (karar 67, 68, 70)
+  kullanici adi rezervasyonu YOK (karar 70 geri alindi) (karar 67, 68)
 - Tek uyeli konusma duzeltmeleri (karar 69)
 - Gizlilik metni ve onu gosteren ekran
 - Askidaki hesap ekrani
