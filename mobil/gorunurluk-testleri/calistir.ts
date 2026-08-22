@@ -2118,6 +2118,100 @@ async function main() {
     )
   })
 
+  await senaryo('51 - Askidaki kullanici aramada ve profilde yok', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    const { data: bProfil, error: bProfilHata } = await b
+      .from('profiller')
+      .select('kullanici_adi')
+      .eq('id', bId)
+      .single()
+    esitMi(bProfilHata, null, '51 kurulum: B kullanici adi okundu')
+    const bAd = bProfil?.kullanici_adi ?? ''
+
+    // Kurulum iddiasi: askidan once A, B'yi gercekten aramada buluyor mu?
+    // Bu olmadan "askidan sonra cikmiyor" iddiasi baska bir sebeple de
+    // (yanlis arama metni, engelleme vb.) gecebilirdi.
+    const { data: aramaOncesi, error: aramaOncesiHata } = await a.rpc('kisi_ara', {
+      p_metin: bAd,
+    })
+    esitMi(aramaOncesiHata, null, '51 kurulum: arama (askidan once) hatasiz')
+    esitMi(
+      ((aramaOncesi ?? []) as { id: string }[]).some((s) => s.id === bId),
+      true,
+      '51 kurulum: B askidan once aramada cikiyor'
+    )
+
+    const { data: profilOncesi, error: profilOncesiHata } = await a.rpc(
+      'baskasinin_profili',
+      { p_kullanici_id: bId }
+    )
+    esitMi(profilOncesiHata, null, '51 kurulum: profil cagrisi (askidan once) hatasiz')
+    esitMi(
+      (profilOncesi ?? []).length,
+      1,
+      '51 kurulum: B\'nin profili askidan once aciliyor'
+    )
+
+    // B'nin kendi aramasi da askidan once calisiyor mu? ("Ucuncu Test
+    // Kullanici" adiyla C her zaman mevcut, bu yuzden 'test' metni
+    // askidan once en az bir sonuc donmeli.)
+    const { data: bAramaOncesi, error: bAramaOncesiHata } = await b.rpc('kisi_ara', {
+      p_metin: 'test',
+    })
+    esitMi(bAramaOncesiHata, null, '51 kurulum: B\'nin aramasi (askidan once) hatasiz')
+    esitMi(
+      (bAramaOncesi ?? []).length > 0,
+      true,
+      '51 kurulum: B askidan once arama sonucu aliyor'
+    )
+
+    try {
+      const { error: kurulumHata } = await yonetici
+        .from('hesap_durumlari')
+        .insert({
+          kullanici_id: bId,
+          durum: 'askida',
+          aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+          gerekce: 'test',
+          moderator_id: aId,
+        })
+      esitMi(kurulumHata, null, '51 kurulum: B askiya alindi')
+
+      const { data: arama, error: aramaHata } = await a.rpc('kisi_ara', {
+        p_metin: bAd,
+      })
+      esitMi(aramaHata, null, '51: arama hatasiz')
+      esitMi(
+        ((arama ?? []) as { id: string }[]).some((s) => s.id === bId),
+        false,
+        '51: askidaki B aramada cikmiyor'
+      )
+
+      const { data: profil, error: profilHata } = await a.rpc(
+        'baskasinin_profili',
+        { p_kullanici_id: bId }
+      )
+      esitMi(profilHata, null, '51: profil cagrisi hatasiz')
+      esitMi((profil ?? []).length, 0, '51: askidaki B\'nin profili acilmiyor')
+
+      // Askidaki cagiran da arama yapamaz.
+      const { data: bAramasi, error: bAramaHata } = await b.rpc('kisi_ara', {
+        p_metin: 'test',
+      })
+      esitMi(bAramaHata, null, '51: askidaki cagiran icin arama hatasiz')
+      esitMi((bAramasi ?? []).length, 0, '51: askidaki B hic sonuc alamiyor')
+    } finally {
+      // Kurulum ile buraya kadar herhangi bir iddia atarsa (ag hatasi vb.)
+      // bile B'nin askida satiri KALICI olarak veritabaninda kalmamali -
+      // sonraki kosumda B'nin butun yazma senaryolarini coker.
+      await hesapDurumunuTemizle([bId])
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
