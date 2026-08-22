@@ -58,10 +58,11 @@
 // HER hata "Parola yanlis" donduruluyordu - rate limit, ag hatasi ya
 // da GoTrue kesintisi de dahil. Sonuc: dogru parolasini yazan bir
 // kullaniciya "Parola yanlis" denip tekrar tekrar denetmesi
-// istenebiliyordu. Simdi hata turu ayriliyor: yalnizca GERCEK bir
-// gecersiz kimlik bilgisi (`code === 'invalid_credentials'`) "Parola
-// yanlis" (400) donduruyor; her sey (rate limit, ag, 5xx, bilinmeyen)
-// "su anda dogrulanamadi" (503) donduruyor - bkz. asagidaki (2).
+// istenebiliyordu. Simdi hata turu ayriliyor: GERCEK bir gecersiz
+// kimlik bilgisi (`code === 'invalid_credentials'`, ya da `code` yoksa
+// `status === 400` - duzeltme turu 2, Kismi 1) "Parola yanlis" (400)
+// donduruyor; her sey (rate limit, ag, 5xx, bilinmeyen) "su anda
+// dogrulanamadi" (503) donduruyor - bkz. asagidaki (2).
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { fotografYollari } from './saf.ts'
@@ -172,11 +173,16 @@ Deno.serve(async (istek: Request) => {
     })
 
     // Yalnizca GERCEK bir gecersiz kimlik bilgisi "Parola yanlis"
-    // donduruyor. GoTrue'nun kod'u bunu ayirt ediyor. Rate limit, ag
-    // hatasi ya da 5xx gibi durumlarda parolanin dogru olup olmadigi
-    // BILINMIYOR - kullaniciya "yanlis" demek yanlis bir itham olur ve
-    // onu tekrar tekrar denemeye iter.
-    if (parolaHatasi.code === 'invalid_credentials') {
+    // donduruyor. GoTrue'nun `code`u bunu ayirt ediyor, ama her GoTrue
+    // surumu/yani `code` alanini doldurmayabilir (duzeltme turu 2,
+    // Kismi 1) - o durumda `status === 400`e de bakiliyor, cunku
+    // signInWithPassword'da GoTrue'nun basit-dogrulama disinda 400
+    // dondurdugu tek durum gecersiz kimlik bilgisidir. Rate limit
+    // (429), ag hatasi ya da 5xx gibi durumlarda parolanin dogru olup
+    // olmadigi BILINMIYOR - kullaniciya "yanlis" demek yanlis bir itham
+    // olur ve onu tekrar tekrar denemeye iter; yon hep suphede kalmak:
+    // belirsizlik 503'e duser, asla "yanlis" ithamina degil.
+    if (parolaHatasi.code === 'invalid_credentials' || parolaHatasi.status === 400) {
       return yanit({ hata: 'Parola yanlis' }, 400)
     }
     return yanit({ hata: 'Su anda dogrulanamadi, biraz sonra tekrar dene' }, 503)

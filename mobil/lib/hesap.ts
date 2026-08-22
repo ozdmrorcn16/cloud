@@ -1,3 +1,4 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 
 export type HesapDurumu = {
@@ -53,13 +54,29 @@ export async function hesabiGeriAc(): Promise<boolean> {
 // parolayi bilmeyen biri (ornegin calinmis bir oturum jetonuyla) hesabi
 // silemez.
 export async function hesabiSil(parola: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('hesap-sil', {
+  const { error } = await supabase.functions.invoke('hesap-sil', {
     body: { parola },
   })
   if (error) {
-    // Edge Function 4xx dondugunde supabase-js genel bir mesaj veriyor;
-    // asil sebep govdededir ve kullaniciya onu gostermek gerekiyor.
-    const sunucuHatasi = (data as { hata?: string } | null)?.hata
-    throw new Error(sunucuHatasi ?? error.message)
+    // Duzeltme turu 2 (N2, kod incelemesi): `data` burada HER ZAMAN
+    // null oluyor - functions-js bir 4xx/5xx aldiginda govdeyi
+    // ayristirmiyor, `data: null` donup `FunctionsHttpError` firlatiyor
+    // (bkz. @supabase/functions-js FunctionsClient.ts: `throw new
+    // FunctionsHttpError(response)`). Onceki surum bu yuzden HER ZAMAN
+    // `error.message`e (Ingilizce, "Edge Function returned a non-2xx
+    // status code") dusuyordu; sunucudaki 400/503 ayrimi (bkz.
+    // hesap-sil/index.ts) kullaniciya hic ulasmiyordu. Asil govde
+    // `error.context`te (ham fetch Response) duruyor, burada ayristirip
+    // okunuyor.
+    let sunucuHatasi: string | undefined
+    if (error instanceof FunctionsHttpError) {
+      try {
+        const govde = await error.context.json()
+        sunucuHatasi = typeof govde?.hata === 'string' ? govde.hata : undefined
+      } catch {
+        // Govde JSON degilse (beklenmeyen bir durum) genel mesaja dus.
+      }
+    }
+    throw new Error(sunucuHatasi ?? 'Silme su anda tamamlanamadi, tekrar dene')
   }
 }

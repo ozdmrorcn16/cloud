@@ -1,3 +1,4 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { hesapDurumunuGetir, hesabiDondur, hesabiGeriAc, hesabiSil } from './hesap'
 import { supabase } from './supabase'
 
@@ -120,13 +121,45 @@ describe('hesabiSil', () => {
     ).toHaveBeenCalledWith('hesap-sil', { body: { parola: 'dogruparola' } })
   })
 
-  it('sunucu hatasini firlatir', async () => {
+  // Duzeltme turu 2 (N2, kod incelemesi): functions-js non-2xx'te
+  // `data`yi HER ZAMAN null birakip `FunctionsHttpError` firlatiyor -
+  // eski test bunu `{ data: { hata: ... }, error: {...} }` gibi
+  // gerceklikte hic olmayan bir sekille kuruyordu ve gecmis
+  // implementasyonun asil govdeyi hic okumadigini yakalayamamisti.
+  // Gercek govde `error.context` (fetch Response) icinde durur.
+  it('FunctionsHttpError govdesindeki hata metnini firlatir', async () => {
+    const sahteYanit = { json: jest.fn().mockResolvedValue({ hata: 'Parola yanlis' }) }
     sahteSupabase.functions = {
       invoke: jest.fn().mockResolvedValue({
-        data: { hata: 'Parola yanlis' },
-        error: { message: 'Edge Function returned a non-2xx status code' },
+        data: null,
+        error: new FunctionsHttpError(sahteYanit),
       }),
     } as never
     await expect(hesabiSil('yanlisparola')).rejects.toThrow('Parola yanlis')
+  })
+
+  it('govde JSON degilse Turkce genel mesaji firlatir', async () => {
+    const sahteYanit = { json: jest.fn().mockRejectedValue(new Error('JSON degil')) }
+    sahteSupabase.functions = {
+      invoke: jest.fn().mockResolvedValue({
+        data: null,
+        error: new FunctionsHttpError(sahteYanit),
+      }),
+    } as never
+    await expect(hesabiSil('parola')).rejects.toThrow(
+      'Silme su anda tamamlanamadi, tekrar dene'
+    )
+  })
+
+  it('FunctionsHttpError olmayan bir hatada da Turkce genel mesaji firlatir', async () => {
+    sahteSupabase.functions = {
+      invoke: jest.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Failed to fetch' },
+      }),
+    } as never
+    await expect(hesabiSil('parola')).rejects.toThrow(
+      'Silme su anda tamamlanamadi, tekrar dene'
+    )
   })
 })
