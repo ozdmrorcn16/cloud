@@ -61,7 +61,7 @@ export default function AyarlarEkrani() {
       // ama girisli bir ara durumda kalirdi (spec karar 66).
       await supabase.auth.signOut()
     } catch (e) {
-      setHata((e as Error).message)
+      setHata(e instanceof Error ? e.message : 'Bir sorun olustu')
     } finally {
       setDondurmaOnayi(false)
     }

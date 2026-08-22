@@ -221,5 +221,36 @@ describe('AyarlarEkrani', () => {
     expect(sahteDondur).toHaveBeenCalled()
     expect(sahteCikis).toHaveBeenCalled()
     expect(queryByText('Evet, dondur')).toBeNull()
+
+    // Sira onemli: once dondurulmeli, sonra cikis yapilmali. Ikisinin de
+    // cagrildigini bilmek yeterli degil - siranin ters olmadigini da
+    // dogrulamak gerekir.
+    expect(sahteDondur.mock.invocationCallOrder[0]).toBeLessThan(
+      sahteCikis.mock.invocationCallOrder[0]
+    )
+  })
+
+  it('dondurma basarisiz olursa hata gosterir, cikis yapmaz ve onayi sifirlar', async () => {
+    sahteDondur.mockRejectedValue(new Error('ag hatasi'))
+    const { getByText, queryByText } = await render(<AyarlarEkrani />)
+
+    await fireEvent.press(getByText('Hesabimi dondur'))
+    await fireEvent.press(getByText('Evet, dondur'))
+
+    expect(await screen.findByText('ag hatasi')).toBeTruthy()
+    expect(sahteCikis).not.toHaveBeenCalled()
+    expect(queryByText('Evet, dondur')).toBeNull()
+    expect(getByText('Hesabimi dondur')).toBeTruthy()
+  })
+
+  it('vazgec basinca onay ekrani kapanir ve hicbir sey dondurulmez', async () => {
+    const { getByText, queryByText } = await render(<AyarlarEkrani />)
+
+    await fireEvent.press(getByText('Hesabimi dondur'))
+    await fireEvent.press(getByText('Vazgec'))
+
+    expect(sahteDondur).not.toHaveBeenCalled()
+    expect(queryByText('Evet, dondur')).toBeNull()
+    expect(getByText('Hesabimi dondur')).toBeTruthy()
   })
 })
