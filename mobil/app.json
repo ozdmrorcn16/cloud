@@ -8,9 +8,11 @@
     "scheme": "slooin",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.slooin.app"
     },
     "android": {
+      "package": "com.slooin.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -33,7 +35,21 @@
           "imageWidth": 76
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Slooin, yakınındaki mekânları ve orada olan kişileri gösterebilmek için konumunu kullanır."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Slooin, profil ve mekân fotoğrafı ekleyebilmen için galerine erişir.",
+          "cameraPermission": "Slooin, mekânda fotoğraf çekebilmen için kameranı kullanır."
+        }
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
