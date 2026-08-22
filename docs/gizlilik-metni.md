@@ -13,22 +13,32 @@ Bu metin KVKK m.10 aydinlatma yukumlulugunu karsilar
 kullaniciya acilmadan once bir danismana dogrulatilmalidir (ayni
 dosyadaki not gecerlidir).
 
-**Duzeltme turu 1 notu (kod incelemesi sonrasi):** bu metnin ilk
-surumu birkac yerde yanlis ya da eksik beyanda bulunuyordu (mekan
-aramasinin da konum kullandigini soylemiyordu, saklama surelerini
-henuz uygulanmamisken kesin dille yaziyordu, sikayet kimlik bagini
-yanlis anlatiyordu, bildirim aktariminda gonderenin adinin gittigini
-soylemiyordu). Asagidaki metin koddan (RPC'ler, migrasyonlar, Edge
-Function) dogrulanarak duzeltildi; her madde ilgili kaynaga atif
-yapar.
+**Duzeltme gecmisi (kod incelemesi turleri):**
+- **Tur 1:** ilk surum birkac yerde yanlis ya da eksik beyanda
+  bulunuyordu (mekan aramasinin da konum kullandigini soylemiyordu,
+  saklama surelerini henuz uygulanmamisken kesin dille yaziyordu,
+  sikayet kimlik bagini yanlis anlatiyordu, bildirim aktariminda
+  gonderenin adinin gittigini soylemiyordu).
+- **Tur 2:** tur 1'in kendisi yeni bir yanlis beyan getirdi ("check-in
+  yaptiginda konum KALICI saklanir" - oysa check-in aniya donusunce
+  koordinat silinir, bu kullanicinin LEHINE bir gercek ve kaybolmustu).
+  Ayrica: mekan EKLERKEN de cihaz konumu kullanildigi (uzuncu bir yol)
+  eksikti; "tek otomatik silme kurali" iddiasi yanlisti (istek_gunlugu
+  budamasi ve check-in konum silme de otomatik); md/ekran arasindaki
+  fark tam kapanmamisti.
+
+Asagidaki metin koddan (RPC'ler, migrasyonlar, Edge Function, cron
+isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 
 ## 1. Hangi verilerini isliyoruz
 
 - Telefon numaran (hesap ve dogrulama icin)
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
-- **Konumun** - iki farkli sekilde: mekan ararken SUNUCUYA GONDERILIR
-  ama SAKLANMAZ; check-in yaptiginda ise KALICI olarak saklanir
-  (ayrinti madde 3'te)
+- **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
+  cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
+  koordinatin saklanir, check-in aniya donusunce (en fazla ~4 saat
+  sonra, ya da hemen "ayrildim" dediginde) koordinat SILINIR ve geriye
+  yalnizca hangi mekanda oldugun kalir (tam ayrinti madde 3'te)
 - Gonderdigin ve aldigin mesajlarin icerigi
 - Bag bilgin: kimi takip ettigin, kimlerle sohbet istegi alisverisinde
   bulundugun, kimi engelledigin
@@ -45,7 +55,7 @@ yapar.
 
 ## 3. Konum ozel olarak
 
-Cihazinin konumu **iki farkli sekilde** kullanilir; bunlari
+Cihazinin konumu **UC farkli sekilde** kullanilir; bunlari
 karistirmamak onemli:
 
 - **Mekan ararken:** yakinindaki mekanlari gosterebilmemiz icin
@@ -55,19 +65,35 @@ karistirmamak onemli:
   yakinda, hangi sirada) icin kullanilir, veritabaninda bir yere
   yazilmaz. (Kod: `yakin_mekanlar_yogunluk` fonksiyonu konumu yalnizca
   mesafe hesabinda kullanir, hicbir sutuna yazmaz.)
-- **Check-in yaptiginda:** konumun **KALICI** olarak saklanir. Bu
-  saklanan konum, check-in icin sectigin bulunurluk kademesine gore
-  paylasilir:
-  - **Herkese acik:** uygulamadaki herkes gorur
-  - **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
-  - **Gizli:** kimse gormez, check-in yalnizca kendi gecmisinde kalir
+- **Yeni bir mekan eklerken:** eklemek istedigin mekana gercekten
+  yakin oldugunu dogrulamak icin cihazinin konumu gonderilir (~200
+  metre icinde olman gerekir). Bu konum da **SAKLANMAZ** - yalnizca bu
+  yakinlik kontrolu icin kullanilir. Saklanan tek sey eklenen
+  **mekanin** konumudur, senin o andaki konumun degil. (Kod:
+  `mekan_ekle` fonksiyonu `p_cihaz_lat`/`p_cihaz_lng`yi yalnizca
+  `ST_DWithin` kontrolunde kullanir, hicbir sutuna yazmaz.)
+- **Check-in yaptiginda:** check-in **AKTIFKEN** koordinatin saklanir.
+  Ama bu gecici: check-in en fazla **~4 saat** sonra (ya da hemen
+  "ayrildim" dediginde) otomatik olarak **aniya** donusur, ve bu
+  donusumde **koordinat SILINIR** (veritabaninda null'a cekilir) -
+  geriye yalnizca hangi mekanda oldugun kalir, tam koordinat degil.
+  (Kod: `check_inden_ayril` RPC'si ve gunluk calisan
+  `check-in-suresi-dolanlari-aniya-cevir` adli pg_cron isi `konum`
+  sutununu null yapiyor.)
+
+Check-in aktifken saklanan koordinat, check-in icin sectigin bulunurluk
+kademesine gore paylasilir:
+
+- **Herkese acik:** uygulamadaki herkes gorur
+- **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
+- **Gizli:** kimse gormez, check-in yalnizca kendi gecmisinde kalir
 
 `Gizli` sectiginde **kimligin** kimseye gorunmez - moderasyon disinda
 (bkz. madde 4). Ama bir istisna var: bulundugun mekanin herkese acik
 "kac kisi var" sayacina (yogunluk) bulunurluk kademenden BAGIMSIZ
 olarak dahil olursun. Yani kimligin gizli kalir, ama sayac senin
-varliginla artar - sakin bir mekanda sayac 0'dan 1'e ciktiginda
-oradaki biri "birisi var" bilgisini cikarabilir. (Kod:
+varliginla artar - **sakin bir mekanda sayac 0'dan 1'e ciktiginda
+oradaki biri "birisi var" bilgisini cikarabilir.** (Kod:
 `yakin_mekanlar_yogunluk` icindeki `kisi_sayisi` alt sorgusu
 `bulunurluk`a hic bakmiyor, yalnizca aktif check-in ve aktif hesap
 kontrolu yapiyor.)
@@ -105,14 +131,22 @@ Verilerin iki ayri yerde islenir:
 
 ## 6. Saklama sureleri
 
-**Bugun gecerli olan tek otomatik silme kurali:** suresi dolmus (90
-gunden eski) hesap askiya alma kayitlari her gun otomatik olarak
-veritabanindan **SILINIR** (tam silme, arsivlenmez). Bu kayitlarin
-baska bir yerde saklanan bir kopyasi bugun **yoktur**.
+**Bugun gecerli olan otomatik silme/temizleme kurallari BIRDEN
+FAZLA** (tek bir kural degil):
 
-Anilarin (check-in gecmisin), mesajlarin ve sikayetler icin bugun
-herhangi bir otomatik silme islemi **YOKTUR** - suresiz saklanirlar.
-"Gerekli oldugu sure kadar saklama" ilkesinin tam karsiligi henuz
+- Suresi dolmus (90 gunden eski) hesap askiya alma kayitlari her gun
+  otomatik olarak veritabanindan **SILINIR** (tam silme, arsivlenmez).
+  Bu kayitlarin baska bir yerde saklanan bir kopyasi bugun **yoktur**.
+- Takip/sohbet istegi gunluk tavanini hesaplamak icin tutulan kayitlar
+  (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
+- Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
+  donustugunde otomatik olarak silinir (null'a cekilir) - en fazla ~4
+  saat sonra.
+
+Anilarin (check-in gecmisinin geri kalani - hangi mekanda oldugun,
+notun, fotografin), mesajlarin ve sikayetler icin bugun tam bir
+otomatik silme islemi **YOKTUR** - suresiz saklanirlar. "Gerekli
+oldugu sure kadar saklama" ilkesinin tam karsiligi henuz
 tamamlanmadi; bu KVKK uyum listemizde acik bir madde olarak durur.
 
 **Planlanan (henuz uygulanmadi):** moderasyon erisim kayitlarinin 2

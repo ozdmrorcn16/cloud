@@ -32,12 +32,12 @@ it('yedi bolumun hepsi mevcut, hicbiri bos degil', () => {
 
 it('mekan aramasinin konumu sundugu ama saklamadigi acikca yazar (duzeltme turu 1: Critical)', async () => {
   const { getByText } = await render(<GizlilikEkrani />)
-  expect(getByText(/GONDERILIR ama SAKLANMAZ/)).toBeTruthy()
+  expect(getByText(/GONDERILIR\. Bu konum SAKLANMAZ/)).toBeTruthy()
 })
 
 it('gizli check-in de mekan sayacina dahil oldugunu yazar (duzeltme turu 1: Important 1)', async () => {
   const { getByText } = await render(<GizlilikEkrani />)
-  expect(getByText(/kisi sayacina .* dahil olursun/i)).toBeTruthy()
+  expect(getByText(/sayacina .* dahil olursun/i)).toBeTruthy()
 })
 
 it('hakkinda acilan sikayette kimlik baginin kopmadigini yazar (duzeltme turu 1: Important 3)', async () => {
@@ -48,4 +48,25 @@ it('hakkinda acilan sikayette kimlik baginin kopmadigini yazar (duzeltme turu 1:
 it('bildirimde gonderenin adinin da gittigini yazar (duzeltme turu 1: Important 4)', async () => {
   const { getByText } = await render(<GizlilikEkrani />)
   expect(getByText(/tetikleyen kisinin adi buradan gecer/)).toBeTruthy()
+})
+
+it('check-in aniya donusunce koordinatin silindigini yazar, kalici saklanir demez (duzeltme turu 2: N1)', async () => {
+  const { getByText, queryByText } = await render(<GizlilikEkrani />)
+  expect(
+    getByText(/aniya donusur, ve bu donusumde koordinat SILINIR/)
+  ).toBeTruthy()
+  // Turu 1'in yanlis beyani ("konumun KALICI olarak saklanir") artik
+  // hicbir paragrafta gecmemeli.
+  expect(queryByText(/konumun KALICI olarak saklanir/)).toBeNull()
+})
+
+it('mekan eklerken de cihaz konumunun kullanildigini yazar (duzeltme turu 2: Kismi 4)', async () => {
+  const { getByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/Yeni bir mekan eklerken/)).toBeTruthy()
+})
+
+it('otomatik silme kurallarinin birden fazla oldugunu yazar (duzeltme turu 2: Kismi 3)', async () => {
+  const { getByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/birden fazla/)).toBeTruthy()
+  expect(getByText(/2 gunden eski satirlar her gun otomatik silinir/)).toBeTruthy()
 })
