@@ -101,12 +101,35 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   yoluna (EAS build) gecilecek. MEVCUT DURUM: eas-cli calisiyor ama
   GIRIS YAPILMAMIS (`npx eas-cli whoami` -> Not logged in), `eas.json`
   yok, `app.json`da `android.package` ve `projectId` tanimsiz.
-  YENI OTURUMDA SIRA: (a) kullanicidan `! npx eas-cli login` ile giris
-  (Expo hesabi yoksa expo.dev'de ucretsiz acilir), (b) `android.package`
-  belirle (oneri: `com.slooin.app`), (c) `eas build:configure`,
-  (d) `eas build --profile preview --platform android` -> APK linki
+  **GUNCELLEME (ayni gun, commit 5a6f49d): giris disindaki hazirlik
+  BITTI.** `app.json`a `android.package` ve `ios.bundleIdentifier`
+  (`com.slooin.app`) ile uc native config plugin'i (expo-location,
+  expo-image-picker, expo-notifications) eklendi; izin metinleri
+  ekran metni sayildigi icin duzgun Turkce yazildi (karar 74).
+  `eas.json` elle yazildi: development / preview / production
+  profilleri, preview APK uretir. Dogrulama: `npx expo-doctor` 21/21
+  gecti; `npx expo prebuild --platform android` gercekten calisti ve
+  uretilen manifestte `applicationId com.slooin.app`,
+  ACCESS_FINE/COARSE_LOCATION ve VIBRATE izinleri dogrulandi (uretilen
+  `android/` klasoru ve prebuild'in package.json'a yaptigi yan
+  degisiklik geri alindi; CNG akisi korunuyor).
+
+  KALAN TEK ENGEL: `npx eas-cli whoami` hala `Not logged in`. Giris
+  interaktif parola istedigi icin ajan yapamaz, kullanici yapmali:
+  `! npx eas-cli login` (hesap yoksa `! npx eas-cli register`).
+
+  GIRISTEN SONRAKI SIRA: (a) `eas init` (projectId'yi app.json'a yazar),
+  (b) **Supabase degiskenlerini EAS'e tanimla** - `mobil/.env` gitignored
+  oldugu icin derleme sunucusuna YUKLENMEZ; anahtarsiz APK acilista
+  patlar. Cozum `eas env:create --environment preview` ile
+  EXPO_PUBLIC_SUPABASE_URL ve EXPO_PUBLIC_SUPABASE_ANON_KEY tanimlamak
+  (eas.json'daki `"environment": "preview"` bunlari derlemeye tasir).
+  Anahtarlar eas.json'a YAZILMAZ - depo public.
+  (c) `eas build --profile preview --platform android` -> APK linki
   telefona indirilip kurulur. Not: ilk derleme kuyrukta 10-30 dk
-  surebilir (ucretsiz katman).
+  surebilir (ucretsiz katman); ilk derlemede EAS Android keystore
+  uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
+  birakilir.
 
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
