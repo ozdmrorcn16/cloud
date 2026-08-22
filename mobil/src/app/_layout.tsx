@@ -28,12 +28,14 @@ function YonlendirmeKontrolu() {
 
     if (!oturum && !authGrubunda) {
       router.replace('/giris')
-    } else if (oturum && hesapDurumu && !hesapDurumuEkraninda) {
+    } else if (oturum && hesapDurumu) {
       // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
       // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
       // olabilir) ve profil olusturma ekranina atilirsa orada da yazamadigi
-      // icin sikisir.
-      router.replace('/hesap-durumu')
+      // icin sikisir. Bu kol zinciri BURADA bitirir: baska hicbir kol
+      // degerlendirilmez. Aksi halde profil ve ana ekran kollari devreye
+      // girip /hesap-durumu ile diger ekran arasinda sonsuz donme uretir.
+      if (!hesapDurumuEkraninda) router.replace('/hesap-durumu')
     } else if (oturum && profilVarMi === false && !profilOlusturEkraninda) {
       router.replace('/profil-olustur')
     } else if (

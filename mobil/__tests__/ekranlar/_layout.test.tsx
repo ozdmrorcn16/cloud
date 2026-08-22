@@ -185,3 +185,75 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     expect(mockDinleyiciyiKaldir).toHaveBeenCalled()
   })
 })
+
+describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
+  const sahteHesapDurumu = {
+    durum: 'askida' as const,
+    askiBitisi: null,
+    gerekce: 'test',
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('hesapDurumu dolu ve hesap-durumu ekraninda degilken /hesap-durumu yonlendirir', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: true,
+      hesapDurumu: sahteHesapDurumu,
+      yukleniyor: false,
+    })
+    mockSegments = []
+
+    await render(<KokLayout />)
+
+    await waitFor(() => {
+      expect(mockRouterReplace).toHaveBeenCalledWith('/hesap-durumu')
+    })
+  })
+
+  it('hesapDurumu dolu ve zaten hesap-durumu ekranindayken hicbir yonlendirme yapmaz', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: true,
+      hesapDurumu: sahteHesapDurumu,
+      yukleniyor: false,
+    })
+    mockSegments = ['hesap-durumu']
+
+    await render(<KokLayout />)
+
+    expect(mockRouterReplace).not.toHaveBeenCalled()
+  })
+
+  it('hesapDurumu dolu, profilVarMi false ve hesap-durumu ekranindayken hicbir yonlendirme yapmaz', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: false,
+      hesapDurumu: sahteHesapDurumu,
+      yukleniyor: false,
+    })
+    mockSegments = ['hesap-durumu']
+
+    await render(<KokLayout />)
+
+    expect(mockRouterReplace).not.toHaveBeenCalled()
+  })
+
+  it('hesapDurumu null olunca (aski kalkinca) hesap-durumu ekranindan / yonlendirir', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'kullanici-1' } },
+      profilVarMi: true,
+      hesapDurumu: null,
+      yukleniyor: false,
+    })
+    mockSegments = ['hesap-durumu']
+
+    await render(<KokLayout />)
+
+    await waitFor(() => {
+      expect(mockRouterReplace).toHaveBeenCalledWith('/')
+    })
+  })
+})

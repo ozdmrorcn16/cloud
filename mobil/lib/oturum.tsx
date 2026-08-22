@@ -68,8 +68,14 @@ export function OturumSaglayici({ children }: { children: ReactNode }) {
     const { data: dinleyici } = supabase.auth.onAuthStateChange(async (_olay, yeniOturum) => {
       setOturum(yeniOturum)
       if (yeniOturum) {
+        // yukleniyor'u tekrar true yapmadan profil ve hesap durumu
+        // cozulene kadar yonlendirme effect'i (`if (yukleniyor) return`)
+        // eski degerlerle bir kare ana ekrani gosterebilirdi - ozellikle
+        // askiya alinmis bir kullanici icin. Bu, o kareyi kapatiyor.
+        setYukleniyor(true)
         setProfilVarMi(await profilVarMiKontrolEt(yeniOturum.user.id))
         setHesapDurumu(await hesapDurumunuCoz())
+        setYukleniyor(false)
       } else {
         setProfilVarMi(null)
         setHesapDurumu(null)
