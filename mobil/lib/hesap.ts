@@ -12,7 +12,7 @@ export type HesapDurumu = {
 export async function hesapDurumunuGetir(): Promise<HesapDurumu | null> {
   const { data: kullanici } = await supabase.auth.getUser()
   const kimlik = kullanici?.user?.id
-  if (!kimlik) return null
+  if (!kimlik) throw new Error('Oturum bulunamadi')
 
   const { data, error } = await supabase
     .from('hesap_durumlari')

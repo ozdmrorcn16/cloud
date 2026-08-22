@@ -57,6 +57,11 @@ describe('hesapDurumunuGetir', () => {
     zinciriKur({ data: null, error: { message: 'kopuk' } })
     await expect(hesapDurumunuGetir()).rejects.toThrow('kopuk')
   })
+
+  it('oturum yoksa firlatir (hesap sorunsuz ile karistirilmamali)', async () => {
+    sahteSupabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: null })
+    await expect(hesapDurumunuGetir()).rejects.toThrow('Oturum bulunamadi')
+  })
 })
 
 describe('hesabiDondur', () => {
@@ -72,6 +77,14 @@ describe('hesabiDondur', () => {
     sahteSupabase.rpc.mockResolvedValue({ error: { message: 'olmadi' } })
     await expect(hesabiDondur()).rejects.toThrow('olmadi')
   })
+
+  it('gerekce verilmezse RPC-ye null gonderir', async () => {
+    sahteSupabase.rpc.mockResolvedValue({ error: null })
+    await hesabiDondur()
+    expect(sahteSupabase.rpc).toHaveBeenCalledWith('hesabimi_dondur', {
+      p_gerekce: null,
+    })
+  })
 })
 
 describe('hesabiGeriAc', () => {
@@ -84,6 +97,11 @@ describe('hesabiGeriAc', () => {
     // Bu cagri her oturum acilisinda yapiliyor; ag hatasi girisi
     // engellememeli.
     sahteSupabase.rpc.mockResolvedValue({ data: null, error: { message: 'ag' } })
+    await expect(hesabiGeriAc()).resolves.toBe(false)
+  })
+
+  it('hata yokken data false ise false doner (gercekten geri acilmadi)', async () => {
+    sahteSupabase.rpc.mockResolvedValue({ data: false, error: null })
     await expect(hesabiGeriAc()).resolves.toBe(false)
   })
 })
