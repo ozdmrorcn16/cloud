@@ -80,12 +80,19 @@ Moderasyon paneli spec'i yeni veri depolari getiriyor
 ertelemek artik daha pahali. Spec'te onerilen sureler ve gerekceleri
 "Saklama sureleri" bolumunde.
 
-### 5. Silme hakki / hesabin silinmesi (KVKK m.11) - BLOKE
+### 5. Silme hakki / hesabin silinmesi (KVKK m.11) - KAPSAMA ALINDI
 
-Kullanici hesabini silemiyor. Bu bir ozellik eksigi degil, ilgili
-kisinin **kanuni hakki**. Moderasyon paneli spec'inde `[SONRA]`
-diliminde duruyor; orada kalmasi ilk gercek kullaniciya kadar kabul
-edilebilir, sonrasinda degil.
+Kullanicinin 2026-08-22 karariyla hem **hesap silme** hem **hesap
+dondurma** kapsama girdi ve moderasyon paneli spec'inin Plan 1'inde yer
+aliyor (karar 66-70). Silme kalicidir, bekleme suresi yoktur; geri
+donmek isteyen sifirdan hesap acar. Dondurma, kararsiz kullanicinin
+ihtiyacini karsiladigi icin silmenin geri alinamaz olmasini mumkun
+kiliyor.
+
+Cozulen ayrintilar: mesajlar ve sikayetler silinmez, gonderen
+anonimlesir (bir konusma iki kisinin verisidir ve sikayet ucuncu kisi
+hakkindadir); fotograflar Storage'dan silinir; kullanici adi 90 gun
+rezerve edilir.
 
 Ayrinti dusunulmeli: hesap silinince mesajlarin karsi tarafta ne olacagi
 (karsi tarafin kendi verisi de var), anilarin ve sikayetlerin durumu,

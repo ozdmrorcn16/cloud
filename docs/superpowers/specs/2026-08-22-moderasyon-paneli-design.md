@@ -511,6 +511,175 @@ bildirilmemis olmasi KVKK ve GDPR acisindan savunulamaz, ve magaza
 incelemesi de bu maddeyi arar. Yetkinin kendisi mesru; bildirilmemis
 olmasi degil.
 
+## Hesap haklari: dondurma ve silme
+
+Kullanicinin karari (2026-08-22): "Kullaniciya istedigi zaman hesabini
+silme hakki koymaliyiz ve dondurma hakki koymaliyiz." Ikisi de bu isin
+kapsamina girdi; silme, uyum listesinde **BLOKE** olan KVKK m.11
+maddesini de kapatiyor.
+
+Ikisi birlikte tasarlaniyor cunku birbirinin varligina dayaniyorlar:
+dondurma var oldugu icin silme geri alinamaz olabiliyor.
+
+### Karar 66 - Dondurma, moderasyon askisiyla ayni mekanizmayi kullanir
+
+Dondurulmus hesap, askiya alinmis hesapla **ayni sekilde** davranir:
+kimseye gorunmez, hicbir sey yazamaz, canli check-in'i sona erer,
+bildirim almaz. Fark yalnizca kimin koydugu ve kimin kaldirabildigidir.
+
+Bu yuzden ayri bir mekanizma kurulmuyor: `hesap_durumlari` tablosuna
+ucuncu bir deger ekleniyor ve `moderasyon.hesap_aktif_mi` oldugu gibi
+kaliyor. Yani "askiya almanin zorlandigi noktalar" tablosundaki butun
+kapilar dondurma icin de **kendiliginden** calisiyor. Ayri bir yol
+acmak, o listeyi ikinci kez ve eksik uygulamak demekti.
+
+```sql
+-- durum artik uc deger aliyor
+check (durum in ('askida', 'yasakli', 'dondurulmus'))
+-- moderator_id, dondurma kullanicinin kendi karari oldugu icin null olabilir
+alter table public.hesap_durumlari alter column moderator_id drop not null;
+constraint hesap_durumlari_kaynak check (
+  (durum = 'dondurulmus' and moderator_id is null) or
+  (durum in ('askida', 'yasakli') and moderator_id is not null)
+)
+```
+
+Iki RPC: `hesabimi_dondur(p_gerekce)` ve `hesabimi_geri_ac()`.
+
+**Geri acilma otomatiktir: kullanici tekrar giris yapinca hesap yeniden
+aktif olur** (kullanicinin karari, 2026-08-22). Ayri bir dugmeye basmak
+gerekmez. Akis:
+
+- `hesabimi_dondur` cagrildiktan hemen sonra **oturum kapatilir**. Aksi
+  halde kullanici dondurulmus ama girisli bir ara durumda kalirdi.
+- `lib/oturum.tsx` her oturum kurulusunda `hesabimi_geri_ac()` cagirir.
+  Satir `dondurulmus` ise silinir ve kullanici dogrudan uygulamaya
+  girer; bir kerelik "Hesabin yeniden aktif" bilgisi gosterilir.
+- Satir `askida` ya da `yasakli` ise RPC hicbir sey yapmaz ve askidaki
+  hesap ekrani cikar.
+
+Yani dondurulmus kullanici icin ayri bir ekran **yok**; dondurma
+yalnizca "giris yapmadigin surece gorunmezsin" demek. Askidaki hesap
+ekrani sadece moderasyon kararlari icin kaliyor.
+
+Kritik kisit: **`hesabimi_geri_ac` yalnizca `durum = 'dondurulmus'`
+satirini siler.** Aksi halde askiya alinmis bir kullanici giris yapip
+kendi askisini kaldirabilirdi - ve bu otomatik cagri yuzunden farkinda
+bile olmadan olurdu. Bu kosul, otomatik geri acilmayi guvenli kilan tek
+seydir; `test:gorunurluk` icinde kendi senaryosu olur. Ayni sekilde
+`hesabimi_dondur`, satir zaten varsa basarisiz olur - boylece askidaki
+biri askisini dondurmaya cevirip sureyi sifirlayamaz.
+
+Ters yon serbest: moderator dondurulmus bir hesabi askiya alabilir
+(satir uzerine yazilir). O aski kaldirildiginda hesap **tamamen aktif**
+olur, eski dondurma hatirlanmaz. Bu bilincli bir sadelestirme; alternatifi
+iki bagimsiz durum ekseni tasimakti ve moderasyon kararinin ustune
+kullanici tercihi bindirmek karisikliktan baska bir sey uretmiyor.
+
+Arayuz: dondurma girisi ayarlar ekranindadir ve yaninda "Verilerin
+silinmez; tekrar giris yaptiginda hesabin kendiliginden aktif olur"
+aciklamasi durur.
+
+### Karar 67 - Silme kalicidir, geri alinamaz; bekleme suresi yok
+
+Cogu uygulama silmeye 30 gunluk geri alma penceresi koyar. Burada
+koymuyoruz, cunku o pencerenin karsiladigi ihtiyaci (kararsizlik,
+"bir sure uzaklasmak istiyorum") **dondurma** zaten karsiliyor. Silme
+istegini geciktirmek, KVKK m.11 anlaminda da tercih edilen davranis
+degil: talep gecikmeden sonuclandirilmali.
+
+Yanlislikla silmeye karsi koruma sure degil **surtunmedir**: silme
+onayinda parola yeniden istenir ve kullanici kendi kullanici adini
+yazarak onaylar. Onay ekrani dondurmayi acikca alternatif olarak sunar.
+
+Islemi bir Edge Function yurutur (`hesap-sil`), cunku `auth.users`
+satirini silmek Admin API gerektirir ve bu yalnizca sunucu tarafinda
+olabilir. Karar 55'in "service-role yok" kurali **panelin paketi**
+icindir; sunucu tarafinda calisan bir fonksiyon icin gecerli degildir -
+`bildirim-gonder` fonksiyonu da ayni sekilde service-role kullaniyor.
+
+Sira: cagiranin JWT'si dogrulanir (kendi hesabindan baskasini
+silemez) -> anonimlestirilecek kayitlar anonimlestirilir -> Storage'daki
+profil ve check-in fotograflari silinir -> `auth.admin.deleteUser`
+cagrilir ve cascade kalani goturur.
+
+**Geri donus yoktur; kullanici yeniden gelmek isterse sifirdan hesap
+acar** (kullanicinin karari, 2026-08-22). `auth.users` satiri silindigi
+icin telefon numarasi serbest kalir, yani ayni numarayla yeniden kayit
+olunabilir - ama bu tamamen yeni bir hesaptir: eski profil, anilar,
+baglar ve konusmalar geri gelmez. Onay ekraninda bu acikca yazar, ve
+dondurmayla farki tek cumlede gosterilir:
+
+- **Dondur:** verilerin durur, tekrar giris yapinca hesabin aktif olur.
+- **Sil:** geri donusu yok, yeniden gelmek istersen sifirdan hesap
+  acman gerekir.
+
+Bunun karar 70 ile bir yan etkisi var: ayni kisi 90 gun dolmadan
+yeniden kayit olursa **eski kullanici adini alamaz**, cunku ad
+rezervede olur. Taklit korumasinin kacinilmaz bedeli; kabul ediliyor.
+
+### Karar 68 - Silmede ne gider, ne kalir
+
+Bugunku yabanci anahtarlar bu karari **yanlis** veriyor: `mesajlar` ve
+`sikayetler` de `on delete cascade` ile bagli, yani naif bir silme
+karsi tarafin konusma gecmisini yariya indirir ve kullanicinin
+BASKALARI hakkinda actigi sikayetleri yok eder. Ikisi de duzeltiliyor.
+
+| Veri | Karar |
+|---|---|
+| `profiller`, `check_inler` (canli ve anilar), `takipler`, `sohbet_istekleri`, `engellemeler`, `istek_gunlugu`, `bildirim_jetonlari`, `konusma_uyeleri` | **Silinir** (mevcut cascade dogru) |
+| Storage: profil ve check-in fotograflari | **Silinir** (Edge Function) |
+| `mesajlar` | **Kalir, gonderen anonimlesir.** `on delete cascade` -> `set null`, `gonderen_id` nullable olur |
+| `sikayetler.sikayet_eden_id` | **Kalir, sikayet eden anonimlesir.** cascade -> `set null` |
+| `moderasyon_kayitlari.moderator_id` | **Kalir**, `set null` |
+| `mekanlar.ekleyen_kullanici` | Kalir (zaten `set null`) |
+
+Mesajlarin kalmasinin gerekcesi: bir konusma **iki kisinin** verisidir.
+Silen tarafin mesajlarini yok etmek, karsi tarafin kendi gecmisini
+okunamaz yarim bir metne cevirir ve acik bir sikayetin kanitini ortadan
+kaldirir. Kisiyle bagi koparmak (anonimlestirme) KVKK'nin istedigini
+karsilar; icerigin tamamini yok etmek karsi tarafin hakkina girer.
+Arayuzde bu mesajlar "Silinmis kullanici" olarak gorunur.
+
+Sikayetlerin kalmasinin gerekcesi ayni yonde: sikayet ucuncu bir kisi
+hakkindadir. Tacize ugrayan biri sikayet edip sonra hesabini silerse,
+sikayetin de silinmesi taciz edeni korurdu.
+
+### Karar 69 - Silme, "her konusmanin tam iki uyesi var" invaryantini kirar
+
+`docs/faz3b-takip-isleri.md` madde 1a bunu **kalici bir invaryant**
+olarak ilan ediyor ve `mesajlari_getir`'in `limit 1` ile "diger uye"yi
+bulmasini buna dayandiriyor. Karar 54 (grup sohbeti hic olmayacak) o
+invaryanti dogruluyordu, ama hesap silme onu bambaska bir yerden kiriyor:
+`konusma_uyeleri.kullanici_id` birincil anahtarin parcasi oldugu icin
+null olamaz, dolayisiyla uyelik satiri silinmek zorunda ve konusma
+**tek uyeli** kalir.
+
+Bu, tam olarak o belgenin uyardigi turden bir tuzak: sonraki isi yanlis
+yone sokacak bir "kalici dogru". Uc okuyucu buna gore duzeltilir:
+
+- `mesajlari_getir`: karsi uye bulunamazsa engelleme kontrolu atlanir
+  (kontrol edilecek kimse yok) ve konusma salt-okunur donulur. Bugun
+  `v_diger_id` null kaldiginda davranis tanimsiz.
+- `konusmalarim`: karsi taraf yerine "Silinmis kullanici" doner, konusma
+  listede kalir.
+- `bag.yazabilir_mi`: karsi uye yoksa **false**. Silinmis bir hesaba
+  mesaj yazilamaz.
+
+Madde 1a bu spec ile birlikte guncellenir; invaryant artik "en fazla iki
+uye, silme sonrasi bir uye olabilir" seklindedir.
+
+### Karar 70 - Silinen kullanici adi 90 gun rezerve edilir
+
+Kullanici adi serbest kalirsa bir baskasi onu hemen alip silinen kisinin
+yerine gecebilir - tanisma uygulamasinda gercek bir taklit riski.
+Rezervasyon `kullanici_adi` ve `serbest_kalma` iki sutunlu kucuk bir
+tabloda tutulur, kisiyle **hicbir bagi olmadan**; 90 gun sonra gunluk
+budama isi satiri siler ve ad yeniden alinabilir hale gelir.
+
+Sure bir denge: taklidi engellemeye yetecek kadar uzun, silinmis bir
+kisinin tanitici bilgisini suresiz tutmayacak kadar kisa.
+
 ## Saklama sureleri (karar 65)
 
 Bu is uc yeni kisisel veri deposu getiriyor, dolayisiyla "gerekli oldugu
@@ -528,11 +697,10 @@ Ucu de **oneridir** ve `docs/kvkk-uyum-listesi.md` madde 4 ile birlikte
 degerlendirilmelidir; sureler degisirse tek degisen `pg_cron` isinin
 araligidir.
 
-Bir sinir: hesap silme (KVKK m.11) bu isin kapsaminda **degil**, ama
-uyum listesinde **BLOKE** olarak isaretli. Bu spec'in `[SONRA]`
-diliminde durmasi ilk gercek kullaniciya kadar kabul edilebilir,
-sonrasinda degil. Plan bunu bir borc olarak degil, tarihli bir
-yukumluluk olarak tasimali.
+Hesap silme (KVKK m.11) artik `[SONRA]` degil: kullanicinin
+2026-08-22 karariyla kapsama girdi ve Plan 1'de yer aliyor. Uyum
+listesindeki iki BLOKE maddeden ikincisi de boylece bu isin icinde
+kapaniyor.
 
 ## Moderator RPC'leri (ilk dilim)
 
@@ -632,24 +800,43 @@ mesaj okumasi dahil butun satirlari gor.
 
 ## Dilimler
 
-**Ilk dilim (bu spec'in plani):**
+Hesap haklari (karar 66-70) eklendikten sonra bu is tek bir plana
+sigmiyor. **Iki plan halinde yurutulur** ve sira onemlidir: birincisi
+ikincisinin dayandigi temeli kuruyor.
+
+**Plan 1 - Hesap durumu temeli ve kullanici haklari** (uygulama tarafi):
+
+- `hesap_durumlari` tablosu, `moderasyon.hesap_aktif_mi` yardimcisi ve
+  **butun** zorlama noktalari (8 yazma kapisi, 5 gorunurluk yolu)
+- Hesap dondurma ve otomatik geri acilma (karar 66)
+- Hesap silme: Edge Function, FK duzeltmeleri, Storage temizligi,
+  kullanici adi rezervasyonu (karar 67, 68, 70)
+- Tek uyeli konusma duzeltmeleri (karar 69)
+- Gizlilik metni ve onu gosteren ekran
+- Askidaki hesap ekrani
+
+Bu plan once geliyor, cunku (a) uyum listesindeki iki BLOKE maddeyi
+kapatiyor, (b) panelin "askiya al" aksiyonu bu temel olmadan zaten
+anlamsiz, (c) tamami kullanici tarafinda, yani panelden bagimsiz
+dogrulanabilir.
+
+**Plan 2 - Moderasyon paneli:**
 
 - Moderator kimligi, TOTP, AAL2 kapisi, `moderatorler` tablosu
-- Denetim izi
-- Hesap durumu kavrami ve **butun** zorlama noktalari
+- Denetim izi ve saklama sureleri (karar 61, 65)
 - Sikayet listesi, detay, hedef gecmisi, karara baglama
 - Kullanici arama ve detayi (karar 64: engellemeler, istekler, konusma
   metadatasi dahil)
+- Askiya alma / yasaklama / geri alma aksiyonlari
 - Check-in / ani gizleme
 - Mesaj sikayetinin duzeltilmesi (karar 62) ve mesaj basina sikayet
 - Konusma goruntuleyici, gerekceli ve izli (karar 63)
-- Gizlilik metni ve onu gosteren ekran
+- `panel/` uygulamasinin kendisi
 
 **Sonraki dilim (bu spec kapsaminda tasarlandi, uygulanmadi):**
 
 - Sikayet edeni degerlendirme (kotu niyetli ihbar sayaci)
 - Profil alani temizleme (hakaret iceren kullanici adi / fotograf)
-- Hesap silme (KVKK), geri alinamaz
 - Pano: canli sayilar (aktif kullanici, bugunku check-in, bekleyen
   sikayet, buyume)
 - Mekan kaydi kaldirma

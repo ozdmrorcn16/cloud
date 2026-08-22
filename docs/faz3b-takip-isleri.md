@@ -33,10 +33,29 @@ fazda her konusmanin tam iki uyesi var ve "diger uye" tek.
 
 **Kullanicinin karari (2026-08-22): GRUP SOHBETI HIC OLMAYACAK, ve
 "mekan odasi" ozelligi de HIC OLMAYACAK.** Bu yuzden ikiden fazla uyeli
-bir konusma turu de gelmeyecek. Dolayisiyla `limit 1` bir kirilma riski
-degil, kalici olarak dogru bir varsayim. Bu madde artik "ilerideki bir
-isi yanlis yone sokabilir" listesinde DEGIL; yalnizca kodun neden `limit
-1` kullandigini belgeliyor. Yapilacak bir sey yok.
+bir konusma turu de gelmeyecek. `limit 1` bu yonden guvenli.
+
+**AMA INVARYANT YINE DE KIRILDI - ustten degil, alttan.** Bu bolumun
+"her konusmanin tam iki uyesi var, yapilacak bir sey yok" diyen eski
+hali ARTIK GECERLI DEGIL. Sebep grup sohbeti degil, HESAP SILME:
+kullanicinin 2026-08-22 karariyla hesap silme kapsama girdi ve
+`konusma_uyeleri.kullanici_id` birincil anahtarin parcasi oldugu icin
+null olamaz. Bir taraf hesabini silince uyelik satiri cascade ile
+gidiyor ve konusma TEK UYELI kaliyor.
+
+Yani sayi "her zaman iki" degil, "en fazla iki, silme sonrasi bir"
+oldu. `limit 1` hala dogru satiri seciyor, ama sifir satir donebilecegi
+icin cagiranin null durumunu ele almasi gerekiyor.
+
+Duzeltilmesi gereken uc okuyucu (moderasyon paneli spec'i karar 69):
+`mesajlari_getir` (karsi uye yoksa engelleme kontrolu atlanir, konusma
+salt-okunur doner - bugun bu durumda davranis tanimsiz), `konusmalarim`
+("Silinmis kullanici" doner, konusma listede kalir),
+`bag.yazabilir_mi` (karsi uye yoksa false).
+
+Bu maddenin ilk yazilisi tam da uyardigi tuzaga dustu: bir invaryanti
+"kalici olarak dogru" ilan etmek, onu baska bir yonden kirabilecek isi
+gormeyi zorlastirdi.
 
 ### 1b. Mesaj sikayeti hangi mesaja ait oldugunu tasimiyor
 

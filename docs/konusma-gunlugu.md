@@ -690,3 +690,62 @@ bildirilmemis bir okuma yetkisi calisir durumda olur.
     Onemli ayrim ve karar 63 ile tutarlilik: uyumun yolu isletmeci
     yetkisini kesmek DEGIL. Yetki genis kalir; uyum aydinlatma,
     denetim izi ve saklama disiplini ile saglanir.
+
+### Hesap haklari: dondurma ve silme (2026-08-22)
+
+Kullanicinin karari: "Kullaniciya istedigi zaman hesabini silme hakki
+koymaliyiz ve dondurma hakki koymaliyiz." Netlestirmesi: "Dondurdugu
+zaman geri giris yaptiginda hesabi tekrar aktif olucak ama hesabi
+sildigi zaman geri donusu olmucak tekrar sifirdan hesap acmali."
+
+66. **Dondurma, moderasyon askisiyla AYNI mekanizmayi kullanir.**
+    `hesap_durumlari` tablosuna ucuncu deger (`dondurulmus`) ekleniyor,
+    `moderasyon.hesap_aktif_mi` oldugu gibi kaliyor - boylece "askiya
+    almanin zorlandigi noktalar" listesindeki 8 yazma kapisi ve 5
+    gorunurluk yolu dondurma icin de KENDILIGINDEN calisiyor. Ayri bir
+    yol acmak o listeyi ikinci kez ve eksik uygulamak olurdu.
+    **Geri acilma OTOMATIK:** dondurma oturumu kapatir, sonraki giriste
+    `lib/oturum.tsx` `hesabimi_geri_ac()` cagirir ve hesap aktiflesir;
+    ayri bir dugme yok. Guvenligin dayandigi tek nokta: `hesabimi_geri_ac`
+    YALNIZCA `dondurulmus` satirini siler - aksi halde askiya alinmis bir
+    kullanici giris yapinca askisi farkinda olmadan kalkardi. Kendi
+    test:gorunurluk senaryosu olacak.
+67. **Silme kalicidir, bekleme suresi YOK.** Cogu uygulamadaki 30 gunluk
+    geri alma penceresinin karsiladigi ihtiyaci dondurma zaten
+    karsiliyor; KVKK m.11 acisindan da talebi geciktirmek tercih edilen
+    davranis degil. Yanlislikla silmeye karsi koruma sure degil
+    SURTUNME: parola yeniden istenir ve kullanici kullanici adini
+    yazarak onaylar. Telefon numarasi serbest kalir, ayni numarayla
+    yeniden kayit olunabilir ama bu SIFIRDAN yeni bir hesaptir.
+    Islemi `hesap-sil` Edge Function'i yurutur (auth.users silmek Admin
+    API gerektiriyor; karar 55'in service-role yasagi PANELIN PAKETI
+    icindir, sunucu fonksiyonu icin degil - bildirim-gonder de ayni
+    sekilde kullaniyor).
+68. **Silmede mesajlar ve sikayetler KALIR, anonimlesir.** Bugunku
+    yabanci anahtarlar bu karari YANLIS veriyor: ikisi de
+    `on delete cascade`, yani naif bir silme karsi tarafin konusma
+    gecmisini yariya indirir ve kullanicinin BASKALARI hakkinda actigi
+    sikayetleri yok eder. Ikisi `set null`'a cevriliyor. Gerekce: bir
+    konusma IKI kisinin verisidir; kisiyle bagi koparmak KVKK'nin
+    istedigini karsilar, icerigi yok etmek karsi tarafin hakkina girer.
+    Tacize ugrayip sikayet eden biri hesabini silince sikayetin de
+    silinmesi taciz edeni korurdu.
+69. **Silme, "her konusmanin tam iki uyesi var" invaryantini KIRIYOR.**
+    Karar 54 bu invaryanti "kalici olarak dogru" ilan etmisti; grup
+    sohbeti yonunden dogruydu ama hesap silme onu alttan kiriyor
+    (`konusma_uyeleri.kullanici_id` birincil anahtarin parcasi, null
+    olamaz, satir cascade ile gidiyor, konusma tek uyeli kaliyor).
+    `mesajlari_getir`, `konusmalarim` ve `bag.yazabilir_mi` bu duruma
+    gore duzeltiliyor. `docs/faz3b-takip-isleri.md` madde 1a
+    guncellendi.
+70. **Silinen kullanici adi 90 gun rezerve.** Ad hemen serbest kalirsa
+    bir baskasi onu alip silinen kisinin yerine gecebilir. Rezervasyon
+    kisiyle hicbir bagi olmayan iki sutunlu bir tabloda tutulur.
+    Yan etkisi kabul ediliyor: ayni kisi 90 gun dolmadan donerse eski
+    adini alamaz.
+
+**Is iki plana bolundu.** Plan 1 (once): hesap durumu temeli + butun
+zorlama noktalari, dondurma, silme, tek uyeli konusma duzeltmeleri,
+gizlilik metni ekrani. Plan 2: moderasyon paneli. Sira boyle cunku
+uyum listesindeki iki BLOKE madde plan 1'de kapaniyor ve panelin
+"askiya al" aksiyonu bu temel olmadan zaten anlamsiz.

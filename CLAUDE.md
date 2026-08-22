@@ -518,8 +518,15 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   mesajlari OKUYABILIR ("her seye tam ulasilir olmam gerek") ve mesaj
   sikayeti kaliyor, iki kusuru duzeltilerek. Mesaj okuma izli ve
   gerekceli, salt-okunur; yan yukumluluk olarak gizlilik metni ekrani
-  ayni dilime girdi. Sonraki adim: kullanicinin spec'i onaylamasi,
-  ardindan `superpowers:writing-plans` ile uygulama plani.
+  ayni dilime girdi. **Karar 65-70:** gizlilik/KVKK her adimda gozetilir
+  (`docs/kvkk-uyum-listesi.md`), ve kullanici hesabini DONDURABILIR
+  (geri giriste otomatik aktif olur) ya da KALICI SILEBILIR (geri
+  donusu yok, sifirdan hesap acilir). Silme mesajlari ve sikayetleri
+  anonimlestirir ama silmez, ve "her konusmanin tam iki uyesi var"
+  invaryantini kirar (karar 69). **Is iki plana bolundu:** Plan 1
+  hesap durumu temeli + hesap haklari + gizlilik metni, Plan 2
+  moderasyon paneli. Sonraki adim: kullanicinin spec'i onaylamasi,
+  ardindan `superpowers:writing-plans` ile Plan 1.
 
 - 2026-08-22 - **Grup sohbeti, "mekan odasi" ve COK UYELI konusma fikri
   tamamen ve kalici olarak kaldirildi.** Uygulama yalnizca birebir;
