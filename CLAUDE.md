@@ -525,8 +525,12 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   anonimlestirir ama silmez, ve "her konusmanin tam iki uyesi var"
   invaryantini kirar (karar 69). **Is iki plana bolundu:** Plan 1
   hesap durumu temeli + hesap haklari + gizlilik metni, Plan 2
-  moderasyon paneli. Sonraki adim: kullanicinin spec'i onaylamasi,
-  ardindan `superpowers:writing-plans` ile Plan 1.
+  moderasyon paneli. **Plan 1 YAZILDI:**
+  `docs/superpowers/plans/2026-08-22-plan1-hesap-durumu-ve-haklari.md`
+  (18 gorev, 12 migrasyon, 1 Edge Function, 3 yeni ekran, 12 yeni canli
+  senaryo 45-56). Kod yazilmadi. Sonraki adim: Plan 1'in uygulanmasi
+  (subagent-driven-development ya da executing-plans), ardindan Plan 2
+  icin ayri bir plan yazilmasi.
 
 - 2026-08-22 - **Grup sohbeti, "mekan odasi" ve COK UYELI konusma fikri
   tamamen ve kalici olarak kaldirildi.** Uygulama yalnizca birebir;
