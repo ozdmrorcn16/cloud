@@ -10,6 +10,15 @@ export type HesapDurumu = {
 // hesap_durumlari'nin RLS'i yalnizca kendi satirini gosteriyor, bu
 // yuzden ayri bir kimlik filtresi zorunlu degil; yine de acikca
 // filtreliyoruz ki niyet okunur olsun.
+//
+// `.or(...)` satiri sunucudaki moderasyon.hesap_aktif_mi ile AYNI
+// kurali istemciye tasir: suresi dolmus bir aski (aski_bitisi <= now)
+// sunucuya gore zaten AKTIF sayilir. Bu filtre olmadan satir sureye
+// bakmadan donerdi ve suresi dolmus bir 'askida' satiri, budama
+// cron'u onu 90 gun sonra silene kadar kullaniciyi /hesap-durumu
+// ekranina kilitlerdi. Karsilastirma BILEREK istemci saatiyle degil
+// PostgREST/Postgres tarafinda ('now' ozel zaman damgasi degeri)
+// yapiliyor; istemci saatine guvenilmez.
 export async function hesapDurumunuGetir(): Promise<HesapDurumu | null> {
   const { data: kullanici } = await supabase.auth.getUser()
   const kimlik = kullanici?.user?.id
@@ -19,6 +28,7 @@ export async function hesapDurumunuGetir(): Promise<HesapDurumu | null> {
     .from('hesap_durumlari')
     .select('durum, aski_bitisi, gerekce')
     .eq('kullanici_id', kimlik)
+    .or('durum.in.(yasakli,dondurulmus),aski_bitisi.gt.now')
     .maybeSingle()
 
   if (error) throw new Error(error.message)

@@ -22,7 +22,7 @@ dosyadaki not gecerlidir).
 - **Tur 2:** tur 1'in kendisi yeni bir yanlis beyan getirdi ("check-in
   yaptiginda konum KALICI saklanir" - oysa check-in aniya donusunce
   koordinat silinir, bu kullanicinin LEHINE bir gercek ve kaybolmustu).
-  Ayrica: mekan EKLERKEN de cihaz konumu kullanildigi (uzuncu bir yol)
+  Ayrica: mekan EKLERKEN de cihaz konumu kullanildigi (ucuncu bir yol)
   eksikti; "tek otomatik silme kurali" iddiasi yanlisti (istek_gunlugu
   budamasi ve check-in konum silme de otomatik); md/ekran arasindaki
   fark tam kapanmamisti.
@@ -77,16 +77,31 @@ karistirmamak onemli:
   "ayrildim" dediginde) otomatik olarak **aniya** donusur, ve bu
   donusumde **koordinat SILINIR** (veritabaninda null'a cekilir) -
   geriye yalnizca hangi mekanda oldugun kalir, tam koordinat degil.
-  (Kod: `check_inden_ayril` RPC'si ve gunluk calisan
+  (Kod: `check_inden_ayril` RPC'si ve 10 dakikada bir calisan
   `check-in-suresi-dolanlari-aniya-cevir` adli pg_cron isi `konum`
   sutununu null yapiyor.)
 
 Check-in aktifken saklanan koordinat, check-in icin sectigin bulunurluk
-kademesine gore paylasilir:
+kademesine gore paylasilir. **Bu, canli check-in icindir** - check-in
+aniya donustukten sonra gecerli olan kademe farkli, asagida ayrica
+anlatiliyor:
 
-- **Herkese acik:** uygulamadaki herkes gorur
+- **Herkese acik:** uygulamadaki herkes DEGIL, yalnizca **ayni mekanda
+  o an canli check-in'i olanlar** ya da **karsilikli takiplerin**
+  gorur. (Kod: `check-in gorunurlugu` RLS politikasi,
+  `bulunurluk = 'herkese_acik'` kolunda `gizli.ayni_mekanda_canli_mi`
+  veya `bag.takip_ediyor_mu` sartlarindan biri saglanmali.)
 - **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
 - **Gizli:** kimse gormez, check-in yalnizca kendi gecmisinde kalir
+
+Check-in aniya donustukten sonra (yani konum silindikten sonra), anin
+gorunurlugu **ayri bir uc kademedir** ve farkli calisir - artik "ayni
+mekanda canli olma" sarti yoktur:
+
+- **Herkese acik:** uygulamadaki herkes gorur (aktif hesaplar,
+  engelleme haric)
+- **Sadece takipcilerim:** yalnizca karsilikli takiplerinin gordugu
+- **Kimse:** yalnizca kendi profilinde sen gorursun
 
 `Gizli` sectiginde **kimligin** kimseye gorunmez - moderasyon disinda
 (bkz. madde 4). Ama bir istisna var: bulundugun mekanin herkese acik

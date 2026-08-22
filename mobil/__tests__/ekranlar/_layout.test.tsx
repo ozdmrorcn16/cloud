@@ -241,7 +241,15 @@ describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
     expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 
-  it('hesapDurumu null olunca (aski kalkinca) hesap-durumu ekranindan / yonlendirir', async () => {
+  // D1 duzeltmesi (2026-08-22): baslikta "aski kalkinca" ifadesi
+  // teknik olarak yanlisti - satirin kendisi silinmiyor, budama
+  // cron'u onu 90 gun sonra siler. hesapDurumunuGetir suresi dolmus
+  // bir askiyi lib/hesap.ts'teki sunucu-taraf filtresiyle (`.or(...)`,
+  // hesap_aktif_mi ile ayni kural) sorgudan DUSURUYOR; bu yuzden
+  // istemcide gorulen deger null oluyor, satir yok olmuyor. Davranis
+  // ayni kaliyor (hesapDurumu gercekten null geliyor), yalnizca bu
+  // aciklama yanlisti.
+  it('hesapDurumu null olunca (suresi dolmus aski sorgu filtresiyle dusunce) hesap-durumu ekranindan / yonlendirir', async () => {
     ;(useOturum as jest.Mock).mockReturnValue({
       oturum: { user: { id: 'kullanici-1' } },
       profilVarMi: true,

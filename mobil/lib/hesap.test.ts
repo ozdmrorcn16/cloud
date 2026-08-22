@@ -20,10 +20,11 @@ const sahteSupabase = supabase as unknown as {
 
 function zinciriKur(sonuc: { data: unknown; error: unknown }) {
   const maybeSingle = jest.fn().mockResolvedValue(sonuc)
-  const eq = jest.fn(() => ({ maybeSingle }))
+  const or = jest.fn(() => ({ maybeSingle }))
+  const eq = jest.fn(() => ({ or }))
   const select = jest.fn(() => ({ eq }))
   sahteSupabase.from.mockReturnValue({ select })
-  return { select, eq, maybeSingle }
+  return { select, eq, or, maybeSingle }
 }
 
 beforeEach(() => {
@@ -59,6 +60,19 @@ describe('hesapDurumunuGetir', () => {
   it('hata gelirse firlatir', async () => {
     zinciriKur({ data: null, error: { message: 'kopuk' } })
     await expect(hesapDurumunuGetir()).rejects.toThrow('kopuk')
+  })
+
+  // D1 duzeltmesi: suresi dolmus bir 'askida' satiri sunucudaki
+  // hesap_aktif_mi'ye gore AKTIF sayilir. Bu filtre olmadan satir
+  // sureye bakmadan donerdi ve kullaniciyi bitmis bir askiya 90 gun
+  // (budama cron'una kadar) kilitlerdi. Karsilastirmayi sunucuda
+  // yapmasi gerektigi icin, ne dondugunu degil DOGRU filtre metniyle
+  // cagrildigini sinuyoruz - "suresi dolmus satir null'a duser mi"
+  // sorusu sunucu tarafinda cevaplaniyor, birim testiyle sinanamaz.
+  it('sunucu tarafi suresi-dolmus-aski filtresini uygular', async () => {
+    const { or } = zinciriKur({ data: null, error: null })
+    await hesapDurumunuGetir()
+    expect(or).toHaveBeenCalledWith('durum.in.(yasakli,dondurulmus),aski_bitisi.gt.now')
   })
 
   it('oturum yoksa firlatir (hesap sorunsuz ile karistirilmamali)', async () => {
