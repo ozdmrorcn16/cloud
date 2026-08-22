@@ -131,6 +131,45 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### Telefonda deneme - TARAYICI YOLU (2026-08-23, kullanicinin karari)
+
+EAS/APK yolu **askiya alindi**: kullanici "expo disinda baska bir yolla
+teste gecelim" dedi. Yerel APK derlemesi de elendi, cunku bu makinede
+hicbir Android zinciri yok (java, Android SDK, adb - ucu de kurulu
+degil); kurulum ~5 GB indirme ve saatlerce is demek.
+
+Secilen yol: **web surumunu telefonun tarayicisindan denemek.**
+
+```bash
+cd mobil && npx expo export --platform web      # dist/ uretir (prod paket)
+python <scratchpad>/spa-sunucu.py <mutlak dist yolu> 8080   # arka planda
+"/c/Program Files (x86)/cloudflared/cloudflared.exe" tunnel --url http://127.0.0.1:8080 --no-autoupdate
+```
+
+`cloudflared` bu makineye winget ile kuruldu
+(`winget install --id Cloudflare.cloudflared -e`). Hesapsiz "quick
+tunnel" gecici bir `https://<rastgele>.trycloudflare.com` adresi verir;
+adres her calistirmada degisir ve surec olunce olur.
+
+**HTTPS neden sart:** tarayici konum API'sini yalnizca guvenli baglamda
+acar. `http://192.168.x.x` ile konum izni hic sorulmaz, uygulama sessizce
+calismaz gorunur. Bu yuzden yerel IP degil tunel kullaniliyor.
+
+`spa-sunucu.py` (scratchpad'te) `dist/`i servis eder ve bilinmeyen yollari
+`index.html`e dusurur; yoksa telefonda sayfa yenilendiginde 404 gelir
+(expo-router yonlendirmeyi istemcide yapiyor).
+
+**Bu yolun sinirlari:** push bildirimleri web'de calismaz (zaten bilinen
+borc); paket statik, kod degisirse `expo export` yeniden kosulmalidir.
+**Gizlilik notu:** tunel arayuzu gecici olarak internete acar. Adres
+tahmin edilemez, tunel kapaninca olur ve veri tarafinda Supabase RLS
+korumasi durur; yine de canli veritabanina bagli bir arayuz disari
+aciliyor, bilerek yapiliyor.
+
+EAS tarafi olduğu yerde duruyor: `app.json` ve `eas.json` hazir
+(commit 5a6f49d), tek eksik Expo hesabi girisi. Ileride gercek cihazda
+bildirim denemek gerekirse o yol bir `eas-cli login` uzaklikta.
+
 ### Yerelden devam (2026-08-19'dan sonra tek yol bu)
 
 Butun bulut oturumlari kapatildi. Calisma yalnizca kullanicinin kendi
