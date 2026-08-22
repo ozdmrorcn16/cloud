@@ -28,8 +28,13 @@ export default function HesabiSilEkrani() {
     setHata(null)
     try {
       await hesabiSil(parola)
+      setParola('')
       await supabase.auth.signOut()
     } catch (e) {
+      // Basarisiz denemeden sonra da parolayi state'te birakmiyoruz -
+      // yanlis yazilmis ya da reddedilmis bir parolanin ekran hafizasinda
+      // gereksiz yere durmasina gerek yok (duzeltme turu 1, Minor).
+      setParola('')
       setHata((e as Error).message)
     } finally {
       setCalisiyor(false)

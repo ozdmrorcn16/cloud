@@ -53,6 +53,15 @@
 //
 // LOG: parola, telefon ya da mesaj icerigi YAZILMAZ; yalnizca islem
 // sonucu ve silinen/elenen dosya sayilari. Govde de loglanmaz.
+//
+// DUZELTME TURU 1 (kod incelemesi Important): parola dogrulamasindaki
+// HER hata "Parola yanlis" donduruluyordu - rate limit, ag hatasi ya
+// da GoTrue kesintisi de dahil. Sonuc: dogru parolasini yazan bir
+// kullaniciya "Parola yanlis" denip tekrar tekrar denetmesi
+// istenebiliyordu. Simdi hata turu ayriliyor: yalnizca GERCEK bir
+// gecersiz kimlik bilgisi (`code === 'invalid_credentials'`) "Parola
+// yanlis" (400) donduruyor; her sey (rate limit, ag, 5xx, bilinmeyen)
+// "su anda dogrulanamadi" (503) donduruyor - bkz. asagidaki (2).
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { fotografYollari } from './saf.ts'
@@ -155,9 +164,22 @@ Deno.serve(async (istek: Request) => {
     password: parola,
   })
   if (parolaHatasi) {
-    // Parola da govde de loglanmiyor; sabit bir mesaj yeterli.
-    console.error('hesap-sil: parola dogrulanamadi')
-    return yanit({ hata: 'Parola yanlis' }, 400)
+    // Parola da govde de loglanmiyor; kod ve durum kodu (sir tasimayan
+    // metadata) tanidamayi kolaylastirmak icin loglaniyor.
+    console.error('hesap-sil: parola dogrulanamadi', {
+      kod: parolaHatasi.code,
+      durum: parolaHatasi.status,
+    })
+
+    // Yalnizca GERCEK bir gecersiz kimlik bilgisi "Parola yanlis"
+    // donduruyor. GoTrue'nun kod'u bunu ayirt ediyor. Rate limit, ag
+    // hatasi ya da 5xx gibi durumlarda parolanin dogru olup olmadigi
+    // BILINMIYOR - kullaniciya "yanlis" demek yanlis bir itham olur ve
+    // onu tekrar tekrar denemeye iter.
+    if (parolaHatasi.code === 'invalid_credentials') {
+      return yanit({ hata: 'Parola yanlis' }, 400)
+    }
+    return yanit({ hata: 'Su anda dogrulanamadi, biraz sonra tekrar dene' }, 503)
   }
 
   const { data: profil, error: profilHata } = await yonetici

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Switch, Pressable, TextInput, StyleSheet } from 'react-native'
+import { View, Text, Switch, Pressable, TextInput, ScrollView, StyleSheet } from 'react-native'
 import {
   varsayilanBulunurluguGetir,
   varsayilanBulunurluguAyarla,
@@ -135,7 +135,11 @@ export default function AyarlarEkrani() {
   }
 
   return (
-    <View style={stiller.kapsayici}>
+    // Duzeltme turu 1 (Minor, kod incelemesi): kok eskiden `flex: 1`
+    // View'di ve alt tarafta bes bolum vardi - telefonda "Hesabimi sil"
+    // butonu ekranin en dibinde kalip kaydirilamayabiliyordu. ScrollView'a
+    // cevrildi.
+    <ScrollView style={stiller.kaydirici} contentContainerStyle={stiller.kapsayici}>
       <Text style={stiller.baslik}>Gizlilik ayarlari</Text>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -261,12 +265,13 @@ export default function AyarlarEkrani() {
       >
         <Text style={stiller.butonMetni}>Hesabimi sil</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   )
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  kaydirici: { flex: 1 },
+  kapsayici: { padding: 16 },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
   altBaslik: { fontSize: 16, fontWeight: '600', marginTop: 24, marginBottom: 8 },
   satir: {

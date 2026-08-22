@@ -45,3 +45,15 @@ it('sunucu parolayi reddederse hata ekranda gorunur', async () => {
   await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
   expect(getByText('Parola yanlis')).toBeTruthy()
 })
+
+// Duzeltme turu 1 (Minor, kod incelemesi): reddedilen bir denemeden
+// sonra parola girdisi state'te kalmamali.
+it('basarisiz denemeden sonra parola alani temizlenir', async () => {
+  sahteSil.mockRejectedValueOnce(new Error('Parola yanlis'))
+  const { getByText, getByPlaceholderText } = await render(<HesabiSilEkrani />)
+  const girdi = getByPlaceholderText('parolan')
+  await fireEvent.changeText(girdi, 'yanlisparola')
+  await fireEvent.press(getByText('Hesabimi kalici olarak sil'))
+  expect(getByText('Parola yanlis')).toBeTruthy()
+  expect(girdi.props.value).toBe('')
+})
