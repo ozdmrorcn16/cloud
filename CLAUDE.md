@@ -502,8 +502,13 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   "askiya alma" `hesap_durumlari` tablosu + `moderasyon.hesap_aktif_mi`
   ile butun yazma kapilarinda ve gorunurluk yollarinda zorlanir, panel
   `panel/` altinda ayri bir Vite + React uygulamasi, moderator ozel
-  mesaj okumaz, "kaldirma" ilk dilimde GIZLEME olarak gelir, denetim
-  izi ekleme-only. Sonraki adim: kullanicinin spec'i onaylamasi,
+  "kaldirma" ilk dilimde GIZLEME olarak gelir, denetim izi
+  ekleme-only. **Karar 62-64 (ayni gun, kullanicinin duzeltmesi):**
+  karar 59 ve onceden alinmis karar 3 GERI ALINDI - moderator ozel
+  mesajlari OKUYABILIR ("her seye tam ulasilir olmam gerek") ve mesaj
+  sikayeti kaliyor, iki kusuru duzeltilerek. Mesaj okuma izli ve
+  gerekceli, salt-okunur; yan yukumluluk olarak gizlilik metni ekrani
+  ayni dilime girdi. Sonraki adim: kullanicinin spec'i onaylamasi,
   ardindan `superpowers:writing-plans` ile uygulama plani.
 
 - 2026-08-22 - **Grup sohbeti, "mekan odasi" ve COK UYELI konusma fikri

@@ -28,8 +28,9 @@ okunabilsin.
   "kim yapti" bilgisiyle kaydedilir.
 - **Kapsam: tam yonetim konsolu**, dilimlere bolunerek insa edilir ama
   tasarim butunsel yapilir.
-- **Mesaj sikayeti tamamen kaldirilir.** Sohbet ekraninda yalnizca
-  "kullaniciyi sikayet et" kalir.
+- ~~**Mesaj sikayeti tamamen kaldirilir.**~~ **BU KARAR GERI ALINDI**
+  (kullanicinin karari, 2026-08-22; asagida karar 62). Mesaj sikayeti
+  kaliyor ve DUZGUN uygulaniyor.
 - Envanterin `[ILK]` / `[SONRA]` dilimlemesi devam notundaki gibidir;
   son hali asagida "Dilimler" bolumunde.
 
@@ -116,13 +117,12 @@ okuyabilir. Bu kabul edilebilir bir gecikme; hemen iptal isteniyorsa
   barindiriciya cikarilmasi ek bir guvenlik karari gerektirmez; cikarma
   isi `[SONRA]`.
 
-### Karar 59 - Moderator ozel mesaj okuyamaz, hicbir dilimde
+### Karar 59 - GERI ALINDI
 
-Karar 3'un (mesaj sikayetinin kaldirilmasi) dogal devami. Panelde
-`mesajlar` ve `konusmalar` tablolarina bakan hicbir RPC yoktur ve
-olmayacaktir. Sohbette taciz eden kullanici "kullaniciyi sikayet et"
-yoluyla bildirilir ve hesap duzeyinde islem gorur. Uygulamanin gizlilik
-durusuyla tutarli tek secim bu.
+Bu karar "moderator ozel mesaj okuyamaz, hicbir dilimde" diyordu.
+Kullanici 2026-08-22'de bunu geri cevirdi: "Mesajlarla alakali bir
+sikayet alirsam mesajlari gormem gerek, her seye tam ulasilir olmam
+gerek." Yerine gecen tasarim karar 63'te.
 
 ### Karar 60 - "Kaldirma" ilk dilimde GIZLEME olarak uygulanir
 
@@ -141,9 +141,68 @@ tarafindan gizlendi" bildirimi gosterilmesi ayri bir is ve `[SONRA]`.
 
 `moderasyon_kayitlari` tablosuna yalnizca RPC'ler yazar; `update` ve
 `delete` hicbir role verilmez. Panel gecmisi okuyabilir, degistiremez.
-Aksiyonlarin yani sira **kullanici detayinin goruntulenmesi de**
-kaydedilir (kisisel veriye erisim izi). Liste ekranlarinda gezinme
-kaydedilmez, aksi halde iz gurultuye bogulur.
+Aksiyonlarin yani sira **kullanici detayinin goruntulenmesi ve mesaj
+icerigi okunmasi da** kaydedilir (kisisel veriye erisim izi). Liste
+ekranlarinda gezinme kaydedilmez, aksi halde iz gurultuye bogulur.
+
+### Karar 62 - Mesaj sikayeti KALIYOR ve duzgun uygulaniyor
+
+Onceden alinmis karar 3 mesaj sikayetini tamamen kaldiriyordu ve
+gerekcelerinden biri "moderatorun ozel mesaj okuma yolunu hic
+acmamak"ti. Kullanici o yolu bilerek actigi icin (karar 63) gerekce
+dustu, ve kaldirmak artik zarar veriyor: sohbet ekranindan gelen bir
+sikayet `hedef_tur = 'kullanici'` olsaydi moderator o sikayetin
+mesajlarla ilgili oldugunu bile bilemezdi, elinde yalnizca "bu kisiden
+sikayetci" bilgisi olurdu.
+
+Yani mesaj sikayeti duruyor, ama bugunku iki kusuru da gideriliyor:
+
+1. `sikayetler` tablosunun CHECK kisiti `'mesaj'` turunu tanimiyor, bu
+   yuzden insert `23514` ile patliyor. Bugun bir mesaj sikayeti
+   **gonderilemiyor**. Kisit genisletilir.
+2. `hedef_id`'ye mesaj id'si degil **konusma** id'si yaziliyor. Artik
+   gercek mesaj id'si yazilir; boylece moderator dogrudan o mesaja
+   gider.
+
+Sikayet edenin o mesajin konusmasinda gercekten uye oldugu sunucuda
+dogrulanir, ve kendi mesajini sikayet etmesi reddedilir.
+
+### Karar 63 - Moderator konusma gecmisini okuyabilir; erisim izli ve gerekceli
+
+Kullanicinin karari: "Mesajlarla alakali bir sikayet alirsam mesajlari
+gormem gerek, her seye tam ulasilir olmam gerek." Panelde `konusmalar`
+ve `mesajlar` icerigini okuyan RPC'ler var.
+
+Erisim **kisitlanmiyor**, ama iki kosula baglaniyor. Ikisi de erisimi
+zorlastirmak icin degil, erisimi savunulabilir kilmak icin:
+
+- **Her icerik okumasi denetim izine dusuyor**, hangi konusma ve ne
+  zaman. Gerekce alani (`p_gerekce`) zorunlu ve ize yaziliyor. Tek
+  operatorlu bir sistemde bu bir ic kontrol degil, disariya karsi
+  kanittir: bir gun "moderator mesajlarimi neden okudu" sorusu gelirse
+  cevabin kaydi var.
+- **Uygulamanin gizlilik metnine acik madde ekleniyor:** kotuye
+  kullanim incelemesi sirasinda moderasyonun mesajlari okuyabilecegi
+  yazili olarak bildirilir. KVKK ve GDPR acisindan gizli tutulan bir
+  okuma yetkisi ile bildirilmis bir okuma yetkisi arasindaki fark
+  budur; magaza incelemesi de ayni maddeyi ariyor. Bu madde bir
+  "guzel olur" degil, **isin parcasi** (asagida "Gizlilik metni
+  yukumlulugu").
+
+Metadata (kimin kimle konustugu, mesaj sayisi, son mesaj zamani) ile
+icerik ayri tutulur: metadata kullanici detayinda gelir ve zaten oradaki
+iz kaydina dahildir, icerik ayri bir cagri ve ayri bir iz satiridir.
+
+### Karar 64 - Kullanici detayi gercekten HER SEYI gosterir
+
+"Her seye hakim olmam gerek" gereginin somut karsiligi. Kullanici
+detayi ekrani su ana kadar sayilanlara ek olarak sunlari da gosterir:
+engelledigi ve onu engelleyen kullanicilar, gonderdigi/aldigi takip ve
+sohbet istekleri (durumlariyla), gunluk istek sayaci
+(`istek_gunlugu`, spam incelemesi icin), konusma listesi (metadata),
+ve kayitli bildirim cihazi sayisi (jetonun kendisi degil, yalnizca
+sayi - jeton bir kimlik bilgisidir ve gosterilmesinin moderasyon
+degeri yoktur).
 
 ## Mimari
 
@@ -158,10 +217,15 @@ PostgREST  ->  public.moderasyon_* RPC'leri (security definer)
                  |      moderatorler tablosunda satir VAR MI
                  |      ve auth.jwt()->>'aal' = 'aal2' MI
                  |
-                 +-- okuma: sikayetler, profiller, check_inler, hesap_durumlari
+                 +-- okuma: sikayetler, profiller, check_inler,
+                 |          hesap_durumlari, engellemeler, takipler,
+                 |          sohbet_istekleri, istek_gunlugu,
+                 |          konusmalar, mesajlar (karar 63)
                  +-- yazma: hesap_durumlari, check_inler.moderasyon_gizli,
                  |          sikayetler.durum / moderator_notu
-                 +-- her yazma ve kullanici detayi okumasi:
+                 |          (mesajlara ASLA yazmaz - salt-okunur)
+                 +-- her yazma, kullanici detayi okumasi ve
+                        mesaj icerigi okumasi:
                         moderasyon_kayitlari'na bir satir
 ```
 
@@ -224,7 +288,7 @@ public.moderasyon_kayitlari (
   moderator_id uuid not null references auth.users(id),
   eylem        text not null,
   hedef_tur    text not null check (hedef_tur in
-                 ('kullanici', 'check_in', 'sikayet')),
+                 ('kullanici', 'check_in', 'sikayet', 'konusma')),
   hedef_id     uuid not null,
   ayrinti      jsonb,
   olusturuldu  timestamptz not null default now()
@@ -242,9 +306,20 @@ alter table public.sikayetler
   add column karar_zamani    timestamptz,
   add column moderator_notu  text;
 
+-- Karar 62: 'mesaj' turu tabloda da taninir. Bugun yalnizca RPC
+-- taniyor, tablo tanimiyor; insert 23514 ile patliyor.
+alter table public.sikayetler
+  drop constraint sikayetler_hedef_tur_check,
+  add  constraint sikayetler_hedef_tur_check
+    check (hedef_tur in ('kullanici', 'check_in', 'mesaj'));
+
 alter table public.check_inler
   add column moderasyon_gizli boolean not null default false;
 ```
+
+Kisitin gercek adi migrasyon yazilirken `pg_constraint`'ten
+dogrulanir; `create table` govdesinde adsiz tanimlandigi icin
+Postgres'in urettigi ad kullanilir.
 
 `check_inler.moderasyon_gizli` icin sutun bazli `grant` **verilmez**;
 `20260820052249_check_inler_sutun_yetkileri.sql` zaten `authenticated`
@@ -362,31 +437,79 @@ Bugunku Storage okuma politikalari zaten `to authenticated` ve engelleme
 kontrollu; gizlenen bir ani icin fotografin da kapatilmasi `[SONRA]`
 diliminde kalici silme isiyle birlikte gelir.
 
-## Mesaj sikayetinin kaldirilmasi (karar 3)
+## Mesaj sikayetinin duzeltilmesi (karar 62)
 
-Bugun iki ayri sey bozuk ve bu degisiklik ikisini birden kaynagindan
-siliyor:
+Bugun iki ayri sey bozuk; ikisi de duzeltiliyor, ozellik kaldirilmiyor.
 
 1. `sikayet_gonder` `'mesaj'` turunu kabul ediyor ama `sikayetler`
    tablosunun CHECK kisiti yalnizca `('kullanici','check_in')` tanidigi
    icin insert `23514` ile patliyor. Bugun bir mesaj sikayeti
    **gonderilemiyor**.
-2. Gonderilebilseydi bile `hedef_id`'ye mesaj id'si degil **konusma**
-   id'si yaziliyor; moderator "hangi mesaj" sorusunu cevaplayamazdi.
+2. `hedef_id`'ye mesaj id'si degil **konusma** id'si yaziliyor
+   (`sohbet/[kullaniciId].tsx:170-171`); moderator "hangi mesaj"
+   sorusunu cevaplayamiyor.
 
 Yapilacaklar:
 
-- Yeni migrasyon: `sikayet_gonder` govdesinden `'mesaj'` cikarilir.
-  Tablonun CHECK kisitina **dokunulmaz**, zaten dogrudur.
-- `mobil/src/app/sohbet/[kullaniciId].tsx`: `sikayetHedefTur` /
-  `sikayetHedefId` ayrimi kalkar; her zaman `hedefTur='kullanici'`,
-  `hedefId=kullaniciId`.
-- `mobil/lib/sikayet.ts`: `SikayetHedefTuru` tipinden `'mesaj'` cikar.
-- Faz 3b'nin "mesaj turu kabul ediliyor" testi **tersine** cevrilir:
-  artik reddedilmeli. Yeni test insert yoluna gercekten girmeli
-  (gecerli bir `sebep` ile), cunku eski test bos `sebep` kullandigi icin
-  CHECK kisitina hic ulasmiyordu ve kusuru bu yuzden kacirdi.
-- `docs/faz3b-takip-isleri.md` madde 1b kapandi diye isaretlenir.
+- Migrasyon: tablonun CHECK kisiti `'mesaj'` turunu de tanir (yukarida
+  "Mevcut tablolara eklenenler").
+- `sikayet_gonder`, `p_hedef_tur = 'mesaj'` icin iki dogrulama daha
+  yapar: sikayet eden o mesajin konusmasinda **uye olmali**, ve
+  **kendi mesajini** sikayet edememeli. Ikisi de `security definer`
+  govdesinde, cunku `mesajlar` RLS'i burada atlaniyor. Uyelik
+  kontrolu, var olmayan ya da baskasina ait bir mesaj id'siyle sahte
+  sikayet uretilmesini de kapatir.
+- Sohbet ekrani sikayeti **mesaj basina** acar: bir mesaja uzun basinca
+  "Bu mesaji sikayet et" secenegi cikar ve gercek `mesaj.id` gecirilir.
+  Konusma henuz yokken (hic mesajlasilmamis) davranis degismez:
+  `hedefTur='kullanici'`.
+- `mobil/lib/sikayet.ts`: `SikayetHedefTuru` tipi **degismez**, `'mesaj'`
+  gecerli kalir.
+- Faz 3b'nin "mesaj turu kabul ediliyor" testi **gercege cevrilir**:
+  bugun bos `sebep` ile cagirdigi icin insert yoluna hic girmiyor ve
+  CHECK kisitini hic tetiklemiyordu - kusuru bu yuzden kacirdi. Yeni
+  test gecerli bir `sebep` ve gercek bir mesaj id'siyle cagirir ve
+  satirin **yazildigini** dogrular.
+- `docs/faz3b-takip-isleri.md` madde 1b bu isle kapaniyor.
+
+## Konusma erisimi (karar 63)
+
+Panel iki adimda okur; metadata ile icerik bilerek ayri:
+
+- **Metadata** kullanici detayinda gelir: kullanicinin konusmalari,
+  karsi taraf, mesaj sayisi, ilk ve son mesaj zamani. Icerik yok.
+  Kullanici detayi zaten ize dusuyor, ayri bir kayit uretmez.
+- **Icerik** ayri bir cagridir (`moderasyon_konusma_mesajlari`),
+  `p_gerekce` zorunludur ve her cagri denetim izine bir
+  `konusma_okundu` satiri yazar.
+
+Bir mesaj sikayeti acildiginda panel sikayet edilen mesaji ve
+**cevresindeki baglami** (oncesi ve sonrasi 20 mesaj) tek cagrida
+getirir; moderator butun konusmayi taramak zorunda kalmaz. Tamamini
+gormek isterse ayni RPC sayfalama ile cagrilir, ve o da ize duser.
+
+Okuma **salt-okunurdur**: panel mesaj silemez, duzenleyemez, gizleyemez.
+Sohbetteki kotuye kullanimin karsiligi hesap duzeyinde islemdir (askiya
+alma / yasaklama). Mesaj silme `[SONRA]` listesinde bile yok, cunku
+karsi tarafin gecmisini de degistirir ve kanit niteligini yok eder.
+
+## Gizlilik metni yukumlulugu
+
+Karar 63 bir sey daha zorunlu kiliyor ve bu **isin parcasidir**,
+ertelenen bir sus degil: uygulamanin gizlilik metnine, moderasyonun
+kotuye kullanim incelemesi sirasinda mesaj icerigini okuyabilecegi acik
+bir madde olarak yazilir.
+
+Bugun uygulamada gizlilik metni ekrani **yok**. Ilk dilim su iki seyi
+getirir: metnin kendisi (`docs/gizlilik-metni.md`, kaynak) ve
+uygulamada okunabilecegi bir ekran (ayarlardan erisilir). Kayit
+ekranindaki riza akisina baglanmasi ve magaza listelemesi icin URL'e
+konmasi ayri bir is; bu spec metni ve ekrani ustlenir.
+
+Gerekce: konum tabanli bir tanisma uygulamasinda mesaj okuma yetkisinin
+bildirilmemis olmasi KVKK ve GDPR acisindan savunulamaz, ve magaza
+incelemesi de bu maddeyi arar. Yetkinin kendisi mesru; bildirilmemis
+olmasi degil.
 
 ## Moderator RPC'leri (ilk dilim)
 
@@ -396,11 +519,12 @@ Hepsi `public` semasinda, `security definer`, ilk satirda yetki kapisi.
 |---|---|
 | `moderator_muyum()` | Panel acilis kontrolu, hata firlatmaz |
 | `moderasyon_sikayetleri_listele(p_durum, p_hedef_tur, p_baslangic, p_bitis, p_sirala, p_limit, p_ofset)` | Baglamli liste: sikayet edenin kullanici adi, hedef turu/adi, sebep, durum, tarih, hedefin toplam sikayet sayisi |
-| `moderasyon_sikayet_detayi(p_sikayet_id)` | Sikayet + hedefin tam icerigi (check-in ise not, fotograf yolu, mekan, zaman; kullanici ise profil) |
+| `moderasyon_sikayet_detayi(p_sikayet_id)` | Sikayet + hedefin tam icerigi (check-in ise not, fotograf yolu, mekan, zaman; kullanici ise profil; mesaj ise mesajin kendisi ve hangi konusmada oldugu) |
 | `moderasyon_hedef_gecmisi(p_hedef_tur, p_hedef_id)` | Ayni hedefe ait butun sikayetler ve verilmis kararlar |
 | `moderasyon_sikayeti_karara_bagla(p_sikayet_id, p_durum, p_not)` | `durum` gunceller, `karar_veren_id` / `karar_zamani` / `moderator_notu` yazar, ize kaydeder |
 | `moderasyon_kullanici_ara(p_metin, p_limit)` | Kullanici adi / ad ile arama; `aramada_gorunsun` ve engelleme **dikkate alinmaz** |
-| `moderasyon_kullanici_detayi(p_kullanici_id)` | Profil, hesap durumu, check-in ve ani gecmisi (gizlenenler dahil), bag sayilari, aldigi ve gonderdigi sikayet sayilari. **Ize kaydedilir** (karar 61) |
+| `moderasyon_kullanici_detayi(p_kullanici_id)` | Profil, hesap durumu, check-in ve ani gecmisi (gizlenenler dahil), baglar, engelledikleri ve onu engelleyenler, takip/sohbet istekleri, gunluk istek sayaci, konusma listesi (metadata), bildirim cihazi sayisi, sikayet ozeti (karar 64). **Ize kaydedilir** (karar 61) |
+| `moderasyon_konusma_mesajlari(p_konusma_id, p_gerekce, p_merkez_mesaj_id, p_limit, p_ofset)` | Konusma icerigi. `p_merkez_mesaj_id` verilirse o mesajin oncesi ve sonrasi 20 mesaj gelir (sikayet baglami). `p_gerekce` zorunlu. **Her cagri ize kaydedilir** (karar 63) |
 | `moderasyon_hesabi_askiya_al(p_kullanici_id, p_bitis, p_gerekce)` | `hesap_durumlari`'na `askida` satiri yazar |
 | `moderasyon_hesabi_yasakla(p_kullanici_id, p_gerekce)` | `yasakli` satiri yazar |
 | `moderasyon_hesap_durumunu_kaldir(p_kullanici_id, p_gerekce)` | Satiri siler |
@@ -426,10 +550,19 @@ birakmayan tek yol budur.
    suclu hemen goze carpsin).
 3. **Sikayet detayi.** Sikayet edilen icerigin tam hali, hedefin sikayet
    gecmisi, karar formu (durum + moderator notu) ve dogrudan aksiyon
-   dugmeleri (askiya al / yasakla / icerigi gizle).
-4. **Kullanicilar.** Arama, kullanici detayi (profil, hesap durumu,
-   check-in ve ani gecmisi, bag sayilari, sikayet ozeti) ve aksiyonlar.
-5. **Denetim izi.** Ters kronolojik liste, hedefe gore filtrelenebilir.
+   dugmeleri (askiya al / yasakla / icerigi gizle). Mesaj sikayetinde
+   sikayet edilen mesaj vurgulanmis halde, oncesi ve sonrasiyla
+   birlikte gosterilir; acilmadan once gerekce sorulur (karar 63).
+4. **Kullanicilar.** Arama ve kullanici detayi: profil, hesap durumu,
+   check-in ve ani gecmisi, baglar, engellemeler, istekler ve gunluk
+   sayaci, konusma listesi (metadata), sikayet ozeti (karar 64), ve
+   aksiyonlar.
+5. **Konusma goruntuleyici.** Kullanici detayindaki bir konusmadan ya
+   da bir mesaj sikayetinden acilir. Gerekce girilmeden icerik
+   yuklenmez; ekranin ustunde "bu goruntuleme kaydedildi" uyarisi
+   durur. Salt-okunur, hicbir aksiyon dugmesi yok.
+6. **Denetim izi.** Ters kronolojik liste, hedefe gore filtrelenebilir.
+   Mesaj okumalari burada ayirt edilebilir sekilde gorunur.
 
 Tasarim sade, veri yogun, tablo agirlikli olur. `frontend-design`
 eklentisi kullanilir ama panel bir vitrin degil; okunabilirlik ve
@@ -455,8 +588,12 @@ Projenin mevcut dort kosumu korunur ve genisletilir.
   moderator olmayan ve `aal1` bir kullanici her moderator RPC'sinden
   `Yetkisiz` alir. Pozitif yon (gercek `aal2` ile calisma) elle
   dogrulanir.
-- **`npx jest --runInBand`**: `lib/sikayet.ts` ve sohbet ekrani
-  degisikligi; askidaki hesap ekraninin gosterilmesi.
+  Ayrica `sikayet_gonder`'in `'mesaj'` turunu **gercekten yazdigi**
+  (bugun `23514` ile patliyor), konusmada uye olmayanin ve kendi
+  mesajini sikayet edenin reddedildigi.
+- **`npx jest --runInBand`**: `lib/sikayet.ts`, mesaj basina sikayet
+  akisi (sohbet ekrani), askidaki hesap ekraninin gosterilmesi,
+  gizlilik metni ekrani.
 - **`npx tsc --noEmit`**: bes onceden var olan hata disinda temiz. Panel
   ayri bir `tsconfig` tasir ve kendi tip kontrolunu ayrica kosar.
 
@@ -464,9 +601,11 @@ Projenin mevcut dort kosumu korunur ve genisletilir.
 hesapla tarayicida gezinme" borcunun sebebi ayni anda iki insanin
 gerekmesiydi; panel tek operatorlu, tek tarayicili ve kullanicinin kendi
 makinesinde. Ilk dilim su akis gozle dogrulanmadan bitmis sayilmaz:
-TOTP ile giris -> sikayeti gor -> hedefi askiya al -> uygulamada o
-hesabin yazamadigini ve baskalarina gorunmedigini gor -> askiyi kaldir
--> denetim izinde uc satiri gor.
+TOTP ile giris -> uygulamada bir mesaji sikayet et -> panelde o
+sikayeti ac ve sikayet edilen mesaji baglamiyla gor -> gerekce girip
+konusmayi ac -> hedefi askiya al -> uygulamada o hesabin yazamadigini
+ve baskalarina gorunmedigini gor -> askiyi kaldir -> denetim izinde
+mesaj okumasi dahil butun satirlari gor.
 
 ## Dilimler
 
@@ -476,9 +615,12 @@ hesabin yazamadigini ve baskalarina gorunmedigini gor -> askiyi kaldir
 - Denetim izi
 - Hesap durumu kavrami ve **butun** zorlama noktalari
 - Sikayet listesi, detay, hedef gecmisi, karara baglama
-- Kullanici arama ve detayi
+- Kullanici arama ve detayi (karar 64: engellemeler, istekler, konusma
+  metadatasi dahil)
 - Check-in / ani gizleme
-- Mesaj sikayetinin kaldirilmasi
+- Mesaj sikayetinin duzeltilmesi (karar 62) ve mesaj basina sikayet
+- Konusma goruntuleyici, gerekceli ve izli (karar 63)
+- Gizlilik metni ve onu gosteren ekran
 
 **Sonraki dilim (bu spec kapsaminda tasarlandi, uygulanmadi):**
 
@@ -495,7 +637,10 @@ hesabin yazamadigini ve baskalarina gorunmedigini gor -> askiyi kaldir
 
 ## Kapsam disi (hicbir dilimde yok)
 
-- Ozel mesaj okuma (karar 59)
+- Panelden mesaj silme veya duzenleme. Okuma acik (karar 63), yazma
+  degil: bir mesaji silmek karsi tarafin gecmisini de degistirir ve
+  sikayetin kanitini yok eder. Sohbetteki kotuye kullanimin karsiligi
+  hesap duzeyinde islemdir.
 - Rol yonetimi arayuzu (onceden alinmis karar 1)
 - Otomatik moderasyon, icerik siniflandirma, kural motoru
 - Kullaniciya moderasyon karari icin itiraz akisi
@@ -522,3 +667,15 @@ hesabin yazamadigini ve baskalarina gorunmedigini gor -> askiyi kaldir
    icin otomatik dogrulamanin agirligi orada; panel arayuzu elle
    dogrulaniyor. Bilincli bir denge, cunku Faz 2a'nin dersi mock'lu
    arayuz testlerinin gercek veritabani hatalarini gormedigiydi.
+6. **Mesaj okuma yetkisi sistemin en genis yetkisidir** (karar 63) ve
+   teknik olarak sinirlandirilmamistir: moderator herhangi bir
+   konusmayi, sikayet olmasa da okuyabilir. Tek gercek koruma AAL2
+   kapisi (yetkiyi bir hesaba ve bir ikinci faktore baglar) ve denetim
+   izidir (okumanin gizli kalmasini engeller). Izin **ekleme-only**
+   olmasi (karar 61) bu yuzden dekoratif degil, bu yetkinin
+   dengeleyicisidir: moderator okudugunu silemez.
+7. **Gizlilik metni gecikirse yetki bildirilmemis olur.** Metin ve
+   ekran ilk dilime dahil edildi ki mesaj okuma yetkisiyle ayni anda
+   yayina girsin. Ikisi ayrilirsa - once panel, sonra metin - aradaki
+   surede bildirilmemis bir okuma yetkisi calisir durumda olur. Plan
+   bu iki isi ayni dilimde tutmali.

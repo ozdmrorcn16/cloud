@@ -25,7 +25,11 @@ kullanicinin spec'i onaylamasi, ardindan uygulama plani.
    sikayet okuma degil; kullanici ve icerik yonetimi, zorlama
    aksiyonlari ve gozetim dahil.
 
-3. **MESAJ SIKAYETI TAMAMEN KALDIRILIYOR.** Sohbet ekraninda yalnizca
+3. ~~**MESAJ SIKAYETI TAMAMEN KALDIRILIYOR.**~~ **BU KARAR AYNI GUN
+   GERI ALINDI** (spec karar 62): mesaj sikayeti kaliyor ve iki kusuru
+   duzeltiliyor; moderator mesaj da okuyabiliyor (spec karar 63).
+   Asagisi kararin ilk halidir, tarihsel kayittir.
+   Eski hali: **MESAJ SIKAYETI TAMAMEN KALDIRILIYOR.** Sohbet ekraninda yalnizca
    "kullaniciyi sikayet et" kalacak. Gerekce ve sonuclari asagida
    ("Bugunku kusur" bolumu) - bu karar iki mevcut kusuru birden
    kaynagindan siliyor ve moderatorun ozel mesaj okuma yolunu hic

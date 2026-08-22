@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-08-21 — [2026-08-21-74f56f7b.md](oturumlar/2026-08-21-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
+- 2026-08-21 — [2026-08-21-0f20b7f0.md](oturumlar/2026-08-21-0f20b7f0.md) — docs/moderasyon-paneli-devam-notu.md oku, moderasyon paneli spec'ini yaz
 - 2026-08-20 — [2026-08-20-869a9560.md](oturumlar/2026-08-20-869a9560.md) — docs/faz3a-devam-notu.md dosyasini oku ve Faz 3a'ya kaldigimiz yerden devam et. …
 - 2026-08-20 — [2026-08-20-74f56f7b.md](oturumlar/2026-08-20-74f56f7b.md) — Faz 3b'ye kaldığımız yerden devam et
 - 2026-08-19 — [2026-08-19-cc4a8373.md](oturumlar/2026-08-19-cc4a8373.md) — uygulamamıza kaldıgımız yerden burdan devam edebilirmiyiz
@@ -620,3 +621,38 @@ kapsami, mesaj sikayetinin kaldirilmasi, dilimlere bolme)
     verilmiyor. Aksiyonlarin yani sira kullanici detayinin
     GORUNTULENMESI de kaydediliyor (kisisel veriye erisim izi); liste
     gezinmesi kaydedilmiyor.
+
+### Mesaj erisimi: karar 59 ve karar 3 geri alindi (2026-08-22)
+
+Kullanicinin ayni gun icindeki duzeltmesi: "Mesajlarla alakali bir
+sikayet alirsam mesajlari gormem gerek, her seye tam ulasilir olmam
+gerek." Spec buna gore degistirildi.
+
+62. **Mesaj sikayeti KALIYOR ve duzgun uygulaniyor.** Onceden alinmis
+    karar 3 (mesaj sikayetini tamamen kaldirmak) geri alindi.
+    Gerekcelerinden biri "moderatorun ozel mesaj okuma yolunu hic
+    acmamak"ti; kullanici o yolu bilerek actigi icin gerekce dustu.
+    Dahasi kaldirmak artik zarar veriyordu: sohbetten gelen bir sikayet
+    `hedef_tur='kullanici'` olsaydi moderator o sikayetin mesajlarla
+    ilgili oldugunu bile bilemezdi. Iki mevcut kusur duzeltiliyor:
+    `sikayetler` CHECK kisiti `'mesaj'` turunu taniyacak (bugun insert
+    `23514` ile patliyor), ve `hedef_id`'ye konusma id'si yerine gercek
+    MESAJ id'si yazilacak. Sikayet edenin o konusmada uye oldugu ve
+    kendi mesajini sikayet etmedigi sunucuda dogrulanir.
+63. **Moderator konusma gecmisini okuyabilir; erisim IZLI ve
+    GEREKCELI.** Erisim kisitlanmiyor, iki kosula baglaniyor: her
+    icerik okumasi denetim izine duser (`p_gerekce` zorunlu), ve
+    uygulamanin gizlilik metnine moderasyonun mesaj okuyabilecegi acik
+    madde olarak yazilir. Ikisi de erisimi zorlastirmak icin degil,
+    savunulabilir kilmak icin. Metadata (kim kiminle, kac mesaj, ne
+    zaman) ile icerik ayri tutulur. Okuma SALT-OKUNUR: panel mesaj
+    silemez, duzenleyemez - silmek karsi tarafin gecmisini de degistirir
+    ve sikayetin kanitini yok eder.
+64. **Kullanici detayi gercekten her seyi gosterir:** engellemeler (iki
+    yon), takip ve sohbet istekleri, gunluk istek sayaci, konusma
+    listesi (metadata), bildirim cihazi SAYISI (jetonun kendisi degil -
+    jeton bir kimlik bilgisi ve moderasyon degeri yok).
+
+**Yan yukumluluk:** uygulamada gizlilik metni ekrani BUGUN YOK; mesaj
+okuma yetkisiyle ayni dilimde gelmesi sart. Ayrilirlarsa aradaki surede
+bildirilmemis bir okuma yetkisi calisir durumda olur.
