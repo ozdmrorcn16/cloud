@@ -91,7 +91,7 @@ kiliyor.
 
 Cozulen ayrintilar: mesajlar ve sikayetler silinmez, gonderen
 anonimlesir (bir konusma iki kisinin verisidir ve sikayet ucuncu kisi
-hakkindadir); fotograflar Storage'dan silinir; kullanici adi 90 gun
+hakkindadir); fotograflar Storage'dan silinir; kullanici adi 24 saat
 rezerve edilir.
 
 Denetim izi (`moderasyon_kayitlari`) silinmez, `moderator_id` alani

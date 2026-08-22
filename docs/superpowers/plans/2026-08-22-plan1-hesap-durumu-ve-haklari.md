@@ -2950,7 +2950,7 @@ Expected: FAIL, tablo yok.
 --
 -- Tablo kisiyle HICBIR BAGI OLMADAN tutuluyor: yalnizca ad ve serbest
 -- kalma tarihi. Silinmis bir kisinin tanitici bilgisini suresiz
--- saklamamak icin 90 gun sonra budaniyor.
+-- saklamamak icin 24 saat sonra budaniyor.
 create table public.kullanici_adi_rezervasyonlari (
   kullanici_adi text primary key,
   serbest_kalma timestamptz not null
@@ -3001,7 +3001,7 @@ security definer
 set search_path = public
 as $fn$
   insert into public.kullanici_adi_rezervasyonlari (kullanici_adi, serbest_kalma)
-  values (p_ad, now() + interval '90 days')
+  values (p_ad, now() + interval '24 hours')
   on conflict (kullanici_adi)
     do update set serbest_kalma = excluded.serbest_kalma;
 $fn$;
@@ -3033,7 +3033,7 @@ bozulmamis.
 
 ```bash
 git add mobil/supabase/migrations/20260822101000_kullanici_adi_rezervasyonu.sql mobil/gorunurluk-testleri/calistir.ts
-git commit -m "feat: silinen kullanici adi 90 gun rezerve edilir"
+git commit -m "feat: silinen kullanici adi 24 saat rezerve edilir"
 ```
 
 ---
@@ -3153,7 +3153,7 @@ Expected: PASS, 4 test.
 //   1) Cagiranin JWT'si dogrulanir - KENDI hesabindan baskasini silemez.
 //   2) Onay metni kullanici adiyla karsilastirilir (yanlislikla silmeye
 //      karsi surtunme; spec karar 67'de bekleme suresi yerine bu var).
-//   3) Kullanici adi 90 gun rezerve edilir (taklit korumasi, karar 70).
+//   3) Kullanici adi 24 saat rezerve edilir (taklit korumasi, karar 70).
 //   4) Storage'daki profil ve check-in fotograflari silinir.
 //   5) auth.admin.deleteUser cagrilir; cascade kalani goturur.
 //
@@ -3324,7 +3324,7 @@ test numarasini KULLANMA - onlar butun gorunurluk paketinin on kosulu):
 4. Ayni telefon numarasiyla yeniden kayit olunabildigini dogrula
    (spec karar 67: sifirdan yeni hesap).
 5. Eski kullanici adinin **alinamadigini** dogrula (karar 70,
-   90 gun rezerve).
+   24 saat rezerve).
 
 - [ ] **Step 9: Commit**
 

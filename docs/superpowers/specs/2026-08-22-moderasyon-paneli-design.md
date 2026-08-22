@@ -626,7 +626,7 @@ dondurmayla farki tek cumlede gosterilir:
 - **Sil:** geri donusu yok, yeniden gelmek istersen sifirdan hesap
   acman gerekir.
 
-Bunun karar 70 ile bir yan etkisi var: ayni kisi 90 gun dolmadan
+Bunun karar 70 ile bir yan etkisi var: ayni kisi 24 saat dolmadan
 yeniden kayit olursa **eski kullanici adini alamaz**, cunku ad
 rezervede olur. Taklit korumasinin kacinilmaz bedeli; kabul ediliyor.
 
@@ -681,16 +681,21 @@ yone sokacak bir "kalici dogru". Uc okuyucu buna gore duzeltilir:
 Madde 1a bu spec ile birlikte guncellenir; invaryant artik "en fazla iki
 uye, silme sonrasi bir uye olabilir" seklindedir.
 
-### Karar 70 - Silinen kullanici adi 90 gun rezerve edilir
+### Karar 70 - Silinen kullanici adi 24 SAAT rezerve edilir
 
-Kullanici adi serbest kalirsa bir baskasi onu hemen alip silinen kisinin
-yerine gecebilir - tanisma uygulamasinda gercek bir taklit riski.
-Rezervasyon `kullanici_adi` ve `serbest_kalma` iki sutunlu kucuk bir
-tabloda tutulur, kisiyle **hicbir bagi olmadan**; 90 gun sonra gunluk
-budama isi satiri siler ve ad yeniden alinabilir hale gelir.
+Kullanici adi hemen serbest kalirsa bir baskasi onu aninda alip silinen
+kisinin yerine gecebilir - tanisma uygulamasinda gercek bir taklit
+riski. Rezervasyon `kullanici_adi` ve `serbest_kalma` iki sutunlu kucuk
+bir tabloda tutulur, kisiyle **hicbir bagi olmadan**; sure dolunca
+gunluk budama isi satiri siler ve ad yeniden alinabilir hale gelir.
 
-Sure bir denge: taklidi engellemeye yetecek kadar uzun, silinmis bir
-kisinin tanitici bilgisini suresiz tutmayacak kadar kisa.
+**Sure 24 saat (kullanicinin karari, 2026-08-22).** Ilk tasarim 90 gun
+onermisti; kullanici bunu cok uzun buldu. Denge acikca su yone kaydi:
+24 saat, adi aninda kapmaya calisan otomatik bir yeniden-kayit
+denemesini engeller ama kararli birini engellemez. Buna karsilik
+silinmis bir kisinin tanitici bilgisi veritabaninda yalnizca bir gun
+kalir - silme hakkinin ruhuna daha yakin. Bilincli bir tercih: taklit
+korumasi zayifliyor, veri minimizasyonu guclenıyor.
 
 ## Saklama sureleri (karar 65)
 
