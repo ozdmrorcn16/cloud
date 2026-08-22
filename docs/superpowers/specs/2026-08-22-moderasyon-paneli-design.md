@@ -580,6 +580,18 @@ Arayuz: dondurma girisi ayarlar ekranindadir ve yaninda "Verilerin
 silinmez; tekrar giris yaptiginda hesabin kendiliginden aktif olur"
 aciklamasi durur.
 
+**Tek istisna - canli check-in geri gelmez (kullanici onayladi,
+2026-08-22):** dondurma anindaki canli check-in aniya cevrilir; hesap
+geri acildiginda o mekanda yeniden canli gorunmez, gecmiste bir ani
+olarak durur. Gerekce: canli varlik zaten dort saatlik bir kavram ve
+iki hafta sonra donen birinin hala "su an burada" gorunmesi yanlis
+olurdu. Verinin kendisi silinmiyor; yalnizca canliligi sona eriyor.
+
+Ikinci bir sonuc, kullaniciya anlatilmali: dondurulmusken karsi taraf
+ona MESAJ YAZAMAZ (`bag.yazabilir_mi` iki tarafi da kontrol ediyor).
+Yani donen kullanici birikmis okunmamis mesaj bulmaz; o aralikta
+yazmak isteyen kisi yazamamistir. Konusma gecmisi durur.
+
 ### Karar 67 - Silme kalicidir, geri alinamaz; bekleme suresi yok
 
 Cogu uygulama silmeye 30 gunluk geri alma penceresi koyar. Burada
