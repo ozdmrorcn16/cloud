@@ -834,3 +834,20 @@ uygulanmis, ama ucunun `test:gorunurluk` icinde kendi senaryosu yok:
 kaniti `docs/plan1-takip-isleri.md` icinde.
 
 Kalan takip isleri: `docs/plan1-takip-isleri.md`.
+
+### Uygulamanin adi kesinlesti: SLOOIN (2026-08-23)
+
+72. **Uygulamanin adi SLOOIN. KESIN.** Kullanicinin karari ("slooin
+    kesinlesti"). 2026-08-21'deki "isim ertelendi, Wherio kalici degil"
+    karari boylece kapandi; isim artik koda giriyor.
+
+    Karar oncesi yapilan kontrolun kaydi: "Slooin" tam yazimiyla ne
+    Google Play'de ne App Store'da mevcut - isim bosta. Bilinen tek
+    yakin risk: Google Play'de "Sloon" adinda (bir harf eksik) gercek
+    zamanli tanisma uygulamasi var - ayni kategori. Kullanici bu risk
+    ACIKCA soylendikten sonra "kesinlesti" dedi; yani bilinerek alinmis
+    bir karar, gozden kacma degil. Ileride bir marka itirazi ya da
+    magaza reddi gelirse donulecek yer burasi.
+
+    Marka tescili ve alan adi kontrolu YAPILMADI; magazaya cikis
+    oncesi kalemleri (docs/isim-arastirmasi.md'deki surece eklenecek).

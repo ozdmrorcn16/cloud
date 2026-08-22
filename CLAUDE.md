@@ -653,6 +653,12 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   PostgREST'in `net`i expose etmemesi + Edge Function'in kaynak
   dogrulamasi (`README-net-kilidi.md`).
 
+- 2026-08-23 - **UYGULAMANIN ADI KESINLESTI: SLOOIN** (karar 72,
+  `docs/konusma-gunlugu.md`). `app.json` guncellendi (name: Slooin,
+  slug/scheme: slooin). Bilinen risk kayitli: Play'de "Sloon" adli ayni
+  kategoride bir uygulama var; kullanici riski bilerek onayladi. Marka
+  tescili ve alan adi kontrolu henuz yapilmadi (magaza oncesi is).
+  Asagidaki 2026-08-21 karari boylece KAPANDI.
 - 2026-08-21 - **Calisma adi Wherio; KALICI DEGIL.** Kullanici once
   Wherio'yu secti, ayni gun "isim degisikligi olabilir, kalici olmasin;
   isim ve tasarimi sonraya alalim" dedi. Nihai isim ve gorsel kimlik

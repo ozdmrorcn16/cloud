@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobil",
-    "slug": "mobil",
+    "name": "Slooin",
+    "slug": "slooin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobil",
+    "scheme": "slooin",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
