@@ -2019,6 +2019,52 @@ async function main() {
     await hesapDurumunuTemizle([aId])
   })
 
+  await senaryo('50 - Askidaki kullanicinin check-in\'i gorunmez', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+    // B ayni mekana check-in yapsin (aktifken), A da ayni mekanda olsun.
+    const aCheckIn = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    const bCheckIn = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+
+    const { data: oncesi, error: oncesiHata } = await a
+      .from('check_inler')
+      .select('id')
+      .eq('id', bCheckIn)
+    esitMi(oncesiHata, null, '50 kurulum: okuma hatasiz')
+    esitMi((oncesi ?? []).length, 1, '50 kurulum: A, B\'nin check-in\'ini goruyor')
+
+    const { error: kurulumHata } = await yonetici
+      .from('hesap_durumlari')
+      .insert({
+        kullanici_id: bId,
+        durum: 'askida',
+        aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+        gerekce: 'test',
+        moderator_id: aId,
+      })
+    esitMi(kurulumHata, null, '50 kurulum: B askiya alindi')
+
+    const { data: sonrasi, error: sonrasiHata } = await a
+      .from('check_inler')
+      .select('id')
+      .eq('id', bCheckIn)
+    esitMi(sonrasiHata, null, '50: okuma hatasiz')
+    esitMi((sonrasi ?? []).length, 0, '50: askidaki B\'nin check-in\'i A\'ya gorunmuyor')
+
+    const { data: kendi, error: kendiHata } = await b
+      .from('check_inler')
+      .select('id')
+      .eq('id', bCheckIn)
+    esitMi(kendiHata, null, '50: sahibi icin okuma hatasiz')
+    esitMi((kendi ?? []).length, 1, '50: B kendi check-in\'ini hala goruyor')
+
+    await hesapDurumunuTemizle([bId])
+    t.checkInler.push({ istemci: a, id: aCheckIn }, { istemci: b, id: bCheckIn })
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
