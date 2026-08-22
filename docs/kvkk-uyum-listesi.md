@@ -94,10 +94,8 @@ anonimlesir (bir konusma iki kisinin verisidir ve sikayet ucuncu kisi
 hakkindadir); fotograflar Storage'dan silinir; kullanici adi 90 gun
 rezerve edilir.
 
-Ayrinti dusunulmeli: hesap silinince mesajlarin karsi tarafta ne olacagi
-(karsi tarafin kendi verisi de var), anilarin ve sikayetlerin durumu,
-denetim izinin korunmasi (moderasyon kaydi silinmemeli ama
-kisisellestirmesi azaltilabilir).
+Denetim izi (`moderasyon_kayitlari`) silinmez, `moderator_id` alani
+`set null` olur: izin butunlugu korunur, kisiyle bagi kopar.
 
 ### 6. Erisim ve tasinabilirlik hakki (KVKK m.11) - EKSIK
 
