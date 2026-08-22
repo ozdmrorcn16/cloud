@@ -885,3 +885,36 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     ASCII Turkce metin gosteriyor; gorsel kimlik koda tasinirken UI
     metinleri de duzgun Turkceye cevrilmeli. Kod/yorum/commit kurali
     (ASCII) DEGISMIYOR - yalnizca kullaniciya gorunen string'ler.
+
+75. **EKRAN METINLERI TURKCE'YE CEVRILDI (karar 74 uygulandi).**
+    Kullanici uygulamayi telefonda tarayici uzerinden test etti ve tek
+    kusur olarak yazim yanlislarini bildirdi ("her sey iyi gorunuyor
+    ozellikle dikkatimi cekenler yazim yanlislari cok var"). 21 ekran +
+    21 test dosyasinda 421 satir duzeltildi, gizlilik metni ekrani
+    bastan yazildi, lib/ icindeki hata metinleri de cevrildi (ekranlar
+    e.message'i dogrudan basiyor). Yalnizca c/g/i/o/s/u aksanlari
+    kullanildi; duzeltme isaretli harflere girilmedi. KALAN BORC:
+    veritabanindaki 32 `raise exception` metni hala aksansiz.
+    Commit b431d89.
+
+76. **MODERATORUN MESAJ ERISIMINDE OLCULULUK: dar varsayilan, genis
+    erisim ayri eylem.** Kullanici ozel mesaj erisimini kendisi
+    sorguladi ("sence mesajlara ulasmak dogru mu degil mi alternatif
+    bir yol var mi") ve sunulan oneriyi onayladi. Yetki KESILMIYOR
+    (karar 63 gecerli), ama kapsam daraliyor: kademe 1 varsayilandir ve
+    yalnizca sikayet edilen mesaji +/- 20 mesajlik cevresiyle gosterir;
+    kademe 2 (tam konusma) ayri gerekce, ayri onay adimi ve denetim
+    izinde ayri tur (`konusma_tam`) ister. Kullanici detayindan bir
+    konusma acmak daima kademe 2'dir. Ayrica sikayet formunda,
+    cevredeki mesajlarin incelemeye acilacagi bildirilir. Gerekce:
+    KVKK m.4 olcululuk; amac erisimi zorlastirmak degil,
+    kazara/aliskanliktan yapilmasini engellemek ve izde ayirt
+    edilebilir kilmak. Degerlendirilip ELENEN alternatif: uctan uca
+    sifreleme - konum paylasan yabancilarin oldugu bir uygulamada
+    taciz vakasinda moderasyonu tamamen kor birakirdi. Spec'te
+    "Karar 75" ve "Karar 76" basliklariyla yazildi.
+
+77. **PANELIN YAPIMINA TAM YETKIYLE BASLANDI.** Kullanici "panelin
+    yapimina baslarsin tum yetki sende ben yatiyorum" dedi. Plan 2
+    (moderasyon paneli) yazilacak ve uygulanacak; ara kararlar
+    Claude tarafindan alinip bu deftere yazilacak.
