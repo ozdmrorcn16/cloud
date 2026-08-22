@@ -166,6 +166,10 @@ export default function AyarlarEkrani() {
         <Text style={stiller.ipucu}>{KULLANICI_ADI_KURALI}</Text>
       )}
 
+      <Pressable style={stiller.buton} onPress={() => router.push('/gizlilik')}>
+        <Text style={stiller.butonMetni}>Gizlilik metni</Text>
+      </Pressable>
+
       <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayilan olarak</Text>
       <View style={stiller.butonSatiri}>
         {VARSAYILAN_SECENEKLERI.map((secenek) => (

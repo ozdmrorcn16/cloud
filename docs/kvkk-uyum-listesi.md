@@ -36,17 +36,17 @@ guclu tarafi.
 Durum isaretleri: **TAMAM** / **EKSIK** / **BLOKE** (gercek kullaniciya
 acilmadan once mutlaka kapanmali).
 
-### 1. Aydinlatma yukumlulugu (KVKK m.10) - BLOKE
+### 1. Aydinlatma yukumlulugu (KVKK m.10) - KAPANDI
 
-Uygulamada gizlilik metni ekrani **yok**. Hangi verinin hangi amacla
-islendigi, kimlere aktarildigi ve saklama sureleri kullaniciya
-bildirilmis degil.
+Gizlilik metni yazildi ve uygulamada okunabilir hale geldi: kaynak metin
+`docs/gizlilik-metni.md`, ekran `mobil/src/app/gizlilik.tsx`
+(`Ayarlar > Gizlilik metni`den erisiliyor). Yedi maddeyi kapsiyor:
+hangi veri, ne amacla, konum ozel olarak, moderasyon erisimi (mesaj
+icerigi dahil), yurt disina aktarim, saklama sureleri ve hesap silinince
+ne olacagi, kullanici haklari ve basvuru yolu.
 
-Moderasyon paneli spec'i (karar 63) bu maddeyi ilk dilime aldi, cunku
-mesaj okuma yetkisiyle ayni anda yayina girmesi gerekiyor. Metnin
-kapsamasi gerekenler: konum isleme, mesaj icerigi ve moderasyonun
-kotuye kullanim incelemesinde mesaj okuyabilecegi, yurt disina aktarim,
-saklama sureleri, ilgili kisi haklari ve basvuru yolu.
+Kayit ekranindaki riza akisina baglanmasi ve magaza listelemesi icin
+URL'e konmasi henuz yapilmadi - ayri bir is.
 
 ### 2. Acik riza, ozellikle konum icin (KVKK m.5) - EKSIK
 
@@ -68,6 +68,12 @@ Iki aktarim var ve ikisi de bugun belgelenmemis:
 2024 degisikligiyle standart sozlesme yolu acildi; kullanilan yol ne
 olursa olsun Kurum'a bildirim ve belgeleme gerekiyor. **Bir danismana
 dogrulatilmali.**
+
+Gizlilik metni (madde 1) artik bu aktarimin **durumunu bildiriyor**
+(hangi veri nereye, hangi ulkeye gidiyor), ama bu yalnizca bildirimdir -
+KVKK m.9'un istedigi **hukuki mekanizma** (standart sozlesme, Kurum
+bildirimi, belgeleme) hala kurulmadi. Bu madde bu yuzden EKSIK olarak
+kaliyor; bildirim yapilmis olmasi hukuki dayanagi tamamlamiyor.
 
 ### 4. Saklama ve imha politikasi - EKSIK
 
