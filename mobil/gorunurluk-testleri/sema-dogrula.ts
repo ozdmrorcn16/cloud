@@ -688,16 +688,46 @@ async function main() {
   }
 
   {
-    const { data, error } = await a
-      .from('hesap_durumlari')
-      .select('kullanici_id')
-      .eq('kullanici_id', bId)
-    esitMi(error === null, true, 'hesap_durumlari: select hata vermez')
-    esitMi(
-      (data ?? []).length,
-      0,
-      'hesap_durumlari: baskasinin satiri okunamaz'
-    )
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok - RLS izolasyon kontrolu')
+    } else {
+      // Iddianin gercekten sinanmasi icin B'nin bir satiri OLMALI. Satir
+      // yokken "okunamiyor" demek, veri yoklugunu RLS zannetmektir.
+      const { error: kurulumHata } = await yonetici
+        .from('hesap_durumlari')
+        .insert({
+          kullanici_id: bId,
+          durum: 'askida',
+          aski_bitisi: new Date(Date.now() + 3600_000).toISOString(),
+          gerekce: 'sema testi',
+          moderator_id: aId,
+        })
+      esitMi(kurulumHata, null, 'hesap_durumlari: B icin test satiri yazildi')
+
+      const { data, error } = await a
+        .from('hesap_durumlari')
+        .select('kullanici_id')
+        .eq('kullanici_id', bId)
+      esitMi(error, null, 'hesap_durumlari: select hata vermez')
+      esitMi((data ?? []).length, 0, 'hesap_durumlari: baskasinin VAR OLAN satiri okunamaz')
+
+      // Kendi satirini gorebildigini de dogrula: politikanin fazla dar
+      // olmadigini gosterir (her seyi engelleyen bir politika da yukaridaki
+      // iddiayi gecirirdi).
+      const { data: kendi, error: kendiHata } = await b
+        .from('hesap_durumlari')
+        .select('kullanici_id')
+        .eq('kullanici_id', bId)
+      esitMi(kendiHata, null, 'hesap_durumlari: kendi satirini okurken hata yok')
+      esitMi((kendi ?? []).length, 1, 'hesap_durumlari: kendi satirini okuyabiliyor')
+
+      const { error: temizlikHata } = await yonetici
+        .from('hesap_durumlari')
+        .delete()
+        .eq('kullanici_id', bId)
+      esitMi(temizlikHata, null, 'hesap_durumlari: test satiri temizlendi')
+    }
   }
 
   // moderasyon semasi PostgREST uzerinden sunulmuyor.
