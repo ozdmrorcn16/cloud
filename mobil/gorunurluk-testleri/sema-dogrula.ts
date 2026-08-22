@@ -673,6 +673,45 @@ async function main() {
 
   await bildirimTetikleyicileriniDogrula(a, anon)
 
+  // --- Hesap durumu temeli (Plan 1 Task 1) ---
+
+  // hesap_durumlari'na authenticated yazamaz; yalnizca kendi satirini okur.
+  {
+    const { error } = await a
+      .from('hesap_durumlari')
+      .insert({ kullanici_id: aId, durum: 'askida', gerekce: 'test' })
+    esitMi(
+      error !== null,
+      true,
+      'hesap_durumlari: authenticated dogrudan insert edemez'
+    )
+  }
+
+  {
+    const { data, error } = await a
+      .from('hesap_durumlari')
+      .select('kullanici_id')
+      .eq('kullanici_id', bId)
+    esitMi(error === null, true, 'hesap_durumlari: select hata vermez')
+    esitMi(
+      (data ?? []).length,
+      0,
+      'hesap_durumlari: baskasinin satiri okunamaz'
+    )
+  }
+
+  // moderasyon semasi PostgREST uzerinden sunulmuyor.
+  {
+    const { error } = await a.rpc('hesap_aktif_mi', {
+      p_kullanici_id: bId,
+    })
+    esitMi(
+      error !== null,
+      true,
+      'moderasyon.hesap_aktif_mi: public RPC olarak cagrilamaz'
+    )
+  }
+
   sonucuBildirVeCik()
 }
 

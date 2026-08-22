@@ -225,3 +225,22 @@ export async function kotayiTemizle(kimlikler: string[]): Promise<void> {
     console.error('  Kota temizligi basarisiz:', error.message)
   }
 }
+
+// Bir senaryo hesabi askiya alip hata yolundan cikarsa satir ortada
+// kalir ve sonraki butun senaryolarin on kosulunu bozar. Bu yuzden
+// temizlik yonetici anahtariyla ve YALNIZCA test hesaplari icin yapilir.
+export async function hesapDurumunuTemizle(kimlikler: string[]): Promise<void> {
+  const yonetici = yoneticiIstemcisi()
+  if (!yonetici) {
+    console.warn(
+      '\n  UYARI: SUPABASE_SERVICE_ROLE_KEY yok, hesap durumlari temizlenmedi.\n' +
+        '  Askiya alma senaryolari kalinti birakabilir.\n'
+    )
+    return
+  }
+  const { error } = await yonetici
+    .from('hesap_durumlari')
+    .delete()
+    .in('kullanici_id', kimlikler)
+  if (error) throw new Error(`hesap durumu temizlik hatasi: ${error.message}`)
+}
