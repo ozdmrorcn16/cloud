@@ -10,6 +10,7 @@ import {
   type Konusma,
   type Mesaj,
 } from '../../../lib/sohbet'
+import { useOturum } from '../../../lib/oturum'
 
 const KAPALI_KAPI_NOTU = 'Bu kisiye su an mesaj gonderemezsin.'
 
@@ -27,6 +28,8 @@ function hataMesaji(e: unknown): string {
 
 export default function SohbetEkrani() {
   const router = useRouter()
+  const { oturum } = useOturum()
+  const benimKimligim = oturum?.user.id ?? null
   const { kullaniciId } = useLocalSearchParams<{ kullaniciId: string }>()
   // Konusma satiri bulunamayabilir: iki taraf hic mesajlasmamissa
   // konusmalarim listesinde bu kisiye ait satir hic olmaz. O durumda
@@ -186,11 +189,16 @@ export default function SohbetEkrani() {
         data={mesajlar}
         keyExtractor={(m) => m.id}
         inverted
-        renderItem={({ item }) => (
-          <View style={stiller.mesajBalonu}>
-            <Text testID="mesaj-metni">{item.metin}</Text>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          // gonderen_id null = gonderen hesabini silmis. Kendi mesajim
+          // olmadigi kesin, karsi balon olarak cizilir.
+          const benimMi = item.gonderenId !== null && item.gonderenId === benimKimligim
+          return (
+            <View style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}>
+              <Text testID="mesaj-metni">{item.metin}</Text>
+            </View>
+          )
+        }}
         ListEmptyComponent={<Text style={stiller.durum}>Henuz mesaj yok</Text>}
       />
 
@@ -235,7 +243,10 @@ const stiller = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginVertical: 4,
+    maxWidth: '80%',
   },
+  kendiBalonu: { alignSelf: 'flex-end', backgroundColor: '#f0f0f0' },
+  karsiBalonu: { alignSelf: 'flex-start', backgroundColor: '#fff' },
   girdiSatiri: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 8 },
   girdi: {
     flex: 1,

@@ -2,9 +2,9 @@ import { supabase } from './supabase'
 
 export type Konusma = {
   konusmaId: string
-  kisiId: string
-  kullaniciAdi: string
-  ad: string
+  kisiId: string | null
+  kullaniciAdi: string | null
+  ad: string | null
   sonMesaj: string | null
   sonMesajZamani: string | null
   okunmamis: number
@@ -13,16 +13,16 @@ export type Konusma = {
 
 export type Mesaj = {
   id: string
-  gonderenId: string
+  gonderenId: string | null
   metin: string
   olusturuldu: string
 }
 
 type KonusmaSatiri = {
   konusma_id: string
-  kisi_id: string
-  kullanici_adi: string
-  ad: string
+  kisi_id: string | null
+  kullanici_adi: string | null
+  ad: string | null
   son_mesaj: string | null
   son_mesaj_zamani: string | null
   okunmamis: number
@@ -31,7 +31,7 @@ type KonusmaSatiri = {
 
 type MesajSatiri = {
   id: string
-  gonderen_id: string
+  gonderen_id: string | null
   metin: string
   olusturuldu: string
 }

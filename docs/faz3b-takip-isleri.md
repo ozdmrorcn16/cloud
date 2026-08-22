@@ -15,7 +15,7 @@ Ikincisi (mesaj sikayeti) moderasyon panelini yazani ilgilendiriyor.
 Ilki artik bir RISK degil, kodun DAYANDIGI bir INVARYANT - asagida
 aciklandi.
 
-### 1a. `mesajlari_getir` her konusmanin TAM IKI UYELI olduguna dayanir (kalici invaryant)
+### 1a. `mesajlari_getir` her konusmanin TAM IKI UYELI olduguna dayanir (kalici invaryant) (UYGULANDI - Plan 1 Task 13)
 
 `public.mesajlari_getir` `security definer`, yani `mesajlar` tablosunun
 RLS'ini (dolayisiyla `not gizli.engelli_mi(...)` kosulunu) tamamen

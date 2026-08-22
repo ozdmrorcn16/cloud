@@ -2422,6 +2422,88 @@ async function main() {
     }
   })
 
+  await senaryo('56 - Karsi uye kaybolunca konusma salt-okunur kalir', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+
+    // A ile C arasinda bir konusma kur (B'yi bozmuyoruz; C ucuncu
+    // test hesabi). Once yazma yetkisi icin karsilikli bag.
+    const { error: istekHata } = await a.rpc('sohbet_istegi_gonder', {
+      p_kullanici_id: cId,
+    })
+    esitMi(istekHata, null, '56 kurulum: sohbet istegi gonderildi')
+    const { error: kabulHata } = await c.rpc('sohbet_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, '56 kurulum: istek kabul edildi')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: cId,
+      p_metin: 'silme oncesi mesaj',
+    })
+    esitMi(mesajHata, null, '56 kurulum: mesaj gonderildi')
+
+    // GERCEK SILME DEGIL: yalnizca cascade'in yapacagi seyi taklit
+    // ediyoruz (uyelik satirini kaldirmak). Boylece C hesabini
+    // gercekten silmeden tek uyeli konusma durumu olusuyor ve sonraki
+    // senaryolar C'yi kullanmaya devam edebiliyor.
+    const { error: silHata } = await yonetici
+      .from('konusma_uyeleri')
+      .delete()
+      .eq('konusma_id', konusmaId)
+      .eq('kullanici_id', cId)
+    esitMi(silHata, null, '56 kurulum: C uyeligi kaldirildi')
+
+    // Ayni taklidin devami: gercek bir silmede sohbet_istekleri.alan_id
+    // ve gonderen_id de auth.users'a cascade bagli (dogrulandi), yani
+    // A-C arasindaki kabul edilmis istek de C'yle birlikte giderdi. Bu
+    // satir silinmeden birakilirsa A-C bagi hala GERCEKTEN aktif kalir
+    // ve bag.yazabilir_mi(cId) - konusma_uyeleri'ne degil dogrudan C'nin
+    // hesap durumuna ve bu bag satirina bakar - hala true doner; asagidaki
+    // "yeni mesaj yazilamamali" iddiasi o zaman sahte basarisiz olurdu.
+    const { error: istekSilHata } = await yonetici
+      .from('sohbet_istekleri')
+      .delete()
+      .eq('gonderen_id', aId)
+      .eq('alan_id', cId)
+    esitMi(istekSilHata, null, '56 kurulum: A-C sohbet istegi kaldirildi (bag tasiyici)')
+
+    try {
+      // Konusma listede KALMALI.
+      const { data: liste, error: listeHata } = await a.rpc('konusmalarim')
+      esitMi(listeHata, null, '56: konusmalarim hatasiz')
+      const satir = ((liste ?? []) as {
+        konusma_id: string
+        kisi_id: string | null
+        yazilabilir_mi: boolean
+      }[]).find((k) => k.konusma_id === konusmaId)
+      esitMi(satir !== undefined, true, '56: konusma listede kaldi')
+      esitMi(satir?.kisi_id ?? null, null, '56: karsi taraf null donuyor')
+      esitMi(satir?.yazilabilir_mi, false, '56: konusma salt-okunur')
+
+      // Gecmis OKUNABILIR kalmali.
+      const { data: mesajlar, error: getirHata } = await a.rpc(
+        'mesajlari_getir',
+        { p_konusma_id: konusmaId }
+      )
+      esitMi(getirHata, null, '56: mesajlari_getir hata firlatmiyor')
+      esitMi((mesajlar ?? []).length >= 1, true, '56: gecmis okunabiliyor')
+
+      // Yeni mesaj YAZILAMAMALI.
+      const { error: yeniHata } = await a.rpc('mesaj_gonder', {
+        p_kullanici_id: cId,
+        p_metin: 'silme sonrasi mesaj',
+      })
+      esitMi(yeniHata !== null, true, '56: silinmis uyeye mesaj gonderilemiyor')
+    } finally {
+      await yonetici.from('konusmalar').delete().eq('id', konusmaId)
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }

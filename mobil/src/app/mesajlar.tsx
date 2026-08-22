@@ -46,25 +46,34 @@ export default function MesajlarEkrani() {
       <FlatList
         data={konusmalar}
         keyExtractor={(k) => k.konusmaId}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <Pressable
-              style={stiller.icerik}
-              onPress={() => router.push(`/sohbet/${item.kisiId}`)}
-            >
-              <View style={stiller.ustSatir}>
-                <Text style={stiller.ad}>{item.ad}</Text>
-                {item.okunmamis > 0 && <Text style={stiller.rozet}>{item.okunmamis}</Text>}
-              </View>
-              <Text style={stiller.sonMesaj} numberOfLines={1}>
-                {item.sonMesaj ?? ''}
-              </Text>
-            </Pressable>
-            <Pressable onPress={() => gizle(item.konusmaId)}>
-              <Text style={stiller.gizleButonu}>Gizle</Text>
-            </Pressable>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          // Karsi taraf hesabini silmisse uyelik satiri yok; konusma
+          // listede kalir ama kime ait oldugu artik bilinmiyor (spec
+          // karar 69). Rota kullaniciId istiyor, null ile acilamaz.
+          const gorunenAd = item.ad ?? 'Silinmis kullanici'
+          const acilabilirMi = item.kisiId !== null
+
+          return (
+            <View style={stiller.satir}>
+              <Pressable
+                style={stiller.icerik}
+                onPress={() => acilabilirMi && router.push(`/sohbet/${item.kisiId}`)}
+                disabled={!acilabilirMi}
+              >
+                <View style={stiller.ustSatir}>
+                  <Text style={stiller.ad}>{gorunenAd}</Text>
+                  {item.okunmamis > 0 && <Text style={stiller.rozet}>{item.okunmamis}</Text>}
+                </View>
+                <Text style={stiller.sonMesaj} numberOfLines={1}>
+                  {item.sonMesaj ?? ''}
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => gizle(item.konusmaId)}>
+                <Text style={stiller.gizleButonu}>Gizle</Text>
+              </Pressable>
+            </View>
+          )
+        }}
         ListEmptyComponent={<Text style={stiller.durum}>Henuz bir konusman yok</Text>}
       />
     </View>
