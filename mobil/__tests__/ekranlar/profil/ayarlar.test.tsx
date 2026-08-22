@@ -9,6 +9,8 @@ import {
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import { kullaniciAdiniDegistir } from '../../../lib/kullanici-adi'
+import { hesabiDondur } from '../../../lib/hesap'
+import { supabase } from '../../../lib/supabase'
 
 jest.mock('../../../lib/ayarlar', () => ({
   varsayilanBulunurluguGetir: jest.fn(),
@@ -24,6 +26,17 @@ jest.mock('../../../lib/kullanici-adi', () => ({
   kullaniciAdiniDegistir: jest.fn(),
 }))
 
+jest.mock('../../../lib/hesap', () => ({
+  hesabiDondur: jest.fn(),
+}))
+
+jest.mock('../../../lib/supabase', () => ({
+  supabase: { auth: { signOut: jest.fn() } },
+}))
+
+const sahteDondur = hesabiDondur as jest.Mock
+const sahteCikis = supabase.auth.signOut as jest.Mock
+
 beforeEach(() => {
   jest.clearAllMocks()
   ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
@@ -35,6 +48,8 @@ beforeEach(() => {
     kullaniciAdi: 'orcun',
     sonrakiDegisimTarihi: null,
   })
+  sahteDondur.mockResolvedValue(undefined)
+  sahteCikis.mockResolvedValue(undefined)
 })
 
 describe('AyarlarEkrani', () => {
@@ -188,5 +203,23 @@ describe('AyarlarEkrani', () => {
     expect(
       await screen.findByText(`Tekrar degistirebilecegin tarih: ${gun}.${ay}.${yil}`)
     ).toBeTruthy()
+  })
+
+  it('dondurma iki adimda calisir ve oturumu kapatir', async () => {
+    const { getByText, queryByText } = await render(<AyarlarEkrani />)
+
+    // Ilk dokunus yalnizca onay ister; hemen dondurmez.
+    await fireEvent.press(getByText('Hesabimi dondur'))
+    expect(sahteDondur).not.toHaveBeenCalled()
+    expect(
+      getByText(
+        'Verilerin silinmez. Tekrar giris yaptiginda hesabin kendiliginden aktif olur.'
+      )
+    ).toBeTruthy()
+
+    await fireEvent.press(getByText('Evet, dondur'))
+    expect(sahteDondur).toHaveBeenCalled()
+    expect(sahteCikis).toHaveBeenCalled()
+    expect(queryByText('Evet, dondur')).toBeNull()
   })
 })

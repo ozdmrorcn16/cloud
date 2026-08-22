@@ -15,6 +15,8 @@ import {
   kullaniciAdiniNormallestir,
   kullaniciAdiniDegistir,
 } from '../../../lib/kullanici-adi'
+import { hesabiDondur } from '../../../lib/hesap'
+import { supabase } from '../../../lib/supabase'
 
 const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
   { deger: 'herkese_acik', etiket: 'Herkese acik' },
@@ -50,6 +52,20 @@ export default function AyarlarEkrani() {
     kullaniciAdi: string
     sonrakiDegisimTarihi: Date | null
   } | null>(null)
+  const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
+
+  async function hesabiDondurmayiOnayla() {
+    try {
+      await hesabiDondur()
+      // Dondurmadan hemen sonra cikis: aksi halde kullanici dondurulmus
+      // ama girisli bir ara durumda kalirdi (spec karar 66).
+      await supabase.auth.signOut()
+    } catch (e) {
+      setHata((e as Error).message)
+    } finally {
+      setDondurmaOnayi(false)
+    }
+  }
 
   async function ayarlariYukle() {
     try {
@@ -213,6 +229,26 @@ export default function AyarlarEkrani() {
           </Pressable>
         ))}
       </View>
+
+      <Text style={stiller.altBaslik}>Hesabi dondur</Text>
+      <Text style={stiller.ipucu}>
+        Verilerin silinmez. Tekrar giris yaptiginda hesabin kendiliginden
+        aktif olur.
+      </Text>
+      {!dondurmaOnayi ? (
+        <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(true)}>
+          <Text style={stiller.butonMetni}>Hesabimi dondur</Text>
+        </Pressable>
+      ) : (
+        <View style={stiller.butonSatiri}>
+          <Pressable style={stiller.buton} onPress={hesabiDondurmayiOnayla}>
+            <Text style={stiller.butonMetni}>Evet, dondur</Text>
+          </Pressable>
+          <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(false)}>
+            <Text style={stiller.butonMetni}>Vazgec</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   )
 }
