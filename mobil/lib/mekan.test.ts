@@ -33,6 +33,9 @@ describe('yakinMekanlariGetir', () => {
         id: 'mekan-1',
         ad: 'Sahil Kafe',
         tur: 'kafe',
+        // Kaynakta semt %96.5 dolu ama null olabilir; sunucu alani hic
+        // gondermezse de tip null'a dusuyor.
+        semt: null,
         adres: null,
         osmId: 123,
         konum: { lat: 41.015, lng: 28.979 },

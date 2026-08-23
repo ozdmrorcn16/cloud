@@ -222,7 +222,7 @@ export default function KesfetEkrani() {
           contentContainerStyle={stiller.kartSatiri}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/mekanlar/${item.id}`)}>
-              <MekanGorseli mekanId={item.id} style={stiller.kart}>
+              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={44} style={stiller.kart}>
                 <View style={stiller.kartKarartma} />
                 <View style={stiller.canliRozet}>
                   <View style={stiller.canliNokta} />
@@ -235,8 +235,7 @@ export default function KesfetEkrani() {
                     {item.ad}
                   </Text>
                   <Text style={stiller.kartAltYazi}>
-                    {item.tur}
-                    {uzaklik(item) ? ` · ${uzaklik(item)}` : ''}
+                    {[item.tur, item.semt, uzaklik(item)].filter(Boolean).join(' · ')}
                   </Text>
                 </View>
               </MekanGorseli>
@@ -255,14 +254,13 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/mekanlar/${item.id}`)}
           >
-            <MekanGorseli mekanId={item.id} style={stiller.satirGorsel} />
+            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={22} style={stiller.satirGorsel} />
             <View style={stiller.satirOrta}>
               <Text style={stiller.satirAd} numberOfLines={1}>
                 {item.ad}
               </Text>
               <Text style={stiller.satirAlt}>
-                {item.tur}
-                {uzaklik(item) ? ` · ${uzaklik(item)}` : ''}
+                {[item.tur, item.semt, uzaklik(item)].filter(Boolean).join(' · ')}
               </Text>
             </View>
             <Text style={stiller.sakinYazi}>Sakin</Text>

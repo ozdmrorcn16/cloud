@@ -30,12 +30,12 @@ describe('MekanEkleEkrani', () => {
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Yeni Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.press(screen.getByText('Kafe'))
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {
       expect(mekanEkle).toHaveBeenCalledWith(
-        'Yeni Kafe', 'kafe', { lat: 41.015, lng: 28.979 }, { lat: 41.015, lng: 28.979 }, undefined
+        'Yeni Kafe', 'Kafe', { lat: 41.015, lng: 28.979 }, { lat: 41.015, lng: 28.979 }, undefined
       )
     })
     expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar/mekan-yeni')
@@ -47,7 +47,7 @@ describe('MekanEkleEkrani', () => {
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Uzak Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.press(screen.getByText('Kafe'))
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {
@@ -77,7 +77,7 @@ describe('MekanEkleEkrani', () => {
     await render(<MekanEkleEkrani />)
     await waitFor(() => expect(cihazKonumunuAl).toHaveBeenCalled())
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan adı'), 'Yeni Kafe')
-    await fireEvent.changeText(screen.getByPlaceholderText('Tür (kafe, bar, restoran, park...)'), 'kafe')
+    await fireEvent.press(screen.getByText('Kafe'))
     await fireEvent.press(screen.getByText('Ekle'))
 
     await waitFor(() => {

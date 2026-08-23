@@ -93,6 +93,7 @@ def indir():
                    bbox.xmin AS lng,
                    bbox.ymin AS lat,
                    addresses[1].freeform AS adres,
+                   addresses[1].locality AS semt,
                    addresses[1].country AS ulke
             FROM read_parquet('{s3_yolu(release)}')
             WHERE bbox.xmin >= {XMIN} AND bbox.xmax <= {XMAX}
@@ -100,7 +101,7 @@ def indir():
               AND names.primary IS NOT NULL
               AND confidence >= {GUVEN_ESIGI}
           )
-          SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres
+          SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres, semt
           FROM ham
           WHERE (ulke IS NULL OR ulke = 'TR')
             AND kategori IS NOT NULL
@@ -121,7 +122,7 @@ def yukle():
     esleme = _esleme()
     con = duckdb.connect()
     ham = con.execute(
-        "SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres "
+        "SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres, semt "
         f"FROM read_parquet('{YEREL_PARQUET}')"
     ).fetchall()
 
@@ -131,12 +132,12 @@ def yukle():
     # degisirse veriyi yeniden indirmeye gerek kalmaz.
     satirlar = []
     atlanan = {}
-    for gers_id, ad, kategori, alt, guven, lng, lat, adres in ham:
+    for gers_id, ad, kategori, alt, guven, lng, lat, adres, semt in ham:
         tur = esleme.duzelt(kategori, list(alt) if alt is not None else [])
         if tur is None:
             atlanan[kategori] = atlanan.get(kategori, 0) + 1
             continue
-        satirlar.append((gers_id, ad, tur, kategori, guven, lng, lat, adres))
+        satirlar.append((gers_id, ad, tur, kategori, guven, lng, lat, adres, semt))
 
     print(f"{len(ham)} kayittan {len(satirlar)} tanesi eslesti.")
     if atlanan:
@@ -157,6 +158,7 @@ def yukle():
                 "guven": s[4],
                 "konum": f"POINT({s[5]} {s[6]})",
                 "adres": s[7],
+                "semt": s[8],
                 "kaynak": "overture",
             }
             for s in satirlar[i : i + PARCA]

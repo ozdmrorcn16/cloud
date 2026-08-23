@@ -5,6 +5,8 @@ export type Mekan = {
   id: string
   ad: string
   tur: string
+  /** Semt / mahalle. Kaynakta %97 dolu; yine de null olabilir. */
+  semt: string | null
   adres: string | null
   osmId: number | null
   konum: { lat: number; lng: number }
@@ -14,6 +16,7 @@ type MekanSatiri = {
   id: string
   ad: string
   tur: string
+  semt: string | null
   adres: string | null
   osm_id: number | null
   konum: string
@@ -24,6 +27,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     id: satir.id,
     ad: satir.ad,
     tur: satir.tur,
+    semt: satir.semt ?? null,
     adres: satir.adres,
     osmId: satir.osm_id,
     konum: noktayiCoz(satir.konum),

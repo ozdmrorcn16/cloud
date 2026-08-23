@@ -1,8 +1,21 @@
 import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import { MekanIkonu } from '../../tasarim/MekanIkonu'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
+
+// Tur ARTIK SERBEST METIN DEGIL. Sebep: kapak gorseli turden
+// turetilen ikondur (karar 2026-08-23); kullanici "kahvehane" yazarsa
+// hicbir ikonla eslesmez ve mekan noktasiz kalir. Liste, ikonu olan
+// turlerden en yaygin olanlari.
+const EKLENEBILIR_TURLER = [
+  'Kafe', 'Restoran', 'Bar', 'Çay evi', 'Fırın', 'Tatlıcı',
+  'Park', 'Plaj', 'Meydan', 'Kamp alanı',
+  'Spor salonu', 'Yüzme havuzu',
+  'Kütüphane', 'Müze', 'Sanat galerisi', 'Canlı müzik', 'Sinema',
+  'Tarihi yer', 'AVM', 'Market', 'Otel', 'Kitapçı',
+] as const
 
 export default function MekanEkleEkrani() {
   const router = useRouter()
@@ -64,12 +77,24 @@ export default function MekanEkleEkrani() {
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>Yeni mekan ekle</Text>
       <TextInput style={stiller.girdi} placeholder="Mekan adı" value={ad} onChangeText={setAd} />
-      <TextInput
-        style={stiller.girdi}
-        placeholder="Tür (kafe, bar, restoran, park...)"
-        value={tur}
-        onChangeText={setTur}
-      />
+      <Text style={stiller.turBaslik}>Türü seç</Text>
+      <View style={stiller.turIzgara}>
+        {EKLENEBILIR_TURLER.map((t) => {
+          const secili = tur === t
+          return (
+            <Pressable
+              key={t}
+              style={[stiller.turCipi, secili && stiller.turCipiSecili]}
+              onPress={() => setTur(t)}
+            >
+              {/* Kullanici sectigi turun ikonunu ANINDA goruyor;
+                  mekanin kapagi bu ikon olacak. */}
+              <MekanIkonu tur={t} boyut={16} renk={secili ? '#FFFFFF' : '#6E6660'} />
+              <Text style={[stiller.turCipiYazi, secili && stiller.turCipiYaziSecili]}>{t}</Text>
+            </Pressable>
+          )
+        })}
+      </View>
       <TextInput style={stiller.girdi} placeholder="Adres (opsiyonel)" value={adres} onChangeText={setAdres} />
 
       {benzerMekanlar.length > 0 && (
@@ -96,6 +121,22 @@ export default function MekanEkleEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  turBaslik: { fontSize: 13, color: '#6E6660', marginBottom: 8, marginTop: 4 },
+  turIzgara: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  turCipi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#EFEAE5',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  turCipiSecili: { backgroundColor: '#FF6B1A', borderColor: '#FF6B1A' },
+  turCipiYazi: { fontSize: 13, color: '#6E6660' },
+  turCipiYaziSecili: { color: '#FFFFFF', fontWeight: '600' },
   kapsayici: { flex: 1, padding: 24 },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
