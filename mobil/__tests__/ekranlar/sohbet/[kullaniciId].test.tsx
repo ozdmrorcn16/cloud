@@ -24,6 +24,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ kullaniciId: 'kullanici-2' }),
 }))
 
+// Kendi mesajim / karsi tarafin mesaji ayrimi oturum kimligine bakiyor.
+// Mock olmadan oturum null kalir, her mesaj "karsi taraf" sayilirdi ve
+// kendi mesajina sikayet acilmadigini olcen test hicbir sey olcmezdi.
+jest.mock('../../../lib/oturum', () => ({
+  useOturum: () => ({ oturum: { user: { id: 'kullanici-1' } }, yukleniyor: false }),
+}))
+
 function konusma(ustune: Partial<Konusma> = {}): Konusma {
   return {
     konusmaId: 'konusma-1',
@@ -78,7 +85,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
     await fireEvent.changeText(girdi, 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     await waitFor(() => {
       expect(mesajGonder).toHaveBeenCalledWith('kullanici-2', 'Merhaba')
@@ -94,7 +101,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
     await fireEvent.changeText(girdi, 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByPlaceholderText('Bir mesaj yaz...').props.value).toBe('Merhaba')
@@ -108,7 +115,7 @@ describe('SohbetEkrani', () => {
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
 
     await fireEvent.changeText(girdi, '   ')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     expect(mesajGonder).not.toHaveBeenCalled()
   })
@@ -132,7 +139,7 @@ describe('SohbetEkrani', () => {
     expect(await screen.findByPlaceholderText('Bir mesaj yaz...')).toBeTruthy()
 
     await fireEvent.changeText(screen.getByPlaceholderText('Bir mesaj yaz...'), 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     expect(await screen.findByText('Bu kişiye şu an mesaj gönderemezsin.')).toBeTruthy()
     expect(screen.getByPlaceholderText('Bir mesaj yaz...').props.value).toBe('Merhaba')
@@ -155,23 +162,47 @@ describe('SohbetEkrani', () => {
     expect(konusmayiOkunduIsaretle).not.toHaveBeenCalled()
   })
 
-  it('sikayet butonuna basinca sikayet ekranina hedef_tur=mesaj ile yonlendirir', async () => {
+  // Ust bardaki dugme artik DAIMA kullaniciyi sikayet eder. Eskiden
+  // hedefTur='mesaj' ile KONUSMA id'si gonderiyordu; moderator "hangi
+  // mesaj" sorusunu cevaplayamiyordu (Plan 2 Task 6, karar 62).
+  it('ust bardaki sikayet dugmesi daima kullaniciyi sikayet eder', async () => {
     await render(<SohbetEkrani />)
     await fireEvent.press(await screen.findByText('Şikayet et'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=konusma-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
 
-  it('konusma henuz yokken sikayet hedef_tur=kullanici ile aciliyor', async () => {
-    // Elde konusma id'si yok. Eskiden bu durumda da hedefTur=mesaj
-    // gonderiliyordu, yani 'mesaj' etiketli satira bir KULLANICI id'si
-    // yaziliyordu ve moderasyon paneli ikisini ayirt edemiyordu.
+  it('konusma henuz yokken de ust bar dugmesi kullaniciyi sikayet eder', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
 
     await render(<SohbetEkrani />)
     await fireEvent.press(await screen.findByText('Şikayet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
+  })
+
+  it('karsi tarafin mesajina uzun basinca o MESAJI sikayet eder', async () => {
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm42', gonderenId: 'kullanici-2', metin: 'Kotu soz' }),
+    ])
+
+    await render(<SohbetEkrani />)
+    await fireEvent(await screen.findByText('Kotu soz'), 'longPress')
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=m42')
+  })
+
+  it('kendi mesajina uzun basmak sikayet acmaz', async () => {
+    // Sunucu zaten reddediyor (Kendi mesajini sikayet edemezsin);
+    // arayuz de bos bir yola sokmamali.
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm43', gonderenId: 'kullanici-1', metin: 'Benim mesajim' }),
+    ])
+
+    await render(<SohbetEkrani />)
+    await fireEvent(await screen.findByText('Benim mesajim'), 'longPress')
+
+    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
   it('abonelik konusma id ile kuruluyor ve gelen mesaj listeye eklenir', async () => {
@@ -212,7 +243,7 @@ describe('SohbetEkrani', () => {
 
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
     await fireEvent.changeText(girdi, 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     await waitFor(() => {
       expect(mesajGonder).toHaveBeenCalledWith('kullanici-2', 'Merhaba')
@@ -237,7 +268,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
     await fireEvent.changeText(girdi, 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     await waitFor(() => {
       expect(mesajGonder).toHaveBeenCalled()
@@ -307,7 +338,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
     await fireEvent.changeText(girdi, 'Merhaba')
-    await fireEvent.press(screen.getByText('Gonder'))
+    await fireEvent.press(screen.getByText('Gönder'))
 
     await waitFor(() => {
       expect(mesajlariGetir).toHaveBeenCalledWith('konusma-9')

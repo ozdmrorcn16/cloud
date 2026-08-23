@@ -48,6 +48,16 @@ export default function SikayetEkrani() {
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>Şikayet et</Text>
 
+      {/* Karar 76: kademe 1 baglami sikayet edenin kendi konusmasindan
+          da mesaj tasir, bu yuzden bildirilir. Ayri bir onay kutusu YOK -
+          sikayeti gondermek zaten iradi bir eylem ve ek surtunme sikayet
+          etmeyi caydirir. */}
+      {hedefTur === 'mesaj' && (
+        <Text style={stiller.baglamBildirimi}>
+          İncelemede bu mesajın çevresindeki mesajlar da moderasyona açılır.
+        </Text>
+      )}
+
       {SIKAYET_SEBEPLERI.map((sebep) => (
         <Pressable
           key={sebep.anahtar}
@@ -72,7 +82,7 @@ export default function SikayetEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Pressable style={stiller.buton} onPress={gonder} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gonderiliyor...' : 'Gonder'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gönderiliyor...' : 'Gönder'}</Text>
       </Pressable>
     </View>
   )
@@ -81,6 +91,7 @@ export default function SikayetEkrani() {
 const stiller = StyleSheet.create({
   kapsayici: { flex: 1, padding: 16 },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
+  baglamBildirimi: { fontSize: 13, color: '#666', marginBottom: 12 },
   sebepSatiri: {
     borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
     padding: 12, marginBottom: 8,

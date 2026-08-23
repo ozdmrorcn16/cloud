@@ -166,18 +166,15 @@ export default function SohbetEkrani() {
     }
   }
 
-  // Konusma henuz yokken elimizde bir konusma id'si yok; o durumda
-  // sikayet KULLANICI hakkinda aciliyor. Boyle olmazsa 'mesaj' etiketli
-  // bir sikayet satirinda konusma id'si yerine kullanici id'si dururdu
-  // ve moderasyon paneli ikisini ayirt edemezdi.
-  const sikayetHedefTur = konusmaId ? 'mesaj' : 'kullanici'
-  const sikayetHedefId = konusmaId ?? kullaniciId
-
+  // Ust bardaki dugme KISIYI sikayet eder. Tek tek mesajlar icin ayri
+  // bir yol var (asagida, uzun basis): sikayetin hedefi gercek mesaj
+  // id'si olmali, yoksa moderator "hangi mesaj" sorusunu cevaplayamaz.
+  // Eskiden bu dugme 'mesaj' turuyle KONUSMA id'si gonderiyordu.
   return (
     <View style={stiller.kapsayici}>
       <View style={stiller.ustBar}>
         <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? 'Sohbet'}</Text>
-        <Pressable onPress={() => router.push(`/sikayet?hedefTur=${sikayetHedefTur}&hedefId=${sikayetHedefId}`)}>
+        <Pressable onPress={() => router.push(`/sikayet?hedefTur=kullanici&hedefId=${kullaniciId}`)}>
           <Text style={stiller.sikayetButonu}>Şikayet et</Text>
         </Pressable>
       </View>
@@ -193,10 +190,20 @@ export default function SohbetEkrani() {
           // gonderen_id null = gonderen hesabini silmis. Kendi mesajim
           // olmadigi kesin, karsi balon olarak cizilir.
           const benimMi = item.gonderenId !== null && item.gonderenId === benimKimligim
+          // Kendi mesajini sikayet etmek sunucuda zaten reddediliyor
+          // (Kendi mesajini sikayet edemezsin); arayuz de o yola hic
+          // sokmuyor.
           return (
-            <View style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}>
+            <Pressable
+              onLongPress={
+                benimMi
+                  ? undefined
+                  : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
+              }
+              style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
+            >
               <Text testID="mesaj-metni">{item.metin}</Text>
-            </View>
+            </Pressable>
           )
         }}
         ListEmptyComponent={<Text style={stiller.durum}>Henüz mesaj yok</Text>}
@@ -216,7 +223,7 @@ export default function SohbetEkrani() {
             onPress={gonder}
             disabled={!gonderMumkun}
           >
-            <Text style={stiller.gonderButonuYazi}>{gonderiliyor ? 'Gonderiliyor...' : 'Gonder'}</Text>
+            <Text style={stiller.gonderButonuYazi}>{gonderiliyor ? 'Gönderiliyor...' : 'Gönder'}</Text>
           </Pressable>
         </View>
       ) : (

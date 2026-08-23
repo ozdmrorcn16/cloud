@@ -53,7 +53,7 @@ export default function KayitEkrani() {
       />
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.buton} onPress={kayitOl} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gonderiliyor...' : 'Kayıt ol'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gönderiliyor...' : 'Kayıt ol'}</Text>
       </Pressable>
       <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/giris')}>
         <Text style={stiller.baglanti}>Zaten hesabın var mı? Giriş yap</Text>
