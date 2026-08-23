@@ -133,10 +133,15 @@ def yukle():
     satirlar = []
     atlanan = {}
     for gers_id, ad, kategori, alt, guven, lng, lat, adres, semt in ham:
-        tur = esleme.duzelt(kategori, list(alt) if alt is not None else [])
+        tur = esleme.duzelt(kategori, list(alt) if alt is not None else [], ad)
         if tur is None:
             atlanan[kategori] = atlanan.get(kategori, 0) + 1
             continue
+        # Yer adi (koy, mahalle, cadde) check-in yapilacak bir mekan
+        # degil. Overture bunlari mekan gibi yolluyor; alinir ama
+        # kullaniciya gosterilmez - okuma yollari 'yer-degil'i filtreler.
+        if esleme.toponim_mi(ad):
+            tur = 'yer-degil'
         satirlar.append((gers_id, ad, tur, kategori, guven, lng, lat, adres, semt))
 
     print(f"{len(ham)} kayittan {len(satirlar)} tanesi eslesti.")

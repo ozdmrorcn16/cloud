@@ -111,6 +111,17 @@ const TUR_IKONU: Record<string, IkonAdi> = {
   'Kuaför': 'canta', 'Berber': 'canta', 'Güzellik salonu': 'canta',
   'Spa': 'dalga', 'Hamam': 'dalga', 'Tırnak bakımı': 'canta',
   'Dövme stüdyosu': 'cerceve',
+  // Denetimde acilan turler (2026-08-23). Alti denetim ajani mevcut
+  // turlerin altinda yanlis duran buyuk kumeler buldu; kapsam
+  // daraltilmak yerine genisletildi (kullanicinin karari).
+  'Öğrenci yurdu': 'yatak', 'Seyahat acentesi': 'otobus',
+  'Medikal malzeme': 'haç', 'Optik': 'haç',
+  'Kozmetik mağazası': 'canta', 'Yapı marketi': 'canta',
+  'Hediyelik eşya': 'canta', 'Çarşı': 'canta',
+  'Kırtasiye': 'kitap',
+  'Şarküteri': 'sepet', 'Balıkçı': 'sepet',
+  'Düğün salonu': 'nota', 'Oyun salonu': 'film',
+  'Halı saha': 'stadyum', 'Baraj': 'dalga',
 }
 
 export function turIkonAdi(tur: string): IkonAdi {

@@ -135,6 +135,10 @@ export const SOSYAL_TURLER = new Set<string>([
   // Karsilasma ihtimali yuksek digerleri
   'AVM', 'Kitapçı', 'Semt pazarı', 'Üniversite', 'Kampüs binası',
   'Hamam',
+  // Denetimde acilan turler (2026-08-23). Hepsi insanlarin bir arada
+  // bulundugu yerler; 'yer-degil' bilerek YOK, o zaten okuma yolunda
+  // filtreleniyor.
+  'Halı saha', 'Düğün salonu', 'Çarşı', 'Oyun salonu', 'Öğrenci yurdu',
 ])
 
 /** Kesfet akisi icin: arama bosken sosyal turlere daralt. */

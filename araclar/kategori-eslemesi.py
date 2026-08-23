@@ -202,14 +202,42 @@ ESLEME: dict[str, str] = {
     'central_government_office': 'Kamu kurumu',
     'public_service_and_government': 'Kamu hizmeti',
     'post_office': 'Postane',
-    'police_station': 'Karakol',
-    'fire_station': 'İtfaiye',
+    'police_department': 'Karakol',
+    'fire_department': 'İtfaiye',
     'courthouse': 'Adliye',
     'embassy': 'Konsolosluk',
     'community_center': 'Toplum merkezi',
     'bank_credit_union': 'Banka',
     'banks': 'Banka',
     'atms': 'ATM',
+
+    # --- Denetimde acilan turler (2026-08-23) ---
+    # Alti denetim ajani, mevcut turlerin altinda YANLIS duran buyuk
+    # kumeler buldu. Kullanicinin karari kapsami daraltmak degil
+    # genisletmekti: "Butun turleri almaliyiz cok kapsamli olmali".
+    'student_housing': 'Öğrenci yurdu',
+    'travel_agency': 'Seyahat acentesi',
+    'travel_services': 'Seyahat acentesi',
+    'medical_supply': 'Medikal malzeme',
+    'cosmetics_and_beauty_supply': 'Kozmetik mağazası',
+    'optometrist': 'Optik',
+    'eyewear_and_opticians': 'Optik',
+    'hardware_store': 'Yapı marketi',
+    'building_materials': 'Yapı marketi',
+    'stationery': 'Kırtasiye',
+    'gift_shop': 'Hediyelik eşya',
+    'delicatessen': 'Şarküteri',
+    'butcher_shop': 'Kasap',
+    'fishmonger': 'Balıkçı',
+    'party_and_event_planning': 'Düğün salonu',
+    'wedding_hall': 'Düğün salonu',
+    'dam': 'Baraj',
+    'arcade': 'Oyun salonu',
+    'pool_billiards': 'Bilardo salonu',
+    'dance_club': 'Gece kulübü',
+    'hookah_bar': 'Nargile kafe',
+    'doner_kebab': 'Kebapçı',
+    'spas': 'Spa',
 }
 
 
@@ -248,14 +276,49 @@ KONAKLAMA_SINYALI = {
 }
 
 
-def duzelt(ana_kategori, alternatifler):
+# Ad TOPONIM ekiyle bitiyorsa, kategori ne derse desin orasi bir
+# isletme degil bir yer adidir. Denetimde en buyuk tek kusur buydu:
+# "Fatih Mahallesi", "Dogancik Koyu", "Ayralaksa Yaylasi" gibi 5.276
+# kayit Otel gorunuyordu, cunku duzelt() ISME HIC BAKMIYORDU.
+TOPONIM = (
+    'koyu', 'koy', 'mahallesi', 'mahalle', 'mah.', 'mh.', 'kasabasi',
+    'yaylasi', 'deresi', 'tepesi', 'vadisi', 'caddesi', 'cad.',
+    'sokagi', 'sokak', 'bulvari', 'kavsagi', 'sahili', 'plaji',
+    'baraji', 'goleti',
+)
+
+
+def _sadelestir(metin):
+    """Turkce harfleri ASCII'ye indirger ve kucultur.
+
+    Python'un lower()'i da PostgreSQL gibi buyuk İ'de sasiriyor; ayni
+    normalizasyon burada da sart, yoksa "KOYU" yazimi kacar.
+    """
+    cevrim = str.maketrans(
+        'İIŞĞÜÖÇÂÎÛışğüöçâîû',
+        'IISGUOCAIUisguocaiu',
+    )
+    return (metin or '').translate(cevrim).lower()
+
+
+def toponim_mi(ad):
+    """Ad bir yer adi mi (isletme degil)."""
+    sozcukler = _sadelestir(ad).replace(',', ' ').split()
+    return any(s in TOPONIM for s in sozcukler)
+
+
+def duzelt(ana_kategori, alternatifler, ad=''):
     """Yanlis etiketlenmis acik alan kayitlarini duzeltir.
 
     Donen deger nihai Turkce turdur; alinmayacak kayitlar icin None.
+
+    ONEMLI: konaklama override'i yalnizca ad bir yer adi DEGILSE
+    uygulanir. Onceki surumde bu kosul yoktu ve koy/mahalle adlari
+    otele donusuyordu.
     """
     alt = list(alternatifler or [])
 
-    if ana_kategori in ACIK_ALAN:
+    if ana_kategori in ACIK_ALAN and not toponim_mi(ad):
         konaklama = next((a for a in alt if a in KONAKLAMA_SINYALI), None)
         if konaklama:
             # Acik alan degil: alternatifin soyledigi sey.
