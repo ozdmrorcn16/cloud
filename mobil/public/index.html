@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--
+  WEB CIKTISININ HTML SABLONU.
+
+  Neden burada: app.json'da web.output = "single" (SPA). Bu modda
+  Expo Router `src/app/+html.tsx` dosyasini YOK SAYAR; sablonu
+  `public/index.html`den alir. (+html.tsx yalnizca output = "static"
+  modunda calisir - bir kez denenip yok sayildigi gorulduğu icin o dosya
+  kaldirildi.)
+
+  lang="tr" SART. Varsayilan sablon lang="en" uretiyordu; icerik Turkce
+  oldugu icin Chrome sayfayi Ingilizce sanip Turkce'ye "cevirmeye"
+  calisiyor ve arayuz metinlerini bozuyor. Bu somut olarak yasandi:
+  moderasyon panelinde "Şikayetler" basligi ekranda "komiller" olarak
+  gorundu.
+
+  translate="no" + notranslate: makine cevirisi hic teklif edilmesin.
+  Uygulama ileride cok dilli olacak ama bu GERCEK yerellestirme ile
+  (kendi metinlerimizle) yapilacak; tarayicinin otomatik cevirisi
+  "yakindakiler", "check-in", "bulunurluk" gibi urune ozgu terimleri
+  yanlis cevirip anlamsiz hale getiriyor.
+
+  Govde Expo'nun urettigi varsayilan sablondan alindi; script ve favicon
+  etiketlerini Expo derleme sirasinda kendisi ekliyor, buraya yazilmaz.
+-->
+<html lang="tr" translate="no">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="google" content="notranslate" />
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>
+      Bu uygulamayı kullanmak için JavaScript'i etkinleştirmen gerekiyor.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  </body>
+</html>
