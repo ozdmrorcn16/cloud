@@ -131,6 +131,62 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### Plan 2 (moderasyon paneli) UYGULANDI (2026-08-23)
+
+**Calisma dali degisti: `claude/plan2-moderasyon-paneli`** (ucu
+`claude/plan1-hesap-haklari`ndan ayrildi). Plan:
+`docs/superpowers/plans/2026-08-23-plan2-moderasyon-paneli.md`
+(23 gorev, 5 faz). Kullanici "panelin yapimina baslarsin tum yetki
+sende ben yatiyorum" dedi (karar 77) ve is bu yetkiyle yuruttuldu.
+
+**Yapilanlar:**
+
+- **Faz A - veritabani temeli:** `moderatorler` tablosu ve AAL2 yetki
+  kapisi (`moderasyon.yetkili_mi` / `yetkili_mi_zorla`,
+  `public.moderator_muyum`); ekleme-only denetim izi
+  (`moderasyon_kayitlari` + `moderasyon.kaydet` + 2 yillik budama
+  cron'u); `sikayetler`e karar sutunlari ve `'mesaj'` turu;
+  `check_inler.moderasyon_gizli` ve gizleme filtresinin uc yola
+  islenmesi.
+- **Faz B - sikayet akisinin duzeltilmesi:** `sikayet_gonder`'e uyelik
+  ve sahiplik dogrulamasi; sohbet ekraninda **mesaj basina sikayet**
+  (uzun basis) ve karar 76 baglam bildirimi.
+- **Faz C - 13 moderator RPC'si:** sikayet listesi/detayi/hedef
+  gecmisi, karara baglama, kullanici arama/detayi, iki kademeli konusma
+  erisimi, askiya alma/yasaklama/kaldirma, icerik gizleme, iz
+  listeleme, iki Storage politikasi.
+- **Faz D - canli dogrulama:** senaryo 59 (13 RPC'nin hepsi yetkisiz
+  cagriyi reddediyor) ve senaryo 60 (gizleme uc yoldan da kesiyor,
+  sahibi dahil).
+- **Faz E - panel:** `panel/` altinda Vite + React + TS, alti ekran.
+
+**Kapanis dogrulamasi:** jest 44 paket / 364 test yesil;
+`test:sema` 145 dogrulama; `test:gorunurluk` 340 dogrulama; mobil
+`tsc` yalnizca bes onceden var olan `@types/node` hatasi; panel `tsc`
+0 hata ve uretim derlemesi temiz.
+
+**BLOKAJ - siradaki oturumun ILK isi:** projede **TOTP MFA kapali**.
+`mfa.enroll` cagrisi `MFA enroll is disabled for TOTP` donuyor. Bu bir
+Supabase **proje ayaridir**, migrasyonla ya da MCP ile acilamaz:
+Supabase Dashboard -> Authentication -> Multi-Factor Authentication ->
+TOTP acilmali. Acilana kadar panele giris yapilamaz ve pozitif yon
+(dogru kimlik kapiyi aciyor mu) dogrulanamaz.
+
+Negatif yon TAM dogrulandi: gercek bir moderator hesabi olusturulup
+`moderatorler` tablosuna eklendi, parola ile giris yapildi (aal1) ve
+kapi KAPALI kaldi - `moderator_muyum` false dondu, moderator RPC'si
+`Yetkisiz` verdi. Yani ikinci faktor gercekten zorlaniyor.
+
+**Test moderator hesabi duruyor:** `+905550000009` /
+`moderator-test-1234`, `profiller` satiri yok (karar 56 geregi dogru).
+Parola `docs/plan2-takip-isleri.md` icinde yazili oldugu icin bu hesap
+GERCEK moderator hesabi olarak kullanilmamali; kullanici kendi
+hesabini kurunca silinmeli ya da parolasi degistirilmeli.
+
+Kalan borclar ve `[SONRA]` listesi: `docs/plan2-takip-isleri.md`.
+Panelin kendi belgesi (neden service-role yok, ilk moderator nasil
+eklenir, iki kademe nasil calisir): `panel/README.md`.
+
 ### Ekran metinleri duzgun Turkce'ye cevrildi (2026-08-23, commit b431d89)
 
 Kullanici uygulamayi tarayici yolundan telefonda test etti ve tek

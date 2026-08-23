@@ -918,3 +918,22 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     yapimina baslarsin tum yetki sende ben yatiyorum" dedi. Plan 2
     (moderasyon paneli) yazilacak ve uygulanacak; ara kararlar
     Claude tarafindan alinip bu deftere yazilacak.
+
+78. **PLAN 2 (MODERASYON PANELI) UYGULANDI.** Kullanicinin tam yetki
+    vermesiyle (karar 77) 23 gorevlik plan yazildi ve bes fazi da
+    yuruttuldu; dal `claude/plan2-moderasyon-paneli`. Veritabani
+    tarafinda 12 migrasyon (moderator kimligi ve AAL2 kapisi, denetim
+    izi, sikayet genisletmesi, icerik gizleme, sikayet_gonder
+    duzeltmesi, 13 moderator RPC'si, Storage politikalari); mobil
+    tarafta mesaj basina sikayet; `panel/` altinda alti ekranli Vite +
+    React konsolu. Kapanis: jest 44/364, test:sema 145, test:gorunurluk
+    340, mobil tsc bes taban hatasi, panel tsc 0 hata.
+    Uc gercek kusur bulundu ve duzeltildi: (a) mesaj sikayeti CHECK
+    kisiti yuzunden HIC calismiyordu (Faz 3b'den beri), (b) sohbet
+    ekrani konusma id'sini mesaj id'si diye gonderiyordu, (c)
+    sikayet_gonder uyelik/sahiplik dogrulamiyordu. Ayrica spec'in
+    `check_inler` okuyucu listesi eskimisti; liste canlida yeniden
+    uretildi. BLOKAJ: projede TOTP MFA kapali (Supabase proje ayari),
+    bu yuzden panele giris yapilamiyor ve pozitif yon dogrulanamadi;
+    negatif yon (aal1 ile kapi kapali) gercek bir moderator hesabiyla
+    dogrulandi. Ayrinti `docs/plan2-takip-isleri.md`.
