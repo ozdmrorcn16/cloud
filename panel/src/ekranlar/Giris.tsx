@@ -12,10 +12,17 @@ type Adim = 'parola' | 'kod'
  *
  * Ilk kurulumda TOTP kaydi da burada yapilir: enroll bir QR uretir,
  * moderator onu dogrulayici uygulamasina ekler ve ilk kodu girer.
+ *
+ * KIMLIK E-POSTADIR, telefon degil. Spec karar 56 "kendi telefon
+ * numarasi" diyordu ama Supabase'in TOTP'si QR uretirken hesap adi
+ * olarak e-postayi kullaniyor; telefon-only hesapta enroll
+ * "AccountName must be set" ile 500 doner (auth loglarinda dogrulandi).
+ * E-posta ayrica daha uygun: moderator hesabi zaten uygulamadan ayri
+ * ve telefon dogrulamasi bos yere SMS maliyeti getiriyordu.
  */
 export function Giris({ onGirildi }: { onGirildi: () => void }) {
   const [adim, setAdim] = useState<Adim>('parola')
-  const [telefon, setTelefon] = useState('')
+  const [eposta, setEposta] = useState('')
   const [parola, setParola] = useState('')
   const [kod, setKod] = useState('')
   const [faktorId, setFaktorId] = useState<string | null>(null)
@@ -28,7 +35,7 @@ export function Giris({ onGirildi }: { onGirildi: () => void }) {
     setCalisiyor(true)
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        phone: telefon.trim(),
+        email: eposta.trim(),
         password: parola,
       })
       if (error) {
@@ -123,12 +130,13 @@ export function Giris({ onGirildi }: { onGirildi: () => void }) {
             girisYap()
           }}
         >
-          <label htmlFor="telefon">Telefon</label>
+          <label htmlFor="eposta">E-posta</label>
           <input
-            id="telefon"
-            value={telefon}
-            onChange={(e) => setTelefon(e.target.value)}
-            placeholder="+905550000000"
+            id="eposta"
+            type="email"
+            value={eposta}
+            onChange={(e) => setEposta(e.target.value)}
+            placeholder="moderator@slooin.app"
             autoComplete="username"
           />
 
