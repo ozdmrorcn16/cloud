@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -42,20 +42,37 @@ export default function KesfetEkrani() {
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
+  // Ilk acilis bittikten sonra ekran duzeni bir daha tam ekran
+  // durumlara gecmiyor; bkz. asagidaki not.
+  const [ilkYuklemeBitti, setIlkYuklemeBitti] = useState(false)
+  const istekSirasi = useRef(0)
 
   async function yukle(metre = yaricapMetre, metin = arama) {
+    // Yaris korumasi: hizli yazarken istekler sirayla degil paralel
+    // doner. Sira numarasi olmadan eski ve yavas bir istek, yeni
+    // sonucun uzerine yaziyor ve liste yanlis kaliyordu.
+    const sira = ++istekSirasi.current
     setYukleniyor(true)
     setHata(null)
     try {
       const konum = cihazKonumu ?? (await cihazKonumunuAl())
       setCihazKonumu(konum)
-      setMekanlar(
-        await yakinMekanlariYogunlukIleGetir(konum.lat, konum.lng, metre, metin || undefined)
+      const sonuc = await yakinMekanlariYogunlukIleGetir(
+        konum.lat,
+        konum.lng,
+        metre,
+        metin || undefined
       )
+      if (sira !== istekSirasi.current) return
+      setMekanlar(sonuc)
     } catch (e) {
+      if (sira !== istekSirasi.current) return
       setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
-      setYukleniyor(false)
+      if (sira === istekSirasi.current) {
+        setYukleniyor(false)
+        setIlkYuklemeBitti(true)
+      }
     }
   }
 
@@ -64,9 +81,23 @@ export default function KesfetEkrani() {
     // Ilk yukleme; sonrakiler kullanici etkilesimiyle tetikleniyor.
   }, [])
 
-  async function aramaDegisti(metin: string) {
+  // Arama kutusu her harfte istek ATMIYOR. Onceki surumde her tusa
+  // basista sunucuya gidiliyordu; bu hem agi bosa yoruyor hem de
+  // yazmayi tekletiyordu. 300 ms sessizlik bekleniyor.
+  useEffect(() => {
+    if (!cihazKonumu) return
+    const zamanlayici = setTimeout(() => {
+      yukle(yaricapMetre, arama)
+    }, 300)
+    return () => clearTimeout(zamanlayici)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arama])
+
+  function aramaDegisti(metin: string) {
+    // Burada yalnizca metin guncelleniyor: istegi yukaridaki
+    // bekletmeli etki atiyor. Yazma ile ag istegini ayirmak, yazi
+    // kutusunun her tusta yeniden olusmasini engelliyor.
     setArama(metin)
-    if (cihazKonumu) await yukle(yaricapMetre, metin)
   }
 
   async function yaricapDegisti(metre: number) {
@@ -109,7 +140,18 @@ export default function KesfetEkrani() {
     return Number.isFinite(metre) ? mesafeYazisi(metre) : ''
   }
 
-  if (yukleniyor && mekanlar.length === 0) {
+  // TAM EKRAN DURUMLAR YALNIZCA ILK ACILISTA.
+  //
+  // Kullanicinin bildirdigi hata buradaydi: arama sonuc vermeyince
+  // liste bosaliyor, bir harf daha yazilinca `yukleniyor && liste bos`
+  // kosulu saglaniyor ve EKRANIN TAMAMI yukleme ekraniyla
+  // degisiyordu. Yazi kutusu agactan kalkinca klavye kapaniyor,
+  // kullanici yazmaya devam edemiyordu.
+  //
+  // Ilk acilistan sonra yukleme durumu artik yalnizca kutunun
+  // yanindaki kucuk gostergeyle anlatiliyor; ekran duzeni sabit
+  // kaliyor.
+  if (!ilkYuklemeBitti && yukleniyor) {
     return (
       <View style={stiller.ortala}>
         <ActivityIndicator color={renk.turuncu} />
@@ -119,7 +161,8 @@ export default function KesfetEkrani() {
   }
 
   // Bos ya da hatali durum bir yon vermeli, yalnizca hata metni degil.
-  if (hata && mekanlar.length === 0) {
+  // Arama YAPILIYORKEN tam ekrana gecilmiyor - ayni klavye sorunu.
+  if (hata && mekanlar.length === 0 && !arama.trim()) {
     return (
       <View style={stiller.ortala}>
         <Text style={stiller.hataBaslik}>Çevreni göremiyoruz</Text>
@@ -183,7 +226,33 @@ export default function KesfetEkrani() {
         placeholderTextColor={renk.metinSoluk}
         value={arama}
         onChangeText={aramaDegisti}
+        autoCorrect={false}
+        autoCapitalize="none"
+        returnKeyType="search"
       />
+
+      {/* Arama sirasinda ekran duzeni DEGISMIYOR; durum yalnizca bu
+          ince seritle anlatiliyor. Boylece yazi kutusu agacta kaliyor
+          ve klavye acik kaliyor. */}
+      {arama.trim().length > 0 && (
+        <View style={stiller.aramaDurumu}>
+          {yukleniyor ? (
+            <>
+              <ActivityIndicator size="small" color={renk.turuncu} />
+              <Text style={stiller.aramaDurumYazi}>Aranıyor…</Text>
+            </>
+          ) : suzulmus.length === 0 ? (
+            <Text style={stiller.aramaDurumYazi}>
+              “{arama.trim()}” için yakınında bir yer bulunamadı. Yarıçapı
+              büyütmeyi deneyebilirsin.
+            </Text>
+          ) : (
+            <Text style={stiller.aramaDurumYazi}>
+              {suzulmus.length} sonuç
+            </Text>
+          )}
+        </View>
+      )}
 
       {turler.length > 1 && (
         <ScrollView
@@ -351,6 +420,19 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.xs,
   },
   ozetVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuKoyu },
+  aramaDurumu: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.s,
+    paddingHorizontal: bosluk.l,
+    paddingTop: bosluk.s,
+  },
+  aramaDurumYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+    flexShrink: 1,
+  },
   hataSeridi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
