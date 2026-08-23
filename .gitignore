@@ -23,3 +23,10 @@ araclar/overture-tr.parquet
 panel/node_modules
 panel/dist
 panel/.env
+
+# Mekan yukleme araclarinin urettigi buyuk/gecici dosyalar
+araclar/overture-tr.parquet
+araclar/kategori-tam.txt
+araclar/kategori-dagilim.txt
+araclar/indirme-log.txt
+araclar/yukleme-log.txt

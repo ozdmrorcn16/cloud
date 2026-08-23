@@ -51,25 +51,27 @@ YEREL_PARQUET = os.path.join(os.path.dirname(__file__), "overture-tr.parquet")
 XMIN, XMAX = 25.5, 44.9
 YMIN, YMAX = 35.7, 42.3
 
-GUVEN_ESIGI = 0.5
+# 0.5'ten 0.6'ya cikarildi: Overture'in yanlis etiketledigi kayitlarin
+# cogu dusuk guvenli. Ornek: "Park Apt" 0.43 guvenle 'park' kategorisinde
+# duruyordu. Esik yukseltmek kapsami bir miktar daraltiyor ama
+# kullanicinin bildirdigi yaniltici etiketleri belirgin sekilde azaltiyor.
+GUVEN_ESIGI = 0.6
 
-# Overture kategorisi -> uygulamanin tur degeri.
-# Uygulamanin bugunku tur seti korunuyor: kafe / bar / restoran / park.
-TUR_SQL = """
-CASE
-  WHEN kategori IN ('cafe', 'coffee_shop', 'tea_room', 'internet_cafe')
-       OR kategori LIKE '%_cafe' THEN 'kafe'
-  WHEN kategori IN ('bar', 'pub', 'night_club', 'wine_bar', 'cocktail_bar',
-                    'beer_garden', 'beer_bar', 'hookah_lounge', 'karaoke')
-       OR kategori LIKE '%_bar' THEN 'bar'
-  WHEN kategori LIKE '%restaurant%' OR kategori IN ('fast_food', 'food_court',
-                    'diner', 'bistro', 'pizzeria', 'kebab_shop')
-       THEN 'restoran'
-  WHEN kategori IN ('park', 'state_park', 'national_park', 'public_garden',
-                    'botanical_garden', 'beach', 'picnic_area')
-       THEN 'park'
-END
-"""
+# Kategori eslemesi ARTIK SQL'DE DEGIL: araclar/kategori-eslemesi.py.
+# Sebep: eski esleme her seyi dort ture (kafe/bar/restoran/park)
+# sikistiriyordu ve plaj "park", apartman "park" gorunuyordu. Yeni esleme
+# 168 kategoriyi kendi Turkce adiyla tasiyor ve Overture'in alternatif
+# kategorilerini de kullanarak yanlis etiketleri duzeltiyor.
+def _esleme():
+    import importlib.util
+    import os as _os
+
+    yol = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                        'kategori-eslemesi.py')
+    spec = importlib.util.spec_from_file_location('kategori_eslemesi', yol)
+    modul = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modul)
+    return modul
 
 
 def indir():
@@ -86,6 +88,7 @@ def indir():
             SELECT id AS gers_id,
                    names.primary AS ad,
                    categories.primary AS kategori,
+                   categories.alternate AS alt_kategoriler,
                    confidence AS guven,
                    bbox.xmin AS lng,
                    bbox.ymin AS lat,
@@ -97,10 +100,10 @@ def indir():
               AND names.primary IS NOT NULL
               AND confidence >= {GUVEN_ESIGI}
           )
-          SELECT gers_id, ad, {TUR_SQL} AS tur, guven, lng, lat, adres
+          SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres
           FROM ham
           WHERE (ulke IS NULL OR ulke = 'TR')
-            AND ({TUR_SQL}) IS NOT NULL
+            AND kategori IS NOT NULL
         ) TO '{YEREL_PARQUET}' (FORMAT parquet)
     """)
     n = con.execute(f"SELECT count(*) FROM read_parquet('{YEREL_PARQUET}')").fetchone()[0]
@@ -115,11 +118,33 @@ def yukle():
         os.environ["EXPO_PUBLIC_SUPABASE_URL"],
         os.environ["SUPABASE_SERVICE_ROLE_KEY"],
     )
+    esleme = _esleme()
     con = duckdb.connect()
-    satirlar = con.execute(
-        f"SELECT gers_id, ad, tur, guven, lng, lat, adres FROM read_parquet('{YEREL_PARQUET}')"
+    ham = con.execute(
+        "SELECT gers_id, ad, kategori, alt_kategoriler, guven, lng, lat, adres "
+        f"FROM read_parquet('{YEREL_PARQUET}')"
     ).fetchall()
-    print(f"{len(satirlar)} satir yuklenecek (gers_id ile upsert)...")
+
+    # Esleme burada uygulaniyor: sozlukte karsiligi olmayan kategori
+    # ALINMAZ. Boylece ekranda hicbir zaman ham Ingilizce kategori adi
+    # gorunmez. Ham kategori ayrica sutunda saklanir - esleme sonradan
+    # degisirse veriyi yeniden indirmeye gerek kalmaz.
+    satirlar = []
+    atlanan = {}
+    for gers_id, ad, kategori, alt, guven, lng, lat, adres in ham:
+        tur = esleme.duzelt(kategori, list(alt) if alt is not None else [])
+        if tur is None:
+            atlanan[kategori] = atlanan.get(kategori, 0) + 1
+            continue
+        satirlar.append((gers_id, ad, tur, kategori, guven, lng, lat, adres))
+
+    print(f"{len(ham)} kayittan {len(satirlar)} tanesi eslesti.")
+    if atlanan:
+        ilk = sorted(atlanan.items(), key=lambda x: -x[1])[:10]
+        print("Eslesmedigi icin ALINMAYAN kategoriler (ilk 10):")
+        for kategori, adet in ilk:
+            print(f"   {adet:>7}  {kategori}")
+        print(f"   ... toplam {sum(atlanan.values())} kayit alinmadi.")
 
     PARCA = 500
     for i in range(0, len(satirlar), PARCA):
@@ -128,15 +153,16 @@ def yukle():
                 "gers_id": s[0],
                 "ad": s[1],
                 "tur": s[2],
-                "guven": s[3],
-                "konum": f"POINT({s[4]} {s[5]})",
-                "adres": s[6],
+                "kategori": s[3],
+                "guven": s[4],
+                "konum": f"POINT({s[5]} {s[6]})",
+                "adres": s[7],
                 "kaynak": "overture",
             }
             for s in satirlar[i : i + PARCA]
         ]
         supabase.table("mekanlar").upsert(parca, on_conflict="gers_id").execute()
-        if (i // PARCA) % 20 == 0 or i + PARCA >= len(satirlar):
+        if (i // PARCA) % 40 == 0 or i + PARCA >= len(satirlar):
             print(f"{min(i + PARCA, len(satirlar))}/{len(satirlar)}")
     print("Yukleme bitti.")
 
