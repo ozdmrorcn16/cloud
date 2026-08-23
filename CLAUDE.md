@@ -131,6 +131,36 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KRITIK DERS: mock'lanmis test gercek veri bicimini dogrulamaz (2026-08-23)
+
+Kullanici uygulamayi telefonda deneyip "Mekanlari kesfet" ekraninin
+`Beklenmeyen konum formati: 0101000020E6100000...` ile patladigini
+bildirdi. Yani **mekan kesfetme hic calismiyordu** - Bursa'da da,
+hicbir yerde de.
+
+Sebep: PostgREST `geography` sutununu WKT (`POINT(x y)`) olarak degil
+**hex EWKB** olarak donduruyor. `lib/konum.ts` icindeki `noktayiCoz`
+yalnizca WKT taniyordu ve gelen her gercek degeri reddediyordu.
+
+**Hicbir kosum yakalamadi:**
+- jest ekran testleri Supabase'i mock'luyor -> gercek bicimi hic gormuyor
+- `test:gorunurluk` RPC'yi cagiriyor ama `konum` alanini hic OKUMUYOR
+- elle tarayici gezintisi Faz 2a'dan beri borc olarak duruyordu
+
+**Bu ayni sinif hata Faz 2a'da da yasanmisti** (mekan detay ekrani canli
+veritabaninda hic calismiyordu, 66 test yesilken). Ders tekrar etti:
+bir alan yalnizca mock'ta okunuyorsa, o alanin gercek bicimi hic
+dogrulanmamis demektir.
+
+Duzeltme istemcide yapildi (`noktayiCoz` artik iki bicimi de coziyor),
+testler canlidan alinmis GERCEK bir deger kullaniyor. Sunucuya
+dokunulmadi.
+
+**Kural olarak alinmali:** sunucudan gelen bir alani ISTEMCIDE
+ayristiran her yer, en az bir testte gercek sunucu ciktisiyla
+dogrulanmali. Mock veri, bicim varsayimini test etmez - yalnizca
+varsayimi tekrar eder.
+
 ### Plan 2 (moderasyon paneli) UYGULANDI (2026-08-23)
 
 **Calisma dali degisti: `claude/plan2-moderasyon-paneli`** (ucu
