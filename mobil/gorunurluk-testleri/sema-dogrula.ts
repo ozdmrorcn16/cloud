@@ -742,6 +742,37 @@ async function main() {
     )
   }
 
+  // Plan 2 Task 1: moderator kimligi ve AAL2 yetki kapisi.
+  //
+  // Kimlerin moderator oldugu da bir sizinti yuzeyidir; tabloda RLS acik
+  // ve HICBIR politika yok, yani PostgREST uzerinden okunamaz.
+  {
+    console.log('\n--- Plan 2 Task 1: moderator kimligi ve yetki kapisi ---')
+
+    const { data: modSatirlari, error: modHatasi } = await a
+      .from('moderatorler')
+      .select('kullanici_id')
+      .limit(1)
+    esitMi(
+      modHatasi !== null || (modSatirlari?.length ?? 0) === 0,
+      true,
+      'moderatorler tablosu PostgREST uzerinden okunamiyor'
+    )
+
+    // moderator_muyum panelin acilista sordugu TEK istisnadir: hata
+    // firlatmaz, yalnizca cevap verir. Siradan bir kullanici icin false.
+    const { data: moderatorMu, error: muyumHatasi } = await a.rpc('moderator_muyum')
+    esitMi(muyumHatasi, null, 'moderator_muyum siradan kullanici tarafindan cagrilabiliyor')
+    esitMi(moderatorMu, false, 'moderator olmayan icin moderator_muyum false doner')
+
+    const { error: anonMuyumHatasi } = await anon.rpc('moderator_muyum')
+    esitMi(
+      anonMuyumHatasi?.code,
+      '42501',
+      'kimliksiz istemci moderator_muyum cagiramiyor (anon rolunden geri alinmis)'
+    )
+  }
+
   sonucuBildirVeCik()
 }
 
