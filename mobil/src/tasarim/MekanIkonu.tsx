@@ -21,7 +21,7 @@ type IkonAdi =
   | 'dambil' | 'stadyum' | 'havuz'
   | 'yatak' | 'canta' | 'sepet'
   | 'mezuniyet' | 'kubbe' | 'haç' | 'otobus' | 'nokta'
-  | 'ev' | 'konak' | 'site'
+  | 'ev' | 'konak' | 'site' | 'fabrika' | 'ofis'
 
 // Tur -> ikon. Sozlukte olmayan tur 'nokta'ya duser.
 const TUR_IKONU: Record<string, IkonAdi> = {
@@ -122,6 +122,10 @@ const TUR_IKONU: Record<string, IkonAdi> = {
   'Şarküteri': 'sepet', 'Balıkçı': 'sepet',
   'Düğün salonu': 'nota', 'Oyun salonu': 'film',
   'Halı saha': 'stadyum', 'Baraj': 'dalga',
+  // Konut / is yeri / fabrika ayrimi (kullanicinin istegi):
+  // uc grup da kendi ikonunu tasir, birbirine karismaz.
+  'Fabrika': 'fabrika', 'Sanayi sitesi': 'fabrika',
+  'İş merkezi': 'ofis', 'Depo': 'fabrika',
 }
 
 export function turIkonAdi(tur: string): IkonAdi {
@@ -322,6 +326,24 @@ export function MekanIkonu({
           <Line x1="4" y1="11" x2="20" y2="11" {...ortak} />
           <Circle cx="8" cy="19" r="1.6" {...ortak} />
           <Circle cx="16" cy="19" r="1.6" {...ortak} />
+        </>
+      )}
+      {ad === 'fabrika' && (
+        <>
+          {/* Testere disli catili uretim tesisi + baca. Konut ve ofis
+              ikonlarindan ilk bakista ayrilmasi icin baca sart. */}
+          <Path d="M3 21V11l5 3V11l5 3V11l5 3v7z" {...ortak} />
+          <Path d="M18 8V3h3v11" {...ortak} />
+          <Line x1="3" y1="21" x2="21" y2="21" {...ortak} />
+        </>
+      )}
+      {ad === 'ofis' && (
+        <>
+          {/* Yuksek is merkezi: dar govde, duzenli pencere sirasi. */}
+          <Path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17" {...ortak} />
+          <Path d="M9.5 7h1M13.5 7h1M9.5 11h1M13.5 11h1M9.5 15h1M13.5 15h1" {...ortak} />
+          <Path d="M10 21v-3h4v3" {...ortak} />
+          <Line x1="4" y1="21" x2="20" y2="21" {...ortak} />
         </>
       )}
       {ad === 'ev' && (

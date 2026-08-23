@@ -131,6 +131,63 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### Mekan turu DENETIMI: alti ajan, uc sistemik kok neden (2026-08-23)
+
+Kullanicinin istegi: "Butun turleri denetlesinler ajanlar", "Hataya yer
+yok", ve ardindan "konutlari is yerleri fabrikalari bunlarin hepsi cok
+iyi ayrilmali dogru turu gostermeli". Alti bagimsiz denetim ajani
+calisti (yalnizca SELECT), 142 kural onerdi. Tam rapor:
+`docs/mekan-turu-denetimi-2026-08-23.md`.
+
+**UC SISTEMIK KOK NEDEN - hepsi duzeltildi:**
+
+1. **`lower('İ')` PostgreSQL'de bozuk**: tek 'i' degil 'i' + U+0307
+   uretiyor. Yani `~*` ve `ilike` ile yazilmis HER ad kurali Turkce
+   buyuk İ'de sessizce yarim calisiyordu (`ad like '%İlkokul%'` 3492,
+   `ad ilike '%ilkokul%'` 1625). **En agir sonucu ARAMANIN KENDISIYDI**:
+   kullanici "istanbul" yazinca "İstanbul Kafe" bulunmuyordu. Cozum:
+   `public.tr_kucuk()`; `yakin_mekanlar` ve `yakin_mekanlar_yogunluk`
+   artik iki tarafi da bundan geciriyor. **KURAL: bundan sonra ad
+   uzerinde yazilan her SQL kurali `tr_kucuk(ad)` kullanir, ham `ad`
+   veya `ilike` DEGIL.** Yan fayda: desenler saf ASCII yazilir.
+2. **`duzelt()` isme hic bakmiyordu**: ana kategori acik alansa ve
+   alternatifte konaklama sinyali varsa kaydi otele ceviriyordu.
+   "Fatih Mahallesi", "Doğancık Köyü" bu yuzden Otel'di - 9.456 kayit,
+   Otel turunun ~%17'si. Artik `ad` parametresi aliyor ve
+   `toponim_mi()` ile yer adi olup olmadigina bakiyor.
+3. **ESLEME'de olu anahtarlar**: `police_station`/`fire_station`
+   yazilmisti, Overture `police_department`/`fire_department` yolluyor.
+   `Karakol` ve `İtfaiye` turleri 0 kayitti.
+
+**SILME YERINE GIZLEME:** mekan olmayan ~15 bin kayit (yol parcasi, koy
+adi, kargo firmasi, parke bayii, telefonlu SEO ilani) silinmedi,
+`tur = 'yer-degil'` yapildi; okuma yollari onu `'test'` gibi filtreler.
+Silme geri alinamaz ve `check_inler` cascade oldugu icin bir silme
+hatasi kullanicilarin anilarini goturur.
+
+**GERI ALMA KAYDI:** `public.tur_duzeltme_gecmisi` her degisikligin eski
+turunu, yeni turunu ve kural adini tutuyor (RLS acik, politika yok ->
+yalnizca service_role).
+
+**Ilk sonuclar:** Spa 24.120 -> 8.831 (kuafor/berber/guzellik ayrildi),
+Kuafor 14.028, Berber 9.464, Guzellik salonu 16.720, ATM 21.264
+(Banka'dan ayrildi). 22+ yeni tur acildi; kapsam daraltilmak yerine
+GENISLETILDI (kullanicinin karari).
+
+**ORTAM TUZAGI (yasandi, iki kez):** PostgREST cagrilarinda
+`statement_timeout` 8 saniye ve `tr_kucuk(ad)` uzerinde regex indeksi
+yok (pg_trgm kurulu degil, veritabani 500 MB sinirinin dibinde). Ilk
+kosumda 47 kural bu yuzden YARIM KALDI ve bu `ATLANDI` satirlari
+sayilmadan fark edilmiyor. Cozum `mekan_turunu_duzelt` fonksiyonuna
+`set statement_timeout = '180s'` eklemek oldu. **Toplu bakim
+betiklerinden sonra `ATLANDI` satirlari mutlaka sayilmali** - betik
+exit 0 dondugu halde is yarim kalmis olabilir.
+
+**Betikler:** `araclar/tur-duzeltmeleri.py` (ana denetim, ~90 kural),
+`araclar/tur-duzeltmeleri-2-isyeri.py` (konut/is yeri/fabrika ayrimi:
+Fabrika, Sanayi sitesi, İş merkezi, Depo turleri). Ikisi de IDEMPOTENT,
+guvenle yeniden calistirilabilir.
+
 ### Mekan verisi bastan yuklendi: 4 tur -> 133 tur (2026-08-23)
 
 Kullanici bildirdi: "Park Apt" apartman ama PARK gorunuyor, "ganita

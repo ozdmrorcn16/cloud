@@ -506,34 +506,38 @@ def main():
     genel = 0
     for aciklama, turler, kategoriler, desen, haric, hedef in KURALLAR:
         toplam = 0
-        parca = PARCA
-        while True:
-            try:
-                sonuc = supabase.rpc('mekan_turunu_duzelt', {
-                    'p_kaynak_turler': turler,
-                    'p_kategoriler': kategoriler,
-                    'p_desen': desen,
-                    'p_haric': haric,
-                    'p_hedef': hedef,
-                    'p_limit': parca,
-                    'p_kural': aciklama,
-                }).execute()
-            except Exception as hata:
-                # Zaman asimi: parcayi kucult, kuraldan vazgecme. Buyuk
-                # turlerde (Otel 41 bin, Spa 24 bin) regex taramasi tek
-                # seferde sunucunun sinirini asabiliyor.
-                if '57014' in str(hata) or 'timeout' in str(hata).lower():
-                    if parca > 25:
-                        parca = max(25, parca // 4)
-                        time.sleep(1)
-                        continue
-                print(f'  ATLANDI  {aciklama}: {hata}', flush=True)
-                break
-            adet = sonuc.data or 0
-            toplam += adet
-            if adet < parca:
-                break
-            time.sleep(0.05)
+        # ONEMLI: kaynak turler TEK TEK isleniyor, dizi olarak degil.
+        # Ilk kosumda 47 kural yarim kaldi: cok turlu bir dizi
+        # (`tur = any(...)`) yuz binlerce satiri tarattirip zaman
+        # asimina sokuyor. Tur basina cagri indeksi kullaniyor ve
+        # saniyenin altinda bitiyor. Kurallar idempotent oldugu icin
+        # betik guvenle yeniden calistirilabilir.
+        for tur in (turler or [None]):
+            parca = PARCA
+            while True:
+                try:
+                    sonuc = supabase.rpc('mekan_turunu_duzelt', {
+                        'p_kaynak_turler': [tur] if tur else None,
+                        'p_kategoriler': kategoriler,
+                        'p_desen': desen,
+                        'p_haric': haric,
+                        'p_hedef': hedef,
+                        'p_limit': parca,
+                        'p_kural': aciklama,
+                    }).execute()
+                except Exception as hata:
+                    if '57014' in str(hata) or 'timeout' in str(hata).lower():
+                        if parca > 25:
+                            parca = max(25, parca // 4)
+                            time.sleep(1)
+                            continue
+                    print(f'  ATLANDI  {aciklama} / {tur}: {hata}', flush=True)
+                    break
+                adet = sonuc.data or 0
+                toplam += adet
+                if adet < parca:
+                    break
+                time.sleep(0.05)
         genel += toplam
         print(f'{toplam:>7}  {aciklama} -> {hedef}', flush=True)
 

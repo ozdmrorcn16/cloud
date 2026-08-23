@@ -238,6 +238,19 @@ ESLEME: dict[str, str] = {
     'hookah_bar': 'Nargile kafe',
     'doner_kebab': 'Kebapçı',
     'spas': 'Spa',
+
+    # --- Konut / is yeri / fabrika ayrimi (kullanicinin istegi) ---
+    # Uc grup birbirine karismamali: konut konut, is yeri is yeri,
+    # fabrika fabrika gorunmeli.
+    'factory': 'Fabrika',
+    'manufacturing': 'Fabrika',
+    'industrial_zone': 'Sanayi sitesi',
+    'business_park': 'Sanayi sitesi',
+    'office': 'İş merkezi',
+    'shared_office_space': 'İş merkezi',
+    'coworking_space': 'İş merkezi',
+    'warehouse': 'Depo',
+    'storage_facility': 'Depo',
 }
 
 
