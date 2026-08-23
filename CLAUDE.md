@@ -131,6 +131,52 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### Mekan verisi bastan yuklendi: 4 tur -> 133 tur (2026-08-23)
+
+Kullanici bildirdi: "Park Apt" apartman ama PARK gorunuyor, "ganita
+beach" plaj ama PARK gorunuyor. Istegi net: "konum okulsa okul
+gorulmeli apartsa apart parksa park siteyse site yolsa yol", ve
+"tur sayisi artmali dogru konumlandirilmali".
+
+**Kok neden ikiye ayrildi, ikisi de canlida dogrulandi:**
+1. BIZIM hatamiz - esleme her seyi dort ture sikistiriyordu
+   (kafe/bar/restoran/park); `beach` de "park" sayiliyordu.
+2. OVERTURE'in hatasi - "Lüleburgaz Ögretmenler Sitesi"ne 0.76 guvenle
+   `beach` demis, "Küpeli Cesme"ye `wine_bar`.
+
+**Yapilan:**
+- `araclar/kategori-eslemesi.py`: 168 kategori, her biri kendi TURKCE
+  adiyla. Zorlama gruplama YOK. Sozlukte karsiligi olmayan kategori
+  ALINMAZ - boylece ekranda ham Ingilizce kategori adi hic gorunmez.
+- Overture'in ALTERNATIF kategori alani artik kullaniliyor (onceden hic
+  okunmuyordu): ana kategorisi acik alan ama alternatifinde
+  konaklama/konut olan kayitlar duzeltiliyor. "Park Apt" -> Otel,
+  "Ögretmenler Sitesi" -> Konaklama.
+- Guven esigi 0.5 -> 0.6.
+- `mekanlar.kategori` sutunu: ham kaynak kategorisi ARTIK SAKLANIYOR.
+  Bu onemli - onceden saklanmadigi icin "bu kayit neden park" sorusu
+  geriye donuk cevaplanamiyordu. Esleme degisirse veri yeniden
+  indirilmeden duzeltilebilir.
+- Test mekanlari (GORUNURLUK-TEST-*) artik kullaniciya gorunmuyor.
+
+**Sonuc:** 196.935 kayit / 4 tur  ->  877.972 kayit / 133 tur.
+Veritabani 100 MB -> 370 MB (ucretsiz katmanin %74'u).
+
+**Temizlik notu:** eski yuklemeden kalan 23.204 kayit (guven < 0.6,
+kucuk harfli "kafe"/"park" turleri) silindi - yoksa filtrede "Kafe" ve
+"kafe" ayri cipler olarak gorunuyordu. Silme sorgusu check-in'i olan
+mekani KORUYOR; `check_inler.mekan_id` cascade oldugu icin boyle bir
+silme kullanicinin check-in gecmisini de goturur.
+
+**ACIK KARAR:** guven esigi kullanicinin karariyla 0.60'ta BIRAKILDI
+(2026-08-23). 0.80'e cikarmak 694 bin kayda dusurur (~310 MB) ve
+kullanicinin bildirdigi iki hatali kaydi da elerdi ("Park Apt" 0.71,
+"Ögretmenler Sitesi" 0.76). Yer sikisirsa ilk basvurulacak kol budur.
+
+**Bilinen sinir:** Overture'in tekil hatalari (ornek "Küpeli Cesme" ->
+wine_bar) elimizdeki sinyallerle duzeltilemiyor; alternatif kategorisi
+de yok. Bunlar ancak kullanici sikayeti ya da elle duzeltmeyle temizlenir.
+
 ### KRITIK DERS: mock'lanmis test gercek veri bicimini dogrulamaz (2026-08-23)
 
 Kullanici uygulamayi telefonda deneyip "Mekanlari kesfet" ekraninin
