@@ -137,8 +137,10 @@ ESLEME: dict[str, str] = {
     'accommodation': 'Konaklama',
     'vacation_rental': 'Kiralık daire',
     'apartment_building': 'Apartman',
-    'residential_building': 'Konut',
+    'residential_building': 'Site',
     'housing_development': 'Site',
+    'villa': 'Villa',
+    'mansion': 'Konak',
 
     # --- Alisveris ---
     'shopping_center': 'AVM',

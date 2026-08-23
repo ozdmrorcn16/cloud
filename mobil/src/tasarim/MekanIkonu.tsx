@@ -21,6 +21,7 @@ type IkonAdi =
   | 'dambil' | 'stadyum' | 'havuz'
   | 'yatak' | 'canta' | 'sepet'
   | 'mezuniyet' | 'kubbe' | 'haç' | 'otobus' | 'nokta'
+  | 'ev' | 'konak' | 'site'
 
 // Tur -> ikon. Sozlukte olmayan tur 'nokta'ya duser.
 const TUR_IKONU: Record<string, IkonAdi> = {
@@ -71,8 +72,8 @@ const TUR_IKONU: Record<string, IkonAdi> = {
   // Konaklama
   'Otel': 'yatak', 'Motel': 'yatak', 'Hostel': 'yatak',
   'Pansiyon': 'yatak', 'Tatil köyü': 'yatak', 'Konaklama': 'yatak',
-  'Kiralık daire': 'bina', 'Apartman': 'bina', 'Konut': 'bina',
-  'Site': 'bina',
+  'Kiralık daire': 'bina', 'Apartman': 'bina', 'Konut': 'site',
+  'Site': 'site', 'Villa': 'ev', 'Konak': 'konak', 'Rezidans': 'bina',
   // Alisveris
   'AVM': 'canta', 'Alışveriş': 'canta', 'Giyim mağazası': 'canta',
   'Ayakkabı mağazası': 'canta', 'Kuyumcu': 'canta',
@@ -310,6 +311,32 @@ export function MekanIkonu({
           <Line x1="4" y1="11" x2="20" y2="11" {...ortak} />
           <Circle cx="8" cy="19" r="1.6" {...ortak} />
           <Circle cx="16" cy="19" r="1.6" {...ortak} />
+        </>
+      )}
+      {ad === 'ev' && (
+        <>
+          {/* Villa: ucgen catili tek ev. */}
+          <Path d="M4 11l8-6 8 6" {...ortak} />
+          <Path d="M6 10v10h12V10" {...ortak} />
+          <Path d="M10 20v-5h4v5" {...ortak} />
+        </>
+      )}
+      {ad === 'konak' && (
+        <>
+          {/* Konak: genis saçakli, iki katli tarihi ev. */}
+          <Path d="M3 10l9-5 9 5" {...ortak} />
+          <Path d="M5 10v10h14V10" {...ortak} />
+          <Path d="M8 13h3v3H8zM13 13h3v3h-3z" {...ortak} />
+          <Path d="M10 20v-2h4v2" {...ortak} />
+        </>
+      )}
+      {ad === 'site' && (
+        <>
+          {/* Site: yan yana birden fazla blok. */}
+          <Path d="M3 21V9l5-3v15" {...ortak} />
+          <Path d="M8 21V11l6-3v13" {...ortak} />
+          <Path d="M14 21v-8l6 3v5" {...ortak} />
+          <Line x1="2" y1="21" x2="22" y2="21" {...ortak} />
         </>
       )}
       {ad === 'nokta' && (
