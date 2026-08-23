@@ -1,4 +1,4 @@
-import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir } from './mekan'
+import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir, kesfetIcinSuz } from './mekan'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -127,5 +127,33 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
     await expect(yakinMekanlariYogunlukIleGetir(41.015, 28.979, 5000)).rejects.toThrow(
       'sunucu hatasi'
     )
+  })
+})
+
+describe('kesfetIcinSuz', () => {
+  const mekanlar = [
+    { tur: 'Kafe' },
+    { tur: 'Restoran' },
+    { tur: 'Banka' },
+    { tur: 'Telefoncu' },
+    { tur: 'Park' },
+  ]
+
+  it('arama bosken yalnizca sosyal turleri birakir', () => {
+    const sonuc = kesfetIcinSuz(mekanlar, false)
+    expect(sonuc.map((m) => m.tur)).toEqual(['Kafe', 'Restoran', 'Park'])
+  })
+
+  it('arama varken BUTUN turleri geri verir', () => {
+    // Kullanicinin karari: arama kapsamli olmali, kesfet secici.
+    const sonuc = kesfetIcinSuz(mekanlar, true)
+    expect(sonuc).toHaveLength(5)
+    expect(sonuc.map((m) => m.tur)).toContain('Banka')
+  })
+
+  it('cevrede hic sosyal mekan yoksa eldekini gosterir, bos ekran degil', () => {
+    // Kucuk yerlesimlerde liste tamamen bosalabilirdi.
+    const yalnizcaSosyalOlmayan = [{ tur: 'Banka' }, { tur: 'Eczane' }]
+    expect(kesfetIcinSuz(yalnizcaSosyalOlmayan, false)).toHaveLength(2)
   })
 })

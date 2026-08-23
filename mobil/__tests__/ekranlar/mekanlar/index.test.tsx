@@ -10,7 +10,13 @@ jest.mock('../../../lib/konum', () => ({
   cihazKonumunuAl: jest.fn(),
   mesafeMetre: jest.fn(() => 240),
 }))
-jest.mock('../../../lib/mekan', () => ({ yakinMekanlariYogunlukIleGetir: jest.fn() }))
+// kesfetIcinSuz saf bir fonksiyon (ag yok, yan etki yok): mock'lamak
+// yerine GERCEGI kullaniliyor, boylece ekranin suzme davranisi de
+// birlikte dogrulanmis oluyor. Yalnizca ag cagrisi mock'lanir.
+jest.mock('../../../lib/mekan', () => ({
+  ...jest.requireActual('../../../lib/mekan'),
+  yakinMekanlariYogunlukIleGetir: jest.fn(),
+}))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({

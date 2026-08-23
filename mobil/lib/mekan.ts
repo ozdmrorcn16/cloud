@@ -86,3 +86,61 @@ export async function yakinMekanlariYogunlukIleGetir(
     kisiSayisi: satir.kisi_sayisi,
   }))
 }
+
+/**
+ * Kesfet akisinda one cikan tur seti.
+ *
+ * Mekan veritabani 133 tur tasiyor (banka, kuyumcu, telefoncu, eczane
+ * dahil). Hepsi ARAMADA bulunabilir olmali - kullanicinin istegi buydu:
+ * "cok kapsamli olmali". Ama kesfet akisi farkli bir soruyu cevapliyor:
+ * "su an nereye gidip birileriyle karsilasabilirim". Bir telefoncunun
+ * o listede kafeyle yan yana durmasi akisi seyreltiyor.
+ *
+ * Bu yuzden ayrim SUZME degil BAGLAM: arama BOSKEN kesfet listesi bu
+ * turlere daralir, kullanici bir sey aradigi anda butun turler geri
+ * gelir. Kimse bir seyi kaybetmez, yalnizca varsayilan gorunum
+ * uygulamanin amacina gore secilir.
+ */
+export const SOSYAL_TURLER = new Set<string>([
+  // Yeme icme
+  'Kafe', 'Kahveci', 'Çay evi', 'İnternet kafe',
+  'Restoran', 'Türk mutfağı', 'Kebapçı', 'Pizzacı', 'Balık restoranı',
+  'Steakhouse', 'Suşi restoranı', 'İtalyan restoranı', 'Çin restoranı',
+  'Burgerci', 'Ocakbaşı', 'Kahvaltı salonu', 'Fast food', 'Lokanta',
+  'Yemek katı', 'Fırın', 'Tatlıcı', 'Dondurmacı', 'Meyve suyu barı',
+  'Yeme içme',
+  // Gece
+  'Bar', 'Pub', 'Şarap evi', 'Kokteyl barı', 'Bira evi', 'Bira bahçesi',
+  'Spor barı', 'Gece kulübü', 'Karaoke', 'Nargile kafe', 'Şaraphane',
+  'Meyhane', 'Bira fabrikası',
+  // Acik alan
+  'Park', 'Milli park', 'Tabiat parkı', 'Halk bahçesi', 'Botanik bahçe',
+  'Piknik alanı', 'Plaj', 'Meydan', 'Kamp alanı', 'Marina',
+  'Seyir terası', 'Şelale', 'Göl', 'Kaplıca', 'Doğal alan',
+  // Kultur
+  'Müze', 'Sanat galerisi', 'Tarihi yer', 'Anıt', 'Kale', 'Ören yeri',
+  'Kütüphane', 'Kültür merkezi', 'Tiyatro', 'Sahne sanatları',
+  'Opera binası', 'Sinema', 'Canlı müzik', 'Konser salonu',
+  'Sanat ve eğlence', 'Akvaryum', 'Hayvanat bahçesi', 'Lunapark',
+  'Aquapark',
+  // Spor
+  'Spor salonu', 'Fitness merkezi', 'Yoga stüdyosu', 'Pilates stüdyosu',
+  'Yüzme havuzu', 'Stadyum', 'Spor kulübü', 'Bowling salonu',
+  'Bilardo salonu', 'Kayak merkezi', 'Kaykay parkı', 'Tenis kortu',
+  'Spor ve rekreasyon',
+  // Karsilasma ihtimali yuksek digerleri
+  'AVM', 'Kitapçı', 'Semt pazarı', 'Üniversite', 'Kampüs binası',
+  'Hamam',
+])
+
+/** Kesfet akisi icin: arama bosken sosyal turlere daralt. */
+export function kesfetIcinSuz<T extends { tur: string }>(
+  mekanlar: T[],
+  aramaVarMi: boolean
+): T[] {
+  if (aramaVarMi) return mekanlar
+  const sosyal = mekanlar.filter((m) => SOSYAL_TURLER.has(m.tur))
+  // Cevrede hic sosyal mekan yoksa bos ekran gostermek yerine eldekini
+  // gosteriyoruz: kucuk yerlesimlerde liste tamamen bosalabilir.
+  return sosyal.length > 0 ? sosyal : mekanlar
+}

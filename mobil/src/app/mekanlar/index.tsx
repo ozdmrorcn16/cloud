@@ -11,7 +11,11 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
-import { yakinMekanlariYogunlukIleGetir, type MekanYogunlukIle } from '../../../lib/mekan'
+import {
+  yakinMekanlariYogunlukIleGetir,
+  kesfetIcinSuz,
+  type MekanYogunlukIle,
+} from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { MekanGorseli } from '../../tasarim/MekanGorseli'
 
@@ -70,18 +74,27 @@ export default function KesfetEkrani() {
     await yukle(metre, arama)
   }
 
+  // Kesfet akisi "su an nereye gidip birileriyle karsilasabilirim"
+  // sorusunu cevapliyor; arama ise butun veritabanini kapsiyor. Bu
+  // yuzden arama BOSKEN liste sosyal turlere daraliyor, bir sey
+  // arandigi anda 133 turun tamami geri geliyor.
+  const kesfetListesi = useMemo(
+    () => kesfetIcinSuz(mekanlar, arama.trim().length > 0),
+    [mekanlar, arama]
+  )
+
   // Tur cipleri GELEN VERIDEN turetiliyor, sabit liste degil: mekan
   // turleri kaynaga gore degisiyor (bugun 130'dan fazla tur var) ve
   // sabit bir liste bolgeye gore bos cipler gosterirdi.
   const turler = useMemo(() => {
     const sayac = new Map<string, number>()
-    for (const m of mekanlar) sayac.set(m.tur, (sayac.get(m.tur) ?? 0) + 1)
+    for (const m of kesfetListesi) sayac.set(m.tur, (sayac.get(m.tur) ?? 0) + 1)
     return [...sayac.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t)
-  }, [mekanlar])
+  }, [kesfetListesi])
 
   const suzulmus = useMemo(
-    () => (secilenTur ? mekanlar.filter((m) => m.tur === secilenTur) : mekanlar),
-    [mekanlar, secilenTur]
+    () => (secilenTur ? kesfetListesi.filter((m) => m.tur === secilenTur) : kesfetListesi),
+    [kesfetListesi, secilenTur]
   )
 
   const canlilar = suzulmus.filter((m) => m.kisiSayisi > 0)
