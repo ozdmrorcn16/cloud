@@ -89,7 +89,7 @@ export default function MekanEkleEkrani() {
             >
               {/* Kullanici sectigi turun ikonunu ANINDA goruyor;
                   mekanin kapagi bu ikon olacak. */}
-              <MekanIkonu tur={t} boyut={16} renk={secili ? '#FFFFFF' : '#6E6660'} />
+              <MekanIkonu tur={t} boyut={18} renk={secili ? '#FFFFFF' : '#6E6660'} />
               <Text style={[stiller.turCipiYazi, secili && stiller.turCipiYaziSecili]}>{t}</Text>
             </Pressable>
           )

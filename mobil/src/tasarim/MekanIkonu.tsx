@@ -127,9 +127,12 @@ export function MekanIkonu({
   renk?: string
 }) {
   const ad = turIkonAdi(tur)
+  // Cizgi kalinligi boyutla birlikte artiyor: sabit birakilirsa buyuk
+  // ikon soluk, kucuk ikon tikanik gorunuyor.
+  const kalinlik = boyut >= 48 ? 1.6 : boyut >= 30 ? 1.8 : 2
   const ortak = {
     stroke: renk,
-    strokeWidth: 1.7,
+    strokeWidth: kalinlik,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     fill: 'none',
@@ -160,7 +163,11 @@ export function MekanIkonu({
         </>
       )}
       {ad === 'ekmek' && (
-        <Path d="M4 12a4 4 0 0 1 4-4h8a4 4 0 0 1 0 8H8a4 4 0 0 1-4-4zM8 8V6M12 8V6M16 8V6" {...ortak} />
+        <>
+          {/* Ekmek somunu: yuvarlak sirt, duz taban, uzerinde uc kesik. */}
+          <Path d="M3 13c0-4.4 4-7 9-7s9 2.6 9 7v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z" {...ortak} />
+          <Path d="M8 9.5l-1.5 3M12 9l-1.5 3M16 9.5l-1.5 3" {...ortak} />
+        </>
       )}
       {ad === 'dondurma' && (
         <>

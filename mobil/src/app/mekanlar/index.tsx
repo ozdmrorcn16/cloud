@@ -222,8 +222,7 @@ export default function KesfetEkrani() {
           contentContainerStyle={stiller.kartSatiri}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/mekanlar/${item.id}`)}>
-              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={44} style={stiller.kart}>
-                <View style={stiller.kartKarartma} />
+              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={64} style={stiller.kart}>
                 <View style={stiller.canliRozet}>
                   <View style={stiller.canliNokta} />
                   <Text style={stiller.canliRozetYazi}>
@@ -254,7 +253,7 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/mekanlar/${item.id}`)}
           >
-            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={22} style={stiller.satirGorsel} />
+            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={30} style={stiller.satirGorsel} />
             <View style={stiller.satirOrta}>
               <Text style={stiller.satirAd} numberOfLines={1}>
                 {item.ad}
@@ -393,15 +392,9 @@ const stiller = StyleSheet.create({
 
   kartSatiri: { gap: bosluk.m, paddingHorizontal: bosluk.xl, paddingTop: bosluk.l },
   kart: { width: KART_GENISLIK, height: KART_YUKSEKLIK, borderRadius: 28, ...golge.yuzer },
-  // Fotograf uzerindeki yazinin okunmasi icin alttan yukari karartma.
-  kartKarartma: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '62%',
-    backgroundColor: renk.kapakKarartma,
-  },
+  // Beyaz kapak uzerinde cam rozet gorunmuyordu: dolgu turuncuya
+  // gecti. Turuncu burada dogru - "su an canli" bir eylem/canlilik
+  // isareti.
   canliRozet: {
     position: 'absolute',
     top: 14,
@@ -409,21 +402,21 @@ const stiller = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: renk.camRozet,
+    backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
     paddingVertical: 7,
     paddingHorizontal: 13,
   },
-  canliNokta: { width: 7, height: 7, borderRadius: 999, backgroundColor: '#FF8C42' },
+  canliNokta: { width: 7, height: 7, borderRadius: 999, backgroundColor: '#FFFFFF' },
   canliRozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik, color: '#FFFFFF' },
   kartAlt: { position: 'absolute', left: 18, right: 18, bottom: 18, gap: 2 },
   kartAd: {
     fontFamily: yazi.baslikKalin,
     fontSize: 20,
-    color: '#FFFFFF',
+    color: renk.metin,
     letterSpacing: -0.3,
   },
-  kartAltYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: 'rgba(255,255,255,0.82)' },
+  kartAltYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
 
   bolumBasligi: {
     fontFamily: yazi.baslikKalin,
@@ -443,7 +436,7 @@ const stiller = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
-  satirGorsel: { width: 54, height: 54, borderRadius: 18 },
+  satirGorsel: { width: 58, height: 58, borderRadius: 18 },
   satirOrta: { flex: 1, gap: 3 },
   satirAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   satirAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
