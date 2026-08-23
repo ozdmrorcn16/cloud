@@ -3,7 +3,13 @@ import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
 
-jest.mock('../../../lib/konum', () => ({ cihazKonumunuAl: jest.fn() }))
+// mesafeMetre de mock'lanmali: ekran mekan uzakligini bununla
+// hesapliyor. Yalnizca cihazKonumunuAl mock'lanirsa mesafeMetre
+// undefined kalir ve ekran cizilirken patlar.
+jest.mock('../../../lib/konum', () => ({
+  cihazKonumunuAl: jest.fn(),
+  mesafeMetre: jest.fn(() => 240),
+}))
 jest.mock('../../../lib/mekan', () => ({ yakinMekanlariYogunlukIleGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
@@ -53,7 +59,11 @@ describe('MekanAramaEkrani', () => {
     ;(cihazKonumunuAl as jest.Mock).mockRejectedValue(new Error('Konum izni verilmedi'))
     await render(<MekanAramaEkrani />)
     await waitFor(() => {
-      expect(screen.getByText('Konum izni verilmedi')).toBeTruthy()
+      // Ham hata metni yerine ne yapilacagini soyleyen bir ekran
+      // cikiyor; kullaniciya "izin verilmedi" demek tek basina yon
+      // vermiyordu.
+      expect(screen.getByText('Çevreni göremiyoruz')).toBeTruthy()
+      expect(screen.getByText('Tekrar dene')).toBeTruthy()
     })
   })
 
@@ -90,7 +100,7 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
 
     await waitFor(() => {
-      expect(screen.getByText('8 kisi')).toBeTruthy()
+      expect(screen.getByText('8 kişi burada')).toBeTruthy()
     })
   })
 
@@ -108,7 +118,7 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    expect(screen.queryByText('0 kisi')).toBeNull()
+    expect(screen.queryByText('0 kişi burada')).toBeNull()
   })
 
   it('yaricap secicisi 5 km ustunu sunmaz', async () => {
