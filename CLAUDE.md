@@ -169,10 +169,28 @@ hatasi kullanicilarin anilarini goturur.
 turunu, yeni turunu ve kural adini tutuyor (RLS acik, politika yok ->
 yalnizca service_role).
 
-**Ilk sonuclar:** Spa 24.120 -> 8.831 (kuafor/berber/guzellik ayrildi),
-Kuafor 14.028, Berber 9.464, Guzellik salonu 16.720, ATM 21.264
-(Banka'dan ayrildi). 22+ yeni tur acildi; kapsam daraltilmak yerine
-GENISLETILDI (kullanicinin karari).
+**NIHAI SONUC (denetim kapandi):** 98 kural calisti, **73.101 tekil
+kayit** duzeltildi, 12.676 kayit gizlendi. Gorunen mekan 865.188,
+**tur sayisi 133 -> 162**. Ornekler: Spa 24.120 -> 8.831
+(kuafor/berber/guzellik ayrildi), Kuafor 14.028, Berber 9.464,
+Guzellik salonu 16.720, ATM 21.264 (Banka'dan ayrildi). Kapsam
+daraltilmak yerine GENISLETILDI (kullanicinin karari).
+
+**Konut / is yeri / fabrika ayrimi** (kullanicinin ayrica istedigi):
+Site 20.377 (yalnizca konut) / Apartman 2.970 / Ogrenci yurdu 2.525 /
+İş merkezi 1.231 / Rezidans 1.162 / Konak 1.144 / Fabrika 913 /
+Sanayi sitesi 527 / Depo 201 / Villa 31. Fabrika ve Depo bilerek
+`SOSYAL_TURLER` disinda: aramada bulunuyorlar ama kesfet akisini
+doldurmuyorlar.
+
+**Kapanis dogrulamasi:** kalan kirlilik SQL ile olculdu (Banka icinde
+ATM 0, Kitapci icinde kirtasiye 0, Hastane icinde aile sagligi 1).
+Kalan tekil artiklarin incelenmesi dislama kurallarinin DOGRU
+calistigini gosterdi: "Bolu Berberler ve Kuaförler Odası" meslek
+odasidir, kuafor degil; "Anzer Çiçekli Köyü Dinlenme ve Konaklama
+Tesisleri" gercekten konaklamadir. Meslek odalari icin ayrica 113
+kayitlik bir duzeltme yapildi (-> Toplum merkezi).
+Testler: jest 44 paket / 371 test yesil, tsc bes taban hatasi.
 
 **ORTAM TUZAGI (yasandi, iki kez):** PostgREST cagrilarinda
 `statement_timeout` 8 saniye ve `tr_kucuk(ad)` uzerinde regex indeksi
