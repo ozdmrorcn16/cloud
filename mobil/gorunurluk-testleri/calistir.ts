@@ -2612,6 +2612,123 @@ async function main() {
     }
   })
 
+  await senaryo('59 - Moderator RPC kapisi: yetkisiz cagri hicbirine giremez', async () => {
+    // YENI BIR MODERATOR RPC'SI EKLENDIGINDE BU LISTEYE DE EKLENMELI.
+    // Kapinin degeri butun yuzeyi kapsamasindan geliyor; tek bir
+    // unutulmus RPC butun kapiyi anlamsiz kilar.
+    //
+    // Burada olculen sey NEGATIF yon: moderator olmayan (ve aal1) bir
+    // kullanici hicbirine giremiyor. Pozitif yon (gercek aal2 ile
+    // calisma) TOTP gerektirdigi icin otomatik kosumda dogrulanamaz,
+    // elle dogrulama turunde bakiliyor.
+    const sahteId = '00000000-0000-0000-0000-000000000000'
+    const cagrilar: { ad: string; parametre: Record<string, unknown> }[] = [
+      { ad: 'moderasyon_sikayetleri_listele', parametre: {} },
+      { ad: 'moderasyon_sikayet_detayi', parametre: { p_sikayet_id: sahteId } },
+      { ad: 'moderasyon_hedef_gecmisi', parametre: { p_hedef_tur: 'kullanici', p_hedef_id: sahteId } },
+      { ad: 'moderasyon_sikayeti_karara_bagla', parametre: { p_sikayet_id: sahteId, p_durum: 'incelendi' } },
+      { ad: 'moderasyon_kullanici_ara', parametre: { p_metin: 'ab' } },
+      { ad: 'moderasyon_kullanici_detayi', parametre: { p_kullanici_id: sahteId } },
+      { ad: 'moderasyon_konusma_mesajlari', parametre: { p_konusma_id: sahteId, p_gerekce: 'inceleme' } },
+      { ad: 'moderasyon_hesabi_askiya_al', parametre: { p_kullanici_id: sahteId, p_bitis: new Date(Date.now() + 86400000).toISOString(), p_gerekce: 'sebep' } },
+      { ad: 'moderasyon_hesabi_yasakla', parametre: { p_kullanici_id: sahteId, p_gerekce: 'sebep' } },
+      { ad: 'moderasyon_hesap_durumunu_kaldir', parametre: { p_kullanici_id: sahteId, p_gerekce: 'sebep' } },
+      { ad: 'moderasyon_icerigi_gizle', parametre: { p_check_in_id: sahteId, p_gerekce: 'sebep' } },
+      { ad: 'moderasyon_gizlemeyi_kaldir', parametre: { p_check_in_id: sahteId, p_gerekce: 'sebep' } },
+      { ad: 'moderasyon_kayitlarini_listele', parametre: {} },
+    ]
+
+    esitMi(cagrilar.length, 13, '59: butun moderator RPC listesi kapsandi')
+
+    for (const cagri of cagrilar) {
+      const { error } = await a.rpc(cagri.ad, cagri.parametre)
+      esitMi(
+        error?.message?.includes('Yetkisiz') ?? false,
+        true,
+        `59: ${cagri.ad} yetkisiz cagriyi reddediyor`
+      )
+    }
+
+    // moderator_muyum TEK istisna: hata firlatmaz, panelin acilista
+    // sordugu sorudur.
+    const { data: muyum, error: muyumHata } = await a.rpc('moderator_muyum')
+    esitMi(muyumHata, null, '59: moderator_muyum hata firlatmiyor')
+    esitMi(muyum, false, '59: moderator_muyum false donuyor')
+  })
+
+  await senaryo('60 - Moderasyon gizlemesi butun yollardan kesiyor', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+
+    // A mekan-1'e herkese acik check-in yapar; B ayni mekanda oldugu
+    // icin onu gorur.
+    const aCheckIn = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    const bCheckIn = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+
+    try {
+      const oncekiSakinler = await canliSakinIdleri(b, mekan1)
+      esitMi(oncekiSakinler.includes(aId), true, '60: gizlemeden once B, A yi goruyor')
+
+      const { data: oncekiYogunluk } = await b.rpc('yakin_mekanlar_yogunluk', {
+        p_lat: MEKAN_1.lat,
+        p_lng: MEKAN_1.lng,
+        p_yaricap_metre: 3000,
+      })
+      const oncekiSayi =
+        ((oncekiYogunluk ?? []) as { id: string; kisi_sayisi: number }[]).find(
+          (m) => m.id === mekan1
+        )?.kisi_sayisi ?? 0
+      esitMi(oncekiSayi >= 2, true, '60: yogunluk gizlemeden once en az 2')
+
+      // Gizleme moderator RPC'siyle degil dogrudan yaziliyor: RPC TOTP
+      // gerektirir. Olculen sey RPC degil, FILTRELERIN kestigi.
+      const { error: gizleHata } = await yonetici
+        .from('check_inler')
+        .update({ moderasyon_gizli: true })
+        .eq('id', aCheckIn)
+      esitMi(gizleHata, null, '60 kurulum: A nin check-in i gizlendi')
+
+      const sonrakiSakinler = await canliSakinIdleri(b, mekan1)
+      esitMi(sonrakiSakinler.includes(aId), false, '60: gizlendikten sonra B, A yi gormuyor')
+
+      // KARAR 60: gizlenen icerik SAHIBINE DE gorunmez. Bu, politikadaki
+      // filtrenin sahiplik kolunun DISINDA olmasinin tek gorunur kaniti.
+      const kendiSakinler = await canliSakinIdleri(a, mekan1)
+      esitMi(kendiSakinler.includes(aId), false, '60: sahibi de kendi gizlenmis check-in ini gormuyor')
+
+      const { data: sonrakiYogunluk } = await b.rpc('yakin_mekanlar_yogunluk', {
+        p_lat: MEKAN_1.lat,
+        p_lng: MEKAN_1.lng,
+        p_yaricap_metre: 3000,
+      })
+      const sonrakiSayi =
+        ((sonrakiYogunluk ?? []) as { id: string; kisi_sayisi: number }[]).find(
+          (m) => m.id === mekan1
+        )?.kisi_sayisi ?? 0
+      esitMi(
+        sonrakiSayi,
+        oncekiSayi - 1,
+        '60: gizlenen check-in yogunluk sayacindan da dusuyor'
+      )
+
+      // Geri alinabilir olmali: gizleme kalici silme degil (karar 60).
+      const { error: acHata } = await yonetici
+        .from('check_inler')
+        .update({ moderasyon_gizli: false })
+        .eq('id', aCheckIn)
+      esitMi(acHata, null, '60 kurulum: gizleme kaldirildi')
+
+      const geriSakinler = await canliSakinIdleri(b, mekan1)
+      esitMi(geriSakinler.includes(aId), true, '60: gizleme kalkinca A yeniden gorunuyor')
+    } finally {
+      await yonetici.from('check_inler').delete().eq('id', aCheckIn)
+      await yonetici.from('check_inler').delete().eq('id', bCheckIn)
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
