@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { bildirimJetonunuSil } from '../../lib/bildirim'
+import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
 
 export default function AnaEkran() {
   const router = useRouter()
@@ -36,61 +37,150 @@ export default function AnaEkran() {
   )
 
   return (
-    <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Hesabın hazır</Text>
-      <Text style={stiller.aciklama}>
-        Yakınındaki mekanları keşfet, check-in yap.
+    <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
+      {/* Kelime markasi: siyah "slooin" + turuncu nokta (karar 73). */}
+      <Text style={stiller.marka}>
+        slooin<Text style={stiller.markaNokta}>.</Text>
       </Text>
-      <Pressable style={stiller.buton} onPress={() => router.push('/mekanlar')}>
-        <Text style={stiller.butonYazi}>Mekanları keşfet</Text>
+
+      <Text style={stiller.baslik}>Hesabın hazır</Text>
+      <Text style={stiller.aciklama}>Yakınındaki mekanları keşfet, check-in yap.</Text>
+
+      {/* Turuncu YALNIZCA burada: sayfanin tek birincil eylemi. */}
+      <Pressable style={stiller.birincil} onPress={() => router.push('/mekanlar')}>
+        <Text style={stiller.birincilYazi}>Mekanları keşfet</Text>
       </Pressable>
-      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/kisiler')}>
-        <Text style={stiller.ikincilButonYazi}>Kişi ara</Text>
-      </Pressable>
-      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/baglar')}>
-        <View style={stiller.baglarIcerik}>
-          <Text style={stiller.ikincilButonYazi}>Bağlar</Text>
-          {bekleyenSayisi > 0 && <Text style={stiller.rozet}>{bekleyenSayisi}</Text>}
-        </View>
-      </Pressable>
-      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/mesajlar')}>
-        <View style={stiller.baglarIcerik}>
-          <Text style={stiller.ikincilButonYazi}>Mesajlar</Text>
-          {okunmamisMesajSayisi > 0 && <Text style={stiller.rozet}>{okunmamisMesajSayisi}</Text>}
-        </View>
-      </Pressable>
-      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/anilar')}>
-        <Text style={stiller.ikincilButonYazi}>Anılarım</Text>
-      </Pressable>
-      <Pressable style={stiller.ikincilButon} onPress={() => router.push('/profil/ayarlar')}>
-        <Text style={stiller.ikincilButonYazi}>Gizlilik ayarları</Text>
-      </Pressable>
+
+      <View style={stiller.liste}>
+        <SatirDugmesi etiket="Kişi ara" onPress={() => router.push('/kisiler')} />
+        <SatirDugmesi
+          etiket="Bağlar"
+          rozet={bekleyenSayisi}
+          onPress={() => router.push('/baglar')}
+        />
+        <SatirDugmesi
+          etiket="Mesajlar"
+          rozet={okunmamisMesajSayisi}
+          onPress={() => router.push('/mesajlar')}
+        />
+        <SatirDugmesi etiket="Anılarım" onPress={() => router.push('/profil/anilar')} />
+        <SatirDugmesi
+          etiket="Gizlilik ayarları"
+          sonuncu
+          onPress={() => router.push('/profil/ayarlar')}
+        />
+      </View>
+
       <Pressable style={stiller.cikisButonu} onPress={cikisYap}>
         <Text style={stiller.cikisYazi}>Çıkış yap</Text>
       </Pressable>
-    </View>
+    </ScrollView>
+  )
+}
+
+/** Kart icindeki tek satir. Rozet yalnizca sayi sifirdan buyukse cikar. */
+function SatirDugmesi({
+  etiket,
+  rozet = 0,
+  sonuncu = false,
+  onPress,
+}: {
+  etiket: string
+  rozet?: number
+  sonuncu?: boolean
+  onPress: () => void
+}) {
+  return (
+    <Pressable
+      style={[stiller.satir, !sonuncu && stiller.satirCizgili]}
+      onPress={onPress}
+    >
+      <Text style={stiller.satirYazi}>{etiket}</Text>
+      <View style={stiller.satirSag}>
+        {rozet > 0 && <Text style={stiller.rozet}>{rozet}</Text>}
+        <Text style={stiller.ok}>›</Text>
+      </View>
+    </Pressable>
   )
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 8 },
-  aciklama: { color: '#555', textAlign: 'center', marginBottom: 24 },
-  buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center', width: '100%' },
-  butonYazi: { color: '#fff', fontWeight: '600' },
-  ikincilButon: { padding: 14, alignItems: 'center', width: '100%' },
-  ikincilButonYazi: { color: '#111', fontWeight: '600' },
-  baglarIcerik: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  sayfa: { flex: 1, backgroundColor: renk.zemin },
+  icerik: { padding: bosluk.xl, paddingTop: bosluk.xxl + bosluk.l },
+
+  marka: {
+    fontFamily: yazi.baslikKalin,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.xxl,
+  },
+  markaNokta: { color: renk.turuncu },
+
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.5,
+    marginBottom: bosluk.xs,
+  },
+  aciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.xl,
+  },
+
+  birincil: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: bosluk.l,
+    alignItems: 'center',
+    ...golge.kart,
+  },
+  birincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.yuzey,
+  },
+
+  liste: {
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.kart,
+    marginTop: bosluk.xl,
+    overflow: 'hidden',
+    ...golge.kart,
+  },
+  satir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: bosluk.l,
+    paddingHorizontal: bosluk.l,
+  },
+  satirCizgili: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
+  satirYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  satirSag: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   rozet: {
-    color: '#fff',
-    backgroundColor: '#c00',
-    fontSize: 12,
-    fontWeight: '700',
-    borderRadius: 10,
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.yuzey,
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
     paddingHorizontal: 7,
-    paddingVertical: 1,
+    paddingVertical: 2,
     overflow: 'hidden',
   },
-  cikisButonu: { padding: 14, alignItems: 'center' },
-  cikisYazi: { color: '#c00' },
+  ok: { fontFamily: yazi.govde, fontSize: olcek.altBaslik, color: renk.metinSoluk },
+
+  cikisButonu: { paddingVertical: bosluk.l, alignItems: 'center', marginTop: bosluk.s },
+  cikisYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+  },
 })

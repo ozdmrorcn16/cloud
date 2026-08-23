@@ -1,5 +1,15 @@
 import { useEffect } from 'react'
 import { Slot, useRouter, useSegments } from 'expo-router'
+import {
+  useFonts,
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+} from '@expo-google-fonts/bricolage-grotesque'
+import {
+  InstrumentSans_400Regular,
+  InstrumentSans_500Medium,
+  InstrumentSans_600SemiBold,
+} from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
@@ -51,6 +61,19 @@ function YonlendirmeKontrolu() {
 }
 
 export default function KokLayout() {
+  // Marka yazi tipleri (karar 73). Yuklenmeden once ekran cizilmez:
+  // sistem fontuyla bir kare cizip sonra marka fontuna atlamak gozle
+  // gorulur bir sicrama uretiyor.
+  const [yaziHazir] = useFonts({
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    InstrumentSans_400Regular,
+    InstrumentSans_500Medium,
+    InstrumentSans_600SemiBold,
+  })
+
+  if (!yaziHazir) return null
+
   return (
     <OturumSaglayici>
       <YonlendirmeKontrolu />
