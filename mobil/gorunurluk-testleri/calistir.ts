@@ -2511,6 +2511,107 @@ async function main() {
   // numaralandirmak defterdeki ve raporlardaki atiflari bozar. Sonraki
   // gorevler 58'den devam eder.
 
+  await senaryo('58 - Mesaj sikayeti gercekten yaziliyor', async () => {
+    const yonetici = yoneticiIstemcisi()
+    if (!yonetici) {
+      console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
+      return
+    }
+
+    // A ile B arasinda yazma yetkisi kur, sonra A bir mesaj gondersin.
+    const { error: istekHata } = await a.rpc('sohbet_istegi_gonder', {
+      p_kullanici_id: bId,
+    })
+    esitMi(istekHata, null, '58 kurulum: sohbet istegi gonderildi')
+    const { error: kabulHata } = await b.rpc('sohbet_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, '58 kurulum: istek kabul edildi')
+
+    const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'sikayet edilecek mesaj',
+    })
+    esitMi(mesajHata, null, '58 kurulum: mesaj gonderildi')
+
+    // Gercek mesaj id'si lazim: sikayetin hedefi konusma degil MESAJ.
+    const { data: mesajlar } = await a.rpc('mesajlari_getir', {
+      p_konusma_id: konusmaId,
+    })
+    const mesajId = ((mesajlar ?? []) as { id: string }[])[0]?.id
+    esitMi(typeof mesajId, 'string', '58 kurulum: mesaj id alindi')
+
+    try {
+      // Bugune kadar bu cagri 23514 ile patliyordu: tablonun CHECK
+      // kisiti 'mesaj' turunu tanimiyordu.
+      const { error: sikayetHata } = await b.rpc('sikayet_gonder', {
+        p_hedef_tur: 'mesaj',
+        p_hedef_id: mesajId,
+        p_sebep: 'taciz',
+        p_aciklama: 'test',
+      })
+      esitMi(sikayetHata, null, '58: mesaj sikayeti hatasiz gonderiliyor')
+
+      const { data: satirlar } = await yonetici
+        .from('sikayetler')
+        .select('id, hedef_tur, hedef_id')
+        .eq('hedef_id', mesajId)
+      esitMi((satirlar ?? []).length, 1, '58: sikayet satiri gercekten yazildi')
+      esitMi(
+        ((satirlar ?? [])[0] as { hedef_tur: string } | undefined)?.hedef_tur,
+        'mesaj',
+        '58: hedef_tur mesaj olarak kaydedildi'
+      )
+
+      // Kendi mesajini sikayet edemez: A o mesajin gonderenidir.
+      const { error: kendiHata } = await a.rpc('sikayet_gonder', {
+        p_hedef_tur: 'mesaj',
+        p_hedef_id: mesajId,
+        p_sebep: 'taciz',
+      })
+      esitMi(
+        kendiHata?.message?.includes('Kendi mesajini') ?? false,
+        true,
+        '58: kendi mesajini sikayet edemiyor'
+      )
+
+      // Konusmanin uyesi olmayan ucuncu kisi de sikayet edemez; bu ayni
+      // zamanda uydurma bir mesaj id'siyle sahte sikayet uretilmesini
+      // kapatan kontroldur.
+      const { error: yabanciHata } = await c.rpc('sikayet_gonder', {
+        p_hedef_tur: 'mesaj',
+        p_hedef_id: mesajId,
+        p_sebep: 'taciz',
+      })
+      esitMi(
+        yabanciHata?.message?.includes('Bu mesaji sikayet edemezsin') ?? false,
+        true,
+        '58: konusmanin uyesi olmayan sikayet edemiyor'
+      )
+
+      // Var olmayan bir mesaj id'si de ayni kapiya takilir.
+      const { error: sahteHata } = await b.rpc('sikayet_gonder', {
+        p_hedef_tur: 'mesaj',
+        p_hedef_id: '00000000-0000-0000-0000-000000000000',
+        p_sebep: 'taciz',
+      })
+      esitMi(
+        sahteHata?.message?.includes('Bu mesaji sikayet edemezsin') ?? false,
+        true,
+        '58: var olmayan mesaj sikayet edilemiyor'
+      )
+    } finally {
+      await yonetici.from('sikayetler').delete().eq('hedef_id', mesajId)
+      await yonetici.from('konusmalar').delete().eq('id', konusmaId)
+      await yonetici
+        .from('sohbet_istekleri')
+        .delete()
+        .eq('gonderen_id', aId)
+        .eq('alan_id', bId)
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
