@@ -18,3 +18,8 @@ araclar/overture-tr.parquet
 # global ignore listesinde; yedekleri de depoya girmemeli).
 .claude/settings.local.json.yedek
 .claude/settings.local.json.*.yedek
+
+# Panel (moderasyon konsolu) - sirlar ve uretilen dosyalar
+panel/node_modules
+panel/dist
+panel/.env
