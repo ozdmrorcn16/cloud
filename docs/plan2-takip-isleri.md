@@ -59,6 +59,38 @@ Kullanici kendi moderator hesabini kurunca bu test hesabi silinmeli
 ya da parolasi degistirilmelidir. Parola bu belgede duruyor, yani
 **gercek moderator hesabi olarak kullanilmamalidir**.
 
+## Ertelenen is: cok dillilik (i18n)
+
+Kullanicinin karari (2026-08-23): "bu dil isini sonraya birakalim."
+
+Bugun uygulama tamamen Turkce. Kullanici urunun farkli dillerde
+kullanilabilmesini istiyor (2026-08-21'deki "urun cok dilli" karariyla
+da tutarli), ama bunun **makine cevirisiyle degil gercek
+yerellestirmeyle** olmasi sart: "yanlis anlamsiz ceviriler olmamali."
+
+Bugun yapilan sey yalnizca **tarayicinin otomatik cevirisini
+engellemek** (`lang="tr"`, `translate="no"`, `notranslate`). Bu,
+uygulamayi tek dile kilitlemez ve i18n eklendiginde onunde engel
+olusturmaz; tersine sarttir, cunku kendi cevirimiz olsa bile tarayici
+ustune bir kez daha cevirip bozar.
+
+Gercek i18n icin gereken is:
+
+- ~160 ekran metninin bir sozluk dosyasina toplanmasi ve her birine
+  anahtar verilmesi (`t('giris.yap')` gibi)
+- Ingilizce karsiliklarin yazilmasi
+- Tarih/saat ve sayi bicimlerinin diline gore ayarlanmasi
+- `docs/gizlilik-metni.md` ve gizlilik ekraninin cevrilmesi (hukuki
+  metin, dikkat ister)
+- Cihaz dilini algilama + kullanicinin elle dil secebilmesi
+
+**Ne kadar erken yapilirsa o kadar ucuz:** her yeni ekran, i18n
+eklenmeden once yazildiginda sonradan iki kat is cikariyor. Magazaya
+cikmadan once yapilmasi oneriliyor.
+
+Panel bu isin DISINDA: yalnizca Turkce kalacak (kullanicinin karari),
+cunku tek operatorlu bir ic arac.
+
 ## Spec'te `[SONRA]` olarak isaretlenenler (bu plana girmedi)
 
 - Kalici silme (bugun yalnizca **gizleme** var, karar 60)
