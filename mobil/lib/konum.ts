@@ -22,8 +22,60 @@ export async function cihazKonumunuAl(): Promise<{ lat: number; lng: number }> {
   return { lat: konum.coords.latitude, lng: konum.coords.longitude }
 }
 
-export function noktayiCoz(wkt: string): { lat: number; lng: number } {
-  const eslesme = /POINT\(([-\d.]+) ([-\d.]+)\)/.exec(wkt)
-  if (!eslesme) throw new Error(`Beklenmeyen konum formati: ${wkt}`)
-  return { lng: parseFloat(eslesme[1]), lat: parseFloat(eslesme[2]) }
+/**
+ * Sunucudan gelen bir noktayi enlem/boylama cevirir.
+ *
+ * PostgREST `geography` sutununu WKT olarak DEGIL, hex EWKB olarak
+ * donduruyor (ornegin `0101000020E6100000...`). Ayristirici basta
+ * yalnizca WKT bekliyordu ve "Mekanlari kesfet" ekrani canlida
+ * "Beklenmeyen konum formati" ile patliyordu - jest testleri
+ * Supabase'i mock'ladigi, gorunurluk testleri de bu alani hic
+ * okumadigi icin kusur uzun sure gorulmedi.
+ *
+ * Iki bicim de kabul ediliyor: WKT hala calisiyor (ornegin
+ * `ST_AsText` ile donen bir sorgu), hex EWKB ise gercekte gelen bicim.
+ */
+export function noktayiCoz(deger: string): { lat: number; lng: number } {
+  const wktEslesme = /POINT\(([-\d.]+) ([-\d.]+)\)/.exec(deger)
+  if (wktEslesme) {
+    return { lng: parseFloat(wktEslesme[1]), lat: parseFloat(wktEslesme[2]) }
+  }
+
+  if (/^[0-9a-fA-F]+$/.test(deger) && deger.length >= 42) {
+    const nokta = ewkbCoz(deger)
+    if (nokta) return nokta
+  }
+
+  throw new Error(`Beklenmeyen konum formati: ${deger}`)
+}
+
+/**
+ * Hex EWKB cozumleyici - yalnizca POINT icin.
+ *
+ * Duzen: 1 bayt bayt-sirasi, 4 bayt geometri turu, (SRID bayragi
+ * varsa) 4 bayt SRID, ardindan X ve Y icin sekizer baytlik cift
+ * duyarlikli sayilar. SRID bayragi tur alanindaki 0x20000000 bitidir.
+ */
+function ewkbCoz(hex: string): { lat: number; lng: number } | null {
+  const baytlar = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < baytlar.length; i++) {
+    baytlar[i] = parseInt(hex.substr(i * 2, 2), 16)
+  }
+
+  const gorunum = new DataView(baytlar.buffer)
+  const kucukSonlu = baytlar[0] === 1
+  const tur = gorunum.getUint32(1, kucukSonlu)
+
+  // Alt bayt geometri turunu verir; 1 = POINT. Baska turleri
+  // cozmuyoruz, cunku uygulamada nokta disinda geometri yok.
+  if ((tur & 0xff) !== 1) return null
+
+  const sridVar = (tur & 0x20000000) !== 0
+  const konumBasi = sridVar ? 9 : 5
+  if (baytlar.length < konumBasi + 16) return null
+
+  return {
+    lng: gorunum.getFloat64(konumBasi, kucukSonlu),
+    lat: gorunum.getFloat64(konumBasi + 8, kucukSonlu),
+  }
 }
