@@ -773,6 +773,55 @@ async function main() {
     )
   }
 
+  // Plan 2 Task 2: denetim izi EKLEME-ONLY.
+  //
+  // Izin butun degeri silinemez olmasindan geliyor. Moderator kendi
+  // erisim kaydini silebilseydi iz bir kanit degil bir suslemeye
+  // donerdi - bu yuzden update/delete HICBIR rolde olmamali.
+  {
+    console.log('\n--- Plan 2 Task 2: denetim izi ---')
+
+    const { data: izSatirlari, error: izHatasi } = await a
+      .from('moderasyon_kayitlari')
+      .select('id')
+      .limit(1)
+    esitMi(
+      izHatasi !== null || (izSatirlari?.length ?? 0) === 0,
+      true,
+      'moderasyon_kayitlari PostgREST uzerinden okunamiyor'
+    )
+
+    // Silme ve degistirme denemesi: ikisi de yetki hatasiyla (42501)
+    // donmeli. Satirin var olup olmamasi onemli degil - yetki kontrolu
+    // satir bulmadan once yapiliyor.
+    const sahteId = '00000000-0000-0000-0000-000000000000'
+
+    const { error: izSilmeHatasi } = await a
+      .from('moderasyon_kayitlari')
+      .delete()
+      .eq('id', sahteId)
+    esitMi(izSilmeHatasi?.code, '42501', 'authenticated moderasyon_kayitlari satirini silemiyor')
+
+    const { error: izGuncellemeHatasi } = await a
+      .from('moderasyon_kayitlari')
+      .update({ eylem: 'degistirildi' })
+      .eq('id', sahteId)
+    esitMi(
+      izGuncellemeHatasi?.code,
+      '42501',
+      'authenticated moderasyon_kayitlari satirini guncelleyemiyor'
+    )
+
+    // moderasyon.kaydet ozel semada: PostgREST uzerinden hic cagrilamaz,
+    // yalnizca moderator RPC'lerinin govdesinden.
+    const { error: kaydetHatasi } = await a.rpc('kaydet', {
+      p_eylem: 'sahte',
+      p_hedef_tur: 'kullanici',
+      p_hedef_id: sahteId,
+    })
+    esitMi(kaydetHatasi !== null, true, 'moderasyon.kaydet public RPC olarak cagrilamaz')
+  }
+
   sonucuBildirVeCik()
 }
 
