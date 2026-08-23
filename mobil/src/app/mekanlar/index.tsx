@@ -222,7 +222,7 @@ export default function KesfetEkrani() {
           contentContainerStyle={stiller.kartSatiri}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/mekanlar/${item.id}`)}>
-              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={64} style={stiller.kart}>
+              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={78} style={stiller.kart}>
                 <View style={stiller.canliRozet}>
                   <View style={stiller.canliNokta} />
                   <Text style={stiller.canliRozetYazi}>
@@ -253,7 +253,7 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/mekanlar/${item.id}`)}
           >
-            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={30} style={stiller.satirGorsel} />
+            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={34} style={stiller.satirGorsel} />
             <View style={stiller.satirOrta}>
               <Text style={stiller.satirAd} numberOfLines={1}>
                 {item.ad}

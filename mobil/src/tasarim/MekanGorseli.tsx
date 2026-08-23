@@ -19,7 +19,7 @@ import { renk } from './tema'
  */
 export function MekanGorseli({
   tur,
-  ikonBoyut = 34,
+  ikonBoyut = 38,
   style,
   children,
 }: {
