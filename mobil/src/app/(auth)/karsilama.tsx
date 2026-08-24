@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
+  Image,
   Pressable,
   StyleSheet,
   Animated,
@@ -18,13 +19,13 @@ import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
  * bilmeyen birine once telefon numarasi soruluyordu. Bu ekran o
  * boslugu dolduruyor - once ne oldugunu soyluyor, sonra istiyor.
  *
- * IMZA OGE: markanin noktasi.
- * Kelime markasi zaten "slooin." seklinde, sonunda turuncu bir nokta
- * (karar 73). Burada o nokta CANLI bir check-in noktasina donusuyor:
- * nabiz gibi atiyor ve etrafindan halka yayiliyor. Boylece marka
- * isareti ile urunun vaadi ("su an burada biri var") ayni ogede
- * birlesiyor. Kimlik kuralina da uyuyor: turuncu yalnizca eylem ve
- * CANLILIK icin kullanilir - burada tam olarak canliligi anlatiyor.
+ * IMZA OGE: marka isaretinden yayilan halkalar.
+ * Logo (kullanicinin karari, 2026-08-24) tek bir isarette uc sey
+ * birden soyluyor: "S" harfi, iki nokta (iki insan) ve alt kismi bir
+ * KONUM IGNESI. Yani marka zaten "burada biri var" diyor.
+ * Bu ekranda o igneden halkalar yayiliyor - isaret canlaniyor ve
+ * urunun vaadi ("su an burada biri var") gorsellesiyor. Kimlik
+ * kuralina da uyuyor: turuncu yalnizca eylem ve CANLILIK icindir.
  *
  * Ekrandaki tek hareket bu. Geri kalan her sey sabit ve sessiz;
  * boldugumuz tek yer imza ogesi.
@@ -64,7 +65,7 @@ function Halka({ gecikme, hareketAcik }: { gecikme: number; hareketAcik: boolean
         {
           opacity: ilerleme.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 0.5, 0] }),
           transform: [
-            { scale: ilerleme.interpolate({ inputRange: [0, 1], outputRange: [0.4, 4.2] }) },
+            { scale: ilerleme.interpolate({ inputRange: [0, 1], outputRange: [0.85, 2.6] }) },
           ],
         },
       ]}
@@ -121,15 +122,20 @@ export default function KarsilamaEkrani() {
           <Halka gecikme={0} hareketAcik={hareketAcik} />
           <Halka gecikme={1300} hareketAcik={hareketAcik} />
           <Animated.View
-            style={[
-              stiller.nokta,
-              {
-                transform: [
-                  { scale: nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] }) },
-                ],
-              },
-            ]}
-          />
+            style={{
+              transform: [
+                { scale: nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] }) },
+              ],
+            }}
+          >
+            <Image
+              source={require('../../../assets/images/marka-isareti.png')}
+              style={stiller.isaret}
+              resizeMode="contain"
+              accessibilityRole="image"
+              accessibilityLabel="Slooin"
+            />
+          </Animated.View>
         </View>
 
         <Text style={stiller.marka} accessibilityRole="header">
@@ -179,7 +185,10 @@ export default function KarsilamaEkrani() {
   )
 }
 
-const NOKTA_BOYUT = 18
+const ISARET_BOYUT = 96
+// Halka isaretin ETRAFINDAN yayiliyor: baslangic capi isaretten biraz
+// kucuk, sonra disari aciliyor.
+const HALKA_BOYUT = 72
 
 const stiller = StyleSheet.create({
   sayfa: {
@@ -193,22 +202,17 @@ const stiller = StyleSheet.create({
   // --- Ust: imza ogesi ve marka ---
   ust: { alignItems: 'center' },
   noktaAlani: {
-    width: NOKTA_BOYUT * 5,
-    height: NOKTA_BOYUT * 5,
+    width: ISARET_BOYUT * 2.6,
+    height: ISARET_BOYUT * 2.6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  nokta: {
-    width: NOKTA_BOYUT,
-    height: NOKTA_BOYUT,
-    borderRadius: NOKTA_BOYUT / 2,
-    backgroundColor: renk.turuncu,
-  },
+  isaret: { width: ISARET_BOYUT, height: ISARET_BOYUT },
   halka: {
     position: 'absolute',
-    width: NOKTA_BOYUT,
-    height: NOKTA_BOYUT,
-    borderRadius: NOKTA_BOYUT / 2,
+    width: HALKA_BOYUT,
+    height: HALKA_BOYUT,
+    borderRadius: HALKA_BOYUT / 2,
     borderWidth: 1.5,
     borderColor: renk.turuncu,
   },
