@@ -131,6 +131,43 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KARAR: dis kaynakli mekanlarda TUR GOSTERILMIYOR (2026-08-24)
+
+Kullanicinin karari, tur hatalarini "yuzde yuz nasil cozeriz" sorusuna
+verdigi cevap: **"Tür ve ikonları kaldıralım sadece konum adı semt
+bilgisi olsun sadece yeni eklenen konumlara kişiler tür ekliyebilsin
+ikon olmucak altında tür görüncek."**
+
+Gerekce: alti denetim ajani, 98 kural ve 87 bin kayitlik duzeltmeden
+sonra bile tur verisi %100 dogru yapilamiyor. "Konak Restaurant" ile
+"Hünkar Konakları" ayrimi isim kalibiyla cozulemez; Overture'in kendi
+etiketi de yanlis olabiliyor. Kullanici, dogrulugu garanti edilemeyen
+bir alani gostermek yerine HIC GOSTERMEMEYI secti.
+
+Uygulanan kural tek yerde: `lib/mekan.ts` icindeki `turuGosterilir()`.
+  kaynak = 'kullanici'  -> tur GOSTERILIR
+  kaynak = 'overture'   -> tur GIZLENIR
+  kaynak bilinmiyor     -> tur GIZLENIR (guvenli taraf)
+Uc davranis da test altinda (`lib/mekan.test.ts`).
+
+Ekranda ne degisti:
+- Kesfet listesinde ve canli kartlarda ikon/kapak gorseli YOK; satir
+  artik "ad" + "semt · uzaklik".
+- Tur filtre cipleri kaldirildi (tur gosterilmiyorsa ona gore suzmek de
+  anlamsiz).
+- `mekanlar/ekle.tsx` tur secimi KALIYOR ve tek tur girisi noktasi o:
+  kullanicinin ekledigi mekanda tur gosteriliyor, cunku ekleyen kisi
+  oradadir. Cipteki ikonlar kaldirildi.
+- `yakin_mekanlar_yogunluk` RPC'si artik `kaynak` sutununu donduruyor.
+
+ONEMLI: tur verisi SILINMEDI, yalnizca gosterilmiyor. Arka plandaki
+kullanimlari duruyor: `SOSYAL_TURLER` ile kesfet daraltmasi ve
+'yer-degil' filtresi. Ileride tur verisi guvenilir hale gelirse
+`turuGosterilir()` tek satirla acilabilir.
+
+MekanIkonu.tsx ve MekanGorseli.tsx dosyalari SILINMEDI ama artik
+kullanilmiyor.
+
 ### Mekan turu DENETIMI: alti ajan, uc sistemik kok neden (2026-08-23)
 
 Kullanicinin istegi: "Butun turleri denetlesinler ajanlar", "Hataya yer

@@ -14,10 +14,10 @@ import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
   kesfetIcinSuz,
+  turuGosterilir,
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { MekanGorseli } from '../../tasarim/MekanGorseli'
 
 const YARICAP_SECENEKLERI = [
   { etiket: '1 km', metre: 1000 },
@@ -38,7 +38,6 @@ export default function KesfetEkrani() {
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [arama, setArama] = useState('')
   const [yaricapMetre, setYaricapMetre] = useState(VARSAYILAN_YARICAP_METRE)
-  const [secilenTur, setSecilenTur] = useState<string | null>(null)
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -114,23 +113,23 @@ export default function KesfetEkrani() {
     [mekanlar, arama]
   )
 
-  // Tur cipleri GELEN VERIDEN turetiliyor, sabit liste degil: mekan
-  // turleri kaynaga gore degisiyor (bugun 130'dan fazla tur var) ve
-  // sabit bir liste bolgeye gore bos cipler gosterirdi.
-  const turler = useMemo(() => {
-    const sayac = new Map<string, number>()
-    for (const m of kesfetListesi) sayac.set(m.tur, (sayac.get(m.tur) ?? 0) + 1)
-    return [...sayac.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t)
-  }, [kesfetListesi])
-
-  const suzulmus = useMemo(
-    () => (secilenTur ? kesfetListesi.filter((m) => m.tur === secilenTur) : kesfetListesi),
-    [kesfetListesi, secilenTur]
-  )
+  // Tur cipleri KALDIRILDI (karar 2026-08-24): tur artik dis kaynakli
+  // mekanlarda gosterilmedigi icin ona gore suzmek de anlamsiz.
+  const suzulmus = kesfetListesi
 
   const canlilar = suzulmus.filter((m) => m.kisiSayisi > 0)
   const sakinler = suzulmus.filter((m) => m.kisiSayisi === 0)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
+
+  // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
+  // mekanlarda gorunuyor (karar 2026-08-24): dis kaynagin tur verisi
+  // guvenilmez oldugu icin yanlis tur gostermektense hic gostermemek
+  // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
+  function altSatir(m: MekanYogunlukIle): string {
+    const parcalar = turuGosterilir(m) ? [m.tur] : []
+    parcalar.push(m.semt ?? '', uzaklik(m))
+    return parcalar.filter(Boolean).join(' · ')
+  }
 
   function uzaklik(m: MekanYogunlukIle): string {
     // Konum eksikse mesafe hic gosterilmez: yanlis bir mesafe
@@ -254,32 +253,6 @@ export default function KesfetEkrani() {
         </View>
       )}
 
-      {turler.length > 1 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={stiller.turSatiri}
-        >
-          <Pressable
-            style={[stiller.turCipi, secilenTur === null && stiller.turCipiSecili]}
-            onPress={() => setSecilenTur(null)}
-          >
-            <Text style={[stiller.turYazi, secilenTur === null && stiller.turYaziSecili]}>
-              Tümü
-            </Text>
-          </Pressable>
-          {turler.map((t) => (
-            <Pressable
-              key={t}
-              style={[stiller.turCipi, secilenTur === t && stiller.turCipiSecili]}
-              onPress={() => setSecilenTur(secilenTur === t ? null : t)}
-            >
-              <Text style={[stiller.turYazi, secilenTur === t && stiller.turYaziSecili]}>{t}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
-
       {/* Canli mekanlar one cikiyor: uygulamanin tek sorusu "su an
           nerede insan var". Kimse yoksa bu bolum hic cizilmiyor. */}
       {canlilar.length > 0 && (
@@ -290,23 +263,20 @@ export default function KesfetEkrani() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={stiller.kartSatiri}
           renderItem={({ item }) => (
-            <Pressable onPress={() => router.push(`/mekanlar/${item.id}`)}>
-              <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={78} style={stiller.kart}>
-                <View style={stiller.canliRozet}>
-                  <View style={stiller.canliNokta} />
-                  <Text style={stiller.canliRozetYazi}>
-                    {item.kisiSayisi} kişi burada
-                  </Text>
-                </View>
-                <View style={stiller.kartAlt}>
-                  <Text style={stiller.kartAd} numberOfLines={2}>
-                    {item.ad}
-                  </Text>
-                  <Text style={stiller.kartAltYazi}>
-                    {[item.tur, item.semt, uzaklik(item)].filter(Boolean).join(' · ')}
-                  </Text>
-                </View>
-              </MekanGorseli>
+            <Pressable
+              style={stiller.kart}
+              onPress={() => router.push(`/mekanlar/${item.id}`)}
+            >
+              <View style={stiller.canliRozet}>
+                <View style={stiller.canliNokta} />
+                <Text style={stiller.canliRozetYazi}>{item.kisiSayisi} kişi burada</Text>
+              </View>
+              <View style={stiller.kartAlt}>
+                <Text style={stiller.kartAd} numberOfLines={2}>
+                  {item.ad}
+                </Text>
+                <Text style={stiller.kartAltYazi}>{altSatir(item)}</Text>
+              </View>
             </Pressable>
           )}
         />
@@ -322,14 +292,11 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/mekanlar/${item.id}`)}
           >
-            <MekanGorseli mekanId={item.id} tur={item.tur} ikonBoyut={34} style={stiller.satirGorsel} />
             <View style={stiller.satirOrta}>
               <Text style={stiller.satirAd} numberOfLines={1}>
                 {item.ad}
               </Text>
-              <Text style={stiller.satirAlt}>
-                {[item.tur, item.semt, uzaklik(item)].filter(Boolean).join(' · ')}
-              </Text>
+              <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
             </View>
             <Text style={stiller.sakinYazi}>Sakin</Text>
           </Pressable>

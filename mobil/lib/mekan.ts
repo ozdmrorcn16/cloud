@@ -7,6 +7,13 @@ export type Mekan = {
   tur: string
   /** Semt / mahalle. Kaynakta %97 dolu; yine de null olabilir. */
   semt: string | null
+  /**
+   * 'kullanici' ya da 'overture'. Tur YALNIZCA 'kullanici' kayitlarinda
+   * gosterilir (karar 2026-08-24): dis kaynagin tur verisi guvenilmez,
+   * yanlis tur gostermektense hic gostermemek tercih edildi. Bkz.
+   * turuGosterilir().
+   */
+  kaynak: string
   adres: string | null
   osmId: number | null
   konum: { lat: number; lng: number }
@@ -17,6 +24,7 @@ type MekanSatiri = {
   ad: string
   tur: string
   semt: string | null
+  kaynak?: string | null
   adres: string | null
   osm_id: number | null
   konum: string
@@ -28,6 +36,9 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     ad: satir.ad,
     tur: satir.tur,
     semt: satir.semt ?? null,
+    // Eski RPC'ler kaynak dondurmuyorsa dis kaynak varsayilir: tur
+    // gosterilmez. Guvenli taraf bu.
+    kaynak: satir.kaynak ?? 'overture',
     adres: satir.adres,
     osmId: satir.osm_id,
     konum: noktayiCoz(satir.konum),
@@ -140,6 +151,23 @@ export const SOSYAL_TURLER = new Set<string>([
   // filtreleniyor.
   'Halı saha', 'Düğün salonu', 'Çarşı', 'Oyun salonu', 'Öğrenci yurdu',
 ])
+
+/**
+ * Turun kullaniciya gosterilip gosterilmeyecegi.
+ *
+ * KARAR (kullanici, 2026-08-24): dis kaynaktan (Overture) gelen
+ * mekanlarda tur GOSTERILMEZ - yalnizca ad ve semt gorunur. Alti
+ * denetim ajani ve 87 bin kayitlik duzeltmeden sonra bile "Konak
+ * Restaurant" ile "Hünkar Konakları" gibi ayrimlar isim kaliplariyla
+ * cozulemiyor. Dogrulugu garanti edilemeyen bir alani gostermek yerine
+ * hic gostermemek tercih edildi.
+ *
+ * Kullanicinin kendi ekledigi mekanda tur gosterilir: orayi ekleyen
+ * kisi oradadir ve turu bilerek secmistir.
+ */
+export function turuGosterilir(mekan: { kaynak?: string }): boolean {
+  return mekan.kaynak === 'kullanici'
+}
 
 /** Kesfet akisi icin: arama bosken sosyal turlere daralt. */
 export function kesfetIcinSuz<T extends { tur: string }>(

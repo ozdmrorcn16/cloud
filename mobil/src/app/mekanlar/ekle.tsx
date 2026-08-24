@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import { MekanIkonu } from '../../tasarim/MekanIkonu'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
 
-// Tur ARTIK SERBEST METIN DEGIL. Sebep: kapak gorseli turden
-// turetilen ikondur (karar 2026-08-23); kullanici "kahvehane" yazarsa
-// hicbir ikonla eslesmez ve mekan noktasiz kalir. Liste, ikonu olan
-// turlerden en yaygin olanlari.
+// Tur SERBEST METIN DEGIL, listeden secilir.
+//
+// Bu ekran tur bilgisinin GIRILDIGI tek yer (karar 2026-08-24): dis
+// kaynaktan gelen mekanlarda tur artik gosterilmiyor, cunku dogrulugu
+// garanti edilemiyor. Kullanicinin kendi ekledigi mekanda ise
+// gosteriliyor - orayi ekleyen kisi oradadir ve turu bilerek secer.
+// Liste sabit tutuluyor ki ayni yer icin "kahvehane" ve "Çay evi" gibi
+// farkli yazimlar olusmasin.
 const EKLENEBILIR_TURLER = [
   'Kafe', 'Restoran', 'Bar', 'Çay evi', 'Fırın', 'Tatlıcı',
   'Park', 'Plaj', 'Meydan', 'Kamp alanı',
@@ -87,9 +90,6 @@ export default function MekanEkleEkrani() {
               style={[stiller.turCipi, secili && stiller.turCipiSecili]}
               onPress={() => setTur(t)}
             >
-              {/* Kullanici sectigi turun ikonunu ANINDA goruyor;
-                  mekanin kapagi bu ikon olacak. */}
-              <MekanIkonu tur={t} boyut={20} renk={secili ? '#FFFFFF' : '#6E6660'} />
               <Text style={[stiller.turCipiYazi, secili && stiller.turCipiYaziSecili]}>{t}</Text>
             </Pressable>
           )

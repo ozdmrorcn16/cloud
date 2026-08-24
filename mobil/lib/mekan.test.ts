@@ -1,4 +1,4 @@
-import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir, kesfetIcinSuz } from './mekan'
+import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir, kesfetIcinSuz, turuGosterilir } from './mekan'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -36,6 +36,10 @@ describe('yakinMekanlariGetir', () => {
         // Kaynakta semt %96.5 dolu ama null olabilir; sunucu alani hic
         // gondermezse de tip null'a dusuyor.
         semt: null,
+        // Sunucu 'kaynak' gondermezse dis kaynak varsayiliyor; boylece
+        // tur GOSTERILMIYOR. Guvenli taraf bu: bilinmeyen kaynagin tur
+        // verisine guvenilmez (karar 2026-08-24).
+        kaynak: 'overture',
         adres: null,
         osmId: 123,
         konum: { lat: 41.015, lng: 28.979 },
@@ -158,5 +162,29 @@ describe('kesfetIcinSuz', () => {
     // Kucuk yerlesimlerde liste tamamen bosalabilirdi.
     const yalnizcaSosyalOlmayan = [{ tur: 'Banka' }, { tur: 'Eczane' }]
     expect(kesfetIcinSuz(yalnizcaSosyalOlmayan, false)).toHaveLength(2)
+  })
+})
+
+describe('turuGosterilir', () => {
+  // KARAR (kullanici, 2026-08-24): dis kaynaktan gelen mekanlarda tur
+  // GOSTERILMEZ. Alti denetim ajani ve 87 bin kayitlik duzeltmeden
+  // sonra bile "Konak Restaurant" ile "Hünkar Konakları" gibi ayrimlar
+  // isim kaliplariyla cozulemedi; dogrulugu garanti edilemeyen bir
+  // alani gostermek yerine hic gostermemek tercih edildi.
+  //
+  // Bu test kurali kilitliyor: biri ileride turu tekrar her yerde
+  // gostermeye kalkarsa burasi kirilir.
+  it('kullanicinin ekledigi mekanda turu gosterir', () => {
+    expect(turuGosterilir({ kaynak: 'kullanici' })).toBe(true)
+  })
+
+  it('dis kaynakli mekanda turu GIZLER', () => {
+    expect(turuGosterilir({ kaynak: 'overture' })).toBe(false)
+  })
+
+  it('kaynak bilinmiyorsa turu GIZLER', () => {
+    // Guvenli taraf: bilinmeyen kaynagin tur verisine guvenilmez.
+    expect(turuGosterilir({})).toBe(false)
+    expect(turuGosterilir({ kaynak: undefined })).toBe(false)
   })
 })
