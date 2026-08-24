@@ -37,7 +37,11 @@ function YonlendirmeKontrolu() {
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
-      router.replace('/giris')
+      // Oturumu olmayan kullanici once KARSILAMA ekranini goruyor,
+      // dogrudan giris formunu degil: uygulamayi yeni indiren birine
+      // once ne oldugunu soylemek gerekiyor. Giris ve kayit oradan
+      // aciliyor.
+      router.replace('/karsilama')
     } else if (oturum && hesapDurumu) {
       // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
       // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis

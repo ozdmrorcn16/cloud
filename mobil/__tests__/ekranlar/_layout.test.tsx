@@ -33,7 +33,7 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     jest.clearAllMocks()
   })
 
-  it('oturum yokken ve (auth) grubunda degilken /giris yonlendirir', async () => {
+  it('oturum yokken ve (auth) grubunda degilken /karsilama yonlendirir', async () => {
     ;(useOturum as jest.Mock).mockReturnValue({
       oturum: null,
       profilVarMi: null,
@@ -44,7 +44,7 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     await render(<KokLayout />)
 
     await waitFor(() => {
-      expect(mockRouterReplace).toHaveBeenCalledWith('/giris')
+      expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
     })
   })
 

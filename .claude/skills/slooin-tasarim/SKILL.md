@@ -1,0 +1,145 @@
+---
+name: slooin-tasarim
+description: Slooin mobil uygulamasinda ekran tasarlarken ya da mevcut bir ekrani gorsel kimlige tasirken kullanilir. Kimlik jetonlarini, renk ve yazi kurallarini, bilesen desenlerini ve daha once verilmis tasarim kararlarini tasir.
+---
+
+# Slooin tasarim
+
+Slooin konum tabanli bir sosyal uygulama: kullanici bulundugu yere
+check-in yapar ve tam o anda orada olan diger insanlari gorur. Hedef
+kitle 18+. Uygulamanin tek sorusu sudur: **"su an nerede insan var?"**
+Her tasarim karari bu soruya hizmet etmeli.
+
+Bu beceri devreye girdiginde once `mobil/src/tasarim/tema.ts` dosyasini
+oku - jetonlarin tek kaynagi orasidir, buradaki degerler ozettir.
+
+## Degismez kurallar
+
+Bunlar kullanicinin verdigi kararlardir; tasarim tercihi degil kisittir.
+
+1. **Turuncu YALNIZCA eylem ve canlilik icin.** Bir sey turuncuysa ya
+   tiklanabilir ya da "su an oluyor" demektir. Dekorasyon icin turuncu
+   kullanmak kimligi tuketir. Bir ekranda genelde TEK birincil turuncu
+   eylem olur.
+2. **Ekran metinleri duzgun Turkce yazilir** (karar 74): aksanli, tam
+   karakterlerle. "Sikayet" degil "Şikâyet"... ama duzeltme isaretli
+   harflere GIRILMEZ: "mekan" ve "sikayet" kelimelerinde yalnizca
+   c, g, i, o, s, u aksanlari kullanilir. ASCII kurali yalnizca kod,
+   yorum ve commit metinleri icindir.
+3. **Toplu dize degistirme kod tanimlayicilarina tasar.** Metinleri
+   Turkceye cevirirken bir kez `kullaniciAdiniNormallestir` fonksiyon
+   adinin ici bozuldu ve uygulama calismaz hale geldi. Boyle bir
+   degisiklikten sonra, dize sabitleri DISINDA aksanli harf arayan bir
+   tarama mutlaka kosulmali.
+4. **Mekanlarin fotografi yok.** Dis kaynaktan gorsel cekme iptal
+   edildi (telif, kapsam, API bagimliligi). Check-in fotografi da kapak
+   olamaz: kisi kendi yuzunu yukleyebilir. Gercek fotograflar YALNIZCA
+   anilarda.
+5. **Dis kaynakli mekanlarda TUR GOSTERILMEZ** (karar 2026-08-24).
+   Yalnizca ad ve semt gorunur. Tur, kullanicinin kendi ekledigi
+   mekanlarda gosterilir. Kural tek yerde: `lib/mekan.ts` icindeki
+   `turuGosterilir()`. Tur ikonlari da bu kararla birlikte ekrandan
+   kaldirildi.
+6. **Gizlilik ve KVKK her adimda gozetilir.** Bir ekran kisisel veriye
+   dokunuyorsa (konum, ozel mesaj), aydinlatma o ekranin icinde durur -
+   ayri bir "sonra" maddesine kaymaz.
+
+## Jetonlar
+
+Degerler `mobil/src/tasarim/tema.ts` dosyasindan gelir. Ekranlarda ham
+renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
+
+**Renk**
+| Jeton | Deger | Kullanim |
+|---|---|---|
+| `renk.turuncu` | `#FF6B1A` | Birincil eylem, canlilik |
+| `renk.turuncuKoyu` | `#E85D0F` | Basili hal |
+| `renk.turuncuZemin` | `#FFF3EA` | Secili satir, rozet arkasi |
+| `renk.metin` | `#17130F` | Ana metin (saf siyah degil) |
+| `renk.metinIkincil` | `#6E6660` | Aciklama, zaman damgasi |
+| `renk.metinSoluk` | `#A39B93` | Yer tutucu, pasif |
+| `renk.zemin` | `#FAF7F3` | Sayfa zemini (sicak beyaz) |
+| `renk.yuzey` | `#FFFFFF` | Kart, yuzer yuzey |
+| `renk.cizgi` | `#EFEAE5` | Ayirici, kenarlik |
+
+**Yazi**
+- Baslik: `BricolageGrotesque_600SemiBold` / `_700Bold` - karakterli,
+  olculu kullanilir. Baslik boyutlarinda `letterSpacing` negatif
+  (-0.6 / -0.8) verilir, yoksa dagilir.
+- Govde: `InstrumentSans_400Regular` / `_500Medium` / `_600SemiBold`.
+- Olcek: `olcek.dev 56` / `baslik 24` / `altBaslik 18` / `govde 15` /
+  `kucuk 13` / `minik 11`.
+
+**Bosluk** `xs 4 / s 8 / m 12 / l 16 / xl 24 / xxl 32`
+**Yuvarlaklik** `kart 16 / buyuk 20 / hap 999`
+**Golge** `golge.yuzer` (gezinme, birincil buton), `golge.kart`
+
+Yazi tipleri `_layout.tsx` icinde `useFonts` ile yukleniyor ve
+yuklenmeden ekran cizilmiyor - sistem fontuyla bir kare cizip marka
+fontuna atlamak gorunur bir sicrama uretiyordu.
+
+## Bilesen desenleri
+
+**Birincil eylem**: turuncu zemin, `yuvarlak.hap`, `paddingVertical`
+16-17, beyaz `govdeKalin` yazi, `golge.yuzer`. Basili halde
+`turuncuKoyu`. Ekranda tek tane.
+
+**Ikincil eylem**: zeminsiz, yalnizca metin. Vurgulu kelime
+`govdeKalin` + `renk.metin`.
+
+**Liste satiri**: `renk.yuzey` zemin, altta `renk.cizgi` ayirici. Ust
+satir ad (`govdeOrta`, `olcek.govde`), alt satir baglam
+(`renk.metinIkincil`, `olcek.kucuk`), parcalar ` · ` ile birlesir ve
+bos olanlar once elenir (`filter(Boolean).join(' · ')`).
+
+**Canlilik rozeti**: turuncu nokta + sayi. "3 kişi burada". Canlilik
+turuncunun mesru kullanimidir.
+
+**Bos ve hatali durum**: yon verir, yalnizca hata metni basmaz. Bir
+baslik, ne yapilacagini soyleyen bir cumle ve bir eylem butonu.
+Hatalar ozur dilemez ve ne oldugu konusunda belirsiz kalmaz.
+
+## Ekran duzeni tuzagi - ONEMLI
+
+Bir ekranin YUKLEME ya da HATA durumunda `return` ile tamamen baska bir
+agac cizmesi, o ekrandaki `TextInput`'u agactan kaldirir; klavye
+kapanir ve kullanici yazamaz. Bu gercek bir hata olarak yasandi
+(kesfet ekraninda arama).
+
+Kural: **tam ekran durumlar yalnizca ILK acilista.** Sonrasinda ekran
+duzeni sabit kalir, durum kucuk bir seritle anlatilir. Ayrica arama
+alanlari bekletmeli (300 ms) olmali ve gec donen istekler sira
+numarasiyla yok sayilmali.
+
+## Erisilebilirlik tabani
+
+- Hareket: `AccessibilityInfo.isReduceMotionEnabled()` dinlenir;
+  kapaliysa animasyon hic baslamaz.
+- Dokunma hedefleri en az 44 pt.
+- `accessibilityRole` verilir (`button`, `header`).
+- Renk tek basina anlam tasimaz; canlilik rozetinde renk + yazi birlikte.
+
+## Hareket
+
+Ekranda genelde TEK hareketli oge olur ve o da bir sey anlatir.
+Dagitilmis efektler tasarimi yapay gosterir. Karsilama ekranindaki
+nabiz atan nokta buna ornektir: markanin noktasi ile urunun vaadi
+("su an burada biri var") ayni ogede birlesir.
+
+## Ekranlarin durumu
+
+Kimlige tasinmis: karsilama, giris, kayit, ana ekran, kesfet, mekan
+ekle. Geri kalan ~14 ekran hala eski duz stille duruyor; bir ekrana
+dokunurken onu kimlige tasimak dogru is. Takip listesi:
+`docs/tasarim-takip-isleri.md`.
+
+Kanvas calisma dosyalari `tasarim/slooin-kanvas/` altinda; jetonlarin
+kaynagi orasidir ama uygulamada dogru yer `tema.ts`.
+
+## Once sunu yap
+
+Yeni bir ekran tasarlarken once genel gorsel tasarim ilkelerini oku:
+`.claude/skills/frontend-design/SKILL.md`. O beceri "sablon gibi
+gorunmeyen, kendine ozgu tasarim" icin genel yontemi verir; bu beceri
+ise Slooin'in kisitlarini. Ikisi birlikte kullanilir: genel yontem
+serbest eksenleri doldurur, buradaki kisitlar baglayicidir.
