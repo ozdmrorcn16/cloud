@@ -3,10 +3,12 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
+import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 
 export default function GirisEkrani() {
   const router = useRouter()
+  const { t } = useDil()
   const [telefon, setTelefon] = useState('')
   const [sifre, setSifre] = useState('')
   const [hata, setHata] = useState<string | null>(null)
@@ -17,7 +19,7 @@ export default function GirisEkrani() {
     setHata(null)
     const eFormatli = eFormatinaCevir(telefon)
     if (!eFormatli) {
-      setHata('Geçerli bir telefon numarası gir')
+      setHata(t('giris.hataTelefon'))
       return
     }
 
@@ -40,12 +42,12 @@ export default function GirisEkrani() {
         slooin<Text style={stiller.markaNokta}>.</Text>
       </Text>
 
-      <Text style={stiller.baslik}>Tekrar hoş geldin</Text>
-      <Text style={stiller.altYazi}>Çevrende neler olduğunu görmek için giriş yap.</Text>
+      <Text style={stiller.baslik}>{t('giris.baslik')}</Text>
+      <Text style={stiller.altYazi}>{t('giris.altYazi')}</Text>
 
       <TextInput
         style={[stiller.girdi, odaklanan === 'telefon' && stiller.girdiOdakli]}
-        placeholder="05XX XXX XX XX"
+        placeholder={t('kayit.telefonYerTutucu')}
         placeholderTextColor={renk.metinSoluk}
         keyboardType="phone-pad"
         value={telefon}
@@ -55,7 +57,7 @@ export default function GirisEkrani() {
       />
       <TextInput
         style={[stiller.girdi, odaklanan === 'sifre' && stiller.girdiOdakli]}
-        placeholder="Şifre"
+        placeholder={t('giris.sifreYerTutucu')}
         placeholderTextColor={renk.metinSoluk}
         secureTextEntry
         value={sifre}
@@ -71,12 +73,13 @@ export default function GirisEkrani() {
         onPress={girisYap}
         disabled={gonderiliyor}
       >
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Giriş yapılıyor...' : 'Giriş yap'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? t('giris.gonderiliyor') : t('giris.gonder')}</Text>
       </Pressable>
 
       <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/kayit')}>
         <Text style={stiller.baglanti}>
-          Hesabın yok mu? <Text style={stiller.baglantiVurgu}>Kayıt ol</Text>
+          {t('giris.hesabinYokMu')}{' '}
+          <Text style={stiller.baglantiVurgu}>{t('giris.kayitOl')}</Text>
         </Text>
       </Pressable>
     </View>

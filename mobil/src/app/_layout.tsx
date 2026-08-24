@@ -11,7 +11,19 @@ import {
   InstrumentSans_600SemiBold,
 } from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
+import { DilSaglayici, useDil } from '../../lib/dil'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
+
+/**
+ * Dil tercihi cihazdan okunana kadar ekran cizilmiyor. Yazi tipleriyle
+ * ayni gerekce: once Turkce cizip sonra Ingilizceye atlamak gozle
+ * gorulur bir sicrama uretiyor.
+ */
+function DilBekleyerek() {
+  const { hazir } = useDil()
+  if (!hazir) return null
+  return <YonlendirmeKontrolu />
+}
 
 function YonlendirmeKontrolu() {
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
@@ -79,8 +91,10 @@ export default function KokLayout() {
   if (!yaziHazir) return null
 
   return (
-    <OturumSaglayici>
-      <YonlendirmeKontrolu />
-    </OturumSaglayici>
+    <DilSaglayici>
+      <OturumSaglayici>
+        <DilBekleyerek />
+      </OturumSaglayici>
+    </DilSaglayici>
   )
 }

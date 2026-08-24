@@ -21,26 +21,38 @@ Bunlar kullanicinin verdigi kararlardir; tasarim tercihi degil kisittir.
    tiklanabilir ya da "su an oluyor" demektir. Dekorasyon icin turuncu
    kullanmak kimligi tuketir. Bir ekranda genelde TEK birincil turuncu
    eylem olur.
-2. **Ekran metinleri duzgun Turkce yazilir** (karar 74): aksanli, tam
+2. **EKRAN METINLERI KODA GOMULMEZ.** Uygulama cok dilli (2026-08-24).
+   Kullaniciya gorunen her metin `mobil/lib/ceviriler/tr.ts` icine
+   yazilir, `en.ts` icine cevrilir ve ekranda `const { t } = useDil()`
+   ile `t('ekran.anahtar')` seklinde kullanilir. Anahtarlar ekran adiyla
+   gruplanir. Yeni bir ekran yapiyorsan metinleri once sozluge yaz.
+   Dil adlari (`Türkçe`, `English`) CEVRILMEZ - `DIL_ADI` sabitinde
+   durur. Testler `jest.setup.js` icindeki mock uzerinden GERCEK Turkce
+   sozlugu gorur, yani testlerde hala asil metin aranir.
+3. **Ekran metinleri duzgun Turkce yazilir** (karar 74): aksanli, tam
    karakterlerle. "Sikayet" degil "Şikâyet"... ama duzeltme isaretli
    harflere GIRILMEZ: "mekan" ve "sikayet" kelimelerinde yalnizca
    c, g, i, o, s, u aksanlari kullanilir. ASCII kurali yalnizca kod,
    yorum ve commit metinleri icindir.
-3. **Toplu dize degistirme kod tanimlayicilarina tasar.** Metinleri
+4. **Toplu dize degistirme kod tanimlayicilarina tasar.** Metinleri
    Turkceye cevirirken bir kez `kullaniciAdiniNormallestir` fonksiyon
    adinin ici bozuldu ve uygulama calismaz hale geldi. Boyle bir
    degisiklikten sonra, dize sabitleri DISINDA aksanli harf arayan bir
    tarama mutlaka kosulmali.
-4. **Mekanlarin fotografi yok.** Dis kaynaktan gorsel cekme iptal
+5. **Mekanlarin fotografi yok.** Dis kaynaktan gorsel cekme iptal
    edildi (telif, kapsam, API bagimliligi). Check-in fotografi da kapak
    olamaz: kisi kendi yuzunu yukleyebilir. Gercek fotograflar YALNIZCA
    anilarda.
-5. **Dis kaynakli mekanlarda TUR GOSTERILMEZ** (karar 2026-08-24).
+6. **Dis kaynakli mekanlarda TUR GOSTERILMEZ** (karar 2026-08-24).
    Yalnizca ad ve semt gorunur. Tur, kullanicinin kendi ekledigi
    mekanlarda gosterilir. Kural tek yerde: `lib/mekan.ts` icindeki
    `turuGosterilir()`. Tur ikonlari da bu kararla birlikte ekrandan
    kaldirildi.
-6. **Gizlilik ve KVKK her adimda gozetilir.** Bir ekran kisisel veriye
+7. **Onaylar TEK yerde toplanir.** Kullanici birden fazla onay kutusu
+   istemiyor (karar 2026-08-24). Uyum, onay sayisini artirarak degil
+   metnin kapsayici olmasi ve onayin kayit altina alinmasiyla saglanir:
+   kayit ekranindaki tek kutu, veritabanina iki onay turu birden yazar.
+8. **Gizlilik ve KVKK her adimda gozetilir.** Bir ekran kisisel veriye
    dokunuyorsa (konum, ozel mesaj), aydinlatma o ekranin icinde durur -
    ayri bir "sonra" maddesine kaymaz.
 

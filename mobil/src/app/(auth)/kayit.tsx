@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
 import { kayitMetadatasi } from '../../../lib/kvkk'
+import { useDil, DESTEKLENEN_DILLER, DIL_ADI, type Dil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 
 const EN_AZ_SIFRE = 8
@@ -38,12 +39,11 @@ function OnayKutusu({
 
 export default function KayitEkrani() {
   const router = useRouter()
+  const { t, dil, dilDegistir } = useDil()
   const [telefon, setTelefon] = useState('')
-  const [dil, setDil] = useState<'tr' | 'en'>('tr')
   const [sifre, setSifre] = useState('')
   const [sifreTekrar, setSifreTekrar] = useState('')
-  const [aydinlatma, setAydinlatma] = useState(false)
-  const [konumRizasi, setKonumRizasi] = useState(false)
+  const [kabul, setKabul] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [odaklanan, setOdaklanan] = useState<string | null>(null)
@@ -53,22 +53,19 @@ export default function KayitEkrani() {
 
     const eFormatli = eFormatinaCevir(telefon)
     if (!eFormatli) {
-      setHata('Geçerli bir telefon numarası gir.')
+      setHata(t('kayit.hataTelefon'))
       return
     }
     if (sifre.length < EN_AZ_SIFRE) {
-      setHata(`Şifre en az ${EN_AZ_SIFRE} karakter olmalı.`)
+      setHata(t('kayit.hataSifreKisa', { adet: EN_AZ_SIFRE }))
       return
     }
     if (sifre !== sifreTekrar) {
-      setHata('Şifreler aynı değil. İkisini de kontrol et.')
+      setHata(t('kayit.hataSifreUyusmuyor'))
       return
     }
-    // Aydinlatma onayi olmadan hesap acilamaz. Acik riza (konum) ise
-    // KVKK geregi OZGUR IRADEYLE verilmeli; hizmetin kosulu yapilamaz.
-    // Bu yuzden yalnizca aydinlatma zorunlu tutuluyor.
-    if (!aydinlatma) {
-      setHata('Devam etmek için gizlilik metnini kabul etmen gerekiyor.')
+    if (!kabul) {
+      setHata(t('kayit.hataOnay'))
       return
     }
 
@@ -76,7 +73,7 @@ export default function KayitEkrani() {
     const { error } = await supabase.auth.signUp({
       phone: eFormatli,
       password: sifre,
-      options: { data: kayitMetadatasi({ aydinlatma, konumRizasi }, dil) },
+      options: { data: kayitMetadatasi({ kabul }, dil) },
     })
     setGonderiliyor(false)
 
@@ -97,15 +94,13 @@ export default function KayitEkrani() {
         slooin<Text style={stiller.markaNokta}>.</Text>
       </Text>
 
-      <Text style={stiller.baslik}>Hesabını oluştur</Text>
-      <Text style={stiller.altYazi}>
-        Numaranı doğrulayacağız. Numaran profilinde görünmez.
-      </Text>
+      <Text style={stiller.baslik}>{t('kayit.baslik')}</Text>
+      <Text style={stiller.altYazi}>{t('kayit.altYazi')}</Text>
 
-      <Text style={stiller.etiket}>Telefon numarası</Text>
+      <Text style={stiller.etiket}>{t('kayit.telefonEtiket')}</Text>
       <TextInput
         style={girdiStili('telefon')}
-        placeholder="05XX XXX XX XX"
+        placeholder={t('kayit.telefonYerTutucu')}
         placeholderTextColor={renk.metinSoluk}
         keyboardType="phone-pad"
         autoComplete="tel"
@@ -115,30 +110,35 @@ export default function KayitEkrani() {
         onBlur={() => setOdaklanan(null)}
       />
 
-      <Text style={stiller.etiket}>Uygulama dili</Text>
+      <Text style={stiller.etiket}>{t('kayit.dilEtiket')}</Text>
+      {/* Dil secimi ANINDA uygulaniyor: kullanici sectigi anda ekranin
+          tamami o dile geciyor. Boylece secimin ne yaptigi tahmin
+          edilmiyor, goruluyor. Tercih cihazda saklaniyor ve kayitla
+          birlikte profile de yaziliyor. */}
       <View style={stiller.dilSatiri}>
-        <Pressable
-          style={[stiller.dilCipi, dil === 'tr' && stiller.dilCipiSecili]}
-          onPress={() => setDil('tr')}
-          accessibilityRole="radio"
-          accessibilityState={{ selected: dil === 'tr' }}
-        >
-          <Text style={[stiller.dilYazi, dil === 'tr' && stiller.dilYaziSecili]}>Türkçe</Text>
-        </Pressable>
-        {/* Ingilizce arayuz henuz hazir degil. Secilebilir gostermek
-            yaniltici olurdu: kullanici Ingilizce secip Turkce bir
-            uygulama gorurdu. Tercih alani simdiden duruyor ki ceviri
-            geldiginde kullaniciya yeniden sorulmasin. */}
-        <View style={[stiller.dilCipi, stiller.dilCipiPasif]}>
-          <Text style={stiller.dilYaziPasif}>English</Text>
-          <Text style={stiller.yakinda}>yakında</Text>
-        </View>
+        {DESTEKLENEN_DILLER.map((secenek: Dil) => {
+          const secili = dil === secenek
+          return (
+            <Pressable
+              key={secenek}
+              style={[stiller.dilCipi, secili && stiller.dilCipiSecili]}
+              onPress={() => dilDegistir(secenek)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: secili }}
+              accessibilityLabel={DIL_ADI[secenek]}
+            >
+              <Text style={[stiller.dilYazi, secili && stiller.dilYaziSecili]}>
+                {DIL_ADI[secenek]}
+              </Text>
+            </Pressable>
+          )
+        })}
       </View>
 
-      <Text style={stiller.etiket}>Şifre</Text>
+      <Text style={stiller.etiket}>{t('kayit.sifreEtiket')}</Text>
       <TextInput
         style={girdiStili('sifre')}
-        placeholder={`En az ${EN_AZ_SIFRE} karakter`}
+        placeholder={t('kayit.sifreYerTutucu', { adet: EN_AZ_SIFRE })}
         placeholderTextColor={renk.metinSoluk}
         secureTextEntry
         autoComplete="new-password"
@@ -148,10 +148,10 @@ export default function KayitEkrani() {
         onBlur={() => setOdaklanan(null)}
       />
 
-      <Text style={stiller.etiket}>Şifreyi tekrar gir</Text>
+      <Text style={stiller.etiket}>{t('kayit.tekrarEtiket')}</Text>
       <TextInput
         style={girdiStili('tekrar')}
-        placeholder="Aynı şifreyi bir kez daha"
+        placeholder={t('kayit.tekrarYerTutucu')}
         placeholderTextColor={renk.metinSoluk}
         secureTextEntry
         autoComplete="new-password"
@@ -162,45 +162,31 @@ export default function KayitEkrani() {
       />
       {/* Uyusmazlik yazarken soyleniyor, gonderdikten sonra degil. */}
       {sifreTekrar.length > 0 && sifre !== sifreTekrar && (
-        <Text style={stiller.uyari}>Şifreler henüz aynı değil.</Text>
+        <Text style={stiller.uyari}>{t('kayit.sifrelerFarkli')}</Text>
       )}
 
       <View style={stiller.onayBolumu}>
+        {/* TEK onay kutusu (kullanicinin karari): onaylar bolunmuyor.
+            Metin kapsayici yazildi - hem aydinlatmayi hem konum
+            verisinin islenmesini iceriyor - ve isaretlendiginde
+            veritabanina her iki onay turu de kaydediliyor. Yani
+            arayuz sade, ispat kaydi eksiksiz. */}
         <OnayKutusu
-          isaretli={aydinlatma}
-          onDegis={setAydinlatma}
-          etiket="Gizlilik metnini okudum ve kabul ediyorum"
+          isaretli={kabul}
+          onDegis={setKabul}
+          etiket={t('kayit.onayEtiket')}
         >
-          <Text>
-            Gizlilik metnini okudum, kişisel verilerimin burada anlatıldığı şekilde işlenmesini
-            kabul ediyorum.{' '}
-          </Text>
+          <Text>{t('kayit.onayMetni')} </Text>
           <Text
             style={stiller.baglantiYazi}
             onPress={() => router.push('/gizlilik')}
             accessibilityRole="link"
           >
-            Metni oku
+            {t('kayit.metniOku')}
           </Text>
         </OnayKutusu>
 
-        {/* Acik riza AYRI bir onaydir ve zorunlu DEGILDIR: KVKK'ya gore
-            acik riza ozgur iradeyle verilmeli, hizmetin on kosulu
-            yapilamaz. Rizasiz da hesap acilir; konum isteyen ekranlar
-            o zaman rizayi ayrica sorar. */}
-        <OnayKutusu
-          isaretli={konumRizasi}
-          onDegis={setKonumRizasi}
-          etiket="Konum verimin işlenmesine açık rıza veriyorum"
-        >
-          Yakınımdaki mekânları ve orada olan kişileri görebilmem için konum verimin
-          işlenmesine açık rıza veriyorum. Bu onayı sonradan geri çekebilirim.
-        </OnayKutusu>
-
-        <Text style={stiller.onayNotu}>
-          Açık rıza zorunlu değil. Vermezsen de hesabını açabilirsin; konum gerektiren
-          bölümlerde tekrar sorulur.
-        </Text>
+        <Text style={stiller.onayNotu}>{t('kayit.onayNotu')}</Text>
       </View>
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -216,7 +202,7 @@ export default function KayitEkrani() {
         accessibilityRole="button"
       >
         <Text style={stiller.birincilYazi}>
-          {gonderiliyor ? 'Gönderiliyor…' : 'Hesap oluştur'}
+          {gonderiliyor ? t('kayit.gonderiliyor') : t('kayit.gonder')}
         </Text>
       </Pressable>
 
@@ -226,7 +212,8 @@ export default function KayitEkrani() {
         accessibilityRole="button"
       >
         <Text style={stiller.ikincilYazi}>
-          Zaten hesabın var mı? <Text style={stiller.ikincilVurgu}>Giriş yap</Text>
+          {t('kayit.zatenHesap')}{' '}
+          <Text style={stiller.ikincilVurgu}>{t('kayit.girisYap')}</Text>
         </Text>
       </Pressable>
     </ScrollView>
@@ -300,15 +287,8 @@ const stiller = StyleSheet.create({
     backgroundColor: renk.yuzey,
   },
   dilCipiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
-  dilCipiPasif: { backgroundColor: 'transparent' },
   dilYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metin },
   dilYaziSecili: { color: renk.turuncu },
-  dilYaziPasif: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinSoluk },
-  yakinda: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    color: renk.metinSoluk,
-  },
 
   // --- Onaylar ---
   onayBolumu: { marginTop: bosluk.xl, gap: bosluk.m },

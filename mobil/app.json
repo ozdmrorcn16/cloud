@@ -48,7 +48,8 @@
           "cameraPermission": "Slooin, mekânda fotoğraf çekebilmen için kameranı kullanır."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

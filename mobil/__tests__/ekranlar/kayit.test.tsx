@@ -15,8 +15,10 @@ jest.mock('expo-router', () => ({
 const TELEFON = '05XX XXX XX XX'
 const SIFRE = 'En az 8 karakter'
 const TEKRAR = 'Aynı şifreyi bir kez daha'
-const AYDINLATMA = 'Gizlilik metnini okudum ve kabul ediyorum'
-const KONUM_RIZASI = 'Konum verimin işlenmesine açık rıza veriyorum'
+// TEK onay kutusu (kullanicinin karari 2026-08-24: "onayları tek
+// biryerde topla ayırma"). Isaretlendiginde veritabanina her iki onay
+// turu de yaziliyor; arayuz sade, ispat kaydi eksiksiz.
+const ONAY = 'Koşulları kabul ediyorum'
 
 /** Gecerli bir kayit formunu doldurur; onaylar cagirana birakilir. */
 async function formuDoldur(sifre = 'sifre1234', tekrar = 'sifre1234') {
@@ -36,7 +38,7 @@ describe('KayitEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText(TELEFON), '123')
     await fireEvent.changeText(screen.getByPlaceholderText(SIFRE), 'sifre1234')
     await fireEvent.changeText(screen.getByPlaceholderText(TEKRAR), 'sifre1234')
-    await fireEvent.press(screen.getByLabelText(AYDINLATMA))
+    await fireEvent.press(screen.getByLabelText(ONAY))
     await fireEvent.press(screen.getByText('Hesap oluştur'))
 
     await waitFor(() => {
@@ -48,7 +50,7 @@ describe('KayitEkrani', () => {
   it('sifreler ayni degilse kayit olmaz', async () => {
     await render(<KayitEkrani />)
     await formuDoldur('sifre1234', 'baskasifre')
-    await fireEvent.press(screen.getByLabelText(AYDINLATMA))
+    await fireEvent.press(screen.getByLabelText(ONAY))
     await fireEvent.press(screen.getByText('Hesap oluştur'))
 
     await waitFor(() => {
@@ -64,26 +66,27 @@ describe('KayitEkrani', () => {
     expect(screen.getByText('Şifreler henüz aynı değil.')).toBeTruthy()
   })
 
-  // KVKK: aydinlatma onayi olmadan hesap acilamaz.
-  it('aydinlatma onayi verilmeden kayit olmaz', async () => {
+  // Onay olmadan hesap acilamaz.
+  it('onay verilmeden kayit olmaz', async () => {
     await render(<KayitEkrani />)
     await formuDoldur()
     await fireEvent.press(screen.getByText('Hesap oluştur'))
 
     await waitFor(() => {
       expect(
-        screen.getByText('Devam etmek için gizlilik metnini kabul etmen gerekiyor.')
+        screen.getByText('Devam etmek için koşulları kabul etmen gerekiyor.')
       ).toBeTruthy()
     })
     expect(supabase.auth.signUp).not.toHaveBeenCalled()
   })
 
-  // KVKK: acik riza OZGUR IRADEYLE verilmeli, hizmetin on kosulu
-  // yapilamaz. Bu yuzden konum rizasi olmadan da hesap acilabilmeli.
-  it('konum rizasi verilmeden de hesap acilir ve riza false gider', async () => {
+  // Tek kutu isaretlendiginde HER IKI onay turu de metadata'ya gidiyor:
+  // arayuz sade kaliyor ama "konum verisinin islenmesine riza var
+  // miydi" sorusu geriye donuk cevaplanabiliyor.
+  it('tek onay her iki onay turunu de metadataya yazar', async () => {
     await render(<KayitEkrani />)
     await formuDoldur()
-    await fireEvent.press(screen.getByLabelText(AYDINLATMA))
+    await fireEvent.press(screen.getByLabelText(ONAY))
     await fireEvent.press(screen.getByText('Hesap oluştur'))
 
     await waitFor(() => {
@@ -93,7 +96,7 @@ describe('KayitEkrani', () => {
         options: {
           data: {
             aydinlatma_onayi: true,
-            konum_rizasi: false,
+            konum_rizasi: true,
             gizlilik_metni_surumu: GIZLILIK_METNI_SURUMU,
             dil: 'tr',
           },
@@ -105,8 +108,7 @@ describe('KayitEkrani', () => {
   it('onaylar ve dil tercihi signUp metadatasina gider', async () => {
     await render(<KayitEkrani />)
     await formuDoldur()
-    await fireEvent.press(screen.getByLabelText(AYDINLATMA))
-    await fireEvent.press(screen.getByLabelText(KONUM_RIZASI))
+    await fireEvent.press(screen.getByLabelText(ONAY))
     await fireEvent.press(screen.getByText('Hesap oluştur'))
 
     await waitFor(() => {

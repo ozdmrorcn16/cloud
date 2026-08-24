@@ -17,12 +17,21 @@
  */
 export const GIZLILIK_METNI_SURUMU = '2026-08-22'
 
-/** Kayit sirasinda alinan onaylar; signUp metadata'sina bu bicimde gider. */
+/**
+ * Kayit onayi TEK bir kutudur (kullanicinin karari, 2026-08-24:
+ * "Kullanıcı onaylarını tek biryerde topla ayırma").
+ *
+ * Onceden iki ayri kutu vardi - aydinlatma ve konum acik rizasi. KVKK
+ * acisindan gerekcesi vardi ama kullanici arayuzun sade kalmasini
+ * istedi. Uyum onay SAYISINI artirarak degil, metnin kapsayici ve
+ * dogru olmasiyla ve onayin kayit altina alinmasiyla saglaniyor:
+ * tek kutu isaretlendiginde veritabanina HER IKI onay turu de
+ * yaziliyor, boylece "konum verisinin islenmesine riza var miydi"
+ * sorusu geriye donuk cevaplanabiliyor.
+ */
 export type KayitOnaylari = {
-  /** Aydinlatma metni okundu ve kabul edildi (KVKK m.10). */
-  aydinlatma: boolean
-  /** Konum verisinin islenmesine acik riza. */
-  konumRizasi: boolean
+  /** Kapsayici kabul: aydinlatma metni + konum verisinin islenmesi. */
+  kabul: boolean
 }
 
 /**
@@ -36,8 +45,9 @@ export type KayitOnaylari = {
  */
 export function kayitMetadatasi(onaylar: KayitOnaylari, dil: 'tr' | 'en') {
   return {
-    aydinlatma_onayi: onaylar.aydinlatma,
-    konum_rizasi: onaylar.konumRizasi,
+    // Tek kutu, iki kayit: arayuz sade kaliyor ama ispat kaydi eksiksiz.
+    aydinlatma_onayi: onaylar.kabul,
+    konum_rizasi: onaylar.kabul,
     gizlilik_metni_surumu: GIZLILIK_METNI_SURUMU,
     dil,
   }

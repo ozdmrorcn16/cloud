@@ -9,3 +9,31 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY =
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 )
+
+// Dil katmani: ekran testleri DilSaglayici olmadan render ediyor.
+// Mock, GERCEK Turkce sozlugu kullaniyor - boylece testler ekrandaki
+// asil metinleri dogrulamaya devam ediyor, anahtar adlarini degil.
+// Bir anahtar sozlukte yoksa anahtarin kendisi doner; test o zaman
+// eksik ceviriyi gorunur bicimde patlatir.
+jest.mock('./lib/dil', () => {
+  const tr = require('./lib/ceviriler/tr').default
+
+  function cevir(anahtar, secenekler) {
+    const deger = anahtar
+      .split('.')
+      .reduce((o, parca) => (o == null ? undefined : o[parca]), tr)
+    if (typeof deger !== 'string') return anahtar
+    if (!secenekler) return deger
+    return deger.replace(/\{\{(\w+)\}\}/g, (_, ad) =>
+      secenekler[ad] == null ? `{{${ad}}}` : String(secenekler[ad])
+    )
+  }
+
+  return {
+    DESTEKLENEN_DILLER: ['tr', 'en'],
+    DIL_ADI: { tr: 'Türkçe', en: 'English' },
+    DilSaglayici: ({ children }) => children,
+    useDil: () => ({ dil: 'tr', t: cevir, dilDegistir: jest.fn(), hazir: true }),
+    cevir,
+  }
+})

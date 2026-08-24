@@ -10,6 +10,7 @@ import {
   AccessibilityInfo,
 } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 
 /**
@@ -75,6 +76,7 @@ function Halka({ gecikme, hareketAcik }: { gecikme: number; hareketAcik: boolean
 
 export default function KarsilamaEkrani() {
   const router = useRouter()
+  const { t } = useDil()
   // Erisilebilirlik: "hareketi azalt" aciksa nabiz ve halkalar durur.
   const [hareketAcik, setHareketAcik] = useState(true)
   const nabiz = useRef(new Animated.Value(0)).current
@@ -147,13 +149,11 @@ export default function KarsilamaEkrani() {
         {/* Vaat iki cumlede: once durum, sonra davet. Uygulamanin
             tamami bu iki cumlede. */}
         <Text style={stiller.baslik}>
-          Aynı yerdesiniz.{'\n'}
-          <Text style={stiller.baslikVurgu}>Tanışmaya ne dersin?</Text>
+          {t('karsilama.baslikBirinci')}
+          {'\n'}
+          <Text style={stiller.baslikVurgu}>{t('karsilama.baslikIkinci')}</Text>
         </Text>
-        <Text style={stiller.aciklama}>
-          Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum
-          paylaşımı check-in yaptığın süreyle sınırlı.
-        </Text>
+        <Text style={stiller.aciklama}>{t('karsilama.aciklama')}</Text>
       </View>
 
       <View style={stiller.alt}>
@@ -162,7 +162,7 @@ export default function KarsilamaEkrani() {
           onPress={() => router.push('/kayit')}
           accessibilityRole="button"
         >
-          <Text style={stiller.birincilYazi}>Hesap oluştur</Text>
+          <Text style={stiller.birincilYazi}>{t('karsilama.hesapOlustur')}</Text>
         </Pressable>
 
         <Pressable
@@ -171,15 +171,14 @@ export default function KarsilamaEkrani() {
           accessibilityRole="button"
         >
           <Text style={stiller.ikincilYazi}>
-            Hesabın var mı? <Text style={stiller.ikincilVurgu}>Giriş yap</Text>
+            {t('karsilama.hesabinVarMi')}{' '}
+            <Text style={stiller.ikincilVurgu}>{t('karsilama.girisYap')}</Text>
           </Text>
         </Pressable>
 
         {/* Yas siniri ve konum kullanimi ilk ekranda soyleniyor.
             Sonradan cikan bir kosul degil, en basta bilinen bir sey. */}
-        <Text style={stiller.kucukNot}>
-          18 yaşından büyük olman gerekiyor. Konumun kimseyle sürekli paylaşılmaz.
-        </Text>
+        <Text style={stiller.kucukNot}>{t('karsilama.kucukNot')}</Text>
       </View>
     </View>
   )
