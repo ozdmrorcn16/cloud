@@ -17,6 +17,23 @@ export async function profilFotografiUrl(yol: string): Promise<string | null> {
   return data?.signedUrl ?? null
 }
 
+/**
+ * Check-in fotograflari da private bir bucket'ta duruyor; ayni sebeple
+ * imzali URL gerekiyor.
+ *
+ * Imzalama basarisiz olursa null doner ve cagiran taraf fotografsiz
+ * cizer. Bu bekleniyor: storage politikasi fotografi her zaman satirla
+ * ayni anda acmiyor (ornegin baska bir mekanda canli olan bir bagin
+ * fotografi). Kirik resim gostermektense hic gostermemek dogru.
+ */
+export async function checkInFotografiUrl(yol: string): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from('check-in-fotograflari')
+    .createSignedUrl(yol, GECERLILIK_SANIYE)
+  if (error) return null
+  return data?.signedUrl ?? null
+}
+
 /** Birden fazla yolu tek seferde imzalar; basarisiz olanlar atlanir. */
 export async function profilFotograflariUrl(yollar: string[]): Promise<string[]> {
   const sonuclar = await Promise.all(yollar.map((yol) => profilFotografiUrl(yol)))

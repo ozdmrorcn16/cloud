@@ -81,6 +81,19 @@ export default {
     gizle: 'Gizle',
   },
 
+  anaSayfa: {
+    baslik: 'slooin',
+    suAnBurada: 'şu an burada',
+    bosBaslik: 'Akışın henüz boş',
+    bosAciklama:
+      'Bir yere check-in yap ya da birileriyle bağ kur; onların check-inleri burada görünür.',
+    kesfet: 'Mekanları keşfet',
+    azOnce: 'az önce',
+    dakika: '{{sayi}} dk',
+    saat: '{{sayi}} sa',
+    gun: '{{sayi}} gün',
+  },
+
   profil: {
     ayarlar: 'Ayarlar',
     aniSayisi: 'Anı',

@@ -35,6 +35,23 @@ function ikonRengi(aktif: boolean) {
 
 const SEKMELER: Sekme[] = [
   {
+    // Ana sayfa: akis. Instagram'daki gibi en solda ve ev ikonuyla.
+    ad: 'Ana sayfa',
+    yol: '/',
+    onEk: '/',
+    ikon: (aktif) => (
+      <Svg width={24} height={24} viewBox="0 0 24 24">
+        <Path
+          d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-5.5H9V20H5a1 1 0 0 1-1-1z"
+          stroke={ikonRengi(aktif)}
+          strokeWidth={1.8}
+          fill={aktif ? renk.turuncuZemin : 'none'}
+          strokeLinejoin="round"
+        />
+      </Svg>
+    ),
+  },
+  {
     ad: 'Keşfet',
     yol: '/mekanlar',
     onEk: '/mekanlar',
@@ -117,7 +134,9 @@ export function AltGezinme({ okunmamisMesaj = 0 }: { okunmamisMesaj?: number }) 
     <View style={stiller.kapsayici} pointerEvents="box-none">
       <View style={stiller.cubuk}>
         {SEKMELER.map((s) => {
-          const aktif = yol.startsWith(s.onEk)
+          // Ana sayfanin oneki "/" oldugu icin startsWith her yolu
+          // eslestirirdi; o sekme yalnizca tam eslesmede aktif.
+          const aktif = s.onEk === '/' ? yol === '/' : yol.startsWith(s.onEk)
           const rozet = s.yol === '/mesajlar' ? okunmamisMesaj : 0
           return (
             <Pressable
@@ -136,7 +155,12 @@ export function AltGezinme({ okunmamisMesaj = 0 }: { okunmamisMesaj?: number }) 
                   </View>
                 )}
               </View>
-              <Text style={[stiller.etiket, aktif && stiller.etiketAktif]}>{s.ad}</Text>
+              <Text
+                style={[stiller.etiket, aktif && stiller.etiketAktif]}
+                numberOfLines={1}
+              >
+                {s.ad}
+              </Text>
             </Pressable>
           )
         })}
@@ -166,7 +190,7 @@ const stiller = StyleSheet.create({
     paddingVertical: bosluk.m,
     ...golge.yuzer,
   },
-  sekme: { flex: 1, alignItems: 'center', gap: 4 },
+  sekme: { flex: 1, alignItems: 'center', gap: 4, paddingHorizontal: 2 },
   etiket: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,

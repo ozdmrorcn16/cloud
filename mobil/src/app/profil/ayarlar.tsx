@@ -17,6 +17,7 @@ import {
 } from '../../../lib/kullanici-adi'
 import { router } from 'expo-router'
 import { hesabiDondur } from '../../../lib/hesap'
+import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
 
 const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
@@ -54,6 +55,14 @@ export default function AyarlarEkrani() {
     sonrakiDegisimTarihi: Date | null
   } | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
+
+  async function cikisYap() {
+    // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
+    // kullaniciya ait bildirimler bu cihaza dusmesin. Hata yutulur,
+    // cikisi bloklamaz.
+    await bildirimJetonunuSil()
+    await supabase.auth.signOut()
+  }
 
   async function hesabiDondurmayiOnayla() {
     try {
@@ -264,6 +273,13 @@ export default function AyarlarEkrani() {
         onPress={() => router.push('/profil/hesabi-sil')}
       >
         <Text style={stiller.butonMetni}>Hesabımı sil</Text>
+      </Pressable>
+
+      {/* Cikis buraya tasindi: eski ana ekran menusu akisa donusunce
+          (2026-08-25) oradaki cikis dugmesi kalkti. Instagram'da da
+          cikis ayarlarin altinda durur. */}
+      <Pressable style={stiller.buton} onPress={cikisYap}>
+        <Text style={stiller.butonMetni}>Çıkış yap</Text>
       </Pressable>
     </ScrollView>
   )
