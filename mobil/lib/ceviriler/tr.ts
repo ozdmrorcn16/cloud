@@ -94,6 +94,29 @@ export default {
     gun: '{{sayi}} gün',
   },
 
+  kullanici: {
+    bulunamadi: 'Bu profil bulunamadı',
+    aniSayisi: '{{sayi}} anı',
+    takipEt: 'Takip et',
+    istegiGeriCek: 'İsteği geri çek',
+    bagiKopar: 'Bağı kopar',
+    sohbetIste: 'Sohbet iste',
+    sohbetAcik: 'Sohbet açık',
+    mesajGonder: 'Mesaj gönder',
+    gelenIstekAciklama:
+      "Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.",
+    kabulEt: 'Kabul et',
+    reddet: 'Reddet',
+    anilar: 'Anılar',
+    aniYok: 'Henüz bir anısı yok',
+    sikayetEt: 'Şikayet et',
+    engelle: 'Engelle',
+    engelleOnayi: 'Engellersen birbirinizi hiçbir yerde göremezsiniz.',
+    engelleEvet: 'Evet, engelle',
+    vazgec: 'Vazgeç',
+    geri: 'Geri',
+  },
+
   profil: {
     ayarlar: 'Ayarlar',
     aniSayisi: 'Anı',

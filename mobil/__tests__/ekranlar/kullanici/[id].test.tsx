@@ -3,7 +3,7 @@ import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir } from '../../../lib/checkin'
-import { profilFotograflariUrl } from '../../../lib/fotograf-url'
+import { profilFotograflariUrl, checkInFotografiUrl } from '../../../lib/fotograf-url'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -21,7 +21,10 @@ jest.mock('../../../lib/engelleme', () => ({
   engellediklerimiGetir: jest.fn(),
 }))
 jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn() }))
-jest.mock('../../../lib/fotograf-url', () => ({ profilFotograflariUrl: jest.fn() }))
+jest.mock('../../../lib/fotograf-url', () => ({
+  profilFotograflariUrl: jest.fn(),
+  checkInFotografiUrl: jest.fn(),
+}))
 jest.mock('../../../lib/bag', () => ({
   bagDurumunuGetir: jest.fn(),
   takipIstegiGonder: jest.fn(),
@@ -34,8 +37,9 @@ jest.mock('../../../lib/bag', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+const mockRouterBack = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, back: mockRouterBack }),
   useLocalSearchParams: () => ({ id: 'kullanici-2' }),
 }))
 
@@ -49,6 +53,7 @@ beforeEach(() => {
   ;(profilFotograflariUrl as jest.Mock).mockImplementation((yollar: string[]) =>
     Promise.resolve(yollar.map((yol) => `https://ornek/imzali/${yol}`))
   )
+  ;(checkInFotografiUrl as jest.Mock).mockResolvedValue(null)
   ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
     takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
   })
@@ -156,7 +161,10 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
+    // Engelleme iki adimli: once niyet, sonra onay. Geri alinamayan bir
+    // eylem tek dokunusla tetiklenmemeli.
     await fireEvent.press(screen.getByText('Engelle'))
+    await fireEvent.press(await screen.findByText('Evet, engelle'))
 
     await waitFor(() => {
       expect(engelle).toHaveBeenCalledWith('kullanici-2')
@@ -185,6 +193,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
     await fireEvent.press(screen.getByText('Engelle'))
+    await fireEvent.press(await screen.findByText('Evet, engelle'))
 
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
