@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-na
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
+import { renk } from '../../tasarim/tema'
 
 // Tur SERBEST METIN DEGIL, listeden secilir.
 //
@@ -134,7 +135,7 @@ const stiller = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
-  turCipiSecili: { backgroundColor: '#FF6B1A', borderColor: '#FF6B1A' },
+  turCipiSecili: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
   turCipiYazi: { fontSize: 13, color: '#6E6660' },
   turCipiYaziSecili: { color: '#FFFFFF', fontWeight: '600' },
   kapsayici: { flex: 1, padding: 24 },

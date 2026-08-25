@@ -12,12 +12,19 @@
  */
 
 export const renk = {
-  /** Ana vurgu. Eylem ve canlilik. */
-  turuncu: '#FF6B1A',
+  /**
+   * Ana vurgu. Eylem ve canlilik.
+   *
+   * Kullanicinin karari (2026-08-25): logodaki turuncu esas alindi ve
+   * uygulamanin her yerine tasindi. Onceki deger #FF6B1A daha parlakti;
+   * bu ton mat ve logoyla BIREBIR ayni - marka isareti ile butonlar
+   * arasinda renk farki kalmiyor.
+   */
+  turuncu: '#E66208',
   /** Basili/aktif hal. */
-  turuncuKoyu: '#E85D0F',
+  turuncuKoyu: '#CC5607',
   /** Turuncunun yumusak zemini (secili satir, rozet arkasi). */
-  turuncuZemin: '#FFF3EA',
+  turuncuZemin: '#FDF1E9',
 
   /** Ana metin. Saf siyah degil - sicak, fotografla kavga etmiyor. */
   metin: '#17130F',

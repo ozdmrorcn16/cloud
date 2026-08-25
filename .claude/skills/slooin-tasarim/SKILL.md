@@ -91,9 +91,9 @@ renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
 **Renk**
 | Jeton | Deger | Kullanim |
 |---|---|---|
-| `renk.turuncu` | `#FF6B1A` | Birincil eylem, canlilik |
-| `renk.turuncuKoyu` | `#E85D0F` | Basili hal |
-| `renk.turuncuZemin` | `#FFF3EA` | Secili satir, rozet arkasi |
+| `renk.turuncu` | `#E66208` | Birincil eylem, canlilik. Logoyla BIREBIR ayni ton |
+| `renk.turuncuKoyu` | `#CC5607` | Basili hal |
+| `renk.turuncuZemin` | `#FDF1E9` | Secili satir, rozet arkasi |
 | `renk.metin` | `#17130F` | Ana metin (saf siyah degil) |
 | `renk.metinIkincil` | `#6E6660` | Aciklama, zaman damgasi |
 | `renk.metinSoluk` | `#A39B93` | Yer tutucu, pasif |
