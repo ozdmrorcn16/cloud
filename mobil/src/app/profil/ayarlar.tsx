@@ -183,6 +183,13 @@ export default function AyarlarEkrani() {
         <Text style={stiller.butonMetni}>Gizlilik metni</Text>
       </Pressable>
 
+      {/* Engelleme bu ekrandan once TEK YONLU bir kapiydi: engelleyebiliyordun
+          ama kimi engelledigini goremiyor, geri de alamiyordun
+          (kullanicinin istegi, 2026-08-25). */}
+      <Pressable style={stiller.buton} onPress={() => router.push('/profil/engellenenler')}>
+        <Text style={stiller.butonMetni}>Engellenenler</Text>
+      </Pressable>
+
       <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayılan olarak</Text>
       <View style={stiller.butonSatiri}>
         {VARSAYILAN_SECENEKLERI.map((secenek) => (

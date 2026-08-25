@@ -1,4 +1,9 @@
-import { engelle, engeliKaldir, engellediklerimiGetir } from './engelleme'
+import {
+  engelle,
+  engeliKaldir,
+  engellediklerimiGetir,
+  engellediklerimiListele,
+} from './engelleme'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -45,5 +50,31 @@ describe('engellediklerimiGetir', () => {
 
     expect(supabase.from).toHaveBeenCalledWith('engellemeler')
     expect(sonuc).toEqual(['kullanici-2', 'kullanici-3'])
+  })
+})
+
+describe('engellediklerimiListele', () => {
+  it('rpc sonucunu istemci bicimine cevirir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: [
+        { id: 'k2', kullanici_adi: 'ada123', ad: 'Ada', engellendi: '2026-08-20T10:00:00Z' },
+      ],
+      error: null,
+    })
+
+    const sonuc = await engellediklerimiListele()
+
+    expect(supabase.rpc).toHaveBeenCalledWith('engellediklerim')
+    expect(sonuc).toEqual([
+      { id: 'k2', kullaniciAdi: 'ada123', ad: 'Ada', engellendi: '2026-08-20T10:00:00Z' },
+    ])
+  })
+
+  it('sunucu hatasini firlatir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { message: 'Kimlik dogrulamasi gerekli' },
+    })
+    await expect(engellediklerimiListele()).rejects.toThrow('Kimlik dogrulamasi gerekli')
   })
 })

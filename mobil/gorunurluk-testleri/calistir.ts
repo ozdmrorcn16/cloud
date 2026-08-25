@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import {
   ikiKullaniciIleBaglan,
   ucuncuKullaniciIleBaglan,
+  anonIstemciOlustur,
   esitMi,
   sonucuBildirVeCik,
   bosTemizlenecekler,
@@ -2859,6 +2860,50 @@ async function main() {
         console.error(`  61 temizlik: test dosyalari silinemedi: ${silHata.message}`)
       }
     }
+  })
+
+  await senaryo('62 - Engellenenler listesi adlariyla donuyor', async () => {
+    // Bu liste olmadan engelleme tek yonlu bir kapiydi: kullanici
+    // engelleyebiliyor ama kimi engelledigini goremiyor, geri de
+    // alamiyordu. Isimlerin ayri bir RPC'den gelmesi sart, cunku
+    // bag_kisileri tam da engellenmis kisileri eliyor.
+    const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: cId })
+    esitMi(engelHata, null, '62 kurulum: A, C yi engelleyebiliyor')
+
+    const { data: liste, error: listeHata } = await a.rpc('engellediklerim')
+    esitMi(listeHata, null, 'A engellenenler listesini okuyabiliyor')
+    const satir = ((liste ?? []) as { id: string; ad: string; kullanici_adi: string }[]).find(
+      (k) => k.id === cId
+    )
+    esitMi(satir !== undefined, true, 'engellenen kisi listede')
+    esitMi(
+      typeof satir?.ad === 'string' && satir.ad.length > 0,
+      true,
+      'engellenen kisinin ADI da donuyor (kimlik degil)'
+    )
+
+    // Liste tek yonlu: engellenen, kimin kendisini engelledigini
+    // goremez.
+    const { data: cListesi } = await c.rpc('engellediklerim')
+    esitMi(
+      ((cListesi ?? []) as { id: string }[]).some((k) => k.id === aId),
+      false,
+      'engellenen kisi, kendisini engelleyeni bu listede goremez'
+    )
+
+    const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: cId })
+    esitMi(kaldirHata, null, 'A engeli kaldirabiliyor')
+
+    const { data: sonrakiListe } = await a.rpc('engellediklerim')
+    esitMi(
+      ((sonrakiListe ?? []) as { id: string }[]).some((k) => k.id === cId),
+      false,
+      'engel kalkinca kisi listeden cikiyor'
+    )
+
+    const anonim = anonIstemciOlustur()
+    const { error: anonHata } = await anonim.rpc('engellediklerim')
+    esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
   })
 
   await temizle(t)
