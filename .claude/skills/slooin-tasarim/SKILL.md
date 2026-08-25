@@ -56,6 +56,33 @@ Bunlar kullanicinin verdigi kararlardir; tasarim tercihi degil kisittir.
    dokunuyorsa (konum, ozel mesaj), aydinlatma o ekranin icinde durur -
    ayri bir "sonra" maddesine kaymaz.
 
+## Marka isareti
+
+Logo (2026-08-25) tek isarette uc sey soyluyor: bir KONUM IGNESI,
+icinde IKI INSAN ve bir KONUSMA BALONU - "burada birileri var ve
+konusuyorlar". Kaynak: `tasarim/slooin-logo-kaynak.png`.
+
+Ekranda `<MarkaIsareti zemin="acik|koyu" boyut={96} />` ile kullanilir.
+Isaret ZEMINE GORE uyarlanir (kullanicinin karari):
+
+| Zemin | Igne / balon | Siyah figur |
+|---|---|---|
+| `acik` (sayfa zemini #FAF7F3) | turuncu | **degismez** |
+| `koyu` (turuncu ya da koyu yuzey) | beyaz | **degismez** |
+
+**Siyah figur SABITTIR** - kullanici bunu ayrica duzeltti. Zemine gore
+degisen tek sey logonun BEYAZ ogeleridir; onlar acik zeminde
+kayboldugu icin turuncuya doner. Siyah figur markanin sabit unsuru ve
+her iki zeminde de okunuyor.
+
+Uygulama simgesi (`icon.png`, ana ekranda gorunen) logonun ORIJINAL
+hali kalir: turuncu zemin uzerinde beyaz + siyah. Ona uyarlama
+uygulanmaz.
+
+Ikonlari yeniden uretmek gerekirse maskeleme olcutu "beyaz mi" DEGIL,
+"zemin turuncusuna uzak mi" olmalidir - parlakliga bakan bir esik
+siyah figuru eleyip isareti yarim birakir.
+
 ## Jetonlar
 
 Degerler `mobil/src/tasarim/tema.ts` dosyasindan gelir. Ekranlarda ham
