@@ -33,22 +33,27 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 /**
  * Acilis ekranindaki ozellik ikonlari.
  *
- * Kullanicinin verdigi ornekteki gibi: KOYU daire icinde TURUNCU sekil.
- * Sekiller dolgu (stroke degil) - kucuk dairenin icinde ince cizgi
- * kayboluyordu.
+ * Once koyu daire icindeydiler; kullanici daireyi kaldirtti ve ikonlari
+ * biraz buyuttu (2026-08-25). Zeminsiz turuncu sekil, krokinin uzerinde
+ * daha hafif duruyor - koyu daireler ekranin en agir ogesiydi ve gozu
+ * metinden caliyordu.
+ *
+ * Sekiller dolgu (stroke degil): bu boyutta ince cizgi zayif kaliyor.
  */
 function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' }) {
   const R = renk.turuncu
   return (
-    <View style={stiller.ikonDairesi}>
-      <Svg width={24} height={24} viewBox="0 0 24 24">
+    <View style={stiller.ikonAlani}>
+      <Svg width={30} height={30} viewBox="0 0 24 24">
         {ad === 'konum' && (
           <>
             <Path
               d="M12 2.5a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.8 7.2 11.8s7.2-6.4 7.2-11.8A7.2 7.2 0 0 0 12 2.5z"
               fill={R}
             />
-            <Circle cx={12} cy={9.6} r={2.7} fill={renk.metin} />
+            {/* Ignenin deligi: koyu daire kalkinca zemin rengi olmali,
+                yoksa siyah bir nokta gibi duruyor. */}
+            <Circle cx={12} cy={9.6} r={2.7} fill={renk.zemin} />
           </>
         )}
         {ad === 'kisiler' && (
@@ -161,16 +166,15 @@ const stiller = StyleSheet.create({
 
   markaYazisi: { marginTop: bosluk.s },
 
-  adimlar: { marginTop: bosluk.l, gap: bosluk.m },
-  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
-  ikonDairesi: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: renk.metin,
-    alignItems: 'center',
-    justifyContent: 'center',
+  adimlar: {
+    marginTop: bosluk.l,
+    gap: bosluk.m,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 320,
   },
+  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
+  ikonAlani: { width: 34, alignItems: 'center' },
   adimOrta: { flex: 1 },
   adimBaslik: {
     fontFamily: yazi.govdeKalin,
