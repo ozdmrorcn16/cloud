@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
 import { ilkAcilisiIsaretle } from '../../../lib/ilk-acilis'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
@@ -31,6 +32,59 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
  * KVKK ispat kaydi hesabin olustugu anda yaziliyor. Bu ekran yalnizca
  * uygulamanin ne oldugunu anlatiyor; bir taahhut istemiyor.
  */
+/**
+ * Acilis ekranindaki ozellik ikonlari.
+ *
+ * Kullanicinin verdigi ornekteki gibi: KOYU daire icinde TURUNCU sekil.
+ * Sekiller dolgu (stroke degil) - kucuk dairenin icinde ince cizgi
+ * kayboluyordu.
+ */
+function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' }) {
+  const R = renk.turuncu
+  return (
+    <View style={stiller.ikonDairesi}>
+      <Svg width={24} height={24} viewBox="0 0 24 24">
+        {ad === 'konum' && (
+          <>
+            <Path
+              d="M12 2.5a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.8 7.2 11.8s7.2-6.4 7.2-11.8A7.2 7.2 0 0 0 12 2.5z"
+              fill={R}
+            />
+            <Circle cx={12} cy={9.6} r={2.7} fill={renk.metin} />
+          </>
+        )}
+        {ad === 'kisiler' && (
+          <>
+            <Circle cx={9} cy={8.4} r={3.5} fill={R} />
+            <Path d="M2.6 19.4c0-3.5 2.9-5.8 6.4-5.8s6.4 2.3 6.4 5.8z" fill={R} />
+            <Circle cx={17.2} cy={9.4} r={2.6} fill={R} />
+            <Path d="M14.6 19.4c0-2.6 1.4-4.4 3.4-4.4 2 0 3.4 1.8 3.4 4.4z" fill={R} />
+          </>
+        )}
+        {ad === 'sohbet' && (
+          <Path
+            d="M3.6 5.2h16.8v10.4H9.6L5.4 19.6v-4h-1.8z"
+            fill={R}
+            strokeLinejoin="round"
+          />
+        )}
+        {ad === 'yogunluk' && (
+          <>
+            <Path d="M3.5 20.5h3.6v-6H3.5zM10.2 20.5h3.6V9.5h-3.6zM16.9 20.5h3.6V4h-3.6z" fill={R} />
+          </>
+        )}
+      </Svg>
+    </View>
+  )
+}
+
+const OZELLIKLER = [
+  { no: 1, ikon: 'konum' },
+  { no: 2, ikon: 'kisiler' },
+  { no: 3, ikon: 'sohbet' },
+  { no: 4, ikon: 'yogunluk' },
+] as const
+
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -46,25 +100,18 @@ export default function KarsilamaEkrani() {
             kelime markasi. Ikisi birlikte bir kilit olusturuyor. */}
         <MarkaIsareti zemin="acik" boyut={104} />
         <MarkaYazisi genislik={190} style={stiller.markaYazisi} />
-        <Text style={stiller.baslik}>
-          {t('karsilama.baslikBirinci')}
-          {'\n'}
-          <Text style={stiller.baslikVurgu}>{t('karsilama.baslikIkinci')}</Text>
-        </Text>
-        {/* Eskiden burada bir paragraf vardi; uc adim eklenince ayni
-            seyi iki kez soyluyorduk ("check-in yap, orada olanlari
-            gor"). Adimlar daha somut, paragraf kaldirildi. */}
+        {/* Slogan ve altindaki paragraf KALDIRILDI (kullanicinin karari,
+            2026-08-25). Uygulamayi anlatan tek yer asagidaki ozellik
+            listesi; slogan onun soyledigini bir kez daha soyluyordu. */}
       </View>
 
-      {/* Uc adim: uygulamanin ne oldugunu anlatan tek yer. Numaralar
-          susleme degil, gercek bir sira - check-in olmadan kimseyi
-          gormuyorsun, gormeden de sohbet baslamiyor. */}
+      {/* Uygulamanin ne yaptigini anlatan tek yer. Kullanicinin verdigi
+          ornekteki duzen: koyu daire icinde turuncu ikon, yaninda kisa
+          baslik ve tek satirlik aciklama. */}
       <View style={stiller.adimlar}>
-        {[1, 2, 3].map((no) => (
+        {OZELLIKLER.map(({ no, ikon }) => (
           <View key={no} style={stiller.adim}>
-            <View style={stiller.adimNo}>
-              <Text style={stiller.adimNoYazi}>{no}</Text>
-            </View>
+            <OzellikIkonu ad={ikon} />
             <View style={stiller.adimOrta}>
               <Text style={stiller.adimBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
               <Text style={stiller.adimMetin}>{t(`karsilama.adim${no}Metin`)}</Text>
@@ -112,20 +159,15 @@ const stiller = StyleSheet.create({
 
   markaYazisi: { marginTop: bosluk.m },
 
-  adimlar: { marginTop: bosluk.xxl, gap: bosluk.l },
-  adim: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.m },
-  adimNo: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: renk.turuncuZemin,
+  adimlar: { marginTop: bosluk.xl, gap: bosluk.l },
+  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
+  ikonDairesi: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: renk.metin,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  adimNoYazi: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.kucuk,
-    color: renk.turuncu,
   },
   adimOrta: { flex: 1 },
   adimBaslik: {
