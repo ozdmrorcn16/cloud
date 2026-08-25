@@ -94,12 +94,7 @@ export default function EngellenenlerEkrani() {
         keyExtractor={(k) => k.id}
         contentContainerStyle={stiller.liste}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <>
-            <Text style={stiller.aciklama}>{t('engellenenler.aciklama')}</Text>
-            {hata && <Text style={stiller.hata}>{hata}</Text>}
-          </>
-        }
+        ListHeaderComponent={hata ? <Text style={stiller.hata}>{hata}</Text> : null}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
             <View style={stiller.avatar}>
@@ -155,13 +150,6 @@ const stiller = StyleSheet.create({
   },
 
   liste: { paddingHorizontal: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
-  aciklama: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-    marginBottom: bosluk.m,
-  },
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,

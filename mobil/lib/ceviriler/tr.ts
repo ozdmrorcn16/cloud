@@ -119,8 +119,6 @@ export default {
 
   engellenenler: {
     baslik: 'Engellenenler',
-    aciklama:
-      'Engellediğin kişiler burada. Engeli kaldırırsan birbirinizi yeniden görebilirsiniz.',
     engeliKaldir: 'Engeli kaldır',
     bosBaslik: 'Kimseyi engellemedin',
     bosAciklama: 'Birini engellersen burada görünür ve buradan geri alabilirsin.',
