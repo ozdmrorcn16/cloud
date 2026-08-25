@@ -217,7 +217,7 @@ const stiller = StyleSheet.create({
   },
   canliNokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: renk.turuncu },
   bolumAd: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

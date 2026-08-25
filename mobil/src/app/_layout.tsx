@@ -10,6 +10,7 @@ import {
   InstrumentSans_400Regular,
   InstrumentSans_500Medium,
   InstrumentSans_600SemiBold,
+  InstrumentSans_700Bold,
 } from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
@@ -120,6 +121,7 @@ export default function KokLayout() {
     InstrumentSans_400Regular,
     InstrumentSans_500Medium,
     InstrumentSans_600SemiBold,
+    InstrumentSans_700Bold,
   })
 
   if (!yaziHazir) return null

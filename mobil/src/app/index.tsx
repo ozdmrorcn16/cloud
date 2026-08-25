@@ -293,7 +293,7 @@ const stiller = StyleSheet.create({
 
   bosAlan: { paddingHorizontal: bosluk.s, paddingTop: bosluk.xxl },
   bosBaslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

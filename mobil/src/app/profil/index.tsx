@@ -292,7 +292,7 @@ const stiller = StyleSheet.create({
   },
   kullaniciAdi: {
     flexShrink: 1,
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.baslik,
     color: renk.metin,
     letterSpacing: -0.4,
@@ -398,7 +398,7 @@ const stiller = StyleSheet.create({
     ...golge.kart,
   },
   kartBaslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
@@ -431,7 +431,7 @@ const stiller = StyleSheet.create({
     marginBottom: bosluk.s,
   },
   bolumAd: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

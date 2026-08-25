@@ -142,7 +142,7 @@ const stiller = StyleSheet.create({
   },
   baslik: {
     flexShrink: 1,
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.baslik,
     color: renk.metin,
     letterSpacing: -0.4,
@@ -205,7 +205,7 @@ const stiller = StyleSheet.create({
 
   bosAlan: { paddingTop: bosluk.xl },
   bosBaslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

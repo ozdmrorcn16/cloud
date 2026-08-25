@@ -151,8 +151,12 @@ export default function AyarlarEkrani() {
                 value={aramadaGorunsun}
                 onValueChange={aramadaGorunsunDegisti}
                 trackColor={{ true: renk.turuncu, false: renk.cizgi }}
-                // Web'de varsayilan dugme yesil geliyor; kimlikte yesil yok.
+                // Web'de varsayilan dugme YESIL geliyor ve kimlikte yesil
+                // yok. `thumbColor` react-native-web'de karsiligi olmayan
+                // bir prop; RNW kendi `activeThumbColor`ini bekliyor, o da
+                // RN'in tip tanimlarinda olmadigi icin ayri geciliyor.
                 thumbColor={renk.yuzey}
+                {...({ activeThumbColor: renk.yuzey } as object)}
               />
             }
           />

@@ -332,7 +332,7 @@ const stiller = StyleSheet.create({
     gap: bosluk.m,
   },
   durumYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
-  hataBaslik: { fontFamily: yazi.baslik, fontSize: olcek.altBaslik, color: renk.metin },
+  hataBaslik: { fontFamily: yazi.ekranBasligi, fontSize: olcek.altBaslik, color: renk.metin },
   hataAciklama: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,

@@ -254,7 +254,7 @@ const stiller = StyleSheet.create({
   },
   baslik: {
     flexShrink: 1,
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

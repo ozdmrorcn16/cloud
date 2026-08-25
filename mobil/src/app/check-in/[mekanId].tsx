@@ -185,7 +185,7 @@ const stiller = StyleSheet.create({
     paddingBottom: ALT_GEZINME_PAYI,
   },
   baslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.baslik,
     color: renk.metin,
     letterSpacing: -0.4,
@@ -236,7 +236,7 @@ const stiller = StyleSheet.create({
     color: renk.metin,
   },
   altBaslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,

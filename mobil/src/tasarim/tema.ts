@@ -51,6 +51,20 @@ export const yazi = {
   /** Baslik ailesi. Karakterli; olculu kullanilir. */
   baslik: 'BricolageGrotesque_600SemiBold',
   baslikKalin: 'BricolageGrotesque_700Bold',
+  /**
+   * EKRAN BASLIKLARI (kullanicinin karari, 2026-08-25).
+   *
+   * Sayfa ve bolum basliklari marka fontu Bricolage ile degil, govde
+   * ailesinin en agir kesimiyle yaziliyor: kullanici Instagram'in
+   * ayarlar ekranini ornek gosterip "yazi stili bu ornekteki gibi
+   * olsun, basliklar daha kalin ve daha buyuk puntolu" dedi.
+   *
+   * Bricolage KALDIRILMADI: kelime markasinda ve karsilama/giris
+   * ekranlarinin buyuk vaadinde duruyor - yani markanin konustugu
+   * yerlerde. Uygulamanin ici ise notr ve okunakli.
+   */
+  ekranBasligi: 'InstrumentSans_700Bold',
+
   /** Govde ailesi. */
   govde: 'InstrumentSans_400Regular',
   govdeOrta: 'InstrumentSans_500Medium',
@@ -60,8 +74,8 @@ export const yazi = {
 /** Tip olcegi. Kanvastaki degerlerden turetildi. */
 export const olcek = {
   dev: 56,
-  baslik: 24,
-  altBaslik: 18,
+  baslik: 26,
+  altBaslik: 19,
   govde: 15,
   kucuk: 13,
   minik: 11,

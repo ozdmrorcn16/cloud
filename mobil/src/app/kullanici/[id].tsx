@@ -448,7 +448,7 @@ const stiller = StyleSheet.create({
   },
   ustBaslik: {
     flexShrink: 1,
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
@@ -469,7 +469,7 @@ const stiller = StyleSheet.create({
   basHarf: { fontFamily: yazi.baslikKalin, fontSize: 34, color: renk.turuncu },
   kimlikOrta: { flex: 1 },
   ad: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
@@ -579,7 +579,7 @@ const stiller = StyleSheet.create({
   },
 
   bolumAd: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
