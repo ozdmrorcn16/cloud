@@ -175,12 +175,31 @@ def main():
     yaz(turuncu.resize((512, 512), Image.LANCZOS), 'assets/images/marka-isareti-acik.png')
     yaz(beyaz.resize((512, 512), Image.LANCZOS), 'assets/images/marka-isareti-koyu.png')
 
-    # 5) ACIK SURUM: beyaz zemin, turuncu isaret. Ayni kirpma
+    # 5) PWA simgeleri. Bunlar `public/` altinda duruyor ve web
+    #    derlemesine oldugu gibi kopyalaniyor; app.json'daki `icon`
+    #    onlara DOKUNMUYOR. Logo degistiginde burasi unutulursa
+    #    telefonun ana ekranindaki kisayol eski logoyu gostermeye devam
+    #    ediyor (kullanici 2026-08-25'te bunu bildirdi).
+    yaz(simge.resize((192, 192), Image.LANCZOS), 'public/pwa-192.png')
+    yaz(simge.resize((512, 512), Image.LANCZOS), 'public/pwa-512.png')
+
+    # Maskelenebilir surum: Android simgeyi daire/kare maskeyle kirpiyor,
+    # bu yuzden isaret guvenli alanda kalacak sekilde kucultuluyor.
+    maskeli = gradyan(512).convert('RGBA')
+    ic = simge.convert('RGBA').resize((int(512 * 0.66), int(512 * 0.66)), Image.LANCZOS)
+    # Kiremitin kendi zemini var; yalnizca isaret gerekiyor.
+    ic_alfa = alfa.resize(ic.size, Image.LANCZOS)
+    beyaz_ic = Image.new('RGBA', ic.size, (255, 255, 255, 255))
+    beyaz_ic.putalpha(ic_alfa)
+    maskeli.paste(beyaz_ic, ((512 - ic.size[0]) // 2, (512 - ic.size[1]) // 2), beyaz_ic)
+    yaz(maskeli.convert('RGB'), 'public/pwa-512-maskable.png')
+
+    # 6) ACIK SURUM: beyaz zemin, turuncu isaret. Ayni kirpma
     #    geometrisiyle uretiliyor ki koyu surumle birebir ortussun.
     acik = acik_surum(alfa)
     yaz(acik.resize((1024, 1024), Image.LANCZOS), '../tasarim/slooin-simge-2-acik.png')
 
-    # 6) Tasarim klasorune referans kopya.
+    # 7) Tasarim klasorune referans kopya.
     yaz(simge.resize((512, 512), Image.LANCZOS), '../tasarim/slooin-simge-2.png')
 
 
