@@ -51,7 +51,26 @@ export default function KarsilamaEkrani() {
           {'\n'}
           <Text style={stiller.baslikVurgu}>{t('karsilama.baslikIkinci')}</Text>
         </Text>
-        <Text style={stiller.aciklama}>{t('karsilama.aciklama')}</Text>
+        {/* Eskiden burada bir paragraf vardi; uc adim eklenince ayni
+            seyi iki kez soyluyorduk ("check-in yap, orada olanlari
+            gor"). Adimlar daha somut, paragraf kaldirildi. */}
+      </View>
+
+      {/* Uc adim: uygulamanin ne oldugunu anlatan tek yer. Numaralar
+          susleme degil, gercek bir sira - check-in olmadan kimseyi
+          gormuyorsun, gormeden de sohbet baslamiyor. */}
+      <View style={stiller.adimlar}>
+        {[1, 2, 3].map((no) => (
+          <View key={no} style={stiller.adim}>
+            <View style={stiller.adimNo}>
+              <Text style={stiller.adimNoYazi}>{no}</Text>
+            </View>
+            <View style={stiller.adimOrta}>
+              <Text style={stiller.adimBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
+              <Text style={stiller.adimMetin}>{t(`karsilama.adim${no}Metin`)}</Text>
+            </View>
+          </View>
+        ))}
       </View>
 
       <View style={stiller.esnekBosluk} />
@@ -92,6 +111,35 @@ const stiller = StyleSheet.create({
   },
 
   markaYazisi: { marginTop: bosluk.m },
+
+  adimlar: { marginTop: bosluk.xxl, gap: bosluk.l },
+  adim: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.m },
+  adimNo: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adimNoYazi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.kucuk,
+    color: renk.turuncu,
+  },
+  adimOrta: { flex: 1 },
+  adimBaslik: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  adimMetin: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    marginTop: 2,
+  },
   ust: { alignItems: 'center' },
   baslik: {
     fontFamily: yazi.ekranBasligi,

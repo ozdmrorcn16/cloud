@@ -25,6 +25,15 @@ export default {
     aciklama:
       'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
     dilEtiket: 'Dil',
+    // Uc adim, gercek bir SIRA: once check-in, sonra orada olanlari
+    // gormek, sonra sohbet. Numaralandirma bu yuzden mesru.
+    adim1Baslik: 'Bulunduğun yere check-in yap',
+    adim1Metin: 'Kafede, konserde, sahilde… Şu an oradaysan bir dokunuşla belirt.',
+    adim2Baslik: 'Tam o anda orada olanları gör',
+    adim2Metin: 'Aynı yerde olan insanlar birbirini görür. Uzaktan takip, sürekli konum yok.',
+    adim3Baslik: 'Sohbeti orada başlat',
+    adim3Metin: 'İstek gönder; karşı taraf kabul ederse mesajlaşmaya başlarsınız.',
+
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',

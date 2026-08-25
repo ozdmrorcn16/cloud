@@ -139,6 +139,12 @@ def main():
     # bir cerceve olarak ciziliyordu (karsilama ekraninda goruldu).
     alfa = isaret_alfasi(kiremit)
 
+    # LOGOYA MUDAHALE EDILMIYOR.
+    #
+    # Bir ara isaretin yanindaki iki nokta kaldirilmisti ("logonun
+    # yanlarindaki o bisiler olmasin" denmisti); kullanici sonucu
+    # gorunce "logoyu bozmussun" dedi ve noktalar geri kondu. Kural
+    # net: kaynak logo neyse o cizilir, parcasi silinmez.
     beyaz = Image.new('RGBA', (boyut, boyut), (255, 255, 255, 255))
     beyaz.putalpha(alfa)
     turuncu = Image.new('RGBA', (boyut, boyut), MARKA_TURUNCU + (255,))
