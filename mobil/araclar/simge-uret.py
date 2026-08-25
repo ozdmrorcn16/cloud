@@ -126,11 +126,17 @@ def main():
     # pikseli oluyor. Bedeli: isaret %16 buyuyor - simgede sorun degil,
     # zaten iOS/Android simgeleri boyle dolu durur.
     pay = int(boyut * 0.075)
-    simge = kiremit.crop((pay, pay, boyut - pay, boyut - pay))
+    kiremit = kiremit.crop((pay, pay, boyut - pay, boyut - pay))
+    boyut = kiremit.size[0]
+    simge = kiremit
     yaz(simge.resize((1024, 1024), Image.LANCZOS), 'assets/images/icon.png')
     yaz(simge.resize((64, 64), Image.LANCZOS), 'assets/images/favicon.png')
 
-    # Zeminsiz surumler icin alfa.
+    # Zeminsiz surumler icin alfa - KIRPILMIS kiremitten cikariliyor.
+    #
+    # Kirpmadan once cikarilinca yuvarlak kosenin DISINDAKI beyaz zemin
+    # de "isaret" sayiliyordu: uygulama ici isaret, ortasi bos turuncu
+    # bir cerceve olarak ciziliyordu (karsilama ekraninda goruldu).
     alfa = isaret_alfasi(kiremit)
 
     beyaz = Image.new('RGBA', (boyut, boyut), (255, 255, 255, 255))
@@ -165,7 +171,7 @@ def main():
 
     # 5) ACIK SURUM: beyaz zemin, turuncu isaret. Ayni kirpma
     #    geometrisiyle uretiliyor ki koyu surumle birebir ortussun.
-    acik = acik_surum(alfa).crop((pay, pay, boyut - pay, boyut - pay))
+    acik = acik_surum(alfa)
     yaz(acik.resize((1024, 1024), Image.LANCZOS), '../tasarim/slooin-simge-2-acik.png')
 
     # 6) Tasarim klasorune referans kopya.

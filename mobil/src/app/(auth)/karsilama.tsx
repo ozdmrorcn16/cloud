@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { useDil } from '../../../lib/dil'
 import { ilkAcilisiIsaretle } from '../../../lib/ilk-acilis'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 
 /**
@@ -41,7 +42,10 @@ export default function KarsilamaEkrani() {
   return (
     <View style={stiller.sayfa}>
       <View style={stiller.ust}>
-        <MarkaYazisi genislik={200} />
+        {/* Kullanicinin istegi (2026-08-25): ustte isaret, altinda
+            kelime markasi. Ikisi birlikte bir kilit olusturuyor. */}
+        <MarkaIsareti zemin="acik" boyut={104} />
+        <MarkaYazisi genislik={190} style={stiller.markaYazisi} />
         <Text style={stiller.baslik}>
           {t('karsilama.baslikBirinci')}
           {'\n'}
@@ -87,6 +91,7 @@ const stiller = StyleSheet.create({
     paddingBottom: bosluk.l,
   },
 
+  markaYazisi: { marginTop: bosluk.m },
   ust: { alignItems: 'center' },
   baslik: {
     fontFamily: yazi.ekranBasligi,

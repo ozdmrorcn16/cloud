@@ -3,26 +3,19 @@ import { Image, type ImageStyle, type StyleProp } from 'react-native'
 /**
  * Slooin marka isareti - ZEMINE GORE UYARLANIR.
  *
- * Logo tek bir isarette uc sey soyluyor: konum ignesi, icindeki iki
- * insan ve konusma balonu. Yani "burada birileri var ve konusuyorlar".
+ * Kullanicinin ikinci logo takimindaki S isareti (2026-08-25). Iki
+ * varyant var ve zemin turune gore secilir:
  *
- * Kullanicinin karari (2026-08-25): "logoyu zemine göre uyarla arka
- * plan beyazsa ona göre zıttını turuncuysa ona göre zıttını görüncek
- * şekilde ayarla" ve "koyu olmasın daha açık mat renkler kullan".
+ *   zemin="acik"  -> TURUNCU isaret (sayfa zemini #FAF7F3 gibi acik
+ *                    yuzeyler icin)
+ *   zemin="koyu"  -> BEYAZ isaret (turuncu ya da koyu yuzeyler icin)
  *
- * Bu yuzden iki varyant var ve zemin turune gore secilir:
- *
- *   zemin="acik"  -> igne TURUNCU, ikinci figur acik mat seftali
- *                    (sayfa zemini #FAF7F3 gibi acik yuzeyler)
- *   zemin="koyu"  -> igne BEYAZ, ikinci figur acik krem
- *                    (turuncu ya da koyu yuzeyler)
- *
- * Kaynak logodaki SIYAH figur hicbir varyantta siyah kalmiyor; iki
- * tonda da turuncuyla akraba, acik ve mat bir renge boyaniyor. Boylece
- * iki figur birbirinden ayrilirken palet tek kaliyor.
+ * Ikisi de `araclar/simge-uret.py` tarafindan ayni kaynaktan
+ * uretiliyor: isaretin silueti renk cozumlemesiyle cikariliyor, yani
+ * kenarlardaki ara tonlar ve S'in katlandigi yerdeki golge korunuyor.
  *
  * Uygulama simgesinin kendisi (ana ekranda gorunen) logonun ORIJINAL
- * hali: turuncu zemin uzerinde beyaz + siyah. O dosya `icon.png`.
+ * hali: gradyanli kiremit uzerinde beyaz isaret. O dosya `icon.png`.
  */
 export function MarkaIsareti({
   zemin = 'acik',
