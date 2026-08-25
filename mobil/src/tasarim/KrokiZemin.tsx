@@ -30,7 +30,7 @@ const EN = 390
 const BOY = 844
 
 /** Halkalarin ve ignenin merkezi - icerigin bos seridi. */
-const MERKEZ = { x: 196, y: 626 }
+const MERKEZ = { x: 196, y: 652 }
 
 /**
  * Insan ikonlari. Konumlar rastgele degil: hicbiri metnin uzerine
@@ -38,25 +38,25 @@ const MERKEZ = { x: 196, y: 626 }
  * kalabalik bilerek nabzin cevresinde topluyor.
  */
 const KISILER = [
-  // Nabzin cevresinde YOGUN: "su an burada insanlar var" demek icin
-  // kalabalik tam ignenin etrafinda toplaniyor.
-  { x: 112, y: 596, r: 20 },
-  { x: 280, y: 592, r: 18 },
-  { x: 78, y: 664, r: 16 },
-  { x: 312, y: 668, r: 17 },
-  { x: 196, y: 688, r: 15 },
-  // Cevrede seyrek: sehrin geri kalaninda da insanlar var.
-  { x: 44, y: 152, r: 21 },
-  { x: 346, y: 188, r: 18 },
-  { x: 62, y: 64, r: 15 },
-  { x: 324, y: 74, r: 13 },
+  // Nabzin cevresi: kalabalik burada ama SEYREK - dort ikon.
+  { x: 118, y: 612, r: 20 },
+  { x: 276, y: 618, r: 18 },
+  { x: 92, y: 676, r: 15 },
+  { x: 300, y: 680, r: 16 },
+  // Sehrin geri kalani: iki ikon, ust seritte.
+  { x: 78, y: 152, r: 22 },
+  { x: 316, y: 190, r: 19 },
 ]
+
+// Kenar payi: 'slice' olceklemesinde tuvalin yanlari kirpilabiliyor.
+// Ilk denemede kenara yakin ikonlar yarim gorunuyordu ("yamuk").
+// Yukaridaki x degerleri en dar telefonda bile tam kaliyor.
 
 /** Krokideki ikincil check-in igneleri - metnin ustune binmeyen yerler. */
 const IGNELER = [
-  { x: 52, y: 86, olcek: 0.45 },
-  { x: 340, y: 108, olcek: 0.4 },
-  { x: 286, y: 690, olcek: 0.55 },
+  { x: 84, y: 84, olcek: 0.45 },
+  { x: 306, y: 112, olcek: 0.4 },
+  { x: 234, y: 604, olcek: 0.45 },
 ]
 
 const HALKA_SURESI = 2800
@@ -69,12 +69,25 @@ function Kisi({ x, y, r }: { x: number; y: number; r: number }) {
   const o = r / 22
   return (
     <G>
-      <Circle cx={x} cy={y} r={r} fill={renk.yuzey} stroke={renk.turuncu} strokeWidth={2} />
-      <Circle cx={x} cy={y - 4 * o} r={6 * o} fill={renk.turuncu} />
-      <Path
-        d={`M${x - 10 * o} ${y + 13 * o}c0-6 4.5-9.5 10-9.5s10 3.5 10 9.5z`}
-        fill={renk.turuncu}
+      <Circle
+        cx={x}
+        cy={y}
+        r={r}
+        fill={renk.yuzey}
+        stroke={renk.turuncu}
+        strokeWidth={1.8}
+        opacity={0.85}
       />
+      {/* Siluet SOLUK: kullanicinin istegi - "renkleri gorseldeki gibi
+          olsun, cok belirgin olmasin". Dolu turuncu ikonlar arka plani
+          one cikariyordu. */}
+      <G opacity={0.42}>
+        <Circle cx={x} cy={y - 4 * o} r={6 * o} fill={renk.turuncu} />
+        <Path
+          d={`M${x - 10 * o} ${y + 13 * o}c0-6 4.5-9.5 10-9.5s10 3.5 10 9.5z`}
+          fill={renk.turuncu}
+        />
+      </G>
     </G>
   )
 }

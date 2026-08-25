@@ -167,25 +167,30 @@ const stiller = StyleSheet.create({
   markaYazisi: { marginTop: bosluk.s },
 
   adimlar: {
-    marginTop: bosluk.l,
+    // Blok asagi cekildi (kullanicinin istegi 2026-08-25): marka kilidi
+    // ile liste birbirine yapisikti, kroki de aralarindan gorunmuyordu.
+    marginTop: bosluk.xxl + bosluk.s,
     gap: bosluk.m,
     alignSelf: 'center',
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 336,
   },
   adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
   ikonAlani: { width: 34, alignItems: 'center' },
   adimOrta: { flex: 1 },
   adimBaslik: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.govde + 1,
     color: renk.metin,
   },
+  // Aciklama daha belirgin bir tonda (kullanicinin istegi): kroki
+  // uzerinde metinIkincil soluk kaliyordu. Baslikla arasindaki fark
+  // yine duruyor - agirlik ve punto farkli.
   adimMetin: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk + 1,
+    lineHeight: 21,
+    color: '#57504A',
     marginTop: 2,
   },
   ust: { alignItems: 'center' },
