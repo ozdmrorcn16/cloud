@@ -72,6 +72,15 @@ export default {
     ipucu: 'Tanıdığın birini kullanıcı adıyla ya da ismiyle arayabilirsin.',
   },
 
+  mesajlar: {
+    baslik: 'Mesajlar',
+    bosBaslik: 'Henüz bir konuşman yok',
+    bosAciklama:
+      'Karşılıklı bağ kurduğun ya da sohbet isteğin kabul edilen kişilerle mesajlaşabilirsin.',
+    silinmisKullanici: 'Silinmiş kullanıcı',
+    gizle: 'Gizle',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',
