@@ -4,8 +4,31 @@ import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 
+/**
+ * GIRIS - uygulamanin ilk sayfasi.
+ *
+ * Kullanicinin karari (2026-08-25): uygulamayi acan kisi dogrudan bu
+ * ekrani gorur. Once bir karsilama/tanitim ekrani vardi; kullanici
+ * Instagram'in giris ekranini ornek gosterip "ilk sayfa bu olacak"
+ * dedi. Gerekce makul: donen kullanici cogunluktur ve onu bir tanitim
+ * ekranindan gecirmek her acilista engel cikarmak demek.
+ *
+ * DUZEN (Instagram'dan alinan iskelet, Slooin kimligiyle):
+ *   - Ust bosluk, ortada marka isareti
+ *   - Iki alan: telefon ve sifre
+ *   - Dolu birincil buton (turuncu)
+ *   - Esnek bosluk
+ *   - Altta CERCEVELI ikincil eylem: yeni hesap olustur
+ *   - En altta kelime markasi
+ *
+ * Iki eylemin bicimi bilerek farkli: birincil DOLU, ikincil CERCEVELI.
+ * Boylece ekranda tek bir turuncu dolgu kaliyor ve "asil eylem hangisi"
+ * sorusu bakisla cevaplaniyor - kimlik kurali da bunu soyluyor
+ * (turuncu yalnizca eylem ve canlilik icin).
+ */
 export default function GirisEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -15,8 +38,14 @@ export default function GirisEkrani() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [odaklanan, setOdaklanan] = useState<'telefon' | 'sifre' | null>(null)
 
+  const hazir = telefon.trim().length > 0 && sifre.length > 0
+
   async function girisYap() {
     setHata(null)
+    if (!hazir) {
+      setHata(t('giris.hataBos'))
+      return
+    }
     const eFormatli = eFormatinaCevir(telefon)
     if (!eFormatli) {
       setHata(t('giris.hataTelefon'))
@@ -24,7 +53,10 @@ export default function GirisEkrani() {
     }
 
     setGonderiliyor(true)
-    const { error } = await supabase.auth.signInWithPassword({ phone: eFormatli, password: sifre })
+    const { error } = await supabase.auth.signInWithPassword({
+      phone: eFormatli,
+      password: sifre,
+    })
     setGonderiliyor(false)
 
     if (error) {
@@ -35,130 +67,143 @@ export default function GirisEkrani() {
   }
 
   return (
-    <View style={stiller.kapsayici}>
-      {/* Uygulamanin ilk gorunen yuzu. Marka burada tam boy duruyor;
-          iceride kuculup ust bara cekiliyor. */}
+    <View style={stiller.sayfa}>
+      <View style={stiller.ust}>
+        <MarkaIsareti zemin="acik" boyut={84} />
+      </View>
+
+      <View style={stiller.form}>
+        <TextInput
+          style={[stiller.girdi, odaklanan === 'telefon' && stiller.girdiOdakli]}
+          placeholder={t('giris.telefonYerTutucu')}
+          placeholderTextColor={renk.metinSoluk}
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          value={telefon}
+          onChangeText={setTelefon}
+          onFocus={() => setOdaklanan('telefon')}
+          onBlur={() => setOdaklanan(null)}
+        />
+        <TextInput
+          style={[stiller.girdi, odaklanan === 'sifre' && stiller.girdiOdakli]}
+          placeholder={t('giris.sifreYerTutucu')}
+          placeholderTextColor={renk.metinSoluk}
+          secureTextEntry
+          autoComplete="current-password"
+          value={sifre}
+          onChangeText={setSifre}
+          onFocus={() => setOdaklanan('sifre')}
+          onBlur={() => setOdaklanan(null)}
+        />
+
+        {hata && <Text style={stiller.hata}>{hata}</Text>}
+
+        {/* Alanlar bosken buton soluk: basmadan once ne bekledigi
+            belli oluyor. Yine de basilabilir ve eksigi soyluyor -
+            devre disi bir buton neyin eksik oldugunu anlatmiyor. */}
+        <Pressable
+          style={({ pressed }) => [
+            stiller.birincil,
+            !hazir && stiller.birincilSoluk,
+            pressed && stiller.birincilBasili,
+          ]}
+          onPress={girisYap}
+          disabled={gonderiliyor}
+          accessibilityRole="button"
+        >
+          <Text style={stiller.birincilYazi}>
+            {gonderiliyor ? t('giris.gonderiliyor') : t('giris.gonder')}
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={stiller.esnekBosluk} />
+
+      <Pressable
+        style={({ pressed }) => [stiller.ikincil, pressed && stiller.ikincilBasili]}
+        onPress={() => router.push('/kayit')}
+        accessibilityRole="button"
+      >
+        <Text style={stiller.ikincilYazi}>{t('giris.kayitOl')}</Text>
+      </Pressable>
+
       <Text style={stiller.marka}>
         slooin<Text style={stiller.markaNokta}>.</Text>
       </Text>
-
-      <Text style={stiller.baslik}>{t('giris.baslik')}</Text>
-      <Text style={stiller.altYazi}>{t('giris.altYazi')}</Text>
-
-      <TextInput
-        style={[stiller.girdi, odaklanan === 'telefon' && stiller.girdiOdakli]}
-        placeholder={t('kayit.telefonYerTutucu')}
-        placeholderTextColor={renk.metinSoluk}
-        keyboardType="phone-pad"
-        value={telefon}
-        onChangeText={setTelefon}
-        onFocus={() => setOdaklanan('telefon')}
-        onBlur={() => setOdaklanan(null)}
-      />
-      <TextInput
-        style={[stiller.girdi, odaklanan === 'sifre' && stiller.girdiOdakli]}
-        placeholder={t('giris.sifreYerTutucu')}
-        placeholderTextColor={renk.metinSoluk}
-        secureTextEntry
-        value={sifre}
-        onChangeText={setSifre}
-        onFocus={() => setOdaklanan('sifre')}
-        onBlur={() => setOdaklanan(null)}
-      />
-
-      {hata && <Text style={stiller.hata}>{hata}</Text>}
-
-      <Pressable
-        style={[stiller.buton, gonderiliyor && stiller.butonPasif]}
-        onPress={girisYap}
-        disabled={gonderiliyor}
-      >
-        <Text style={stiller.butonYazi}>{gonderiliyor ? t('giris.gonderiliyor') : t('giris.gonder')}</Text>
-      </Pressable>
-
-      <Pressable style={stiller.baglantiButonu} onPress={() => router.push('/kayit')}>
-        <Text style={stiller.baglanti}>
-          {t('giris.hesabinYokMu')}{' '}
-          <Text style={stiller.baglantiVurgu}>{t('giris.kayitOl')}</Text>
-        </Text>
-      </Pressable>
     </View>
   )
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: {
+  sayfa: {
     flex: 1,
-    padding: bosluk.xl,
-    justifyContent: 'center',
     backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    paddingTop: 96,
+    paddingBottom: bosluk.xl,
   },
 
-  marka: {
-    fontFamily: yazi.baslikKalin,
-    fontSize: 34,
-    color: renk.metin,
-    letterSpacing: -1,
-    marginBottom: bosluk.xxl,
-  },
-  markaNokta: { color: renk.turuncu },
+  ust: { alignItems: 'center', marginBottom: 56 },
 
-  baslik: {
-    fontFamily: yazi.baslik,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.5,
-    marginBottom: bosluk.xs,
-  },
-  altYazi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metinIkincil,
-    marginBottom: bosluk.xl,
-  },
-
+  form: { gap: bosluk.m },
   girdi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metin,
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     paddingHorizontal: bosluk.l,
-    paddingVertical: bosluk.l,
-    marginBottom: bosluk.m,
+    paddingVertical: 16,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
   },
-  // Odak turuncuyla belirtiliyor: turuncu "su an burasi etkin" demek.
-  girdiOdakli: { borderColor: renk.turuncu, backgroundColor: renk.yuzey },
+  girdiOdakli: { borderColor: renk.turuncu },
 
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
-    marginBottom: bosluk.m,
+    color: '#C0392B',
+    paddingHorizontal: bosluk.xs,
   },
 
-  buton: {
+  birincil: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: bosluk.l,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: bosluk.s,
-    ...golge.kart,
+    marginTop: bosluk.xs,
   },
-  butonPasif: { backgroundColor: renk.turuncuKoyu, opacity: 0.6 },
-  butonYazi: {
+  birincilSoluk: { opacity: 0.45 },
+  birincilBasili: { backgroundColor: renk.turuncuKoyu },
+  birincilYazi: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.yuzey,
+    fontSize: olcek.altBaslik,
+    color: '#FFFFFF',
   },
 
-  baglantiButonu: { marginTop: bosluk.xl, alignItems: 'center' },
-  baglanti: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
+  esnekBosluk: { flex: 1 },
+
+  // Ikincil eylem CERCEVELI: ekranda tek turuncu dolgu kalsin diye.
+  ikincil: {
+    borderWidth: 1.5,
+    borderColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
   },
-  baglantiVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncu },
+  ikincilBasili: { backgroundColor: renk.turuncuZemin },
+  ikincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.turuncu,
+  },
+
+  marka: {
+    fontFamily: yazi.baslikKalin,
+    fontSize: olcek.govde,
+    color: renk.metinSoluk,
+    textAlign: 'center',
+    marginTop: bosluk.l,
+  },
+  markaNokta: { color: renk.turuncu },
 })

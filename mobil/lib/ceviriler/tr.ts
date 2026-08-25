@@ -27,7 +27,7 @@ export default {
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',
-    kucukNot: '18 yaşından büyük olman gerekiyor. Konumun kimseyle sürekli paylaşılmaz.',
+    kucukNot: '18 yaşından büyük olmalısın. Konumun sürekli paylaşılmaz.',
   },
 
   kayit: {
@@ -59,13 +59,12 @@ export default {
   },
 
   giris: {
-    baslik: 'Tekrar hoş geldin',
-    altYazi: 'Çevrende neler olduğunu görmek için giriş yap.',
+    telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',
     gonder: 'Giriş yap',
     gonderiliyor: 'Giriş yapılıyor…',
-    hesabinYokMu: 'Hesabın yok mu?',
-    kayitOl: 'Kayıt ol',
-    hataTelefon: 'Geçerli bir telefon numarası gir',
+    kayitOl: 'Yeni hesap oluştur',
+    hataTelefon: 'Geçerli bir telefon numarası gir.',
+    hataBos: 'Telefon numaranı ve şifreni gir.',
   },
 } as const

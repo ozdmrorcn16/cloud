@@ -1,0 +1,103 @@
+/**
+ * Ekran goruntusu araci - GERCEK telefon viewport'uyla.
+ *
+ * Neden Chrome'un `--screenshot` bayragi yetmedi: Windows'ta pencere
+ * asgari bir genislige sahip ve `--window-size=390` istense bile layout
+ * ~500 px'te kaliyor, goruntu de o layout'tan kirpiliyor. Sonuc, dar
+ * ekranda olmayan bir "sag kenar tasmasi" gibi gorunuyordu - yani arac
+ * yanlis teshis uretiyordu.
+ *
+ * Puppeteer, CDP uzerinden gercek cihaz olculerini uyguluyor
+ * (`deviceScaleFactor`, `isMobile`, dokunma destegi), dolayisiyla
+ * goruntu telefondaki halin aynisi oluyor. `puppeteer-core` kullaniliyor:
+ * tarayici indirmiyor, sistemdeki Chrome'a baglaniyor.
+ *
+ * Kullanim:
+ *   node araclar/ekran-goruntusu.mjs <yol> <cikti.png> [genislik] [yukseklik]
+ * Ornek (Git Bash'te bastaki egik cizgiyi YAZMA):
+ *   node araclar/ekran-goruntusu.mjs giris ../tasarim/ekran-giris.png
+ */
+import puppeteer from 'puppeteer-core'
+
+const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+const [, , hamYol = '/', cikti = 'ekran.png', gen = '390', yuk = '844'] = process.argv
+
+// Git Bash (MSYS) "/giris" gibi bir argumani Windows yoluna ceviriyor
+// ("C:/Program Files/Git/giris") ve URL bozuluyor. Bu yuzden yol
+// bastaki egik cizgi OLMADAN da verilebiliyor; burada normalize
+// ediliyor.
+const yol = '/' + hamYol.replace(/^.*[\/]Git[\/]/, '').replace(/^\/+/, '')
+
+const tarayici = await puppeteer.launch({
+  executablePath: CHROME,
+  headless: true,
+  args: ['--no-sandbox', '--disable-gpu'],
+})
+
+try {
+  // Konum izni ve sahte konum: kesfet gibi ekranlar konum olmadan
+  // hata durumunu ciziyor, tasarim degerlendirilemiyordu. Varsayilan
+  // Bursa/Nilufer - veritabaninda o cevrede gercek mekan var.
+  const baglam = tarayici.defaultBrowserContext()
+  await baglam.overridePermissions('http://127.0.0.1:8080', ['geolocation'])
+
+  const sayfa = await tarayici.newPage()
+  await sayfa.setGeolocation({
+    latitude: Number(process.env.SLOOIN_TEST_LAT ?? 40.2261),
+    longitude: Number(process.env.SLOOIN_TEST_LNG ?? 28.8656),
+  })
+  await sayfa.setViewport({
+    width: Number(gen),
+    height: Number(yuk),
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+  })
+  // Ic ekranlar oturum istiyor. SLOOIN_TEST_TELEFON ve
+  // SLOOIN_TEST_SIFRE tanimliysa once giris yapiliyor; yoksa dogrudan
+  // istenen yola gidiliyor (giris/kayit gibi acik ekranlar icin).
+  const tel = process.env.SLOOIN_TEST_TELEFON
+  const sif = process.env.SLOOIN_TEST_SIFRE
+  if (tel && sif) {
+    await sayfa.goto('http://127.0.0.1:8080/giris', {
+      waitUntil: 'networkidle0',
+      timeout: 60000,
+    })
+    await sayfa.evaluate(() => document.fonts.ready)
+    const alanlar = await sayfa.$$('input')
+    if (alanlar.length >= 2) {
+      await alanlar[0].type(tel, { delay: 12 })
+      await alanlar[1].type(sif, { delay: 12 })
+      // Butonu metninden buluyoruz: React Native Web dugmeyi <div>
+      // olarak ciziyor, bu yuzden 'button' secicisi ise yaramiyor.
+      await sayfa.evaluate(() => {
+        const hedef = [...document.querySelectorAll('div,span')].find(
+          (e) => e.textContent?.trim() === 'Giriş yap' && e.children.length === 0
+        )
+        hedef?.closest('[role="button"]')?.click() ?? hedef?.click()
+      })
+      await new Promise((c) => setTimeout(c, 4000))
+    }
+  }
+
+  await sayfa.goto(`http://127.0.0.1:8080${yol}`, {
+    waitUntil: 'networkidle0',
+    timeout: 60000,
+  })
+  // Yazi tipleri yuklenmeden cekilen goruntu sistem fontunu gosterir.
+  await sayfa.evaluate(() => document.fonts.ready)
+  await new Promise((c) => setTimeout(c, 1200))
+
+  // Yatay tasma gercekten var mi? Arac degil sayfa olcsun.
+  const olcum = await sayfa.evaluate(() => ({
+    govde: document.body.scrollWidth,
+    gorunum: window.innerWidth,
+  }))
+  await sayfa.screenshot({ path: cikti })
+  console.log(
+    `${cikti}  gorunum=${olcum.gorunum}px  govde=${olcum.govde}px` +
+      (olcum.govde > olcum.gorunum ? '  <-- YATAY TASMA VAR' : '  (tasma yok)')
+  )
+} finally {
+  await tarayici.close()
+}

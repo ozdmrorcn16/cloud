@@ -154,6 +154,10 @@ export default function KarsilamaEkrani() {
         <Text style={stiller.aciklama}>{t('karsilama.aciklama')}</Text>
       </View>
 
+      {/* Esnek bosluk: icerik ustte toplu dursun, eylemler alta
+          yaslansin. Bosluk baslikla logo arasinda birikmemeli. */}
+      <View style={stiller.esnekBosluk} />
+
       <View style={stiller.alt}>
         <Pressable
           style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
@@ -182,25 +186,25 @@ export default function KarsilamaEkrani() {
   )
 }
 
-const ISARET_BOYUT = 96
+const ISARET_BOYUT = 84
 // Halka isaretin ETRAFINDAN yayiliyor: baslangic capi isaretten biraz
 // kucuk, sonra disari aciliyor.
-const HALKA_BOYUT = 72
+const HALKA_BOYUT = 64
 
 const stiller = StyleSheet.create({
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.xl,
-    paddingTop: 72,
-    paddingBottom: bosluk.xl,
+    paddingTop: 48,
+    paddingBottom: bosluk.l,
   },
 
   // --- Ust: imza ogesi ve marka ---
   ust: { alignItems: 'center' },
   noktaAlani: {
-    width: ISARET_BOYUT * 2.6,
-    height: ISARET_BOYUT * 2.6,
+    width: ISARET_BOYUT * 1.85,
+    height: ISARET_BOYUT * 1.85,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -214,18 +218,21 @@ const stiller = StyleSheet.create({
   },
   marka: {
     fontFamily: yazi.baslikKalin,
-    fontSize: 34,
+    fontSize: 26,
     color: renk.metin,
-    letterSpacing: -0.8,
-    marginTop: bosluk.s,
+    letterSpacing: -0.6,
+    // Isaretin hemen altinda: ikisi tek bir kutle olarak okunmali.
+    marginTop: -bosluk.xs,
   },
 
+  esnekBosluk: { flex: 1 },
+
   // --- Orta: vaat ---
-  orta: { flex: 1, justifyContent: 'center' },
+  orta: { marginTop: bosluk.xxl },
   baslik: {
     fontFamily: yazi.baslik,
-    fontSize: 32,
-    lineHeight: 40,
+    fontSize: 34,
+    lineHeight: 41,
     color: renk.metin,
     letterSpacing: -0.6,
   },
@@ -237,12 +244,12 @@ const stiller = StyleSheet.create({
     fontSize: olcek.govde,
     lineHeight: 24,
     color: renk.metinIkincil,
-    marginTop: bosluk.l,
+    marginTop: bosluk.m,
     maxWidth: 340,
   },
 
   // --- Alt: eylemler ---
-  alt: { gap: bosluk.m },
+  alt: { gap: bosluk.s },
   birincil: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
@@ -256,7 +263,7 @@ const stiller = StyleSheet.create({
     fontSize: olcek.altBaslik,
     color: '#FFFFFF',
   },
-  ikincil: { alignItems: 'center', paddingVertical: bosluk.s },
+  ikincil: { alignItems: 'center', paddingVertical: bosluk.m },
   ikincilYazi: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
@@ -266,9 +273,8 @@ const stiller = StyleSheet.create({
   kucukNot: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
-    lineHeight: 16,
+    lineHeight: 15,
     color: renk.metinSoluk,
     textAlign: 'center',
-    paddingHorizontal: bosluk.m,
   },
 })

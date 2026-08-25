@@ -49,11 +49,13 @@ function YonlendirmeKontrolu() {
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
-      // Oturumu olmayan kullanici once KARSILAMA ekranini goruyor,
-      // dogrudan giris formunu degil: uygulamayi yeni indiren birine
-      // once ne oldugunu soylemek gerekiyor. Giris ve kayit oradan
+      // ILK SAYFA GIRIS (kullanicinin karari 2026-08-25). Kisa bir
+      // sure karsilama/tanitim ekrani ilk sayfaydi; kullanici
+      // Instagram'i ornek gosterip giris ekraninin ilk sayfa olmasini
+      // istedi. Donen kullanici cogunluktur ve her acilista tanitim
+      // ekranindan gecmek engel demek. Kayit girisin altindan
       // aciliyor.
-      router.replace('/karsilama')
+      router.replace('/giris')
     } else if (oturum && hesapDurumu) {
       // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
       // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis

@@ -59,11 +59,29 @@
       body {
         overflow: hidden;
       }
+      /*
+        GENISLIK SINIRI - varsayilan sablonda YOKTU ve gercek bir hata
+        uretiyordu: yalnizca height tanimliydi, boylece #root icerige
+        gore genisleyebiliyordu. Sonuc: ekranlarin sag kenari tasiyor,
+        `paddingHorizontal` sagda uygulanmamis gibi gorunuyordu.
+        Giris ve karsilama ekranlarinda buton ve girdiler sag kenardan
+        cikiyordu; sebebi ekran kodu degil buydu.
+      */
+      html,
+      body,
+      #root {
+        width: 100%;
+        max-width: 100%;
+      }
+      body {
+        margin: 0;
+      }
       /* These styles make the root element full-height */
       #root {
         display: flex;
         height: 100%;
         flex: 1;
+        overflow-x: hidden;
       }
     </style>
   </head>

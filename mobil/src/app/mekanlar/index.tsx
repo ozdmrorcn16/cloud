@@ -18,6 +18,7 @@ import {
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { AltGezinme, ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 const YARICAP_SECENEKLERI = [
   { etiket: '1 km', metre: 1000 },
@@ -178,6 +179,7 @@ export default function KesfetEkrani() {
   }
 
   return (
+    <View style={stiller.kok}>
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
       <View style={stiller.ustBar}>
         <Text style={stiller.marka}>
@@ -310,6 +312,8 @@ export default function KesfetEkrani() {
         Mekan verileri: Overture Maps Foundation ve katkıda bulunanlar
       </Text>
     </ScrollView>
+      <AltGezinme />
+    </View>
   )
 }
 
@@ -317,8 +321,9 @@ const KART_GENISLIK = 256
 const KART_YUKSEKLIK = 316
 
 const stiller = StyleSheet.create({
+  kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1, backgroundColor: renk.zemin },
-  icerik: { paddingTop: bosluk.xxl + bosluk.m, paddingBottom: bosluk.xxl },
+  icerik: { paddingTop: bosluk.xxl + bosluk.m, paddingBottom: ALT_GEZINME_PAYI },
   ortala: {
     flex: 1,
     alignItems: 'center',

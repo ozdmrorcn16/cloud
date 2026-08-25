@@ -56,13 +56,12 @@ export default {
   },
 
   giris: {
-    baslik: 'Welcome back',
-    altYazi: 'Sign in to see what is happening around you.',
+    telefonYerTutucu: 'Phone number',
     sifreYerTutucu: 'Password',
-    gonder: 'Sign in',
-    gonderiliyor: 'Signing in…',
-    hesabinYokMu: "Don't have an account?",
-    kayitOl: 'Sign up',
-    hataTelefon: 'Enter a valid phone number',
+    gonder: 'Log in',
+    gonderiliyor: 'Logging in…',
+    kayitOl: 'Create new account',
+    hataTelefon: 'Enter a valid phone number.',
+    hataBos: 'Enter your phone number and password.',
   },
 } as const

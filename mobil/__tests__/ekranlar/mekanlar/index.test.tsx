@@ -20,7 +20,9 @@ jest.mock('../../../lib/mekan', () => ({
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, replace: jest.fn() }),
+  // Alt gezinme cubugu hangi sekmenin aktif oldugunu yoldan okuyor.
+  usePathname: () => '/mekanlar',
 }))
 
 beforeEach(() => {
