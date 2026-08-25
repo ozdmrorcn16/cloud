@@ -53,6 +53,70 @@ export default {
     aydinlatma: 'Devam ederek gizlilik metnini kabul etmiş olmazsın; onayı bir sonraki adımda vereceksin.',
   },
 
+  profilOlustur: {
+    baslik: 'Hesabını oluştur',
+    altYazi: 'Son adım. Bu bilgilerle seni tanıyacağız, bir dahaki girişini de bunlarla yapacaksın.',
+
+    adEtiket: 'Ad ve soyad',
+    adYerTutucu: 'Adın ve soyadın',
+    adHata: 'Adını ve soyadını yaz.',
+
+    dogumEtiket: 'Doğum tarihin',
+    dogumSec: 'Gün, ay ve yıl seç',
+    dogumIpucu:
+      'Doğum tarihin profilinde görünmez. Yalnızca 18 yaşını doldurduğunu doğrulamak için soruyoruz.',
+    dogumHataGecersiz: 'Doğum tarihini seç.',
+    dogumHataYas: 'Slooin’i kullanmak için 18 yaşını doldurmuş olman gerekiyor.',
+    tarihGun: 'Gün',
+    tarihAy: 'Ay',
+    tarihYil: 'Yıl',
+    tarihTamam: 'Tamam',
+    aylar: {
+      1: 'Ocak',
+      2: 'Şubat',
+      3: 'Mart',
+      4: 'Nisan',
+      5: 'Mayıs',
+      6: 'Haziran',
+      7: 'Temmuz',
+      8: 'Ağustos',
+      9: 'Eylül',
+      10: 'Ekim',
+      11: 'Kasım',
+      12: 'Aralık',
+    },
+
+    kullaniciAdiEtiket: 'Kullanıcı adı',
+    kullaniciAdiYerTutucu: 'kullaniciadi',
+    kullaniciAdiIpucu: '3-20 karakter; küçük harf, rakam, nokta ve alt çizgi.',
+    kullaniciAdiKontrol: 'Kontrol ediliyor…',
+    kullaniciAdiMusait: 'Bu kullanıcı adı müsait.',
+    kullaniciAdiAlinmis: 'Bu kullanıcı adı alınmış, başka bir tane dene.',
+
+    sifreEtiket: 'Şifre',
+    sifreYerTutucu: 'En az {{adet}} karakter',
+    tekrarEtiket: 'Şifreyi tekrar gir',
+    tekrarYerTutucu: 'Aynı şifreyi bir kez daha',
+    sifrelerFarkli: 'Şifreler henüz aynı değil.',
+    sifreGoster: 'Şifreyi göster',
+    sifreGizle: 'Şifreyi gizle',
+    hataSifreKisa: 'Şifre en az {{adet}} karakter olmalı.',
+    hataSifreUyusmuyor: 'Şifreler aynı değil. İkisini de kontrol et.',
+
+    onayEtiket: 'Sözleşmeleri kabul ediyorum',
+    onayMetni:
+      'Kullanım koşullarını ve gizlilik metnini okudum, kabul ediyorum; kişisel verilerimin ve konum bilgimin orada anlatıldığı şekilde işlenmesine açık rıza veriyorum.',
+    metniOku: 'Metni oku',
+    onayNotu:
+      'Onay vermeden hesap oluşturulmaz. Konumun yalnızca check-in yaptığın süre boyunca kullanılır ve kimseyle sürekli paylaşılmaz.',
+    hataOnay: 'Devam etmek için sözleşmeleri onaylaman gerekiyor.',
+
+    gonder: 'Hesabı oluştur',
+    gonderiliyor: 'Oluşturuluyor…',
+    oturumDustu: 'Oturumun düşmüş, tekrar giriş yap.',
+    beklenmeyenHata: 'Beklenmeyen bir hata oluştu.',
+  },
+
   kisiler: {
     baslik: 'Kişi ara',
     yerTutucu: 'Kullanıcı adı ya da isim',
