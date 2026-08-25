@@ -44,7 +44,7 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
   const R = renk.turuncu
   return (
     <View style={stiller.ikonAlani}>
-      <Svg width={30} height={30} viewBox="0 0 24 24">
+      <Svg width={34} height={34} viewBox="0 0 24 24">
         {ad === 'konum' && (
           <>
             <Path
@@ -180,31 +180,34 @@ const stiller = StyleSheet.create({
 
   adimlar: {
     // Blok, marka kilidi ile butonlarin ARASINA ortalaniyor: ustunde ve
-    // altinda birer esnek bosluk var (kullanicinin istegi 2026-08-25 -
-    // "daha asagiya cek, ortada degil hala").
+    // altinda birer esnek bosluk var (kullanicinin istegi 2026-08-25).
+    //
+    // GENISLIK TAM: onceden 336 px'lik ortalanmis bir sutundu ve
+    // "yamuk" duruyordu - solda ikon sutunu, sagda dagilan satir sonlari
+    // yuzunden blok saga kaymis gibi gorunuyordu. Artik sayfa paylari
+    // (iki yanda 24 px) blogun paylari; simetri sayfadan geliyor.
     marginTop: 0,
-    gap: bosluk.m,
-    alignSelf: 'center',
+    gap: bosluk.l,
     width: '100%',
-    maxWidth: 336,
   },
-  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
-  ikonAlani: { width: 34, alignItems: 'center' },
+  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  ikonAlani: { width: 40, alignItems: 'center' },
   adimOrta: { flex: 1 },
   adimBaslik: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.govde + 1,
+    fontSize: olcek.altBaslik,
     color: renk.metin,
+    letterSpacing: -0.2,
   },
   // Aciklama daha belirgin bir tonda (kullanicinin istegi): kroki
   // uzerinde metinIkincil soluk kaliyordu. Baslikla arasindaki fark
   // yine duruyor - agirlik ve punto farkli.
   adimMetin: {
     fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk + 1,
-    lineHeight: 21,
+    fontSize: olcek.govde,
+    lineHeight: 22,
     color: '#57504A',
-    marginTop: 2,
+    marginTop: 3,
   },
   ust: { alignItems: 'center' },
   baslik: {
