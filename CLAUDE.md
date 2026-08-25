@@ -29,13 +29,19 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/uygulama-fikri-o3tuda`
-- **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
+- **Calisma dali:** `claude/app-design-mikcti` (tasarim oturumu; onceki dal: `claude/uygulama-fikri-o3tuda`)
+- **Asama:** Tasarim asamasi. Fikir kaydedildi, ekran tasarimlari yapiliyor.
 
 ## Uygulama fikri
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+**Check-in tabanli sosyal uygulama** (2026-08-25'te anlatildi):
+
+- Kullanici bulundugu mekana **check-in** yapiyor.
+- Ayni mekana check-in yapmis **diger insanlari gorebiliyor**.
+- Begendigi kisileri **ekleyip onlarla mesajlasabiliyor**.
+- Ozetle: ayni mekandaki insanlari tanistiran, konuma dayali bir sosyallesme uygulamasi.
+- **Platform: mobil.**
+- Gorsel stil tercihleri netlestikce buraya eklenecek.
 
 ## Eklentiler
 
