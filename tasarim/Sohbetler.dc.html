@@ -57,6 +57,15 @@
     <sc-if value="{{ isReqs }}" hint-placeholder-val="{{ true }}">
       <div>
         <p style="margin:14px 0;font-size:13px;color:#8B93A7">Bu ki&#351;iler seni eklemek istiyor. Kabul edersen mesajla&#351;ma a&#231;&#305;l&#305;r.</p>
+        <sc-if value="{{ noReqs }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 24px;text-align:center">
+            <div style="width:64px;height:64px;border-radius:24px;background:#12151F;border:1px solid #1E2434;display:flex;align-items:center;justify-content:center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5E6678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0"></path><path d="M16 5.6a3 3 0 0 1 0 5.8"></path><path d="M17.6 13.8a5.5 5.5 0 0 1 2.9 5.2"></path></svg>
+            </div>
+            <p style="margin:0;font-size:14px;font-weight:700;color:#8B93A7">&#350;u an bekleyen istek yok</p>
+            <p style="margin:0;font-size:12px;color:#5E6678">Bir mekana check-in yap, yeni insanlarla kar&#351;&#305;la&#351;.</p>
+          </div>
+        </sc-if>
         <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="2">
           <div class="row" style="cursor:default">
             <div style="width:54px;height:54px;border-radius:20px;background:{{ r.avBg }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:{{ r.avFg }};flex:none">{{ r.ini }}</div>
@@ -139,6 +148,7 @@ class Component extends DCLogic {
         hasUnread: c.unread > 0,
       })),
       reqs,
+      noReqs: reqs.length === 0,
       pendingCount,
       hasPending: pendingCount > 0,
     };

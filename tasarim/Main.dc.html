@@ -48,7 +48,7 @@
     </div>
   </sc-if>
 
-  <div style="display:flex;gap:8px;padding:16px 24px 4px;overflow:hidden">
+  <div style="display:flex;gap:8px;padding:16px 24px 4px;overflow-x:auto">
     <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
       <button class="chip {{ c.cls }}" onClick="{{ c.pick }}">{{ c.label }}</button>
     </sc-for>
