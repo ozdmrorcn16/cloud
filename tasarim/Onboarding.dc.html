@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:16px;font-weight:700;font-size:15px;border:none;width:100%}
+    .acc{background:#C8F542;color:#111505}
+    .dot{width:8px;height:8px;border-radius:4px;background:#29304A}
+    .dot.on{width:24px;background:#C8F542}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden;padding:64px 24px 36px">
+  <div style="display:flex;justify-content:flex-end">
+    <button style="background:none;border:none;color:#8B93A7;font-size:14px;font-weight:700;height:44px;padding:0 8px">Atla</button>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;text-align:center">
+    <div style="width:180px;height:180px;border-radius:56px;background:#12151F;border:1px solid #1E2434;display:flex;align-items:center;justify-content:center">
+      <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"></path>
+          <circle cx="12" cy="10" r="2.6"></circle>
+        </svg>
+      </sc-if>
+      <sc-if value="{{ s1 }}" hint-placeholder-val="{{ true }}">
+        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8.5" r="3"></circle>
+          <path d="M3.5 19a5.5 5.5 0 0 1 11 0"></path>
+          <path d="M16 5.6a3 3 0 0 1 0 5.8"></path>
+          <path d="M17.6 13.8a5.5 5.5 0 0 1 2.9 5.2"></path>
+        </svg>
+      </sc-if>
+      <sc-if value="{{ s2 }}" hint-placeholder-val="{{ true }}">
+        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H9l-5 4v-14z"></path>
+          <path d="M8.5 9.5h7"></path>
+          <path d="M8.5 12.7h4.5"></path>
+        </svg>
+      </sc-if>
+    </div>
+
+    <div style="padding:0 8px">
+      <h1 class="h" style="margin:0 0 12px;font-size:26px;font-weight:700;letter-spacing:-.5px">{{ title }}</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#AEB6C8">{{ desc }}</p>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3">
+        <div class="dot {{ d.cls }}"></div>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ ready }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:16px;background:rgba(200,245,66,.12);border:1px solid rgba(200,245,66,.4);color:#C8F542;font-weight:700;font-size:15px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      Haz&#305;rs&#305;n, ke&#351;fetmeye ba&#351;la
+    </div>
+  </sc-if>
+  <sc-if value="{{ notReady }}" hint-placeholder-val="{{ true }}">
+    <button class="btn acc" onClick="{{ next }}">{{ btnLabel }}</button>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const steps = [
+      { title: 'Mekana check-in yap', desc: 'Kafede, konserde, sahada — bulunduğun mekanı seç, orada olduğunu göster.' },
+      { title: 'Oradakileri gör', desc: 'Aynı mekana check-in yapan insanlar anında listende. Kim var, ne seviyor, hemen gör.' },
+      { title: 'Ekle, tanış, konuş', desc: 'İstek gönder; kabul edilince mesajlaşma açılır. Tanışma bahanen hazır: aynı mekandasınız.' },
+    ];
+    const st = this.state || {};
+    const i = st.i || 0;
+    const granted = !!st.granted;
+    const cur = steps[i];
+    return {
+      title: cur.title,
+      desc: cur.desc,
+      s0: i === 0, s1: i === 1, s2: i === 2,
+      dots: steps.map((s, k) => ({ cls: k === i ? 'on' : '' })),
+      ready: granted,
+      notReady: !granted,
+      btnLabel: i < 2 ? 'Devam' : 'Konumuma izin ver',
+      next: () => (i < 2 ? this.setState({ i: i + 1 }) : this.setState({ granted: true })),
+    };
+  }
+}
+</script>
+</body>
+</html>

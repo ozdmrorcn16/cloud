@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:16px;font-weight:800;font-size:15px;border:none;flex:1}
+    .acc{background:#C8F542;color:#111505}
+    .ghost{background:#181D2A;color:#F2F4F8;border:1px solid #29304A}
+    .sentb{background:rgba(200,245,66,.10);border:1px solid rgba(200,245,66,.35);color:#C8F542}
+    .tagc{font-size:12px;font-weight:700;color:#AEB6C8;background:#1A2030;border-radius:12px;padding:8px 14px}
+    .sec{background:#12151F;border:1px solid #1E2434;border-radius:20px;padding:18px}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:60px 24px 0;display:flex;align-items:center;justify-content:space-between">
+    <button style="width:44px;height:44px;border-radius:15px;background:#181D2A;border:1px solid #29304A;display:flex;align-items:center;justify-content:center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="width:44px;height:44px;border-radius:15px;background:#181D2A;border:1px solid #29304A;display:flex;align-items:center;justify-content:center;color:#8B93A7;font-weight:800;font-size:17px">&#8942;</button>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:12px 24px 24px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px">
+      <div style="position:relative">
+        <div style="width:104px;height:104px;border-radius:36px;background:rgba(255,123,169,.14);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:38px;color:#FF7BA9;font-family:'Space Grotesk',sans-serif">E</div>
+        <div style="position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;border-radius:14px;background:#C8F542;border:4px solid #0C0E13"></div>
+      </div>
+      <div>
+        <h1 class="h" style="margin:0 0 6px;font-size:26px;font-weight:700;letter-spacing:-.5px">Elif, 24</h1>
+        <p style="margin:0;font-size:13px;font-weight:700;color:#C8F542;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"></path><circle cx="12" cy="10" r="2.6"></circle></svg>
+          Kafe Mola&#8217;da &#183; 15 dk &#246;nce check-in
+        </p>
+      </div>
+    </div>
+
+    <div class="sec">
+      <p style="margin:0;font-size:14px;line-height:1.65;color:#D7DCE6">Kahve, indie m&#252;zik ve analog foto&#287;raf. Yeni insanlarla tan&#305;&#351;mak i&#231;in buraday&#305;m &#8212; masamda her zaman yer var.</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="tagc">&#304;ndie m&#252;zik</span>
+      <span class="tagc">Kahve</span>
+      <span class="tagc">Analog foto&#287;raf</span>
+      <span class="tagc">Sinema</span>
+    </div>
+
+    <div class="sec" style="display:flex;align-items:center;gap:14px">
+      <div style="width:44px;height:44px;border-radius:15px;background:rgba(157,123,255,.14);display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9D7BFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg>
+      </div>
+      <div style="flex:1">
+        <p style="margin:0 0 2px;font-size:14px;font-weight:800">3 ortak mekan</p>
+        <p style="margin:0;font-size:12px;color:#8B93A7">Kafe Mola, Nova Bar, Kavo Coffee</p>
+      </div>
+    </div>
+
+    <sc-if value="{{ sent }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:0;text-align:center;font-size:12px;color:#8B93A7">&#304;ste&#287;in kabul edilince mesajla&#351;ma a&#231;&#305;l&#305;r.</p>
+    </sc-if>
+  </div>
+
+  <div style="padding:16px 24px 36px;border-top:1px solid #1E2434;background:#0E1119;display:flex;gap:12px">
+    <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+      <button class="btn acc" onClick="{{ send }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111505" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+        Ekle
+      </button>
+    </sc-if>
+    <sc-if value="{{ sent }}" hint-placeholder-val="{{ true }}">
+      <div class="btn sentb">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        &#304;stek g&#246;nderildi
+      </div>
+    </sc-if>
+    <button class="btn ghost">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H9l-5 4v-14z"></path></svg>
+      Mesaj
+    </button>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sent = !!(this.state && this.state.sent);
+    return {
+      sent,
+      notSent: !sent,
+      send: () => this.setState({ sent: true }),
+    };
+  }
+}
+</script>
+</body>
+</html>

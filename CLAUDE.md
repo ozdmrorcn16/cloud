@@ -41,7 +41,21 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - Begendigi kisileri **ekleyip onlarla mesajlasabiliyor**.
 - Ozetle: ayni mekandaki insanlari tanistiran, konuma dayali bir sosyallesme uygulamasi.
 - **Platform: mobil.**
-- Gorsel stil tercihleri netlestikce buraya eklenecek.
+
+### Tasarim kararlari (2026-08-25)
+
+- **Calisma adi:** "Burada" (kullanici onaylamadi, oneri olarak duruyor).
+- **Stil:** koyu ve enerjik — zemin `#0C0E13`, yuzeyler `#12151F`,
+  vurgu neon lime `#C8F542`, ikincil mor `#9D7BFF`.
+- **Fontlar:** Space Grotesk (baslik) + Manrope (metin), Google Fonts.
+- **Ekran seti (9):** Acilis, Kayit/Giris, Onboarding, Kesfet (ana ekran),
+  Mekandakiler, Kisi Profili, Sohbetler+Istekler, Sohbet, Profil/Ayarlar.
+- **Prototip:** tiklanabilir — sekmeler, check-in, ekleme istekleri,
+  mesaj gonderme ve ayar anahtarlari calisiyor.
+- **Dosyalar:** `tasarim/` klasoru (.dc.html artboard'lar + canvas.json).
+  Tasarim tuvali (Artifact): https://claude.ai/code/artifact/9e3fa439-0018-423d-b11e-e8a8469913f2
+  Guncelleme icin: `tasarim/` dosyalarini duzenle, seed edip ayni URL'ye
+  tekrar yayinla (design becerisi).
 
 ## Eklentiler
 

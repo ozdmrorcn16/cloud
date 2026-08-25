@@ -1,0 +1,20 @@
+{
+  "artboards": [
+    { "file": "Acilis.dc.html", "title": "Açılış", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "Kayit.dc.html", "title": "Kayıt / Giriş", "x": 470, "y": 0, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Onboarding.dc.html", "title": "Tanıtım", "x": 940, "y": 0, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Main.dc.html", "title": "Keşfet (Ana Ekran)", "x": 0, "y": 990, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Mekan.dc.html", "title": "Mekandakiler", "x": 470, "y": 990, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Profil.dc.html", "title": "Kişi Profili", "x": 940, "y": 990, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Sohbetler.dc.html", "title": "Sohbetler & İstekler", "x": 0, "y": 1980, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Mesaj.dc.html", "title": "Sohbet", "x": 470, "y": 1980, "w": 390, "h": 844, "is_interactive": true },
+    { "file": "Ayarlar.dc.html", "title": "Profil & Ayarlar", "x": 940, "y": 1980, "w": 390, "h": 844, "is_interactive": true }
+  ],
+  "annotations": [
+    { "id": "genel-not", "x": 0, "y": -190, "w": 560, "text": "Burada — check-in tabanlı sosyal uygulama, ilk tasarım turu.\nUygulama adı çalışma adıdır; mekan ve kişi isimleri örnek veridir.\nEkranlar tıklanabilir: sekmeler, check-in, ekleme istekleri, mesaj gönderme ve ayarlar çalışır." },
+    { "id": "akis-1", "x": -300, "y": 60, "w": 240, "text": "1 · Giriş ve tanıtım akışı" },
+    { "id": "akis-2", "x": -300, "y": 1050, "w": 240, "text": "2 · Check-in akışı: mekan seç, oradakileri gör, ekle" },
+    { "id": "akis-3", "x": -300, "y": 2040, "w": 240, "text": "3 · Mesajlaşma ve profil/ayarlar" }
+  ],
+  "launch": { "view": "canvas" }
+}

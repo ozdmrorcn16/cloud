@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .tab{flex:1;height:44px;border-radius:12px;border:none;background:none;color:#8B93A7;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+    .tab.on{background:#232A3E;color:#F2F4F8}
+    .row{display:flex;align-items:center;gap:14px;padding:14px 0;border:none;background:none;width:100%;text-align:left;color:#F2F4F8;border-bottom:1px solid #171C29}
+    .cnt{min-width:20px;height:20px;border-radius:10px;background:#C8F542;color:#111505;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px}
+    .nav{display:flex;border-top:1px solid #1E2434;background:#0E1119;padding:10px 12px 26px}
+    .nvi{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#6B7390;background:none;border:none;height:56px;justify-content:center}
+    .nvi.on{color:#C8F542}
+    .mini{height:44px;padding:0 16px;border-radius:14px;border:none;font-weight:800;font-size:13px}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:64px 24px 0">
+    <h1 class="h" style="margin:0 0 16px;font-size:30px;font-weight:700;letter-spacing:-.6px">Sohbetler</h1>
+    <div style="display:flex;background:#12151F;border:1px solid #1E2434;border-radius:16px;padding:4px;gap:4px">
+      <button class="tab {{ chatCls }}" onClick="{{ goChats }}">Sohbetler</button>
+      <button class="tab {{ reqCls }}" onClick="{{ goReqs }}">&#304;stekler <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}"><span class="cnt">{{ pendingCount }}</span></sc-if></button>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:8px 24px 24px">
+    <sc-if value="{{ isChats }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <sc-for list="{{ chats }}" as="c" hint-placeholder-count="4">
+          <button class="row">
+            <div style="width:54px;height:54px;border-radius:20px;background:{{ c.avBg }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:{{ c.avFg }};flex:none">{{ c.ini }}</div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0 0 3px;font-size:15px;font-weight:800">{{ c.name }}</p>
+              <p style="margin:0;font-size:13px;color:#8B93A7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.last }}</p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none">
+              <span style="font-size:11px;font-weight:700;color:#5E6678">{{ c.time }}</span>
+              <sc-if value="{{ c.hasUnread }}" hint-placeholder-val="{{ true }}">
+                <span class="cnt">{{ c.unread }}</span>
+              </sc-if>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReqs }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <p style="margin:14px 0;font-size:13px;color:#8B93A7">Bu ki&#351;iler seni eklemek istiyor. Kabul edersen mesajla&#351;ma a&#231;&#305;l&#305;r.</p>
+        <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="2">
+          <div class="row" style="cursor:default">
+            <div style="width:54px;height:54px;border-radius:20px;background:{{ r.avBg }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:{{ r.avFg }};flex:none">{{ r.ini }}</div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0 0 3px;font-size:15px;font-weight:800">{{ r.name }}, {{ r.age }}</p>
+              <p style="margin:0;font-size:12px;color:#8B93A7">{{ r.where }}</p>
+            </div>
+            <sc-if value="{{ r.isOk }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:13px;font-weight:800;color:#C8F542;flex:none">Eklendi</span>
+            </sc-if>
+            <sc-if value="{{ r.isOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:8px;flex:none">
+                <button class="mini" style="background:#C8F542;color:#111505" onClick="{{ r.ok }}">Kabul et</button>
+                <button class="mini" style="background:#181D2A;color:#AEB6C8;border:1px solid #29304A" onClick="{{ r.no }}">Yoksay</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <div class="nav">
+    <button class="nvi">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg>
+      Ke&#351;fet
+    </button>
+    <button class="nvi on">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H9l-5 4v-14z"></path></svg>
+      Sohbetler
+    </button>
+    <button class="nvi">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+      Profil
+    </button>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const tab = st.tab || 'chats';
+    const status = st.status || {};
+    const chatsBase = [
+      { id: 1, name: 'Elif', last: 'Konser bileti aldın mı?', time: '14:02', unread: 2, hue: '#FF7BA9' },
+      { id: 2, name: 'Kaan', last: 'Yarın Arena Fit’te miyiz?', time: '11:47', unread: 0, hue: '#5BC8FF' },
+      { id: 3, name: 'Ada', last: 'Fotoğrafları gönderdim', time: 'Dün', unread: 0, hue: '#7BFFB5' },
+      { id: 4, name: 'Derin', last: 'Rövanş bekliyorum', time: 'Pzt', unread: 0, hue: '#FFC65B' },
+    ];
+    const reqsBase = [
+      { id: 11, name: 'Mert', age: 25, where: 'Kafe Mola’da karşılaştınız', hue: '#C8F542' },
+      { id: 12, name: 'Zeynep', age: 23, where: 'Nova Bar’da karşılaştınız', hue: '#9D7BFF' },
+    ];
+    const reqs = reqsBase
+      .filter((r) => status[r.id] !== 'no')
+      .map((r) => ({
+        ...r,
+        ini: r.name.charAt(0),
+        avBg: r.hue + '1f',
+        avFg: r.hue,
+        isOk: status[r.id] === 'ok',
+        isOpen: !status[r.id],
+        ok: () => this.setState({ status: { ...status, [r.id]: 'ok' } }),
+        no: () => this.setState({ status: { ...status, [r.id]: 'no' } }),
+      }));
+    const pendingCount = reqs.filter((r) => r.isOpen).length;
+    return {
+      isChats: tab === 'chats',
+      isReqs: tab === 'reqs',
+      chatCls: tab === 'chats' ? 'on' : '',
+      reqCls: tab === 'reqs' ? 'on' : '',
+      goChats: () => this.setState({ tab: 'chats' }),
+      goReqs: () => this.setState({ tab: 'reqs' }),
+      chats: chatsBase.map((c) => ({
+        ...c,
+        ini: c.name.charAt(0),
+        avBg: c.hue + '1f',
+        avFg: c.hue,
+        hasUnread: c.unread > 0,
+      })),
+      reqs,
+      pendingCount,
+      hasPending: pendingCount > 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

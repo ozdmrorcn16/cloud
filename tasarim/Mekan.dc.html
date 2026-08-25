@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .pcard{background:#12151F;border:1px solid #1E2434;border-radius:20px;padding:18px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+    .add{height:44px;width:100%;border-radius:14px;border:none;background:#C8F542;color:#111505;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px}
+    .sent{height:44px;width:100%;border-radius:14px;background:rgba(200,245,66,.10);border:1px solid rgba(200,245,66,.35);color:#C8F542;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px}
+    .tagc{font-size:11px;font-weight:700;color:#AEB6C8;background:#1A2030;border-radius:10px;padding:5px 10px}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:60px 24px 18px;background:#10131C;border-bottom:1px solid #1E2434">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button style="width:44px;height:44px;border-radius:15px;background:#181D2A;border:1px solid #29304A;display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"></path></svg>
+      </button>
+      <div style="flex:1;min-width:0">
+        <h1 class="h" style="margin:0 0 2px;font-size:22px;font-weight:700;letter-spacing:-.4px">Kafe Mola</h1>
+        <p style="margin:0;font-size:12px;color:#8B93A7">Kafe &#183; 340 m &#183; Kad&#305;k&#246;y</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:17px;background:rgba(200,245,66,.12);color:#C8F542;font-weight:800;font-size:12px;flex:none">
+        <div style="width:7px;height:7px;border-radius:4px;background:#C8F542"></div>
+        Buradas&#305;n
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;font-weight:700;color:#AEB6C8;display:flex;align-items:center;gap:6px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9D7BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0"></path><path d="M16 5.6a3 3 0 0 1 0 5.8"></path><path d="M17.6 13.8a5.5 5.5 0 0 1 2.9 5.2"></path></svg>
+      &#350;u an {{ total }} ki&#351;i burada &#183; {{ sentCount }} istek g&#246;nderdin
+    </p>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:20px 24px 28px">
+    <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:12px">
+      <sc-for list="{{ people }}" as="p" hint-placeholder-count="6">
+        <div class="pcard">
+          <div style="width:64px;height:64px;border-radius:24px;background:{{ p.avBg }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:{{ p.avFg }}">{{ p.ini }}</div>
+          <div>
+            <p style="margin:0 0 2px;font-size:15px;font-weight:800">{{ p.name }}, {{ p.age }}</p>
+            <p style="margin:0;font-size:11px;color:#8B93A7">{{ p.since }}</p>
+          </div>
+          <span class="tagc">{{ p.tag }}</span>
+          <sc-if value="{{ p.isAdded }}" hint-placeholder-val="{{ true }}">
+            <div class="sent">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+              G&#246;nderildi
+            </div>
+          </sc-if>
+          <sc-if value="{{ p.notAdded }}" hint-placeholder-val="{{ true }}">
+            <button class="add" onClick="{{ p.add }}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111505" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+              Ekle
+            </button>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const base = [
+      { id: 1, name: 'Elif', age: 24, tag: 'İndie müzik', since: '15 dk önce geldi', hue: '#FF7BA9' },
+      { id: 2, name: 'Kaan', age: 27, tag: 'Kahve', since: '40 dk önce geldi', hue: '#5BC8FF' },
+      { id: 3, name: 'Zeynep', age: 23, tag: 'Fotoğraf', since: '5 dk önce geldi', hue: '#9D7BFF' },
+      { id: 4, name: 'Mert', age: 25, tag: 'Koşu', since: '1 sa önce geldi', hue: '#C8F542' },
+      { id: 5, name: 'Derin', age: 26, tag: 'Satranç', since: '25 dk önce geldi', hue: '#FFC65B' },
+      { id: 6, name: 'Ada', age: 22, tag: 'Sinema', since: 'Az önce geldi', hue: '#7BFFB5' },
+    ];
+    const added = (this.state && this.state.added) || {};
+    const people = base.map((p) => ({
+      ...p,
+      ini: p.name.charAt(0),
+      avBg: p.hue + '1f',
+      avFg: p.hue,
+      isAdded: !!added[p.id],
+      notAdded: !added[p.id],
+      add: () => this.setState({ added: { ...added, [p.id]: true } }),
+    }));
+    return {
+      people,
+      total: 12,
+      sentCount: Object.keys(added).length,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .chip{height:44px;padding:0 18px;border-radius:22px;border:1px solid #29304A;background:#12151F;color:#AEB6C8;font-weight:700;font-size:13px;white-space:nowrap;flex:none}
+    .chip.on{background:#C8F542;border-color:#C8F542;color:#111505}
+    .ci{height:44px;padding:0 18px;border-radius:22px;border:none;background:#C8F542;color:#111505;font-weight:800;font-size:13px;flex:none;display:flex;align-items:center;gap:6px}
+    .nav{display:flex;border-top:1px solid #1E2434;background:#0E1119;padding:10px 12px 26px}
+    .nvi{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#6B7390;background:none;border:none;height:56px;justify-content:center}
+    .nvi.on{color:#C8F542}
+    .card{display:flex;align-items:center;gap:14px;background:#12151F;border:1px solid #1E2434;border-radius:20px;padding:16px}
+    .card.here{border-color:rgba(200,245,66,.5)}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:64px 24px 0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <h1 class="h" style="margin:0 0 4px;font-size:30px;font-weight:700;letter-spacing:-.6px">Ke&#351;fet</h1>
+        <p style="margin:0;font-size:13px;color:#8B93A7;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"></path><circle cx="12" cy="10" r="2.6"></circle></svg>
+          Kad&#305;k&#246;y &#231;evresi &#183; {{ visibleCount }} mekan
+        </p>
+      </div>
+      <button style="width:46px;height:46px;border-radius:16px;background:#12151F;border:1px solid #1E2434;display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#AEB6C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.3-4.3"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <sc-if value="{{ hasCheck }}" hint-placeholder-val="{{ true }}">
+    <div style="margin:16px 24px 0;display:flex;align-items:center;gap:12px;background:rgba(200,245,66,.10);border:1px solid rgba(200,245,66,.4);border-radius:16px;padding:14px 16px">
+      <div style="width:10px;height:10px;border-radius:5px;background:#C8F542;flex:none"></div>
+      <p style="margin:0;font-size:14px;font-weight:700;flex:1">&#350;u an <span style="color:#C8F542">{{ checkedName }}</span> mekan&#305;ndas&#305;n</p>
+      <span style="font-size:13px;font-weight:800;color:#C8F542;flex:none">Oradakileri g&#246;r</span>
+    </div>
+  </sc-if>
+
+  <div style="display:flex;gap:8px;padding:16px 24px 4px;overflow:hidden">
+    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
+      <button class="chip {{ c.cls }}" onClick="{{ c.pick }}">{{ c.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:12px 24px 24px;display:flex;flex-direction:column;gap:12px">
+    <sc-for list="{{ list }}" as="v" hint-placeholder-count="5">
+      <div class="card {{ v.cardCls }}">
+        <div style="width:56px;height:56px;border-radius:18px;background:{{ v.tileBg }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:{{ v.tileFg }};flex:none">{{ v.mono }}</div>
+        <div style="flex:1;min-width:0">
+          <p style="margin:0 0 3px;font-size:16px;font-weight:800">{{ v.name }}</p>
+          <p style="margin:0 0 6px;font-size:12px;color:#8B93A7">{{ v.cat }} &#183; {{ v.dist }}</p>
+          <p style="margin:0;font-size:12px;font-weight:700;color:#AEB6C8;display:flex;align-items:center;gap:5px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9D7BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0"></path><path d="M16 5.6a3 3 0 0 1 0 5.8"></path><path d="M17.6 13.8a5.5 5.5 0 0 1 2.9 5.2"></path></svg>
+            {{ v.count }} ki&#351;i &#351;u an burada
+          </p>
+        </div>
+        <sc-if value="{{ v.isIn }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:5px;height:44px;padding:0 14px;border-radius:22px;background:rgba(200,245,66,.12);color:#C8F542;font-weight:800;font-size:13px;flex:none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8F542" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            Buradas&#305;n
+          </div>
+        </sc-if>
+        <sc-if value="{{ v.notIn }}" hint-placeholder-val="{{ true }}">
+          <button class="ci" onClick="{{ v.pick }}">Check-in</button>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="nav">
+    <button class="nvi on">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg>
+      Ke&#351;fet
+    </button>
+    <button class="nvi">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H9l-5 4v-14z"></path></svg>
+      Sohbetler
+    </button>
+    <button class="nvi">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+      Profil
+    </button>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cats = ['Tümü', 'Kafe', 'Bar', 'Spor', 'Etkinlik'];
+    const venues = [
+      { id: 1, name: 'Kafe Mola', cat: 'Kafe', dist: '340 m', count: 12, mono: 'KM', hue: '#C8F542' },
+      { id: 2, name: 'Nova Bar', cat: 'Bar', dist: '550 m', count: 23, mono: 'NB', hue: '#9D7BFF' },
+      { id: 3, name: 'Kavo Coffee', cat: 'Kafe', dist: '700 m', count: 6, mono: 'KC', hue: '#5BC8FF' },
+      { id: 4, name: 'Arena Fit', cat: 'Spor', dist: '1,2 km', count: 8, mono: 'AF', hue: '#FF7BA9' },
+      { id: 5, name: 'Sahne İst', cat: 'Etkinlik', dist: '2,1 km', count: 47, mono: 'Sİ', hue: '#FFC65B' },
+    ];
+    const st = this.state || {};
+    const cat = st.cat || 'Tümü';
+    const checkedId = st.checkedId || null;
+    const list = venues
+      .filter((v) => cat === 'Tümü' || v.cat === cat)
+      .map((v) => ({
+        ...v,
+        isIn: v.id === checkedId,
+        notIn: v.id !== checkedId,
+        cardCls: v.id === checkedId ? 'here' : '',
+        tileBg: v.hue + '1f',
+        tileFg: v.hue,
+        pick: () => this.setState({ checkedId: v.id }),
+      }));
+    const checked = venues.find((v) => v.id === checkedId) || null;
+    return {
+      chips: cats.map((c) => ({
+        label: c,
+        cls: c === cat ? 'on' : '',
+        pick: () => this.setState({ cat: c }),
+      })),
+      list,
+      visibleCount: list.length,
+      hasCheck: !!checked,
+      checkedName: checked ? checked.name : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Manrope',system-ui,sans-serif;background:#0C0E13;color:#F2F4F8;-webkit-font-smoothing:antialiased}
+    a{color:#C8F542}a:hover{color:#DAFF6B}
+    button{font-family:inherit;cursor:pointer}
+    .h{font-family:'Space Grotesk','Manrope',sans-serif}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:54px;border-radius:16px;font-weight:700;font-size:15px;border:none;width:100%}
+    .acc{background:#C8F542;color:#111505}
+    .ghost{background:#181D2A;color:#F2F4F8;border:1px solid #29304A}
+    @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    @keyframes pulse{0%{transform:scale(.92);opacity:.55}100%{transform:scale(1.28);opacity:0}}
+    .rv1{animation:rise .6s ease both}
+    .rv2{animation:rise .6s .12s ease both}
+    .rv3{animation:rise .6s .24s ease both}
+    .ring{position:absolute;border:1px solid rgba(200,245,66,.35);border-radius:50%}
+    .ringp{animation:pulse 2.6s ease-out infinite}
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0C0E13;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <div style="position:absolute;top:-180px;left:50%;transform:translateX(-50%);width:520px;height:520px;border-radius:50%;background:radial-gradient(closest-side,rgba(200,245,66,.10),rgba(200,245,66,0));pointer-events:none"></div>
+
+  <div class="rv1" style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;margin-top:40px">
+    <div style="position:relative;width:320px;height:320px;display:flex;align-items:center;justify-content:center">
+      <div class="ring" style="width:150px;height:150px;top:85px;left:85px"></div>
+      <div class="ring" style="width:230px;height:230px;top:45px;left:45px;border-color:rgba(200,245,66,.18)"></div>
+      <div class="ring" style="width:310px;height:310px;top:5px;left:5px;border-color:rgba(200,245,66,.09)"></div>
+      <div class="ring ringp" style="width:150px;height:150px;top:85px;left:85px"></div>
+
+      <div style="position:absolute;top:38px;left:52px;width:44px;height:44px;border-radius:22px;background:#22283C;border:1px solid #313A56;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#9D7BFF">Z</div>
+      <div style="position:absolute;top:120px;right:8px;width:44px;height:44px;border-radius:22px;background:#22283C;border:1px solid #313A56;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#5BC8FF">K</div>
+      <div style="position:absolute;bottom:34px;left:34px;width:44px;height:44px;border-radius:22px;background:#22283C;border:1px solid #313A56;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#FF7BA9">E</div>
+
+      <div style="width:96px;height:96px;border-radius:30px;background:#C8F542;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 48px rgba(200,245,66,.35)">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#111505" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"></path>
+          <circle cx="12" cy="10" r="2.6"></circle>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="rv2" style="padding:0 28px;text-align:center">
+    <h1 class="h" style="margin:0 0 12px;font-size:42px;font-weight:700;letter-spacing:-1px">Burada</h1>
+    <p style="margin:0;font-size:16px;line-height:1.55;color:#AEB6C8">Mekana check-in yap, ayn&#305; anda orada olanlar&#305; g&#246;r.<br>Ekle, tan&#305;&#351;, konu&#351;.</p>
+  </div>
+
+  <div class="rv3" style="padding:28px 24px 40px;display:flex;flex-direction:column;gap:12px">
+    <button class="btn acc">Hesap olu&#351;tur</button>
+    <button class="btn ghost">Giri&#351; yap</button>
+    <p style="margin:8px 0 0;text-align:center;font-size:12px;color:#5E6678">Devam ederek <a href="#">Kullan&#305;m Ko&#351;ullar&#305;</a>&#8217;n&#305; kabul etmi&#351; olursun.</p>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
