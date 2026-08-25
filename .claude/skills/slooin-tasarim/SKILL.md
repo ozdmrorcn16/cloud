@@ -165,12 +165,65 @@ Dagitilmis efektler tasarimi yapay gosterir. Karsilama ekranindaki
 nabiz atan nokta buna ornektir: markanin noktasi ile urunun vaadi
 ("su an burada biri var") ayni ogede birlesir.
 
-## Ekranlarin durumu
+## Ekranlarin durumu (2026-08-25)
 
-Kimlige tasinmis: karsilama, giris, kayit, ana ekran, kesfet, mekan
-ekle. Geri kalan ~14 ekran hala eski duz stille duruyor; bir ekrana
-dokunurken onu kimlige tasimak dogru is. Takip listesi:
-`docs/tasarim-takip-isleri.md`.
+Kimlige tasinmis: `(auth)/karsilama`, `(auth)/giris`, `(auth)/kayit`,
+`mekanlar/index` (kesfet), `kisiler`, `mesajlar`.
+
+SIRADAKI: profil sekmesi. Alt gezinmedeki "Profil" su an dogrudan
+`/profil/anilar`a gidiyor cunku bir profil ANA ekrani yok; Instagram ve
+Swarm'da o sekme kisinin kendi profilini gosterir (fotograf, kullanici
+adi, anilar, ayarlara giris).
+
+Kalan eski stildeki ekranlar: `baglar`, `mekanlar/[id]`,
+`mekanlar/ekle`, `check-in/[mekanId]`, `kullanici/[id]`,
+`sohbet/[kullaniciId]`, `profil/anilar`, `profil/ayarlar`,
+`profil/hesabi-sil`, `sikayet`, `gizlilik`, `hesap-durumu`,
+`profil-olustur`, `(auth)/dogrula`.
+
+Eski `src/app/index.tsx` (ana ekran menusu) artik gereksiz - gezinme
+alt cubuktan yapiliyor.
+
+## Alt gezinme cubugu
+
+`src/tasarim/AltGezinme.tsx`. Yuzer, dort sekme, okunmamis rozetli.
+Ekrana su desenle eklenir:
+
+```tsx
+<View style={stiller.kok}>
+  <ScrollView contentContainerStyle={{ paddingBottom: ALT_GEZINME_PAYI }}>…</ScrollView>
+  <AltGezinme />
+</View>
+```
+
+Testlerde `jest.setup.js` icinde global mock'lu; yeni ekran testinde
+ayrica bir sey yapmaya gerek yok.
+
+## Marka: kelime markasi ve isaret AYRI
+
+| Varlik | Bilesen | Nerede |
+|---|---|---|
+| Kelime markasi | `MarkaYazisi` | Giris, karsilama, basliklar |
+| Isaret (konum ignesi) | `MarkaIsareti` | Uygulama simgesi, kucuk yerler |
+
+Kelime markasi SIMGE OLAMAZ (en/boy 3.4). `MarkaYazisi` icindeki oran
+koda gomulu; gorsel degisirse o sabit de degismeli.
+
+## Ekran goruntusu araci
+
+`mobil/araclar/ekran-goruntusu.mjs` - tasarimi gozle dogrulamanin tek
+guvenilir yolu. Chrome'un `--screenshot` bayragi Windows'ta yanlis
+teshis uretiyor (asgari pencere genisligi yuzunden sahte "sag kenar
+tasmasi"). Ayrinti ve kullanim: CLAUDE.md.
+
+## Calisma bicimi
+
+Kullanicinin kurali: sayfa sayfa, talimatla. Bir ekran bitince
+siradakine KENDILIGINDEN GECILMEZ - hangi sayfaya gecilecegi sorulur.
+Her adim ekran goruntusuyle gosterilir.
+
+Metinler su an YALNIZCA `tr.ts` icine yaziliyor; diger diller tasarim
+bitince toplu eklenecek.
 
 Kanvas calisma dosyalari `tasarim/slooin-kanvas/` altinda; jetonlarin
 kaynagi orasidir ama uygulamada dogru yer `tema.ts`.

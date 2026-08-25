@@ -131,6 +131,151 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ARAYUZ TASARIMI - DEVAM EDEN IS (2026-08-25)
+
+**Calisma bicimi (kullanicinin kurali):** "Sayfa sayfa ilerlicez
+talimatlarla." Bir ekran bitince SIRADAKINE KENDILIGINDEN GECILMEZ;
+hangi sayfaya gecilecegi sorulur. Her adim ekran goruntusuyle
+gosterilir - kullanici "bunu bana görsel olarak göstermen gerek" dedi.
+
+**Referans:** Instagram ve eski Swarm. Kullanicinin ifadesi: "instagram
+ve eski swarm uygulamalarini referans alarak olustur".
+
+#### Biten ekranlar
+
+| Ekran | Durum |
+|---|---|
+| `(auth)/karsilama` | ILK ACILIS. Yalnizca uygulamayi ilk indirene gorunur |
+| `(auth)/giris` | ILK SAYFA. Instagram duzeni, kelime markasi |
+| `(auth)/kayit` | Telefon, sifre + tekrar, tek onay kutusu |
+| `mekanlar/index` | Kesfet. Alt gezinme buradan basladi |
+| `kisiler` | Kimlige tasindi, bas harfli avatar, bos ekran yonu |
+| `mesajlar` | Okunmamis gorsel ayrimi, turuncu rozet |
+
+#### Siradaki is: PROFIL SEKMESI
+
+Alt gezinmedeki "Profil" sekmesi su an dogrudan `/profil/anilar`
+ekranina gidiyor cunku ORTADA BIR PROFIL ANA EKRANI YOK. Instagram ve
+Swarm'da profil sekmesi kisinin kendi profilini gosterir: fotograf,
+kullanici adi, anilar ve ayarlara giris. Boyle bir ekran yazilmali.
+
+Sonra kalan ekranlar (hepsi hala eski duz stilde): `baglar`,
+`mekanlar/[id]`, `mekanlar/ekle`, `check-in/[mekanId]`,
+`kullanici/[id]`, `sohbet/[kullaniciId]`, `profil/anilar`,
+`profil/ayarlar`, `profil/hesabi-sil`, `sikayet`, `gizlilik`,
+`hesap-durumu`, `profil-olustur`, `(auth)/dogrula`.
+
+Eski `src/app/index.tsx` (ana ekran menusu) artik gereksiz: gezinme
+alt cubuktan yapiliyor. Kaldirilmasi ayri bir is.
+
+#### Alt gezinme cubugu
+
+`src/tasarim/AltGezinme.tsx` - yuzer, dort sekme (Kesfet / Kisiler /
+Mesajlar / Profil), okunmamis rozetiyle. Ekrana su desenle eklenir:
+
+```tsx
+<View style={stiller.kok}>
+  <ScrollView contentContainerStyle={{ paddingBottom: ALT_GEZINME_PAYI }}>…</ScrollView>
+  <AltGezinme />
+</View>
+```
+
+Swarm'daki ortadaki buyuk check-in dugmesi BILEREK yok: Slooin'de
+check-in mekan secilerek yapiliyor, o dugme kullaniciyi yine ayni
+kesfet listesine goturur.
+
+Testlerde cubuk `jest.setup.js` icinde GLOBAL mock'lanmis - `usePathname`
+kullandigi ve her ekran testi expo-router'i kendi mock'uyla degistirdigi
+icin. Yeni ekran testinde ayrica bir sey yapmaya gerek yok.
+
+#### Marka: kelime markasi ve isaret AYRI
+
+| Varlik | Bilesen | Nerede |
+|---|---|---|
+| Kelime markasi (`slooin` yazisi) | `MarkaYazisi` | Giris, karsilama, basliklar |
+| Isaret (konum ignesi) | `MarkaIsareti` | Uygulama simgesi, kucuk yerler |
+
+Kelime markasi SIMGE OLAMAZ: en/boy orani 3.4, kare ikona sigmaz.
+`MarkaYazisi` icindeki en/boy orani KODA GOMULU - gorsel degisirse o
+sabit de degismeli, yoksa yazi ezilir.
+
+Uygulama simgesi: balonsuz isaret, %62 doluluk, altinda golge.
+Kullanicinin geri bildirimleri: "cok genis duruyor" (kucultuldu),
+"cok kötü duruyor sığdırmaya çalışınca" (%90 denendi, geri alindi).
+
+Turuncu `#FE7813` - logodan OLCULDU, tahmin degil. Tema, ikonlar,
+manifest ve `theme-color` hepsi ayni tonda.
+
+Kaynak dosyalar: `tasarim/slooin-logo-kaynak.png` (turuncu zemin),
+`tasarim/slooin-logo-acik-kaynak.png`, `tasarim/slooin-isaret-balonsuz.png`,
+`tasarim/slooin-kelime-markasi-kaynak.png`.
+
+#### DIL: cihazdan aliniyor, SORULMUYOR
+
+Yedi dil: tr, en, de, es, fr, ru, ar. Arapca SAGDAN SOLA (web'de `dir`
+niteligi; native'de yalnizca `allowRTL`, zorla yeniden baslatma YOK).
+Desteklenmeyen cihaz dili INGILIZCE'ye duser, Turkce'ye degil.
+
+**SU ANKI CALISMA KURALI:** yeni ekran metinleri YALNIZCA
+`lib/ceviriler/tr.ts` icine yazilir. Kullanicinin karari: "şuan sadece
+türkçe diliyle ilerle sürekli yedi dile eklemeye çalışma zaman kaybı en
+son yaparız". Diger diller ve dil testi tasarim bitince toplu yapilacak.
+Metin YINE DE koda gomulmez - sozluge yazilir.
+
+`profiller.dil` kisiti istemcideki `DESTEKLENEN_DILLER` ile ayni
+tutulmali.
+
+#### EKRAN GORUNTUSU ARACI - onemli
+
+`mobil/araclar/ekran-goruntusu.mjs` (puppeteer-core). Tasarimi gozle
+dogrulamanin tek guvenilir yolu.
+
+```bash
+cd mobil
+node araclar/ekran-goruntusu.mjs giris ../tasarim/ekran-giris.png
+# oturum gerektiren ekranlar:
+SLOOIN_TEST_TELEFON=05550000000 SLOOIN_TEST_SIFRE=test1234   node araclar/ekran-goruntusu.mjs mekanlar ../tasarim/ekran.png
+# cihaz dili taklidi:
+SLOOIN_TEST_DIL=de-DE node araclar/ekran-goruntusu.mjs karsilama ../tasarim/de.png
+```
+
+Git Bash'te yolu BASTAKI EGIK CIZGI OLMADAN yaz (`giris`, `/giris`
+degil) - MSYS onu Windows yoluna cevirip URL'i bozuyor.
+
+**Chrome'un `--screenshot` bayragini KULLANMA.** Windows'ta pencerenin
+asgari genisligi var; `--window-size=390` istense bile layout ~500 px'te
+kaliyor ve goruntu kirpiliyor. Bu, ekranlarda OLMAYAN bir "sag kenar
+tasmasi" gosterip yanlis teshise yol acti. Arac artik
+`document.body.scrollWidth` olcup tasma olup olmadigini raporluyor.
+
+#### Onizleme akisi (her degisiklikten sonra)
+
+```bash
+# 1) sunucuyu durdur (dist kilitli kalirsa export EBUSY verir)
+powershell -c "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.CommandLine -like '*spa-sunucu*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"
+cd mobil && npx expo export --platform web
+# 2) sunucuyu baslat
+nohup python <scratchpad>/spa-sunucu.py C:/Users/orcns/projects/cloud/mobil/dist 8080 &
+# 3) ekran goruntusu al
+```
+
+Tunel (telefonda bakmak icin) ayri calisiyor:
+`"/c/Program Files (x86)/cloudflared/cloudflared.exe" tunnel --url http://127.0.0.1:8080 --no-autoupdate`
+Adres her calistirmada DEGISIR.
+
+#### Test hesaplari
+
+`05550000000` … `05550000003`, sifre `test1234`, SMS kodu `123456`.
+
+#### EAS / APK durumu
+
+Expo hesabina GIRIS YAPILDI (`byorcun`). Proje `@byorcun/slooin`
+olusturuldu, Supabase anahtarlari preview ortamina tanimlandi, Android
+APK bir kez derlendi. **Ama kullanici iPHONE kullaniyor** - APK ona
+kurulamaz. iOS'ta ucretsiz kurulum yolu YOK (Apple imzasiz uygulamaya
+izin vermiyor, Mac+Xcode de gerekiyor). Kullanici PWA yolunda devam
+etmeyi secti: Safari > Paylas > "Ana Ekrana Ekle".
+
 ### KARAR: dis kaynakli mekanlarda TUR GOSTERILMIYOR (2026-08-24)
 
 Kullanicinin karari, tur hatalarini "yuzde yuz nasil cozeriz" sorusuna
