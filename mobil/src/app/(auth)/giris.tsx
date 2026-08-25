@@ -199,7 +199,7 @@ const stiller = StyleSheet.create({
   },
 
   marka: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
     color: renk.metinSoluk,
     textAlign: 'center',

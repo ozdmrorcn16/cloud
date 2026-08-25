@@ -318,7 +318,7 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   basHarf: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 34,
     color: renk.turuncu,
   },
@@ -327,7 +327,7 @@ const stiller = StyleSheet.create({
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
   sayiAyirici: { width: 1, height: 28, backgroundColor: renk.cizgi },
   sayi: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.4,

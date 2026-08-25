@@ -48,20 +48,18 @@ export const renk = {
 } as const
 
 export const yazi = {
-  /** Baslik ailesi. Karakterli; olculu kullanilir. */
-  baslik: 'BricolageGrotesque_600SemiBold',
-  baslikKalin: 'BricolageGrotesque_700Bold',
   /**
-   * EKRAN BASLIKLARI (kullanicinin karari, 2026-08-25).
+   * EKRAN BASLIKLARI - ve baslik gibi davranan her sey (bas harfli
+   * avatarlar, sayilar).
    *
-   * Sayfa ve bolum basliklari marka fontu Bricolage ile degil, govde
-   * ailesinin en agir kesimiyle yaziliyor: kullanici Instagram'in
-   * ayarlar ekranini ornek gosterip "yazi stili bu ornekteki gibi
-   * olsun, basliklar daha kalin ve daha buyuk puntolu" dedi.
+   * Kullanicinin karari (2026-08-25): "Basliklar dahil butun yazim
+   * stilleri resimdeki gibi olucak." Referans, Instagram duzenine
+   * gecirilmis kendi ayarlar ekranimizdi.
    *
-   * Bricolage KALDIRILMADI: kelime markasinda ve karsilama/giris
-   * ekranlarinin buyuk vaadinde duruyor - yani markanin konustugu
-   * yerlerde. Uygulamanin ici ise notr ve okunakli.
+   * Uygulamanin ICINDE TEK YAZI AILESI var: Instrument Sans. Marka
+   * fontu Bricolage Grotesque buradan tamamen cikti (once yalnizca
+   * basliklardan cikmisti, sonra tamamen). Kelime markasi bir gorsel
+   * oldugu icin markanin karakteri orada duruyor.
    */
   ekranBasligi: 'InstrumentSans_700Bold',
 

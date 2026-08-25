@@ -12,8 +12,8 @@ import { renk, yazi, olcek, bosluk } from './tema'
  * Bu bilesen o boslugu dolduruyor.
  *
  * Baslik ORTALI degil sola yasli: Instagram ayarlarinda ortali duruyor
- * ama bizim basliklarimiz Bricolage ile daha uzun ve iki yana esit
- * bosluk birakmak "Engellenenler" gibi uzun bir baslikta oku sikistiriyor.
+ * ama "Engellenenler" gibi uzun bir baslikta iki yana esit bosluk
+ * birakmak geri okunu sikistiriyor.
  */
 export function UstCubuk({ baslik, geriEtiketi }: { baslik: string; geriEtiketi: string }) {
   const router = useRouter()

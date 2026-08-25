@@ -466,7 +466,7 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  basHarf: { fontFamily: yazi.baslikKalin, fontSize: 34, color: renk.turuncu },
+  basHarf: { fontFamily: yazi.ekranBasligi, fontSize: 34, color: renk.turuncu },
   kimlikOrta: { flex: 1 },
   ad: {
     fontFamily: yazi.ekranBasligi,

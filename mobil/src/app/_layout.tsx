@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
-import {
-  useFonts,
-  BricolageGrotesque_600SemiBold,
-  BricolageGrotesque_700Bold,
-} from '@expo-google-fonts/bricolage-grotesque'
+import { useFonts } from 'expo-font'
 import {
   InstrumentSans_400Regular,
   InstrumentSans_500Medium,
@@ -112,12 +108,10 @@ const stiller = StyleSheet.create({
 })
 
 export default function KokLayout() {
-  // Marka yazi tipleri (karar 73). Yuklenmeden once ekran cizilmez:
+  // Uygulamanin yazi ailesi. Yuklenmeden once ekran cizilmez:
   // sistem fontuyla bir kare cizip sonra marka fontuna atlamak gozle
   // gorulur bir sicrama uretiyor.
   const [yaziHazir] = useFonts({
-    BricolageGrotesque_600SemiBold,
-    BricolageGrotesque_700Bold,
     InstrumentSans_400Regular,
     InstrumentSans_500Medium,
     InstrumentSans_600SemiBold,

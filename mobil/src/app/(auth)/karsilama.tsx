@@ -89,7 +89,7 @@ const stiller = StyleSheet.create({
 
   ust: { alignItems: 'center' },
   baslik: {
-    fontFamily: yazi.baslik,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 30,
     lineHeight: 37,
     color: renk.metin,

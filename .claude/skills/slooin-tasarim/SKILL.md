@@ -101,21 +101,38 @@ renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
 | `renk.yuzey` | `#FFFFFF` | Kart, yuzer yuzey |
 | `renk.cizgi` | `#EFEAE5` | Ayirici, kenarlik |
 
-**Yazi**
-- Baslik: `BricolageGrotesque_600SemiBold` / `_700Bold` - karakterli,
-  olculu kullanilir. Baslik boyutlarinda `letterSpacing` negatif
-  (-0.6 / -0.8) verilir, yoksa dagilir.
-- Govde: `InstrumentSans_400Regular` / `_500Medium` / `_600SemiBold`.
-- Olcek: `olcek.dev 56` / `baslik 24` / `altBaslik 18` / `govde 15` /
+**Yazi - TEK AILE (kullanicinin karari, 2026-08-25)**
+Uygulamanin icinde tek yazi ailesi var: **Instrument Sans**. Marka
+fontu Bricolage Grotesque uygulamadan TAMAMEN CIKARILDI; kullanici
+Instagram'in ayarlar ekranini ornek gosterip once "basliklar boyle
+olsun", sonra "basliklar dahil butun yazim stilleri resimdeki gibi
+olucak" dedi. Markanin karakteri kelime markasi GORSELINDE yasiyor.
+
+- Baslik ve baslik gibi davranan her sey (sayfa basliklari, bolum
+  basliklari, bas harfli avatarlar, sayilar): `yazi.ekranBasligi`
+  (`InstrumentSans_700Bold`). Baslik boyutlarinda `letterSpacing`
+  negatif (-0.3 / -0.4) verilir.
+- Govde: `yazi.govde` / `govdeOrta` / `govdeKalin`
+  (`InstrumentSans_400Regular` / `_500Medium` / `_600SemiBold`).
+- Olcek: `olcek.dev 56` / `baslik 26` / `altBaslik 19` / `govde 15` /
   `kucuk 13` / `minik 11`.
+- `yazi.baslik` ve `yazi.baslikKalin` jetonlari SILINDI; yeni bir
+  ekranda arayip bulamazsan sebebi budur.
 
 **Bosluk** `xs 4 / s 8 / m 12 / l 16 / xl 24 / xxl 32`
 **Yuvarlaklik** `kart 16 / buyuk 20 / hap 999`
 **Golge** `golge.yuzer` (gezinme, birincil buton), `golge.kart`
 
 Yazi tipleri `_layout.tsx` icinde `useFonts` ile yukleniyor ve
-yuklenmeden ekran cizilmiyor - sistem fontuyla bir kare cizip marka
-fontuna atlamak gorunur bir sicrama uretiyordu.
+yuklenmeden ekran cizilmiyor - sistem fontuyla bir kare cizip asil
+fonta atlamak gorunur bir sicrama uretiyordu.
+
+**Ayar listesi deseni:** gruplanmis satirlar `src/tasarim/Liste.tsx`
+icinde (`Bolum`, `Satir`, `SecenekSatiri`), detay ekranlarinin geri
+dugmeli basligi `src/tasarim/UstCubuk.tsx` icinde. Alt gezinme cubugu
+`_layout.tsx`ten geliyor: HER ekranda duruyor (kullanicinin karari
+2026-08-25), tek tek ekranlara eklenmiyor; ekranlar yalnizca
+`ALT_GEZINME_PAYI` kadar alt pay birakiyor.
 
 ## Bilesen desenleri
 

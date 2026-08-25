@@ -205,7 +205,7 @@ const stiller = StyleSheet.create({
   icerik: { padding: bosluk.xl, paddingTop: 64, paddingBottom: bosluk.xxl },
 
   marka: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 22,
     color: renk.metin,
     letterSpacing: -0.5,

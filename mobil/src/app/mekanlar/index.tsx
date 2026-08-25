@@ -355,7 +355,7 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.xl,
   },
   marka: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 22,
     color: renk.metin,
     letterSpacing: -0.6,
@@ -375,7 +375,7 @@ const stiller = StyleSheet.create({
   yaricapYaziSecili: { color: renk.turuncuKoyu },
 
   baslik: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 30,
     lineHeight: 34,
     color: renk.metin,
@@ -464,7 +464,7 @@ const stiller = StyleSheet.create({
   canliRozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik, color: '#FFFFFF' },
   kartAlt: { position: 'absolute', left: 18, right: 18, bottom: 18, gap: 2 },
   kartAd: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: 20,
     color: renk.metin,
     letterSpacing: -0.3,
@@ -472,7 +472,7 @@ const stiller = StyleSheet.create({
   kartAltYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
 
   bolumBasligi: {
-    fontFamily: yazi.baslikKalin,
+    fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
