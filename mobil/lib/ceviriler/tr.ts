@@ -31,7 +31,7 @@ export default {
     adim2Baslik: 'Yakınındakiler',
     adim2Metin: 'Etrafında kimler var gör, yeni insanlarla tanış.',
     adim3Baslik: 'Sohbet Et',
-    adim3Metin: 'İstek gönder, kabul edilirse mesajlaşın.',
+    adim3Metin: 'İstek gönder, kabul edilirse sohbete başla.',
     adim4Baslik: 'Popüler Yerleri Gör',
     adim4Metin: 'Yakınındaki popüler mekanları keşfet.',
 
