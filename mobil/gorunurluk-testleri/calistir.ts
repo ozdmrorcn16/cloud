@@ -24,21 +24,43 @@ const TAVAN_MODU = process.argv.includes('--tavan')
 // test edilebiliyor. Ayni koordinatlar hem mekanin kendi konumu hem de
 // mekan_ekle/check_in_yap'in bekledigi "cihaz konumu" olarak kullaniliyor
 // (~200 m / ~500 m yakinlik kontrollerini gecmek icin).
-const MEKAN_1 = { ad: 'GORUNURLUK-TEST-MEKAN-1', lat: 39.0, lng: 35.0 }
-const MEKAN_2 = { ad: 'GORUNURLUK-TEST-MEKAN-2', lat: 39.01, lng: 35.02 }
+//
+// KONUM ACIK DENIZDE, TUR GERCEK - ikisi de bilincli (2026-08-25).
+// Once bu mekanlar tur='test' ile kuruluyordu ve gercek kullaniciya
+// boyle gizleniyorlardi. Ama 2026-08-23'te yakin_mekanlar_yogunluk
+// "tur not in ('test','yer-degil')" filtresini aldi; o gunden beri
+// yogunluk sayacini olcen dort senaryo (8, 9, 52, 60) sessizce bos
+// olculuyordu - RPC test mekanini hic dondurmuyordu.
+//
+// Sayac gercekten olculecekse mekanin RPC'ye gorunmesi sart. Bu yuzden
+// gizleme TURE degil KONUMA dayaniyor artik: Karadeniz'in ortasi, en
+// yakin kiyidan ~170 km. Bir kullanicinin bu mekanlari gorebilmesi icin
+// acik denizde olmasi gerekir.
+const MEKAN_1 = { ad: 'GORUNURLUK-TEST-MEKAN-1', lat: 43.3, lng: 34.0 }
+const MEKAN_2 = { ad: 'GORUNURLUK-TEST-MEKAN-2', lat: 43.31, lng: 34.02 }
 
 async function mekanGetirVeyaOlustur(istemci: SupabaseClient, ad: string, lat: number, lng: number) {
-  const { data: mevcut, error: selErr } = await istemci
-    .from('mekanlar')
-    .select('id')
-    .eq('ad', ad)
-    .limit(1)
+  // Mekan ADA gore degil KONUMA gore araniyor. Sebep olculdu: `ad`
+  // sutununda indeks yok ve tablo 865 bin satir; `eq('ad', ...)` tam
+  // tarama yapiyor ve PostgREST'in 8 saniyelik statement_timeout'una
+  // araliklarla takiliyordu - paket daha ilk sorguda cokuyordu.
+  // Yogunluk RPC'si once cografi indeksle daraltiyor; test mekanlarinin
+  // 1 km cevresinde baska mekan olmadigi icin sonuc aninda donuyor.
+  const { data: yakindakiler, error: selErr } = await istemci.rpc('yakin_mekanlar_yogunluk', {
+    p_lat: lat,
+    p_lng: lng,
+    p_yaricap_metre: 1000,
+  })
   if (selErr) throw new Error(`mekan sorgu hatasi (${ad}): ${selErr.message}`)
-  if (mevcut && mevcut.length > 0) return mevcut[0].id as string
+  const mevcut = ((yakindakiler ?? []) as { id: string; ad: string }[]).find((m) => m.ad === ad)
+  if (mevcut) return mevcut.id
 
   const { data: yeni, error } = await istemci.rpc('mekan_ekle', {
     p_ad: ad,
-    p_tur: 'test',
+    // Gercek tur: 'test' turu yakin_mekanlar_yogunluk tarafindan
+    // eleniyor ve sayac senaryolari olcum yapamiyor (bkz. MEKAN_1
+    // basligindaki not).
+    p_tur: 'Kafe',
     p_lat: lat,
     p_lng: lng,
     p_cihaz_lat: lat,
