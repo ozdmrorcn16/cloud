@@ -38,7 +38,6 @@ export default {
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',
-    kucukNot: '18 yaşından büyük olmalısın. Konumun sürekli paylaşılmaz.',
   },
 
   kayit: {

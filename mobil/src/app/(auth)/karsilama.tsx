@@ -162,7 +162,6 @@ export default function KarsilamaEkrani() {
         </Text>
       </Pressable>
 
-      <Text style={stiller.kucukNot}>{t('karsilama.kucukNot')}</Text>
     </View>
   )
 }
@@ -255,11 +254,4 @@ const stiller = StyleSheet.create({
   ikincilYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
   ikincilVurgu: { fontFamily: yazi.govdeKalin, color: renk.metin },
 
-  kucukNot: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    lineHeight: 15,
-    color: renk.metinSoluk,
-    textAlign: 'center',
-  },
 })
