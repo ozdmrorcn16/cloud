@@ -10,7 +10,6 @@ import {
 } from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
-import { ilkAcilisGosterildiMi } from '../../lib/ilk-acilis'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
 
@@ -29,14 +28,6 @@ function YonlendirmeKontrolu() {
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
   const router = useRouter()
-  // Ilk acilis ekrani cihazda bir kez gosteriliyor; isaret okunana
-  // kadar yonlendirme yapilmiyor, yoksa ekran bir an gorunup kayboluyor.
-  const [ilkAcilisBitti, setIlkAcilisBitti] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    ilkAcilisGosterildiMi().then(setIlkAcilisBitti)
-  }, [])
-
   // Oturum acik ve profil hazir oldugunda push jetonunu kaydet ve
   // bildirime dokunma dinleyicisini kur. bildirimleriBaslat web'de,
   // izin reddinde ve gercek cihaz olmayan ortamda sessizce doner.
@@ -50,17 +41,18 @@ function YonlendirmeKontrolu() {
   }, [oturum, profilVarMi])
 
   useEffect(() => {
-    if (yukleniyor || ilkAcilisBitti === null) return
+    if (yukleniyor) return
     const authGrubunda = segments[0] === '(auth)'
     const profilOlusturEkraninda = segments[0] === 'profil-olustur'
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
-      // Uygulamayi ILK INDIREN kisi karsilama ekranini gorur; herkes
-      // ve her sonraki acilis dogrudan girise duser (kullanicinin
-      // karari 2026-08-25). Isaret cihazda saklandigi icin uygulama
-      // silinip tekrar kurulunca karsilama yeniden gorunuyor.
-      router.replace(ilkAcilisBitti ? '/giris' : '/karsilama')
+      // HESABI OLMAYAN HERKES, HER ACILISTA karsilama ekranini gorur
+      // (kullanicinin karari 2026-08-25). Once "yalnizca ilk indirene
+      // gosterilsin" denmisti ve isaret cihazda saklaniyordu; o isaret
+      // tamamen kaldirildi. Hesap olusturan kisi zaten oturum actigi
+      // icin buraya hic dusmuyor.
+      router.replace('/karsilama')
     } else if (oturum && hesapDurumu) {
       // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
       // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
@@ -78,7 +70,7 @@ function YonlendirmeKontrolu() {
     ) {
       router.replace('/')
     }
-  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments, ilkAcilisBitti])
+  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments])
 
   // Alt gezinme cubugu HER ekranda duruyor (kullanicinin karari
   // 2026-08-25: "hangi sayfaya girilirse girilsin alttaki sutun sabit

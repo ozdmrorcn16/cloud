@@ -1,104 +1,137 @@
-import { StyleSheet, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { AccessibilityInfo, Animated, Easing, Image, StyleSheet, View } from 'react-native'
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg'
 import { renk } from './tema'
 
 /**
  * Acilis ekraninin arka plani: bir kroki (basitlestirilmis harita),
- * ustunde check-in ignesi, yayilan halkalar ve cevresinde insanlar.
+ * ustunde check-in ignesi, nabiz gibi atan halkalar ve cevresinde
+ * gercek insan fotograflari.
  *
- * Kullanicinin karari (2026-08-25): "komple acilis sayfasinin arka
- * planini kapsayan bir harita kroki gibi birsey, uzerinde check-in
- * ikonlari ve insani temsil eden gorseller."
+ * Kullanicinin kararlari (2026-08-25):
+ *   - "komple acilis sayfasinin arka planini kapsayan bir harita kroki
+ *      gibi birsey, uzerinde check-in ikonlari ve insani temsil eden
+ *      gorseller"
+ *   - ince ayar: "kroki daha belirgin, insan siluetleri gercek
+ *      fotograf, halkalar nabiz gibi atsin"
  *
- * FOTOGRAF DEGIL, CIZIM. Uc sebep:
- *   1. Uzerine metin biniyor; fotografin uzerinde metin okumak icin
- *      karartma gerekiyor, karartma da acik kimligi bozuyor.
- *      Cizimin tonunu istedigimiz kadar sonduruyoruz.
- *   2. Her ekran boyutuna kayipsiz uyuyor (SVG).
- *   3. Pakete agirlik eklemiyor - fotograf 100 KB+, bu birkac KB kod.
+ * Kroki CIZIM, fotograf degil: uzerine metin biniyor ve fotografta
+ * metni okutmak icin karartma gerekir; karartma da acik kimligi bozar.
+ * Insanlar ise fotograf, cunku uygulamanin vaadi gercek insanlar.
  *
- * Kroki bilerek SOLUK: yollar zemine cok yakin bir tonda, halkalar
- * %6-10 saydamlikta. Onde duran sey icerik, arka plan degil.
+ * HAREKET TEK YERDE: yalnizca halkalar atiyor. Cihazda "hareketi azalt"
+ * aciksa hic atmiyor, halkalar sabit duruyor.
  */
 
-// Cizim bu tuvale gore yapiliyor; ekrana 'slice' ile yayiliyor, yani
-// oran korunarak kirpiliyor.
+// Cizim bu tuvale gore yapiliyor; ekrana 'slice' ile yayiliyor.
 const EN = 390
 const BOY = 844
 
-/** Yayilan halkalarin ve ignenin merkezi.
- *
- * Icerigin BOS seridine konumlandi: ustte marka ve ozellik listesi,
- * altta butonlar var; arada kalan bant (y 560-700) bos. Ilk denemede
- * merkez yukaridaydi ve igne "Sohbeti orada baslat" satirinin uzerine
- * biniyordu. */
+/** Halkalarin ve ignenin merkezi - icerigin bos seridi. */
 const MERKEZ = { x: 196, y: 626 }
 
-/** Insan halkalari: konum ve boyut. Rastgele degil - ignenin cevresine
- *  dagitilmis, metnin en yogun oldugu orta seride girmeyecek sekilde. */
+/**
+ * Insan fotograflari. Konumlar rastgele degil: marka kilidinin iki yani
+ * ve ozellik listesiyle butonlar arasindaki bos bant. Ilk denemede
+ * ozellik satirlarinin uzerine biniyorlardi.
+ */
 const KISILER = [
-  // Marka kilidinin iki yani.
-  { x: 46, y: 150, r: 24 },
-  { x: 344, y: 186, r: 21 },
-  // Ozellik listesiyle butonlarin arasindaki bos bant.
-  { x: 58, y: 596, r: 23 },
-  { x: 332, y: 578, r: 25 },
+  { x: 46, y: 150, r: 26, kaynak: require('../../assets/images/kroki-yuz-1.jpg') },
+  { x: 344, y: 186, r: 23, kaynak: require('../../assets/images/kroki-yuz-3.jpg') },
+  { x: 56, y: 596, r: 25, kaynak: require('../../assets/images/kroki-yuz-2.jpg') },
+  { x: 334, y: 578, r: 27, kaynak: require('../../assets/images/kroki-yuz-5.jpg') },
 ]
 
-/** Krokideki ikincil check-in ignesi konumlari. */
-// Igneler metnin USTUNE binmeyecek yerlerde: en ust serit ve alttaki
-// bos bant. Ilk denemede ozellik satirlarinin uzerine geliyorlardi.
+/** Krokideki ikincil check-in igneleri - metnin ustune binmeyen yerler. */
 const IGNELER = [
   { x: 52, y: 86, olcek: 0.45 },
   { x: 340, y: 108, olcek: 0.4 },
   { x: 286, y: 690, olcek: 0.55 },
 ]
 
-function IgneYolu({ x, y, olcek, renkKodu }: { x: number; y: number; olcek: number; renkKodu: string }) {
-  // 24x24 tuvalde cizilmis igne; olcekle buyutulup konumlaniyor.
+const HALKA_SURESI = 2800
+const HALKA_ADEDI = 3
+/** Nabzin en genis hali - merkezden yaricap (tuval birimi). */
+const HALKA_YARICAP = 150
+
+function Igne({ x, y, olcek }: { x: number; y: number; olcek: number }) {
   return (
     <G transform={`translate(${x - 12 * olcek} ${y - 24 * olcek}) scale(${olcek})`}>
       <Path
         d="M12 0C5.9 0 1 4.9 1 11c0 8 11 19 11 19s11-11 11-19c0-6.1-4.9-11-11-11z"
-        fill={renkKodu}
+        fill={renk.turuncu}
       />
       <Circle cx={12} cy={10.6} r={4.2} fill={renk.zemin} />
     </G>
   )
 }
 
-function KisiSiluet({ x, y, r }: { x: number; y: number; r: number }) {
-  const s = r / 26
+/** Disari dogru buyuyup sonen tek bir halka. */
+function NabizHalkasi({ gecikme, hareketVar }: { gecikme: number; hareketVar: boolean }) {
+  const ilerleme = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (!hareketVar) return
+    const dongu = Animated.loop(
+      Animated.sequence([
+        Animated.delay(gecikme),
+        Animated.timing(ilerleme, {
+          toValue: 1,
+          duration: HALKA_SURESI,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(ilerleme, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ])
+    )
+    dongu.start()
+    return () => dongu.stop()
+  }, [gecikme, hareketVar, ilerleme])
+
+  if (!hareketVar) {
+    // Hareket kapaliysa halka sabit ve orta genislikte durur.
+    return <View style={[stiller.halka, stiller.halkaSabit]} />
+  }
+
   return (
-    <G>
-      <Circle
-        cx={x}
-        cy={y}
-        r={r}
-        fill={renk.yuzey}
-        stroke={renk.turuncu}
-        strokeWidth={1.6}
-        opacity={0.75}
-      />
-      {/* Fotograf yok: insani temsil eden sade bir siluet. */}
-      <Circle cx={x} cy={y - 5 * s} r={7 * s} fill={renk.turuncu} opacity={0.4} />
-      <Path
-        d={`M${x - 12 * s} ${y + 16 * s}c0-7 5.4-11 12-11s12 4 12 11z`}
-        fill={renk.turuncu}
-        opacity={0.55}
-      />
-    </G>
+    <Animated.View
+      style={[
+        stiller.halka,
+        {
+          opacity: ilerleme.interpolate({
+            inputRange: [0, 0.15, 1],
+            outputRange: [0, 0.28, 0],
+          }),
+          transform: [
+            { scale: ilerleme.interpolate({ inputRange: [0, 1], outputRange: [0.32, 1] }) },
+          ],
+        },
+      ]}
+    />
   )
 }
 
 export function KrokiZemin() {
+  const [hareketVar, setHareketVar] = useState(true)
+
+  useEffect(() => {
+    // Cihazda "hareketi azalt" aciksa animasyon hic baslamiyor.
+    AccessibilityInfo.isReduceMotionEnabled().then((azalt) => setHareketVar(!azalt))
+  }, [])
+
   return (
     <View style={stiller.kok} pointerEvents="none">
-      <Svg width="100%" height="100%" viewBox={`0 0 ${EN} ${BOY}`} preserveAspectRatio="xMidYMid slice">
+      <Svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${EN} ${BOY}`}
+        preserveAspectRatio="xMidYMid slice"
+      >
         <Rect x={0} y={0} width={EN} height={BOY} fill={renk.zemin} />
 
-        {/* Yapi adalari: yollarin arasindaki bloklar. */}
-        <G opacity={0.5}>
+        {/* Yapi adalari. Zeminden belirgin sekilde koyu: kullanicinin
+            istegi uzerine kroki one cikarildi. */}
+        <G>
           {[
             [18, 92, 118, 96],
             [166, 60, 150, 118],
@@ -109,20 +142,20 @@ export function KrokiZemin() {
             [66, 640, 128, 120],
             [242, 664, 140, 130],
           ].map(([x, y, w, h], i) => (
-            <Rect key={i} x={x} y={y} width={w} height={h} rx={14} fill={renk.cizgi} />
+            <Rect key={i} x={x} y={y} width={w} height={h} rx={14} fill="#EFE6DA" />
           ))}
         </G>
 
-        {/* Yollar: krokinin omurgasi. Zemine yakin bir ton - harita
-            oldugunu soyluyor ama one cikmiyor. */}
-        <G stroke={renk.cizgi} strokeWidth={16} strokeLinecap="round" opacity={0.9}>
+        {/* Yollar: adalarin uzerinden gecen BEYAZ seritler. Haritalarin
+            okunma bicimi bu - koyu ada, acik yol. */}
+        <G stroke="#FFFFFF" strokeWidth={17} strokeLinecap="round">
           <Path d="M-20 210 L410 232" />
           <Path d="M-20 424 L410 404" />
           <Path d="M-20 618 L410 640" />
           <Path d="M150 -20 L166 864" />
           <Path d="M330 -20 L318 864" />
         </G>
-        <G stroke={renk.cizgi} strokeWidth={7} strokeLinecap="round" opacity={0.8}>
+        <G stroke="#FFFFFF" strokeWidth={8} strokeLinecap="round">
           <Path d="M-20 316 L410 306" />
           <Path d="M-20 528 L410 540" />
           <Path d="M60 -20 L44 864" />
@@ -131,46 +164,73 @@ export function KrokiZemin() {
           <Path d="M-20 740 L410 726" />
         </G>
 
-        {/* Yayilan halkalar: "su an burada" hissi. */}
-        <G>
-          <Circle cx={MERKEZ.x} cy={MERKEZ.y} r={150} fill={renk.turuncu} opacity={0.05} />
-          <Circle cx={MERKEZ.x} cy={MERKEZ.y} r={104} fill={renk.turuncu} opacity={0.06} />
-          <Circle cx={MERKEZ.x} cy={MERKEZ.y} r={62} fill={renk.turuncu} opacity={0.08} />
-          <Circle
-            cx={MERKEZ.x}
-            cy={MERKEZ.y}
-            r={150}
-            stroke={renk.turuncu}
-            strokeWidth={1.5}
-            fill="none"
-            opacity={0.18}
-          />
-          <Circle
-            cx={MERKEZ.x}
-            cy={MERKEZ.y}
-            r={104}
-            stroke={renk.turuncu}
-            strokeWidth={1.5}
-            fill="none"
-            opacity={0.22}
-          />
-        </G>
-
         {IGNELER.map((igne, i) => (
-          <IgneYolu key={i} {...igne} renkKodu={renk.turuncu} />
-        ))}
-
-        {KISILER.map((kisi, i) => (
-          <KisiSiluet key={i} {...kisi} />
+          <Igne key={i} {...igne} />
         ))}
 
         {/* Merkezdeki check-in ignesi: krokinin odagi. */}
-        <IgneYolu x={MERKEZ.x} y={MERKEZ.y + 26} olcek={1.5} renkKodu={renk.turuncu} />
+        <Igne x={MERKEZ.x} y={MERKEZ.y + 26} olcek={1.5} />
       </Svg>
+
+      {/* Nabiz halkalari SVG'nin degil Animated'in isi: olcek ve
+          saydamlik yerli surucude donuyor. */}
+      <View
+        style={[
+          stiller.nabizAlani,
+          {
+            left: `${((MERKEZ.x - HALKA_YARICAP) / EN) * 100}%`,
+            top: `${((MERKEZ.y - HALKA_YARICAP) / BOY) * 100}%`,
+            width: `${((HALKA_YARICAP * 2) / EN) * 100}%`,
+            aspectRatio: 1,
+          },
+        ]}
+      >
+        {Array.from({ length: HALKA_ADEDI }).map((_, i) => (
+          <NabizHalkasi
+            key={i}
+            gecikme={(HALKA_SURESI / HALKA_ADEDI) * i}
+            hareketVar={hareketVar}
+          />
+        ))}
+      </View>
+
+      {KISILER.map((kisi, i) => (
+        <Image
+          key={i}
+          source={kisi.kaynak}
+          style={[
+            stiller.yuz,
+            {
+              left: `${((kisi.x - kisi.r) / EN) * 100}%`,
+              top: `${((kisi.y - kisi.r) / BOY) * 100}%`,
+              width: kisi.r * 2,
+              height: kisi.r * 2,
+              borderRadius: kisi.r,
+            },
+          ]}
+          accessibilityRole="image"
+          accessibilityLabel=""
+        />
+      ))}
     </View>
   )
 }
 
 const stiller = StyleSheet.create({
   kok: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
+  nabizAlani: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  halka: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 9999,
+    backgroundColor: renk.turuncu,
+  },
+  halkaSabit: { opacity: 0.14, transform: [{ scale: 0.7 }] },
+  yuz: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: renk.turuncu,
+    backgroundColor: renk.yuzey,
+  },
 })

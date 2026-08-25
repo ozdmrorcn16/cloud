@@ -7,12 +7,6 @@ import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 // Ilk acilis ekrani cihazda BIR KEZ gosteriliyor. Varsayilan olarak
 // "gosterildi" kabul ediliyor; ilk acilis senaryosu ayrica test
 // ediliyor.
-const mockIlkAcilisGosterildiMi = jest.fn(async () => true)
-jest.mock('../../lib/ilk-acilis', () => ({
-  ilkAcilisGosterildiMi: () => mockIlkAcilisGosterildiMi(),
-  ilkAcilisiIsaretle: jest.fn(),
-}))
-
 const mockRouterReplace = jest.fn()
 const mockRouterPush = jest.fn()
 let mockSegments: string[] = []
@@ -42,7 +36,7 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     jest.clearAllMocks()
   })
 
-  it('oturum yokken ve (auth) grubunda degilken /giris yonlendirir', async () => {
+  it('oturum yokken ve (auth) grubunda degilken /karsilama yonlendirir', async () => {
     ;(useOturum as jest.Mock).mockReturnValue({
       oturum: null,
       profilVarMi: null,
@@ -53,7 +47,7 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     await render(<KokLayout />)
 
     await waitFor(() => {
-      expect(mockRouterReplace).toHaveBeenCalledWith('/giris')
+      expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
     })
   })
 
@@ -274,8 +268,9 @@ describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
     })
   })
 
-  it('uygulamayi ILK kez acan kisiyi karsilama ekranina yonlendirir', async () => {
-    mockIlkAcilisGosterildiMi.mockResolvedValueOnce(false)
+  it('daha once acmis olsa bile hesapsiz kullaniciyi yine karsilamaya yonlendirir', async () => {
+    // Kullanicinin karari (2026-08-25): karsilama her acilista gorunur,
+    // hesap olusturulana kadar. Cihazda "gosterildi" isareti YOK.
     ;(useOturum as jest.Mock).mockReturnValue({
       oturum: null,
       profilVarMi: null,

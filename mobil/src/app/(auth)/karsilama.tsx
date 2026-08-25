@@ -2,7 +2,6 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
-import { ilkAcilisiIsaretle } from '../../../lib/ilk-acilis'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { KrokiZemin } from '../../tasarim/KrokiZemin'
 import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
@@ -11,12 +10,10 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 /**
  * ILK ACILIS EKRANI.
  *
- * Kullanicinin karari (2026-08-25): bu ekran uygulamayi ILK INDIREN
- * kisiye gosterilir ve bir daha gorunmez. Kullanici uygulamayi silip
- * tekrar indirirse yeniden gorunur - isaret cihazda saklandigi icin
- * (bkz. lib/ilk-acilis.ts) bu davranis kendiliginden dogru calisiyor.
- * Hesabi olan biri buraya hic dusmez: oturumu olan dogrudan uygulamaya,
- * oturumu olmayip bu ekrani daha once gormus olan ise girise gider.
+ * Kullanicinin karari (2026-08-25): hesabi olmayan HERKES, HER
+ * acilista bu ekrani gorur. Once "yalnizca ilk indirene gosterilsin"
+ * denmisti; o kural ve onu tasiyan cihaz isareti kaldirildi.
+ * Hesap olusturan kisi buraya hic dusmez, cunku oturumu aciliyor.
  *
  * ICERIK: kelime markasi, vaat, hesap olustur. Dil secimi ve sozlesme
  * onayi BILEREK yok - asagiya bak.
@@ -89,8 +86,7 @@ const OZELLIKLER = [
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
-  async function devamEt(hedef: 'kayit' | 'giris') {
-    await ilkAcilisiIsaretle()
+  function devamEt(hedef: 'kayit' | 'giris') {
     router.replace(hedef === 'kayit' ? '/kayit' : '/giris')
   }
 
