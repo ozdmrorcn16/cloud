@@ -64,8 +64,7 @@ export default function DogrulaEkrani() {
       setHata(error.message)
       return
     }
-    // Sifre ve KVKK onayi bir sonraki adimda aliniyor.
-    router.replace('/sifre-belirle')
+    router.replace('/profil-olustur')
   }
 
   function kodDegisti(yeni: string) {

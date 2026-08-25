@@ -53,28 +53,6 @@ export default {
     aydinlatma: 'Devam ederek gizlilik metnini kabul etmiş olmazsın; onayı bir sonraki adımda vereceksin.',
   },
 
-  sifreBelirle: {
-    geri: 'Geri',
-    baslik: 'Şifreni belirle',
-    altYazi: 'Bir dahaki girişinde numaran ve bu şifreyle gireceksin.',
-    sifreEtiket: 'Şifre',
-    sifreYerTutucu: 'En az {{adet}} karakter',
-    tekrarEtiket: 'Şifreyi tekrar gir',
-    tekrarYerTutucu: 'Aynı şifreyi bir kez daha',
-    sifrelerFarkli: 'Şifreler henüz aynı değil.',
-    onayEtiket: 'Koşulları kabul ediyorum',
-    onayMetni:
-      'Gizlilik metnini okudum; kişisel verilerimin ve konum bilgimin orada anlatıldığı şekilde işlenmesini kabul ediyorum.',
-    metniOku: 'Metni oku',
-    onayNotu:
-      'Konumun yalnızca check-in yaptığın süre boyunca kullanılır ve kimseyle sürekli paylaşılmaz.',
-    gonder: 'Hesabı oluştur',
-    gonderiliyor: 'Oluşturuluyor…',
-    hataSifreKisa: 'Şifre en az {{adet}} karakter olmalı.',
-    hataSifreUyusmuyor: 'Şifreler aynı değil. İkisini de kontrol et.',
-    hataOnay: 'Devam etmek için koşulları kabul etmen gerekiyor.',
-  },
-
   kisiler: {
     baslik: 'Kişi ara',
     yerTutucu: 'Kullanıcı adı ya da isim',
