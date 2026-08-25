@@ -20,7 +20,7 @@ beforeEach(() => {
 })
 
 describe('DogrulaEkrani', () => {
-  it('alti hane girilince KENDILIGINDEN dogrular ve profil olusturmaya yonlendirir', async () => {
+  it('alti hane girilince KENDILIGINDEN dogrular ve sifre adimina gecer', async () => {
     ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue({ data: {}, error: null })
 
     await render(<DogrulaEkrani />)
@@ -34,7 +34,7 @@ describe('DogrulaEkrani', () => {
         type: 'sms',
       })
     })
-    expect(mockRouterReplace).toHaveBeenCalledWith('/profil-olustur')
+    expect(mockRouterReplace).toHaveBeenCalledWith('/sifre-belirle')
   })
 
   it('rakam olmayan karakterleri atar', async () => {

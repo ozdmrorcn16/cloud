@@ -44,6 +44,10 @@ function YonlendirmeKontrolu() {
     if (yukleniyor) return
     const authGrubunda = segments[0] === '(auth)'
     const profilOlusturEkraninda = segments[0] === 'profil-olustur'
+    // Kayit akisinin son adimi: numara dogrulanmis (oturum var) ama
+    // profil henuz yok. Muhafiz burada devreye girerse kullanici sifre
+    // belirlemeden profil olusturmaya atilir.
+    const sifreBelirleEkraninda = (segments as string[]).includes('sifre-belirle')
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
@@ -61,7 +65,12 @@ function YonlendirmeKontrolu() {
       // degerlendirilmez. Aksi halde profil ve ana ekran kollari devreye
       // girip /hesap-durumu ile diger ekran arasinda sonsuz donme uretir.
       if (!hesapDurumuEkraninda) router.replace('/hesap-durumu')
-    } else if (oturum && profilVarMi === false && !profilOlusturEkraninda) {
+    } else if (
+      oturum &&
+      profilVarMi === false &&
+      !profilOlusturEkraninda &&
+      !sifreBelirleEkraninda
+    ) {
       router.replace('/profil-olustur')
     } else if (
       oturum &&
