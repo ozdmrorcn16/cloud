@@ -25,6 +25,9 @@ from PIL import Image, ImageDraw, ImageFilter
 import os
 
 KAYNAK = '../tasarim/slooin-logo-2-kaynak.png'
+
+# PWA simge dosyalarinin surumu - onbellek kirici. Logo degisirse artir.
+SURUM = 'v2'
 KIREMIT_KUTUSU = (108, 107, 1145, 1145)
 
 # Kaynaktan olculen gradyan koseleri (sol-ust -> sag-alt).
@@ -180,8 +183,14 @@ def main():
     #    onlara DOKUNMUYOR. Logo degistiginde burasi unutulursa
     #    telefonun ana ekranindaki kisayol eski logoyu gostermeye devam
     #    ediyor (kullanici 2026-08-25'te bunu bildirdi).
-    yaz(simge.resize((192, 192), Image.LANCZOS), 'public/pwa-192.png')
-    yaz(simge.resize((512, 512), Image.LANCZOS), 'public/pwa-512.png')
+    # Dosya adlarinda SURUM var. iOS ana ekran kisayolunun simgesini
+    # adrese gore onbellege aliyor; ayni adla yeni gorsel yazinca
+    # telefonda eski logo gorunmeye devam ediyordu (kullanici bildirdi,
+    # 2026-08-25). Logo bir daha degisirse SURUM artirilir.
+    yaz(simge.resize((192, 192), Image.LANCZOS), f'public/pwa-192-{SURUM}.png')
+    yaz(simge.resize((512, 512), Image.LANCZOS), f'public/pwa-512-{SURUM}.png')
+    # iOS 180 px istiyor; 192'yi olceklemek yerine dogrudan uretiyoruz.
+    yaz(simge.resize((180, 180), Image.LANCZOS), f'public/apple-touch-icon-{SURUM}.png')
 
     # Maskelenebilir surum: Android simgeyi daire/kare maskeyle kirpiyor,
     # bu yuzden isaret guvenli alanda kalacak sekilde kucultuluyor.
@@ -192,7 +201,7 @@ def main():
     beyaz_ic = Image.new('RGBA', ic.size, (255, 255, 255, 255))
     beyaz_ic.putalpha(ic_alfa)
     maskeli.paste(beyaz_ic, ((512 - ic.size[0]) // 2, (512 - ic.size[1]) // 2), beyaz_ic)
-    yaz(maskeli.convert('RGB'), 'public/pwa-512-maskable.png')
+    yaz(maskeli.convert('RGB'), f'public/pwa-512-maskable-{SURUM}.png')
 
     # 6) ACIK SURUM: beyaz zemin, turuncu isaret. Ayni kirpma
     #    geometrisiyle uretiliyor ki koyu surumle birebir ortussun.

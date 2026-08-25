@@ -47,7 +47,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Slooin" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <!--
+      Dosya adinda SURUM var (bkz. araclar/simge-uret.py). iOS bu
+      simgeyi adrese gore onbellege aliyor; ayni adla yeni gorsel
+      yayinlaninca ana ekran kisayolunda eski logo kaliyordu.
+    -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v2.png" />
+    <link rel="apple-touch-icon" href="/pwa-192-v2.png" />
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       /* These styles make the body full-height */
