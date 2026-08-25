@@ -23,8 +23,8 @@ export function MarkaYazisi({
   genislik?: number
   style?: StyleProp<ImageStyle>
 }) {
-  // Oran sabit: kaynak gorselden olculdu (900x269).
-  const yukseklik = Math.round((genislik * 269) / 900)
+  // Oran sabit: kaynak gorselden olculdu (900x268).
+  const yukseklik = Math.round((genislik * 268) / 900)
   return (
     <Image
       source={require('../../assets/images/marka-yazisi.png')}
