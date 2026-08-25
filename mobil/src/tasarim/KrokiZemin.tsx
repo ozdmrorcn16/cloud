@@ -38,14 +38,17 @@ const MERKEZ = { x: 196, y: 652 }
  * kalabalik bilerek nabzin cevresinde topluyor.
  */
 const KISILER = [
-  // Nabzin cevresi: kalabalik burada ama SEYREK - dort ikon.
-  { x: 118, y: 612, r: 20 },
-  { x: 276, y: 618, r: 18 },
-  { x: 92, y: 676, r: 15 },
-  { x: 300, y: 680, r: 16 },
-  // Sehrin geri kalani: iki ikon, ust seritte.
-  { x: 78, y: 152, r: 22 },
-  { x: 316, y: 190, r: 19 },
+  // Ust serit: marka kilidinin iki yani. Ortaya konan bir ikon logonun
+  // arkasindan gorunuyordu, kaldirildi.
+  { x: 74, y: 148, r: 20 },
+  { x: 316, y: 176, r: 18 },
+  // Alt bant: nabzin cevresi, yatayda esit araliklarla. Ustteki ikisi
+  // once daha yukaridaydi ve son ozellik satirinin uzerine biniyordu;
+  // asagi cekildi. Butonun altina denk gelen ikon da kaldirildi.
+  { x: 152, y: 640, r: 19 },
+  { x: 250, y: 644, r: 18 },
+  { x: 72, y: 688, r: 16 },
+  { x: 322, y: 690, r: 16 },
 ]
 
 // Kenar payi: 'slice' olceklemesinde tuvalin yanlari kirpilabiliyor.

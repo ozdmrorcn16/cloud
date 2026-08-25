@@ -115,6 +115,8 @@ export default function KarsilamaEkrani() {
       {/* Uygulamanin ne yaptigini anlatan tek yer. Kullanicinin verdigi
           ornekteki duzen: koyu daire icinde turuncu ikon, yaninda kisa
           baslik ve tek satirlik aciklama. */}
+      <View style={stiller.esnekBosluk} />
+
       <View style={stiller.adimlar}>
         {OZELLIKLER.map(({ no, ikon }) => (
           <View key={no} style={stiller.adim}>
@@ -167,9 +169,10 @@ const stiller = StyleSheet.create({
   markaYazisi: { marginTop: bosluk.s },
 
   adimlar: {
-    // Blok asagi cekildi (kullanicinin istegi 2026-08-25): marka kilidi
-    // ile liste birbirine yapisikti, kroki de aralarindan gorunmuyordu.
-    marginTop: bosluk.xxl + bosluk.s,
+    // Blok, marka kilidi ile butonlarin ARASINA ortalaniyor: ustunde ve
+    // altinda birer esnek bosluk var (kullanicinin istegi 2026-08-25 -
+    // "daha asagiya cek, ortada degil hala").
+    marginTop: 0,
     gap: bosluk.m,
     alignSelf: 'center',
     width: '100%',
