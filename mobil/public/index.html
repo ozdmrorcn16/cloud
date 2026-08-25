@@ -29,6 +29,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="google" content="notranslate" />
+
+    <!--
+      ANA EKRANA EKLENDIGINDE GERCEK UYGULAMA GIBI ACILIR (PWA).
+      display=standalone: tarayici adres cubugu ve sekmeler gorunmez.
+      Kullanicinin istegi: "uygulamayi gercek uygulamaymis gibi
+      telefonda gormek". APK derlemesi ayri bir yol; bu, kurulum
+      gerektirmeyen ve hemen calisan yol.
+
+      HTTPS SART - tunel bu yuzden kullaniliyor. Guvenli olmayan bir
+      baglamda ne "ana ekrana ekle" onerilir ne de konum izni sorulur.
+    -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#FF6B1A" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- iOS kendi etiketlerini istiyor; manifest'i tam desteklemiyor. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Slooin" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       /* These styles make the body full-height */
