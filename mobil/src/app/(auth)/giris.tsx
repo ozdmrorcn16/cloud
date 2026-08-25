@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
-import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
+import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 
 /**
  * GIRIS - uygulamanin ilk sayfasi.
@@ -69,7 +69,10 @@ export default function GirisEkrani() {
   return (
     <View style={stiller.sayfa}>
       <View style={stiller.ust}>
-        <MarkaIsareti zemin="acik" boyut={84} />
+        {/* Kelime markasi: marka adini da gosteriyor. Isaret yerine
+            burada yazi kullaniliyor - uygulamayi ilk acan kisi adi
+            gormeli. */}
+        <MarkaYazisi genislik={200} />
       </View>
 
       <View style={stiller.form}>
@@ -127,9 +130,6 @@ export default function GirisEkrani() {
         <Text style={stiller.ikincilYazi}>{t('giris.kayitOl')}</Text>
       </Pressable>
 
-      <Text style={stiller.marka}>
-        slooin<Text style={stiller.markaNokta}>.</Text>
-      </Text>
     </View>
   )
 }
