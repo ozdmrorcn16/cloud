@@ -92,7 +92,7 @@ const SEKMELER: Sekme[] = [
   },
   {
     ad: 'Profil',
-    yol: '/profil/anilar',
+    yol: '/profil',
     onEk: '/profil',
     ikon: (aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">

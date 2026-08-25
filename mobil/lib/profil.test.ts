@@ -1,8 +1,8 @@
-import { baskasininProfiliniGetir } from './profil'
+import { baskasininProfiliniGetir, kendiProfilimiGetir } from './profil'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
-  supabase: { rpc: jest.fn() },
+  supabase: { rpc: jest.fn(), from: jest.fn(), auth: { getUser: jest.fn() } },
 }))
 
 beforeEach(() => {
@@ -43,5 +43,55 @@ describe('baskasininProfiliniGetir', () => {
     await expect(baskasininProfiliniGetir('kullanici-2')).rejects.toThrow(
       'Kimlik dogrulamasi gerekli'
     )
+  })
+})
+
+describe('kendiProfilimiGetir', () => {
+  function oturumuKur(kullaniciId: string | null) {
+    ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({
+      data: { user: kullaniciId ? { id: kullaniciId } : null },
+    })
+  }
+
+  function satiriKur(satir: unknown, hata: { message: string } | null = null) {
+    const maybeSingle = jest.fn().mockResolvedValue({ data: satir, error: hata })
+    const eq = jest.fn().mockReturnValue({ maybeSingle })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock).mockReturnValue({ select })
+    return { eq }
+  }
+
+  it('kendi satirini profiller tablosundan okur', async () => {
+    oturumuKur('kullanici-1')
+    const { eq } = satiriKur({
+      id: 'kullanici-1',
+      kullanici_adi: 'orcun',
+      ad: 'Orcun',
+      biyografi: 'merhaba',
+      fotograflar: ['a.jpg'],
+    })
+
+    const sonuc = await kendiProfilimiGetir()
+
+    expect(supabase.from).toHaveBeenCalledWith('profiller')
+    expect(eq).toHaveBeenCalledWith('id', 'kullanici-1')
+    expect(sonuc).toEqual({
+      id: 'kullanici-1',
+      kullaniciAdi: 'orcun',
+      ad: 'Orcun',
+      biyografi: 'merhaba',
+      fotograflar: ['a.jpg'],
+    })
+  })
+
+  it('profil satiri yoksa null doner', async () => {
+    oturumuKur('kullanici-1')
+    satiriKur(null)
+    expect(await kendiProfilimiGetir()).toBeNull()
+  })
+
+  it('oturum yoksa hata firlatir', async () => {
+    oturumuKur(null)
+    await expect(kendiProfilimiGetir()).rejects.toThrow('Oturum bulunamadı')
   })
 })

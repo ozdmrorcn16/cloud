@@ -119,3 +119,33 @@ export async function aniyiSil(checkInId: string): Promise<void> {
   const { error } = await supabase.from('check_inler').delete().eq('id', checkInId)
   if (error) throw new Error(error.message)
 }
+
+export type AktifCheckIn = CheckIn & { mekanAdi: string }
+
+/**
+ * Kullanicinin su an canli olan check-in'i (varsa).
+ *
+ * Canlilik tek bir seye bagli: `konum` sutunu dolu mu. Sure dolunca ya
+ * da "ayrildim" denince sunucu o sutunu bosaltiyor ve kayit aniya
+ * donusuyor. Ayni anda birden fazla canli check-in olamaz; yine de
+ * `limit 1` var, cunku bu ekran tek bir satiri gosteriyor.
+ */
+export async function aktifCheckInimiGetir(): Promise<AktifCheckIn | null> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const kullaniciId = kullaniciVerisi.user?.id
+  if (!kullaniciId) throw new Error('Oturum bulunamadı')
+
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad)')
+    .eq('kullanici_id', kullaniciId)
+    .not('konum', 'is', null)
+    .order('olusturma_zamani', { ascending: false })
+    .limit(1)
+  if (error) throw new Error(error.message)
+
+  const satirlar = data as unknown as (CheckInSatiri & { mekanlar: { ad: string } })[]
+  if (satirlar.length === 0) return null
+
+  return { ...satiriCheckInACevir(satirlar[0]), mekanAdi: satirlar[0].mekanlar.ad }
+}

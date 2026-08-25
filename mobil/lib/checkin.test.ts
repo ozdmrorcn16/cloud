@@ -1,4 +1,4 @@
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aniyiSil } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, aniyiSil } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -179,6 +179,55 @@ describe('kullanicininAnilariniGetir', () => {
     expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
     expect(sonuc[0].mekanKonumu).toEqual({ lat: 41.015, lng: 28.979 })
     expect(sonuc[0].bulunurluk).toBe('herkese_acik')
+  })
+})
+
+describe('aktifCheckInimiGetir', () => {
+  function oturumuKur(kullaniciId: string | null) {
+    ;(supabase as unknown as { auth: unknown }).auth = {
+      getUser: jest.fn().mockResolvedValue({ data: { user: kullaniciId ? { id: kullaniciId } : null } }),
+    }
+  }
+
+  function zinciriKur(satirlar: unknown[]) {
+    const limit = jest.fn().mockResolvedValue({ data: satirlar, error: null })
+    const order = jest.fn().mockReturnValue({ limit })
+    const not = jest.fn().mockReturnValue({ order })
+    const eq = jest.fn().mockReturnValue({ not })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select })
+    return { eq, not }
+  }
+
+  it('canli check-in varsa mekan adiyla birlikte doner', async () => {
+    oturumuKur('kullanici-1')
+    const { eq, not } = zinciriKur([
+      {
+        id: 'checkin-9', mekan_id: 'mekan-2', not_metni: null, fotograf: null,
+        olusturma_zamani: '2026-08-25T10:00:00Z', bitis_zamani: '2026-08-25T14:00:00Z',
+        konum: 'POINT(28.979 41.015)', bulunurluk: 'herkese_acik',
+        mekanlar: { ad: 'Sahil Kafe' },
+      },
+    ])
+
+    const sonuc = await aktifCheckInimiGetir()
+
+    expect(supabase.from).toHaveBeenCalledWith('check_inler')
+    expect(eq).toHaveBeenCalledWith('kullanici_id', 'kullanici-1')
+    // Canlilik tek olcute bagli: konum sutunu dolu mu.
+    expect(not).toHaveBeenCalledWith('konum', 'is', null)
+    expect(sonuc).toMatchObject({ id: 'checkin-9', mekanAdi: 'Sahil Kafe', canliMi: true })
+  })
+
+  it('canli check-in yoksa null doner', async () => {
+    oturumuKur('kullanici-1')
+    zinciriKur([])
+    expect(await aktifCheckInimiGetir()).toBeNull()
+  })
+
+  it('oturum yoksa hata firlatir', async () => {
+    oturumuKur(null)
+    await expect(aktifCheckInimiGetir()).rejects.toThrow('Oturum bulunamadı')
   })
 })
 

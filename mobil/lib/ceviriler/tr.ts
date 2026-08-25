@@ -81,6 +81,25 @@ export default {
     gizle: 'Gizle',
   },
 
+  profil: {
+    ayarlar: 'Ayarlar',
+    aniSayisi: 'Anı',
+    bagSayisi: 'Bağ',
+    canliEtiket: 'Şu an buradasın',
+    ayril: 'Ayrıl',
+    bosCanliBaslik: 'Şu an bir yerde değilsin',
+    bosCanliAciklama:
+      'Bulunduğun yere check-in yap, tam o anda orada olan insanları gör.',
+    checkInYap: 'Bir yere check-in yap',
+    anilarBaslik: 'Anılar',
+    tumu: 'Tümü',
+    bosAniBaslik: 'Henüz bir anın yok',
+    bosAniAciklama: 'Check-in’in bittiğinde burada bir anı olarak kalır.',
+    profilYok: 'Profilin henüz hazır değil',
+    profilYokAciklama: 'Adını ve kullanıcı adını belirle, sonra buradan devam et.',
+    profilOlustur: 'Profilini oluştur',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',
