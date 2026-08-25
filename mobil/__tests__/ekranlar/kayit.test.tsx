@@ -9,7 +9,9 @@ jest.mock('../../lib/supabase', () => ({
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, replace: jest.fn() }),
+  // Karsilama ekranindan gelen onay parametresi; testte bos.
+  useLocalSearchParams: () => ({}),
 }))
 
 const TELEFON = '05XX XXX XX XX'

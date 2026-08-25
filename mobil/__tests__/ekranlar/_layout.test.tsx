@@ -4,6 +4,15 @@ import KokLayout from '../../src/app/_layout'
 import { useOturum } from '../../lib/oturum'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
+// Ilk acilis ekrani cihazda BIR KEZ gosteriliyor. Varsayilan olarak
+// "gosterildi" kabul ediliyor; ilk acilis senaryosu ayrica test
+// ediliyor.
+const mockIlkAcilisGosterildiMi = jest.fn(async () => true)
+jest.mock('../../lib/ilk-acilis', () => ({
+  ilkAcilisGosterildiMi: () => mockIlkAcilisGosterildiMi(),
+  ilkAcilisiIsaretle: jest.fn(),
+}))
+
 const mockRouterReplace = jest.fn()
 const mockRouterPush = jest.fn()
 let mockSegments: string[] = []
@@ -262,6 +271,22 @@ describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
 
     await waitFor(() => {
       expect(mockRouterReplace).toHaveBeenCalledWith('/')
+    })
+  })
+
+  it('uygulamayi ILK kez acan kisiyi karsilama ekranina yonlendirir', async () => {
+    mockIlkAcilisGosterildiMi.mockResolvedValueOnce(false)
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: null,
+      profilVarMi: null,
+      yukleniyor: false,
+    })
+    mockSegments = ['bazi-ekran']
+
+    await render(<KokLayout />)
+
+    await waitFor(() => {
+      expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
     })
   })
 })

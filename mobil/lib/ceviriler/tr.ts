@@ -24,10 +24,16 @@ export default {
     baslikIkinci: 'Tanışmaya ne dersin?',
     aciklama:
       'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
+    dilEtiket: 'Dil',
+    onayEtiket: 'Koşulları kabul ediyorum',
+    onayMetni:
+      'Gizlilik metnini okudum; kişisel verilerimin ve konum bilgimin orada anlatıldığı şekilde işlenmesini kabul ediyorum.',
+    metniOku: 'Metni oku',
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',
     kucukNot: '18 yaşından büyük olmalısın. Konumun sürekli paylaşılmaz.',
+    hataOnay: 'Devam etmek için koşulları kabul etmen gerekiyor.',
   },
 
   kayit: {

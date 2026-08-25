@@ -2,8 +2,14 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getLocales } from 'expo-localization'
 import { I18n } from 'i18n-js'
+import { I18nManager, Platform } from 'react-native'
 import tr from './ceviriler/tr'
 import en from './ceviriler/en'
+import de from './ceviriler/de'
+import es from './ceviriler/es'
+import fr from './ceviriler/fr'
+import ru from './ceviriler/ru'
+import ar from './ceviriler/ar'
 
 /**
  * Uygulama dili.
@@ -18,7 +24,18 @@ import en from './ceviriler/en'
  * acildiginda profildeki tercih varsa o gecerli olur.
  */
 
-export const DESTEKLENEN_DILLER = ['tr', 'en'] as const
+/**
+ * Desteklenen diller.
+ *
+ * Kullanicinin karari (2026-08-25): dil kullaniciya SORULMUYOR, cihazin
+ * dilinden aliniyor. Bunun dogal sonucu su: cihaz dili desteklenmiyorsa
+ * kullanici yanlis dilde bir uygulama goruyor. Bu yuzden liste dunyada
+ * en cok kullanilan dilleri kapsayacak sekilde genisletildi.
+ *
+ * Almanca ve Arapca ozellikle onemli: Almanya'da buyuk bir Turkiye
+ * kokenli nufus var ve Arapca hem Turkiye'de hem bolgede yaygin.
+ */
+export const DESTEKLENEN_DILLER = ['tr', 'en', 'de', 'es', 'fr', 'ru', 'ar'] as const
 export type Dil = (typeof DESTEKLENEN_DILLER)[number]
 
 const SAKLAMA_ANAHTARI = 'slooin.dil'
@@ -31,17 +48,63 @@ const SAKLAMA_ANAHTARI = 'slooin.dil'
 export const DIL_ADI: Record<Dil, string> = {
   tr: 'Türkçe',
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  ru: 'Русский',
+  ar: 'العربية',
 }
 
-const i18n = new I18n({ tr, en })
+/** Sagdan sola yazilan diller. */
+const SAGDAN_SOLA: readonly Dil[] = ['ar']
+
+export function sagdanSolaMi(d: Dil): boolean {
+  return SAGDAN_SOLA.includes(d)
+}
+
+/**
+ * Yazi yonunu uygular.
+ *
+ * Web'de `dir` niteligi aninda etkili oluyor. Native'de `I18nManager`
+ * yon degisikligi ancak uygulama yeniden baslatildiginda tam olarak
+ * uygulaniyor; burada yalnizca izin veriliyor ve yon isaretleniyor,
+ * zorla yeniden baslatma YAPILMIYOR - kullanicinin oturumunu kirmak
+ * dilin aninda donmesinden daha kotu.
+ */
+function yonuUygula(d: Dil) {
+  const sagdan = sagdanSolaMi(d)
+  if (Platform.OS === 'web') {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = sagdan ? 'rtl' : 'ltr'
+      document.documentElement.lang = d
+    }
+    return
+  }
+  I18nManager.allowRTL(sagdan)
+}
+
+const i18n = new I18n({ tr, en, de, es, fr, ru, ar })
 // Eksik anahtar ham anahtari ("kayit.baslik") basmak yerine kaynak
 // dile duser: yarim cevrilmis bir ekran, kod gorunen bir ekrandan iyi.
 i18n.enableFallback = true
 i18n.defaultLocale = 'tr'
 
+/**
+ * Cihazin dilini desteklenen bir dile esler.
+ *
+ * Cihaz "de-AT" ya da "pt-BR" gibi bolgeli bir kod verebiliyor;
+ * yalnizca dil kismina bakiliyor. Desteklenmeyen bir dil gelirse
+ * INGILIZCE'ye dusuluyor - Turkce'ye degil: uygulamayi Turkce
+ * bilmeyen birine Turkce acmak, Ingilizce acmaktan kotu.
+ */
 function cihazDili(): Dil {
-  const kod = getLocales()[0]?.languageCode
-  return kod === 'tr' ? 'tr' : kod ? 'en' : 'tr'
+  for (const yerel of getLocales()) {
+    const kod = yerel.languageCode?.toLowerCase()
+    if (kod && (DESTEKLENEN_DILLER as readonly string[]).includes(kod)) {
+      return kod as Dil
+    }
+  }
+  return 'en'
 }
 
 type DilBaglami = {
@@ -68,14 +131,17 @@ export function DilSaglayici({ children }: { children: React.ReactNode }) {
             ? (kayitli as Dil)
             : cihazDili()
         i18n.locale = secilen
+        yonuUygula(secilen)
         setDil(secilen)
       })
       // Saklama okunamazsa cihaz diline dusuyoruz; dil yuzunden
       // uygulamanin acilmamasi kabul edilemez.
       .catch(() => {
         if (!gecerli) return
-        i18n.locale = cihazDili()
-        setDil(cihazDili())
+        const yedek = cihazDili()
+        i18n.locale = yedek
+        yonuUygula(yedek)
+        setDil(yedek)
       })
       .finally(() => {
         if (gecerli) setHazir(true)
@@ -92,6 +158,7 @@ export function DilSaglayici({ children }: { children: React.ReactNode }) {
       t: (anahtar, secenekler) => i18n.t(anahtar, secenekler),
       dilDegistir: async (yeni) => {
         i18n.locale = yeni
+        yonuUygula(yeni)
         setDil(yeni)
         // Yazma basarisiz olsa bile dil bu oturumda degismis olur;
         // kullanicinin sectigi dil hemen uygulanmali.

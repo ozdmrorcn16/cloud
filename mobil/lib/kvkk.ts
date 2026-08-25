@@ -1,3 +1,5 @@
+import type { Dil } from './dil'
+
 /**
  * KVKK onaylarinin tek kaynagi.
  *
@@ -43,7 +45,7 @@ export type KayitOnaylari = {
  * ve veritabanindaki tetikleyici onu `kvkk_onaylari` tablosuna
  * aliyor - onay kaydinin kacirilmasi mumkun degil.
  */
-export function kayitMetadatasi(onaylar: KayitOnaylari, dil: 'tr' | 'en') {
+export function kayitMetadatasi(onaylar: KayitOnaylari, dil: Dil) {
   return {
     // Tek kutu, iki kayit: arayuz sade kaliyor ama ispat kaydi eksiksiz.
     aydinlatma_onayi: onaylar.kabul,

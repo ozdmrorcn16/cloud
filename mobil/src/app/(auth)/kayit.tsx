@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
 import { kayitMetadatasi } from '../../../lib/kvkk'
-import { useDil, DESTEKLENEN_DILLER, DIL_ADI, type Dil } from '../../../lib/dil'
+import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 
 const EN_AZ_SIFRE = 8
@@ -39,11 +39,18 @@ function OnayKutusu({
 
 export default function KayitEkrani() {
   const router = useRouter()
-  const { t, dil, dilDegistir } = useDil()
+  // Dil cihazdan geliyor, kullaniciya sorulmuyor; yine de kayitla
+  // birlikte profile yaziliyor ki sunucu tarafi da bilsin.
+  const { t, dil } = useDil()
+  // Karsilama ekraninda kosullar kabul edildiyse burada tekrar
+  // sorulmuyor; kutu isaretli geliyor. Onay yine KAYIT ANINDA
+  // veritabanina yaziliyor (bkz. lib/kvkk.ts) - tasinan sey yalnizca
+  // kullaniciya ayni soruyu iki kez sormamak.
+  const { onay } = useLocalSearchParams<{ onay?: string }>()
   const [telefon, setTelefon] = useState('')
   const [sifre, setSifre] = useState('')
   const [sifreTekrar, setSifreTekrar] = useState('')
-  const [kabul, setKabul] = useState(false)
+  const [kabul, setKabul] = useState(onay === '1')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [odaklanan, setOdaklanan] = useState<string | null>(null)
@@ -109,31 +116,6 @@ export default function KayitEkrani() {
         onFocus={() => setOdaklanan('telefon')}
         onBlur={() => setOdaklanan(null)}
       />
-
-      <Text style={stiller.etiket}>{t('kayit.dilEtiket')}</Text>
-      {/* Dil secimi ANINDA uygulaniyor: kullanici sectigi anda ekranin
-          tamami o dile geciyor. Boylece secimin ne yaptigi tahmin
-          edilmiyor, goruluyor. Tercih cihazda saklaniyor ve kayitla
-          birlikte profile de yaziliyor. */}
-      <View style={stiller.dilSatiri}>
-        {DESTEKLENEN_DILLER.map((secenek: Dil) => {
-          const secili = dil === secenek
-          return (
-            <Pressable
-              key={secenek}
-              style={[stiller.dilCipi, secili && stiller.dilCipiSecili]}
-              onPress={() => dilDegistir(secenek)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: secili }}
-              accessibilityLabel={DIL_ADI[secenek]}
-            >
-              <Text style={[stiller.dilYazi, secili && stiller.dilYaziSecili]}>
-                {DIL_ADI[secenek]}
-              </Text>
-            </Pressable>
-          )
-        })}
-      </View>
 
       <Text style={stiller.etiket}>{t('kayit.sifreEtiket')}</Text>
       <TextInput
@@ -274,21 +256,6 @@ const stiller = StyleSheet.create({
   },
 
   // --- Dil ---
-  dilSatiri: { flexDirection: 'row', gap: bosluk.s },
-  dilCipi: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.s,
-    paddingHorizontal: bosluk.l,
-    paddingVertical: 10,
-    borderRadius: yuvarlak.hap,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    backgroundColor: renk.yuzey,
-  },
-  dilCipiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
-  dilYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metin },
-  dilYaziSecili: { color: renk.turuncu },
 
   // --- Onaylar ---
   onayBolumu: { marginTop: bosluk.xl, gap: bosluk.m },

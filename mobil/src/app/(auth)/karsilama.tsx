@@ -1,151 +1,54 @@
-import { useEffect, useRef, useState } from 'react'
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Animated,
-  Easing,
-  AccessibilityInfo,
-} from 'react-native'
+import { useState } from 'react'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useDil } from '../../../lib/dil'
+import { ilkAcilisiIsaretle } from '../../../lib/ilk-acilis'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
+import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 
 /**
- * Ilk acilis ekrani - uygulamayi indiren kisinin gordugu ilk yuz.
+ * ILK ACILIS EKRANI.
  *
- * Onceden uygulama dogrudan giris formuna dusuyordu: Slooin'i hic
- * bilmeyen birine once telefon numarasi soruluyordu. Bu ekran o
- * boslugu dolduruyor - once ne oldugunu soyluyor, sonra istiyor.
+ * Kullanicinin karari (2026-08-25): bu ekran uygulamayi ILK INDIREN
+ * kisiye gosterilir ve bir daha gorunmez. Kullanici uygulamayi silip
+ * tekrar indirirse yeniden gorunur - isaret cihazda saklandigi icin
+ * (bkz. lib/ilk-acilis.ts) bu davranis kendiliginden dogru calisiyor.
+ * Hesabi olan biri buraya hic dusmez: oturumu olan dogrudan uygulamaya,
+ * oturumu olmayip bu ekrani daha once gormus olan ise girise gider.
  *
- * IMZA OGE: marka isaretinden yayilan halkalar.
- * Logo (kullanicinin karari, 2026-08-25) tek bir isarette uc sey
- * birden soyluyor: bir KONUM IGNESI, icinde IKI INSAN ve bir KONUSMA
- * BALONU. Yani marka zaten "burada birileri var ve konusuyorlar"
- * diyor - uygulamanin tarifi.
- * Bu ekranda o igneden halkalar yayiliyor: isaret canlaniyor ve
- * urunun vaadi gorsellesiyor. Kimlik kuralina da uyuyor - turuncu
- * yalnizca eylem ve CANLILIK icindir.
- * Isaret zemine gore uyarlanir; bkz. MarkaIsareti.
+ * ICERIK: kelime markasi, vaat, sozlesme onayi, hesap olustur.
+ * Dil secimi BILEREK yok - asagiya bak.
  *
- * Ekrandaki tek hareket bu. Geri kalan her sey sabit ve sessiz;
- * boldugumuz tek yer imza ogesi.
+ * DIL SECIMI YOK (kullanicinin karari 2026-08-25): "eğer uygulama
+ * kullanılan cihazın dilini tespit edip otomatik o dilde
+ * görünebilecekse dil seçimi yaptırmıcaz". `lib/dil.tsx` cihazin
+ * dilini okuyor ve uygulama o dille aciliyor; kullaniciya sorulmuyor.
+ * Dili degistirmek isteyen icin dogru yer ayarlar ekrani.
+ *
+ * SOZLESME: onay burada aliniyor ama KAYIT ANINDA kaydediliyor. Onay
+ * bilgisi kayit ekranina rota parametresiyle tasiniyor ve orada kutu
+ * isaretli geliyor; kullaniciya ayni sey iki kez sorulmuyor, KVKK
+ * ispat kaydi ise hesabin olustugu anda yaziliyor.
  */
-
-/** Yayilan halka. Gecikme ile iki tane kullaniliyor. */
-function Halka({ gecikme, hareketAcik }: { gecikme: number; hareketAcik: boolean }) {
-  const ilerleme = useRef(new Animated.Value(0)).current
-
-  useEffect(() => {
-    if (!hareketAcik) return
-    const dongu = Animated.loop(
-      Animated.sequence([
-        Animated.delay(gecikme),
-        Animated.timing(ilerleme, {
-          toValue: 1,
-          duration: 2600,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(ilerleme, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ])
-    )
-    dongu.start()
-    return () => dongu.stop()
-  }, [gecikme, hareketAcik, ilerleme])
-
-  // Hareket kapaliysa halka hic cizilmiyor; sabit bir halka birakmak
-  // "donacakmis gibi duran ama donmeyen" bir sey uretiyor.
-  if (!hareketAcik) return null
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        stiller.halka,
-        {
-          opacity: ilerleme.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 0.5, 0] }),
-          transform: [
-            { scale: ilerleme.interpolate({ inputRange: [0, 1], outputRange: [0.85, 2.6] }) },
-          ],
-        },
-      ]}
-    />
-  )
-}
-
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
-  // Erisilebilirlik: "hareketi azalt" aciksa nabiz ve halkalar durur.
-  const [hareketAcik, setHareketAcik] = useState(true)
-  const nabiz = useRef(new Animated.Value(0)).current
+  const [kabul, setKabul] = useState(false)
+  const [hata, setHata] = useState<string | null>(null)
 
-  useEffect(() => {
-    let gecerli = true
-    AccessibilityInfo.isReduceMotionEnabled().then((azalt) => {
-      if (gecerli) setHareketAcik(!azalt)
-    })
-    const dinleyici = AccessibilityInfo.addEventListener('reduceMotionChanged', (azalt) =>
-      setHareketAcik(!azalt)
-    )
-    return () => {
-      gecerli = false
-      dinleyici.remove()
+  async function devamEt(hedef: 'kayit' | 'giris') {
+    if (hedef === 'kayit' && !kabul) {
+      setHata(t('karsilama.hataOnay'))
+      return
     }
-  }, [])
-
-  useEffect(() => {
-    if (!hareketAcik) return
-    const dongu = Animated.loop(
-      Animated.sequence([
-        Animated.timing(nabiz, {
-          toValue: 1,
-          duration: 1300,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(nabiz, {
-          toValue: 0,
-          duration: 1300,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ])
-    )
-    dongu.start()
-    return () => dongu.stop()
-  }, [hareketAcik, nabiz])
+    await ilkAcilisiIsaretle()
+    router.replace(hedef === 'kayit' ? '/kayit?onay=1' : '/giris')
+  }
 
   return (
     <View style={stiller.sayfa}>
       <View style={stiller.ust}>
-        <View style={stiller.noktaAlani}>
-          <Halka gecikme={0} hareketAcik={hareketAcik} />
-          <Halka gecikme={1300} hareketAcik={hareketAcik} />
-          <Animated.View
-            style={{
-              transform: [
-                { scale: nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] }) },
-              ],
-            }}
-          >
-            {/* Sayfa zemini acik (#FAF7F3) oldugu icin "acik" varyant:
-                igne turuncu, ikinci figur acik mat seftali. */}
-            <MarkaIsareti zemin="acik" boyut={ISARET_BOYUT} />
-          </Animated.View>
-        </View>
-
-        <Text style={stiller.marka} accessibilityRole="header">
-          slooin
-        </Text>
-      </View>
-
-      <View style={stiller.orta}>
-        {/* Vaat iki cumlede: once durum, sonra davet. Uygulamanin
-            tamami bu iki cumlede. */}
+        <MarkaYazisi genislik={200} />
         <Text style={stiller.baslik}>
           {t('karsilama.baslikBirinci')}
           {'\n'}
@@ -154,122 +57,151 @@ export default function KarsilamaEkrani() {
         <Text style={stiller.aciklama}>{t('karsilama.aciklama')}</Text>
       </View>
 
-      {/* Esnek bosluk: icerik ustte toplu dursun, eylemler alta
-          yaslansin. Bosluk baslikla logo arasinda birikmemeli. */}
       <View style={stiller.esnekBosluk} />
 
-      <View style={stiller.alt}>
-        <Pressable
-          style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
-          onPress={() => router.push('/kayit')}
-          accessibilityRole="button"
-        >
-          <Text style={stiller.birincilYazi}>{t('karsilama.hesapOlustur')}</Text>
-        </Pressable>
-
-        <Pressable
-          style={stiller.ikincil}
-          onPress={() => router.push('/giris')}
-          accessibilityRole="button"
-        >
-          <Text style={stiller.ikincilYazi}>
-            {t('karsilama.hesabinVarMi')}{' '}
-            <Text style={stiller.ikincilVurgu}>{t('karsilama.girisYap')}</Text>
+      <Pressable
+        style={stiller.onaySatiri}
+        onPress={() => {
+          setKabul(!kabul)
+          setHata(null)
+        }}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: kabul }}
+        accessibilityLabel={t('karsilama.onayEtiket')}
+      >
+        <View style={[stiller.kutu, kabul && stiller.kutuIsaretli]}>
+          {kabul && <Text style={stiller.tik}>✓</Text>}
+        </View>
+        <Text style={stiller.onayYazi}>
+          {t('karsilama.onayMetni')}{' '}
+          <Text
+            style={stiller.baglantiYazi}
+            onPress={() => router.push('/gizlilik')}
+            accessibilityRole="link"
+          >
+            {t('karsilama.metniOku')}
           </Text>
-        </Pressable>
+        </Text>
+      </Pressable>
 
-        {/* Yas siniri ve konum kullanimi ilk ekranda soyleniyor.
-            Sonradan cikan bir kosul degil, en basta bilinen bir sey. */}
-        <Text style={stiller.kucukNot}>{t('karsilama.kucukNot')}</Text>
-      </View>
+      {hata && <Text style={stiller.hata}>{hata}</Text>}
+
+      <Pressable
+        style={({ pressed }) => [
+          stiller.birincil,
+          !kabul && stiller.birincilSoluk,
+          pressed && stiller.birincilBasili,
+        ]}
+        onPress={() => devamEt('kayit')}
+        accessibilityRole="button"
+      >
+        <Text style={stiller.birincilYazi}>{t('karsilama.hesapOlustur')}</Text>
+      </Pressable>
+
+      {/* Hesabi olan biri de uygulamayi yeni bir cihaza kurmus
+          olabilir; onu bu ekranda kilitlememek gerekiyor. */}
+      <Pressable
+        style={stiller.ikincil}
+        onPress={() => devamEt('giris')}
+        accessibilityRole="button"
+      >
+        <Text style={stiller.ikincilYazi}>
+          {t('karsilama.hesabinVarMi')}{' '}
+          <Text style={stiller.ikincilVurgu}>{t('karsilama.girisYap')}</Text>
+        </Text>
+      </Pressable>
+
+      <Text style={stiller.kucukNot}>{t('karsilama.kucukNot')}</Text>
     </View>
   )
 }
-
-const ISARET_BOYUT = 84
-// Halka isaretin ETRAFINDAN yayiliyor: baslangic capi isaretten biraz
-// kucuk, sonra disari aciliyor.
-const HALKA_BOYUT = 64
 
 const stiller = StyleSheet.create({
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.xl,
-    paddingTop: 48,
+    paddingTop: 72,
     paddingBottom: bosluk.l,
   },
 
-  // --- Ust: imza ogesi ve marka ---
   ust: { alignItems: 'center' },
-  noktaAlani: {
-    width: ISARET_BOYUT * 1.85,
-    height: ISARET_BOYUT * 1.85,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  halka: {
-    position: 'absolute',
-    width: HALKA_BOYUT,
-    height: HALKA_BOYUT,
-    borderRadius: HALKA_BOYUT / 2,
-    borderWidth: 1.5,
-    borderColor: renk.turuncu,
-  },
-  marka: {
-    fontFamily: yazi.baslikKalin,
-    fontSize: 26,
-    color: renk.metin,
-    letterSpacing: -0.6,
-    // Isaretin hemen altinda: ikisi tek bir kutle olarak okunmali.
-    marginTop: -bosluk.xs,
-  },
-
-  esnekBosluk: { flex: 1 },
-
-  // --- Orta: vaat ---
-  orta: { marginTop: bosluk.xxl },
   baslik: {
     fontFamily: yazi.baslik,
-    fontSize: 34,
-    lineHeight: 41,
+    fontSize: 30,
+    lineHeight: 37,
     color: renk.metin,
-    letterSpacing: -0.6,
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginTop: bosluk.xxl,
   },
-  // Ikinci satir turuncu: davet olan cumle o. Turuncu yine eylemi
-  // isaret ediyor, dekorasyon degil.
   baslikVurgu: { color: renk.turuncu },
   aciklama: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
-    lineHeight: 24,
+    lineHeight: 23,
     color: renk.metinIkincil,
+    textAlign: 'center',
     marginTop: bosluk.m,
-    maxWidth: 340,
   },
 
-  // --- Alt: eylemler ---
-  alt: { gap: bosluk.s },
+  esnekBosluk: { flex: 1 },
+
+
+  onaySatiri: { flexDirection: 'row', gap: bosluk.m, alignItems: 'flex-start' },
+  kutu: {
+    width: 24,
+    height: 24,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: renk.metinSoluk,
+    backgroundColor: renk.yuzey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  kutuIsaretli: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
+  tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
+  onayYazi: {
+    flex: 1,
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+  },
+  baglantiYazi: {
+    fontFamily: yazi.govdeKalin,
+    color: renk.metin,
+    textDecorationLine: 'underline',
+  },
+
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginTop: bosluk.s,
+  },
+
   birincil: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
     paddingVertical: 17,
     alignItems: 'center',
+    marginTop: bosluk.l,
     ...golge.yuzer,
   },
+  birincilSoluk: { opacity: 0.45 },
   birincilBasili: { backgroundColor: renk.turuncuKoyu },
   birincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: '#FFFFFF',
   },
+
   ikincil: { alignItems: 'center', paddingVertical: bosluk.m },
-  ikincilYazi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metinIkincil,
-  },
+  ikincilYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
   ikincilVurgu: { fontFamily: yazi.govdeKalin, color: renk.metin },
+
   kucukNot: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,

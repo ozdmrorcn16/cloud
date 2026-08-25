@@ -21,10 +21,16 @@ export default {
     baslikIkinci: 'Why not say hello?',
     aciklama:
       'Check in where you are and see who else is there right now. Your location is only shared while you are checked in.',
+    dilEtiket: 'Language',
+    onayEtiket: 'I accept the terms',
+    onayMetni:
+      'I have read the privacy notice and agree that my personal data and location may be processed as described there.',
+    metniOku: 'Read the notice',
     hesapOlustur: 'Create account',
     hesabinVarMi: 'Already have an account?',
     girisYap: 'Sign in',
     kucukNot: 'You must be 18 or older. Your location is never shared continuously.',
+    hataOnay: 'You need to accept the terms to continue.',
   },
 
   kayit: {

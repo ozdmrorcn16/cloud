@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import {
   useFonts,
@@ -12,6 +12,7 @@ import {
 } from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
+import { ilkAcilisGosterildiMi } from '../../lib/ilk-acilis'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
 /**
@@ -29,6 +30,13 @@ function YonlendirmeKontrolu() {
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
   const router = useRouter()
+  // Ilk acilis ekrani cihazda bir kez gosteriliyor; isaret okunana
+  // kadar yonlendirme yapilmiyor, yoksa ekran bir an gorunup kayboluyor.
+  const [ilkAcilisBitti, setIlkAcilisBitti] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    ilkAcilisGosterildiMi().then(setIlkAcilisBitti)
+  }, [])
 
   // Oturum acik ve profil hazir oldugunda push jetonunu kaydet ve
   // bildirime dokunma dinleyicisini kur. bildirimleriBaslat web'de,
@@ -43,19 +51,17 @@ function YonlendirmeKontrolu() {
   }, [oturum, profilVarMi])
 
   useEffect(() => {
-    if (yukleniyor) return
+    if (yukleniyor || ilkAcilisBitti === null) return
     const authGrubunda = segments[0] === '(auth)'
     const profilOlusturEkraninda = segments[0] === 'profil-olustur'
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
     if (!oturum && !authGrubunda) {
-      // ILK SAYFA GIRIS (kullanicinin karari 2026-08-25). Kisa bir
-      // sure karsilama/tanitim ekrani ilk sayfaydi; kullanici
-      // Instagram'i ornek gosterip giris ekraninin ilk sayfa olmasini
-      // istedi. Donen kullanici cogunluktur ve her acilista tanitim
-      // ekranindan gecmek engel demek. Kayit girisin altindan
-      // aciliyor.
-      router.replace('/giris')
+      // Uygulamayi ILK INDIREN kisi karsilama ekranini gorur; herkes
+      // ve her sonraki acilis dogrudan girise duser (kullanicinin
+      // karari 2026-08-25). Isaret cihazda saklandigi icin uygulama
+      // silinip tekrar kurulunca karsilama yeniden gorunuyor.
+      router.replace(ilkAcilisBitti ? '/giris' : '/karsilama')
     } else if (oturum && hesapDurumu) {
       // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
       // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
@@ -73,7 +79,7 @@ function YonlendirmeKontrolu() {
     ) {
       router.replace('/')
     }
-  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments])
+  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments, ilkAcilisBitti])
 
   return <Slot />
 }

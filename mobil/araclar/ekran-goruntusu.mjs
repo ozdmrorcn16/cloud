@@ -42,6 +42,17 @@ try {
   await baglam.overridePermissions('http://127.0.0.1:8080', ['geolocation'])
 
   const sayfa = await tarayici.newPage()
+  // Cihaz dili taklidi: uygulamanin cihaz dilini gercekten okuyup
+  // okumadigini dogrulamak icin. SLOOIN_TEST_DIL=en-US verilince
+  // tarayici Ingilizce bir cihaz gibi davraniyor.
+  const testDil = process.env.SLOOIN_TEST_DIL
+  if (testDil) {
+    await sayfa.setExtraHTTPHeaders({ 'Accept-Language': testDil })
+    await sayfa.evaluateOnNewDocument((d) => {
+      Object.defineProperty(navigator, 'language', { get: () => d })
+      Object.defineProperty(navigator, 'languages', { get: () => [d] })
+    }, testDil)
+  }
   await sayfa.setGeolocation({
     latitude: Number(process.env.SLOOIN_TEST_LAT ?? 40.2261),
     longitude: Number(process.env.SLOOIN_TEST_LNG ?? 28.8656),
