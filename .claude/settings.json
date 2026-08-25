@@ -6,7 +6,9 @@
           {
             "type": "command",
             "command": "C:/Users/orcns/AppData/Local/Programs/Python/Python312/python.exe",
-            "args": ["C:/Users/orcns/projects/cloud/.claude/hooks/oturum-kaydet.py"],
+            "args": [
+              "C:/Users/orcns/projects/cloud/.claude/hooks/oturum-kaydet.py"
+            ],
             "statusMessage": "Oturum kaydi yaziliyor",
             "async": true
           }
@@ -19,7 +21,9 @@
           {
             "type": "command",
             "command": "C:/Users/orcns/AppData/Local/Programs/Python/Python312/python.exe",
-            "args": ["C:/Users/orcns/projects/cloud/.claude/hooks/oturum-kaydet.py"],
+            "args": [
+              "C:/Users/orcns/projects/cloud/.claude/hooks/oturum-kaydet.py"
+            ],
             "timeout": 120,
             "statusMessage": "Oturum kaydi yaziliyor"
           }

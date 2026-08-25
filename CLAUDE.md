@@ -1227,6 +1227,18 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   eklenti diskte kurulu degilse yuklenmiyor. `claude plugin install ... --scope
   project` de calistirilmali. Onceki oturumun `frontend-design`'i bu yuzden
   hic aktif olmamisti.
+  **BU 2026-08-26'DA TEKRAR YASANDI:** uc eklenti (`frontend-design`,
+  `code-review`, `security-guidance`) settings.json'da `true` gorunuyor,
+  dosyalari da `~/.claude/plugins/cache` altinda duruyordu, ama
+  `installed_plugins.json` icinde KAYITLI DEGILLERDI - yani yuklu
+  sayilmiyorlardi. `security-guidance`'in hook'lari 2026-08-14'ten beri
+  hic calismamis (pycache tarihinden olculdu). Kurulum kayidi
+  `~/.claude` altinda tutuldugu ve depoya girmedigi icin bu her yeni
+  makinede/klonda tekrarlanabilir. **KONTROL YOLU: `claude plugin list`**
+  - settings.json'a bakmak yeterli degil, o yalnizca niyeti gosteriyor.
+  Duzeltme: `claude plugin install <ad>@claude-code-plugins --scope project`.
+  Yeni kurulan eklentiler ANCAK BIR SONRAKI OTURUMDA devreye girer.
+
 - 2026-08-09 — `security-guidance`, `claude-mem` ve `gstack` kuruldu ve test
   edildi. Konteyner gecici oldugu icin `~/.claude` altina kurulanlari geri
   getiren bir `SessionStart` hook'u yazildi:
