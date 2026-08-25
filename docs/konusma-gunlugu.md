@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-08-25 — [2026-08-25-906da1b5.md](oturumlar/2026-08-25-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
+- 2026-08-25 — [2026-08-25-6938e64a.md](oturumlar/2026-08-25-6938e64a.md) — profilden devam
 - 2026-08-24 — [2026-08-24-906da1b5.md](oturumlar/2026-08-24-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
 - 2026-08-23 — [2026-08-23-906da1b5.md](oturumlar/2026-08-23-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
 - 2026-08-22 — [2026-08-22-906da1b5.md](oturumlar/2026-08-22-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
@@ -74,6 +75,42 @@ icinde `/hooks` menusunden devre disi birak.
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
+
+
+### 2026-08-25 - Arayuz tasarimi, ikinci oturum
+
+Bu oturumda ekranlarin buyuk kismi gorsel kimlige tasindi ve marka
+varliklari yenilendi. Ayrintili durum `CLAUDE.md` icindeki "ARAYUZ
+TASARIMI - DEVAM EDEN IS" bolumunde; burada yalnizca alinan KARARLAR:
+
+- **Ana sayfa akisi.** Girisden sonra Instagram'daki gibi bir akis
+  gelir; alt cubugun en solunda ev ikonu durur. Akista kullanicinin
+  kendi check-in'leri ve karsilikli bag kurdugu kisilerin
+  check-in'leri birlikte akar.
+- **Alt gezinme HER ekranda sabit.** Cubuk kok yerlesime tasindi;
+  ekranlara tek tek eklenmiyor.
+- **Uygulama icinde TEK yazi ailesi.** Marka fontu Bricolage arayuzden
+  tamamen cikti; hiyerarsi agirlik ve puntoyla kuruluyor. Karakterli
+  baslik fontu kararı GECERSIZ.
+- **Yeni logo takimi** (S isareti + kelime markasi). Logonun parcasi
+  silinmez, isaret yeniden cizilmez; renk cozumlemesiyle ayiklanir.
+- **Karsilama ekrani her acilista gorunur** (hesap olusturana kadar);
+  "yalnizca ilk indirene goster" kurali ve cihaz isareti kaldirildi.
+  Sozlesme onayi ve slogan bu ekrandan cikarildi.
+- **Kayit akisi uce bolundu:** yalnizca telefon -> SMS kodu -> profil
+  olusturma. Sifre ve KVKK onayi su an akista YOK; kullanici o
+  ekranlarin sirasi gelince ele almak istiyor.
+- **Istenen kadarini yap.** Kullanicinin uyarisi: istenen ekran
+  disinda, akisi tamamlamak icin bile olsa, yeni ekran eklenmez.
+
+Yol ustunde bulunan ve duzeltilen gercek kusurlar: takiplestigin
+kisinin canli check-in fotografi hic acilmiyordu (storage politikasi
+satirin gorunurluk kuralina baglandi; ayni degisiklik ani
+fotograflarindaki fazla genisligi de kapatti), moderatorun fotograf
+politikasi var olmayan bir bucket adini suzuyordu, mekan detay
+ekraninda mekanin ADI hic gorunmuyordu, detay ekranlarinda geri
+dugmesi yoktu, gorunurluk test paketindeki yedi dogrulama 2026-08-23'ten
+beri sessizce bos olculuyordu.
 
 ## Kararlar
 

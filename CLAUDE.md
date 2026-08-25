@@ -131,122 +131,148 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
-### ARAYUZ TASARIMI - DEVAM EDEN IS (2026-08-25)
+### ARAYUZ TASARIMI - DEVAM EDEN IS (2026-08-25, ikinci oturum)
 
-**Calisma bicimi (kullanicinin kurali):** "Sayfa sayfa ilerlicez
-talimatlarla." Bir ekran bitince SIRADAKINE KENDILIGINDEN GECILMEZ;
-hangi sayfaya gecilecegi sorulur. Her adim ekran goruntusuyle
-gosterilir - kullanici "bunu bana görsel olarak göstermen gerek" dedi.
+**Calisma bicimi (kullanicinin iki kurali):**
+1. "Sayfa sayfa ilerlicez talimatlarla." Bir ekran bitince SIRADAKINE
+   KENDILIGINDEN GECILMEZ; hangi sayfaya gecilecegi sorulur. Her adim
+   ekran goruntusuyle gosterilir.
+2. **ISTENEN KADARINI YAP.** Kullanici 2026-08-25'te bunu acikca
+   soyledi: telefon + dogrulama ekrani istemisti, ben akisi tamamlamak
+   icin ucuncu bir "sifre belirle" ekrani ekledim ve geri aldirdi:
+   "Sifre belirleme ekraniyla suan ugrasma, sadece sana soyledigimi
+   yap." Yaptigin adim baska bir sey gerektiriyorsa YAPMA, SOYLE.
 
-**Referans:** Instagram ve eski Swarm. Kullanicinin ifadesi: "instagram
-ve eski swarm uygulamalarini referans alarak olustur".
+**Referans:** Instagram. Kullanici ekran goruntuleri gonderip "bu
+gorseldeki gibi olsun" diyor; gonderdigi gorsel cogu zaman KENDI
+ekranimizin telefondaki hali oluyor.
 
-#### Biten ekranlar
+#### SIRADAKI IS: `profil-olustur` ekrani
 
-| Ekran | Durum |
+Kullanici "onaylandiktan sonra profil olusturma ekranina geciyoruz"
+dedi ve orada durduk. Ekranin su anki hali `tasarim/ekran-profil-olustur.png`.
+Tespit edilen bes sorun (kullaniciya soylendi, onayi BEKLENIYOR):
+alan etiketi yok; dogum tarihi `YYYY-AA-GG` diye elle yaziliyor;
+fotograf bir kutu icinde duz metin; kullanici adi musaitlik sonucuna
+yer ayrilmamis; zorunlu/istege bagli ayrimi yok.
+
+**Bu ekrani gormek icin PROFILI OLMAYAN bir kullanici gerekiyor** -
+mevcut test hesaplarinin hepsinin profili var ve yonlendirme kontrolu
+onlari uygulamaya sokuyor. Cozum: service-role ile profilsiz bir
+hesap acmak (`+905550000008` / `test1234` bu amacla olusturuldu,
+profil satiri yok).
+
+#### Biten ekranlar (hepsi kimlikte)
+
+| Ekran | Not |
 |---|---|
-| `(auth)/karsilama` | ILK ACILIS. Yalnizca uygulamayi ilk indirene gorunur |
-| `(auth)/giris` | ILK SAYFA. Instagram duzeni, kelime markasi |
-| `(auth)/kayit` | Telefon, sifre + tekrar, tek onay kutusu |
-| `mekanlar/index` | Kesfet. Alt gezinme buradan basladi |
-| `kisiler` | Kimlige tasindi, bas harfli avatar, bos ekran yonu |
-| `mesajlar` | Okunmamis gorsel ayrimi, turuncu rozet |
+| `(auth)/karsilama` | Kroki arka plan, dort tanitim maddesi, marka kilidi |
+| `(auth)/giris` | Instagram duzeni |
+| `(auth)/kayit` | YALNIZCA telefon numarasi + "Kodu gonder" |
+| `(auth)/dogrula` | Alti kutulu SMS kodu, geri sayimli tekrar gonder |
+| `index` (ana sayfa) | AKIS: kendi ve baglarin check-in'leri |
+| `mekanlar/index` | Kesfet |
+| `mekanlar/[id]` | Mekan detayi (adi artik gorunuyor) |
+| `kisiler`, `mesajlar` | Liste ekranlari |
+| `profil/index` | YENI: profil ana ekrani, "su an buradasin" seridi |
+| `kullanici/[id]` | Baskasinin profili, iki adimli engelleme |
+| `profil/ayarlar` | Instagram duzeni: gruplanmis satirlar |
+| `profil/kullanici-adi`, `profil/check-in-gorunurlugu`, `profil/ani-gorunurlugu` | Ayarlarin alt ekranlari |
+| `profil/engellenenler` | YENI |
+| Diger ekranlar | Tipografi ve jetonlar kimlige gecti, yerlesim eski |
 
-#### Siradaki is: PROFIL SEKMESI
+#### KAYIT AKISI (2026-08-25'te degisti)
 
-Alt gezinmedeki "Profil" sekmesi su an dogrudan `/profil/anilar`
-ekranina gidiyor cunku ORTADA BIR PROFIL ANA EKRANI YOK. Instagram ve
-Swarm'da profil sekmesi kisinin kendi profilini gosterir: fotograf,
-kullanici adi, anilar ve ayarlara giris. Boyle bir ekran yazilmali.
+`karsilama` -> `kayit` (yalnizca telefon, `signInWithOtp`) ->
+`dogrula` (SMS kodu) -> `profil-olustur`.
 
-Sonra kalan ekranlar (hepsi hala eski duz stilde): `baglar`,
-`mekanlar/[id]`, `mekanlar/ekle`, `check-in/[mekanId]`,
-`kullanici/[id]`, `sohbet/[kullaniciId]`, `profil/anilar`,
-`profil/ayarlar`, `profil/hesabi-sil`, `sikayet`, `gizlilik`,
-`hesap-durumu`, `profil-olustur`, `(auth)/dogrula`.
+**IKI ACIK BORC** (kullaniciya soylendi, o an istemedi):
+1. Bu akista SIFRE BELIRLENMIYOR ama `giris` ekrani numara + sifre
+   istiyor. Yani bu yolla acilan hesap giris ekranindan tekrar giremez.
+2. KVKK ONAYI HICBIR YERDE ALINMIYOR - onay kutusu eski kayit
+   ekranindaydi. Onay metadatasini `kvkk_onaylari` tablosuna alan
+   tetikleyici artik hem INSERT hem UPDATE'te calisiyor
+   (migrasyon 20260825170000), yani onay nereye konursa konsun
+   kaydedilecek.
 
-Eski `src/app/index.tsx` (ana ekran menusu) artik gereksiz: gezinme
-alt cubuktan yapiliyor. Kaldirilmasi ayri bir is.
+#### ALT GEZINME: her ekranda, kokten geliyor
 
-#### Alt gezinme cubugu
+`src/tasarim/AltGezinme.tsx` - yuzer, BES sekme (Ana sayfa / Kesfet /
+Kisiler / Mesajlar / Profil). Kullanicinin karari: "hangi sayfaya
+girilirse girilsin alttaki sutun sabit kalacak."
 
-`src/tasarim/AltGezinme.tsx` - yuzer, dort sekme (Kesfet / Kisiler /
-Mesajlar / Profil), okunmamis rozetiyle. Ekrana su desenle eklenir:
+Cubuk `src/app/_layout.tsx` icinde `<Slot />` ile birlikte ciziliyor;
+EKRANLARA TEK TEK EKLENMEZ. Ekranlar yalnizca `ALT_GEZINME_PAYI`
+kadar alt pay birakir. Okunmamis rozetini cubuk kendisi cekiyor
+(yol degistikce). Giris/kayit, profil olusturma ve askidaki hesap
+ekranlarinda cubuk YOK.
 
-```tsx
-<View style={stiller.kok}>
-  <ScrollView contentContainerStyle={{ paddingBottom: ALT_GEZINME_PAYI }}>…</ScrollView>
-  <AltGezinme />
-</View>
-```
+Testlerde cubuk `jest.setup.js` icinde GLOBAL mock'lu.
 
-Swarm'daki ortadaki buyuk check-in dugmesi BILEREK yok: Slooin'de
-check-in mekan secilerek yapiliyor, o dugme kullaniciyi yine ayni
-kesfet listesine goturur.
+#### MARKA: yeni logo takimi (2026-08-25)
 
-Testlerde cubuk `jest.setup.js` icinde GLOBAL mock'lanmis - `usePathname`
-kullandigi ve her ekran testi expo-router'i kendi mock'uyla degistirdigi
-icin. Yeni ekran testinde ayrica bir sey yapmaya gerek yok.
+Kullanici yeni bir logo verdi: gradyanli kiremit uzerinde beyaz S
+isareti (iki noktasiyla) ve koyu harfli "slooin" yazisi (i'nin noktasi
+turuncu konum ignesi). Kaynaklar `tasarim/slooin-logo-2-kaynak.png` ve
+`tasarim/slooin-kelime-markasi-2-kaynak.png`.
 
-#### Marka: kelime markasi ve isaret AYRI
+**ISARET YENIDEN CIZILMEZ.** Iki kez denendi (esikle maskeleyip duz
+renkle boyamak) ve ikisinde de kullanici "goruntu bozuldu" dedi.
+Dogru yontem RENK COZUMLEMESI: `piksel = alfa * isaret + (1-alfa) *
+zemin` denklemi alfa icin cozuluyor, kenar tonlari ve S'in katlanma
+golgesi korunuyor. Logonun PARCASI SILINMEZ - iki nokta bir kez
+kaldirildi, geri aldirildi.
 
-| Varlik | Bilesen | Nerede |
-|---|---|---|
-| Kelime markasi (`slooin` yazisi) | `MarkaYazisi` | Giris, karsilama, basliklar |
-| Isaret (konum ignesi) | `MarkaIsareti` | Uygulama simgesi, kucuk yerler |
+Butun simge varliklari iki betikten uretiliyor:
+- `araclar/simge-uret.py` - icon, favicon, Android ucusu, acilis
+  isareti, uygulama ici isaret (acik/koyu), PWA simgeleri.
+- `araclar/kelime-markasi-uret.py` - kelime markasinin beyaz zeminini
+  saydama cevirir, kirpar, en/boy oranini ekrana basar (o oran
+  `MarkaYazisi.tsx` icinde SABIT yazili, gorsel degisirse guncellenmeli).
 
-Kelime markasi SIMGE OLAMAZ: en/boy orani 3.4, kare ikona sigmaz.
-`MarkaYazisi` icindeki en/boy orani KODA GOMULU - gorsel degisirse o
-sabit de degismeli, yoksa yazi ezilir.
+**PWA SIMGELERI AYRI DOSYALAR** (`public/pwa-*-v2.png`,
+`apple-touch-icon-v2.png`): `app.json`daki `icon` onlara dokunmuyor.
+Adlarinda SURUM var, cunku iOS ana ekran kisayolunun simgesini ADRESE
+gore onbellege aliyor; ayni adla yeni gorsel yayinlaninca telefonda
+eski logo gorunmeye devam ediyordu. Logo degisirse
+`araclar/simge-uret.py` icindeki `SURUM` artirilir.
 
-Uygulama simgesi: balonsuz isaret, %62 doluluk, altinda golge.
-Kullanicinin geri bildirimleri: "cok genis duruyor" (kucultuldu),
-"cok kötü duruyor sığdırmaya çalışınca" (%90 denendi, geri alindi).
+#### TIPOGRAFI: uygulama icinde TEK yazi ailesi
 
-Turuncu `#FE7813` - logodan OLCULDU, tahmin degil. Tema, ikonlar,
-manifest ve `theme-color` hepsi ayni tonda.
+Kullanicinin karari: "Basliklar dahil butun yazim stilleri resimdeki
+gibi olucak." Marka fontu Bricolage Grotesque arayuzden TAMAMEN cikti;
+`yazi.baslik` ve `yazi.baslikKalin` jetonlari SILINDI. Basliklar,
+govde, bas harfli avatarlar ve sayilar ayni aileden (Instrument Sans);
+baslik olmak agirlik ve punto degistiriyor, yazi tipini degil. Baslik
+jetonu: `yazi.ekranBasligi` (InstrumentSans_700Bold).
+Olcek: baslik 26 / altBaslik 19 / govde 15 / kucuk 13 / minik 11.
 
-Kaynak dosyalar: `tasarim/slooin-logo-kaynak.png` (turuncu zemin),
-`tasarim/slooin-logo-acik-kaynak.png`, `tasarim/slooin-isaret-balonsuz.png`,
-`tasarim/slooin-kelime-markasi-kaynak.png`.
+#### KARSILAMA EKRANI
 
-#### DIL: cihazdan aliniyor, SORULMUYOR
+- Hesabi olmayan HERKES, HER acilista goruyor (hesap olusturana kadar).
+  Onceki "yalnizca ilk indirene goster" kurali ve onu tasiyan cihaz
+  isareti (`lib/ilk-acilis.ts`) kaldirildi.
+- Arka plan `src/tasarim/KrokiZemin.tsx`: cizilmis harita, check-in
+  igneleri, insan ikonlari ve NABIZ gibi atan halkalar. Fotograf degil
+  cizim - uzerine metin biniyor, fotografta karartma gerekir ve
+  karartma acik kimligi bozar. Hareket tek yerde; "hareketi azalt"
+  aciksa hic baslamiyor.
+- Sozlesme onayi ve slogan bu ekrandan KALDIRILDI.
 
-Yedi dil: tr, en, de, es, fr, ru, ar. Arapca SAGDAN SOLA (web'de `dir`
-niteligi; native'de yalnizca `allowRTL`, zorla yeniden baslatma YOK).
-Desteklenmeyen cihaz dili INGILIZCE'ye duser, Turkce'ye degil.
-
-**SU ANKI CALISMA KURALI:** yeni ekran metinleri YALNIZCA
-`lib/ceviriler/tr.ts` icine yazilir. Kullanicinin karari: "şuan sadece
-türkçe diliyle ilerle sürekli yedi dile eklemeye çalışma zaman kaybı en
-son yaparız". Diger diller ve dil testi tasarim bitince toplu yapilacak.
-Metin YINE DE koda gomulmez - sozluge yazilir.
-
-`profiller.dil` kisiti istemcideki `DESTEKLENEN_DILLER` ile ayni
-tutulmali.
-
-#### EKRAN GORUNTUSU ARACI - onemli
+#### EKRAN GORUNTUSU ARACI
 
 `mobil/araclar/ekran-goruntusu.mjs` (puppeteer-core). Tasarimi gozle
 dogrulamanin tek guvenilir yolu.
 
 ```bash
 cd mobil
-node araclar/ekran-goruntusu.mjs giris ../tasarim/ekran-giris.png
-# oturum gerektiren ekranlar:
-SLOOIN_TEST_TELEFON=05550000000 SLOOIN_TEST_SIFRE=test1234   node araclar/ekran-goruntusu.mjs mekanlar ../tasarim/ekran.png
-# cihaz dili taklidi:
-SLOOIN_TEST_DIL=de-DE node araclar/ekran-goruntusu.mjs karsilama ../tasarim/de.png
+node araclar/ekran-goruntusu.mjs karsilama ../tasarim/ekran.png
+SLOOIN_TEST_TELEFON=05550000000 SLOOIN_TEST_SIFRE=test1234 \
+  node araclar/ekran-goruntusu.mjs profil ../tasarim/ekran.png
 ```
 
-Git Bash'te yolu BASTAKI EGIK CIZGI OLMADAN yaz (`giris`, `/giris`
-degil) - MSYS onu Windows yoluna cevirip URL'i bozuyor.
-
-**Chrome'un `--screenshot` bayragini KULLANMA.** Windows'ta pencerenin
-asgari genisligi var; `--window-size=390` istense bile layout ~500 px'te
-kaliyor ve goruntu kirpiliyor. Bu, ekranlarda OLMAYAN bir "sag kenar
-tasmasi" gosterip yanlis teshise yol acti. Arac artik
-`document.body.scrollWidth` olcup tasma olup olmadigini raporluyor.
+Git Bash'te yolu BASTAKI EGIK CIZGI OLMADAN yaz. Ana sayfa icin bos
+dize kullan (`""`).
 
 #### Onizleme akisi (her degisiklikten sonra)
 
@@ -256,25 +282,26 @@ powershell -c "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Whe
 cd mobil && npx expo export --platform web
 # 2) sunucuyu baslat
 nohup python <scratchpad>/spa-sunucu.py C:/Users/orcns/projects/cloud/mobil/dist 8080 &
-# 3) ekran goruntusu al
+# 3) tunel (telefonda bakmak icin) - ADRES HER CALISTIRMADA DEGISIR
+"/c/Program Files (x86)/cloudflared/cloudflared.exe" tunnel --url http://127.0.0.1:8080 --no-autoupdate
 ```
 
-Tunel (telefonda bakmak icin) ayri calisiyor:
-`"/c/Program Files (x86)/cloudflared/cloudflared.exe" tunnel --url http://127.0.0.1:8080 --no-autoupdate`
-Adres her calistirmada DEGISIR.
+Kullanici tunel adresinin degismesinden sikayetci ("her seferinde
+giris yapmak zorunda kaliyorum"): tarayici depolamayi adrese bagli
+tuttugu icin yeni adres = yeni oturum. Oturum kaliciligi UYGULAMADA
+DOGRU calisiyor (olculdu: tarayici kapatilip acildiginda oturum
+duruyor). Kalici cozum sabit bir adres (GitHub Pages onerildi,
+kullanici "simdilik tunelle devam" dedi).
 
 #### Test hesaplari
 
 `05550000000` … `05550000003`, sifre `test1234`, SMS kodu `123456`.
+`05550000008` PROFILSIZ (profil olusturma ekranini gormek icin).
 
 #### EAS / APK durumu
 
-Expo hesabina GIRIS YAPILDI (`byorcun`). Proje `@byorcun/slooin`
-olusturuldu, Supabase anahtarlari preview ortamina tanimlandi, Android
-APK bir kez derlendi. **Ama kullanici iPHONE kullaniyor** - APK ona
-kurulamaz. iOS'ta ucretsiz kurulum yolu YOK (Apple imzasiz uygulamaya
-izin vermiyor, Mac+Xcode de gerekiyor). Kullanici PWA yolunda devam
-etmeyi secti: Safari > Paylas > "Ana Ekrana Ekle".
+Expo hesabina giris yapildi (`byorcun`), Android APK bir kez derlendi.
+Kullanici iPHONE kullaniyor - APK ona kurulamaz, PWA yolunda devam.
 
 ### KARAR: dis kaynakli mekanlarda TUR GOSTERILMIYOR (2026-08-24)
 
