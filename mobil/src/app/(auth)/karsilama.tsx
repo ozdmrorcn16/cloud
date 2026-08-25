@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
-  Image,
   Pressable,
   StyleSheet,
   Animated,
@@ -12,6 +11,7 @@ import {
 import { useRouter } from 'expo-router'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 
 /**
  * Ilk acilis ekrani - uygulamayi indiren kisinin gordugu ilk yuz.
@@ -21,12 +21,14 @@ import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
  * boslugu dolduruyor - once ne oldugunu soyluyor, sonra istiyor.
  *
  * IMZA OGE: marka isaretinden yayilan halkalar.
- * Logo (kullanicinin karari, 2026-08-24) tek bir isarette uc sey
- * birden soyluyor: "S" harfi, iki nokta (iki insan) ve alt kismi bir
- * KONUM IGNESI. Yani marka zaten "burada biri var" diyor.
- * Bu ekranda o igneden halkalar yayiliyor - isaret canlaniyor ve
- * urunun vaadi ("su an burada biri var") gorsellesiyor. Kimlik
- * kuralina da uyuyor: turuncu yalnizca eylem ve CANLILIK icindir.
+ * Logo (kullanicinin karari, 2026-08-25) tek bir isarette uc sey
+ * birden soyluyor: bir KONUM IGNESI, icinde IKI INSAN ve bir KONUSMA
+ * BALONU. Yani marka zaten "burada birileri var ve konusuyorlar"
+ * diyor - uygulamanin tarifi.
+ * Bu ekranda o igneden halkalar yayiliyor: isaret canlaniyor ve
+ * urunun vaadi gorsellesiyor. Kimlik kuralina da uyuyor - turuncu
+ * yalnizca eylem ve CANLILIK icindir.
+ * Isaret zemine gore uyarlanir; bkz. MarkaIsareti.
  *
  * Ekrandaki tek hareket bu. Geri kalan her sey sabit ve sessiz;
  * boldugumuz tek yer imza ogesi.
@@ -130,13 +132,9 @@ export default function KarsilamaEkrani() {
               ],
             }}
           >
-            <Image
-              source={require('../../../assets/images/marka-isareti.png')}
-              style={stiller.isaret}
-              resizeMode="contain"
-              accessibilityRole="image"
-              accessibilityLabel="Slooin"
-            />
+            {/* Sayfa zemini acik (#FAF7F3) oldugu icin "acik" varyant:
+                igne turuncu, ikinci figur acik mat seftali. */}
+            <MarkaIsareti zemin="acik" boyut={ISARET_BOYUT} />
           </Animated.View>
         </View>
 
@@ -206,7 +204,6 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  isaret: { width: ISARET_BOYUT, height: ISARET_BOYUT },
   halka: {
     position: 'absolute',
     width: HALKA_BOYUT,
