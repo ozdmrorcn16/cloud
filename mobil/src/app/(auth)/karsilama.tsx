@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
@@ -98,8 +98,20 @@ export default function KarsilamaEkrani() {
       <View style={stiller.ust}>
         {/* Kullanicinin istegi (2026-08-25): ustte isaret, altinda
             kelime markasi. Ikisi birlikte bir kilit olusturuyor. */}
-        <MarkaIsareti zemin="acik" boyut={104} />
-        <MarkaYazisi genislik={190} style={stiller.markaYazisi} />
+        <MarkaIsareti zemin="acik" boyut={84} />
+        <MarkaYazisi genislik={168} style={stiller.markaYazisi} />
+
+        {/* Uygulamanin ne oldugunu tek bakista anlatan sahne: ayni
+            mekanda, telefonlari elinde, birbirini goren insanlar.
+            Kullanicinin verdigi gorsel (2026-08-25). Ustunde metin
+            YOK - metin altta, ekranin okunakliligi bozulmasin. */}
+        <Image
+          source={require('../../../assets/images/tanitim-sahne.jpg')}
+          style={stiller.sahne}
+          resizeMode="cover"
+          accessibilityRole="image"
+          accessibilityLabel="Aynı mekanda, birbirini gören insanlar"
+        />
         {/* Slogan ve altindaki paragraf KALDIRILDI (kullanicinin karari,
             2026-08-25). Uygulamayi anlatan tek yer asagidaki ozellik
             listesi; slogan onun soyledigini bir kez daha soyluyordu. */}
@@ -153,18 +165,28 @@ const stiller = StyleSheet.create({
     flex: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.xl,
-    paddingTop: 72,
+    paddingTop: 44,
     paddingBottom: bosluk.l,
   },
 
-  markaYazisi: { marginTop: bosluk.m },
+  markaYazisi: { marginTop: bosluk.s },
+  sahne: {
+    width: '100%',
+    // Yukseklik SABIT, aspectRatio degil: kok kapsayici esnek oldugu
+    // icin oran verildiginde gorsel bos alanin tamamini yiyip ekrani
+    // kapliyordu (telefonda denendi).
+    height: 176,
+    borderRadius: yuvarlak.buyuk,
+    marginTop: bosluk.l,
+    backgroundColor: renk.cizgi,
+  },
 
-  adimlar: { marginTop: bosluk.xl, gap: bosluk.l },
+  adimlar: { marginTop: bosluk.l, gap: bosluk.m },
   adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
   ikonDairesi: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: renk.metin,
     alignItems: 'center',
     justifyContent: 'center',
