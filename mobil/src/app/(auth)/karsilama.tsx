@@ -72,8 +72,18 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
           />
         )}
         {ad === 'yogunluk' && (
+          // Yukselen ok: 'populer yerler' sutun grafiginden daha dogru
+          // anlatiyor - artan ilgi demek.
           <>
-            <Path d="M3.5 20.5h3.6v-6H3.5zM10.2 20.5h3.6V9.5h-3.6zM16.9 20.5h3.6V4h-3.6z" fill={R} />
+            <Path
+              d="M3.2 16.4l5.6-5.6 3.8 3.8 6-6"
+              stroke={R}
+              strokeWidth={2.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <Path d="M14.6 7.4h6.4v6.4z" fill={R} />
           </>
         )}
       </Svg>
