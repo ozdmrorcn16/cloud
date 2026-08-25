@@ -12,6 +12,7 @@ import {
 } from '../../../lib/sohbet'
 import { useOturum } from '../../../lib/oturum'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 
 const KAPALI_KAPI_NOTU = 'Bu kişiye şu an mesaj gönderemezsin.'
 
@@ -237,40 +238,99 @@ export default function SohbetEkrani() {
 const stiller = StyleSheet.create({
   // Alt gezinme cubugu artik her ekranda: yazma alani onun altinda
   // kalmasin.
-  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.l,
+    paddingTop: bosluk.xxl + bosluk.m,
+    paddingBottom: ALT_GEZINME_PAYI,
+  },
   ustBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: bosluk.m,
+    marginBottom: bosluk.m,
   },
-  baslik: { fontSize: 20, fontWeight: '600' },
-  sikayetButonu: { color: '#c00' },
+  baslik: {
+    flexShrink: 1,
+    fontFamily: yazi.baslik,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+  },
+  sikayetButonu: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
   liste: { flex: 1 },
+
   mesajBalonu: {
-    borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
-    padding: 10,
-    marginVertical: 4,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.m,
+    paddingVertical: bosluk.s + 2,
+    marginVertical: bosluk.xs,
     maxWidth: '80%',
   },
-  kendiBalonu: { alignSelf: 'flex-end', backgroundColor: '#f0f0f0' },
-  karsiBalonu: { alignSelf: 'flex-start', backgroundColor: '#fff' },
-  girdiSatiri: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 8 },
+  // Kendi mesajin turuncu: konusmada kimin konustugu tek bakista
+  // okunmali. Turuncunun burada "eylem" degil "sen" demesi kimligin
+  // izin verdigi tek istisna degil - mesaj da bir eylemdir.
+  kendiBalonu: { alignSelf: 'flex-end', backgroundColor: renk.turuncu },
+  karsiBalonu: {
+    alignSelf: 'flex-start',
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
+
+  girdiSatiri: { flexDirection: 'row', alignItems: 'flex-end', gap: bosluk.s, marginTop: bosluk.s },
   girdi: {
     flex: 1,
+    backgroundColor: renk.yuzey,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    marginRight: 8,
-    minHeight: 40,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 12,
+    minHeight: 44,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
   },
-  gonderButonu: { backgroundColor: '#111', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 12 },
-  gonderButonuPasif: { backgroundColor: '#999' },
-  gonderButonuYazi: { color: '#fff', fontWeight: '600' },
-  kapaliNot: { color: '#666', textAlign: 'center', marginTop: 8, paddingVertical: 12 },
-  hata: { color: '#c00', marginBottom: 12 },
-  durum: { color: '#666', marginTop: 24, textAlign: 'center' },
+  gonderButonu: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 12,
+  },
+  gonderButonuPasif: { backgroundColor: renk.metinSoluk },
+  gonderButonuYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#FFFFFF',
+  },
+
+  kapaliNot: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    textAlign: 'center',
+    marginTop: bosluk.s,
+    paddingVertical: bosluk.m,
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
+  durum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: bosluk.xl,
+    textAlign: 'center',
+  },
 })

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 
 export default function DogrulaEkrani() {
   const router = useRouter()
@@ -47,11 +48,53 @@ export default function DogrulaEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, justifyContent: 'center' },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 8 },
-  aciklama: { color: '#555', marginBottom: 24 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  hata: { color: '#c00', marginBottom: 12 },
-  buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
-  butonYazi: { color: '#fff', fontWeight: '600' },
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    justifyContent: 'center',
+  },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.s,
+  },
+  aciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.xl,
+  },
+  girdi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 14,
+    marginBottom: bosluk.m,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  buton: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  butonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
 })

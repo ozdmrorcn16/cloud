@@ -3,6 +3,8 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { sikayetGonder, SIKAYET_SEBEPLERI, type SikayetHedefTuru } from '../../lib/sikayet'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { UstCubuk } from '../tasarim/UstCubuk'
 
 export default function SikayetEkrani() {
   const router = useRouter()
@@ -47,7 +49,7 @@ export default function SikayetEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Şikayet et</Text>
+      <UstCubuk baslik="Şikayet et" geriEtiketi="Geri" />
 
       {/* Karar 76: kademe 1 baglami sikayet edenin kendi konusmasindan
           da mesaj tasir, bu yuzden bildirilir. Ayri bir onay kutusu YOK -
@@ -90,19 +92,80 @@ export default function SikayetEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
-  baglamBildirimi: { fontSize: 13, color: '#666', marginBottom: 12 },
-  sebepSatiri: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    padding: 12, marginBottom: 8,
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
   },
-  sebepSatiriSecili: { borderColor: '#111', backgroundColor: '#f0f0f0' },
-  sebepYazi: { fontSize: 16 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginTop: 8, marginBottom: 12 },
-  cokSatirli: { minHeight: 80, textAlignVertical: 'top' },
-  teyitMetni: { fontSize: 16, color: '#555', marginBottom: 24 },
-  hata: { color: '#c00', marginBottom: 12 },
-  buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 12 },
-  butonYazi: { color: '#fff', fontWeight: '600' },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.m,
+  },
+  baglamBildirimi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.m,
+  },
+
+  sebepSatiri: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    marginBottom: bosluk.s,
+  },
+  sebepSatiriSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
+  sebepYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+
+  girdi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    marginTop: bosluk.s,
+    marginBottom: bosluk.m,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  cokSatirli: { minHeight: 90, textAlignVertical: 'top' },
+
+  teyitMetni: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.xl,
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
+
+  buton: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: bosluk.m,
+  },
+  butonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
 })

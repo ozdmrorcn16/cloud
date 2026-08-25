@@ -180,3 +180,22 @@ export function kesfetIcinSuz<T extends { tur: string }>(
   // gosteriyoruz: kucuk yerlesimlerde liste tamamen bosalabilir.
   return sosyal.length > 0 ? sosyal : mekanlar
 }
+
+/**
+ * Tek bir mekanin bilgisi - detay ekraninin basligi icin.
+ *
+ * Detay ekrani mekanin ADINI hic gostermiyordu; kullanici bir yere
+ * girdiginde nerede oldugunu ekranda goremiyordu. Liste RPC'leri
+ * yalnizca yakindakileri donduruyor, bu yuzden kimlikle dogrudan
+ * okuma gerekiyor.
+ */
+export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
+  const { data, error } = await supabase
+    .from('mekanlar')
+    .select('id, ad, tur, semt, kaynak, adres, osm_id, konum')
+    .eq('id', mekanId)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!data) return null
+  return satiriMekanaCevir(data as unknown as MekanSatiri)
+}

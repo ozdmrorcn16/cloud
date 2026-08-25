@@ -270,12 +270,9 @@ describe('BaglarEkrani', () => {
     await render(<BaglarEkrani />)
     await waitFor(() => expect(gelenIstekleriGetir).toHaveBeenCalled())
 
-    const kok = screen.root
-    if (!kok) throw new Error('render kok elemani yok')
-
-    // Dis kaydirici tam olarak kok eleman (screen.root); testID'siyle
-    // kanitlaniyor.
-    expect(kok.props.testID).toBe('baglar-kaydirici')
+    // Ust cubuk eklendikten sonra (2026-08-25) kok eleman artik cubugu ve
+    // kaydiriciyi saran View; dis kaydirici testID'siyle bulunuyor.
+    const kok = screen.getByTestId('baglar-kaydirici')
 
     // FlatList kendi host RCTScrollView'ina indiriyor; ic kaydirmanin
     // gercekten kapali oldugunu (yalnizca prop olarak GECMEDIGINI degil,

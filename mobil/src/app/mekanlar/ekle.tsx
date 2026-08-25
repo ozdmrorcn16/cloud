@@ -3,8 +3,9 @@ import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-na
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
-import { renk } from '../../tasarim/tema'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { UstCubuk } from '../../tasarim/UstCubuk'
 
 // Tur SERBEST METIN DEGIL, listeden secilir.
 //
@@ -80,7 +81,7 @@ export default function MekanEkleEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Yeni mekan ekle</Text>
+      <UstCubuk baslik="Yeni mekan ekle" geriEtiketi="Geri" />
       <TextInput style={stiller.girdi} placeholder="Mekan adı" value={ad} onChangeText={setAd} />
       <Text style={stiller.turBaslik}>Türü seç</Text>
       <View style={stiller.turIzgara}>
@@ -123,29 +124,92 @@ export default function MekanEkleEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  turBaslik: { fontSize: 13, color: '#6E6660', marginBottom: 8, marginTop: 4 },
-  turIzgara: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
+  },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.l,
+  },
+  girdi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 14,
+    marginBottom: bosluk.m,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  buton: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  butonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
+  turBaslik: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.s,
+    marginTop: bosluk.xs,
+  },
+  turIzgara: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s, marginBottom: bosluk.m },
   turCipi: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#EFEAE5',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.hap,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: bosluk.m,
   },
   turCipiSecili: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
-  turCipiYazi: { fontSize: 13, color: '#6E6660' },
-  turCipiYaziSecili: { color: '#FFFFFF', fontWeight: '600' },
-  kapsayici: { flex: 1, padding: 24, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  benzerKutu: { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, marginBottom: 12 },
-  benzerBaslik: { fontWeight: '600', marginBottom: 6 },
-  benzerMekan: { color: '#0645ad', paddingVertical: 4 },
-  hata: { color: '#c00', marginBottom: 12 },
-  buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
-  butonYazi: { color: '#fff', fontWeight: '600' },
+  turCipiYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  turCipiYaziSecili: { fontFamily: yazi.govdeKalin, color: '#FFFFFF' },
+  benzerKutu: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    marginBottom: bosluk.m,
+  },
+  benzerBaslik: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
+    marginBottom: bosluk.xs,
+  },
+  benzerMekan: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metin,
+    paddingVertical: bosluk.xs,
+  },
 })

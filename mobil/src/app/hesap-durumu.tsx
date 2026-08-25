@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useOturum } from '../../lib/oturum'
 import { supabase } from '../../lib/supabase'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 
 // Bu ekran YALNIZCA moderasyon kararlari icindir. Dondurulmus hesap
 // buraya hic dusmez: giris sirasinda otomatik geri acilir (karar 66).
@@ -49,26 +50,61 @@ export default function HesapDurumuEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, gap: 12, justifyContent: 'center' },
-  baslik: { fontSize: 20, fontWeight: '600' },
-  metin: { fontSize: 15 },
-  ipucu: { fontSize: 13, opacity: 0.7, marginTop: 8 },
-  hataMetni: { fontSize: 13, color: '#c0392b' },
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    padding: bosluk.xl,
+    gap: bosluk.m,
+    justifyContent: 'center',
+  },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+  },
+  metin: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: renk.metinIkincil,
+  },
+  ipucu: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 19,
+    color: renk.metinSoluk,
+    marginTop: bosluk.s,
+  },
+  hataMetni: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
   buton: {
-    marginTop: 8,
-    padding: 14,
-    borderRadius: 8,
-    backgroundColor: '#333',
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
     alignItems: 'center',
+    marginTop: bosluk.s,
   },
-  butonMetni: { color: 'white', fontWeight: '600' },
+  butonMetni: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
   ikincilButon: {
-    marginTop: 24,
-    padding: 14,
-    borderRadius: 8,
+    backgroundColor: renk.yuzey,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 14,
     alignItems: 'center',
+    marginTop: bosluk.xl,
   },
-  ikincilButonMetni: { color: '#333', fontWeight: '600' },
+  ikincilButonMetni: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
 })

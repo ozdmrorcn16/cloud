@@ -14,6 +14,8 @@ import {
 import { engelle } from '../../lib/engelleme'
 import type { BagKisi } from '../../lib/bag'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { UstCubuk } from '../tasarim/UstCubuk'
 
 export default function BaglarEkrani() {
   const [gelenTakip, setGelenTakip] = useState<BagKisi[]>([])
@@ -135,7 +137,9 @@ export default function BaglarEkrani() {
     // Boylece dis kaydirma tek elden yonetiliyor, ic listeler kendi
     // icinde kaydirmaya calismiyor. (Takip karsilikli olunca "Takip
     // ettiklerim" listesi kaldirildi, simdi dort FlatList var.)
-    <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
+    <View style={stiller.kok}>
+      <UstCubuk baslik="Bağlar" geriEtiketi="Geri" />
+      <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
@@ -245,34 +249,110 @@ export default function BaglarEkrani() {
         )}
         ListEmptyComponent={<Text style={stiller.bosDurum}>Henüz takipçin yok</Text>}
       />
-    </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
+  kapsayici: { flex: 1, padding: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
+  kok: { flex: 1, backgroundColor: renk.zemin },
   kaydirici: { flex: 1 },
-  icerik: { padding: 16 },
-  bolumBaslik: { fontSize: 18, fontWeight: '600', marginTop: 20, marginBottom: 4 },
-  altBaslik: { fontSize: 15, fontWeight: '600', marginTop: 12, marginBottom: 4, color: '#555' },
-  aciklama: { color: '#555', marginBottom: 8 },
+  icerik: {
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
+  },
+
+  bolumBaslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+    marginTop: bosluk.xl,
+    marginBottom: bosluk.xs,
+  },
+  altBaslik: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: bosluk.l,
+    marginBottom: bosluk.xs,
+  },
+  aciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.s,
+  },
+
   satir: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: renk.cizgi,
   },
   kisiBilgisi: { flexShrink: 1 },
-  kullaniciAdi: { fontSize: 16, fontWeight: '600' },
-  ad: { color: '#555' },
-  butonlar: { flexDirection: 'row', gap: 8 },
-  kucukButon: { borderWidth: 1, borderColor: '#0645ad', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 },
-  kucukButonYazi: { color: '#0645ad', fontWeight: '600', fontSize: 13 },
-  kucukTehlikeliButon: { borderWidth: 1, borderColor: '#c00', borderRadius: 6, paddingVertical: 6, paddingHorizontal: 10 },
-  kucukTehlikeliButonYazi: { color: '#c00', fontWeight: '600', fontSize: 13 },
-  bosDurum: { color: '#666', paddingVertical: 8 },
-  durum: { color: '#666', marginTop: 24, textAlign: 'center' },
-  hata: { color: '#c00', marginBottom: 12 },
+  kullaniciAdi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  ad: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 1,
+  },
+
+  butonlar: { flexDirection: 'row', gap: bosluk.s },
+  kucukButon: {
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 7,
+    paddingHorizontal: bosluk.m,
+  },
+  kucukButonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.metin,
+  },
+  kucukTehlikeliButon: {
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 7,
+    paddingHorizontal: bosluk.m,
+  },
+  kucukTehlikeliButonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: '#C0392B',
+  },
+
+  bosDurum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    paddingVertical: bosluk.s,
+  },
+  durum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: bosluk.xl,
+    textAlign: 'center',
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
 })

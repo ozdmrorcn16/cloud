@@ -3,6 +3,8 @@ import { View, Text, FlatList, Pressable, Linking, StyleSheet } from 'react-nati
 import { supabase } from '../../../lib/supabase'
 import { kullanicininAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/checkin'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { UstCubuk } from '../../tasarim/UstCubuk'
 
 export default function AnilarEkrani() {
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
@@ -35,7 +37,7 @@ export default function AnilarEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Anılarım</Text>
+      <UstCubuk baslik="Anılarım" geriEtiketi="Geri" />
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <FlatList
         data={anilar}
@@ -58,15 +60,55 @@ export default function AnilarEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
-  satir: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee',
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
   },
-  mekanAdi: { fontSize: 16, fontWeight: '600', color: '#0645ad' },
-  not: { color: '#555', marginTop: 2 },
-  silButonu: { color: '#c00' },
-  hata: { color: '#c00', marginBottom: 12 },
-  durum: { color: '#666', marginTop: 24, textAlign: 'center' },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.l,
+  },
+  satir: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
+  mekanAdi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  not: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 2,
+  },
+  silButonu: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
+  durum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: bosluk.xl,
+    textAlign: 'center',
+  },
 })

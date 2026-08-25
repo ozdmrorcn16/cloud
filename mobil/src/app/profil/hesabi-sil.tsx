@@ -4,6 +4,8 @@ import { router } from 'expo-router'
 import { hesabiSil } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { UstCubuk } from '../../tasarim/UstCubuk'
 
 // Spec karar 67: bekleme suresi YOK, koruma parola dogrulamasi.
 // Dondurma alternatifi ayni ekranda sunuluyor cunku "kararsizim"
@@ -44,7 +46,7 @@ export default function HesabiSilEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Hesabını sil</Text>
+      <UstCubuk baslik="Hesabını sil" geriEtiketi="Geri" />
       <Text style={stiller.metin}>
         Geri donusu yok. Yeniden gelmek istersen sifirdan hesap acman
         gerekir.
@@ -82,21 +84,70 @@ export default function HesabiSilEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, gap: 12, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 20, fontWeight: '600' },
-  metin: { fontSize: 15 },
-  ipucu: { fontSize: 13, opacity: 0.7 },
-  etiket: { fontSize: 14, marginTop: 16 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12 },
-  hata: { color: '#b00020' },
-  ikincilButon: { padding: 12, alignItems: 'center' },
-  ikincilButonMetni: { fontWeight: '600' },
-  tehlikeButonu: {
-    marginTop: 8,
-    padding: 14,
-    borderRadius: 8,
-    backgroundColor: '#b00020',
-    alignItems: 'center',
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    padding: bosluk.xl,
+    gap: bosluk.m,
+    paddingBottom: ALT_GEZINME_PAYI,
   },
-  tehlikeButonMetni: { color: 'white', fontWeight: '600' },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+  },
+  metin: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: renk.metinIkincil,
+  },
+  ipucu: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 19,
+    color: renk.metinSoluk,
+  },
+  etiket: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: bosluk.l,
+  },
+  girdi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 14,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
+  ikincilButon: { paddingVertical: bosluk.m, alignItems: 'center' },
+  ikincilButonMetni: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  // Silme geri alinamaz: uygulamadaki tek kirmizi zemin burada, bilerek.
+  tehlikeButonu: {
+    backgroundColor: '#C0392B',
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: bosluk.s,
+  },
+  tehlikeButonMetni: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
 })

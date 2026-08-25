@@ -1,5 +1,7 @@
 import { ScrollView, Text, View, StyleSheet } from 'react-native'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { UstCubuk } from '../tasarim/UstCubuk'
 
 // Kaynak metin: docs/gizlilik-metni.md. Icerik uzak bir kaynaktan
 // CEKILMEZ, kod icinde sabit tutulur - gizlilik metni ag baglantisi
@@ -93,7 +95,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
 export default function GizlilikEkrani() {
   return (
     <ScrollView style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
-      <Text style={stiller.baslik}>Gizlilik metni</Text>
+      <UstCubuk baslik="Gizlilik metni" geriEtiketi="Geri" />
       {BOLUMLER.map((bolum) => (
         <View key={bolum.baslik} style={stiller.bolum}>
           <Text style={stiller.bolumBasligi}>{bolum.baslik}</Text>
@@ -109,10 +111,30 @@ export default function GizlilikEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kaydirici: { flex: 1 },
-  icerik: { padding: 24, gap: 8, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 22, fontWeight: '600', marginBottom: 8 },
-  bolum: { marginTop: 16, gap: 6 },
-  bolumBasligi: { fontSize: 16, fontWeight: '600' },
-  paragraf: { fontSize: 14, lineHeight: 20 },
+  kaydirici: { flex: 1, backgroundColor: renk.zemin },
+  icerik: {
+    paddingHorizontal: bosluk.xl,
+    gap: bosluk.s,
+    paddingBottom: ALT_GEZINME_PAYI,
+  },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.s,
+  },
+  bolum: { marginTop: bosluk.l, gap: bosluk.xs },
+  bolumBasligi: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+  },
+  paragraf: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 23,
+    color: renk.metinIkincil,
+  },
 })

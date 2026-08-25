@@ -8,13 +8,26 @@ jest.mock('../../../lib/checkin', () => ({
   mekanAnilariniGetir: jest.fn(),
   checkIndenAyril: jest.fn(),
 }))
+jest.mock('../../../lib/mekan', () => ({
+  ...jest.requireActual('../../../lib/mekan'),
+  mekaniGetir: jest.fn().mockResolvedValue({
+    id: 'mekan-1',
+    ad: 'Sahil Kafe',
+    tur: 'Kafe',
+    semt: 'Nilüfer',
+    kaynak: 'overture',
+    adres: null,
+    osmId: null,
+    konum: { lat: 40, lng: 29 },
+  }),
+}))
 jest.mock('../../../lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) } },
 }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, back: jest.fn() }),
   useLocalSearchParams: () => ({ id: 'mekan-1' }),
 }))
 

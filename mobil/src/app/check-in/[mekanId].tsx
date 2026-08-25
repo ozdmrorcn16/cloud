@@ -9,6 +9,8 @@ import { checkInYap, type Bulunurluk } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { UstCubuk } from '../../tasarim/UstCubuk'
 
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
@@ -132,7 +134,7 @@ export default function CheckInEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Yeni check-in</Text>
+      <UstCubuk baslik="Yeni check-in" geriEtiketi="Geri" />
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
         placeholder="Bir not ekle (opsiyonel)"
@@ -176,25 +178,114 @@ export default function CheckInEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, paddingBottom: ALT_GEZINME_PAYI },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  cokSatirli: { minHeight: 80, textAlignVertical: 'top' },
-  fotoButonu: { padding: 12, alignItems: 'center', marginBottom: 12 },
-  fotoButonuYazi: { color: '#0645ad' },
-  altBaslik: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  secenek: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 8,
+  kapsayici: {
+    flex: 1,
+    backgroundColor: renk.zemin,
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
   },
-  secenekSecili: { borderColor: '#111', backgroundColor: '#f2f2f2' },
-  secenekEtiketi: { fontSize: 16, fontWeight: '600' },
-  secenekAciklamasi: { fontSize: 13, color: '#666', marginTop: 2 },
-  uyariMetni: { fontSize: 16, lineHeight: 24, marginBottom: 32 },
-  ikincilButon: { padding: 14, alignItems: 'center', marginTop: 12 },
-  ikincilButonYazi: { color: '#0645ad', fontWeight: '600' },
-  onizleme: { width: '100%', height: 180, borderRadius: 8, marginBottom: 12 },
-  uyari: { color: '#a60', marginBottom: 12 },
-  hata: { color: '#c00', marginBottom: 12 },
-  buton: { backgroundColor: '#111', borderRadius: 8, padding: 14, alignItems: 'center' },
-  butonYazi: { color: '#fff', fontWeight: '600' },
+  baslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+    marginBottom: bosluk.l,
+  },
+  girdi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 14,
+    marginBottom: bosluk.m,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  buton: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  butonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginBottom: bosluk.m,
+  },
+  cokSatirli: { minHeight: 90, textAlignVertical: 'top' },
+  fotoButonu: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: bosluk.m,
+  },
+  fotoButonuYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
+  },
+  altBaslik: {
+    fontFamily: yazi.baslik,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+    marginBottom: bosluk.s,
+  },
+  secenek: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    marginBottom: bosluk.s,
+  },
+  secenekSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
+  secenekEtiketi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  secenekAciklamasi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 2,
+  },
+  uyariMetni: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 23,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.xxl,
+  },
+  ikincilButon: { paddingVertical: 14, alignItems: 'center', marginTop: bosluk.m },
+  ikincilButonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
+  },
+  onizleme: {
+    width: '100%',
+    height: 200,
+    borderRadius: yuvarlak.kart,
+    marginBottom: bosluk.m,
+    backgroundColor: renk.cizgi,
+  },
+  uyari: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuKoyu,
+    marginBottom: bosluk.m,
+  },
 })
