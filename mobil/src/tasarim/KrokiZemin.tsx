@@ -1,23 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated, Easing, Image, StyleSheet, View } from 'react-native'
+import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native'
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg'
 import { renk } from './tema'
 
 /**
  * Acilis ekraninin arka plani: bir kroki (basitlestirilmis harita),
  * ustunde check-in ignesi, nabiz gibi atan halkalar ve cevresinde
- * gercek insan fotograflari.
+ * insan ikonlari.
  *
  * Kullanicinin kararlari (2026-08-25):
  *   - "komple acilis sayfasinin arka planini kapsayan bir harita kroki
  *      gibi birsey, uzerinde check-in ikonlari ve insani temsil eden
  *      gorseller"
- *   - ince ayar: "kroki daha belirgin, insan siluetleri gercek
- *      fotograf, halkalar nabiz gibi atsin"
+ *   - "kroki daha belirgin, halkalar nabiz gibi atsin"
+ *   - gercek fotograf DENENDI VE IPTAL EDILDI: "gercek insan yuzu
+ *     olmasin, ozellikle nabiz gibi atan check-in'in yakininda daha
+ *     cok insan ikonu olsun, cevresinde de bazi yerlerde olsun"
  *
- * Kroki CIZIM, fotograf degil: uzerine metin biniyor ve fotografta
- * metni okutmak icin karartma gerekir; karartma da acik kimligi bozar.
- * Insanlar ise fotograf, cunku uygulamanin vaadi gercek insanlar.
+ * Her sey CIZIM: uzerine metin biniyor ve fotografta metni okutmak
+ * icin karartma gerekir; karartma da acik kimligi bozar. Insanlar da
+ * ikon - gercek yuz denendi, kullanici istemedi.
  *
  * HAREKET TEK YERDE: yalnizca halkalar atiyor. Cihazda "hareketi azalt"
  * aciksa hic atmiyor, halkalar sabit duruyor.
@@ -31,15 +33,23 @@ const BOY = 844
 const MERKEZ = { x: 196, y: 626 }
 
 /**
- * Insan fotograflari. Konumlar rastgele degil: marka kilidinin iki yani
- * ve ozellik listesiyle butonlar arasindaki bos bant. Ilk denemede
- * ozellik satirlarinin uzerine biniyorlardi.
+ * Insan ikonlari. Konumlar rastgele degil: hicbiri metnin uzerine
+ * gelmiyor (ilk denemede ozellik satirlarinin uzerine biniyorlardi) ve
+ * kalabalik bilerek nabzin cevresinde topluyor.
  */
 const KISILER = [
-  { x: 46, y: 150, r: 26, kaynak: require('../../assets/images/kroki-yuz-1.jpg') },
-  { x: 344, y: 186, r: 23, kaynak: require('../../assets/images/kroki-yuz-3.jpg') },
-  { x: 56, y: 596, r: 25, kaynak: require('../../assets/images/kroki-yuz-2.jpg') },
-  { x: 334, y: 578, r: 27, kaynak: require('../../assets/images/kroki-yuz-5.jpg') },
+  // Nabzin cevresinde YOGUN: "su an burada insanlar var" demek icin
+  // kalabalik tam ignenin etrafinda toplaniyor.
+  { x: 112, y: 596, r: 20 },
+  { x: 280, y: 592, r: 18 },
+  { x: 78, y: 664, r: 16 },
+  { x: 312, y: 668, r: 17 },
+  { x: 196, y: 688, r: 15 },
+  // Cevrede seyrek: sehrin geri kalaninda da insanlar var.
+  { x: 44, y: 152, r: 21 },
+  { x: 346, y: 188, r: 18 },
+  { x: 62, y: 64, r: 15 },
+  { x: 324, y: 74, r: 13 },
 ]
 
 /** Krokideki ikincil check-in igneleri - metnin ustune binmeyen yerler. */
@@ -53,6 +63,21 @@ const HALKA_SURESI = 2800
 const HALKA_ADEDI = 3
 /** Nabzin en genis hali - merkezden yaricap (tuval birimi). */
 const HALKA_YARICAP = 150
+
+/** Insan ikonu: turuncu cerceveli daire icinde sade bir siluet. */
+function Kisi({ x, y, r }: { x: number; y: number; r: number }) {
+  const o = r / 22
+  return (
+    <G>
+      <Circle cx={x} cy={y} r={r} fill={renk.yuzey} stroke={renk.turuncu} strokeWidth={2} />
+      <Circle cx={x} cy={y - 4 * o} r={6 * o} fill={renk.turuncu} />
+      <Path
+        d={`M${x - 10 * o} ${y + 13 * o}c0-6 4.5-9.5 10-9.5s10 3.5 10 9.5z`}
+        fill={renk.turuncu}
+      />
+    </G>
+  )
+}
 
 function Igne({ x, y, olcek }: { x: number; y: number; olcek: number }) {
   return (
@@ -168,7 +193,12 @@ export function KrokiZemin() {
           <Igne key={i} {...igne} />
         ))}
 
-        {/* Merkezdeki check-in ignesi: krokinin odagi. */}
+        {KISILER.map((kisi, i) => (
+          <Kisi key={i} {...kisi} />
+        ))}
+
+        {/* Merkezdeki check-in ignesi: krokinin odagi, insanlarin
+            ortasinda duruyor. */}
         <Igne x={MERKEZ.x} y={MERKEZ.y + 26} olcek={1.5} />
       </Svg>
 
@@ -194,24 +224,6 @@ export function KrokiZemin() {
         ))}
       </View>
 
-      {KISILER.map((kisi, i) => (
-        <Image
-          key={i}
-          source={kisi.kaynak}
-          style={[
-            stiller.yuz,
-            {
-              left: `${((kisi.x - kisi.r) / EN) * 100}%`,
-              top: `${((kisi.y - kisi.r) / BOY) * 100}%`,
-              width: kisi.r * 2,
-              height: kisi.r * 2,
-              borderRadius: kisi.r,
-            },
-          ]}
-          accessibilityRole="image"
-          accessibilityLabel=""
-        />
-      ))}
     </View>
   )
 }
@@ -227,10 +239,4 @@ const stiller = StyleSheet.create({
     backgroundColor: renk.turuncu,
   },
   halkaSabit: { opacity: 0.14, transform: [{ scale: 0.7 }] },
-  yuz: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: renk.turuncu,
-    backgroundColor: renk.yuzey,
-  },
 })
