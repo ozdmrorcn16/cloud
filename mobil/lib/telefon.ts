@@ -12,3 +12,17 @@ export function eFormatinaCevir(girilenNumara: string): string | null {
   }
   return null
 }
+
+/**
+ * E.164 numarayi EKRANDA okunacak hale getirir:
+ *   +905551234567  ->  0555 123 45 67
+ *
+ * Dogrulama ekraninda ham +90 bicimi gosteriliyordu; kullanici kendi
+ * numarasini o bicimde tanimiyor.
+ */
+export function okunurBicim(eFormatli: string): string {
+  const rakamlar = eFormatli.replace(/\D/g, '')
+  const yerel = rakamlar.startsWith('90') ? rakamlar.slice(2) : rakamlar
+  if (yerel.length !== 10) return eFormatli
+  return `0${yerel.slice(0, 3)} ${yerel.slice(3, 6)} ${yerel.slice(6, 8)} ${yerel.slice(8)}`
+}

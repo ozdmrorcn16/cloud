@@ -1,4 +1,4 @@
-import { eFormatinaCevir } from './telefon'
+import { eFormatinaCevir, okunurBicim } from './telefon'
 
 describe('eFormatinaCevir', () => {
   it('basinda 0 olan 11 haneli numarayi +90 formatina cevirir', () => {
@@ -19,5 +19,15 @@ describe('eFormatinaCevir', () => {
 
   it('zaten +90 ile baslayan numarayi oldugu gibi kabul eder', () => {
     expect(eFormatinaCevir('+905551234567')).toBe('+905551234567')
+  })
+})
+
+describe('okunurBicim', () => {
+  it('e.164 numarayi ekranda okunur hale getirir', () => {
+    expect(okunurBicim('+905551234567')).toBe('0555 123 45 67')
+  })
+
+  it('beklenmeyen bicimi oldugu gibi birakir', () => {
+    expect(okunurBicim('+1202555')).toBe('+1202555')
   })
 })

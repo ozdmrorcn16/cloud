@@ -209,6 +209,20 @@ export default {
     profilOlustur: 'Profilini oluştur',
   },
 
+  dogrula: {
+    geri: 'Geri',
+    baslik: 'Telefonunu doğrula',
+    aciklama: '{{telefon}} numarasına 6 haneli bir kod gönderdik.',
+    kodEtiketi: 'Doğrulama kodu',
+    gonder: 'Doğrula',
+    gonderiliyor: 'Doğrulanıyor…',
+    kodGelmedi: 'Kod gelmedi mi?',
+    tekrarGonder: 'Tekrar gönder',
+    tekrarBekle: '{{saniye}} sn sonra tekrar gönderebilirsin',
+    tekrarGonderildi: 'Yeni kod gönderildi.',
+    hataEksik: 'Kodu eksiksiz gir.',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',
