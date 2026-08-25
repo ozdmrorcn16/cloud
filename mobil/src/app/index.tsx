@@ -3,11 +3,10 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
-import { konusmalarimiGetir } from '../../lib/sohbet'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 const DAKIKA = 60 * 1000
 const SAAT = 60 * DAKIKA
@@ -65,7 +64,6 @@ export default function AnaSayfa() {
   const router = useRouter()
   const { t } = useDil()
   const [ogeler, setOgeler] = useState<AkisOgesi[]>([])
-  const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [yenileniyor, setYenileniyor] = useState(false)
@@ -86,11 +84,6 @@ export default function AnaSayfa() {
   useFocusEffect(
     useCallback(() => {
       yukle()
-      konusmalarimiGetir()
-        .then((konusmalar) =>
-          setOkunmamisMesaj(konusmalar.reduce((toplam, k) => toplam + k.okunmamis, 0))
-        )
-        .catch(() => setOkunmamisMesaj(0))
     }, [])
   )
 
@@ -197,7 +190,6 @@ export default function AnaSayfa() {
         }
       />
 
-      <AltGezinme okunmamisMesaj={okunmamisMesaj} />
     </View>
   )
 }

@@ -8,6 +8,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
@@ -175,7 +176,7 @@ export default function CheckInEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24 },
+  kapsayici: { flex: 1, padding: 24, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
   cokSatirli: { minHeight: 80, textAlignVertical: 'top' },

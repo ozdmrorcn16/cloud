@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
 import { supabase } from '../../../lib/supabase'
 import { kullanicininAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/checkin'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 export default function AnilarEkrani() {
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
@@ -57,7 +58,7 @@ export default function AnilarEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
   satir: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

@@ -9,7 +9,7 @@ import {
 } from '../../../lib/engelleme'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 function GeriIkonu() {
   return (
@@ -125,7 +125,6 @@ export default function EngellenenlerEkrani() {
         }
       />
 
-      <AltGezinme />
     </View>
   )
 }

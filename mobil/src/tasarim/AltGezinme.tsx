@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter, usePathname } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
+import { konusmalarimiGetir } from '../../lib/sohbet'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
 
 /**
@@ -126,9 +128,29 @@ const SEKMELER: Sekme[] = [
   },
 ]
 
-export function AltGezinme({ okunmamisMesaj = 0 }: { okunmamisMesaj?: number }) {
+export function AltGezinme() {
   const router = useRouter()
   const yol = usePathname()
+  const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
+
+  // Rozet cubugun kendi isi: cubuk artik her ekranda duruyor (kullanicinin
+  // karari 2026-08-25), dolayisiyla sayiyi tek tek ekranlardan prop olarak
+  // gecirmek hem tekrar hem de eksik kalma riski demekti. Yol her
+  // degistiginde tazeleniyor; bir konusma okununca kullanici zaten baska
+  // bir yola gidiyor.
+  useEffect(() => {
+    let iptal = false
+    konusmalarimiGetir()
+      .then((konusmalar) => {
+        if (!iptal) setOkunmamisMesaj(konusmalar.reduce((t, k) => t + k.okunmamis, 0))
+      })
+      .catch(() => {
+        if (!iptal) setOkunmamisMesaj(0)
+      })
+    return () => {
+      iptal = true
+    }
+  }, [yol])
 
   return (
     <View style={stiller.kapsayici} pointerEvents="box-none">

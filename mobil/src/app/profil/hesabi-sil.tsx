@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { router } from 'expo-router'
 import { hesabiSil } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 // Spec karar 67: bekleme suresi YOK, koruma parola dogrulamasi.
 // Dondurma alternatifi ayni ekranda sunuluyor cunku "kararsizim"
@@ -81,7 +82,7 @@ export default function HesabiSilEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 24, gap: 12 },
+  kapsayici: { flex: 1, padding: 24, gap: 12, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 20, fontWeight: '600' },
   metin: { fontSize: 15 },
   ipucu: { fontSize: 13, opacity: 0.7 },

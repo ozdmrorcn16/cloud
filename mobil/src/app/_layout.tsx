@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { View, StyleSheet } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import {
   useFonts,
@@ -14,6 +15,7 @@ import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
 import { ilkAcilisGosterildiMi } from '../../lib/ilk-acilis'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
+import { AltGezinme } from '../tasarim/AltGezinme'
 
 /**
  * Dil tercihi cihazdan okunana kadar ekran cizilmiyor. Yazi tipleriyle
@@ -81,8 +83,32 @@ function YonlendirmeKontrolu() {
     }
   }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments, ilkAcilisBitti])
 
-  return <Slot />
+  // Alt gezinme cubugu HER ekranda duruyor (kullanicinin karari
+  // 2026-08-25: "hangi sayfaya girilirse girilsin alttaki sutun sabit
+  // kalacak"). Bu yuzden tek tek ekranlara degil, koke konuyor.
+  //
+  // Uygulamaya girilmemis durumlar disarida: giris/kayit ekranlari,
+  // profil olusturma ve askidaki hesap ekrani. Oralarda cubuk gorunse
+  // bile her dokunus yonlendirme kontrolu tarafindan geri alinirdi.
+  const uygulamaIcinde =
+    !!oturum &&
+    profilVarMi === true &&
+    !hesapDurumu &&
+    segments[0] !== '(auth)' &&
+    segments[0] !== 'profil-olustur' &&
+    segments[0] !== 'hesap-durumu'
+
+  return (
+    <View style={stiller.kok}>
+      <Slot />
+      {uygulamaIcinde && <AltGezinme />}
+    </View>
+  )
 }
+
+const stiller = StyleSheet.create({
+  kok: { flex: 1 },
+})
 
 export default function KokLayout() {
   // Marka yazi tipleri (karar 73). Yuklenmeden once ekran cizilmez:

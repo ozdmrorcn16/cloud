@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
 import { renk } from '../../tasarim/tema'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 // Tur SERBEST METIN DEGIL, listeden secilir.
 //
@@ -138,7 +139,7 @@ const stiller = StyleSheet.create({
   turCipiSecili: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
   turCipiYazi: { fontSize: 13, color: '#6E6660' },
   turCipiYaziSecili: { color: '#FFFFFF', fontWeight: '600' },
-  kapsayici: { flex: 1, padding: 24 },
+  kapsayici: { flex: 1, padding: 24, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 24 },
   girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
   benzerKutu: { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, marginBottom: 12 },

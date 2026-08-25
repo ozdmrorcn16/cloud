@@ -5,7 +5,7 @@ import { kisiAra, type KisiSonucu } from '../../lib/kisi-ara'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 type SatirVerisi = KisiSonucu & { fotografUrl: string | null }
 
@@ -120,7 +120,6 @@ export default function KisilerEkrani() {
         />
       </View>
 
-      <AltGezinme />
     </View>
   )
 }

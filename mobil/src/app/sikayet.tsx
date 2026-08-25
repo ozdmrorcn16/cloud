@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { sikayetGonder, SIKAYET_SEBEPLERI, type SikayetHedefTuru } from '../../lib/sikayet'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 export default function SikayetEkrani() {
   const router = useRouter()
@@ -89,7 +90,7 @@ export default function SikayetEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
   baglamBildirimi: { fontSize: 13, color: '#666', marginBottom: 12 },
   sebepSatiri: {

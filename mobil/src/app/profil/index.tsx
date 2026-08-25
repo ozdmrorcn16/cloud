@@ -14,7 +14,7 @@ import {
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 /** Anilar bolumunde kac satir onizlenir. Tamami ayri ekranda. */
 const ONIZLEME_ADEDI = 3
@@ -270,7 +270,6 @@ export default function ProfilEkrani() {
         )}
       </ScrollView>
 
-      <AltGezinme />
     </View>
   )
 }

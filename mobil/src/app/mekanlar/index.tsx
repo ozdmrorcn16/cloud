@@ -18,7 +18,7 @@ import {
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 const YARICAP_SECENEKLERI = [
   { etiket: '1 km', metre: 1000 },
@@ -312,7 +312,6 @@ export default function KesfetEkrani() {
         Mekan verileri: Overture Maps Foundation ve katkıda bulunanlar
       </Text>
     </ScrollView>
-      <AltGezinme />
     </View>
   )
 }

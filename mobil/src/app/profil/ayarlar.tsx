@@ -1,107 +1,79 @@
-import { useEffect, useState } from 'react'
-import { View, Text, Switch, Pressable, TextInput, ScrollView, StyleSheet } from 'react-native'
+import { useCallback, useState } from 'react'
+import { View, Switch, ScrollView, StyleSheet, Text } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
 import {
   varsayilanBulunurluguGetir,
-  varsayilanBulunurluguAyarla,
-  aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
-import type { Bulunurluk, AniGorunurlugu } from '../../../lib/checkin'
-import {
-  KULLANICI_ADI_KURALI,
-  kullaniciAdiGecerliMi,
-  kullaniciAdiniNormallestir,
-  kullaniciAdiniDegistir,
-} from '../../../lib/kullanici-adi'
-import { router } from 'expo-router'
+import type { Bulunurluk } from '../../../lib/checkin'
 import { hesabiDondur } from '../../../lib/hesap'
 import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
+import { useDil } from '../../../lib/dil'
+import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
+import { UstCubuk } from '../../tasarim/UstCubuk'
+import { Bolum, Satir } from '../../tasarim/Liste'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import {
+  KisiIkonu,
+  BelgeIkonu,
+  EngelIkonu,
+  KonumIkonu,
+  GozIkonu,
+  AramaIkonu,
+  DurdurIkonu,
+  CopIkonu,
+  CikisIkonu,
+} from '../../tasarim/ayar-ikonlari'
 
-const VARSAYILAN_SECENEKLERI: { deger: Bulunurluk; etiket: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkese açık' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim' },
-  { deger: 'gizli', etiket: 'Gizli' },
-]
-
-const ANI_GORUNURLUK_SECENEKLERI: { deger: AniGorunurlugu; etiket: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkes görsün' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim görsün' },
-  { deger: 'kimse', etiket: 'Kimse görmesin' },
-]
-
-function tarihiBicimlendir(tarih: Date): string {
-  const gun = String(tarih.getDate()).padStart(2, '0')
-  const ay = String(tarih.getMonth() + 1).padStart(2, '0')
-  const yil = tarih.getFullYear()
-  return `${gun}.${ay}.${yil}`
-}
-
+/**
+ * Ayarlar.
+ *
+ * Kullanicinin karari (2026-08-25): duzen Instagram ayarlarindaki gibi
+ * gruplanmis satirlar olsun. Onceki hali serbest yerlesimli dugmeler
+ * yiginiydi; kullanici adi girdisi, gorunurluk cipleri ve hesap
+ * eylemleri ayni duzlemde duruyordu.
+ *
+ * Deger secen iki ayar (check-in gorunurlugu ve ani gorunurlugu) kendi
+ * ekranlarina tasindi. Sebep yalnizca duzen degil: ikisinin de bir
+ * aciklamasi var ve o aciklama satir icinde okunmuyordu. Kullanici adi
+ * da ayri bir ekrana gitti - metin girdisi olan bir alan, liste
+ * satirinin icinde durmamali (klavye acilinca liste kayiyor).
+ */
 export default function AyarlarEkrani() {
-  const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk>('herkese_acik')
-  // Bu bir sunucudan gelen kalici tercih degil (RPC her cagrildiginda
-  // butun anilara uygulanan toplu bir eylem) - son basarili secimi
-  // gostermek icin yalnizca yerel. Baslangicta null: henuz hicbir secim
-  // yapilmadi, hicbir cip secili gorunmemeli.
-  const [aniGorunurluk, setAniGorunurluk] = useState<AniGorunurlugu | null>(null)
-  const [hata, setHata] = useState<string | null>(null)
-  const [yeniKullaniciAdi, setYeniKullaniciAdi] = useState('')
-  const [kullaniciAdiSonucu, setKullaniciAdiSonucu] = useState<string | null>(null)
+  const { t } = useDil()
+  const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
-  const [kullaniciAdiDurumu, setKullaniciAdiDurumu] = useState<{
-    kullaniciAdi: string
-    sonrakiDegisimTarihi: Date | null
-  } | null>(null)
+  const [kullaniciAdi, setKullaniciAdi] = useState<string | null>(null)
+  const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
 
-  async function cikisYap() {
-    // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
-    // kullaniciya ait bildirimler bu cihaza dusmesin. Hata yutulur,
-    // cikisi bloklamaz.
-    await bildirimJetonunuSil()
-    await supabase.auth.signOut()
-  }
-
-  async function hesabiDondurmayiOnayla() {
-    try {
-      await hesabiDondur()
-      // Dondurmadan hemen sonra cikis: aksi halde kullanici dondurulmus
-      // ama girisli bir ara durumda kalirdi (spec karar 66).
-      await supabase.auth.signOut()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
-    } finally {
-      setDondurmaOnayi(false)
-    }
+  const BULUNURLUK_ETIKETI: Record<Bulunurluk, string> = {
+    herkese_acik: t('ayarlar.bulunurlukHerkeseAcik'),
+    takipcilerim: t('ayarlar.bulunurlukTakipcilerim'),
+    gizli: t('ayarlar.bulunurlukGizli'),
   }
 
   async function ayarlariYukle() {
     try {
       setVarsayilanBulunurluk(await varsayilanBulunurluguGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
-      setKullaniciAdiDurumu(await kullaniciAdiDurumunuGetir())
+      setKullaniciAdi((await kullaniciAdiDurumunuGetir()).kullaniciAdi)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
-  async function kullaniciAdiniGuncelle() {
-    const normal = kullaniciAdiniNormallestir(yeniKullaniciAdi)
-    if (!kullaniciAdiGecerliMi(normal)) {
-      setKullaniciAdiSonucu(KULLANICI_ADI_KURALI)
-      return
-    }
-    try {
-      await kullaniciAdiniDegistir(normal)
-      setKullaniciAdiSonucu('Kullanıcı adın güncellendi.')
-      setYeniKullaniciAdi('')
-    } catch (e) {
-      setKullaniciAdiSonucu(e instanceof Error ? e.message : 'Bir sorun oluştu')
-    }
-  }
+  // Alt ekranlardan (kullanici adi, gorunurluk) donunce satirdaki deger
+  // guncel olmali; useEffect yalnizca ilk acilista cekerdi.
+  useFocusEffect(
+    useCallback(() => {
+      ayarlariYukle()
+    }, [])
+  )
 
   async function aramadaGorunsunDegisti(deger: boolean) {
     const oncekiDeger = aramadaGorunsun
@@ -111,209 +83,175 @@ export default function AyarlarEkrani() {
       setHata(null)
     } catch (e) {
       setAramadaGorunsun(oncekiDeger)
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
-  useEffect(() => {
-    ayarlariYukle()
-  }, [])
-
-  async function varsayilanDegisti(deger: Bulunurluk) {
-    const onceki = varsayilanBulunurluk
-    setVarsayilanBulunurluk(deger)
+  async function hesabiDondurmayiOnayla() {
     try {
-      await varsayilanBulunurluguAyarla(deger)
-      setHata(null)
+      await hesabiDondur()
+      // Dondurmadan hemen sonra cikis: aksi halde kullanici dondurulmus
+      // ama girisli bir ara durumda kalirdi (spec karar 66).
+      await supabase.auth.signOut()
     } catch (e) {
-      setVarsayilanBulunurluk(onceki)
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    } finally {
+      setDondurmaOnayi(false)
     }
   }
 
-  async function aniGorunurluguDegistir(deger: AniGorunurlugu) {
-    const onceki = aniGorunurluk
-    setAniGorunurluk(deger)
-    try {
-      await aniGorunurlugunuAyarla(deger)
-      setHata(null)
-    } catch (e) {
-      setAniGorunurluk(onceki)
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
-    }
+  async function cikisYap() {
+    // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
+    // kullaniciya ait bildirimler bu cihaza dusmesin.
+    await bildirimJetonunuSil()
+    await supabase.auth.signOut()
   }
 
   return (
-    // Duzeltme turu 1 (Minor, kod incelemesi): kok eskiden `flex: 1`
-    // View'di ve alt tarafta bes bolum vardi - telefonda "Hesabimi sil"
-    // butonu ekranin en dibinde kalip kaydirilamayabiliyordu. ScrollView'a
-    // cevrildi.
-    <ScrollView style={stiller.kaydirici} contentContainerStyle={stiller.kapsayici}>
-      <Text style={stiller.baslik}>Gizlilik ayarları</Text>
-      {hata && <Text style={stiller.hata}>{hata}</Text>}
+    <View style={stiller.kok}>
+      <UstCubuk baslik={t('ayarlar.baslik')} geriEtiketi={t('ayarlar.geri')} />
 
-      <Text style={stiller.altBaslik}>Hesap</Text>
-      {kullaniciAdiDurumu && (
-        <Text style={stiller.ipucu}>Kullanıcı adın: @{kullaniciAdiDurumu.kullaniciAdi}</Text>
-      )}
-      {kullaniciAdiDurumu?.sonrakiDegisimTarihi &&
-        kullaniciAdiDurumu.sonrakiDegisimTarihi > new Date() && (
-          <Text style={stiller.ipucu}>
-            Tekrar degistirebilecegin tarih:{' '}
-            {tarihiBicimlendir(kullaniciAdiDurumu.sonrakiDegisimTarihi)}
-          </Text>
-        )}
-      <TextInput
-        style={stiller.girdi}
-        placeholder="Yeni kullanıcı adı"
-        autoCapitalize="none"
-        value={yeniKullaniciAdi}
-        onChangeText={setYeniKullaniciAdi}
-      />
-      <Pressable style={stiller.buton} onPress={kullaniciAdiniGuncelle}>
-        <Text style={stiller.butonMetni}>Kullanıcı adını değiştir</Text>
-      </Pressable>
-      {kullaniciAdiSonucu ? (
-        <Text style={stiller.ipucu}>{kullaniciAdiSonucu}</Text>
-      ) : (
-        <Text style={stiller.ipucu}>{KULLANICI_ADI_KURALI}</Text>
-      )}
+      <ScrollView contentContainerStyle={stiller.icerik} showsVerticalScrollIndicator={false}>
+        {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-      <Pressable style={stiller.buton} onPress={() => router.push('/gizlilik')}>
-        <Text style={stiller.butonMetni}>Gizlilik metni</Text>
-      </Pressable>
+        <Bolum baslik={t('ayarlar.bolumHesap')}>
+          <Satir
+            ikon={<KisiIkonu />}
+            etiket={t('ayarlar.kullaniciAdi')}
+            deger={kullaniciAdi ? `@${kullaniciAdi}` : undefined}
+            onPress={() => router.push('/profil/kullanici-adi')}
+          />
+          <Satir
+            ikon={<BelgeIkonu />}
+            etiket={t('ayarlar.gizlilikMetni')}
+            sonuncu
+            onPress={() => router.push('/gizlilik')}
+          />
+        </Bolum>
 
-      {/* Engelleme bu ekrandan once TEK YONLU bir kapiydi: engelleyebiliyordun
-          ama kimi engelledigini goremiyor, geri de alamiyordun
-          (kullanicinin istegi, 2026-08-25). */}
-      <Pressable style={stiller.buton} onPress={() => router.push('/profil/engellenenler')}>
-        <Text style={stiller.butonMetni}>Engellenenler</Text>
-      </Pressable>
+        <Bolum baslik={t('ayarlar.bolumGorunurluk')}>
+          <Satir
+            ikon={<KonumIkonu />}
+            etiket={t('ayarlar.checkInGorunurlugu')}
+            deger={varsayilanBulunurluk ? BULUNURLUK_ETIKETI[varsayilanBulunurluk] : undefined}
+            onPress={() => router.push('/profil/check-in-gorunurlugu')}
+          />
+          <Satir
+            ikon={<GozIkonu />}
+            etiket={t('ayarlar.aniGorunurlugu')}
+            onPress={() => router.push('/profil/ani-gorunurlugu')}
+          />
+          <Satir
+            ikon={<AramaIkonu />}
+            etiket={t('ayarlar.aramadaGorun')}
+            sonuncu
+            sagBilesen={
+              <Switch
+                accessibilityLabel={t('ayarlar.aramadaGorunEtiket')}
+                value={aramadaGorunsun}
+                onValueChange={aramadaGorunsunDegisti}
+                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
+                // Web'de varsayilan dugme yesil geliyor; kimlikte yesil yok.
+                thumbColor={renk.yuzey}
+              />
+            }
+          />
+        </Bolum>
 
-      <Text style={stiller.altBaslik}>Yeni check-in'lerim varsayılan olarak</Text>
-      <View style={stiller.butonSatiri}>
-        {VARSAYILAN_SECENEKLERI.map((secenek) => (
-          <Pressable
-            key={secenek.deger}
-            accessibilityLabel={`Varsayılan bulunurluk: ${secenek.deger}${
-              varsayilanBulunurluk === secenek.deger ? ', seçili' : ''
-            }`}
-            style={[
-              stiller.buton,
-              varsayilanBulunurluk === secenek.deger && stiller.butonSecili,
-            ]}
-            onPress={() => varsayilanDegisti(secenek.deger)}
-          >
-            <Text
-              style={[
-                stiller.butonMetni,
-                varsayilanBulunurluk === secenek.deger && stiller.butonMetniSecili,
-              ]}
-            >
-              {secenek.etiket}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+        <Bolum baslik={t('ayarlar.bolumKisiler')}>
+          {/* Engelleme bu satir eklenmeden once TEK YONLU bir kapiydi:
+              engelleyebiliyordun ama kimi engelledigini goremiyor, geri
+              de alamiyordun (kullanicinin istegi, 2026-08-25). */}
+          <Satir
+            ikon={<EngelIkonu />}
+            etiket={t('ayarlar.engellenenler')}
+            sonuncu
+            onPress={() => router.push('/profil/engellenenler')}
+          />
+        </Bolum>
 
-      <View style={stiller.satir}>
-        <Text style={stiller.etiket}>Beni aramada göster</Text>
-        <Switch
-          accessibilityLabel="Aramada görünürlük"
-          value={aramadaGorunsun}
-          onValueChange={aramadaGorunsunDegisti}
-        />
-      </View>
+        <Bolum baslik={t('ayarlar.bolumHesapIslemleri')}>
+          <Satir
+            ikon={<DurdurIkonu />}
+            etiket={t('ayarlar.dondur')}
+            okYok
+            onPress={() => setDondurmaOnayi(true)}
+          />
+          {dondurmaOnayi && (
+            <View style={stiller.onay}>
+              <Text style={stiller.onayMetni}>{t('ayarlar.dondurAciklama')}</Text>
+              <View style={stiller.onayButonlari}>
+                <Text
+                  style={stiller.onayEvet}
+                  accessibilityRole="button"
+                  onPress={hesabiDondurmayiOnayla}
+                >
+                  {t('ayarlar.dondurEvet')}
+                </Text>
+                <Text
+                  style={stiller.onayVazgec}
+                  accessibilityRole="button"
+                  onPress={() => setDondurmaOnayi(false)}
+                >
+                  {t('ayarlar.vazgec')}
+                </Text>
+              </View>
+            </View>
+          )}
+          <Satir
+            ikon={<CopIkonu />}
+            etiket={t('ayarlar.hesabiSil')}
+            tehlikeli
+            onPress={() => router.push('/profil/hesabi-sil')}
+          />
+          <Satir
+            ikon={<CikisIkonu />}
+            etiket={t('ayarlar.cikisYap')}
+            sonuncu
+            okYok
+            onPress={cikisYap}
+          />
+        </Bolum>
+      </ScrollView>
 
-      <Text style={stiller.altBaslik}>Bütün anılarımı kim görsün</Text>
-      <Text style={stiller.ipucu}>
-        Bu secim butun anilarina uygulanir, ama gizli check-in'den donusen anilar bu ayardan
-        etkilenmez ve kapali kalir.
-      </Text>
-      <View style={stiller.butonSatiri}>
-        {ANI_GORUNURLUK_SECENEKLERI.map((secenek) => (
-          <Pressable
-            key={secenek.deger}
-            accessibilityLabel={`Anı görünürlüğü: ${secenek.deger}${
-              aniGorunurluk === secenek.deger ? ', seçili' : ''
-            }`}
-            style={[
-              stiller.buton,
-              aniGorunurluk === secenek.deger && stiller.butonSecili,
-            ]}
-            onPress={() => aniGorunurluguDegistir(secenek.deger)}
-          >
-            <Text
-              style={[
-                stiller.butonMetni,
-                aniGorunurluk === secenek.deger && stiller.butonMetniSecili,
-              ]}
-            >
-              {secenek.etiket}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={stiller.altBaslik}>Hesabı dondur</Text>
-      <Text style={stiller.ipucu}>
-        Verilerin silinmez. Tekrar giris yaptiginda hesabin kendiliginden
-        aktif olur.
-      </Text>
-      {!dondurmaOnayi ? (
-        <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(true)}>
-          <Text style={stiller.butonMetni}>Hesabımı dondur</Text>
-        </Pressable>
-      ) : (
-        <View style={stiller.butonSatiri}>
-          <Pressable style={stiller.buton} onPress={hesabiDondurmayiOnayla}>
-            <Text style={stiller.butonMetni}>Evet, dondur</Text>
-          </Pressable>
-          <Pressable style={stiller.buton} onPress={() => setDondurmaOnayi(false)}>
-            <Text style={stiller.butonMetni}>Vazgeç</Text>
-          </Pressable>
-        </View>
-      )}
-
-      <Pressable
-        style={stiller.buton}
-        onPress={() => router.push('/profil/hesabi-sil')}
-      >
-        <Text style={stiller.butonMetni}>Hesabımı sil</Text>
-      </Pressable>
-
-      {/* Cikis buraya tasindi: eski ana ekran menusu akisa donusunce
-          (2026-08-25) oradaki cikis dugmesi kalkti. Instagram'da da
-          cikis ayarlarin altinda durur. */}
-      <Pressable style={stiller.buton} onPress={cikisYap}>
-        <Text style={stiller.butonMetni}>Çıkış yap</Text>
-      </Pressable>
-    </ScrollView>
+    </View>
   )
 }
 
 const stiller = StyleSheet.create({
-  kaydirici: { flex: 1 },
-  kapsayici: { padding: 16 },
-  baslik: { fontSize: 24, fontWeight: '600', marginBottom: 16 },
-  altBaslik: { fontSize: 16, fontWeight: '600', marginTop: 24, marginBottom: 8 },
-  satir: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee',
+  kok: { flex: 1, backgroundColor: renk.zemin },
+  icerik: {
+    paddingHorizontal: bosluk.xl,
+    paddingBottom: ALT_GEZINME_PAYI,
   },
-  etiket: { fontSize: 16, flex: 1, marginRight: 12 },
-  butonSatiri: { flexDirection: 'row', gap: 12 },
-  buton: {
-    paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+  hata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+    marginTop: bosluk.m,
   },
-  butonSecili: { backgroundColor: '#111' },
-  butonMetni: { color: '#0645ad', fontWeight: '600' },
-  // #111 zemin uzerinde onceki mavi (#0645ad) yaklasik 2.2:1 kontrast
-  // veriyordu (esik 4.5:1) ve bu cip kullanicinin gizlilik tercihinin
-  // TEK gostergesiydi. Beyaz metin #111 uzerinde ~19:1 kontrast verir.
-  butonMetniSecili: { color: '#fff' },
-  hata: { color: '#c00', marginBottom: 12 },
-  girdi: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 8 },
-  ipucu: { color: '#555', marginBottom: 12 },
+
+  onay: {
+    paddingHorizontal: bosluk.l,
+    paddingBottom: bosluk.l,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
+  onayMetni: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+  },
+  onayButonlari: { flexDirection: 'row', gap: bosluk.xl, marginTop: bosluk.m },
+  onayEvet: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
+  onayVazgec: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
 })

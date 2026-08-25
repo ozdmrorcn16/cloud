@@ -8,7 +8,7 @@ import { kullanicininAnilariniGetir, type AniGorunumu } from '../../../lib/check
 import { profilFotograflariUrl, checkInFotografiUrl } from '../../../lib/fotograf-url'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -215,7 +215,6 @@ export default function KullaniciProfiliEkrani() {
           {hata && <Text style={stiller.hata}>{hata}</Text>}
           {!yukleniyor && <Text style={stiller.durum}>{t('kullanici.bulunamadi')}</Text>}
         </View>
-        <AltGezinme />
       </View>
     )
   }
@@ -432,7 +431,6 @@ export default function KullaniciProfiliEkrani() {
         </View>
       </ScrollView>
 
-      <AltGezinme />
     </View>
   )
 }

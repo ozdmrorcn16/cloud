@@ -117,6 +117,67 @@ export default {
     geri: 'Geri',
   },
 
+  ayarlar: {
+    baslik: 'Ayarlar',
+    geri: 'Geri',
+
+    bolumHesap: 'Hesabın',
+    kullaniciAdi: 'Kullanıcı adı',
+    gizlilikMetni: 'Gizlilik metni',
+
+    bolumGorunurluk: 'Seni kimler görebilir?',
+    checkInGorunurlugu: 'Yeni check-in’lerim',
+    aniGorunurlugu: 'Geçmiş anılarım',
+    aramadaGorun: 'Beni aramada göster',
+    aramadaGorunEtiket: 'Aramada görünürlük',
+
+    bolumKisiler: 'Kişiler',
+    engellenenler: 'Engellenenler',
+
+    bolumHesapIslemleri: 'Hesap',
+    dondur: 'Hesabımı dondur',
+    dondurAciklama:
+      'Verilerin silinmez. Tekrar giriş yaptığında hesabın kendiliğinden aktif olur.',
+    dondurEvet: 'Evet, dondur',
+    vazgec: 'Vazgeç',
+    hesabiSil: 'Hesabımı sil',
+    cikisYap: 'Çıkış yap',
+
+    bulunurlukHerkeseAcik: 'Herkese açık',
+    bulunurlukTakipcilerim: 'Sadece takipçilerim',
+    bulunurlukGizli: 'Gizli',
+    aniHerkeseAcik: 'Herkes görsün',
+    aniTakipcilerim: 'Sadece takipçilerim görsün',
+    aniKimse: 'Kimse görmesin',
+    secilmedi: 'Seçilmedi',
+  },
+
+  kullaniciAdiEkrani: {
+    baslik: 'Kullanıcı adı',
+    geri: 'Geri',
+    mevcut: 'Şu anki kullanıcı adın',
+    yerTutucu: 'Yeni kullanıcı adı',
+    kaydet: 'Kullanıcı adını değiştir',
+    guncellendi: 'Kullanıcı adın güncellendi.',
+    sonrakiDegisim: 'Tekrar değiştirebileceğin tarih: {{tarih}}',
+  },
+
+  checkInGorunurlugu: {
+    baslik: 'Yeni check-in’lerim',
+    geri: 'Geri',
+    aciklama: 'Bundan sonra yaptığın check-in’ler bu ayarla başlar; her check-in’de tek tek değiştirebilirsin.',
+    herkeseAcikAciklama: 'Buradakiler ve takipçilerin görür',
+    takipcilerimAciklama: 'Buradaki yabancılar görmez',
+    gizliAciklama: 'Kimse görmez',
+  },
+
+  aniGorunurlugu: {
+    baslik: 'Geçmiş anılarım',
+    geri: 'Geri',
+    aciklama:
+      'Bu seçim bütün anılarına uygulanır, ama gizli check-in’den dönüşen anılar bu ayardan etkilenmez ve kapalı kalır.',
+  },
+
   engellenenler: {
     baslik: 'Engellenenler',
     engeliKaldir: 'Engeli kaldır',

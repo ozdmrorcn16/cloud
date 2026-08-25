@@ -13,6 +13,7 @@ import {
 } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
 import type { BagKisi } from '../../lib/bag'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 export default function BaglarEkrani() {
   const [gelenTakip, setGelenTakip] = useState<BagKisi[]>([])
@@ -249,7 +250,7 @@ export default function BaglarEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
   kaydirici: { flex: 1 },
   icerik: { padding: 16 },
   bolumBaslik: { fontSize: 18, fontWeight: '600', marginTop: 20, marginBottom: 4 },

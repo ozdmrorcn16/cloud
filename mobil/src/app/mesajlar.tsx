@@ -4,7 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import { konusmalarimiGetir, konusmayiGizle, type Konusma } from '../../lib/sohbet'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
-import { AltGezinme, ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 export default function MesajlarEkrani() {
   const router = useRouter()
@@ -42,8 +42,6 @@ export default function MesajlarEkrani() {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
-
-  const toplamOkunmamis = konusmalar.reduce((t, k) => t + k.okunmamis, 0)
 
   return (
     <View style={stiller.kok}>
@@ -113,7 +111,6 @@ export default function MesajlarEkrani() {
         />
       </View>
 
-      <AltGezinme okunmamisMesaj={toplamOkunmamis} />
     </View>
   )
 }

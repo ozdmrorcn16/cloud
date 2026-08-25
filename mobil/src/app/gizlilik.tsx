@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, StyleSheet } from 'react-native'
+import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 // Kaynak metin: docs/gizlilik-metni.md. Icerik uzak bir kaynaktan
 // CEKILMEZ, kod icinde sabit tutulur - gizlilik metni ag baglantisi
@@ -109,7 +110,7 @@ export default function GizlilikEkrani() {
 
 const stiller = StyleSheet.create({
   kaydirici: { flex: 1 },
-  icerik: { padding: 24, gap: 8 },
+  icerik: { padding: 24, gap: 8, paddingBottom: ALT_GEZINME_PAYI },
   baslik: { fontSize: 22, fontWeight: '600', marginBottom: 8 },
   bolum: { marginTop: 16, gap: 6 },
   bolumBasligi: { fontSize: 16, fontWeight: '600' },

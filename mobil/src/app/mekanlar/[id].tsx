@@ -8,6 +8,7 @@ import {
   checkIndenAyril,
   type CheckInGorunumu,
 } from '../../../lib/checkin'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 export default function MekanDetayEkrani() {
   const router = useRouter()
@@ -109,7 +110,7 @@ export default function MekanDetayEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
   bolumBaslik: { fontSize: 18, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   satir: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
   kullaniciAdi: { fontSize: 16, fontWeight: '600' },

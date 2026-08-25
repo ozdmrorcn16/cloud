@@ -11,6 +11,7 @@ import {
   type Mesaj,
 } from '../../../lib/sohbet'
 import { useOturum } from '../../../lib/oturum'
+import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 const KAPALI_KAPI_NOTU = 'Bu kişiye şu an mesaj gönderemezsin.'
 
@@ -234,7 +235,9 @@ export default function SohbetEkrani() {
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: 16 },
+  // Alt gezinme cubugu artik her ekranda: yazma alani onun altinda
+  // kalmasin.
+  kapsayici: { flex: 1, padding: 16, paddingBottom: ALT_GEZINME_PAYI },
   ustBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
