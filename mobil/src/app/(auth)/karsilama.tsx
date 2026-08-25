@@ -115,7 +115,7 @@ export default function KarsilamaEkrani() {
       {/* Uygulamanin ne yaptigini anlatan tek yer. Kullanicinin verdigi
           ornekteki duzen: koyu daire icinde turuncu ikon, yaninda kisa
           baslik ve tek satirlik aciklama. */}
-      <View style={stiller.esnekBosluk} />
+      <View style={stiller.ustBosluk} />
 
       <View style={stiller.adimlar}>
         {OZELLIKLER.map(({ no, ikon }) => (
@@ -216,7 +216,11 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.m,
   },
 
-  esnekBosluk: { flex: 1 },
+  // Iki bosluk ESIT DEGIL: ustteki daha kucuk, boylece tanitim blogu
+  // ekranin ortasindan biraz yukarida duruyor ve altta nabza yer
+  // kaliyor (kullanicinin istegi 2026-08-25).
+  ustBosluk: { flex: 0.65 },
+  esnekBosluk: { flex: 1.35 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {

@@ -30,7 +30,9 @@ const EN = 390
 const BOY = 844
 
 /** Halkalarin ve ignenin merkezi - icerigin bos seridi. */
-const MERKEZ = { x: 196, y: 652 }
+// Nabiz, tanitim blogunun BITTIGI nokta ile 'Hesap olustur' butonunun
+// ortasinda duruyor (kullanicinin istegi 2026-08-25).
+const MERKEZ = { x: 196, y: 630 }
 
 /**
  * Insan ikonlari. Konumlar rastgele degil: hicbiri metnin uzerine
@@ -45,10 +47,10 @@ const KISILER = [
   // Alt bant: nabzin cevresi, yatayda esit araliklarla. Ustteki ikisi
   // once daha yukaridaydi ve son ozellik satirinin uzerine biniyordu;
   // asagi cekildi. Butonun altina denk gelen ikon da kaldirildi.
-  { x: 152, y: 640, r: 19 },
-  { x: 250, y: 644, r: 18 },
-  { x: 72, y: 688, r: 16 },
-  { x: 322, y: 690, r: 16 },
+  { x: 152, y: 618, r: 19 },
+  { x: 250, y: 622, r: 18 },
+  { x: 72, y: 672, r: 16 },
+  { x: 322, y: 674, r: 16 },
 ]
 
 // Kenar payi: 'slice' olceklemesinde tuvalin yanlari kirpilabiliyor.
@@ -59,7 +61,7 @@ const KISILER = [
 const IGNELER = [
   { x: 84, y: 84, olcek: 0.45 },
   { x: 306, y: 112, olcek: 0.4 },
-  { x: 234, y: 604, olcek: 0.45 },
+  { x: 236, y: 582, olcek: 0.45 },
 ]
 
 const HALKA_SURESI = 2800
