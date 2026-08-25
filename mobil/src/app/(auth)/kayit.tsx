@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { eFormatinaCevir } from '../../../lib/telefon'
 import { kayitMetadatasi } from '../../../lib/kvkk'
@@ -42,15 +42,13 @@ export default function KayitEkrani() {
   // Dil cihazdan geliyor, kullaniciya sorulmuyor; yine de kayitla
   // birlikte profile yaziliyor ki sunucu tarafi da bilsin.
   const { t, dil } = useDil()
-  // Karsilama ekraninda kosullar kabul edildiyse burada tekrar
-  // sorulmuyor; kutu isaretli geliyor. Onay yine KAYIT ANINDA
-  // veritabanina yaziliyor (bkz. lib/kvkk.ts) - tasinan sey yalnizca
-  // kullaniciya ayni soruyu iki kez sormamak.
-  const { onay } = useLocalSearchParams<{ onay?: string }>()
   const [telefon, setTelefon] = useState('')
   const [sifre, setSifre] = useState('')
   const [sifreTekrar, setSifreTekrar] = useState('')
-  const [kabul, setKabul] = useState(onay === '1')
+  // Sozlesme onayinin TEK yeri burasi (kullanicinin karari
+  // 2026-08-25): ilk acilis ekraninda sorulmuyor, dolayisiyla kutu her
+  // zaman isaretsiz baslar.
+  const [kabul, setKabul] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [odaklanan, setOdaklanan] = useState<string | null>(null)

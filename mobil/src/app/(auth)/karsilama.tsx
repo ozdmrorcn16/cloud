@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useDil } from '../../../lib/dil'
@@ -16,8 +15,8 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
  * Hesabi olan biri buraya hic dusmez: oturumu olan dogrudan uygulamaya,
  * oturumu olmayip bu ekrani daha once gormus olan ise girise gider.
  *
- * ICERIK: kelime markasi, vaat, sozlesme onayi, hesap olustur.
- * Dil secimi BILEREK yok - asagiya bak.
+ * ICERIK: kelime markasi, vaat, hesap olustur. Dil secimi ve sozlesme
+ * onayi BILEREK yok - asagiya bak.
  *
  * DIL SECIMI YOK (kullanicinin karari 2026-08-25): "eğer uygulama
  * kullanılan cihazın dilini tespit edip otomatik o dilde
@@ -25,24 +24,18 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
  * dilini okuyor ve uygulama o dille aciliyor; kullaniciya sorulmuyor.
  * Dili degistirmek isteyen icin dogru yer ayarlar ekrani.
  *
- * SOZLESME: onay burada aliniyor ama KAYIT ANINDA kaydediliyor. Onay
- * bilgisi kayit ekranina rota parametresiyle tasiniyor ve orada kutu
- * isaretli geliyor; kullaniciya ayni sey iki kez sorulmuyor, KVKK
- * ispat kaydi ise hesabin olustugu anda yaziliyor.
+ * SOZLESME ONAYI BURADA YOK (kullanicinin karari 2026-08-25):
+ * "Sozlesmeyi ilk acilis ekraninda degil sadece hesap olusturma
+ * adimina koy." Onay tek bir yerde, kayit ekraninda aliniyor ve orada
+ * KVKK ispat kaydi hesabin olustugu anda yaziliyor. Bu ekran yalnizca
+ * uygulamanin ne oldugunu anlatiyor; bir taahhut istemiyor.
  */
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
-  const [kabul, setKabul] = useState(false)
-  const [hata, setHata] = useState<string | null>(null)
-
   async function devamEt(hedef: 'kayit' | 'giris') {
-    if (hedef === 'kayit' && !kabul) {
-      setHata(t('karsilama.hataOnay'))
-      return
-    }
     await ilkAcilisiIsaretle()
-    router.replace(hedef === 'kayit' ? '/kayit?onay=1' : '/giris')
+    router.replace(hedef === 'kayit' ? '/kayit' : '/giris')
   }
 
   return (
@@ -60,38 +53,7 @@ export default function KarsilamaEkrani() {
       <View style={stiller.esnekBosluk} />
 
       <Pressable
-        style={stiller.onaySatiri}
-        onPress={() => {
-          setKabul(!kabul)
-          setHata(null)
-        }}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: kabul }}
-        accessibilityLabel={t('karsilama.onayEtiket')}
-      >
-        <View style={[stiller.kutu, kabul && stiller.kutuIsaretli]}>
-          {kabul && <Text style={stiller.tik}>✓</Text>}
-        </View>
-        <Text style={stiller.onayYazi}>
-          {t('karsilama.onayMetni')}{' '}
-          <Text
-            style={stiller.baglantiYazi}
-            onPress={() => router.push('/gizlilik')}
-            accessibilityRole="link"
-          >
-            {t('karsilama.metniOku')}
-          </Text>
-        </Text>
-      </Pressable>
-
-      {hata && <Text style={stiller.hata}>{hata}</Text>}
-
-      <Pressable
-        style={({ pressed }) => [
-          stiller.birincil,
-          !kabul && stiller.birincilSoluk,
-          pressed && stiller.birincilBasili,
-        ]}
+        style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
         onPress={() => devamEt('kayit')}
         accessibilityRole="button"
       >
@@ -146,41 +108,7 @@ const stiller = StyleSheet.create({
   },
 
   esnekBosluk: { flex: 1 },
-
-
-  onaySatiri: { flexDirection: 'row', gap: bosluk.m, alignItems: 'flex-start' },
-  kutu: {
-    width: 24,
-    height: 24,
-    borderRadius: 7,
-    borderWidth: 1.5,
-    borderColor: renk.metinSoluk,
-    backgroundColor: renk.yuzey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  kutuIsaretli: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
-  onayYazi: {
-    flex: 1,
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-  },
-  baglantiYazi: {
-    fontFamily: yazi.govdeKalin,
-    color: renk.metin,
-    textDecorationLine: 'underline',
-  },
-
-  hata: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: '#C0392B',
-    marginTop: bosluk.s,
-  },
 
   birincil: {
     backgroundColor: renk.turuncu,
@@ -190,7 +118,6 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.l,
     ...golge.yuzer,
   },
-  birincilSoluk: { opacity: 0.45 },
   birincilBasili: { backgroundColor: renk.turuncuKoyu },
   birincilYazi: {
     fontFamily: yazi.govdeKalin,
