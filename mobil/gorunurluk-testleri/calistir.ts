@@ -2729,6 +2729,116 @@ async function main() {
     }
   })
 
+  await senaryo('61 - Check-in fotografi satirla ayni kurala uyuyor', async () => {
+    // 2026-08-25'te bulunan kusur: fotograf politikasi kendi kurallarini
+    // yaziyordu ve satir politikasindan ayriliyordu. Iki yon de yanlisti:
+    // takiplestigin birinin BASKA mekandaki canli check-in'inin fotografi
+    // acilmiyordu (fazla dar), buna karsilik aniya donusmus HER fotograf
+    // yolunu bilen herkese aciliyordu (fazla genis). Politika artik
+    // satira devrediyor; bu senaryo iki yonu de olcuyor.
+    const dosyaAcik = `${aId}/senaryo61-acik-${Date.now()}.txt`
+    const dosyaGizli = `${aId}/senaryo61-gizli-${Date.now()}.txt`
+    const icerik = Buffer.from('senaryo-61')
+
+    const { error: yukleAcikHata } = await a.storage
+      .from('check-in-fotograflari')
+      .upload(dosyaAcik, icerik, { contentType: 'text/plain' })
+    esitMi(yukleAcikHata, null, '61 kurulum: A acik check-in fotografini yukleyebiliyor')
+
+    const { error: yukleGizliHata } = await a.storage
+      .from('check-in-fotograflari')
+      .upload(dosyaGizli, icerik, { contentType: 'text/plain' })
+    esitMi(yukleGizliHata, null, '61 kurulum: A gizli check-in fotografini yukleyebiliyor')
+
+    // Karsilikli bag kuruluyor: B, A'yi takip ediyor olacak ama B HICBIR
+    // yere check-in yapmiyor - yani A ile ayni mekanda degil. Duzeltmeden
+    // once tam bu durumda fotograf acilmiyordu.
+    const { error: istekHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(istekHata, null, '61 kurulum: A takip istegi gonderebiliyor')
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
+      p_kullanici_id: aId,
+      p_kabul: true,
+    })
+    esitMi(kabulHata, null, '61 kurulum: B istegi kabul edebiliyor')
+    t.takipler.push({ istemci: a, hedefId: bId })
+
+    let acikCheckIn: string | null = null
+    let gizliCheckIn: string | null = null
+    try {
+      const { data: acikSatir, error: acikHata } = await a.rpc('check_in_yap', {
+        p_mekan_id: mekan1,
+        p_lat: MEKAN_1.lat,
+        p_lng: MEKAN_1.lng,
+        p_fotograf: dosyaAcik,
+        p_bulunurluk: 'herkese_acik',
+      })
+      esitMi(acikHata, null, '61 kurulum: A fotografli acik check-in yapabiliyor')
+      acikCheckIn = (acikSatir as { id: string }).id
+
+      const { data: acikImza, error: acikImzaHata } = await b.storage
+        .from('check-in-fotograflari')
+        .createSignedUrl(dosyaAcik, 60)
+      esitMi(
+        acikImzaHata,
+        null,
+        "B, takiplestigi A'nin BASKA mekandaki canli check-in fotografi icin imza alabiliyor"
+      )
+      if (!acikImzaHata) {
+        const yanit = await fetch(acikImza!.signedUrl)
+        esitMi(yanit.status, 200, 'B fotografin icerigini gercekten okuyabiliyor')
+      }
+
+      // Ayni check-in gizli olsaydi fotograf da kapali olmali. Once
+      // acik olani kapatiyoruz (tek aktif check-in kurali var).
+      const { error: ayrilHata } = await a.rpc('check_inden_ayril', {
+        p_check_in_id: acikCheckIn,
+      })
+      esitMi(ayrilHata, null, '61 kurulum: A acik check-in den ayrilabiliyor')
+
+      const { data: gizliSatir, error: gizliHata } = await a.rpc('check_in_yap', {
+        p_mekan_id: mekan1,
+        p_lat: MEKAN_1.lat,
+        p_lng: MEKAN_1.lng,
+        p_fotograf: dosyaGizli,
+        p_bulunurluk: 'gizli',
+      })
+      esitMi(gizliHata, null, '61 kurulum: A gizli check-in yapabiliyor')
+      gizliCheckIn = (gizliSatir as { id: string }).id
+
+      const { data: gizliImza, error: gizliImzaHata } = await b.storage
+        .from('check-in-fotograflari')
+        .createSignedUrl(dosyaGizli, 60)
+      if (gizliImzaHata) {
+        esitMi(true, true, 'B, gizli check-in fotografi icin imza ALAMIYOR')
+      } else {
+        const yanit = await fetch(gizliImza!.signedUrl)
+        esitMi(
+          yanit.status === 400 || yanit.status === 403,
+          true,
+          'B, gizli check-in fotografinin icerigini okuyamiyor'
+        )
+      }
+    } finally {
+      if (acikCheckIn) {
+        const { error } = await a.from('check_inler').delete().eq('id', acikCheckIn)
+        esitMi(error, null, '61 temizlik: acik check-in silinebiliyor')
+      }
+      if (gizliCheckIn) {
+        const { error } = await a.from('check_inler').delete().eq('id', gizliCheckIn)
+        esitMi(error, null, '61 temizlik: gizli check-in silinebiliyor')
+      }
+      // Check-in silindikten SONRA dosyalar siliniyor: bucket'ta silme
+      // politikasi yok (bilinen borc), bu yuzden hata yalnizca
+      // raporlaniyor, senaryoyu dusurmuyor.
+      const { error: silHata } = await a.storage
+        .from('check-in-fotograflari')
+        .remove([dosyaAcik, dosyaGizli])
+      if (silHata) {
+        console.error(`  61 temizlik: test dosyalari silinemedi: ${silHata.message}`)
+      }
+    }
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }
