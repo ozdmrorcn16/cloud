@@ -59,6 +59,14 @@ export default {
     hataOnay: 'يجب الموافقة على الشروط للمتابعة.',
   },
 
+  kisiler: {
+    baslik: 'البحث عن أشخاص',
+    yerTutucu: 'اسم المستخدم أو الاسم',
+    enAzIki: 'اكتب حرفين على الأقل.',
+    bulunamadi: 'لم يتم العثور على أحد.',
+    ipucu: 'ابحث عن شخص تعرفه باسم المستخدم أو الاسم.',
+  },
+
   giris: {
     telefonYerTutucu: 'رقم الهاتف',
     sifreYerTutucu: 'كلمة المرور',

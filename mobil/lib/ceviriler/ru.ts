@@ -53,6 +53,14 @@ export default {
     hataOnay: 'Примите условия, чтобы продолжить.',
   },
 
+  kisiler: {
+    baslik: 'Найти людей',
+    yerTutucu: 'Имя пользователя или имя',
+    enAzIki: 'Введите минимум 2 символа.',
+    bulunamadi: 'Никого не найдено.',
+    ipucu: 'Найдите знакомого по имени пользователя или имени.',
+  },
+
   giris: {
     telefonYerTutucu: 'Номер телефона',
     sifreYerTutucu: 'Пароль',

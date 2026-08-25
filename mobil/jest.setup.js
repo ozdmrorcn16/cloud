@@ -37,3 +37,14 @@ jest.mock('./lib/dil', () => {
     cevir,
   }
 })
+
+// Alt gezinme cubugu artik her ana ekranda var ve `usePathname`
+// kullaniyor. Ekran testleri expo-router'i kendi mock'lariyla
+// degistirdigi icin her testte ayri ayri `usePathname` eklemek
+// gerekiyordu. Bilesenin kendisi burada mock'lanarak bu tekrar
+// ortadan kaldiriliyor - ekran testleri gezinme cubugunu zaten test
+// etmiyor, ekranin kendi icerigini test ediyor.
+jest.mock('./src/tasarim/AltGezinme', () => ({
+  AltGezinme: () => null,
+  ALT_GEZINME_PAYI: 96,
+}))

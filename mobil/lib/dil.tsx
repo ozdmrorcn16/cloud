@@ -84,10 +84,13 @@ function yonuUygula(d: Dil) {
 }
 
 const i18n = new I18n({ tr, en, de, es, fr, ru, ar })
-// Eksik anahtar ham anahtari ("kayit.baslik") basmak yerine kaynak
+// Eksik anahtar ham anahtari ("kayit.baslik") basmak yerine yedek
 // dile duser: yarim cevrilmis bir ekran, kod gorunen bir ekrandan iyi.
+// Yedek dil INGILIZCE - kaynak dil Turkce olsa da: eksik bir ceviride
+// Alman ya da Rus kullaniciya Turkce metin gostermek, Ingilizce
+// gostermekten kotu.
 i18n.enableFallback = true
-i18n.defaultLocale = 'tr'
+i18n.defaultLocale = 'en'
 
 /**
  * Cihazin dilini desteklenen bir dile esler.

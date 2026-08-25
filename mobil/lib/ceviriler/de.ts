@@ -53,6 +53,14 @@ export default {
     hataOnay: 'Bitte akzeptiere die Bedingungen, um fortzufahren.',
   },
 
+  kisiler: {
+    baslik: 'Leute finden',
+    yerTutucu: 'Benutzername oder Name',
+    enAzIki: 'Gib mindestens 2 Zeichen ein.',
+    bulunamadi: 'Niemanden gefunden.',
+    ipucu: 'Suche jemanden, den du kennst, per Benutzername oder Name.',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefonnummer',
     sifreYerTutucu: 'Passwort',

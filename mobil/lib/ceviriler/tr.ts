@@ -64,6 +64,14 @@ export default {
     hataOnay: 'Devam etmek için koşulları kabul etmen gerekiyor.',
   },
 
+  kisiler: {
+    baslik: 'Kişi ara',
+    yerTutucu: 'Kullanıcı adı ya da isim',
+    enAzIki: 'En az 2 karakter yaz.',
+    bulunamadi: 'Kimse bulunamadı.',
+    ipucu: 'Tanıdığın birini kullanıcı adıyla ya da ismiyle arayabilirsin.',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',

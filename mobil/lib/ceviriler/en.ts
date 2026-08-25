@@ -61,6 +61,14 @@ export default {
     hataOnay: 'You need to accept the terms to continue.',
   },
 
+  kisiler: {
+    baslik: 'Find people',
+    yerTutucu: 'Username or name',
+    enAzIki: 'Type at least 2 characters.',
+    bulunamadi: 'No one found.',
+    ipucu: 'Search for someone you know by username or name.',
+  },
+
   giris: {
     telefonYerTutucu: 'Phone number',
     sifreYerTutucu: 'Password',
