@@ -131,6 +131,64 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### DEVIR NOTU - 2026-08-26 (arayuz tasarimi, ucuncu oturum)
+
+Calisma dali `claude/plan2-moderasyon-paneli`, her sey push edildi.
+Calisma bicimi degismedi: **sayfa sayfa, kullanicinin talimatiyla**
+(bkz. asagidaki "ARAYUZ TASARIMI" bolumu). Bugun ogrenilen ek kural:
+bu, ekranlar ARASI gecis kadar tek bir ekranin ICI icin de gecerli -
+bir ekrana baslamak, duzenini kendi tespitime gore kurmam anlamina
+gelmiyor.
+
+**Biten ekranlar / isler:**
+
+- `profil-olustur` BASTAN YAZILDI ve artik HESABIN OLUSTUGU ekran:
+  ad-soyad tek kutuda, dogum tarihi kaydirmali secici ile
+  (`src/tasarim/TarihSecici.tsx` - platform seciciler kullanilmadi,
+  uc platformda uc turlu gorunuyorlardi), kullanici adi, sifre, sifre
+  dogrulama ve KAPSAMLI SOZLESME ONAYI. Onay verilmeden hicbir sey
+  yazilmiyor. Fotograf ve biyografi bu ekrandan CIKARILDI.
+  Iki eski borc kapandi: sifre artik bu akista belirleniyor ve KVKK
+  onayi kayit altina aliniyor.
+- `dogrula`: numara ZATEN KAYITLIYSA kayit akisi burada kesiliyor
+  ("Bu numarada zaten bir hesap var" -> girise). Kontrol kod
+  girildikten SONRA yapiliyor; oncesinde yapmak numara listesiyle
+  kimin kayitli oldugunu taramaya izin verirdi.
+- `karsilama`: aciklama satirlari kalkti, dort baslik kaldi; ornek
+  check-in kartlari eklendi (SAYILAR ORNEK, gercek veri degil).
+  Slogan bir eklenip ayni gun kaldirildi - tekrar onerme.
+  Krokinin yollari DUZLESTIRILDI: egik yollar yazilari yamuk
+  gosteriyordu, yanilsama yazi tarafinda giderilemiyor.
+  Adalar artik yol izgarasindan turetiliyor.
+- `kayit`: baslik ve alt not kaldirildi, marka sola-yukari alindi.
+- ALT GEZINME: Kesfet sekmesi ORTADAKI BUYUK TURUNCU CHECK-IN
+  DUGMESINE donustu. Cubuk: Ana sayfa / Kisiler / [CHECK-IN] /
+  Mesajlar / Profil. `/kisiler` cikarilamaz - o ekrana cubuk disinda
+  giris yok.
+- YENI `lib/hata-metni.ts`: sunucu hatalarinin TEK ceviri kapisi
+  (45 veritabani metni + Supabase kimlik hatalari). Ayrinti asagida.
+- YENI `lib/kod-gonderim.ts`: SMS kod gonderim sayaci, cihazda,
+  numara basina. Ayrinti asagida.
+
+**TEST HESAPLARI DEGISTI** - asagidaki "Test hesaplari" bolumune bak.
+Kayit akisini denemek icin TEK uygun numara `05550000003`.
+
+**ACIK ISLER:**
+
+1. Supabase auth HIZ SINIRLARI gozden gecirilmedi. Istemcideki kod
+   gonderim sayaci en kolay istismar yolunu kapatiyor ama asil sinir
+   sunucuda; panelden bakilmali.
+2. `security-guidance` eklentisinin LLM katmanlari bu makinede HIC
+   calismadi (`ANTHROPIC_API_KEY` yok). Yalnizca desen taramasi
+   calisiyor. Ayrinti asagidaki eklenti karari notunda.
+3. Diger diller (en/de/es/fr/ru/ar) geride: eski kayit ekraninin
+   anahtarlarini tasiyorlar ve yeni ekranlarin anahtarlari yok.
+   Eksik anahtar artik Turkce'ye duesuyor (`lib/dil.tsx`), yani ham
+   anahtar gorunmuyor. Toplu ceviri tasarim bitince yapilacak.
+4. Onizleme tuneli her calistirmada adres degistiriyor; kalici cozum
+   (GitHub Pages) hala onerилmis durumda, kullanici "simdilik tunelle
+   devam" dedi.
+
 ### ARAYUZ TASARIMI - DEVAM EDEN IS (2026-08-25, ikinci oturum)
 
 **Calisma bicimi (kullanicinin iki kurali):**
