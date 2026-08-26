@@ -1,6 +1,8 @@
 import { supabase } from './supabase'
 import { noktayiCoz } from './konum'
 import { hataMetni } from './hata-metni'
+import { etiketleriGetir, type Etiket } from './etiket'
+import { checkInFotografiUrl } from './fotograf-url'
 
 export type Bulunurluk = 'herkese_acik' | 'takipcilerim' | 'gizli'
 export type AniGorunurlugu = 'herkese_acik' | 'takipcilerim' | 'kimse'
@@ -97,23 +99,48 @@ export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorun
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
 }
 
-export type AniGorunumu = CheckIn & { mekanAdi: string; mekanKonumu: { lat: number; lng: number } }
+export type AniGorunumu = CheckIn & {
+  mekanAdi: string
+  mekanKonumu: { lat: number; lng: number }
+  /** check_inler'de denormalize duran ad (karar #18). */
+  kullaniciAdi: string | null
+  /** Imzalanmis fotograf adresi; yoksa null. */
+  fotografUrl: string | null
+  etiketler: Etiket[]
+}
 
-type CheckInSatiriMekanli = CheckInSatiri & { mekanlar: { ad: string; konum: string } }
+type CheckInSatiriMekanli = CheckInSatiri & {
+  mekanlar: { ad: string; konum: string }
+  kullanici_adi: string | null
+}
 
 export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum)')
+    .select(
+      'id, mekan_id, kullanici_adi, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum)'
+    )
     .eq('kullanici_id', kullaniciId)
     .is('konum', null)
     .order('olusturma_zamani', { ascending: false })
   if (error) throw new Error(hataMetni(error))
-  return (data as unknown as CheckInSatiriMekanli[]).map((satir) => ({
-    ...satiriCheckInACevir(satir),
-    mekanAdi: satir.mekanlar.ad,
-    mekanKonumu: noktayiCoz(satir.mekanlar.konum),
-  }))
+  const satirlar = data as unknown as CheckInSatiriMekanli[]
+
+  // Etiketler TEK SORGUDA; okunamazsa anilar yine gosteriliyor.
+  const etiketler: Record<string, Etiket[]> = await etiketleriGetir(
+    satirlar.map((s) => s.id)
+  ).catch(() => ({}))
+
+  return Promise.all(
+    satirlar.map(async (satir) => ({
+      ...satiriCheckInACevir(satir),
+      mekanAdi: satir.mekanlar.ad,
+      mekanKonumu: noktayiCoz(satir.mekanlar.konum),
+      kullaniciAdi: satir.kullanici_adi,
+      fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
+      etiketler: etiketler[satir.id] ?? [],
+    }))
+  )
 }
 
 /**

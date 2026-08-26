@@ -4,35 +4,12 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
 import { checkIniSil } from '../../lib/checkin'
+import { CheckInKarti } from '../tasarim/CheckInKarti'
+import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-
-const DAKIKA = 60 * 1000
-const SAAT = 60 * DAKIKA
-const GUN = 24 * SAAT
-
-/**
- * Akista zaman "ne kadar once" olarak okunur; tam saat kimseye lazim
- * degil. Bir haftayi geceni tarihe donuyor, cunku "23 gün" artik
- * yakinlik bilgisi tasimiyor.
- */
-function gorecelZaman(
-  iso: string,
-  t: (anahtar: string, secenekler?: Record<string, unknown>) => string
-): string {
-  const gecen = Date.now() - new Date(iso).getTime()
-  if (gecen < DAKIKA) return t('anaSayfa.azOnce')
-  if (gecen < SAAT) return t('anaSayfa.dakika', { sayi: Math.floor(gecen / DAKIKA) })
-  if (gecen < GUN) return t('anaSayfa.saat', { sayi: Math.floor(gecen / SAAT) })
-  if (gecen < 7 * GUN) return t('anaSayfa.gun', { sayi: Math.floor(gecen / GUN) })
-
-  const tarih = new Date(iso)
-  const gun = String(tarih.getDate()).padStart(2, '0')
-  const ay = String(tarih.getMonth() + 1).padStart(2, '0')
-  return `${gun}.${ay}.${tarih.getFullYear()}`
-}
 
 function KonumIkonu() {
   return (
@@ -61,22 +38,6 @@ function KonumIkonu() {
  * Mesajlar satirlari). Gezinme alt cubuga tasindigi icin o menu
  * gereksizdi; yerini icerik aldi.
  */
-/** Silme dugmesinin ikonu. Cizgi agirligi diger ikonlarla ayni. */
-function CopIkonu() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
-      <Path
-        d="M5 7h14M10 7V5.5h4V7M6.5 7l.8 12h9.4l.8-12"
-        stroke={renk.metinSoluk}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  )
-}
-
 export default function AnaSayfa() {
   const router = useRouter()
   const { t } = useDil()
@@ -141,136 +102,13 @@ export default function AnaSayfa() {
         refreshing={yenileniyor}
         onRefresh={yenile}
         renderItem={({ item }) => (
-          <Pressable
-            style={stiller.kart}
-            onPress={() => router.push(`/harita/${item.mekanId}` as never)}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.mekanAdi} konumunu haritada gör`}
-          >
-            <View style={stiller.kartUst}>
-              <Pressable
-                onPress={() =>
-                  // `as never`: uretilen rota tipleri profil ana ekranini
-                  // "/profil/index" diye yaziyor, calisma zamaninda ise yol
-                  // "/profil". Ayni takla AltGezinme'de de var.
-                  router.push(
-                    (item.benimMi ? '/profil' : `/kullanici/${item.kullaniciId}`) as never
-                  )
-                }
-                accessibilityRole="button"
-                accessibilityLabel={item.kullaniciAdi ?? ''}
-              >
-                <View style={stiller.avatar}>
-                  <Text style={stiller.basHarf}>
-                    {(item.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-                  </Text>
-                </View>
-              </Pressable>
-
-              {/* TEK BIR METIN AKISI: ad - mekan - etiketler.
-                  Ic ice Text kullaniliyor cunku parcalar satir sonunda
-                  BIRLIKTE kirilmali; ayri View'lara bolununce uzun
-                  mekan adlari tasiyordu. Her parcanin kendi onPress'i
-                  var, dolayisiyla ayri dokunma hedefleri. */}
-              <Text style={stiller.satir}>
-                <Text
-                  style={stiller.kullaniciAdi}
-                  onPress={() =>
-                    router.push(
-                      (item.benimMi ? '/profil' : `/kullanici/${item.kullaniciId}`) as never
-                    )
-                  }
-                >
-                  {item.kullaniciAdi ?? ''}
-                </Text>
-                <Text style={stiller.ayirac}> - </Text>
-                <Text
-                  style={stiller.mekanAdi}
-                  onPress={() => router.push(`/mekanlar/${item.mekanId}`)}
-                >
-                  {item.mekanAdi}
-                </Text>
-                {item.etiketler.length > 0 && (
-                  <>
-                    <Text style={stiller.ayirac}> - </Text>
-                    {item.etiketler.map((etiket, sira) => (
-                      <Text key={etiket.kullaniciId}>
-                        {sira > 0 ? <Text style={stiller.ayirac}>, </Text> : null}
-                        <Text
-                          style={stiller.etiket}
-                          onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
-                        >
-                          {etiket.ad ?? ''}
-                        </Text>
-                      </Text>
-                    ))}
-                  </>
-                )}
-              </Text>
-
-              {/* Silme YALNIZCA kendi check-in'inde. */}
-              {item.benimMi && (
-                <Pressable
-                  onPress={() => setSilOnayi(silOnayi === item.id ? null : item.id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('ortak.sil')}
-                  hitSlop={10}
-                  style={stiller.silDugmesi}
-                >
-                  <CopIkonu />
-                </Pressable>
-              )}
-
-              {item.canliMi ? (
-                // Turuncunun mesru kullanimi: "su an oluyor".
-                // YALNIZCA NOKTA YETMIYOR: renk tek basina anlam
-                // tasimamali (erisilebilirlik tabani), bu yuzden nokta
-                // ve yazi birlikte duruyor.
-                <View style={stiller.canliRozet}>
-                  <View style={stiller.canliNokta} />
-                  <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
-                </View>
-              ) : (
-                <Text style={stiller.zaman}>{gorecelZaman(item.olusturmaZamani, t)}</Text>
-              )}
-            </View>
-
-            {item.fotografUrl && (
-              <Image
-                testID="akis-fotografi"
-                source={{ uri: item.fotografUrl }}
-                style={stiller.fotograf}
-                resizeMode="cover"
-              />
-            )}
-
-            {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
-
-            {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
-                Onay satiri kartin icinde aciliyor - ayri bir ekran ya
-                da sistem uyarisi akisi kesiyordu. */}
-            {silOnayi === item.id && (
-              <View style={stiller.silOnayAlani}>
-                <Text style={stiller.silOnaySoru}>{t('anaSayfa.silOnay')}</Text>
-                <View style={stiller.silOnayDugmeleri}>
-                  <Pressable
-                    onPress={() => setSilOnayi(null)}
-                    accessibilityRole="button"
-                    hitSlop={8}
-                  >
-                    <Text style={stiller.vazgecYazi}>{t('ortak.vazgec')}</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => sil(item.id)}
-                    accessibilityRole="button"
-                    hitSlop={8}
-                  >
-                    <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
-          </Pressable>
+          <CheckInKarti
+            oge={item}
+            zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
+            silOnayiAcik={silOnayi === item.id}
+            onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
+            onSil={sil}
+          />
         )}
         ListEmptyComponent={
           yukleniyor ? (

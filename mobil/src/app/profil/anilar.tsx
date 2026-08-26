@@ -1,14 +1,34 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
+import { View, Text, FlatList, StyleSheet } from 'react-native'
 import { supabase } from '../../../lib/supabase'
 import { kullanicininAnilariniGetir, checkIniSil, type AniGorunumu } from '../../../lib/checkin'
+import { hataMetni } from '../../../lib/hata-metni'
+import { useDil } from '../../../lib/dil'
+import type { AkisOgesi } from '../../../lib/akis'
+import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { CheckInKarti } from '../../tasarim/CheckInKarti'
+import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
+/**
+ * ANILARIM.
+ *
+ * Kullanicinin karari (2026-08-26): "Anasayfaya dusen, kullanicinin
+ * profilinde anilarda gorunecek" ve "ortak olsun". Ekran artik kendi
+ * satir duzenini cizmiyor, ana sayfadaki `CheckInKarti`'nin AYNISINI
+ * kullaniyor - ayni icerigin iki farkli okunusu olmasin diye.
+ *
+ * Onceki duzende "Haritada ac" cihazin harita uygulamasini aciyordu;
+ * artik karta basmak uygulama ICINDEKI harita ekranini aciyor, oradan
+ * da harita uygulamasina cikilabiliyor.
+ */
 export default function AnilarEkrani() {
+  const { t } = useDil()
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [hata, setHata] = useState<string | null>(null)
+  // Silme geri alinamaz: once onay.
+  const [silOnayi, setSilOnayi] = useState<string | null>(null)
 
   async function anilariYukle() {
     try {
@@ -18,7 +38,7 @@ export default function AnilarEkrani() {
       setAnilar(await kullanicininAnilariniGetir(kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(hataMetni(e))
     }
   }
 
@@ -26,13 +46,36 @@ export default function AnilarEkrani() {
     anilariYukle()
   }, [])
 
-  function haritadaAc(konum: { lat: number; lng: number }) {
-    Linking.openURL(`https://maps.google.com/?q=${konum.lat},${konum.lng}`)
+  async function sil(checkInId: string) {
+    try {
+      await checkIniSil(checkInId)
+      setAnilar((mevcut) => mevcut.filter((a) => a.id !== checkInId))
+      setSilOnayi(null)
+    } catch (e) {
+      setHata(hataMetni(e))
+    }
   }
 
-  async function sil(checkInId: string) {
-    await checkIniSil(checkInId)
-    setAnilar((mevcut) => mevcut.filter((a) => a.id !== checkInId))
+  /**
+   * Ani satirini kartin bekledigi bicime cevirir.
+   *
+   * Burasi HEP kendi anilarim: `benimMi` sabit true, dolayisiyla silme
+   * dugmesi her satirda var.
+   */
+  function karta(ani: AniGorunumu): AkisOgesi {
+    return {
+      id: ani.id,
+      kullaniciId: '',
+      kullaniciAdi: ani.kullaniciAdi,
+      mekanId: ani.mekanId,
+      mekanAdi: ani.mekanAdi,
+      notMetni: ani.notMetni,
+      fotografUrl: ani.fotografUrl,
+      olusturmaZamani: ani.olusturmaZamani,
+      canliMi: ani.canliMi,
+      benimMi: true,
+      etiketler: ani.etiketler,
+    }
   }
 
   return (
@@ -42,16 +85,15 @@ export default function AnilarEkrani() {
       <FlatList
         data={anilar}
         keyExtractor={(a) => a.id}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <Pressable onPress={() => haritadaAc(item.mekanKonumu)}>
-              <Text style={stiller.mekanAdi}>{item.mekanAdi}</Text>
-              {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
-            </Pressable>
-            <Pressable onPress={() => sil(item.id)}>
-              <Text style={stiller.silButonu}>Sil</Text>
-            </Pressable>
-          </View>
+          <CheckInKarti
+            oge={karta(item)}
+            zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
+            silOnayiAcik={silOnayi === item.id}
+            onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
+            onSil={sil}
+          />
         )}
         ListEmptyComponent={<Text style={stiller.durum}>Henüz bir anın yok</Text>}
       />
@@ -63,52 +105,18 @@ const stiller = StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.l,
     paddingBottom: ALT_GEZINME_PAYI,
-  },
-  baslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-    marginBottom: bosluk.l,
-  },
-  satir: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
-  mekanAdi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  not: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 2,
-  },
-  silButonu: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
   },
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: '#C0392B',
-    marginBottom: bosluk.m,
+    marginBottom: bosluk.s,
   },
   durum: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    marginTop: bosluk.xl,
-    textAlign: 'center',
   },
 })
