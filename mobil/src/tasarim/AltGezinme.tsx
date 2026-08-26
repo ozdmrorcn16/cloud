@@ -277,8 +277,10 @@ const stiller = StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.turuncu,
     // Daire diger ikonlardan 30 px buyuk ve 18 px yukarida; etiket
-    // aksi halde komsu etiketlerden 12 px asagida kaliyor.
-    marginTop: -12,
+    // aksi halde komsu etiketlerden asagida kaliyor. -12 fazlaydi,
+    // yazi dairenin altina biniyordu; -4 hem cakismiyor hem komsu
+    // etiketlere yakin duruyor.
+    marginTop: -4,
   },
   etiket: {
     fontFamily: yazi.govde,
