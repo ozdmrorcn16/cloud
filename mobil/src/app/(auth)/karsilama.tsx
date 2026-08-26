@@ -194,12 +194,11 @@ const stiller = StyleSheet.create({
     // sutun hissi kayboluyordu; blogu ortalayip icini hizali tutmak
     // ikisini birden veriyor.
     //
-    // Blok TAM ORTADA DEGIL, biraz sola yakin (kullanicinin karari
-    // 2026-08-26: "cok ortada kaldi, biraz sola yakin baslasin").
-    // Sola dayanip kucuk bir pay birakiyor: sayfa payi 24, buraya 12
-    // daha ekleniyor. Tam ortada ~54 px'ten basliyordu.
+    // Blok SOLA DAYALI (kullanicinin karari 2026-08-26: once "biraz
+    // sola yakin baslasin", sonra "daha sola"). Ek pay kaldirildi;
+    // artik sayfa payinin kendisinden, yani 24 px'ten basliyor -
+    // butonlarla ayni sol kenar. Tam ortada ~54, ara adimda 36 px'ti.
     alignSelf: 'flex-start',
-    marginLeft: bosluk.m,
   },
   adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   // Sabit genislik: ikonlarin genisligi farkli, sutun bundan
@@ -234,12 +233,11 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.m,
   },
 
-  // Aciklamalar kalkinca blok kisaldi; esit bosluk verilerek marka
-  // kilidi ile butonlar arasinda GERCEKTEN ortalandi (kullanicinin
-  // karari 2026-08-26: "ekrana ortala"). Onceki 0.65 / 1.35 orani
-  // blogu ortadan yukarida tutuyordu.
-  ustBosluk: { flex: 1 },
-  esnekBosluk: { flex: 1 },
+  // Blok ortadan biraz YUKARIDA duruyor (kullanicinin karari
+  // 2026-08-26: "biraz yukariya"). Ustteki bosluk alttakinden kucuk;
+  // 1 / 1 tam ortaliyordu.
+  ustBosluk: { flex: 0.75 },
+  esnekBosluk: { flex: 1.25 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {
