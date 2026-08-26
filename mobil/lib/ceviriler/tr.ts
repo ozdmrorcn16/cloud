@@ -25,6 +25,22 @@ export default {
     aciklama:
       'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
     dilEtiket: 'Dil',
+
+    // Slogan UC PARCA: ortadaki kelime turuncu yaziliyor. Ceviride
+    // parcalarin sirasi korunmali; vurgulu kelime dilin dogal
+    // vurgusuna gore degisebilir.
+    vaatOnce: 'Şu an orada ',
+    vaatVurgu: 'kim',
+    vaatSonra: ' var',
+    vaatAlt: 'Bulunduğun yere check-in yap, tam o anda orada olanları gör.',
+
+    // Acilistaki ornek check-in kartlari. GERCEK VERI DEGIL: kullanici
+    // henuz giris yapmamis ve kimin nerede oldugu giris oncesi
+    // gosterilemez. Mekan adlari da bilerek jenerik.
+    ornek1Ad: 'Sahil Yürüyüş Yolu',
+    ornek1Alt: '7 kişi şu an burada',
+    ornek2Ad: 'Kampüs Kütüphanesi',
+    ornek2Alt: '3 kişi şu an burada',
     // Dort ozellik, YALNIZCA BASLIK. Basliklarin altindaki aciklama
     // satirlari kullanicinin karariyla kaldirildi (2026-08-26): baslik
     // zaten ne oldugunu soyluyordu, aciklama ayni seyi tekrar ediyordu.

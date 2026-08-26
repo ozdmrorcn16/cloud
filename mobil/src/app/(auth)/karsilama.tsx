@@ -91,7 +91,7 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
   const donusum = `translate(${HIZA - olcek * sol} ${MERKEZ - olcek * merkez}) scale(${olcek})`
   return (
     <View style={stiller.ikonAlani}>
-      <Svg width={34} height={34} viewBox="0 0 24 24">
+      <Svg width={30} height={30} viewBox="0 0 24 24">
         <G transform={donusum}>
         {ad === 'konum' && (
           <>
@@ -169,9 +169,17 @@ export default function KarsilamaEkrani() {
         <MarkaIsareti zemin="acik" boyut={84} />
         <MarkaYazisi genislik={168} style={stiller.markaYazisi} />
 
-        {/* Slogan ve altindaki paragraf KALDIRILDI (kullanicinin karari,
-            2026-08-25). Uygulamayi anlatan tek yer asagidaki ozellik
-            listesi; slogan onun soyledigini bir kez daha soyluyordu. */}
+        {/* Slogan 2026-08-25'te kaldirilmisti, 2026-08-26'da GERI
+            GELDI: o gun aciklama satirlari da duruyordu ve slogan
+            onlarin soyledigini tekrar ediyordu. Aciklamalar kalkinca
+            ekranin ust yarisi bosaldi ve cumlenin yeri acildi.
+            Metni kullanici verdi: "su an orada kim var". */}
+        <Text style={stiller.vaat}>
+          {t('karsilama.vaatOnce')}
+          <Text style={stiller.vaatVurgu}>{t('karsilama.vaatVurgu')}</Text>
+          {t('karsilama.vaatSonra')}
+        </Text>
+        <Text style={stiller.vaatAlt}>{t('karsilama.vaatAlt')}</Text>
       </View>
 
       {/* Uygulamanin ne yaptigini anlatan tek yer: ikon + tek satirlik
@@ -180,6 +188,28 @@ export default function KarsilamaEkrani() {
           ORTALANDI - artik sola dayali bir liste degil, ortada duran
           dort satir. */}
       <View style={stiller.ustBosluk} />
+
+      {/* Uygulamayi ANLATMAK yerine GOSTEREN parca: haritanin uzerinde
+          yuzen iki ornek check-in karti. Sayilar ve mekan adlari ornek
+          - gercek veri gosterilemez, kullanici henuz giris yapmadi. */}
+      <View style={stiller.ornekKartlar}>
+        {[1, 2].map((n) => (
+          <View
+            key={n}
+            style={[stiller.ornekKart, n === 1 ? stiller.ornekKartSol : stiller.ornekKartSag]}
+          >
+            <View style={stiller.nabizHalka}>
+              <View style={stiller.nabizNokta} />
+            </View>
+            <View style={stiller.ornekMetin}>
+              <Text style={stiller.ornekAd}>{t(`karsilama.ornek${n}Ad`)}</Text>
+              <Text style={stiller.ornekAlt}>{t(`karsilama.ornek${n}Alt`)}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={stiller.ortaBosluk} />
 
       <View style={stiller.adimlar}>
         {OZELLIKLER.map(({ no, ikon }) => (
@@ -227,6 +257,58 @@ const stiller = StyleSheet.create({
   },
 
   markaYazisi: { marginTop: bosluk.s },
+  vaat: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: 27,
+    lineHeight: 34,
+    color: renk.metin,
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginTop: bosluk.l,
+  },
+  vaatVurgu: { color: renk.turuncu },
+  vaatAlt: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: '#57504A',
+    textAlign: 'center',
+    marginTop: bosluk.s,
+    paddingHorizontal: bosluk.m,
+  },
+
+  ornekKartlar: { gap: bosluk.m },
+  ornekKart: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.kart,
+    paddingVertical: bosluk.m,
+    paddingHorizontal: bosluk.l,
+    ...golge.kart,
+  },
+  // Kartlar birbirine gore kaydirilmis: harita uzerinde dizilmis degil,
+  // yuzuyor gibi dursunlar.
+  ornekKartSol: { marginRight: bosluk.xxl + bosluk.m },
+  ornekKartSag: { marginLeft: bosluk.xxl + bosluk.m },
+  ornekMetin: { flex: 1 },
+  nabizHalka: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nabizNokta: { width: 10, height: 10, borderRadius: 5, backgroundColor: renk.turuncu },
+  ornekAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  ornekAlt: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 1,
+  },
 
   adimlar: {
     // Blok, marka kilidi ile butonlarin ARASINA ortalaniyor: ustunde ve
@@ -238,7 +320,7 @@ const stiller = StyleSheet.create({
     // tuttugu sey kalmadi - dort kisa baslik ortada daha dengeli
     // duruyor.
     marginTop: 0,
-    gap: bosluk.xl,
+    gap: 20,
     // Blok en genis satiri kadar genis ve EKRANA ORTALI; satirlar
     // blogun icinde sola dayali. Kullanicinin karari (2026-08-26):
     // "basliklar onceki gibi orantili alt alta olmali". Her satiri tek
@@ -255,13 +337,14 @@ const stiller = StyleSheet.create({
   adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   // Sabit genislik: ikonlarin genisligi farkli, sutun bundan
   // kaymasin. Basliklar da bu yuzden ayni noktadan basliyor.
-  ikonAlani: { width: 40, alignItems: 'center', justifyContent: 'center' },
+  ikonAlani: { width: 36, alignItems: 'center', justifyContent: 'center' },
   adimBaslik: {
     // Bir kademe INCE (700 -> 600): kullanicinin istegi "cok az incelt
-    // ama yine belirgin olsun". Punto ve renk degismedi, yalnizca
-    // agirlik.
+    // ama yine belirgin olsun". Punto sonra ayrica bir tik kucultuldu
+    // (19 -> 17, "tanitim yazilarini biraz kucult"); ikonlar da 34 ->
+    // 30 ile birlikte indi ki oran bozulmasin.
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.altBaslik,
+    fontSize: 17,
     color: renk.metin,
     letterSpacing: -0.2,
   },
@@ -288,8 +371,12 @@ const stiller = StyleSheet.create({
   // Blok ortadan biraz YUKARIDA duruyor (kullanicinin karari
   // 2026-08-26: "biraz yukariya"). Ustteki bosluk alttakinden kucuk;
   // 1 / 1 tam ortaliyordu.
-  ustBosluk: { flex: 0.75 },
-  esnekBosluk: { flex: 1.25 },
+  // Icerik krokinin ALT KALABALIGINA duesmemeli: haritanin dibindeki
+  // insan baloncuklari ve nabiz halkasi metnin altina girip okumayi
+  // bozuyor. Bu yuzden ust bosluklar kucuk, alt bosluk buyuk.
+  ustBosluk: { flex: 0.3 },
+  ortaBosluk: { flex: 0.35 },
+  esnekBosluk: { flex: 1.35 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {
