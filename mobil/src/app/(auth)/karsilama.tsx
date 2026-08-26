@@ -312,11 +312,11 @@ const stiller = StyleSheet.create({
   // kaymasin. Basliklar da bu yuzden ayni noktadan basliyor.
   ikonAlani: { width: 36, alignItems: 'center', justifyContent: 'center' },
   adimBaslik: {
-    // Bir kademe INCE (700 -> 600): kullanicinin istegi "cok az incelt
-    // ama yine belirgin olsun". Punto sonra ayrica bir tik kucultuldu
-    // (19 -> 17, "tanitim yazilarini biraz kucult"); ikonlar da 34 ->
-    // 30 ile birlikte indi ki oran bozulmasin.
-    fontFamily: yazi.govdeKalin,
+    // Agirlik iki adimda indi: once 700 Bold -> 600 SemiBold ("cok az
+    // incelt ama yine belirgin olsun"), sonra 600 -> 500 Medium ("cok
+    // az daha incelt"). Punto da bir tik kucultuldu (19 -> 17) ve
+    // ikonlar 34 -> 30 ile birlikte indi ki oran bozulmasin.
+    fontFamily: yazi.govdeOrta,
     fontSize: 17,
     color: renk.metin,
     letterSpacing: -0.2,

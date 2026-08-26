@@ -86,7 +86,12 @@ const ADALAR = DOLU_HUCRELER.map(([satir, sutun], i) => {
 // ekranina slogan ve ornek check-in kartlari eklenince ozellik
 // listesi asagi kaydi ve son satir ("Populer yerleri kesfet") alttaki
 // insan ikonlarinin uzerine biniyordu.
-const MERKEZ = { x: 196, y: 674 }
+// 2026-08-26'da once 630'dan 674'e indirilmisti (icerik uzayinca son
+// ozellik satiri alttaki ikonlarin uzerine biniyordu). Slogan ve alt
+// not kaldirilinca icerik yeniden kisaldi ve bu sefer nabiz "Hesap
+// olustur" dugmesinin altinda kaldi; 640'a CIKARILDI. Ignenin kendisi
+// MERKEZ.y + 26'da, yani insan ikonlarinin tam ortasinda duruyor.
+const MERKEZ = { x: 196, y: 640 }
 
 /**
  * Insan ikonlari. Konumlar rastgele degil: hicbiri metnin uzerine
