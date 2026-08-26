@@ -150,6 +150,27 @@ const OZELLIKLER = [
   { no: 4, ikon: 'yogunluk' },
 ] as const
 
+/**
+ * Ornek kartlarin basindaki check-in isareti.
+ *
+ * Onceden turuncu bir noktaydi (kullanicinin istegi 2026-08-26:
+ * "baslarindaki turuncu nokta yerine de checkin ikonu koy"). Nokta
+ * "canli" diyordu ama NE oldugunu soylemiyordu; igne dogrudan
+ * check-in'i anlatiyor ve profildeki canli seritle ayni dili
+ * konusuyor.
+ */
+function CheckInIsareti() {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24">
+      <Path
+        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
+        fill={renk.turuncu}
+      />
+      <Circle cx={12} cy={9.7} r={2.7} fill={renk.turuncuZemin} />
+    </Svg>
+  )
+}
+
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -191,9 +212,7 @@ export default function KarsilamaEkrani() {
             key={n}
             style={[stiller.ornekKart, n === 1 ? stiller.ornekKartSol : stiller.ornekKartSag]}
           >
-            <View style={stiller.nabizHalka}>
-              <View style={stiller.nabizNokta} />
-            </View>
+            <CheckInIsareti />
             <View style={stiller.ornekMetin}>
               <Text style={stiller.ornekAd}>{t(`karsilama.ornek${n}Ad`)}</Text>
               <Text style={stiller.ornekAlt}>{t(`karsilama.ornek${n}Alt`)}</Text>
@@ -261,20 +280,12 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.l,
     ...golge.kart,
   },
-  // Kartlar birbirine gore kaydirilmis: harita uzerinde dizilmis degil,
-  // yuzuyor gibi dursunlar.
-  ornekKartSol: { marginRight: bosluk.xxl + bosluk.m },
-  ornekKartSag: { marginLeft: bosluk.xxl + bosluk.m },
+  // Kartlar ONCE birbirine gore kaydirilmisti ("yuzuyor gibi dursun");
+  // kullanici 2026-08-26'da esit ve alt alta olmalarini istedi. Kaydirma
+  // kaldirildi, iki kart da tam genislikte.
+  ornekKartSol: {},
+  ornekKartSag: {},
   ornekMetin: { flex: 1 },
-  nabizHalka: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: renk.turuncuZemin,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nabizNokta: { width: 10, height: 10, borderRadius: 5, backgroundColor: renk.turuncu },
   ornekAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   ornekAlt: {
     fontFamily: yazi.govde,
