@@ -117,6 +117,11 @@ export default function AyarlarEkrani() {
         <Bolum baslik={t('ayarlar.bolumHesap')}>
           <Satir
             ikon={<KisiIkonu />}
+            etiket={t('ayarlar.profiliDuzenle')}
+            onPress={() => router.push('/profil/duzenle')}
+          />
+          <Satir
+            ikon={<KisiIkonu />}
             etiket={t('ayarlar.kullaniciAdi')}
             deger={kullaniciAdi ? `@${kullaniciAdi}` : undefined}
             onPress={() => router.push('/profil/kullanici-adi')}

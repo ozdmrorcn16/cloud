@@ -145,9 +145,9 @@ export default {
       'Bir yere check-in yap ya da birileriyle bağ kur; onların check-inleri burada görünür.',
     kesfet: 'Mekanları keşfet',
     azOnce: 'az önce',
-    dakika: '{{sayi}} dk',
-    saat: '{{sayi}} sa',
-    gun: '{{sayi}} gün',
+    dakika: '{{sayi}} dakika önce',
+    saat: '{{sayi}} saat önce',
+    gun: '{{sayi}} gün önce',
     silOnay: 'Bu check-in kalıcı olarak silinsin mi?',
     silAriza: 'Check-in silinemedi.',
   },
@@ -175,11 +175,25 @@ export default {
     geri: 'Geri',
   },
 
+  profilDuzenle: {
+    baslik: 'Profilini düzenle',
+    adEtiket: 'Ad ve soyad',
+    adYerTutucu: 'Adın ve soyadın',
+    adHata: 'Adını ve soyadını yaz.',
+    kullaniciAdiEtiket: 'Kullanıcı adı',
+    biyografiEtiket: 'Biyografi',
+    biyografiYerTutucu: 'Kendinden kısaca bahset',
+    biyografiIpucu: 'Biyografin profilinde adının altında görünür.',
+    kaydediliyor: 'Kaydediliyor…',
+    kaydedildi: 'Profilin güncellendi.',
+  },
+
   ayarlar: {
     baslik: 'Ayarlar',
     geri: 'Geri',
 
     bolumHesap: 'Hesabın',
+    profiliDuzenle: 'Profilini düzenle',
     kullaniciAdi: 'Kullanıcı adı',
     gizlilikMetni: 'Gizlilik metni',
 

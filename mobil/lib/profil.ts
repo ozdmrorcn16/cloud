@@ -153,3 +153,26 @@ async function klasoruTemizle(kullaniciId: string, korunacakYol: string): Promis
     // Temizlik, fotograf degistirmeyi bloke etmemeli.
   }
 }
+
+/**
+ * Ad ve biyografiyi gunceller.
+ *
+ * KULLANICI ADI BURADAN DEGISMEZ: onun 30 gunluk kurali sunucuda
+ * `kullanici_adi_degistir` RPC'sinde zorlaniyor ve `kullanici_adi`
+ * sutununa dogrudan yazma yetkisi zaten YOK (Faz 2c, sutun duzeyinde
+ * kisit). Buradan denemek sessizce basarisiz olmaz, sunucu reddeder.
+ */
+export async function profiliGuncelle(alanlar: {
+  ad: string
+  biyografi: string | null
+}): Promise<void> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const kullaniciId = kullaniciVerisi.user?.id
+  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+
+  const { error } = await supabase
+    .from('profiller')
+    .update({ ad: alanlar.ad, biyografi: alanlar.biyografi })
+    .eq('id', kullaniciId)
+  if (error) throw new Error(hataMetni(error))
+}

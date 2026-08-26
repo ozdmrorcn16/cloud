@@ -36,14 +36,32 @@ function tarihiBicimlendir(zaman: string): string {
  * uzun kaliyor). Instagram'in cozumu burada da dogru: uc cizgi. Ne
  * oldugunu sesli okuyucuya `accessibilityLabel` soyluyor.
  */
+/**
+ * Ayarlar ikonu: DISLI.
+ *
+ * Onceden uc yatay cizgiydi (kullanicinin istegi 2026-08-27: "appleın
+ * ayarlar ikonu gibi bir ikon koy, belirgin boyutta olsun"). Uc cizgi
+ * "menu" demek; disli dogrudan ayarlari anlatiyor. Boyut 22 -> 26.
+ *
+ * Sekil disaridaki disli halkasi + ortadaki delik: iOS'un ayarlar
+ * ikonunun okunusu bu. Dis cizgi yerine DOLU cizilse kucuk boyutta
+ * disler birbirine giriyor.
+ */
 function AyarlarIkonu() {
+  const R = renk.metin
   return (
-    <Svg width={22} height={22} viewBox="0 0 24 24">
+    <Svg width={26} height={26} viewBox="0 0 24 24">
       <Path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke={renk.metin}
-        strokeWidth={1.8}
-        strokeLinecap="round"
+        d="M12 15.4a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8z"
+        stroke={R}
+        strokeWidth={1.7}
+        fill="none"
+      />
+      <Path
+        d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.84 2.84l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.84-2.84l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.84-2.84l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.84 2.84l-.06.06a1.7 1.7 0 0 0-.34 1.88V9a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11a1.7 1.7 0 0 0-1.49 1.03z"
+        stroke={R}
+        strokeWidth={1.7}
+        strokeLinejoin="round"
         fill="none"
       />
     </Svg>

@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
+import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
 
 /**
@@ -82,6 +83,7 @@ export function CheckInKarti({
           </View>
         </Pressable>
 
+        <View style={stiller.orta}>
         <Text style={stiller.satir}>
           <Text
             style={stiller.kullaniciAdi}
@@ -113,6 +115,10 @@ export function CheckInKarti({
             </>
           )}
         </Text>
+        {/* Tam zaman: gorece etiket "ne kadar once" der, bu da "tam
+            olarak ne zaman". */}
+        <Text style={stiller.tamZaman}>{tamZaman(oge.olusturmaZamani)}</Text>
+        </View>
 
         {silinebilir && (
           <Pressable
@@ -126,7 +132,11 @@ export function CheckInKarti({
           </Pressable>
         )}
 
-        {oge.canliMi ? (
+        {/* "Şu an burada" YALNIZCA ILK BIR SAAT (kullanicinin karari
+            2026-08-27). Check-in 4 saat canli kalsa bile bir saatten
+            sonra "2 saat önce" yaziyor - "su an" iddiasi o kadar
+            surmuyor. */}
+        {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
           // Turuncunun mesru kullanimi: "su an oluyor". YALNIZCA NOKTA
           // YETMIYOR - renk tek basina anlam tasimamali.
           <View style={stiller.canliRozet}>
@@ -201,8 +211,14 @@ const stiller = StyleSheet.create({
     color: renk.turuncu,
   },
 
+  orta: { flex: 1 },
+  tamZaman: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
+    marginTop: 2,
+  },
   satir: {
-    flex: 1,
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 21,

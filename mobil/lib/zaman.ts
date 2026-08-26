@@ -27,3 +27,31 @@ export function gorecelZaman(
   const ay = String(tarih.getMonth() + 1).padStart(2, '0')
   return `${gun}.${ay}.${tarih.getFullYear()}`
 }
+
+/**
+ * "Şu an burada" ne kadar sure yazar?
+ *
+ * Check-in 4 saat boyunca CANLI kaliyor ama kullanicinin karari
+ * (2026-08-27) etiketin yalnizca ILK BIR SAAT "şu an burada" demesi.
+ * Sonrasinda check-in hala canli olsa bile "2 saat önce" yaziyor -
+ * "su an" iddiasi bir saatten sonra dogru hissettirmiyor.
+ */
+const CANLI_ETIKET_SURESI = SAAT
+
+/** Etiket "şu an burada" mi olmali? */
+export function suAnBuradaMi(iso: string, canliMi: boolean): boolean {
+  if (!canliMi) return false
+  return Date.now() - new Date(iso).getTime() < CANLI_ETIKET_SURESI
+}
+
+/**
+ * Check-in'in yapildigi an: "27.08.2026 00:23".
+ *
+ * Gorece zaman "ne kadar once" sorusunu cevapliyor; bu da "tam olarak
+ * ne zaman" sorusunu. Ikisi birlikte duruyor.
+ */
+export function tamZaman(iso: string): string {
+  const t = new Date(iso)
+  const iki = (n: number) => String(n).padStart(2, '0')
+  return `${iki(t.getDate())}.${iki(t.getMonth() + 1)}.${t.getFullYear()} ${iki(t.getHours())}:${iki(t.getMinutes())}`
+}
