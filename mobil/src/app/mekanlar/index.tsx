@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { useRouter } from 'expo-router'
+import Svg, { Path, Circle } from 'react-native-svg'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
@@ -20,6 +21,19 @@ import {
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CanliHarita } from '../../tasarim/CanliHarita'
+
+/** Satir sonundaki check-in kisayolu ikonu. */
+function CheckInIkonu() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path
+        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
+        fill={renk.turuncu}
+      />
+      <Circle cx={12} cy={9.7} r={2.7} fill="#FFFFFF" />
+    </Svg>
+  )
+}
 
 const YARICAP_SECENEKLERI = [
   { etiket: '1 km', metre: 1000 },
@@ -357,6 +371,18 @@ export default function KesfetEkrani() {
               <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
             </View>
             <Text style={stiller.sakinYazi}>Sakin</Text>
+            {/* Satirin kendisi mekan detayini aciyor; bu igne DOGRUDAN
+                check-in'e goturuyor. Iki hedef ayni satirda oldugu
+                icin igne ayri bir dugme. */}
+            <Pressable
+              onPress={() => router.push(`/check-in/${item.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.ad} için check-in yap`}
+              hitSlop={10}
+              style={stiller.satirCheckIn}
+            >
+              <CheckInIkonu />
+            </Pressable>
           </Pressable>
         ))
       )}
@@ -376,6 +402,8 @@ const KART_GENISLIK = 256
 const KART_YUKSEKLIK = 316
 
 const stiller = StyleSheet.create({
+  satirCheckIn: { paddingLeft: 12, paddingVertical: 4 },
+
   buradaKart: {
     backgroundColor: renk.yuzey,
     borderRadius: yuvarlak.kart,

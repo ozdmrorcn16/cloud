@@ -4,7 +4,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import {
   suAnBurdakileriGetir,
-  mekanAnilariniGetir,
   checkIndenAyril,
   type CheckInGorunumu,
 } from '../../../lib/checkin'
@@ -30,19 +29,16 @@ export default function MekanDetayEkrani() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const [mekan, setMekan] = useState<Mekan | null>(null)
   const [suAnBurdakiler, setSuAnBurdakiler] = useState<CheckInGorunumu[]>([])
-  const [anilar, setAnilar] = useState<CheckInGorunumu[]>([])
   const [kendiKullaniciId, setKendiKullaniciId] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
 
   async function verileriYukle() {
     try {
-      const [canlilar, gecmisAnilar, kullaniciVerisi] = await Promise.all([
+      const [canlilar, kullaniciVerisi] = await Promise.all([
         suAnBurdakileriGetir(id),
-        mekanAnilariniGetir(id),
         supabase.auth.getUser(),
       ])
       setSuAnBurdakiler(canlilar)
-      setAnilar(gecmisAnilar)
       setKendiKullaniciId(kullaniciVerisi.data.user?.id ?? null)
       setHata(null)
     } catch (e) {
@@ -150,10 +146,6 @@ export default function MekanDetayEkrani() {
         </View>
         <Satirlar veri={suAnBurdakiler} bos="Şu an kimse yok" />
 
-        <Text style={[stiller.bolumAd, stiller.ikinciBolum]} accessibilityRole="header">
-          Anılar
-        </Text>
-        <Satirlar veri={anilar} bos="Henüz bir anı yok" />
       </ScrollView>
     </View>
   )

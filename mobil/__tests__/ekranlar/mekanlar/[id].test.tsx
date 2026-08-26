@@ -36,20 +36,27 @@ beforeEach(() => {
 })
 
 describe('MekanDetayEkrani', () => {
-  it('su an orada olanlari ve anilari iki ayri bolumde gosterir', async () => {
+  it('su an orada olanlari gosterir', async () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciAdi: 'Ada', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
-    ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
-      { id: 'checkin-2', kullaniciAdi: 'Berk', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
     ])
 
     await render(<MekanDetayEkrani />)
 
     await waitFor(() => {
       expect(screen.getByText('Ada')).toBeTruthy()
-      expect(screen.getByText('Berk')).toBeTruthy()
     })
+  })
+
+  it('ANILAR bolumu YOK - mekan ekraninda gecmis gosterilmiyor', async () => {
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanDetayEkrani />)
+    await waitFor(() => screen.getByText('Check-in yap'))
+
+    expect(screen.queryByText('Anılar')).toBeNull()
+    // Bolum kalkinca onu besleyen istek de atilmamali.
+    expect(mekanAnilariniGetir).not.toHaveBeenCalled()
   })
 
   it('kendi aktif check-ini varsa ayrildim butonu gosterir ve basinca cagirir', async () => {
@@ -58,7 +65,6 @@ describe('MekanDetayEkrani', () => {
         { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
       ])
       .mockResolvedValueOnce([])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
     ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
 
     await render(<MekanDetayEkrani />)
@@ -78,7 +84,6 @@ describe('MekanDetayEkrani', () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Baskasi', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
     ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
 
@@ -91,7 +96,6 @@ describe('MekanDetayEkrani', () => {
 
   it('check-in yap butonuna basinca check-in ekranina yonlendirir', async () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Check-in yap'))
@@ -102,7 +106,6 @@ describe('MekanDetayEkrani', () => {
 
   it('veri yuklemesi basarisiz olursa hata mesaji gosterir', async () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
 
@@ -115,7 +118,6 @@ describe('MekanDetayEkrani', () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Ada', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
     ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Ada'))
@@ -128,7 +130,6 @@ describe('MekanDetayEkrani', () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
     ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Sen'))
@@ -137,24 +138,11 @@ describe('MekanDetayEkrani', () => {
     expect(mockRouterPush).not.toHaveBeenCalledWith(expect.stringContaining('/kullanici/'))
   })
 
-  it('anilar listesinde baskasinin adina basinca profiline yonlendirir', async () => {
-    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
-      { id: 'checkin-2', kullaniciId: 'kullanici-3', kullaniciAdi: 'Berk', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
-    ])
-
-    await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Berk'))
-    await fireEvent.press(screen.getByText('Berk'))
-
-    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-3')
-  })
 
   it('baskasinin su an buradaki karti sikayet et baglantisi gosterir ve basinca sikayet ekranina yonlendirir', async () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciId: 'kullanici-2', kullaniciAdi: 'Ada', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
     ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Şikayet et'))
@@ -167,7 +155,6 @@ describe('MekanDetayEkrani', () => {
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: null, fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: true },
     ])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanDetayEkrani />)
     await waitFor(() => screen.getByText('Sen'))
@@ -175,28 +162,5 @@ describe('MekanDetayEkrani', () => {
     expect(screen.queryByText('Şikayet et')).toBeNull()
   })
 
-  it('baskasinin ani karti sikayet et baglantisi gosterir ve basinca sikayet ekranina yonlendirir', async () => {
-    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
-      { id: 'checkin-2', kullaniciId: 'kullanici-3', kullaniciAdi: 'Berk', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
-    ])
 
-    await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Şikayet et'))
-    await fireEvent.press(screen.getByText('Şikayet et'))
-
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=check_in&hedefId=checkin-2')
-  })
-
-  it('kendi ani kartinda sikayet et baglantisi gosterilmez', async () => {
-    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
-    ;(mekanAnilariniGetir as jest.Mock).mockResolvedValue([
-      { id: 'checkin-2', kullaniciId: 'kullanici-1', kullaniciAdi: 'Sen', notMetni: 'guzel', fotograf: null, mekanId: 'mekan-1', olusturmaZamani: '', bitisZamani: '', canliMi: false },
-    ])
-
-    await render(<MekanDetayEkrani />)
-    await waitFor(() => screen.getByText('Sen'))
-
-    expect(screen.queryByText('Şikayet et')).toBeNull()
-  })
 })
