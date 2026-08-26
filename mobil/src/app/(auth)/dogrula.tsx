@@ -37,6 +37,7 @@ export default function DogrulaEkrani() {
   const [bilgi, setBilgi] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [kalanSaniye, setKalanSaniye] = useState(BEKLEME_SANIYE)
+  const [zatenKayitli, setZatenKayitli] = useState(false)
   const girdiRef = useRef<TextInput>(null)
 
   useEffect(() => {
@@ -53,17 +54,52 @@ export default function DogrulaEkrani() {
     setHata(null)
     setBilgi(null)
     setGonderiliyor(true)
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       phone: telefon,
       token: girilen,
       type: 'sms',
     })
-    setGonderiliyor(false)
 
     if (error) {
+      setGonderiliyor(false)
       setHata(error.message)
       return
     }
+
+    // Numara dogrulandi. Simdi bu bir KAYIT mi yoksa zaten var olan bir
+    // hesap mi ona bakiliyor: profil satiri varsa hesap tamamlanmis
+    // demektir ve burasi kayit akisi degildir.
+    //
+    // Kontrol neden BURADA, kod girilmeden once degil: "bu numarada
+    // hesap var mi" sorusunu kimlik dogrulamadan cevaplamak, elindeki
+    // numara listesiyle kimin kayitli oldugunu tarayabilmek demek
+    // olurdu. Kodu giren kisi numaranin sahibi oldugunu zaten ispat
+    // etti, dolayisiyla burada soylemek bilgi sizdirmiyor.
+    const kullaniciId = data.session?.user.id
+    let profilVar = false
+    if (kullaniciId) {
+      const { data: profil, error: profilHatasi } = await supabase
+        .from('profiller')
+        .select('id')
+        .eq('id', kullaniciId)
+        .maybeSingle()
+      // Okuma basarisiz olursa eski davranisa duesuluyor: profil
+      // olusturmaya gidilir, kok yonlendirme kontrolu gerekirse geri
+      // alir. Ag hatasi yuzunden kimseyi ekranda kilitlemiyoruz.
+      profilVar = !profilHatasi && profil !== null
+    }
+
+    if (profilVar) {
+      // Kayit akisi burada BITIYOR (kullanicinin karari 2026-08-26).
+      // Oturum kapatiliyor: aksi halde kok yonlendirme kontrolu bu
+      // kisiyi dogrudan uygulamaya alir ve mesaj hic gorunmez.
+      await supabase.auth.signOut()
+      setGonderiliyor(false)
+      setZatenKayitli(true)
+      return
+    }
+
+    setGonderiliyor(false)
     router.replace('/profil-olustur')
   }
 
@@ -109,6 +145,31 @@ export default function DogrulaEkrani() {
         </Svg>
       </Pressable>
 
+      {/* Numara zaten kayitliysa kayit akisi burada biter: kod alani
+          hic cizilmez, kullaniciya girise gitmesi soylenir. */}
+      {zatenKayitli ? (
+        <>
+          <Text style={stiller.baslik}>{t('dogrula.zatenKayitliBaslik')}</Text>
+          <Text style={stiller.aciklama}>
+            {t('dogrula.zatenKayitliAciklama', { telefon: okunurBicim(telefon ?? '') })}
+          </Text>
+          <Pressable
+            style={stiller.birincil}
+            onPress={() => router.replace('/giris')}
+            accessibilityRole="button"
+          >
+            <Text style={stiller.birincilYazi}>{t('dogrula.girisYap')}</Text>
+          </Pressable>
+          <Pressable
+            style={stiller.ikincil}
+            onPress={() => router.replace('/kayit')}
+            accessibilityRole="button"
+          >
+            <Text style={stiller.ikincilYazi}>{t('dogrula.baskaNumara')}</Text>
+          </Pressable>
+        </>
+      ) : (
+      <>
       <Text style={stiller.baslik}>{t('dogrula.baslik')}</Text>
       <Text style={stiller.aciklama}>{t('dogrula.aciklama', { telefon: okunurBicim(telefon ?? '') })}</Text>
 
@@ -172,6 +233,8 @@ export default function DogrulaEkrani() {
           </Pressable>
         )}
       </View>
+      </>
+      )}
     </View>
   )
 }
@@ -247,6 +310,13 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
     color: '#FFFFFF',
+  },
+
+  ikincil: { alignItems: 'center', paddingVertical: bosluk.l, marginTop: bosluk.s },
+  ikincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
   },
 
   tekrarAlani: { alignItems: 'center', gap: bosluk.xs, marginTop: bosluk.l },

@@ -3,8 +3,18 @@ import DogrulaEkrani from '../../src/app/(auth)/dogrula'
 import { supabase } from '../../lib/supabase'
 
 jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { verifyOtp: jest.fn(), signUp: jest.fn(), resend: jest.fn() } },
+  supabase: {
+    auth: { verifyOtp: jest.fn(), signUp: jest.fn(), resend: jest.fn(), signOut: jest.fn() },
+    from: jest.fn(),
+  },
 }))
+
+/** `from('profiller').select().eq().maybeSingle()` zincirini kurar. */
+function profilSorgusu(sonuc: { data: unknown; error: unknown }) {
+  ;(supabase.from as jest.Mock).mockReturnValue({
+    select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve(sonuc) }) }),
+  })
+}
 
 const mockRouterReplace = jest.fn()
 const mockRouterBack = jest.fn()
@@ -84,5 +94,47 @@ describe('DogrulaEkrani', () => {
     await render(<DogrulaEkrani />)
     await fireEvent.press(screen.getByLabelText('Geri'))
     expect(mockRouterBack).toHaveBeenCalled()
+  })
+})
+
+describe('DogrulaEkrani - numara zaten kayitliysa', () => {
+  const OTURUM = { data: { session: { user: { id: 'kullanici-1' } } }, error: null }
+
+  beforeEach(() => {
+    ;(supabase.auth.signOut as jest.Mock).mockResolvedValue({ error: null })
+  })
+
+  it('profil varsa oturumu kapatir ve girise yonlendiren mesaji gosterir', async () => {
+    ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue(OTURUM)
+    profilSorgusu({ data: { id: 'kullanici-1' }, error: null })
+
+    await render(<DogrulaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText(KOD_ETIKETI), '123456')
+
+    expect(await screen.findByText('Bu numarada zaten bir hesap var')).toBeTruthy()
+    expect(supabase.auth.signOut).toHaveBeenCalled()
+    // Kayit akisi burada bitiyor: profil olusturmaya GECILMIYOR.
+    expect(mockRouterReplace).not.toHaveBeenCalledWith('/profil-olustur')
+  })
+
+  it('profil yoksa profil olusturmaya gecer', async () => {
+    ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue(OTURUM)
+    profilSorgusu({ data: null, error: null })
+
+    await render(<DogrulaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText(KOD_ETIKETI), '123456')
+
+    await waitFor(() => expect(mockRouterReplace).toHaveBeenCalledWith('/profil-olustur'))
+    expect(supabase.auth.signOut).not.toHaveBeenCalled()
+  })
+
+  it('profil okunamazsa akisi kilitlemez, profil olusturmaya gecer', async () => {
+    ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue(OTURUM)
+    profilSorgusu({ data: null, error: { message: 'ag hatasi' } })
+
+    await render(<DogrulaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText(KOD_ETIKETI), '123456')
+
+    await waitFor(() => expect(mockRouterReplace).toHaveBeenCalledWith('/profil-olustur'))
   })
 })

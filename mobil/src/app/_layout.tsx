@@ -43,6 +43,12 @@ function YonlendirmeKontrolu() {
   useEffect(() => {
     if (yukleniyor) return
     const authGrubunda = segments[0] === '(auth)'
+    // Dogrulama ekrani kod dogrulandiktan SONRA kendi karar veriyor:
+    // profil yoksa profil olusturmaya gider, varsa oturumu kapatip
+    // "bu numarada zaten hesap var" der. Bu karar bir kac istek
+    // suruyor; o sirada buradan uygulamaya atilirsa mesaj hic
+    // gorunmez. Bu yuzden /dogrula'dan zorla cikarilmiyor.
+    const dogrulamaEkraninda = authGrubunda && segments[1] === 'dogrula'
     const profilOlusturEkraninda = segments[0] === 'profil-olustur'
     const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
@@ -66,7 +72,8 @@ function YonlendirmeKontrolu() {
     } else if (
       oturum &&
       profilVarMi &&
-      (authGrubunda || profilOlusturEkraninda || hesapDurumuEkraninda)
+      (authGrubunda || profilOlusturEkraninda || hesapDurumuEkraninda) &&
+      !dogrulamaEkraninda
     ) {
       router.replace('/')
     }

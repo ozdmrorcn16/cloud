@@ -295,8 +295,19 @@ kullanici "simdilik tunelle devam" dedi).
 
 #### Test hesaplari
 
-`05550000000` … `05550000003`, sifre `test1234`, SMS kodu `123456`.
-`05550000008` PROFILSIZ (profil olusturma ekranini gormek icin).
+`05550000000`, `05550000001`, `05550000002`: sifre `test1234`, SMS kodu
+`123456`, UCUNUN DE PROFILI VAR - kayit akisini denemek icin uygun
+degiller, dogrulamadan sonra "bu numarada zaten hesap var" ekranina
+duserler.
+
+`05550000003`: SMS kodu alabiliyor ve **hesabi var ama PROFILI YOK**.
+Kayit akisini bastan sona denemek icin kullanilacak numara budur;
+profil olusturmadan cikildigi surece yeniden kullanilabilir.
+
+`05550000008`: profilsiz ama Supabase'in test numarasi listesinde
+DEGIL, yani SMS kodu alamiyor (`Unable to get SMS provider`). Yalnizca
+giris ekranindan `test1234` ile girilerek profil olusturma ekranina
+ulasilir.
 
 #### EAS / APK durumu
 

@@ -270,6 +270,11 @@ export default {
     tekrarBekle: '{{saniye}} sn sonra tekrar gönderebilirsin',
     tekrarGonderildi: 'Yeni kod gönderildi.',
     hataEksik: 'Kodu eksiksiz gir.',
+    zatenKayitliBaslik: 'Bu numarada zaten bir hesap var',
+    zatenKayitliAciklama:
+      '{{telefon}} numarasıyla daha önce hesap oluşturulmuş. Şifrenle giriş yapabilirsin.',
+    girisYap: 'Giriş yap',
+    baskaNumara: 'Başka bir numarayla devam et',
   },
 
   giris: {
