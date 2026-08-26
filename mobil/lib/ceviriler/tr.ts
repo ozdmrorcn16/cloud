@@ -247,7 +247,7 @@ export default {
   profil: {
     ayarlar: 'Ayarlar',
     aniSayisi: 'Anı',
-    bagSayisi: 'Bağ',
+    bagSayisi: 'Arkadaşlarım',
     canliEtiket: 'Şu an buradasın',
     ayril: 'Ayrıl',
     canliSil: 'Sil',

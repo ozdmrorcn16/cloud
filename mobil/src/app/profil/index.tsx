@@ -264,6 +264,12 @@ export default function ProfilEkrani() {
                 <Text style={stiller.fotografDurumu}>Yükleniyor…</Text>
               )}
 
+              {/* Ad ve biyografi AVATARIN HEMEN ALTINDA ve ortali
+                  (kullanicinin istegi 2026-08-27). Onceden sayilarin
+                  altinda ve sola dayaliydi. */}
+              <Text style={stiller.ad}>{profil.ad}</Text>
+              {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
+
               <View style={stiller.sayilar}>
                 <Pressable
                   style={stiller.sayiHucre}
@@ -285,8 +291,6 @@ export default function ProfilEkrani() {
               </View>
             </View>
 
-            <Text style={stiller.ad}>{profil.ad}</Text>
-            {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
 
             {aktifCheckIn ? (
               <>
@@ -333,20 +337,7 @@ export default function ProfilEkrani() {
                 </View>
               )}
               </>
-            ) : (
-              <View style={stiller.kart}>
-                <Text style={stiller.kartBaslik}>{t('profil.bosCanliBaslik')}</Text>
-                <Text style={stiller.kartAciklama}>{t('profil.bosCanliAciklama')}</Text>
-                {/* Sayfanin tek birincil turuncu eylemi. */}
-                <Pressable
-                  style={stiller.birincil}
-                  onPress={() => router.push('/mekanlar')}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.birincilYazi}>{t('profil.checkInYap')}</Text>
-                </Pressable>
-              </View>
-            )}
+            ) : null}
 
             <View style={stiller.bolumBasligi}>
               <Text style={stiller.bolumAd} accessibilityRole="header">
@@ -443,9 +434,11 @@ const stiller = StyleSheet.create({
   kullaniciAdi: {
     flexShrink: 1,
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
+    // Kucultuldu (kullanicinin istegi 2026-08-27): baslik boyutunda
+    // sayfanin en agir ogesiydi ve profil fotografiyla yarisiyordu.
+    fontSize: olcek.altBaslik,
     color: renk.metin,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
 
   hata: {
@@ -480,7 +473,8 @@ const stiller = StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.metinIkincil,
   },
-  avatar: { width: 84, height: 84, borderRadius: 42 },
+  // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
+  avatar: { width: 104, height: 104, borderRadius: 52 },
   avatarYok: {
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
@@ -510,16 +504,17 @@ const stiller = StyleSheet.create({
 
   ad: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
+    fontSize: olcek.altBaslik,
     color: renk.metin,
-    marginTop: bosluk.l,
+    textAlign: 'center',
   },
   biyografi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 20,
     color: renk.metinIkincil,
-    marginTop: bosluk.xs,
+    textAlign: 'center',
+    marginTop: 2,
   },
 
   // Canli serit: ekranin imza ogesi. Turuncu nokta "su an oluyor" der.

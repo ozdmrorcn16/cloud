@@ -81,7 +81,7 @@ describe('ProfilEkrani', () => {
     expect(await screen.findByText('2')).toBeTruthy()
     expect(screen.getByText('Anı')).toBeTruthy()
     expect(screen.getByText('1')).toBeTruthy()
-    expect(screen.getByText('Bağ')).toBeTruthy()
+    expect(screen.getByText('Arkadaşlarım')).toBeTruthy()
   })
 
   it('canli check-in varsa mekan adiyla serit gosterir', async () => {
@@ -103,12 +103,16 @@ describe('ProfilEkrani', () => {
     expect(screen.getByText('Kordon')).toBeTruthy()
   })
 
-  it('canli check-in yoksa check-in yapmaya yonlendirir', async () => {
+  it('canli check-in yoksa profilde HICBIR serit ya da kart cizilmiyor', async () => {
+    // "Su an bir yerde degilsin" karti kaldirildi (kullanicinin karari
+    // 2026-08-27). Check-in'e giris artik alt cubugun ortasindaki
+    // turuncu dugmede; profilde ikinci bir cagri gerekmiyor.
     await render(<ProfilEkrani />)
+    await screen.findByText('Anılar')
 
-    expect(await screen.findByText('Şu an bir yerde değilsin')).toBeTruthy()
-    fireEvent.press(screen.getByText('Bir yere check-in yap'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar')
+    expect(screen.queryByText('Şu an bir yerde değilsin')).toBeNull()
+    expect(screen.queryByText('Bir yere check-in yap')).toBeNull()
+    expect(screen.queryByText('Şu an buradasın')).toBeNull()
   })
 
   it('ayril basilinca check-inden cikar ve serit kaybolur', async () => {
