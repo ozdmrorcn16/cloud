@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { fotografYukle } from './fotograf-yukle'
 
 export type BaskaProfil = {
   id: string
@@ -77,4 +78,35 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
     biyografi: satir.biyografi,
     fotograflar: satir.fotograflar,
   }
+}
+
+/**
+ * Profil fotografini degistirir.
+ *
+ * TEK GIRIS NOKTASI BURASI (kullanicinin karari 2026-08-26): fotograf
+ * artik hesap olusturma adiminda sorulmuyor, yalnizca profil
+ * ekranindaki avatara basilarak ekleniyor ya da degistiriliyor.
+ *
+ * `fotograflar` bir dizi ama tek eleman tutuyor: eski cok fotografli
+ * tasarim kaldirildi, dizinin ilk elemani profil fotografi. Yeni
+ * fotograf eskisinin yerine YAZILIYOR.
+ *
+ * Storage'daki eski dosya SILINMIYOR - bu, projede zaten bilinen bir
+ * borc (oksuz dosyalar). Silmeyi buraya eklemek, yukleme basarili ama
+ * silme basarisiz oldugunda profili yarim birakma riski tasiyor.
+ */
+export async function profilFotografiniDegistir(yerelUri: string): Promise<string> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const kullaniciId = kullaniciVerisi.user?.id
+  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+
+  const yuklenenYol = await fotografYukle(kullaniciId, yerelUri)
+
+  const { error } = await supabase
+    .from('profiller')
+    .update({ fotograflar: [yuklenenYol] })
+    .eq('id', kullaniciId)
+  if (error) throw new Error(hataMetni(error))
+
+  return yuklenenYol
 }

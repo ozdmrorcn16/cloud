@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
-import Svg, { Path } from 'react-native-svg'
+import Svg, { Path, Circle } from 'react-native-svg'
+import * as ImagePicker from 'expo-image-picker'
 import { kendiProfilimiGetir, type KendiProfil } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
 import {
@@ -13,6 +14,7 @@ import {
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { profilFotografiniDegistir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -60,6 +62,26 @@ function AyarlarIkonu() {
  * neredesin seridi, sonra gecmis (anilar). Canli seritteki turuncu
  * kimligin mesru kullanimi: "su an oluyor" demek.
  */
+/**
+ * Canli seritteki check-in isareti.
+ *
+ * Onceden yalnizca turuncu bir noktaydi (kullanicinin istegi
+ * 2026-08-26: "checkin yaninda turuncu nokta degil checkin ikonu
+ * olsun"). Nokta "bir sey aktif" diyordu ama NE oldugunu
+ * soylemiyordu; igne dogrudan check-in'i anlatiyor.
+ */
+function CanliCheckInIkonu() {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24">
+      <Path
+        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
+        fill={renk.turuncu}
+      />
+      <Circle cx={12} cy={9.7} r={2.7} fill={renk.turuncuZemin} />
+    </Svg>
+  )
+}
+
 export default function ProfilEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -70,6 +92,7 @@ export default function ProfilEkrani() {
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
   // Silme geri alinamaz: once onay.
   const [silOnayi, setSilOnayi] = useState(false)
+  const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
@@ -109,6 +132,27 @@ export default function ProfilEkrani() {
       yukle()
     }, [])
   )
+
+  async function fotografDegistir() {
+    const sonuc = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [1, 1],
+    })
+    if (sonuc.canceled) return
+
+    setFotografYukleniyor(true)
+    try {
+      await profilFotografiniDegistir(sonuc.assets[0].uri)
+      // Profili yeniden okuyoruz: imzali adres sunucudan geliyor.
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    } finally {
+      setFotografYukleniyor(false)
+    }
+  }
 
   async function canliyiSil() {
     if (!aktifCheckIn) return
@@ -175,21 +219,49 @@ export default function ProfilEkrani() {
 
         {profil && (
           <>
+            {/* AVATAR YUKARIDA VE ORTADA (kullanicinin karari
+                2026-08-26). Basilinca fotograf secilir: profil
+                fotografinin TEK GIRIS NOKTASI burasi - hesap olusturma
+                adiminda artik sorulmuyor. */}
             <View style={stiller.kimlik}>
-              {fotografUrl ? (
-                <Image
-                  testID="profil-fotografi"
-                  source={{ uri: fotografUrl }}
-                  style={stiller.avatar}
-                />
-              ) : (
-                // Fotografi olmayanda bos daire birakmak profili eksik
-                // gosteriyor; bas harf kimligi tasiyor.
-                <View style={[stiller.avatar, stiller.avatarYok]}>
-                  <Text style={stiller.basHarf}>
-                    {(profil.ad || profil.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-                  </Text>
+              <Pressable
+                onPress={fotografDegistir}
+                disabled={fotografYukleniyor}
+                accessibilityRole="button"
+                accessibilityLabel="Profil fotoğrafını değiştir"
+                style={stiller.avatarBasilir}
+              >
+                {fotografUrl ? (
+                  <Image
+                    testID="profil-fotografi"
+                    source={{ uri: fotografUrl }}
+                    style={stiller.avatar}
+                  />
+                ) : (
+                  // Fotografi olmayanda bos daire birakmak profili eksik
+                  // gosteriyor; bas harf kimligi tasiyor.
+                  <View style={[stiller.avatar, stiller.avatarYok]}>
+                    <Text style={stiller.basHarf}>
+                      {(profil.ad || profil.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                {/* Rozet KOYU, turuncu degil: ekrandaki turuncu eylem
+                    canli check-in seridi. */}
+                <View style={stiller.fotografRozeti}>
+                  <Svg width={14} height={14} viewBox="0 0 24 24">
+                    <Path
+                      d="M12 5v14M5 12h14"
+                      stroke="#FFFFFF"
+                      strokeWidth={2.6}
+                      strokeLinecap="round"
+                    />
+                  </Svg>
                 </View>
+              </Pressable>
+
+              {fotografYukleniyor && (
+                <Text style={stiller.fotografDurumu}>Yükleniyor…</Text>
               )}
 
               <View style={stiller.sayilar}>
@@ -219,7 +291,7 @@ export default function ProfilEkrani() {
             {aktifCheckIn ? (
               <>
               <View style={stiller.canliKart}>
-                <View style={stiller.canliNokta} />
+                <CanliCheckInIkonu />
                 <View style={stiller.canliOrta}>
                   <Text style={stiller.canliEtiket}>{t('profil.canliEtiket')}</Text>
                   <Text style={stiller.canliMekan} numberOfLines={1}>
@@ -388,7 +460,26 @@ const stiller = StyleSheet.create({
     color: renk.metinIkincil,
   },
 
-  kimlik: { flexDirection: 'row', alignItems: 'center', gap: bosluk.xl },
+  kimlik: { alignItems: 'center', gap: bosluk.l },
+  avatarBasilir: { marginBottom: bosluk.xs },
+  fotografRozeti: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: renk.metin,
+    borderWidth: 2.5,
+    borderColor: renk.zemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fotografDurumu: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+  },
   avatar: { width: 84, height: 84, borderRadius: 42 },
   avatarYok: {
     backgroundColor: renk.turuncuZemin,
@@ -401,7 +492,7 @@ const stiller = StyleSheet.create({
     color: renk.turuncu,
   },
 
-  sayilar: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
   sayiAyirici: { width: 1, height: 28, backgroundColor: renk.cizgi },
   sayi: {
@@ -441,12 +532,6 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.l,
     paddingVertical: bosluk.l,
     marginTop: bosluk.xl,
-  },
-  canliNokta: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: renk.turuncu,
   },
   canliOrta: { flex: 1 },
   canliEtiket: {
