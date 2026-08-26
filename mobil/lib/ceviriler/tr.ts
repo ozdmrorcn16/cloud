@@ -26,13 +26,6 @@ export default {
       'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
     dilEtiket: 'Dil',
 
-    // Slogan UC PARCA: ortadaki kelime turuncu yaziliyor. Ceviride
-    // parcalarin sirasi korunmali; vurgulu kelime dilin dogal
-    // vurgusuna gore degisebilir.
-    vaatOnce: 'Şu an orada ',
-    vaatVurgu: 'kim',
-    vaatSonra: ' var',
-    vaatAlt: 'Bulunduğun yere check-in yap, tam o anda orada olanları gör.',
 
     // Acilistaki ornek check-in kartlari. GERCEK VERI DEGIL: kullanici
     // henuz giris yapmamis ve kimin nerede oldugu giris oncesi

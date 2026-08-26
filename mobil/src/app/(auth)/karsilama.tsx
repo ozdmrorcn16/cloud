@@ -169,17 +169,10 @@ export default function KarsilamaEkrani() {
         <MarkaIsareti zemin="acik" boyut={84} />
         <MarkaYazisi genislik={168} style={stiller.markaYazisi} />
 
-        {/* Slogan 2026-08-25'te kaldirilmisti, 2026-08-26'da GERI
-            GELDI: o gun aciklama satirlari da duruyordu ve slogan
-            onlarin soyledigini tekrar ediyordu. Aciklamalar kalkinca
-            ekranin ust yarisi bosaldi ve cumlenin yeri acildi.
-            Metni kullanici verdi: "su an orada kim var". */}
-        <Text style={stiller.vaat}>
-          {t('karsilama.vaatOnce')}
-          <Text style={stiller.vaatVurgu}>{t('karsilama.vaatVurgu')}</Text>
-          {t('karsilama.vaatSonra')}
-        </Text>
-        <Text style={stiller.vaatAlt}>{t('karsilama.vaatAlt')}</Text>
+        {/* SLOGAN YOK. 2026-08-26'da bir kez geri getirildi ve ayni
+            gun kullanicinin karariyla yeniden kaldirildi: acilis
+            ekraninda cumle degil, uygulamanin kendisi gosteriliyor -
+            ornek check-in kartlari ve dort baslik. */}
       </View>
 
       {/* Uygulamanin ne yaptigini anlatan tek yer: ikon + tek satirlik
@@ -257,26 +250,6 @@ const stiller = StyleSheet.create({
   },
 
   markaYazisi: { marginTop: bosluk.s },
-  vaat: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: 27,
-    lineHeight: 34,
-    color: renk.metin,
-    letterSpacing: -0.5,
-    textAlign: 'center',
-    marginTop: bosluk.l,
-  },
-  vaatVurgu: { color: renk.turuncu },
-  vaatAlt: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
-    lineHeight: 22,
-    color: '#57504A',
-    textAlign: 'center',
-    marginTop: bosluk.s,
-    paddingHorizontal: bosluk.m,
-  },
-
   ornekKartlar: { gap: bosluk.m },
   ornekKart: {
     flexDirection: 'row',
@@ -374,9 +347,9 @@ const stiller = StyleSheet.create({
   // Icerik krokinin ALT KALABALIGINA duesmemeli: haritanin dibindeki
   // insan baloncuklari ve nabiz halkasi metnin altina girip okumayi
   // bozuyor. Bu yuzden ust bosluklar kucuk, alt bosluk buyuk.
-  ustBosluk: { flex: 0.3 },
-  ortaBosluk: { flex: 0.35 },
-  esnekBosluk: { flex: 1.35 },
+  ustBosluk: { flex: 0.8 },
+  ortaBosluk: { flex: 0.55 },
+  esnekBosluk: { flex: 1.05 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {

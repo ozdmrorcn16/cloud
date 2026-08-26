@@ -29,9 +29,59 @@ import { renk } from './tema'
 const EN = 390
 const BOY = 844
 
-/** Halkalarin ve ignenin merkezi - icerigin bos seridi. */
-// Nabiz, tanitim blogunun BITTIGI nokta ile 'Hesap olustur' butonunun
-// ortasinda duruyor (kullanicinin istegi 2026-08-25).
+/**
+ * YOL IZGARASI. Yatay ve dikey yollarin eksen konumlari.
+ *
+ * Yollar tam yatay/dikey (2026-08-26): onceden hepsi hafif egimliydi
+ * ve metnin arkasindan gecen egik serit yazilari yamuk gosteriyordu.
+ * Egimi duzeltmek tek gercek cozumdu - yanilsama yazi tarafinda
+ * giderilemiyor.
+ *
+ * Aralklar BILEREK esit degil: canlilik egimden degil, ritimden
+ * geliyor.
+ */
+const YATAY_YOL = [-20, 78, 221, 311, 414, 534, 629, 733, 864]
+const DIKEY_YOL = [-20, 52, 158, 246, 324, 410]
+
+/** Adanin yola olan payi - en kalin yolun yarisindan (8.5) buyuk. */
+const ADA_PAYI = 14
+
+/**
+ * Dolu hucreler: [satir, sutun]. Hepsi doldurulsaydi kroki tekduze bir
+ * dama tahtasi olurdu; bosluklar meydan/park gibi okunuyor.
+ */
+const DOLU_HUCRELER: readonly (readonly [number, number])[] = [
+  [0, 1], [0, 3],
+  [1, 0], [1, 1], [1, 4],
+  [2, 1], [2, 3],
+  [3, 0], [3, 3],
+  [4, 1], [4, 2], [4, 4],
+  [5, 0], [5, 3],
+  [6, 1], [6, 4],
+  [7, 0], [7, 2],
+]
+
+/**
+ * Ada boyutlarindaki degisim.
+ *
+ * Adalar hucreyi TAM DOLDURMUYOR: her biri kendi sirasina gore biraz
+ * daha kucuk cikiyor. Ilk kosumda hepsi hucreyi tam dolduruyordu ve
+ * kroki ayni boyda kutulardan olusan bir dama tahtasina donuyordu.
+ * Deger diziden geliyor, rastgele degil - her cizimde ayni sonuc.
+ */
+const EK_PAY = [0, 14, 6, 22, 10, 2]
+
+/** Hucrelerden uretilen ada dikdortgenleri. */
+const ADALAR = DOLU_HUCRELER.map(([satir, sutun], i) => {
+  const ek = EK_PAY[i % EK_PAY.length]
+  const ekDikey = EK_PAY[(i + 3) % EK_PAY.length]
+  const x = DIKEY_YOL[sutun] + ADA_PAYI
+  const y = YATAY_YOL[satir] + ADA_PAYI
+  const en = DIKEY_YOL[sutun + 1] - ADA_PAYI - x - ek
+  const boy = YATAY_YOL[satir + 1] - ADA_PAYI - y - ekDikey
+  return { x, y, en, boy }
+}).filter(({ en, boy }) => en > 26 && boy > 26)
+
 // Nabzin merkezi. 2026-08-26'da 630'dan 674'e INDIRILDI: acilis
 // ekranina slogan ve ornek check-in kartlari eklenince ozellik
 // listesi asagi kaydi ve son satir ("Populer yerleri kesfet") alttaki
@@ -179,39 +229,43 @@ export function KrokiZemin() {
       >
         <Rect x={0} y={0} width={EN} height={BOY} fill={renk.zemin} />
 
-        {/* Yapi adalari. Zeminden belirgin sekilde koyu: kullanicinin
-            istegi uzerine kroki one cikarildi. */}
+        {/* Yapi adalari. Artik elle konmuyor: YOL IZGARASININ
+            hucrelerinden turetiliyor (bkz. ADALAR). Onceden koordinatlar
+            elle yazilmisti ve yollar duzlestirilince adalar yollarin
+            uzerine binmeye basladi. */}
         <G>
-          {[
-            [18, 92, 118, 96],
-            [166, 60, 150, 118],
-            [-20, 240, 132, 150],
-            [246, 232, 170, 128],
-            [30, 452, 120, 140],
-            [232, 476, 150, 116],
-            [66, 640, 128, 120],
-            [242, 664, 140, 130],
-          ].map(([x, y, w, h], i) => (
-            <Rect key={i} x={x} y={y} width={w} height={h} rx={14} fill="#EFE6DA" />
+          {ADALAR.map(({ x, y, en, boy }, i) => (
+            <Rect key={i} x={x} y={y} width={en} height={boy} rx={14} fill="#EFE6DA" />
           ))}
         </G>
 
         {/* Yollar: adalarin uzerinden gecen BEYAZ seritler. Haritalarin
             okunma bicimi bu - koyu ada, acik yol. */}
+        {/* Yollar TAM YATAY / TAM DIKEY.
+            Onceden hepsi hafif egimliydi (yataylarda 430 birimde 20-36
+            birim dusus, ~3 derece). Kullanici yazilarin yamuk
+            gorundugunu bildirdi ve sebebi buydu: metnin arkasindan
+            gecen egik bir seride bakan goz, duz olan yaziyi da egik
+            okuyor. Klasik bir optik yanilsama, yazi tarafinda
+            duzeltilemiyor - referans cizgileri duzeltmek gerekiyor.
+
+            Duzenlilik sikici olmasin diye ARALIKLAR esit degil ve
+            kalinliklar degisiyor; canlilik egimden degil ritimden
+            geliyor. */}
         <G stroke="#FFFFFF" strokeWidth={17} strokeLinecap="round">
-          <Path d="M-20 210 L410 232" />
-          <Path d="M-20 424 L410 404" />
-          <Path d="M-20 618 L410 640" />
-          <Path d="M150 -20 L166 864" />
-          <Path d="M330 -20 L318 864" />
+          <Path d="M-20 221 L410 221" />
+          <Path d="M-20 414 L410 414" />
+          <Path d="M-20 629 L410 629" />
+          <Path d="M158 -20 L158 864" />
+          <Path d="M324 -20 L324 864" />
         </G>
         <G stroke="#FFFFFF" strokeWidth={8} strokeLinecap="round">
-          <Path d="M-20 316 L410 306" />
-          <Path d="M-20 528 L410 540" />
-          <Path d="M60 -20 L44 864" />
-          <Path d="M240 -20 L252 864" />
-          <Path d="M-20 60 L410 96" />
-          <Path d="M-20 740 L410 726" />
+          <Path d="M-20 78 L410 78" />
+          <Path d="M-20 311 L410 311" />
+          <Path d="M-20 534 L410 534" />
+          <Path d="M-20 733 L410 733" />
+          <Path d="M52 -20 L52 864" />
+          <Path d="M246 -20 L246 864" />
         </G>
 
         {IGNELER.map((igne, i) => (
