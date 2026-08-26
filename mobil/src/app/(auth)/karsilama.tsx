@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import Svg, { Path, Circle } from 'react-native-svg'
+import Svg, { Path, Circle, G } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { KrokiZemin } from '../../tasarim/KrokiZemin'
@@ -40,11 +40,43 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
  *
  * Sekiller dolgu (stroke degil): bu boyutta ince cizgi zayif kaliyor.
  */
+/**
+ * Ikonlarin OPTIK HIZA DUZELTMESI.
+ *
+ * Sorun (2026-08-26, kullanici "yazilar yamuk duruyor" dedi): dort
+ * ikonun kutusu da ayni yerde (x=27, 34x34) ve dort baslik da ayni
+ * yerde (x=76) basliyor, ama her ikonun CIZIMI kendi 24x24 viewBox'i
+ * icinde baska bir noktadan basliyor. Olculen mürekkep sol kenarlari
+ * 33.8 / 30.7 / 32.1 / 29.7 px'di - yani ikon sutununun sol kenari
+ * 4 px zikzak yapiyordu ve goz bunu satirlarin kaymasi olarak
+ * okuyordu.
+ *
+ * Cozum ikonlari yeniden cizmek degil, her birini kendi bbox'ina gore
+ * kaydirmak: hepsinin mürekkebi ayni x'ten (HIZA) basliyor ve dikey
+ * merkezi 12'ye oturuyor. Degerler tarayicida `getBBox()` ile
+ * olculdu; ikon cizimi degisirse yeniden olculmeli.
+ *
+ * yogunluk'ta gövde stroke ile ciziliyor: getBBox stroke'u saymadigi
+ * icin genislik 2.6/2 = 1.3 birim disariya tasiyor, dolayisiyla
+ * gercek sol kenari 3.2 degil 1.9.
+ */
+const HIZA = 2.0
+
+const IKON_DUZELTME = {
+  //          olculen sol kenar        olculen dikey merkez
+  konum: { dx: HIZA - 4.8, dy: 12 - 12.0 },
+  kisiler: { dx: HIZA - 2.6, dy: 12 - 12.15 },
+  sohbet: { dx: HIZA - 3.6, dy: 12 - 12.4 },
+  yogunluk: { dx: HIZA - 1.9, dy: 12 - 11.9 },
+} as const
+
 function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' }) {
   const R = renk.turuncu
+  const { dx, dy } = IKON_DUZELTME[ad]
   return (
     <View style={stiller.ikonAlani}>
       <Svg width={34} height={34} viewBox="0 0 24 24">
+        <G transform={`translate(${dx} ${dy})`}>
         {ad === 'konum' && (
           <>
             <Path
@@ -86,6 +118,7 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
             <Path d="M14.6 7.4h6.4v6.4z" fill={R} />
           </>
         )}
+        </G>
       </Svg>
     </View>
   )
