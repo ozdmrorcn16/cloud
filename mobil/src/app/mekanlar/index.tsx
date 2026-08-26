@@ -364,13 +364,6 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/mekanlar/${item.id}`)}
           >
-            <View style={stiller.satirOrta}>
-              <Text style={stiller.satirAd} numberOfLines={1}>
-                {item.ad}
-              </Text>
-              <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
-            </View>
-            <Text style={stiller.sakinYazi}>Sakin</Text>
             {/* Satirin kendisi mekan detayini aciyor; bu igne DOGRUDAN
                 check-in'e goturuyor. Iki hedef ayni satirda oldugu
                 icin igne ayri bir dugme. */}
@@ -383,6 +376,13 @@ export default function KesfetEkrani() {
             >
               <CheckInIkonu />
             </Pressable>
+            <View style={stiller.satirOrta}>
+              <Text style={stiller.satirAd} numberOfLines={1}>
+                {item.ad}
+              </Text>
+              <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
+            </View>
+            <Text style={stiller.sakinYazi}>Sakin</Text>
           </Pressable>
         ))
       )}
@@ -402,7 +402,9 @@ const KART_GENISLIK = 256
 const KART_YUKSEKLIK = 316
 
 const stiller = StyleSheet.create({
-  satirCheckIn: { paddingLeft: 12, paddingVertical: 4 },
+  // Ikon satirin SOL BASINDA (kullanicinin istegi 2026-08-26);
+  // pay da ona gore sagda.
+  satirCheckIn: { paddingRight: 12, paddingVertical: 4 },
 
   buradaKart: {
     backgroundColor: renk.yuzey,
