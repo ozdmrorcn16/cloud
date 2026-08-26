@@ -1,4 +1,4 @@
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, aniyiSil } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -231,13 +231,13 @@ describe('aktifCheckInimiGetir', () => {
   })
 })
 
-describe('aniyiSil', () => {
+describe('checkIniSil', () => {
   it('check-in id sine gore satiri siler', async () => {
     const eq = jest.fn().mockResolvedValue({ error: null })
     const del = jest.fn().mockReturnValue({ eq })
     ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ delete: del })
 
-    await aniyiSil('checkin-3')
+    await checkIniSil('checkin-3')
 
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(del).toHaveBeenCalled()

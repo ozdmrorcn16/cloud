@@ -116,7 +116,18 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
   }))
 }
 
-export async function aniyiSil(checkInId: string): Promise<void> {
+/**
+ * Bir check-in'i KALICI olarak siler.
+ *
+ * Ad 2026-08-26'da `aniyiSil`den degistirildi: ayni satir hem CANLI
+ * check-in hem de ani olabiliyor ve kullanici ikisini de silebilmeli
+ * (kullanicinin istegi). Silme politikasi zaten `kullanici_id =
+ * auth.uid()`, yani durum ayrimi yapmiyor.
+ *
+ * Silinen satir tek yerde duruyor, dolayisiyla akistan da profildeki
+ * anilardan da ayni anda kalkar.
+ */
+export async function checkIniSil(checkInId: string): Promise<void> {
   const { error } = await supabase.from('check_inler').delete().eq('id', checkInId)
   if (error) throw new Error(hataMetni(error))
 }

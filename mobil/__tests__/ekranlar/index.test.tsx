@@ -3,9 +3,11 @@ import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
+import { checkIniSil } from '../../lib/checkin'
 
 jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
+jest.mock('../../lib/checkin', () => ({ checkIniSil: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -115,5 +117,56 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
 
     expect(await screen.findByText('ağ hatası')).toBeTruthy()
+  })
+
+  it('BASKASININ check-in\'inde silme dugmesi YOK', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: false })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    expect(screen.queryByLabelText('Sil')).toBeNull()
+  })
+
+  it('kendi check-in\'inde silme ONAY ISTIYOR, tek dokunusla silmiyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Sil'))
+
+    // Onay satiri acildi; silme HENUZ yapilmadi.
+    expect(screen.getByText('Bu check-in kalıcı olarak silinsin mi?')).toBeTruthy()
+    expect(checkIniSil).not.toHaveBeenCalled()
+  })
+
+  it('onaylanınca siler ve akistan kaldirir', async () => {
+    ;(checkIniSil as jest.Mock).mockResolvedValue(undefined)
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Sil'))
+    await fireEvent.press(screen.getByText('Sil'))
+
+    expect(checkIniSil).toHaveBeenCalledWith('checkin-1')
+    // Satir tek yerde duruyor; akistan kalkmasi profilden de
+    // kalktigi anlamina geliyor.
+    expect(await screen.findByText('Akışın henüz boş')).toBeTruthy()
+  })
+
+  it('vazgecince silmiyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Sil'))
+    await fireEvent.press(screen.getByText('Vazgeç'))
+
+    expect(checkIniSil).not.toHaveBeenCalled()
+    expect(screen.getByText('Sahil Kafe')).toBeTruthy()
   })
 })

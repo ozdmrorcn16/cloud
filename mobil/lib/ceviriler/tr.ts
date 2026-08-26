@@ -17,6 +17,8 @@ export default {
     tekrarDene: 'Tekrar dene',
     yukleniyor: 'Yükleniyor…',
     birSorunOldu: 'Bir sorun oluştu.',
+    sil: 'Sil',
+    vazgec: 'Vazgeç',
   },
 
   karsilama: {
@@ -150,6 +152,8 @@ export default {
     dakika: '{{sayi}} dk',
     saat: '{{sayi}} sa',
     gun: '{{sayi}} gün',
+    silOnay: 'Bu check-in kalıcı olarak silinsin mi?',
+    silAriza: 'Check-in silinemedi.',
   },
 
   kullanici: {
@@ -250,6 +254,8 @@ export default {
     bagSayisi: 'Bağ',
     canliEtiket: 'Şu an buradasın',
     ayril: 'Ayrıl',
+    canliSil: 'Sil',
+    canliSilOnay: 'Bu check-in kalıcı olarak silinsin mi? Anılarında da kalmaz.',
     bosCanliBaslik: 'Şu an bir yerde değilsin',
     bosCanliAciklama:
       'Bulunduğun yere check-in yap, tam o anda orada olan insanları gör.',

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, Pressable, Linking, StyleSheet } from 'react-native'
 import { supabase } from '../../../lib/supabase'
-import { kullanicininAnilariniGetir, aniyiSil, type AniGorunumu } from '../../../lib/checkin'
+import { kullanicininAnilariniGetir, checkIniSil, type AniGorunumu } from '../../../lib/checkin'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { UstCubuk } from '../../tasarim/UstCubuk'
@@ -31,7 +31,7 @@ export default function AnilarEkrani() {
   }
 
   async function sil(checkInId: string) {
-    await aniyiSil(checkInId)
+    await checkIniSil(checkInId)
     setAnilar((mevcut) => mevcut.filter((a) => a.id !== checkInId))
   }
 

@@ -3,6 +3,7 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
+import { checkIniSil } from '../../lib/checkin'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
@@ -60,6 +61,22 @@ function KonumIkonu() {
  * Mesajlar satirlari). Gezinme alt cubuga tasindigi icin o menu
  * gereksizdi; yerini icerik aldi.
  */
+/** Silme dugmesinin ikonu. Cizgi agirligi diger ikonlarla ayni. */
+function CopIkonu() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24">
+      <Path
+        d="M5 7h14M10 7V5.5h4V7M6.5 7l.8 12h9.4l.8-12"
+        stroke={renk.metinSoluk}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  )
+}
+
 export default function AnaSayfa() {
   const router = useRouter()
   const { t } = useDil()
@@ -67,6 +84,8 @@ export default function AnaSayfa() {
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [yenileniyor, setYenileniyor] = useState(false)
+  // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
+  const [silOnayi, setSilOnayi] = useState<string | null>(null)
 
   async function yukle() {
     try {
@@ -86,6 +105,19 @@ export default function AnaSayfa() {
       yukle()
     }, [])
   )
+
+  async function sil(id: string) {
+    try {
+      await checkIniSil(id)
+      // Satir tek yerde duruyor: profildeki anilardan ve canli
+      // seritten de kalkmis oluyor. Burada yalnizca listeyi
+      // guncelliyoruz, yeniden yuklemeye gerek yok.
+      setOgeler((mevcut) => mevcut.filter((o) => o.id !== id))
+      setSilOnayi(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('anaSayfa.silAriza'))
+    }
+  }
 
   async function yenile() {
     setYenileniyor(true)
@@ -147,6 +179,19 @@ export default function AnaSayfa() {
                 </View>
               </Pressable>
 
+              {/* Silme YALNIZCA kendi check-in'inde. */}
+              {item.benimMi && (
+                <Pressable
+                  onPress={() => setSilOnayi(silOnayi === item.id ? null : item.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('ortak.sil')}
+                  hitSlop={10}
+                  style={stiller.silDugmesi}
+                >
+                  <CopIkonu />
+                </Pressable>
+              )}
+
               {item.canliMi ? (
                 // Turuncunun mesru kullanimi: "su an oluyor".
                 <View style={stiller.canliRozet}>
@@ -168,6 +213,31 @@ export default function AnaSayfa() {
             )}
 
             {item.notMetni && <Text style={stiller.not}>{item.notMetni}</Text>}
+
+            {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
+                Onay satiri kartin icinde aciliyor - ayri bir ekran ya
+                da sistem uyarisi akisi kesiyordu. */}
+            {silOnayi === item.id && (
+              <View style={stiller.silOnayAlani}>
+                <Text style={stiller.silOnaySoru}>{t('anaSayfa.silOnay')}</Text>
+                <View style={stiller.silOnayDugmeleri}>
+                  <Pressable
+                    onPress={() => setSilOnayi(null)}
+                    accessibilityRole="button"
+                    hitSlop={8}
+                  >
+                    <Text style={stiller.vazgecYazi}>{t('ortak.vazgec')}</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => sil(item.id)}
+                    accessibilityRole="button"
+                    hitSlop={8}
+                  >
+                    <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
         )}
         ListEmptyComponent={
@@ -195,6 +265,25 @@ export default function AnaSayfa() {
 }
 
 const stiller = StyleSheet.create({
+  silDugmesi: { padding: 4, marginRight: 2 },
+  silOnayAlani: { marginTop: 12, gap: 8 },
+  silOnaySoru: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silOnayDugmeleri: { flexDirection: 'row', gap: 20 },
+  vazgecYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
+
   kok: { flex: 1, backgroundColor: renk.zemin },
 
   ustCubuk: {

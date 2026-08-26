@@ -7,6 +7,7 @@ import { profilFotografiUrl } from '../../../lib/fotograf-url'
 import {
   kullanicininAnilariniGetir,
   aktifCheckInimiGetir,
+  checkIniSil,
   checkIndenAyril,
   type AniGorunumu,
   type AktifCheckIn,
@@ -67,6 +68,8 @@ export default function ProfilEkrani() {
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [bagSayisi, setBagSayisi] = useState(0)
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
+  // Silme geri alinamaz: once onay.
+  const [silOnayi, setSilOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
@@ -106,6 +109,20 @@ export default function ProfilEkrani() {
       yukle()
     }, [])
   )
+
+  async function canliyiSil() {
+    if (!aktifCheckIn) return
+    try {
+      await checkIniSil(aktifCheckIn.id)
+      // Ayrilmaktan FARKI: ayrilma check-in'i aniya cevirir, silme
+      // satiri tamamen kaldirir - akista da anilarda da kalmaz.
+      setAktifCheckIn(null)
+      setSilOnayi(false)
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
 
   async function ayril() {
     if (!aktifCheckIn) return
@@ -200,6 +217,7 @@ export default function ProfilEkrani() {
             {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
 
             {aktifCheckIn ? (
+              <>
               <View style={stiller.canliKart}>
                 <View style={stiller.canliNokta} />
                 <View style={stiller.canliOrta}>
@@ -208,10 +226,41 @@ export default function ProfilEkrani() {
                     {aktifCheckIn.mekanAdi}
                   </Text>
                 </View>
-                <Pressable onPress={ayril} accessibilityRole="button" hitSlop={8}>
-                  <Text style={stiller.ayril}>{t('profil.ayril')}</Text>
-                </Pressable>
+                <View style={stiller.canliEylemler}>
+                  <Pressable onPress={ayril} accessibilityRole="button" hitSlop={8}>
+                    <Text style={stiller.ayril}>{t('profil.ayril')}</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSilOnayi(!silOnayi)}
+                    accessibilityRole="button"
+                    hitSlop={8}
+                  >
+                    <Text style={stiller.canliSil}>{t('profil.canliSil')}</Text>
+                  </Pressable>
+                </View>
               </View>
+
+              {/* SILME GERI ALINAMAZ. Ayrilmaktan farki burada yaziyor:
+                  ayrilma check-in'i aniya cevirir, silme satiri
+                  tamamen kaldirir. */}
+              {silOnayi && (
+                <View style={stiller.silOnayAlani}>
+                  <Text style={stiller.silOnaySoru}>{t('profil.canliSilOnay')}</Text>
+                  <View style={stiller.silOnayDugmeleri}>
+                    <Pressable
+                      onPress={() => setSilOnayi(false)}
+                      accessibilityRole="button"
+                      hitSlop={8}
+                    >
+                      <Text style={stiller.vazgecYazi}>{t('ortak.vazgec')}</Text>
+                    </Pressable>
+                    <Pressable onPress={canliyiSil} accessibilityRole="button" hitSlop={8}>
+                      <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+              </>
             ) : (
               <View style={stiller.kart}>
                 <Text style={stiller.kartBaslik}>{t('profil.bosCanliBaslik')}</Text>
@@ -275,6 +324,35 @@ export default function ProfilEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  canliSil: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
+  silOnayAlani: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+    gap: 8,
+  },
+  silOnaySoru: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 18,
+    color: renk.metinIkincil,
+  },
+  silOnayDugmeleri: { flexDirection: 'row', gap: 20 },
+  vazgecYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#C0392B',
+  },
+
   kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1 },
   icerik: {

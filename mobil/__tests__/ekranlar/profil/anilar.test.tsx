@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { Linking } from 'react-native'
 import AnilarEkrani from '../../../src/app/profil/anilar'
-import { kullanicininAnilariniGetir, aniyiSil } from '../../../lib/checkin'
+import { kullanicininAnilariniGetir, checkIniSil } from '../../../lib/checkin'
 import { supabase } from '../../../lib/supabase'
 
-jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn(), aniyiSil: jest.fn() }))
+jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn(), checkIniSil: jest.fn() }))
 jest.mock('../../../lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) } },
 }))
@@ -36,13 +36,13 @@ describe('AnilarEkrani', () => {
     expect(Linking.openURL).toHaveBeenCalledWith('https://maps.google.com/?q=41.015,28.979')
   })
 
-  it('sil butonuna basinca aniyiSil cagirir ve listeden kaldirir', async () => {
-    ;(aniyiSil as jest.Mock).mockResolvedValue(undefined)
+  it('sil butonuna basinca checkIniSil cagirir ve listeden kaldirir', async () => {
+    ;(checkIniSil as jest.Mock).mockResolvedValue(undefined)
     await render(<AnilarEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
     await fireEvent.press(screen.getByText('Sil'))
     await waitFor(() => {
-      expect(aniyiSil).toHaveBeenCalledWith('checkin-3')
+      expect(checkIniSil).toHaveBeenCalledWith('checkin-3')
     })
   })
 
