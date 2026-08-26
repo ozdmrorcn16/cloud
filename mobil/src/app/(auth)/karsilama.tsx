@@ -187,21 +187,26 @@ const stiller = StyleSheet.create({
     // duruyor.
     marginTop: 0,
     gap: bosluk.xl,
-    width: '100%',
+    // Blok en genis satiri kadar genis ve EKRANA ORTALI; satirlar
+    // blogun icinde sola dayali. Kullanicinin karari (2026-08-26):
+    // "basliklar onceki gibi orantili alt alta olmali". Her satiri tek
+    // tek ortalamak basliklarin baslangic noktasini kaydiriyor ve
+    // sutun hissi kayboluyordu; blogu ortalayip icini hizali tutmak
+    // ikisini birden veriyor.
+    alignSelf: 'center',
   },
-  adim: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: bosluk.m,
-  },
-  ikonAlani: { alignItems: 'center', justifyContent: 'center' },
+  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  // Sabit genislik: ikonlarin genisligi farkli, sutun bundan
+  // kaymasin. Basliklar da bu yuzden ayni noktadan basliyor.
+  ikonAlani: { width: 40, alignItems: 'center', justifyContent: 'center' },
   adimBaslik: {
-    fontFamily: yazi.ekranBasligi,
+    // Bir kademe INCE (700 -> 600): kullanicinin istegi "cok az incelt
+    // ama yine belirgin olsun". Punto ve renk degismedi, yalnizca
+    // agirlik.
+    fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.2,
-    textAlign: 'center',
   },
   ust: { alignItems: 'center' },
   baslik: {
