@@ -19,6 +19,7 @@ import {
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { CanliHarita } from '../../tasarim/CanliHarita'
 
 const YARICAP_SECENEKLERI = [
   { etiket: '1 km', metre: 1000 },
@@ -118,8 +119,28 @@ export default function KesfetEkrani() {
   // mekanlarda gosterilmedigi icin ona gore suzmek de anlamsiz.
   const suzulmus = kesfetListesi
 
-  const canlilar = suzulmus.filter((m) => m.kisiSayisi > 0)
-  const sakinler = suzulmus.filter((m) => m.kisiSayisi === 0)
+  // En yakin mekan: haritanin altindaki "buradasin" kartinin konusu.
+  // Konumu olmayan kayit disarida: mesafesi bilinmeyen bir mekani "en
+  // yakin" diye gostermek yanlis olur.
+  const enYakin = useMemo(() => {
+    if (!cihazKonumu) return null
+    const olculebilir = suzulmus.filter((m) => m.konum)
+    if (olculebilir.length === 0) return null
+    return olculebilir.reduce((a, b) =>
+      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, a.konum.lat, a.konum.lng) <=
+      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, b.konum.lat, b.konum.lng)
+        ? a
+        : b
+    )
+  }, [suzulmus, cihazKonumu])
+
+  // "Buradasin" kartindaki mekan LISTEDE TEKRAR EDILMIYOR: ayni ad
+  // ekranda iki kez gorunuyordu. Referans tasarimda da alttaki liste
+  // "yakinindaki DIGER mekanlar" anlamina geliyor.
+  const liste = enYakin ? suzulmus.filter((m) => m.id !== enYakin.id) : suzulmus
+
+  const canlilar = liste.filter((m) => m.kisiSayisi > 0)
+  const sakinler = liste.filter((m) => m.kisiSayisi === 0)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
@@ -182,9 +203,6 @@ export default function KesfetEkrani() {
     <View style={stiller.kok}>
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
       <View style={stiller.ustBar}>
-        <Text style={stiller.marka}>
-          slooin<Text style={stiller.markaNokta}>.</Text>
-        </Text>
         <View style={stiller.yaricapSatiri}>
           {YARICAP_SECENEKLERI.map((s) => (
             <Pressable
@@ -210,7 +228,45 @@ export default function KesfetEkrani() {
           yutulmamasi icin ustte bir serit olarak gorunur. */}
       {hata && <Text style={stiller.hataSeridi}>{hata}</Text>}
 
-      <Text style={stiller.baslik}>Şu an çevrende{'\n'}neler oluyor?</Text>
+      {/* HARITA: merkezde kullanici, cevresinde mekanlar gercek yon ve
+          mesafeleriyle. Buyuk iki satirlik baslik KALDIRILDI - harita
+          zaten ekranin gorsel capasi, baslik onu asagi itiyordu. */}
+      <CanliHarita
+        merkez={cihazKonumu}
+        mekanlar={suzulmus}
+        onMekanSec={(id) => router.push(`/mekanlar/${id}`)}
+      />
+
+      {/* Su an bulundugun yer: en yakin mekan. Check-in bir mekan
+          secilerek yapiliyor, dolayisiyla en yakin mekan dogal aday. */}
+      {enYakin && (
+        <View style={stiller.buradaKart}>
+          <View style={stiller.buradaUst}>
+            <View style={stiller.buradaMetin}>
+              <Text style={stiller.buradaAd} numberOfLines={1}>
+                {enYakin.ad}
+              </Text>
+              <Text style={stiller.buradaAlt} numberOfLines={1}>
+                {[enYakin.semt ?? '', uzaklik(enYakin)].filter(Boolean).join(' · ')}
+              </Text>
+            </View>
+            {enYakin.kisiSayisi > 0 && (
+              <View style={stiller.buradaSayiAlani}>
+                <Text style={stiller.buradaSayi}>{enYakin.kisiSayisi}</Text>
+                <Text style={stiller.buradaSayiEtiket}>kişi burada</Text>
+              </View>
+            )}
+          </View>
+          <Pressable
+            style={stiller.checkInButonu}
+            onPress={() => router.push(`/check-in/${enYakin.id}`)}
+            accessibilityRole="button"
+          >
+            <Text style={stiller.checkInYazi}>Check-in yap</Text>
+          </Pressable>
+        </View>
+      )}
+
       <Text style={stiller.ozet}>
         {toplamKisi > 0 ? (
           <>
@@ -320,6 +376,54 @@ const KART_GENISLIK = 256
 const KART_YUKSEKLIK = 316
 
 const stiller = StyleSheet.create({
+  buradaKart: {
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.kart,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    padding: bosluk.l,
+    marginTop: bosluk.m,
+    gap: bosluk.m,
+    ...golge.kart,
+  },
+  buradaUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  buradaMetin: { flex: 1 },
+  buradaAd: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+  },
+  buradaAlt: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 2,
+  },
+  buradaSayiAlani: { alignItems: 'flex-end' },
+  buradaSayi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.5,
+  },
+  buradaSayiEtiket: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+  },
+  checkInButonu: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  checkInYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+
   kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   icerik: { paddingTop: bosluk.xxl + bosluk.m, paddingBottom: ALT_GEZINME_PAYI },
@@ -348,6 +452,8 @@ const stiller = StyleSheet.create({
   },
   birincilButonYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.yuzey },
 
+  // Marka yazisi kaldirildi (kullanicinin istegi 2026-08-26); geriye
+  // yalnizca yaricap cipleri kaldi ve saga hizali duruyor.
   ustBar: {
     flexDirection: 'row',
     alignItems: 'center',

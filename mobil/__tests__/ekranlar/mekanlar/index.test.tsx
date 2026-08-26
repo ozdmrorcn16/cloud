@@ -54,13 +54,20 @@ describe('MekanAramaEkrani', () => {
         id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
         konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
       },
+      {
+        id: 'mekan-2', ad: 'Moda Parkı', tur: 'park', adres: null, osmId: 2,
+        konum: { lat: 41.016, lng: 28.98 }, kisiSayisi: 0,
+      },
     ])
 
     await render(<MekanAramaEkrani />)
-    await waitFor(() => screen.getByText('Sahil Kafe'))
-    await fireEvent.press(screen.getByText('Sahil Kafe'))
+    // EN YAKIN mekan haritanin altindaki "buradasin" kartinda duruyor
+    // ve listede TEKRAR EDILMIYOR; listeye basma davranisi ikinci
+    // mekanla dogrulaniyor.
+    await waitFor(() => screen.getByText('Moda Parkı'))
+    await fireEvent.press(screen.getByText('Moda Parkı'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar/mekan-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar/mekan-2')
   })
 
   it('konum izni verilmezse hata gosterir', async () => {
@@ -101,7 +108,11 @@ describe('MekanAramaEkrani', () => {
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
         id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
-        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 8,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+      {
+        id: 'mekan-2', ad: 'Moda Parkı', tur: 'park', adres: null, osmId: 2,
+        konum: { lat: 41.016, lng: 28.98 }, kisiSayisi: 8,
       },
     ])
 
