@@ -25,15 +25,13 @@ export default {
     aciklama:
       'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
     dilEtiket: 'Dil',
-    // Dort ozellik. Metinler kisa tutuldu: acilis ekrani okunmaz, taranir.
+    // Dort ozellik, YALNIZCA BASLIK. Basliklarin altindaki aciklama
+    // satirlari kullanicinin karariyla kaldirildi (2026-08-26): baslik
+    // zaten ne oldugunu soyluyordu, aciklama ayni seyi tekrar ediyordu.
     adim1Baslik: 'Check-in Yap',
-    adim1Metin: 'Bulunduğun yeri paylaş, görünür ol.',
-    adim2Baslik: 'Yakınındakiler',
-    adim2Metin: 'Etrafında kimler var gör, yeni insanlarla tanış.',
+    adim2Baslik: 'Yakınında kimler var gör',
     adim3Baslik: 'Sohbet Et',
-    adim3Metin: 'İstek gönder, kabul edilirse sohbete başla.',
-    adim4Baslik: 'Popüler Yerleri Gör',
-    adim4Metin: 'Yakınındaki popüler mekanları keşfet.',
+    adim4Baslik: 'Popüler yerleri keşfet',
 
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',

@@ -122,19 +122,18 @@ export default function KarsilamaEkrani() {
             listesi; slogan onun soyledigini bir kez daha soyluyordu. */}
       </View>
 
-      {/* Uygulamanin ne yaptigini anlatan tek yer. Kullanicinin verdigi
-          ornekteki duzen: koyu daire icinde turuncu ikon, yaninda kisa
-          baslik ve tek satirlik aciklama. */}
+      {/* Uygulamanin ne yaptigini anlatan tek yer: ikon + tek satirlik
+          baslik. Basliklarin altindaki aciklamalar kullanicinin
+          karariyla kaldirildi (2026-08-26) ve satirlar EKRANA
+          ORTALANDI - artik sola dayali bir liste degil, ortada duran
+          dort satir. */}
       <View style={stiller.ustBosluk} />
 
       <View style={stiller.adimlar}>
         {OZELLIKLER.map(({ no, ikon }) => (
           <View key={no} style={stiller.adim}>
             <OzellikIkonu ad={ikon} />
-            <View style={stiller.adimOrta}>
-              <Text style={stiller.adimBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
-              <Text style={stiller.adimMetin}>{t(`karsilama.adim${no}Metin`)}</Text>
-            </View>
+            <Text style={stiller.adimBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
           </View>
         ))}
       </View>
@@ -179,34 +178,30 @@ const stiller = StyleSheet.create({
 
   adimlar: {
     // Blok, marka kilidi ile butonlarin ARASINA ortalaniyor: ustunde ve
-    // altinda birer esnek bosluk var (kullanicinin istegi 2026-08-25).
+    // altinda birer esnek bosluk var.
     //
-    // GENISLIK TAM: onceden 336 px'lik ortalanmis bir sutundu ve
-    // "yamuk" duruyordu - solda ikon sutunu, sagda dagilan satir sonlari
-    // yuzunden blok saga kaymis gibi gorunuyordu. Artik sayfa paylari
-    // (iki yanda 24 px) blogun paylari; simetri sayfadan geliyor.
+    // Satirlar ARTIK SOLA DAYALI DEGIL (kullanicinin karari
+    // 2026-08-26): her satir ikonuyla birlikte kendi icinde
+    // ortalaniyor. Aciklamalar kalkinca sola dayali hizalamanin
+    // tuttugu sey kalmadi - dort kisa baslik ortada daha dengeli
+    // duruyor.
     marginTop: 0,
-    gap: bosluk.l,
+    gap: bosluk.xl,
     width: '100%',
   },
-  adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
-  ikonAlani: { width: 40, alignItems: 'center' },
-  adimOrta: { flex: 1 },
+  adim: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: bosluk.m,
+  },
+  ikonAlani: { alignItems: 'center', justifyContent: 'center' },
   adimBaslik: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.2,
-  },
-  // Aciklama daha belirgin bir tonda (kullanicinin istegi): kroki
-  // uzerinde metinIkincil soluk kaliyordu. Baslikla arasindaki fark
-  // yine duruyor - agirlik ve punto farkli.
-  adimMetin: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
-    lineHeight: 22,
-    color: '#57504A',
-    marginTop: 3,
+    textAlign: 'center',
   },
   ust: { alignItems: 'center' },
   baslik: {
@@ -228,11 +223,12 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.m,
   },
 
-  // Iki bosluk ESIT DEGIL: ustteki daha kucuk, boylece tanitim blogu
-  // ekranin ortasindan biraz yukarida duruyor ve altta nabza yer
-  // kaliyor (kullanicinin istegi 2026-08-25).
-  ustBosluk: { flex: 0.65 },
-  esnekBosluk: { flex: 1.35 },
+  // Aciklamalar kalkinca blok kisaldi; esit bosluk verilerek marka
+  // kilidi ile butonlar arasinda GERCEKTEN ortalandi (kullanicinin
+  // karari 2026-08-26: "ekrana ortala"). Onceki 0.65 / 1.35 orani
+  // blogu ortadan yukarida tutuyordu.
+  ustBosluk: { flex: 1 },
+  esnekBosluk: { flex: 1 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {
