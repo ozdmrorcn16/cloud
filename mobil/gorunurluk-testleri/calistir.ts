@@ -671,6 +671,24 @@ async function main() {
       .upload(dosyaYolu, icerik, { contentType: 'text/plain' })
     if (yukleHata) throw new Error(`fotograf yukleme hatasi: ${yukleHata.message}`)
 
+    // Dosya PROFILE BAGLANIYOR. Politika (20260826210000) yalnizca
+    // GUNCEL fotografi baskasina aciyor; bagli olmayan bir dosya
+    // hicbir kullanicinin yasamadigi bir durumdur ve okunmamasi
+    // DOGRUDUR. Onceki fotograf listesi saklanip sonunda geri
+    // yaziliyor.
+    const { data: eskiProfil } = await a
+      .from('profiller')
+      .select('fotograflar')
+      .eq('id', aId)
+      .maybeSingle()
+    const eskiFotograflar: string[] = eskiProfil?.fotograflar ?? []
+
+    const { error: baglaHata } = await a
+      .from('profiller')
+      .update({ fotograflar: [dosyaYolu] })
+      .eq('id', aId)
+    if (baglaHata) throw new Error(`fotograf profile baglanamadi: ${baglaHata.message}`)
+
     try {
       const { data: imza1, error: imza1Hata } = await b.storage
         .from('profil-fotograflari')
@@ -708,6 +726,52 @@ async function main() {
       // "for delete" politikasi yokken (20260819162119'dan once) bu
       // cagri hep sessizce basarisiz oluyordu ve her kosum bucket'a
       // kalici bir dosya birakiyordu.
+      // Profil once eski haline donuyor: dosya silinse bile
+      // fotograflar alaninda olu bir yol kalmasin.
+      await a.from('profiller').update({ fotograflar: eskiFotograflar }).eq('id', aId)
+
+      const { error: silmeHatasi } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
+      esitMi(silmeHatasi, null, 'test dosyasi silinebiliyor')
+    }
+  })
+
+  await senaryo('18b - ESKI (guncel olmayan) profil fotografi baskasina KAPALI', async () => {
+    // Migrasyon 20260826210000'in asil konusu: fotograf degistirilince
+    // eskisi Storage'da kaliyordu ve okuma politikasi dosyanin hala
+    // kullanimda olup olmadigina BAKMIYORDU. Yani baskasi, kisinin
+    // klasorunu listeleyip degistirdigi fotograflari da cekebiliyordu.
+    const dosyaYolu = `${aId}/gorunurluk-test-eski-${Date.now()}.txt`
+
+    const { error: yukleHata } = await a.storage
+      .from('profil-fotograflari')
+      .upload(dosyaYolu, Buffer.from('eski fotograf'), { contentType: 'text/plain' })
+    if (yukleHata) throw new Error(`fotograf yukleme hatasi: ${yukleHata.message}`)
+
+    try {
+      // Dosya PROFILE HIC BAGLANMIYOR - "degistirilmis, artiktan kalan"
+      // dosyanin ta kendisi.
+      const { data: imza, error: imzaHata } = await b.storage
+        .from('profil-fotograflari')
+        .createSignedUrl(dosyaYolu, 60)
+
+      if (imzaHata) {
+        esitMi(true, true, 'B, guncel olmayan fotograf icin imza ALAMIYOR')
+      } else {
+        const yanit = await fetch(imza!.signedUrl)
+        esitMi(
+          yanit.status === 400 || yanit.status === 403,
+          true,
+          'B imza alsa bile guncel olmayan fotografin icerigini okuyamiyor'
+        )
+      }
+
+      // Sahibi kendi eski dosyasini gorebilmeli: kapatilan sey
+      // BASKALARINA aciklik.
+      const { error: sahipHata } = await a.storage
+        .from('profil-fotograflari')
+        .createSignedUrl(dosyaYolu, 60)
+      esitMi(sahipHata, null, 'sahibi kendi eski fotografina hala erisebiliyor')
+    } finally {
       const { error: silmeHatasi } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
       esitMi(silmeHatasi, null, 'test dosyasi silinebiliyor')
     }
