@@ -765,12 +765,13 @@ async function main() {
         )
       }
 
-      // Sahibi kendi eski dosyasini gorebilmeli: kapatilan sey
-      // BASKALARINA aciklik.
+      // SAHIBI DE GOREMIYOR (kullanicinin kurali 2026-08-26: "kullanici
+      // kendi dahil eskisini kimse gormuyor"). Ilk surumde bu kapi
+      // sahibine acik birakilmisti; migrasyon 20260826220000 kapatti.
       const { error: sahipHata } = await a.storage
         .from('profil-fotograflari')
         .createSignedUrl(dosyaYolu, 60)
-      esitMi(sahipHata, null, 'sahibi kendi eski fotografina hala erisebiliyor')
+      esitMi(sahipHata !== null, true, 'SAHIBI de guncel olmayan fotografi goremiyor')
     } finally {
       const { error: silmeHatasi } = await a.storage.from('profil-fotograflari').remove([dosyaYolu])
       esitMi(silmeHatasi, null, 'test dosyasi silinebiliyor')

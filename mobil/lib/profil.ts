@@ -91,15 +91,20 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
  * tasarim kaldirildi, dizinin ilk elemani profil fotografi. Yeni
  * fotograf eskisinin yerine YAZILIYOR.
  *
- * ESKI DOSYA SILINIYOR ama SON ADIMDA ve EN IYI CABAYLA. Sira onemli:
- * once yeni dosya yuklenir, sonra profil guncellenir, EN SON eskisi
- * silinir. Tersi olsaydi silme basarili + guncelleme basarisiz
- * durumunda kullanici fotografsiz kalirdi.
+ * KLASORDE TEK DOSYA KALIR. Kullanicinin kurali (2026-08-26): "tek
+ * bir fotograf yukleniyor, eskisi siliniyor, eskisi hicbir yerde
+ * kayitli kalmiyor". Bu yuzden yalnizca `fotograflar` alanindaki eski
+ * yol degil, KLASORDEKI DIGER HER DOSYA siliniyor - onceki
+ * kosumlardan kalmis artiklar da dahil.
+ *
+ * Sira onemli: once yeni dosya yuklenir, sonra profil guncellenir, EN
+ * SON eskiler silinir. Tersi olsaydi silme basarili + guncelleme
+ * basarisiz durumunda kullanici fotografsiz kalirdi.
  *
  * Silme basarisiz olursa hata FIRLATILMIYOR: fotograf zaten
- * degismistir ve kullanici acisindan is bitmistir. Kalan dosya bir
- * sizinti da degil - okuma politikasi yalnizca GUNCEL fotografi
- * aciyor (migrasyon 20260826210000).
+ * degismistir ve kullanici acisindan is bitmistir. Kalan dosya
+ * gorunmez de olur - okuma politikasi yalnizca GUNCEL fotografi
+ * aciyor, SAHIBINE DE (migrasyon 20260826210000 ve ...220000).
  */
 export async function profilFotografiniDegistir(yerelUri: string): Promise<string> {
   const { data: kullaniciVerisi } = await supabase.auth.getUser()
@@ -108,26 +113,43 @@ export async function profilFotografiniDegistir(yerelUri: string): Promise<strin
 
   const yuklenenYol = await fotografYukle(kullaniciId, yerelUri)
 
-  // Degistirmeden ONCE eski yolu okuyoruz; guncelledikten sonra
-  // ogrenmenin yolu kalmiyor.
-  const { data: oncekiSatir } = await supabase
-    .from('profiller')
-    .select('fotograflar')
-    .eq('id', kullaniciId)
-    .maybeSingle()
-  const eskiYollar: string[] = oncekiSatir?.fotograflar ?? []
-
   const { error } = await supabase
     .from('profiller')
     .update({ fotograflar: [yuklenenYol] })
     .eq('id', kullaniciId)
   if (error) throw new Error(hataMetni(error))
 
-  const silinecekler = eskiYollar.filter((y) => y && y !== yuklenenYol)
-  if (silinecekler.length > 0) {
-    // En iyi caba: burada bir hata kullaniciya yansitilmiyor.
-    await supabase.storage.from('profil-fotograflari').remove(silinecekler)
-  }
-
+  await klasoruTemizle(kullaniciId, yuklenenYol)
   return yuklenenYol
+}
+
+/**
+ * Kullanicinin klasorunde YENI DOSYA DISINDA ne varsa siler.
+ *
+ * `fotograflar` alanindaki eski yolu silmek yetmiyor: onceki
+ * kosumlardan, yarim kalmis yuklemelerden ya da eski cok fotografli
+ * tasarimdan kalma dosyalar da olabiliyor. Klasoru listeleyip
+ * temizlemek "tek fotograf" kuralini gercekten uyguluyor.
+ *
+ * En iyi caba: hata firlatilmiyor. Listeleme de silme de basarisiz
+ * olsa dosyalar gorunmez kaliyor (okuma politikasi guncel olmayan
+ * dosyayi sahibine bile acmiyor).
+ */
+async function klasoruTemizle(kullaniciId: string, korunacakYol: string): Promise<void> {
+  try {
+    const { data: dosyalar, error } = await supabase.storage
+      .from('profil-fotograflari')
+      .list(kullaniciId)
+    if (error || !dosyalar) return
+
+    const silinecekler = dosyalar
+      .map((d) => `${kullaniciId}/${d.name}`)
+      .filter((y) => y !== korunacakYol)
+
+    if (silinecekler.length > 0) {
+      await supabase.storage.from('profil-fotograflari').remove(silinecekler)
+    }
+  } catch {
+    // Temizlik, fotograf degistirmeyi bloke etmemeli.
+  }
 }
