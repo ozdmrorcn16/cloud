@@ -141,10 +141,14 @@ export default function AnaSayfa() {
         refreshing={yenileniyor}
         onRefresh={yenile}
         renderItem={({ item }) => (
-          <View style={stiller.kart}>
+          <Pressable
+            style={stiller.kart}
+            onPress={() => router.push(`/harita/${item.mekanId}` as never)}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.mekanAdi} konumunu haritada gör`}
+          >
             <View style={stiller.kartUst}>
               <Pressable
-                style={stiller.kisi}
                 onPress={() =>
                   // `as never`: uretilen rota tipleri profil ana ekranini
                   // "/profil/index" diye yaziyor, calisma zamaninda ise yol
@@ -154,30 +158,55 @@ export default function AnaSayfa() {
                   )
                 }
                 accessibilityRole="button"
+                accessibilityLabel={item.kullaniciAdi ?? ''}
               >
                 <View style={stiller.avatar}>
                   <Text style={stiller.basHarf}>
                     {(item.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
                   </Text>
                 </View>
-                <View style={stiller.kisiOrta}>
-                  <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-                    {item.kullaniciAdi ?? ''}
-                  </Text>
-                  <Pressable
-                    onPress={() => router.push(`/mekanlar/${item.mekanId}`)}
-                    accessibilityRole="button"
-                    hitSlop={6}
-                  >
-                    <View style={stiller.mekanSatiri}>
-                      <KonumIkonu />
-                      <Text style={stiller.mekanAdi} numberOfLines={1}>
-                        {item.mekanAdi}
-                      </Text>
-                    </View>
-                  </Pressable>
-                </View>
               </Pressable>
+
+              {/* TEK BIR METIN AKISI: ad - mekan - etiketler.
+                  Ic ice Text kullaniliyor cunku parcalar satir sonunda
+                  BIRLIKTE kirilmali; ayri View'lara bolununce uzun
+                  mekan adlari tasiyordu. Her parcanin kendi onPress'i
+                  var, dolayisiyla ayri dokunma hedefleri. */}
+              <Text style={stiller.satir}>
+                <Text
+                  style={stiller.kullaniciAdi}
+                  onPress={() =>
+                    router.push(
+                      (item.benimMi ? '/profil' : `/kullanici/${item.kullaniciId}`) as never
+                    )
+                  }
+                >
+                  {item.kullaniciAdi ?? ''}
+                </Text>
+                <Text style={stiller.ayirac}> - </Text>
+                <Text
+                  style={stiller.mekanAdi}
+                  onPress={() => router.push(`/mekanlar/${item.mekanId}`)}
+                >
+                  {item.mekanAdi}
+                </Text>
+                {item.etiketler.length > 0 && (
+                  <>
+                    <Text style={stiller.ayirac}> - </Text>
+                    {item.etiketler.map((etiket, sira) => (
+                      <Text key={etiket.kullaniciId}>
+                        {sira > 0 ? <Text style={stiller.ayirac}>, </Text> : null}
+                        <Text
+                          style={stiller.etiket}
+                          onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+                        >
+                          {etiket.ad ?? ''}
+                        </Text>
+                      </Text>
+                    ))}
+                  </>
+                )}
+              </Text>
 
               {/* Silme YALNIZCA kendi check-in'inde. */}
               {item.benimMi && (
@@ -194,6 +223,9 @@ export default function AnaSayfa() {
 
               {item.canliMi ? (
                 // Turuncunun mesru kullanimi: "su an oluyor".
+                // YALNIZCA NOKTA YETMIYOR: renk tek basina anlam
+                // tasimamali (erisilebilirlik tabani), bu yuzden nokta
+                // ve yazi birlikte duruyor.
                 <View style={stiller.canliRozet}>
                   <View style={stiller.canliNokta} />
                   <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
@@ -238,7 +270,7 @@ export default function AnaSayfa() {
                 </View>
               </View>
             )}
-          </View>
+          </Pressable>
         )}
         ListEmptyComponent={
           yukleniyor ? (
@@ -265,6 +297,20 @@ export default function AnaSayfa() {
 }
 
 const stiller = StyleSheet.create({
+  satir: {
+    flex: 1,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 21,
+    color: renk.metin,
+  },
+  kullaniciAdi: { fontFamily: yazi.govdeKalin, color: renk.metin },
+  ayirac: { color: renk.metinSoluk },
+  // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
+  // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
+  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncu },
+  etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
+
   silDugmesi: { padding: 4, marginRight: 2 },
   silOnayAlani: { marginTop: 12, gap: 8 },
   silOnaySoru: {
@@ -329,19 +375,6 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
     color: renk.turuncu,
-  },
-  kisiOrta: { flex: 1 },
-  kullaniciAdi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  mekanSatiri: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  mekanAdi: {
-    flexShrink: 1,
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
   },
 
   zaman: {

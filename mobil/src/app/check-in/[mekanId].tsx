@@ -6,6 +6,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk } from '../../../lib/checkin'
+import { etiketleriKaydet } from '../../../lib/etiket'
+import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -35,6 +38,11 @@ export default function CheckInEkrani() {
   // mekan ARTI HER YERDEKI butun takipciler demek.
   const [bulunurluk, setBulunurluk] = useState<Bulunurluk | null>(null)
   const [ilkKullanimUyarisi, setIlkKullanimUyarisi] = useState(false)
+  // Etiketlenebilecek kisiler: YALNIZCA karsilikli bagli oldugun
+  // arkadaslar. Ayni kisit veritabani politikasinda da var; buradaki
+  // liste kullaniciya secenek gostermek icin.
+  const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
+  const [etiketlenenler, setEtiketlenenler] = useState<string[]>([])
   // Kullanici bulunurluk tercihini elle degistirdiyse (secenek satiri veya ilk
   // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
   // yaniti bu secimin uzerine yazmasin.
@@ -75,6 +83,30 @@ export default function CheckInEkrani() {
     }
   }
 
+  useEffect(() => {
+    let gecerli = true
+    // Bag listesi okunamazsa etiketleme bolumu hic cizilmiyor;
+    // check-in'in kendisi bundan etkilenmiyor.
+    takipcilerimiGetir()
+      .then((liste) => {
+        if (gecerli) setArkadaslar(liste)
+      })
+      .catch(() => {
+        if (gecerli) setArkadaslar([])
+      })
+    return () => {
+      gecerli = false
+    }
+  }, [])
+
+  function etiketiDegistir(kullaniciId: string) {
+    setEtiketlenenler((mevcut) =>
+      mevcut.includes(kullaniciId)
+        ? mevcut.filter((k) => k !== kullaniciId)
+        : [...mevcut, kullaniciId]
+    )
+  }
+
   async function checkInYapButonu() {
     // Buton zaten disabled={bulunurluk === null} ile korunuyor; bu ikinci
     // koruma, disabled prop'a guvenmeden fireEvent.press gibi dogrudan
@@ -99,7 +131,27 @@ export default function CheckInEkrani() {
         }
       }
 
-      await checkInYap(mekanId, konum.lat, konum.lng, notMetni.trim() || undefined, yuklenenFotoYolu, bulunurluk)
+      const olusan = await checkInYap(
+        mekanId,
+        konum.lat,
+        konum.lng,
+        notMetni.trim() || undefined,
+        yuklenenFotoYolu,
+        bulunurluk
+      )
+
+      // Etiketler check-in OLUSTUKTAN SONRA yaziliyor: etiket satiri
+      // check-in'e bagli, once o var olmali. Etiketleme basarisiz
+      // olursa check-in yine duruyor - kullaniciyi bastan baslatmak
+      // yerine uyari gosteriliyor.
+      if (etiketlenenler.length > 0) {
+        try {
+          await etiketleriKaydet(olusan.id, etiketlenenler)
+        } catch {
+          setUyari('Check-in yapıldı ama arkadaşların etiketlenemedi.')
+        }
+      }
+
       router.replace(`/mekanlar/${mekanId}`)
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
@@ -142,6 +194,34 @@ export default function CheckInEkrani() {
         onChangeText={setNotMetni}
         multiline
       />
+      {/* ARKADAS ETIKETLEME. Liste bosken bolum hic cizilmiyor:
+          hicbir bagi olmayan birine bos bir baslik gostermek yon
+          vermiyor. */}
+      {arkadaslar.length > 0 && (
+        <View style={stiller.etiketAlani}>
+          <Text style={stiller.etiketBaslik}>Arkadaşlarını etiketle</Text>
+          <View style={stiller.etiketCipleri}>
+            {arkadaslar.map((kisi) => {
+              const secili = etiketlenenler.includes(kisi.id)
+              return (
+                <Pressable
+                  key={kisi.id}
+                  style={[stiller.etiketCipi, secili && stiller.etiketCipiSecili]}
+                  onPress={() => etiketiDegistir(kisi.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: secili }}
+                  accessibilityLabel={kisi.ad ?? ''}
+                >
+                  <Text style={[stiller.etiketYazi, secili && stiller.etiketYaziSecili]}>
+                    {kisi.ad ?? ''}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
+        </View>
+      )}
+
       <Pressable style={stiller.fotoButonu} onPress={fotografSec}>
         <Text style={stiller.fotoButonuYazi}>
           {yerelFotoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle (opsiyonel)'}
@@ -178,6 +258,29 @@ export default function CheckInEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  etiketAlani: { marginBottom: 16, gap: 8 },
+  etiketBaslik: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  etiketCipleri: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  etiketCipi: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: yuvarlak.hap,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+  },
+  etiketCipiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
+  etiketYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
+  },
+  etiketYaziSecili: { fontFamily: yazi.govdeKalin, color: renk.turuncuKoyu },
+
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,

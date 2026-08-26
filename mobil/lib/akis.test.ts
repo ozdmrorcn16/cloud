@@ -8,6 +8,9 @@ jest.mock('./supabase', () => ({
 }))
 jest.mock('./bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 jest.mock('./fotograf-url', () => ({ checkInFotografiUrl: jest.fn() }))
+// Etiketler ayri bir sorgudan geliyor; akisin kendi donusumunu test
+// ederken o sorgu mock'lanıyor.
+jest.mock('./etiket', () => ({ etiketleriGetir: jest.fn().mockResolvedValue({}) }))
 
 function satir(ustune: Record<string, unknown> = {}) {
   return {
@@ -85,6 +88,7 @@ describe('akisiGetir', () => {
       olusturmaZamani: '2026-08-25T10:00:00Z',
       canliMi: false,
       benimMi: false,
+      etiketler: [],
     })
   })
 

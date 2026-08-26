@@ -29,6 +29,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     olusturmaZamani: new Date().toISOString(),
     canliMi: false,
     benimMi: false,
+    etiketler: [],
     ...ustune,
   }
 }

@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
 import { checkInFotografiUrl } from './fotograf-url'
 import { hataMetni } from './hata-metni'
+import { etiketleriGetir, type Etiket } from './etiket'
 
 /**
  * Ana sayfa akisi.
@@ -33,6 +34,8 @@ export type AkisOgesi = {
   /** Konum sutunu doluysa kisi su an orada. */
   canliMi: boolean
   benimMi: boolean
+  /** Bu check-in'de etiketlenen arkadaslar. */
+  etiketler: Etiket[]
 }
 
 type AkisSatiri = {
@@ -69,6 +72,13 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
 
   const satirlar = data as unknown as AkisSatiri[]
 
+  // Etiketler TEK SORGUDA: satir basina sorgu atmak 30 gidis-donus
+  // demekti. Etiketler okunamazsa akis yine ciziliyor - etiket
+  // yuzunden butun akisi kaybetmek yanlis olur.
+  const etiketler: Record<string, Etiket[]> = await etiketleriGetir(
+    satirlar.map((s) => s.id)
+  ).catch(() => ({}))
+
   return Promise.all(
     satirlar.map(async (satir) => ({
       id: satir.id,
@@ -83,6 +93,7 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
       olusturmaZamani: satir.olusturma_zamani,
       canliMi: satir.konum !== null,
       benimMi: satir.kullanici_id === benimId,
+      etiketler: etiketler[satir.id] ?? [],
     }))
   )
 }
