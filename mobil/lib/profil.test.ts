@@ -41,7 +41,7 @@ describe('baskasininProfiliniGetir', () => {
       error: { message: 'Kimlik dogrulamasi gerekli' },
     })
     await expect(baskasininProfiliniGetir('kullanici-2')).rejects.toThrow(
-      'Kimlik dogrulamasi gerekli'
+      'giriş yapmış olman gerekiyor'
     )
   })
 })

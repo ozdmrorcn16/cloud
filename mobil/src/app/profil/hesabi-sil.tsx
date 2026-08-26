@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { UstCubuk } from '../../tasarim/UstCubuk'
+import { hataMetni } from '../../../lib/hata-metni'
 
 // Spec karar 67: bekleme suresi YOK, koruma parola dogrulamasi.
 // Dondurma alternatifi ayni ekranda sunuluyor cunku "kararsizim"
@@ -38,7 +39,7 @@ export default function HesabiSilEkrani() {
       // yanlis yazilmis ya da reddedilmis bir parolanin ekran hafizasinda
       // gereksiz yere durmasina gerek yok (duzeltme turu 1, Minor).
       setParola('')
-      setHata((e as Error).message)
+      setHata(hataMetni(e))
     } finally {
       setCalisiyor(false)
     }

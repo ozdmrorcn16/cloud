@@ -581,11 +581,22 @@ fonksiyon adinin icine girdi ve uygulamayi bozdu; ayni sekilde
 aksanli harf arayan bir taramayla bulunup geri alindi. Boyle bir
 degisiklikten sonra o tarama mutlaka kosulmali.
 
-**Kalan borc:** veritabanindaki 32 `raise exception` metni hala
-aksansiz ("Mekana cok uzaksin (~500 m icinde olmalisin)" gibi). Bunlar
-ekranda `e.message` yoluyla gorunuyor. Duzeltmek yeni bir migrasyon ve
-`test:sema` / `test:gorunurluk` guncellemesi gerektiriyor - ayri bir
-is olarak birakildi.
+**Bu borc 2026-08-26'da KAPANDI, ama migrasyonla degil.** 45 `raise
+exception` metni veritabaninda oldugu gibi duruyor; cevrilme
+ISTEMCIDE, tek kapida yapiliyor: `lib/hata-metni.ts`. Gerekce:
+metinler onlarca fonksiyonun govdesinde ve migrasyonla yeniden yazmak
+o fonksiyonlari bastan olusturmak demek; ayrica `test:sema` ve
+`test:gorunurluk` bu metinler uzerinden dogruluyor. Istemcide tek kapi
+hem daha guvenli hem de ileride diger dillere cevrilebilir - bir
+veritabani mesaji kullanicinin diline gore degisemez.
+
+Ayni kapi Supabase'in INGILIZCE kimlik hatalarini da ceviriyor
+("Unable to get SMS provider" gibi metinler kullaniciya oldugu gibi
+cikiyordu). Bilinmeyen bir metin gelirse: Ingilizce gorunuyorsa genel
+bir metin doner ve asil hata konsola yazilir, Turkce gorunuyorsa
+oldugu gibi gecer. **Bu ikinci kural onemli** - ilk denemede olcut
+"aksanli harf tasiyor mu" idi ve bizim kendi aksansiz ama dogru
+mesajlarimizi ("Konum izni verilmedi") genel metinle eziyordu.
 
 Dogrulama: jest 44 paket / 360 test yesil, tsc yalnizca bes onceden
 var olan @types/node hatasi.

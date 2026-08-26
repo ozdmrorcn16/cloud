@@ -76,7 +76,7 @@ describe('kullaniciAdiMusaitMi', () => {
 
   it('RPC hata dondururse hatayi firlatir', async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
-    await expect(kullaniciAdiMusaitMi('orcun')).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(kullaniciAdiMusaitMi('orcun')).rejects.toThrow('giriş yapmış olman gerekiyor')
   })
 })
 
@@ -96,7 +96,7 @@ describe('kullaniciAdiniDegistir', () => {
       data: null,
       error: { message: 'Kullanici adini 30 gunde bir degistirebilirsin. Kalan sure: 12 gun' },
     })
-    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('Kalan sure: 12 gun')
+    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('12 gün kaldı')
   })
 
   it('ham kisit ihlali (23505) yerine anlasilir mesaj firlatir', async () => {

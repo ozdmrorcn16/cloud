@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type BagDurumu = 'yok' | 'beklemede' | 'kabul'
 
@@ -17,7 +18,7 @@ async function kendiKullaniciId(): Promise<string> {
 
 async function rpcCagir(ad: string, parametreler: Record<string, unknown>): Promise<void> {
   const { error } = await supabase.rpc(ad, parametreler)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function takipIstegiGonder(kullaniciId: string): Promise<void> {

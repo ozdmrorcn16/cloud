@@ -38,6 +38,6 @@ describe('kisiAra', () => {
 
   it('hata dondururse firlatir', async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
-    await expect(kisiAra('orc')).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(kisiAra('orc')).rejects.toThrow('giriş yapmış olman gerekiyor')
   })
 })

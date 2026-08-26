@@ -3,15 +3,18 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import { supabase } from '../../../lib/supabase'
-import { okunurBicim } from '../../../lib/telefon'
+import { okunurBicim, eFormatinaCevir } from '../../../lib/telefon'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { hataMetni } from '../../../lib/hata-metni'
+import {
+  BEKLEME_SANIYE,
+  gonderimDurumu,
+  gonderimKaydet,
+} from '../../../lib/kod-gonderim'
 
 /** Kodun hane sayisi - Supabase SMS OTP'si alti hane gonderiyor. */
 const HANE = 6
-
-/** Tekrar gonderme icin bekleme suresi. */
-const BEKLEME_SANIYE = 60
 
 /**
  * Telefon dogrulama.
@@ -38,6 +41,7 @@ export default function DogrulaEkrani() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [kalanSaniye, setKalanSaniye] = useState(BEKLEME_SANIYE)
   const [zatenKayitli, setZatenKayitli] = useState(false)
+  const [hakKalmadi, setHakKalmadi] = useState(false)
   const girdiRef = useRef<TextInput>(null)
 
   useEffect(() => {
@@ -45,6 +49,27 @@ export default function DogrulaEkrani() {
     const zamanlayici = setTimeout(() => setKalanSaniye((s) => s - 1), 1000)
     return () => clearTimeout(zamanlayici)
   }, [kalanSaniye])
+
+  // Adres cubugundan gelen numara DOGRULANIYOR. `/dogrula?telefon=...`
+  // elle acilabilen bir adres; bicimi tutmayan bir deger geldiginde
+  // ekrani cizmek yerine kayit adimina geri gonderiyoruz.
+  useEffect(() => {
+    if (!telefon || !eFormatinaCevir(telefon)) {
+      router.replace('/kayit')
+      return
+    }
+    // Geri sayim EKRAN DURUMUNDA degil CIHAZDA tutuluyor: sayfa
+    // yenilenince sifirlanip "Tekrar gonder"i hemen acmasin.
+    let gecerli = true
+    gonderimDurumu(telefon).then(({ kalanSaniye: kalan, kalanHak }) => {
+      if (!gecerli) return
+      setKalanSaniye(kalan)
+      setHakKalmadi(kalanHak <= 0)
+    })
+    return () => {
+      gecerli = false
+    }
+  }, [telefon])
 
   async function dogrula(girilen: string = kod) {
     if (girilen.length < HANE) {
@@ -62,7 +87,7 @@ export default function DogrulaEkrani() {
 
     if (error) {
       setGonderiliyor(false)
-      setHata(error.message)
+      setHata(hataMetni(error))
       return
     }
 
@@ -113,15 +138,32 @@ export default function DogrulaEkrani() {
   }
 
   async function tekrarGonder() {
-    if (kalanSaniye > 0) return
+    if (kalanSaniye > 0 || hakKalmadi) return
     setHata(null)
-    const { error } = await supabase.auth.resend({ type: 'sms', phone: telefon })
-    if (error) {
-      setHata(error.message)
+
+    // Hak, istek ATILMADAN once yeniden okunuyor: ekran uzun sure acik
+    // kalmis olabilir ya da ayni numara baska bir sekmede kod istemis
+    // olabilir.
+    const { kalanSaniye: kalan, kalanHak } = await gonderimDurumu(telefon)
+    if (kalan > 0) {
+      setKalanSaniye(kalan)
       return
     }
+    if (kalanHak <= 0) {
+      setHakKalmadi(true)
+      setHata(t('dogrula.hakKalmadi'))
+      return
+    }
+
+    const { error } = await supabase.auth.resend({ type: 'sms', phone: telefon })
+    if (error) {
+      setHata(hataMetni(error))
+      return
+    }
+    await gonderimKaydet(telefon)
     setBilgi(t('dogrula.tekrarGonderildi'))
     setKalanSaniye(BEKLEME_SANIYE)
+    setHakKalmadi(kalanHak - 1 <= 0)
   }
 
   return (
@@ -223,7 +265,9 @@ export default function DogrulaEkrani() {
 
       <View style={stiller.tekrarAlani}>
         <Text style={stiller.tekrarSoru}>{t('dogrula.kodGelmedi')}</Text>
-        {kalanSaniye > 0 ? (
+        {hakKalmadi ? (
+          <Text style={stiller.tekrarBekle}>{t('dogrula.hakKalmadi')}</Text>
+        ) : kalanSaniye > 0 ? (
           <Text style={stiller.tekrarBekle}>
             {t('dogrula.tekrarBekle', { saniye: kalanSaniye })}
           </Text>

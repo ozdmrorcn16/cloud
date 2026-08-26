@@ -42,7 +42,7 @@ describe('sikayetGonder', () => {
       error: { message: 'Kendini sikayet edemezsin' },
     })
     await expect(sikayetGonder('kullanici', 'kendim', 'taciz')).rejects.toThrow(
-      'Kendini sikayet edemezsin'
+      'Kendini şikayet edemezsin.'
     )
   })
 })

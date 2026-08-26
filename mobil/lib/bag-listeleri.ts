@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import type { BagKisi } from './bag'
+import { hataMetni } from './hata-metni'
 
 type SunucuKisi = { id: string; kullanici_adi: string; ad: string }
 
@@ -20,7 +21,7 @@ async function kisileriCoz(kimlikler: string[]): Promise<BagKisi[]> {
   if (kimlikler.length === 0) return []
 
   const { data, error } = await supabase.rpc('bag_kisileri', { p_kimlikler: kimlikler })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   return (data as SunucuKisi[]).map((satir) => ({
     id: satir.id,
@@ -41,7 +42,7 @@ async function kimlikleriOku(
     .select(sutun)
     .eq(kosulSutunu, kosulDegeri)
     .eq('durum', durum)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as unknown as Record<string, string>[]).map((satir) => satir[sutun])
 }
 

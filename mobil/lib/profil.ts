@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type BaskaProfil = {
   id: string
@@ -22,7 +23,7 @@ export async function baskasininProfiliniGetir(
   const { data, error } = await supabase.rpc('baskasinin_profili', {
     p_kullanici_id: kullaniciId,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   const satirlar = data as SunucuProfili[]
   if (satirlar.length === 0) return null
@@ -65,7 +66,7 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
     .select('id, kullanici_adi, ad, biyografi, fotograflar')
     .eq('id', kullaniciId)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   if (!data) return null
 
   const satir = data as SunucuProfili

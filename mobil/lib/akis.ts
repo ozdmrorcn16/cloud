@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
 import { checkInFotografiUrl } from './fotograf-url'
+import { hataMetni } from './hata-metni'
 
 /**
  * Ana sayfa akisi.
@@ -64,7 +65,7 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
     .in('kullanici_id', kimlikler)
     .order('olusturma_zamani', { ascending: false })
     .limit(adet)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   const satirlar = data as unknown as AkisSatiri[]
 

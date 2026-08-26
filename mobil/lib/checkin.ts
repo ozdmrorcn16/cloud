@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { noktayiCoz } from './konum'
+import { hataMetni } from './hata-metni'
 
 export type Bulunurluk = 'herkese_acik' | 'takipcilerim' | 'gizli'
 export type AniGorunurlugu = 'herkese_acik' | 'takipcilerim' | 'kimse'
@@ -55,13 +56,13 @@ export async function checkInYap(
     p_fotograf: fotograf,
     p_bulunurluk: bulunurluk,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return satiriCheckInACevir(data as CheckInSatiri)
 }
 
 export async function checkIndenAyril(checkInId: string): Promise<void> {
   const { error } = await supabase.rpc('check_inden_ayril', { p_check_in_id: checkInId })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export type CheckInGorunumu = CheckIn & { kullaniciId: string; kullaniciAdi: string | null }
@@ -82,7 +83,7 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
     .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
 }
 
@@ -92,7 +93,7 @@ export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorun
     .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .is('konum', null)
     .eq('mekan_id', mekanId)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
 }
 
@@ -107,7 +108,7 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
     .eq('kullanici_id', kullaniciId)
     .is('konum', null)
     .order('olusturma_zamani', { ascending: false })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as unknown as CheckInSatiriMekanli[]).map((satir) => ({
     ...satiriCheckInACevir(satir),
     mekanAdi: satir.mekanlar.ad,
@@ -117,7 +118,7 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
 
 export async function aniyiSil(checkInId: string): Promise<void> {
   const { error } = await supabase.from('check_inler').delete().eq('id', checkInId)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export type AktifCheckIn = CheckIn & { mekanAdi: string }
@@ -142,7 +143,7 @@ export async function aktifCheckInimiGetir(): Promise<AktifCheckIn | null> {
     .not('konum', 'is', null)
     .order('olusturma_zamani', { ascending: false })
     .limit(1)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   const satirlar = data as unknown as (CheckInSatiri & { mekanlar: { ad: string } })[]
   if (satirlar.length === 0) return null

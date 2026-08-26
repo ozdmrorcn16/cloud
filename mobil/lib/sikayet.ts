@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type SikayetHedefTuru = 'kullanici' | 'check_in' | 'mesaj'
 
@@ -22,5 +23,5 @@ export async function sikayetGonder(
     p_sebep: sebep,
     p_aciklama: aciklama ?? null,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }

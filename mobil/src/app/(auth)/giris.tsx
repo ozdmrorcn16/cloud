@@ -6,6 +6,7 @@ import { eFormatinaCevir } from '../../../lib/telefon'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
+import { hataMetni } from '../../../lib/hata-metni'
 
 /**
  * GIRIS - uygulamanin ilk sayfasi.
@@ -60,7 +61,7 @@ export default function GirisEkrani() {
     setGonderiliyor(false)
 
     if (error) {
-      setHata(error.message)
+      setHata(hataMetni(error))
       return
     }
     router.replace('/')

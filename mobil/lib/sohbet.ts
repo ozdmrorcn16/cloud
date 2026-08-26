@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type Konusma = {
   konusmaId: string
@@ -60,7 +61,7 @@ function mesajCevir(satir: MesajSatiri): Mesaj {
 
 async function rpcCagir(ad: string, parametreler: Record<string, unknown>): Promise<void> {
   const { error } = await supabase.rpc(ad, parametreler)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function mesajGonder(kullaniciId: string, metin: string): Promise<string> {
@@ -68,13 +69,13 @@ export async function mesajGonder(kullaniciId: string, metin: string): Promise<s
     p_kullanici_id: kullaniciId,
     p_metin: metin,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return data as string
 }
 
 export async function konusmalarimiGetir(): Promise<Konusma[]> {
   const { data, error } = await supabase.rpc('konusmalarim', {})
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as KonusmaSatiri[]).map(konusmaCevir)
 }
 
@@ -88,7 +89,7 @@ export async function mesajlariGetir(
     p_once: once,
     p_limit: limit,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as MesajSatiri[]).map(mesajCevir)
 }
 

@@ -14,6 +14,7 @@ import {
 } from '../../lib/kullanici-adi'
 import { TarihSecici, type Tarih } from '../tasarim/TarihSecici'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
+import { hataMetni } from '../../lib/hata-metni'
 
 /** Kullanici adi musaitlik sorgusunun bekletme suresi. */
 const BEKLETME_MS = 300
@@ -188,7 +189,7 @@ export default function ProfilOlusturEkrani() {
         data: kayitMetadatasi({ kabul }, dil),
       })
       if (kimlikHatasi) {
-        setHata(kimlikHatasi.message)
+        setHata(hataMetni(kimlikHatasi))
         return
       }
 
@@ -204,7 +205,7 @@ export default function ProfilOlusturEkrani() {
           setAlanHatalari({ kullaniciAdi: t('profilOlustur.kullaniciAdiAlinmis') })
           setAdDurumu({ hal: 'alinmis' })
         } else {
-          setHata(error.message)
+          setHata(hataMetni(error))
         }
         return
       }
@@ -213,7 +214,7 @@ export default function ProfilOlusturEkrani() {
       router.replace('/')
     } catch (hataNesnesi) {
       setHata(
-        hataNesnesi instanceof Error ? hataNesnesi.message : t('profilOlustur.beklenmeyenHata')
+        hataNesnesi instanceof Error ? hataMetni(hataNesnesi) : t('profilOlustur.beklenmeyenHata')
       )
     } finally {
       setGonderiliyor(false)

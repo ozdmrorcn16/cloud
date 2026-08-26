@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import type { Bulunurluk, AniGorunurlugu } from './checkin'
+import { hataMetni } from './hata-metni'
 
 async function kendiKullaniciId(): Promise<string> {
   const { data } = await supabase.auth.getUser()
@@ -15,7 +16,7 @@ export async function varsayilanBulunurluguGetir(): Promise<Bulunurluk> {
     .select('varsayilan_bulunurluk')
     .eq('id', id)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data?.varsayilan_bulunurluk ?? 'herkese_acik') as Bulunurluk
 }
 
@@ -25,7 +26,7 @@ export async function varsayilanBulunurluguAyarla(deger: Bulunurluk): Promise<vo
     .from('profiller')
     .update({ varsayilan_bulunurluk: deger })
     .eq('id', id)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function aramadaGorunsunGetir(): Promise<boolean> {
@@ -35,7 +36,7 @@ export async function aramadaGorunsunGetir(): Promise<boolean> {
     .select('aramada_gorunsun')
     .eq('id', id)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return data?.aramada_gorunsun ?? true
 }
 
@@ -45,7 +46,7 @@ export async function aramadaGorunsunAyarla(deger: boolean): Promise<void> {
     .from('profiller')
     .update({ aramada_gorunsun: deger })
     .eq('id', id)
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000
@@ -60,7 +61,7 @@ export async function kullaniciAdiDurumunuGetir(): Promise<{
     .select('kullanici_adi, kullanici_adi_degistirildi')
     .eq('id', id)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   const satir = data as
     | { kullanici_adi: string; kullanici_adi_degistirildi: string | null }
@@ -81,5 +82,5 @@ export async function aniGorunurlugunuAyarla(
   // degerine gore kelepceliyor, boylece bu eylem gizli check-in'lerden
   // donen anilari asla genisletemiyor.
   const { error } = await supabase.rpc('ani_gorunurlugunu_ayarla', { p_deger: deger })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }

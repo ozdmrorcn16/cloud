@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { noktayiCoz } from './konum'
+import { hataMetni } from './hata-metni'
 
 export type Mekan = {
   id: string
@@ -55,7 +56,7 @@ export async function yakinMekanlariGetir(
     p_lng: lng,
     p_arama: arama ?? null,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as MekanSatiri[]).map(satiriMekanaCevir)
 }
 
@@ -75,7 +76,7 @@ export async function mekanEkle(
     p_cihaz_lng: cihazKonumu.lng,
     p_adres: adres ?? null,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return satiriMekanaCevir(data as MekanSatiri)
 }
 
@@ -95,7 +96,7 @@ export async function yakinMekanlariYogunlukIleGetir(
     p_yaricap_metre: yaricapMetre,
     p_arama: arama ?? null,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as MekanYogunlukSatiri[]).map((satir) => ({
     ...satiriMekanaCevir(satir),
     kisiSayisi: satir.kisi_sayisi,
@@ -195,7 +196,7 @@ export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
     .select('id, ad, tur, semt, kaynak, adres, osm_id, konum')
     .eq('id', mekanId)
     .maybeSingle()
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   if (!data) return null
   return satiriMekanaCevir(data as unknown as MekanSatiri)
 }

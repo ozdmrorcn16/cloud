@@ -1,18 +1,19 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export async function engelle(kullaniciId: string): Promise<void> {
   const { error } = await supabase.rpc('engelle', { p_kullanici_id: kullaniciId })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function engeliKaldir(kullaniciId: string): Promise<void> {
   const { error } = await supabase.rpc('engeli_kaldir', { p_kullanici_id: kullaniciId })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function engellediklerimiGetir(): Promise<string[]> {
   const { data, error } = await supabase.from('engellemeler').select('engellenen_id')
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return (data as { engellenen_id: string }[]).map((satir) => satir.engellenen_id)
 }
 
@@ -33,7 +34,7 @@ export type EngelliKisi = {
  */
 export async function engellediklerimiListele(): Promise<EngelliKisi[]> {
   const { data, error } = await supabase.rpc('engellediklerim')
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   const satirlar = data as {
     id: string

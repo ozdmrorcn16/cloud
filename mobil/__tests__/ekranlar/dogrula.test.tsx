@@ -70,7 +70,7 @@ describe('DogrulaEkrani', () => {
     await render(<DogrulaEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText(KOD_ETIKETI), '000000')
 
-    expect(await screen.findByText('Token has expired or is invalid')).toBeTruthy()
+    expect(await screen.findByText('Kod geçersiz ya da süresi dolmuş. Yeni bir kod iste.')).toBeTruthy()
     expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 

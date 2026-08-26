@@ -93,6 +93,42 @@ i18n.enableFallback = true
 i18n.defaultLocale = 'en'
 
 /**
+ * SON CARE: anahtar da bulunamazsa Turkce'ye duesuluyor.
+ *
+ * i18n-js, anahtar hicbir dilde yoksa ANAHTARIN KENDISINI basiyor -
+ * ekranda "profilOlustur.baslik" gorunuyor. Tasarim surerken metinler
+ * yalnizca tr.ts'e yaziliyor (diger diller tasarim bitince toplu
+ * cevrilecek), yani yeni bir ekran Ingilizce bir cihazda ham anahtar
+ * gosteriyordu.
+ *
+ * Yarim cevrilmis bir ekran, kod gorunen bir ekrandan iyidir - ayni
+ * gerekce `enableFallback` icin de gecerli. Ceviriler tamamlaninca bu
+ * kol hic calismayacak.
+ */
+function trYedegi(anahtar: string): string {
+  const deger = anahtar
+    .split('.')
+    .reduce<unknown>((o, parca) => (o == null ? undefined : (o as Record<string, unknown>)[parca]), tr)
+  return typeof deger === 'string' ? deger : anahtar
+}
+
+function cevirGuvenli(anahtar: string, secenekler?: Record<string, unknown>): string {
+  const sonuc = i18n.t(anahtar, secenekler)
+  // i18n-js eksik anahtarda anahtarin kendisini donduruyor.
+  if (typeof sonuc === 'string' && sonuc.includes(anahtar)) {
+    const yedek = trYedegi(anahtar)
+    if (yedek !== anahtar) {
+      return secenekler
+        ? yedek.replace(/\{\{(\w+)\}\}/g, (_, ad) =>
+            secenekler[ad] == null ? `{{${ad}}}` : String(secenekler[ad])
+          )
+        : yedek
+    }
+  }
+  return sonuc
+}
+
+/**
  * Cihazin dilini desteklenen bir dile esler.
  *
  * Cihaz "de-AT" ya da "pt-BR" gibi bolgeli bir kod verebiliyor;
@@ -158,7 +194,7 @@ export function DilSaglayici({ children }: { children: React.ReactNode }) {
     () => ({
       dil,
       hazir,
-      t: (anahtar, secenekler) => i18n.t(anahtar, secenekler),
+      t: (anahtar, secenekler) => cevirGuvenli(anahtar, secenekler),
       dilDegistir: async (yeni) => {
         i18n.locale = yeni
         yonuUygula(yeni)
@@ -182,5 +218,5 @@ export function useDil(): DilBaglami {
 
 /** Saglayici disindan (ornegin bir lib fonksiyonundan) ceviri gerekirse. */
 export function cevir(anahtar: string, secenekler?: Record<string, unknown>): string {
-  return i18n.t(anahtar, secenekler)
+  return cevirGuvenli(anahtar, secenekler)
 }

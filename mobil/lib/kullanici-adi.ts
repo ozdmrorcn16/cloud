@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 // Bicim veritabaninda da ayni sekilde kisitli
 // (profiller_kullanici_adi_bicim). Buradaki kopya yalnizca kullaniciya
@@ -7,7 +8,7 @@ import { supabase } from './supabase'
 const DESEN = /^[a-z0-9._]{3,20}$/
 
 export const KULLANICI_ADI_KURALI =
-  'Kullanici adi 3-20 karakter olmali; sadece kucuk harf, rakam, nokta ve alt cizgi kullanilabilir.'
+  'Kullanıcı adı 3-20 karakter olmalı; sadece küçük harf, rakam, nokta ve alt çizgi kullanılabilir.'
 
 export function kullaniciAdiniNormallestir(ham: string): string {
   return ham.trim().toLowerCase()
@@ -21,7 +22,7 @@ export async function kullaniciAdiMusaitMi(ad: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('kullanici_adi_musait_mi', {
     p_ad: kullaniciAdiniNormallestir(ad),
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   return data as boolean
 }
 
@@ -39,6 +40,6 @@ export async function kullaniciAdiniDegistir(yeniAd: string): Promise<void> {
     if (error.code === '23514') {
       throw new Error(KULLANICI_ADI_KURALI)
     }
-    throw new Error(error.message)
+    throw new Error(hataMetni(error))
   }
 }

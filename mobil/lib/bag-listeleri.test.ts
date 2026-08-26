@@ -95,6 +95,6 @@ describe('takipcilerimiGetir', () => {
     ;(supabase.from as jest.Mock).mockReturnValueOnce(tabloDondur([{ takip_eden_id: 'k3' }]))
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
 
-    await expect(takipcilerimiGetir()).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(takipcilerimiGetir()).rejects.toThrow('giriş yapmış olman gerekiyor')
   })
 })

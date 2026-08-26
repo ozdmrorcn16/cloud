@@ -39,7 +39,7 @@ describe('mesajGonder', () => {
       error: { message: 'Bu kisiye su an mesaj gonderemezsin' },
     })
     await expect(mesajGonder('kisi-1', 'merhaba')).rejects.toThrow(
-      'Bu kisiye su an mesaj gonderemezsin'
+      'Bu kişiye şu an mesaj gönderemezsin.'
     )
   })
 })
@@ -79,7 +79,7 @@ describe('konusmalarimiGetir', () => {
 
   it('hata donerse firlatir', async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Kimlik dogrulamasi gerekli' } })
-    await expect(konusmalarimiGetir()).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(konusmalarimiGetir()).rejects.toThrow('giriş yapmış olman gerekiyor')
   })
 })
 
@@ -124,7 +124,7 @@ describe('mesajlariGetir', () => {
 
   it('hata donerse firlatir', async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: 'Konusma bulunamadi' } })
-    await expect(mesajlariGetir('konusma-1')).rejects.toThrow('Konusma bulunamadi')
+    await expect(mesajlariGetir('konusma-1')).rejects.toThrow('Konuşma bulunamadı.')
   })
 })
 
@@ -139,7 +139,7 @@ describe('konusmayiOkunduIsaretle', () => {
 
   it('hata donerse firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Konusma bulunamadi' } })
-    await expect(konusmayiOkunduIsaretle('konusma-1')).rejects.toThrow('Konusma bulunamadi')
+    await expect(konusmayiOkunduIsaretle('konusma-1')).rejects.toThrow('Konuşma bulunamadı.')
   })
 })
 
@@ -152,7 +152,7 @@ describe('konusmayiGizle', () => {
 
   it('hata donerse firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Konusma bulunamadi' } })
-    await expect(konusmayiGizle('konusma-1')).rejects.toThrow('Konusma bulunamadi')
+    await expect(konusmayiGizle('konusma-1')).rejects.toThrow('Konuşma bulunamadı.')
   })
 })
 

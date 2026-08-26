@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type KisiSonucu = {
   id: string
@@ -23,7 +24,7 @@ export async function kisiAra(metin: string): Promise<KisiSonucu[]> {
   if (temiz.length < EN_AZ_KARAKTER) return []
 
   const { data, error } = await supabase.rpc('kisi_ara', { p_metin: temiz })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 
   return (data as SunucuSatiri[]).map((satir) => ({
     id: satir.id,

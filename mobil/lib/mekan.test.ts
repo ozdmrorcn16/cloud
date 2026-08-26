@@ -93,7 +93,7 @@ describe('mekanEkle', () => {
     })
     await expect(
       mekanEkle('Uzak Kafe', 'kafe', { lat: 41.02, lng: 28.98 }, { lat: 42, lng: 30 })
-    ).rejects.toThrow('Mekana yakin olmalisin')
+    ).rejects.toThrow('yaklaşık 200 metre')
   })
 })
 

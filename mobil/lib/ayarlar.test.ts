@@ -61,7 +61,7 @@ describe('aniGorunurlugunuAyarla', () => {
   it('RPC hata donerse firlatir', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({ error: { message: 'Gecersiz gorunurluk degeri' } })
 
-    await expect(aniGorunurlugunuAyarla('kimse')).rejects.toThrow('Gecersiz gorunurluk degeri')
+    await expect(aniGorunurlugunuAyarla('kimse')).rejects.toThrow('Geçersiz görünürlük değeri.')
   })
 })
 

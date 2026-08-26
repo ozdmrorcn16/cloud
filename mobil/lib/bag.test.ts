@@ -60,7 +60,7 @@ describe('takipIstegiGonder', () => {
 
   it('sunucu hatasini oldugu gibi firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Bugunluk istek sinirina ulastin' } })
-    await expect(takipIstegiGonder('kisi-1')).rejects.toThrow('Bugunluk istek sinirina ulastin')
+    await expect(takipIstegiGonder('kisi-1')).rejects.toThrow('Bugünlük istek sınırına ulaştın.')
   })
 })
 
@@ -106,7 +106,7 @@ describe('sohbetIstegiGonder', () => {
 
   it('sunucu hatasini oldugu gibi firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Istegin zaten gonderilmis' } })
-    await expect(sohbetIstegiGonder('kisi-1')).rejects.toThrow('Istegin zaten gonderilmis')
+    await expect(sohbetIstegiGonder('kisi-1')).rejects.toThrow('İsteğin zaten gönderilmiş.')
   })
 })
 
@@ -132,7 +132,7 @@ describe('sohbetIsteginiYanitla', () => {
   it('sunucu hatasini oldugu gibi firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Yanitlanacak istek bulunamadi' } })
     await expect(sohbetIsteginiYanitla('kisi-1', true)).rejects.toThrow(
-      'Yanitlanacak istek bulunamadi'
+      'Yanıtlanacak istek bulunamadı.'
     )
   })
 })
@@ -321,7 +321,7 @@ describe('sohbetIsteginiGeriCek', () => {
   it('sunucu hatasini oldugu gibi firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Geri cekilecek istek bulunamadi' } })
     await expect(sohbetIsteginiGeriCek('kisi-1')).rejects.toThrow(
-      'Geri cekilecek istek bulunamadi'
+      'Geri çekilecek istek bulunamadı.'
     )
   })
 })

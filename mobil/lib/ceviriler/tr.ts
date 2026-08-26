@@ -274,6 +274,7 @@ export default {
     tekrarGonder: 'Tekrar gönder',
     tekrarBekle: '{{saniye}} sn sonra tekrar gönderebilirsin',
     tekrarGonderildi: 'Yeni kod gönderildi.',
+    hakKalmadi: 'Bu numara için çok fazla kod istendi. Bir saat sonra tekrar deneyebilirsin.',
     hataEksik: 'Kodu eksiksiz gir.',
     zatenKayitliBaslik: 'Bu numarada zaten bir hesap var',
     zatenKayitliAciklama:

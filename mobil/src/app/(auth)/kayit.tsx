@@ -6,6 +6,8 @@ import { eFormatinaCevir } from '../../../lib/telefon'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
+import { hataMetni } from '../../../lib/hata-metni'
+import { gonderimKaydet } from '../../../lib/kod-gonderim'
 
 /**
  * KAYDIN ILK ADIMI: yalnizca telefon numarasi.
@@ -45,9 +47,12 @@ export default function KayitEkrani() {
     setGonderiliyor(false)
 
     if (error) {
-      setHata(error.message)
+      setHata(hataMetni(error))
       return
     }
+    // Ilk kod da sayaca yaziliyor; yoksa dogrulama ekrani sifir
+    // beklemeyle aciliyor ve "Tekrar gonder" aninda basilabiliyor.
+    await gonderimKaydet(eFormatli)
     router.push(`/dogrula?telefon=${encodeURIComponent(eFormatli)}`)
   }
 

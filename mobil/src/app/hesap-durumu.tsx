@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useOturum } from '../../lib/oturum'
 import { supabase } from '../../lib/supabase'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { hataMetni } from '../../lib/hata-metni'
 
 // Bu ekran YALNIZCA moderasyon kararlari icindir. Dondurulmus hesap
 // buraya hic dusmez: giris sirasinda otomatik geri acilir (karar 66).
@@ -19,9 +20,9 @@ export default function HesapDurumuEkrani() {
     setCikisHatasi(null)
     try {
       const { error } = await supabase.auth.signOut()
-      if (error) setCikisHatasi(error.message)
+      if (error) setCikisHatasi(hataMetni(error))
     } catch (hata) {
-      setCikisHatasi(hata instanceof Error ? hata.message : 'Çıkış yapılamadı')
+      setCikisHatasi(hata instanceof Error ? hataMetni(hata) : 'Çıkış yapılamadı')
     }
   }
 

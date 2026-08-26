@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { hataMetni } from './hata-metni'
 
 export type HesapDurumu = {
   durum: 'askida' | 'yasakli' | 'dondurulmus'
@@ -31,7 +32,7 @@ export async function hesapDurumunuGetir(): Promise<HesapDurumu | null> {
     .or('durum.in.(yasakli,dondurulmus),aski_bitisi.gt.now')
     .maybeSingle()
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
   if (!data) return null
 
   return {
@@ -45,7 +46,7 @@ export async function hesabiDondur(gerekce?: string): Promise<void> {
   const { error } = await supabase.rpc('hesabimi_dondur', {
     p_gerekce: gerekce ?? null,
   })
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(hataMetni(error))
 }
 
 // Her oturum acilisinda cagriliyor (spec karar 66). Bu yuzden HATA

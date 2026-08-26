@@ -37,7 +37,7 @@ describe('GirisEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'yanlissifre')
     await fireEvent.press(screen.getByText('Giriş yap'))
     await waitFor(() => {
-      expect(screen.getByText('Invalid login credentials')).toBeTruthy()
+      expect(screen.getByText('Telefon numarası ya da şifre hatalı.')).toBeTruthy()
     })
   })
 })

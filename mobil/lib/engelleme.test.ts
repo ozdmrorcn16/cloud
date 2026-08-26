@@ -75,6 +75,6 @@ describe('engellediklerimiListele', () => {
       data: null,
       error: { message: 'Kimlik dogrulamasi gerekli' },
     })
-    await expect(engellediklerimiListele()).rejects.toThrow('Kimlik dogrulamasi gerekli')
+    await expect(engellediklerimiListele()).rejects.toThrow('giriş yapmış olman gerekiyor')
   })
 })

@@ -48,7 +48,7 @@ describe('checkInYap', () => {
       data: null,
       error: { message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' },
     })
-    await expect(checkInYap('mekan-1', 41.5, 29.5)).rejects.toThrow('Mekana cok uzaksin')
+    await expect(checkInYap('mekan-1', 41.5, 29.5)).rejects.toThrow('Mekana çok uzaksın')
   })
 
   it('gizli bulunurluk degerini rpc parametresi olarak gonderir', async () => {
