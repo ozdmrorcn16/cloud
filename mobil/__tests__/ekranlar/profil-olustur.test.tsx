@@ -10,6 +10,7 @@ jest.mock('../../lib/supabase', () => ({
     auth: {
       getUser: jest.fn(),
       updateUser: jest.fn(),
+      signOut: jest.fn(),
     },
     from: jest.fn(),
   },
@@ -36,7 +37,7 @@ async function dogumTarihiniSec() {
 async function formuDoldur() {
   await fireEvent.changeText(screen.getByPlaceholderText('Adın ve soyadın'), 'Orçun Özdemir')
   await dogumTarihiniSec()
-  await fireEvent.changeText(screen.getByPlaceholderText('kullaniciadi'), 'Orcun')
+  await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'Orcun')
   await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'sifre1234')
   await fireEvent.changeText(
     screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
@@ -53,6 +54,7 @@ describe('ProfilOlusturEkrani', () => {
       data: { user: { id: 'kullanici-1' } },
     })
     ;(supabase.auth.updateUser as jest.Mock).mockResolvedValue({ error: null })
+    ;(supabase.auth.signOut as jest.Mock).mockResolvedValue({ error: null })
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(true)
   })
 
@@ -104,7 +106,7 @@ describe('ProfilOlusturEkrani', () => {
   it('dogum tarihi secilmeden hesap olusturmaz', async () => {
     await render(<ProfilOlusturEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('Adın ve soyadın'), 'Orçun Özdemir')
-    await fireEvent.changeText(screen.getByPlaceholderText('kullaniciadi'), 'orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
     await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'sifre1234')
     await fireEvent.changeText(
       screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
@@ -148,7 +150,7 @@ describe('ProfilOlusturEkrani', () => {
   it('bicime uymayan kullanici adinda kurali gosterir ve kaydetmez', async () => {
     await render(<ProfilOlusturEkrani />)
     await formuDoldur()
-    await fireEvent.changeText(screen.getByPlaceholderText('kullaniciadi'), 'or')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'or')
     await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
@@ -160,7 +162,7 @@ describe('ProfilOlusturEkrani', () => {
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(false)
 
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('kullaniciadi'), 'orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
     expect(
       await screen.findByText('Bu kullanıcı adı alınmış, başka bir tane dene.')
@@ -169,8 +171,21 @@ describe('ProfilOlusturEkrani', () => {
 
   it('musait kullanici adinda musait yazisini gosterir', async () => {
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('kullaniciadi'), 'orcun')
+    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
     expect(await screen.findByText('Bu kullanıcı adı müsait.')).toBeTruthy()
+  })
+
+  it('geri tusu OTURUMU KAPATIP acilis ekranina doner', async () => {
+    await render(<ProfilOlusturEkrani />)
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    // Cikis sart: profili olmayan acik bir oturum, kok yonlendirme
+    // kontrolu tarafindan aninda bu ekrana geri gonderilir.
+    await waitFor(() => {
+      expect(supabase.auth.signOut).toHaveBeenCalled()
+    })
+    expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
   })
 })

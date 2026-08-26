@@ -90,6 +90,24 @@ export default function ProfilOlusturEkrani() {
   const enErkenYil = buYil - EN_FAZLA_YAS
   const seciciBaslangici: Tarih = dogum ?? { gun: 1, ay: 1, yil: buYil - 25 }
 
+  /**
+   * Geri: acilis ekranina doner.
+   *
+   * OTURUM KAPATILIYOR ve bu sart. Bu ekrana gelindiginde telefon
+   * dogrulanmis, yani Supabase kullanicisi VAR ve oturum acik. Sadece
+   * `/karsilama`ya gitmek ise yaramazdi: kok yonlendirme kontrolu
+   * profili olmayan acik bir oturumu aninda buraya geri gonderiyor
+   * (`oturum && profilVarMi === false`). Cikis yapmak, kullaniciyi
+   * gercekten disari birakmanin tek yolu.
+   *
+   * Yarim kalan hesap kayboluyor degil: ayni numara tekrar girildiginde
+   * yeni bir kod geliyor ve akis yine bu ekranda devam ediyor.
+   */
+  async function geriDon() {
+    await supabase.auth.signOut()
+    router.replace('/karsilama')
+  }
+
   function alanHatasiniTemizle(alan: string) {
     setAlanHatalari((mevcut) => (mevcut[alan] ? { ...mevcut, [alan]: null } : mevcut))
     setHata(null)
@@ -234,11 +252,29 @@ export default function ProfilOlusturEkrani() {
         contentContainerStyle={stiller.icerik}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={stiller.baslik}>{t('profilOlustur.baslik')}</Text>
-        <Text style={stiller.altYazi}>{t('profilOlustur.altYazi')}</Text>
+        <Pressable
+          style={stiller.geri}
+          onPress={geriDon}
+          accessibilityRole="button"
+          accessibilityLabel={t('ortak.geri')}
+          hitSlop={12}
+        >
+          <Svg width={24} height={24} viewBox="0 0 24 24">
+            <Path
+              d="M15 5l-7 7 7 7"
+              stroke={renk.metin}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </Svg>
+        </Pressable>
 
-        {/* Ad ve soyad TEK kutuda - kullanicinin karari. */}
-        <Text style={stiller.etiket}>{t('profilOlustur.adEtiket')}</Text>
+        <Text style={stiller.baslik}>{t('profilOlustur.baslik')}</Text>
+        {/* Ad ve soyad TEK kutuda. Basliklar KALDIRILDI (kullanicinin
+            karari 2026-08-26): etiketi alanin kendi yer tutucusu
+            tasiyor, ayrica baslik yazmak ayni seyi iki kez soyluyordu. */}
         <TextInput
           style={[
             stiller.girdi,
@@ -259,7 +295,6 @@ export default function ProfilOlusturEkrani() {
         {alanHatalari.ad ? <Text style={stiller.alanHatasi}>{alanHatalari.ad}</Text> : null}
 
         {/* Dogum tarihi: yazilmiyor, tekerlekten seciliyor. */}
-        <Text style={stiller.etiket}>{t('profilOlustur.dogumEtiket')}</Text>
         <Pressable
           style={[stiller.girdi, stiller.secimSatiri, Boolean(alanHatalari.dogum) && stiller.girdiHatali]}
           onPress={() => {
@@ -285,12 +320,13 @@ export default function ProfilOlusturEkrani() {
             />
           </Svg>
         </Pressable>
-        <Text style={[stiller.ipucu, Boolean(alanHatalari.dogum) && stiller.ipucuHatali]}>
-          {alanHatalari.dogum ?? t('profilOlustur.dogumIpucu')}
-        </Text>
+        {/* Ipucu metni KALDIRILDI; yalnizca hata durumunda satir
+            aciliyor. */}
+        {alanHatalari.dogum ? (
+          <Text style={[stiller.ipucu, stiller.ipucuHatali]}>{alanHatalari.dogum}</Text>
+        ) : null}
 
         {/* Kullanici adi */}
-        <Text style={stiller.etiket}>{t('profilOlustur.kullaniciAdiEtiket')}</Text>
         <View
           style={[
             stiller.girdi,
@@ -489,6 +525,7 @@ const stiller = StyleSheet.create({
     paddingBottom: bosluk.xxl + bosluk.xl,
   },
 
+  geri: { alignSelf: 'flex-start', marginBottom: bosluk.l },
   baslik: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.baslik,
@@ -501,7 +538,7 @@ const stiller = StyleSheet.create({
     fontSize: olcek.govde,
     lineHeight: 22,
     color: renk.metinIkincil,
-    marginBottom: bosluk.s,
+    marginBottom: bosluk.xl,
   },
 
   etiket: {

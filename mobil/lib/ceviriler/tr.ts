@@ -19,6 +19,7 @@ export default {
     birSorunOldu: 'Bir sorun oluştu.',
     sil: 'Sil',
     vazgec: 'Vazgeç',
+    geri: 'Geri',
   },
 
   karsilama: {
@@ -61,17 +62,13 @@ export default {
   },
 
   profilOlustur: {
-    baslik: 'Hesabını oluştur',
-    altYazi: 'Son adım. Bu bilgilerle seni tanıyacağız, bir dahaki girişini de bunlarla yapacaksın.',
+    baslik: 'Hesap oluştur',
 
-    adEtiket: 'Ad ve soyad',
     adYerTutucu: 'Adın ve soyadın',
     adHata: 'Adını ve soyadını yaz.',
 
     dogumEtiket: 'Doğum tarihin',
-    dogumSec: 'Gün, ay ve yıl seç',
-    dogumIpucu:
-      'Doğum tarihin profilinde görünmez. Yalnızca 18 yaşını doldurduğunu doğrulamak için soruyoruz.',
+    dogumSec: 'Doğum tarihin',
     dogumHataGecersiz: 'Doğum tarihini seç.',
     dogumHataYas: 'Slooin’i kullanmak için 18 yaşını doldurmuş olman gerekiyor.',
     tarihGun: 'Gün',
@@ -93,8 +90,7 @@ export default {
       12: 'Aralık',
     },
 
-    kullaniciAdiEtiket: 'Kullanıcı adı',
-    kullaniciAdiYerTutucu: 'kullaniciadi',
+    kullaniciAdiYerTutucu: 'Kullanıcı adı',
     kullaniciAdiIpucu: '3-20 karakter; küçük harf, rakam, nokta ve alt çizgi.',
     kullaniciAdiKontrol: 'Kontrol ediliyor…',
     kullaniciAdiMusait: 'Bu kullanıcı adı müsait.',
