@@ -61,22 +61,38 @@ import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
  * gercek sol kenari 3.2 degil 1.9.
  */
 const HIZA = 2.0
+/** Butun ikonlarin oturdugu dikey merkez. */
+const MERKEZ = 12
 
+/**
+ * `sol` ve `merkez`: ikonun mürekkebinin OLCULEN sol kenari ve dikey
+ * merkezi (viewBox birimi). `olcek`: optik boyut esitlemesi.
+ *
+ * Olcek neden hepsinde 1 degil: ham hallerinde konum ignesi 19 birim
+ * yuksekti, digerleri ~14.5. Alan olarak yakinlar ama IGNE UZUN oldugu
+ * icin gozde daha iri duruyordu. Boyu 16.5'e cekildi. Yukseklikleri
+ * ZORLA esitlemek yanlis olurdu: populer oku yassi bir sekil, ayni
+ * boya cekilse 26 birim genisleyip viewBox'i tasardi.
+ */
 const IKON_DUZELTME = {
-  //          olculen sol kenar        olculen dikey merkez
-  konum: { dx: HIZA - 4.8, dy: 12 - 12.0 },
-  kisiler: { dx: HIZA - 2.6, dy: 12 - 12.15 },
-  sohbet: { dx: HIZA - 3.6, dy: 12 - 12.4 },
-  yogunluk: { dx: HIZA - 1.9, dy: 12 - 11.9 },
+  konum: { sol: 4.8, merkez: 12.0, olcek: 0.87 },
+  kisiler: { sol: 2.6, merkez: 12.15, olcek: 0.97 },
+  sohbet: { sol: 3.6, merkez: 12.4, olcek: 1 },
+  // Stroke ile cizildigi icin sol kenari fill bbox'indan yarim cizgi
+  // kalinligi (3.2/2) kadar disarida: 3.2 - 1.6 = 1.6.
+  yogunluk: { sol: 1.6, merkez: 11.9, olcek: 1 },
 } as const
 
 function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' }) {
   const R = renk.turuncu
-  const { dx, dy } = IKON_DUZELTME[ad]
+  const { sol, merkez, olcek } = IKON_DUZELTME[ad]
+  // Once olcekleniyor, sonra kaydiriliyor - bu yuzden kaydirma
+  // olceklenmis kenara gore hesaplaniyor.
+  const donusum = `translate(${HIZA - olcek * sol} ${MERKEZ - olcek * merkez}) scale(${olcek})`
   return (
     <View style={stiller.ikonAlani}>
       <Svg width={34} height={34} viewBox="0 0 24 24">
-        <G transform={`translate(${dx} ${dy})`}>
+        <G transform={donusum}>
         {ad === 'konum' && (
           <>
             <Path
@@ -110,7 +126,10 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
             <Path
               d="M3.2 16.4l5.6-5.6 3.8 3.8 6-6"
               stroke={R}
-              strokeWidth={2.6}
+              // 2.6 -> 3.2: diger uc ikon DOLU sekil, bu tek basina
+              // ince cizgiydi ve satirda daha zayif duruyordu. Fark
+              // boyutta degil agirliktaydi.
+              strokeWidth={3.2}
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
