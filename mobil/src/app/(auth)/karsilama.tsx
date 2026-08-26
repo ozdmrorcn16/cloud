@@ -193,7 +193,13 @@ const stiller = StyleSheet.create({
     // tek ortalamak basliklarin baslangic noktasini kaydiriyor ve
     // sutun hissi kayboluyordu; blogu ortalayip icini hizali tutmak
     // ikisini birden veriyor.
-    alignSelf: 'center',
+    //
+    // Blok TAM ORTADA DEGIL, biraz sola yakin (kullanicinin karari
+    // 2026-08-26: "cok ortada kaldi, biraz sola yakin baslasin").
+    // Sola dayanip kucuk bir pay birakiyor: sayfa payi 24, buraya 12
+    // daha ekleniyor. Tam ortada ~54 px'ten basliyordu.
+    alignSelf: 'flex-start',
+    marginLeft: bosluk.m,
   },
   adim: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   // Sabit genislik: ikonlarin genisligi farkli, sutun bundan
