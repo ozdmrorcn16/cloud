@@ -48,8 +48,6 @@ export default {
   },
 
   kayit: {
-    baslik: 'Telefon numaran',
-    altYazi: 'Numarana bir doğrulama kodu göndereceğiz. Numaran profilinde görünmez.',
     telefonEtiket: 'Telefon numarası',
     telefonYerTutucu: '05XX XXX XX XX',
     gonder: 'Kodu gönder',

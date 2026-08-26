@@ -55,9 +55,10 @@ export default function KayitEkrani() {
     <View style={stiller.sayfa}>
       <MarkaYazisi genislik={128} style={stiller.marka} />
 
-      <Text style={stiller.baslik}>{t('kayit.baslik')}</Text>
-      <Text style={stiller.altYazi}>{t('kayit.altYazi')}</Text>
-
+      {/* Baslik ve altindaki not KALDIRILDI (kullanicinin karari
+          2026-08-26). Ekranda tek bir alan var ve alanin kendi
+          etiketi zaten ne istendigini soyluyor; baslik onu tekrar
+          ediyordu. */}
       <Text style={stiller.etiket}>{t('kayit.telefonEtiket')}</Text>
       <TextInput
         style={[stiller.girdi, odakli && stiller.girdiOdakli]}
@@ -105,24 +106,13 @@ const stiller = StyleSheet.create({
     flex: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.xl,
-    paddingTop: bosluk.xxl + bosluk.xl,
+    // Marka yukari alindi (kullanicinin istegi): 56 -> 32.
+    paddingTop: bosluk.xxl,
   },
-  marka: { marginBottom: bosluk.xxl },
-
-  baslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-    marginBottom: bosluk.s,
-  },
-  altYazi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    lineHeight: 22,
-    color: renk.metinIkincil,
-    marginBottom: bosluk.xl,
-  },
+  // Sayfa payinin biraz DISINA tasiyor: kullanici markayi "biraz daha
+  // sola" istedi. Marka yazisinin solunda kendi bosluğu var, bu yuzden
+  // -6 ile optik olarak sayfa payina oturuyor.
+  marka: { marginLeft: -6, marginBottom: bosluk.xxl + bosluk.l },
 
   etiket: {
     fontFamily: yazi.govdeOrta,
