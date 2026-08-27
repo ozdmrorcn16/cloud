@@ -287,7 +287,13 @@ gelmiyor.
   kontrolun bir KOPYASI kayit ekranina, SMS gonderiminden ONCE
   eklendi** (kullanicinin istegi: "bosuna kod gonderimini direk
   engellemek icin"). Yeni RPC: `public.telefon_kayitli_mi`, yalnizca
-  boolean doner, IP basina saatte 15 sorgu tavani var,
+  boolean doner. Hiz siniri IKI KATMANLI: cihaz basina saatte 10,
+  IP basina saatte 300. **Tek olcut IP OLAMAZ** - mobil operatorler
+  CGNAT kullaniyor, yuzlerce abone ayni IP'den cikiyor; tek katmanli
+  15'lik ilk tasarim tek kisilik teste gore secilmisti ve ayni gun
+  degistirildi. Tavanlar `public.hiz_limitleri` tablosunda, UPDATE ile
+  degisiyor. Kullanim `public.telefon_kontrol_ozeti` icinde saatlik
+  toplanıyor (IP ya da numara tasimaz).
   `telefon_kontrol_gunlugu` tablosunda IP en fazla 1 saat durur.
   Cevap alinamazsa (tavan ya da ag) istemci eski akisa duesuyor: kod
   gonderilir ve kontrol dogrula ekranindaki son kapida yapilir - yani

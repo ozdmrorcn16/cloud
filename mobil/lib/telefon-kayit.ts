@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { cihazKimligi } from './cihaz'
 
 /**
  * "Bu numarada zaten bir hesap var mi?" sorusunu SMS kodu
@@ -17,12 +18,21 @@ import { supabase } from './supabase'
  * kapida yapiliyor. Boylece ne mesru kullanici ekranda kilitleniyor,
  * ne de sunucu tavani asildiginda numara taramasina cevap veriliyor.
  *
- * Sunucu tarafi: `public.telefon_kayitli_mi` (security definer, IP
- * basina saatlik tavan, yalnizca boolean doner).
+ * Sunucu tarafi: `public.telefon_kayitli_mi` (security definer,
+ * yalnizca boolean doner). Hiz siniri IKI KATMANLI: cihaz basina dar
+ * bir tavan, IP basina genis bir tavan. Sayilar `hiz_limitleri`
+ * tablosunda; gercek kullanim verisi geldiginde migrasyon yazmadan
+ * degistirilebiliyorlar.
  */
 export async function telefonKayitliMi(eFormatliTelefon: string): Promise<boolean | null> {
+  // Cihaz kimligi hiz sinirinin DAR katmani icin gidiyor. Sunucudaki
+  // genis katman IP'ye bakiyor; ikisi birlikte CGNAT arkasindaki
+  // kalabaligi bogmadan toplu taramayi sinirliyor (bkz. lib/cihaz.ts).
+  const cihaz = await cihazKimligi()
+
   const { data, error } = await supabase.rpc('telefon_kayitli_mi', {
     p_telefon: eFormatliTelefon,
+    p_cihaz: cihaz,
   })
 
   if (error) {

@@ -108,6 +108,8 @@ describe('KayitEkrani', () => {
     await waitFor(() =>
       expect(supabase.rpc).toHaveBeenCalledWith('telefon_kayitli_mi', {
         p_telefon: '+905551234567',
+        // Hiz sinirinin dar katmani icin cihaz kimligi de gidiyor.
+        p_cihaz: expect.anything(),
       })
     )
   })

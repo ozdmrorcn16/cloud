@@ -188,12 +188,20 @@ gonderimini daha onemli bulmasi.
 
 **Riski sinirlayan uc onlem:**
 
-- IP basina saatte 15 sorgu tavani. Tavan asilirsa fonksiyon cevap
-  vermiyor, hata firlatiyor. Kaynak adresi `cf-connecting-ip`
-  basligindan okunuyor; ilk yazimda `x-forwarded-for`in ILK parcasi
-  kullaniliyordu ve o parca cagiran tarafindan uydurulabildigi icin
-  tavan pratikte hic devreye girmiyordu (olculerek bulundu ve ayni gun
-  duzeltildi, migrasyon 20260827093000).
+- IKI KATMANLI hiz siniri: cihaz basina saatte 10, IP basina saatte
+  300 sorgu. Tavan asilirsa fonksiyon cevap vermiyor. IP adresi
+  `cf-connecting-ip` basligindan okunuyor.
+  Iki duzeltme ayni gun yapildi: (a) ilk yazimda `x-forwarded-for`in
+  ILK parcasi kullaniliyordu, o parca cagiran tarafindan
+  uydurulabildigi icin tavan hic devreye girmiyordu (20260827093000);
+  (b) tek olcut IP idi ve tavan 15 idi - bu sayi TEK KISILIK test
+  durumuna gore secilmisti, CGNAT arkasindaki gercek kullanicilar
+  birbirinin hakkini yerdi (20260827100000).
+  Tavan degerleri `public.hiz_limitleri` tablosunda; gercek kullanim
+  verisiyle migrasyon yazmadan degistirilebiliyorlar.
+- OLCUM: `public.telefon_kontrol_ozeti` saatlik toplamlari tutuyor
+  (kac cagri, kac farkli kaynak). IP ya da numara TASIMAZ - limitleri
+  gercek kullanima gore ayarlayabilmek icin yalnizca sayilar.
 - Istemci, cevap alamadiginda ESKI akisa duesuyor (kodu gonderiyor).
   Yani mesru kullanici engellenmiyor, tarayici da cevap alamiyor.
 - Dogrulama ekranindaki kontrol KALDIRILMADI; son kapi yerinde duruyor.
