@@ -8,6 +8,7 @@ import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 import { hataMetni } from '../../../lib/hata-metni'
 import { gonderimKaydet } from '../../../lib/kod-gonderim'
+import { telefonKayitliMi } from '../../../lib/telefon-kayit'
 
 /**
  * KAYDIN ILK ADIMI: yalnizca telefon numarasi.
@@ -22,8 +23,17 @@ import { gonderimKaydet } from '../../../lib/kod-gonderim'
  * sifre ile KVKK onayi dogrulamadan sonraki adimda aliniyor
  * (sifre-belirle ekrani).
  *
- * Numarasi zaten kayitli biri buraya numarasini yazarsa yine kod
- * gelir ve giris yapmis olur - WhatsApp/Instagram akisinin ayni.
+ * NUMARASI ZATEN KAYITLI BIRI KOD ALMAZ (kullanicinin istegi
+ * 2026-08-27): "kayitli bir telefon numarasi girilirse direk bu
+ * ekranda hata vermeli ki bosuna kod gonderimini direk engellemek
+ * icin". Kontrol `telefonKayitliMi` ile sunucuya soruluyor.
+ *
+ * Kontrol CEVAP VEREMEZSE (ag hatasi ya da sunucudaki saatlik tavan)
+ * akis eski haline duesuyor: kod gonderilir ve "zaten kayitli"
+ * kontrolu dogrulama ekranindaki son kapida yapilir. Yani bu kontrol
+ * bir HIZLI YOL, zorunlu bir adim degil - ne kullanici ekranda
+ * kilitleniyor, ne de tavan asildiginda numara taramasina cevap
+ * veriliyor.
  */
 export default function KayitEkrani() {
   const router = useRouter()
@@ -43,6 +53,14 @@ export default function KayitEkrani() {
     }
 
     setGonderiliyor(true)
+
+    // SMS'ten ONCE: numara zaten kayitliysa kod hic gonderilmiyor.
+    if (await telefonKayitliMi(eFormatli)) {
+      setGonderiliyor(false)
+      setHata(t('kayit.hataZatenKayitli'))
+      return
+    }
+
     const { error } = await supabase.auth.signInWithOtp({ phone: eFormatli })
     setGonderiliyor(false)
 

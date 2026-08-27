@@ -147,6 +147,59 @@ Danismana sorulmali.
 Bir ihlal fark edildiginde ne yapilacagi yazili degil. Kucuk bir yazili
 prosedur yeterli; teknik is degil.
 
+## Acik karar: numara kayit durumunun kayit ekraninda gosterilmesi
+
+**Tarih:** 2026-08-27. **Kullanicinin karari.** Bu bolum bilinerek
+alinmis bir riskin kaydidir; kapanmis bir madde degildir.
+
+**Ne degisti.** Kayit ekraninda telefon numarasi girilip "Kodu gonder"e
+basildiginda, SMS gonderilmeden once sunucuya "bu numarada tamamlanmis
+bir hesap var mi" diye soruluyor (`public.telefon_kayitli_mi`). Varsa
+kod hic gonderilmiyor, hata ayni ekranda cikiyor.
+
+**Neden istendi.** Kullanicinin ifadesi: "kayitli bir telefon numarasi
+girilirse direk bu ekranda hata vermeli ki bosuna kod gonderimini direk
+engellemek icin". Onceki tasarimda kullanici kodu bekliyor, giriyor ve
+ancak ondan sonra "bu numarada zaten hesap var" mesajini goruyordu.
+
+**Bunun ONCEKI kararla celistigi nokta.** 2026-08-26'da bu kontrol
+BILEREK dogrulama sonrasina konmustu; gerekce, kimligini dogrulamamis
+birine "bu numara kayitli mi" sorusunu cevaplamanin elindeki numara
+listesiyle kimin uygulamayi kullandigini taramaya (enumeration) izin
+vermesiydi. O gerekce hala gecerli; degisen sey, kullanicinin bosa SMS
+gonderimini daha onemli bulmasi.
+
+**Dort soru:**
+
+1. *Hangi kisisel veri?* Iki tane. (a) Sorgulanan telefon numarasinin
+   kayitli olup olmadigi - bu, numaranin sahibi hakkinda bir bilgidir
+   ve ucuncu bir kisiye aciliyor. (b) Sorguyu yapanin IP adresi.
+2. *Hukuki dayanak?* (a) icin mesru menfaat (kotuye kullanimi ve gereksiz
+   SMS maliyetini onlemek); pratikte sektor standardi bir davranistir
+   (Instagram, X ve benzerleri ayni bilgiyi kayit ekraninda verir).
+   (b) icin mesru menfaat: guvenlik ve hiz siniri.
+3. *Saklama suresi?* Numara sorgusunun kendisi HIC saklanmiyor - hangi
+   numaranin sorulduğu kaydedilmiyor. IP `telefon_kontrol_gunlugu`
+   icinde en fazla **1 saat** duruyor ve her cagride eski satirlar
+   siliniyor. Kalici bir "kim hangi numarayi sordu" kaydi olusmuyor.
+4. *Kim gorebiliyor?* Tablonun RLS'i acik ve HICBIR politikasi yok;
+   yalnizca `security definer` fonksiyon ve `service_role` erisebiliyor.
+   Fonksiyon disariya yalnizca `boolean` doner.
+
+**Riski sinirlayan uc onlem:**
+
+- IP basina saatte 15 sorgu tavani. Tavan asilirsa fonksiyon cevap
+  vermiyor, hata firlatiyor.
+- Istemci, cevap alamadiginda ESKI akisa duesuyor (kodu gonderiyor).
+  Yani mesru kullanici engellenmiyor, tarayici da cevap alamiyor.
+- Dogrulama ekranindaki kontrol KALDIRILMADI; son kapi yerinde duruyor.
+
+**Kalan risk (kabul edildi):** hedefli tek bir sorgu hala mumkun -
+birisi tanidiginin numarasini yazip Slooin hesabi olup olmadigini
+ogrenebilir. Tavan bunu ENGELLEMIYOR, yalnizca toplu taramayi
+engelliyor. Gercek kullaniciya acilmadan once aydinlatma metnine bu
+davranisin eklenmesi gerekir.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

@@ -283,9 +283,19 @@ gelmiyor.
   Iki eski borc kapandi: sifre artik bu akista belirleniyor ve KVKK
   onayi kayit altina aliniyor.
 - `dogrula`: numara ZATEN KAYITLIYSA kayit akisi burada kesiliyor
-  ("Bu numarada zaten bir hesap var" -> girise). Kontrol kod
-  girildikten SONRA yapiliyor; oncesinde yapmak numara listesiyle
-  kimin kayitli oldugunu taramaya izin verirdi.
+  ("Bu numarada zaten bir hesap var" -> girise). **2026-08-27'de bu
+  kontrolun bir KOPYASI kayit ekranina, SMS gonderiminden ONCE
+  eklendi** (kullanicinin istegi: "bosuna kod gonderimini direk
+  engellemek icin"). Yeni RPC: `public.telefon_kayitli_mi`, yalnizca
+  boolean doner, IP basina saatte 15 sorgu tavani var,
+  `telefon_kontrol_gunlugu` tablosunda IP en fazla 1 saat durur.
+  Cevap alinamazsa (tavan ya da ag) istemci eski akisa duesuyor: kod
+  gonderilir ve kontrol dogrula ekranindaki son kapida yapilir - yani
+  ORASI KALDIRILMADI, hizli yol eklendi.
+  ONEMLI: "oncesinde yapmak numara taramasina izin verirdi" gerekcesi
+  HALA GECERLI ve risk bilerek kabul edildi; tavan toplu taramayi
+  engelliyor, hedefli tek sorguyu engellemiyor. Ayrinti ve dort soru:
+  `docs/kvkk-uyum-listesi.md` icindeki "Acik karar" bolumu.
 - `karsilama`: aciklama satirlari kalkti, dort baslik kaldi; ornek
   check-in kartlari eklendi (SAYILAR ORNEK, gercek veri degil).
   Slogan bir eklenip ayni gun kaldirildi - tekrar onerme.

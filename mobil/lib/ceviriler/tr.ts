@@ -54,6 +54,8 @@ export default {
     zatenHesap: 'Zaten hesabın var mı?',
     girisYap: 'Giriş yap',
     hataTelefon: 'Geçerli bir telefon numarası gir.',
+    hataZatenKayitli:
+      'Bu numarada zaten bir hesap var. Şifrenle giriş yapabilirsin.',
     aydinlatma: 'Devam ederek gizlilik metnini kabul etmiş olmazsın; onayı bir sonraki adımda vereceksin.',
   },
 
