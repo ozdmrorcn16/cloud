@@ -63,7 +63,8 @@
     "lint": "expo lint",
     "test": "jest",
     "test:gorunurluk": "tsx --env-file=.env gorunurluk-testleri/calistir.ts",
-    "test:sema": "tsx --env-file=.env gorunurluk-testleri/sema-dogrula.ts"
+    "test:sema": "tsx --env-file=.env gorunurluk-testleri/sema-dogrula.ts",
+    "yayinla": "expo export --platform web && npx --yes eas-cli deploy --prod"
   },
   "private": true,
   "jest": {

@@ -38,8 +38,11 @@ try {
   // Konum izni ve sahte konum: kesfet gibi ekranlar konum olmadan
   // hata durumunu ciziyor, tasarim degerlendirilemiyordu. Varsayilan
   // Bursa/Nilufer - veritabaninda o cevrede gercek mekan var.
+  // Taban adres: varsayilan yerel onizleme sunucusu. Yayinlanmis
+  // surumu denetlemek icin SLOOIN_TABAN_ADRES=https://slooin.expo.app
+  const tabanAdres = process.env.SLOOIN_TABAN_ADRES ?? 'http://127.0.0.1:8080'
   const baglam = tarayici.defaultBrowserContext()
-  await baglam.overridePermissions('http://127.0.0.1:8080', ['geolocation'])
+  await baglam.overridePermissions(tabanAdres, ['geolocation'])
 
   const sayfa = await tarayici.newPage()
   // Cihaz dili taklidi: uygulamanin cihaz dilini gercekten okuyup
@@ -70,7 +73,7 @@ try {
   const tel = process.env.SLOOIN_TEST_TELEFON
   const sif = process.env.SLOOIN_TEST_SIFRE
   if (tel && sif) {
-    await sayfa.goto('http://127.0.0.1:8080/giris', {
+    await sayfa.goto(`${tabanAdres}/giris`, {
       waitUntil: 'networkidle0',
       timeout: 60000,
     })
@@ -91,7 +94,7 @@ try {
     }
   }
 
-  await sayfa.goto(`http://127.0.0.1:8080${yol}`, {
+  await sayfa.goto(`${tabanAdres}${yol}`, {
     waitUntil: 'networkidle0',
     timeout: 60000,
   })

@@ -131,6 +131,52 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### DEVIR NOTU - 2026-08-27 (kalici yayin adresi)
+
+**Uygulama artik kalici bir adreste yayinda: https://slooin.expo.app**
+
+Tunel yolu (cloudflared quick tunnel) BIRAKILDI. Sebep kullanicinin
+sikayetiydi: adres her calistirmada degisiyordu ve tarayici depolamayi
+adrese bagladigi icin her seferinde yeniden giris gerekiyordu.
+
+Secilen yol **EAS Hosting** (`eas deploy`). Gerekce: Expo hesabina
+(`byorcun`) zaten giris yapilmisti ve `app.json` icindeki EAS projesi
+(`972aa05d-569b-4a5a-ab75-2b149fd8588c`) bagliydi; yeni hesap acmak
+gerekmedi. Adres KOK dizinde (`/`), yani PWA manifest'indeki
+`start_url` ve `scope` degerleri ("/") oldugu gibi calisiyor -
+GitHub Pages alt yolu (`/cloud/`) secilseydi `experiments.baseUrl`
+ayari ve manifest yollarinin tamami degistirilmek zorunda kalirdi.
+
+**Yeniden yayinlamak icin tek komut** (mobil/ icinden):
+
+```bash
+npm run yayinla     # expo export --platform web && eas-cli deploy --prod
+```
+
+Uretim adresi her yayinda AYNI kalir; her yayin ayrica kendi
+`slooin--<hash>.expo.app` adresini de alir (geri donmek gerekirse).
+
+`araclar/ekran-goruntusu.mjs` artik `SLOOIN_TABAN_ADRES` cevre
+degiskenini okuyor; varsayilan yerel 127.0.0.1:8080, yayindaki surumu
+denetlemek icin `SLOOIN_TABAN_ADRES=https://slooin.expo.app` verilir.
+
+**Guvenlik / KVKK notu:** adres kalici olarak internete acik. Uc sey
+dogrulandi: (1) `service_role` anahtari ve test sifresi `dist/` icinde
+YOK (yalnizca `EXPO_PUBLIC_*` degerleri gomulu, ki anon anahtar zaten
+RLS ile korunuyor); (2) Supabase'de SMS saglayicisi tanimli DEGIL,
+yani adresi bulan biri gercek bir numarayla hesap acamaz - yalnizca
+test numaralari kod aliyor; (3) veri tarafinda RLS devrede.
+
+**ELLE TEST LISTESI: `docs/elle-test-listesi.md`.** Fazlardan devreden
+butun "elle tarayici gezintisi" borclari (Faz 2b, 2c, 3a, 3b, Plan 1)
+tek listede toplandi; iki hesap gerektirenler isaretli.
+
+**TEST NUMARASI SORUNU (karar bekliyor):** kayit akisini bastan sona
+denemek icin bos numara KALMADI. `05550000003` 2026-08-26'da profil
+olusturularak harcandi (kullanici adi `asdfgh`). Canli veritabaninda
+dogrulandi. Iki cozum var: Supabase panelinden test numarasi listesine
+yeni numara eklemek, ya da `05550000003`un profil satirini silmek.
+
 ### DEVIR NOTU - 2026-08-26/27 (arayuz tasarimi, ucuncu oturumun DEVAMI)
 
 Bu bolum asagidaki 2026-08-26 notunun UZERINE gelir; o not gunun ilk
