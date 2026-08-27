@@ -1,0 +1,237 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Slooin — profil ekranı fikirleri</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2a2622; font-family: 'Instrument Sans', system-ui, sans-serif; padding: 24px; }
+
+  .telefon {
+    position: relative; width: 390px; height: 844px; overflow: hidden;
+    background: #FFFFFF; display: flex; flex-direction: column;
+  }
+  .govde { flex: 1; padding: 26px 20px 0; overflow: hidden; }
+
+  .ustSatir { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .kullaniciAdi { font-size: 19px; font-weight: 700; color: #17130F; letter-spacing: -0.3px; }
+  .disli { width: 24px; height: 24px; }
+
+  .avatar {
+    border-radius: 999px; background: #FFF3E8; color: #FE7813;
+    display: grid; place-items: center; font-weight: 700; flex: none;
+  }
+
+  .ad { font-size: 16px; font-weight: 600; color: #17130F; }
+  .bio { font-size: 14px; color: #6E6660; margin-top: 3px; line-height: 1.4; }
+
+  .sayilar { display: flex; }
+  .sayilar div { text-align: center; flex: 1; }
+  .sayilar .s { font-size: 18px; font-weight: 700; color: #17130F; }
+  .sayilar .e { font-size: 13px; color: #6E6660; margin-top: 1px; }
+
+  .dugme {
+    border: 1px solid #EFEAE5; border-radius: 10px; padding: 9px 0;
+    text-align: center; font-size: 14px; font-weight: 600; color: #17130F;
+  }
+  .dugme.turuncu { background: #FE7813; color: #fff; border-color: #FE7813; }
+
+  .sekmeler { display: flex; border-bottom: 1px solid #EFEAE5; margin-top: 18px; }
+  .sekmeler div { flex: 1; text-align: center; padding: 11px 0; font-size: 14px; font-weight: 600; color: #A39B93; }
+  .sekmeler div.aktif { color: #17130F; box-shadow: inset 0 -2px 0 #17130F; }
+
+  .izgara { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-top: 3px; }
+  .hucre {
+    aspect-ratio: 1; background: #F6F1EB; border-radius: 4px;
+    padding: 9px; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .hucre .yer { font-size: 12px; font-weight: 600; color: #17130F; line-height: 1.25; }
+  .hucre .tar { font-size: 11px; color: #6E6660; margin-top: 2px; }
+  .hucre.foto { background: linear-gradient(145deg,#FFD9B8,#FE7813); }
+  .hucre.foto .yer, .hucre.foto .tar { color: #fff; }
+
+  .cizgi { height: 1px; background: #EFEAE5; margin: 18px 0; }
+
+  .baslik { font-size: 15px; font-weight: 700; color: #17130F; margin-bottom: 10px; }
+
+  .kart {
+    border: 1px solid #EFEAE5; border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .kart.canli { border-color: #FFD9B8; background: #FFF9F4; }
+  .kutular { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kutu { border: 1px solid #EFEAE5; border-radius: 16px; padding: 14px; }
+  .kutu .s { font-size: 24px; font-weight: 700; color: #17130F; letter-spacing: -0.6px; }
+  .kutu .e { font-size: 12px; color: #6E6660; margin-top: 3px; line-height: 1.3; }
+
+  .rozet {
+    background: #FFF3E8; color: #E06509; font-size: 12px; font-weight: 600;
+    padding: 5px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .rozet i { width: 6px; height: 6px; border-radius: 999px; background: #FE7813; display: block; }
+
+  .satir { display: flex; align-items: center; gap: 12px; }
+  .buyu { flex: 1; }
+
+  .gezinme {
+    height: 84px; margin: 0 12px 14px; background: #fff; border-radius: 28px;
+    display: flex; align-items: center; justify-content: space-around;
+    box-shadow: 0 8px 24px rgba(23,19,15,.10);
+  }
+  .gezinme svg { width: 26px; height: 26px; }
+  .gezinme .checkin {
+    width: 58px; height: 58px; border-radius: 999px; background: #FE7813;
+    display: grid; place-items: center; margin-top: -22px;
+    box-shadow: 0 8px 18px rgba(254,120,19,.35);
+  }
+  .gezinme .checkin svg { width: 28px; height: 28px; }
+
+  .etiket-sat { color: #FAF7F3; font-size: 15px; font-weight: 600; margin: 0 0 10px;
+                display: flex; align-items: baseline; gap: 10px; }
+  .etiket-sat i { color: #FE7813; font-style: normal; font-weight: 700; }
+  .etiket-sat small { color: #a49b92; font-weight: 400; font-size: 13px; }
+  .tahta > div.telefon { margin-bottom: 40px; }
+</style>
+
+<div id="tahta" class="tahta"></div>
+
+<script>
+  const I = {
+    disli: '<svg class="disli" viewBox="0 0 24 24" fill="none" stroke="#17130F" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.9 1.2v.18a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.96-1.14l-.06.06A2 2 0 1 1 4.16 16.4l.06-.06A1.7 1.7 0 0 0 3.08 13.5H2.9a2 2 0 1 1 0-4H3a1.7 1.7 0 0 0 1.14-2.96l-.06-.06A2 2 0 1 1 6.9 3.65l.06.06a1.7 1.7 0 0 0 2.9-1.2V2.4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0 1.2 2.9h.18a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.47 1z"/></svg>',
+    ev: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><path d="M3.5 10.5 12 3.6l8.5 6.9V20a.9.9 0 0 1-.9.9h-4.3v-6h-6.6v6H4.4a.9.9 0 0 1-.9-.9z" stroke-linejoin="round"/></svg>',
+    kisiler: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><circle cx="9" cy="8" r="3.3"/><path d="M2.8 19.6c0-3.4 2.8-5.6 6.2-5.6s6.2 2.2 6.2 5.6" stroke-linecap="round"/><path d="M16.4 6.2a2.9 2.9 0 0 1 0 5.6M18 14.6c2 .6 3.3 2.4 3.3 5" stroke-linecap="round"/></svg>',
+    sohbet: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><path d="M3.6 5.4h16.8v10.2H9L3.6 19.6z" stroke-linejoin="round"/></svg>',
+    profil: '<svg viewBox="0 0 24 24" fill="none" stroke="#FE7813" stroke-width="1.9"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.4c0-3.9 3.2-6.4 7.2-6.4s7.2 2.5 7.2 6.4" stroke-linecap="round"/></svg>',
+    igne: '<svg viewBox="0 0 24 24"><path d="M12 2.4a7.4 7.4 0 0 0-7.4 7.4c0 5.5 7.4 11.8 7.4 11.8s7.4-6.3 7.4-11.8A7.4 7.4 0 0 0 12 2.4z" fill="#fff"/><circle cx="12" cy="9.7" r="2.8" fill="#FE7813"/></svg>',
+  }
+
+  const gez = `<div class="gezinme">${I.ev}${I.kisiler}<div class="checkin">${I.igne}</div>${I.sohbet}${I.profil}</div>`
+  const tel = (no, ic) => `<div class="telefon" id="s${no}"><div class="govde">${ic}</div>${gez}</div>`
+  const ust = `<div class="ustSatir"><div class="kullaniciAdi">@deniz</div>${I.disli}</div>`
+
+  const ANILAR = [
+    ['Kahve Durağı', 'Dün', true], ['Sahil Yolu', '3 gün', false], ['Kent Meydanı', '1 hafta', true],
+    ['Uludağ Ünv.', '1 hafta', false], ['Yeşil Türbe', '2 hafta', true], ['Zafer Plaza', '3 hafta', false],
+  ]
+  const izgara = (n) => `<div class="izgara">${ANILAR.slice(0, n).map(([y, t, f]) =>
+    `<div class="hucre ${f ? 'foto' : ''}"><div class="yer">${y}</div><div class="tar">${t}</div></div>`).join('')}</div>`
+
+  // ---- 1. INSTAGRAM DUZENI ------------------------------------------
+  // Avatar solda ve KUCUK, sayilar onun saginda yan yana. Dikey
+  // bosluk yariya iniyor, ekranin ust yarisi bilgiyle doluyor.
+  const p1 = ust + `
+    <div class="satir" style="gap:20px">
+      <div class="avatar" style="width:76px;height:76px;font-size:30px">D</div>
+      <div class="sayilar buyu">
+        <div><div class="s">24</div><div class="e">Anı</div></div>
+        <div><div class="s">18</div><div class="e">Arkadaş</div></div>
+        <div><div class="s">11</div><div class="e">Yer</div></div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="ad">Deniz Yılmaz</div>
+      <div class="bio">Kahve, uzun yürüyüşler, kalabalık meydanlar.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <div class="dugme buyu">Profili düzenle</div>
+      <div class="dugme buyu">Profili paylaş</div>
+    </div>
+    <div class="sekmeler"><div class="aktif">Anılar</div><div>Yerler</div></div>
+    ${izgara(6)}`
+
+  // ---- 2. ANI IZGARASI ----------------------------------------------
+  // Kimlik blogu MINIMUM, ekranin geri kalani anilar. Fotografi olan
+  // ani gorseliyle, olmayan mekan adiyla duruyor - ikisi ayni izgarada.
+  const p2 = ust + `
+    <div class="satir" style="gap:14px">
+      <div class="avatar" style="width:56px;height:56px;font-size:22px">D</div>
+      <div class="buyu"><div class="ad">Deniz Yılmaz</div>
+      <div class="bio">Kahve, uzun yürüyüşler.</div></div>
+      <div class="dugme" style="padding:8px 14px">Düzenle</div>
+    </div>
+    <div class="satir" style="gap:18px;margin-top:16px">
+      <div class="rozet"><i></i>Şu an Kahve Durağı'nda</div>
+    </div>
+    <div class="baslik" style="margin-top:20px">24 anı · 11 yer</div>
+    ${izgara(6)}`
+
+  // ---- 3. HARITA PROFILI --------------------------------------------
+  // Slooin'e ozgu olan: kisinin gittigi yerler haritada birikiyor.
+  // Baska hicbir sosyal uygulamada birebir karsiligi yok.
+  const p3 = ust + `
+    <div class="satir" style="gap:16px">
+      <div class="avatar" style="width:64px;height:64px;font-size:26px">D</div>
+      <div class="buyu"><div class="ad">Deniz Yılmaz</div>
+        <div class="bio">24 anı · 11 yer · 18 arkadaş</div></div>
+    </div>
+    <div class="baslik" style="margin-top:22px">Gittiğin yerler</div>
+    <svg viewBox="0 0 350 250" style="width:100%;border:1px solid #EFEAE5;border-radius:16px">
+      <rect width="350" height="250" fill="#FDFAF7"/>
+      ${[[60,180],[120,110],[190,70],[250,140],[300,90],[95,60],[160,200],[280,205],[215,120],[140,155],[45,110]]
+        .map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${6 + (i % 3) * 3}" fill="#FE7813" opacity="${0.25 + (i % 3) * 0.2}"/>`).join('')}
+      ${[[0,62],[0,125],[0,188]].map(([x, y]) => `<line x1="0" y1="${y}" x2="350" y2="${y}" stroke="#EFEAE5"/>`).join('')}
+      ${[87,175,262].map((x) => `<line x1="${x}" y1="0" x2="${x}" y2="250" stroke="#EFEAE5"/>`).join('')}
+    </svg>
+    <div class="satir" style="gap:8px;margin-top:14px">
+      <div class="rozet">Nilüfer · 9</div>
+      <div class="rozet">Osmangazi · 3</div>
+      <div class="rozet">Yıldırım · 1</div>
+    </div>`
+
+  // ---- 4. CANLI DURUM ONDE ------------------------------------------
+  // Profil "kim oldugunu" degil "su an nerede oldugunu" onceliyor.
+  // Uygulamanin tek sorusuna en yakin duran secenek.
+  const p4 = ust + `
+    <div class="kart canli">
+      <div class="satir">
+        <div class="buyu">
+          <div class="rozet"><i></i>Şu an burada</div>
+          <div class="ad" style="margin-top:9px">Kahve Durağı</div>
+          <div class="bio">Nilüfer · 42 dakikadır</div>
+        </div>
+        <div class="dugme" style="padding:8px 14px">Ayrıl</div>
+      </div>
+    </div>
+    <div class="satir" style="gap:16px;margin-top:18px">
+      <div class="avatar" style="width:60px;height:60px;font-size:24px">D</div>
+      <div class="buyu"><div class="ad">Deniz Yılmaz</div>
+        <div class="bio">24 anı · 11 yer · 18 arkadaş</div></div>
+      <div class="dugme" style="padding:8px 14px">Düzenle</div>
+    </div>
+    <div class="cizgi"></div>
+    <div class="baslik">Son anıların</div>
+    ${izgara(3)}`
+
+  // ---- 5. KARTLI OZET ------------------------------------------------
+  // Bos alani anlamli veriyle dolduruyor. Sayilarin hepsi mevcut
+  // check-in verisinden HESAPLANABILIR, uydurma yok.
+  const p5 = ust + `
+    <div class="satir" style="gap:16px">
+      <div class="avatar" style="width:64px;height:64px;font-size:26px">D</div>
+      <div class="buyu"><div class="ad">Deniz Yılmaz</div>
+        <div class="bio">Kahve, uzun yürüyüşler.</div></div>
+      <div class="dugme" style="padding:8px 14px">Düzenle</div>
+    </div>
+    <div class="kutular" style="margin-top:20px">
+      <div class="kutu"><div class="s">24</div><div class="e">anı biriktirdin</div></div>
+      <div class="kutu"><div class="s">11</div><div class="e">farklı yere gittin</div></div>
+      <div class="kutu"><div class="s">18</div><div class="e">arkadaşın var</div></div>
+      <div class="kutu"><div class="s">6</div><div class="e">bu ayki check-in</div></div>
+    </div>
+    <div class="kart" style="margin-top:12px">
+      <div class="e" style="font-size:12px;color:#6E6660">En sık gittiğin yer</div>
+      <div class="ad" style="margin-top:4px">Kahve Durağı · 7 kez</div>
+    </div>
+    <div class="baslik" style="margin-top:14px">Son anıların</div>
+    ${izgara(3)}`
+
+  const SECENEKLER = [
+    ['1', 'Instagram düzeni', 'avatar solda küçük, sayılar yanında', p1],
+    ['2', 'Anı ızgarası', 'kimlik minimum, ekran anılara ait', p2],
+    ['3', 'Harita profili', 'gittiğin yerler haritada birikiyor', p3],
+    ['4', 'Canlı durum önde', 'kim değil, şu an nerede', p4],
+    ['5', 'Kartlı özet', 'boşluğu hesaplanabilir veriyle doldurur', p5],
+  ]
+
+  document.getElementById('tahta').innerHTML = SECENEKLER.map(([no, ad, not, ic]) =>
+    `<div class="etiket-sat"><i>${no}</i> ${ad} <small>${not}</small></div>${tel(no, ic)}`
+  ).join('')
+</script>
