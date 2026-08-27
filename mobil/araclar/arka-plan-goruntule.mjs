@@ -12,7 +12,8 @@ import { dirname, join } from 'node:path'
 
 // Betik mobil/araclar altinda; gorseller ve HTML depo kokundeki tasarim/ icinde.
 const burasi = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'tasarim')
-const sayfaYolu = join(burasi, 'arka-plan-fikirleri.html')
+const ad = process.env.SLOOIN_TAHTA ?? 'arka-plan'
+const sayfaYolu = join(burasi, `${ad}-fikirleri.html`)
 
 const KROM = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -38,10 +39,13 @@ try {
   await sayfa.evaluate(() => document.fonts.ready)
   await new Promise((c) => setTimeout(c, 800))
 
-  for (const no of ['1', '2', '3', '4', '5', '6']) {
+  const numaralar = (process.env.SLOOIN_TAHTA_ADET ?? '6') === '5'
+    ? ['1', '2', '3', '4', '5']
+    : ['1', '2', '3', '4', '5', '6']
+  for (const no of numaralar) {
     const oge = await sayfa.$('#s' + no)
     if (!oge) throw new Error('secenek bulunamadi: ' + no)
-    const cikti = join(burasi, `arka-plan-${no}.png`)
+    const cikti = join(burasi, `${ad}-${no}.png`)
     await oge.screenshot({ path: cikti })
     console.log(cikti)
   }
@@ -53,7 +57,7 @@ try {
               .etiket { margin-top: 8px; }`,
   })
   await new Promise((c) => setTimeout(c, 400))
-  const tahta = join(burasi, 'arka-plan-tahta.png')
+  const tahta = join(burasi, `${ad}-tahta.png`)
   await sayfa.screenshot({ path: tahta, fullPage: true })
   console.log(tahta)
 } finally {

@@ -1,0 +1,248 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Slooin — boş akış fikirleri</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2a2622; font-family: 'Instrument Sans', system-ui, sans-serif; padding: 24px; }
+
+  .telefon {
+    position: relative; width: 390px; height: 844px; overflow: hidden;
+    background: #FAF7F3; display: flex; flex-direction: column;
+  }
+  .govde { flex: 1; padding: 28px 20px 0; overflow: hidden; position: relative; z-index: 1; }
+  .marka { width: 128px; margin-bottom: 30px; display: block; }
+
+  h1 { font-size: 26px; font-weight: 700; color: #17130F; letter-spacing: -0.4px; }
+  .alt { font-size: 15px; color: #6E6660; margin-top: 8px; line-height: 1.45; }
+
+  .bolum-basligi {
+    font-size: 13px; font-weight: 600; color: #6E6660;
+    text-transform: none; margin: 26px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .canli-nokta { width: 8px; height: 8px; border-radius: 999px; background: #FE7813; }
+
+  .satir {
+    background: #fff; border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(23,19,15,.05);
+  }
+  .satir .ad { font-size: 15px; font-weight: 500; color: #17130F; }
+  .satir .baglam { font-size: 13px; color: #6E6660; margin-top: 2px; }
+  .satir .buyu { flex: 1; }
+  .rozet {
+    background: #FFF3E8; color: #E06509; font-size: 13px; font-weight: 600;
+    padding: 6px 10px; border-radius: 999px; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rozet i { width: 6px; height: 6px; border-radius: 999px; background: #FE7813; display: block; }
+
+  .buton {
+    background: #FE7813; color: #fff; border-radius: 999px; padding: 17px 0;
+    text-align: center; font-size: 17px; font-weight: 600; margin-top: 22px;
+    box-shadow: 0 8px 20px rgba(254,120,19,.28);
+  }
+  .buton.hayalet {
+    background: transparent; color: #17130F; box-shadow: none;
+    border: 1px solid #EFEAE5; font-weight: 500; margin-top: 10px;
+  }
+
+  /* --- adim listesi --- */
+  .adim {
+    background: #fff; border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(23,19,15,.05);
+  }
+  .adim .no {
+    width: 28px; height: 28px; border-radius: 999px; flex: none;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+    background: #FFF3E8; color: #E06509;
+  }
+  .adim.bitti .no { background: #FE7813; color: #fff; }
+  .adim .baslik { font-size: 15px; font-weight: 500; color: #17130F; }
+  .adim .not { font-size: 13px; color: #6E6660; margin-top: 2px; }
+  .adim .ok { color: #A39B93; font-size: 18px; }
+  .ilerleme { height: 4px; background: #EFEAE5; border-radius: 999px; overflow: hidden; margin: 14px 0 20px; }
+  .ilerleme span { display: block; height: 100%; width: 12%; background: #FE7813; }
+
+  /* --- ozet kartlari --- */
+  .kutular { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kutu { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 1px 2px rgba(23,19,15,.05); }
+  .kutu .sayi { font-size: 30px; font-weight: 700; color: #17130F; letter-spacing: -1px; }
+  .kutu .etiket { font-size: 13px; color: #6E6660; margin-top: 4px; line-height: 1.35; }
+  .kutu.genis { grid-column: 1 / -1; }
+
+  /* --- tam kart (akis karti) --- */
+  .kart {
+    background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(23,19,15,.05);
+  }
+  .kart .ust { display: flex; align-items: center; gap: 10px; }
+  .kart .ad { font-size: 16px; font-weight: 600; color: #17130F; }
+  .kart .baglam { font-size: 13px; color: #6E6660; margin-top: 2px; }
+  .kart .cizgi { height: 1px; background: #EFEAE5; margin: 13px 0; }
+  .kart .eylem { font-size: 14px; font-weight: 600; color: #FE7813; }
+
+  /* --- merkezde tek cagri --- */
+  .orta { display: flex; flex-direction: column; align-items: center; justify-content: center;
+          height: 100%; text-align: center; padding-bottom: 60px; }
+  .orta h1 { font-size: 30px; }
+  .orta .alt { max-width: 280px; }
+  .halkalar { position: absolute; inset: 0; z-index: 0; }
+
+  /* --- alt gezinme --- */
+  .gezinme {
+    position: relative; z-index: 2; height: 84px; margin: 0 12px 14px;
+    background: #fff; border-radius: 28px; display: flex; align-items: center;
+    justify-content: space-around; box-shadow: 0 8px 24px rgba(23,19,15,.10);
+  }
+  .gezinme svg { width: 26px; height: 26px; }
+  .gezinme .checkin {
+    width: 58px; height: 58px; border-radius: 999px; background: #FE7813;
+    display: grid; place-items: center; margin-top: -22px;
+    box-shadow: 0 8px 18px rgba(254,120,19,.35);
+  }
+  .gezinme .checkin svg { width: 28px; height: 28px; }
+
+  .etiket-sat {
+    color: #FAF7F3; font-size: 15px; font-weight: 600; margin: 0 0 10px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .etiket-sat i { color: #FE7813; font-style: normal; font-weight: 700; }
+  .etiket-sat small { color: #a49b92; font-weight: 400; font-size: 13px; }
+  .tahta > div.telefon { margin-bottom: 40px; }
+</style>
+
+<div id="tahta" class="tahta"></div>
+
+<script>
+  const MARKA = '../mobil/assets/images/marka-yazisi.png'
+
+  const G = {
+    ev: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><path d="M3.5 10.5 12 3.6l8.5 6.9V20a.9.9 0 0 1-.9.9h-4.3v-6h-6.6v6H4.4a.9.9 0 0 1-.9-.9z" stroke-linejoin="round"/></svg>',
+    kisiler: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><circle cx="9" cy="8" r="3.3"/><path d="M2.8 19.6c0-3.4 2.8-5.6 6.2-5.6s6.2 2.2 6.2 5.6" stroke-linecap="round"/><path d="M16.4 6.2a2.9 2.9 0 0 1 0 5.6M18 14.6c2 .6 3.3 2.4 3.3 5" stroke-linecap="round"/></svg>',
+    sohbet: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><path d="M3.6 5.4h16.8v10.2H9L3.6 19.6z" stroke-linejoin="round"/></svg>',
+    profil: '<svg viewBox="0 0 24 24" fill="none" stroke="#A39B93" stroke-width="1.9"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.4c0-3.9 3.2-6.4 7.2-6.4s7.2 2.5 7.2 6.4" stroke-linecap="round"/></svg>',
+    igneBeyaz: '<svg viewBox="0 0 24 24"><path d="M12 2.4a7.4 7.4 0 0 0-7.4 7.4c0 5.5 7.4 11.8 7.4 11.8s7.4-6.3 7.4-11.8A7.4 7.4 0 0 0 12 2.4z" fill="#fff"/><circle cx="12" cy="9.7" r="2.8" fill="#FE7813"/></svg>',
+  }
+
+  function gezinme(aktif) {
+    const boya = (s) => s.replace(/#A39B93/g, aktif ? '#A39B93' : '#A39B93')
+    return `<div class="gezinme">
+      ${G.ev.replace(/#A39B93/g, '#FE7813')}
+      ${G.kisiler}
+      <div class="checkin">${G.igneBeyaz}</div>
+      ${G.sohbet}
+      ${G.profil}
+    </div>`
+  }
+
+  function telefon(no, ic) {
+    return `<div class="telefon" id="s${no}">
+      <div class="govde">${ic}</div>
+      ${gezinme()}
+    </div>`
+  }
+
+  const marka = `<img class="marka" src="${MARKA}">`
+
+  // ---- 1. YAKINDA CANLI YERLER --------------------------------------
+  // Akis bos degil: yakindaki mekanlarin GERCEK canli sayilari
+  // gosteriliyor. Kim oldugu yok, yalnizca sayi - mevcut
+  // `yakin_mekanlar_yogunluk` RPC'si zaten tam bunu donduruyor.
+  const y1 = marka + `
+    <h1>Yakınında neler oluyor</h1>
+    <div class="alt">Bağ kurdukça burası arkadaşlarının akışına dönüşecek.</div>
+    <div class="bolum-basligi"><span class="canli-nokta"></span> Şu an canlı</div>
+    ${[
+      ['Kahve Durağı', 'Nilüfer · 340 m', '7 kişi'],
+      ['Sahil Yürüyüş Yolu', 'Nilüfer · 1,2 km', '4 kişi'],
+      ['Kent Meydanı', 'Osmangazi · 2,1 km', '3 kişi'],
+    ].map(([a, b, r]) => `<div class="satir">
+      <div class="buyu"><div class="ad">${a}</div><div class="baglam">${b}</div></div>
+      <div class="rozet"><i></i>${r}</div>
+    </div>`).join('')}
+    <div class="buton">Buralardan birine check-in yap</div>`
+
+  // ---- 2. ILK ADIMLAR -----------------------------------------------
+  // Uc adimlik kurulum listesi. Bos ekrani "yapilacak is"e ceviriyor.
+  const y2 = marka + `
+    <h1>Başlayalım</h1>
+    <div class="alt">Üç adım, birkaç dakika.</div>
+    <div class="ilerleme"><span></span></div>
+    ${[
+      [1, 'İlk check-in’ini yap', 'Bulunduğun yeri seç, orada kimler var gör', true],
+      [2, 'Birileriyle bağ kur', 'Kullanıcı adıyla ara ya da yakınındakilere bak', false],
+      [3, 'İlk sohbetini başlat', 'Bağ kurduğun kişilere mesaj gönderebilirsin', false],
+    ].map(([n, b, k, ilk]) => `<div class="adim${ilk ? '' : ''}">
+      <div class="no">${n}</div>
+      <div class="buyu"><div class="baslik">${b}</div><div class="not">${k}</div></div>
+      <div class="ok">›</div>
+    </div>`).join('')}`
+
+  // ---- 3. TEK BUYUK CAGRI -------------------------------------------
+  // Neredeyse bos ama BILEREK bos: tek soru, tek eylem. Arkada
+  // karsilama ekranindaki sicaklik zemini.
+  const y3 = `
+    <svg class="halkalar" viewBox="0 0 390 760"><defs>
+      <radialGradient id="b1"><stop offset="0" stop-color="#FE7813" stop-opacity=".26"/><stop offset="1" stop-color="#FE7813" stop-opacity="0"/></radialGradient>
+      <radialGradient id="b2"><stop offset="0" stop-color="#FE7813" stop-opacity=".18"/><stop offset="1" stop-color="#FE7813" stop-opacity="0"/></radialGradient>
+    </defs>
+    <circle cx="90" cy="150" r="130" fill="url(#b2)"/>
+    <circle cx="300" cy="560" r="150" fill="url(#b2)"/>
+    <circle cx="195" cy="360" r="170" fill="url(#b1)"/></svg>
+    <div class="orta">
+      <h1>Şu an neredesin?</h1>
+      <div class="alt">Check-in yap, tam o anda orada olan insanları gör.</div>
+      <div class="buton" style="width:100%;">Check-in yap</div>
+      <div class="buton hayalet" style="width:100%;">Yakındaki yerlere bak</div>
+    </div>`
+
+  // ---- 4. SEHIRDE SU AN ---------------------------------------------
+  // Toplu sayilar: uygulamanin canli oldugunu gosteriyor, kimseyi
+  // ifsa etmeden. YENI SUNUCU ISI gerektirir.
+  const y4 = marka + `
+    <h1>Bursa’da şu an</h1>
+    <div class="alt">Sen de katıl; akışın bağ kurdukça dolacak.</div>
+    <div class="bolum-basligi"><span class="canli-nokta"></span> Son bir saat</div>
+    <div class="kutular">
+      <div class="kutu"><div class="sayi">63</div><div class="etiket">yer şu an canlı</div></div>
+      <div class="kutu"><div class="sayi">218</div><div class="etiket">kişi check-in yaptı</div></div>
+      <div class="kutu genis">
+        <div class="etiket" style="margin:0 0 6px">En hareketli semt</div>
+        <div class="sayi" style="font-size:22px">Nilüfer</div>
+      </div>
+    </div>
+    <div class="buton">Yakındaki yerlere bak</div>`
+
+  // ---- 5. AKIS KARTI OLARAK -----------------------------------------
+  // 1 ile ayni veri, ama akisin kendi kart diliyle. Bag kurulunca
+  // ayni yerde arkadas check-in'leri belirecek; gecis gorunmez olur.
+  const y5 = marka + `
+    <h1>Akışın</h1>
+    <div class="alt">Henüz bağın yok, o yüzden yakınında olup bitenleri gösteriyoruz.</div>
+    ${[
+      ['Kahve Durağı', 'Nilüfer · 340 m', '7 kişi şu an burada'],
+      ['Sahil Yürüyüş Yolu', 'Nilüfer · 1,2 km', '4 kişi şu an burada'],
+    ].map(([a, b, c]) => `<div class="kart">
+      <div class="ust">
+        <div class="buyu"><div class="ad">${a}</div><div class="baglam">${b}</div></div>
+        <div class="rozet"><i></i>${c.split(' ')[0]} kişi</div>
+      </div>
+      <div class="cizgi"></div>
+      <div class="eylem">Buraya check-in yap →</div>
+    </div>`).join('')}`
+
+  const SECENEKLER = [
+    ['1', 'Yakında canlı yerler', 'gerçek veri; RPC zaten var', y1],
+    ['2', 'İlk adımlar', 'üç adımlık kurulum listesi', y2],
+    ['3', 'Tek büyük çağrı', 'bilerek boş; tek soru, tek eylem', y3],
+    ['4', 'Şehirde şu an', 'toplu sayılar; yeni sunucu işi gerekir', y4],
+    ['5', 'Akış kartı olarak', 'aynı veri, akışın kendi kart diliyle', y5],
+  ]
+
+  document.getElementById('tahta').innerHTML = SECENEKLER.map(([no, ad, not, ic]) =>
+    `<div class="etiket-sat"><i>${no}</i> ${ad} <small>${not}</small></div>${telefon(no, ic)}`
+  ).join('')
+</script>
