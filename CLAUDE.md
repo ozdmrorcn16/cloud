@@ -131,6 +131,24 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KARAR: sayfa zemini TAM BEYAZ (2026-08-27)
+
+Kullanicinin karari: "Ilk baslangic ekrani disindaki butun sayfalarin
+arka planini tam beyaz yap" ve ardindan karsilama ekraninin ekran
+goruntusuyle "Bu sayfa disinda butun acilan ekranlarin arka planini
+tam beyaz yap".
+
+Uygulanisi: `renk.zemin` jetonunun DEGERI `#FAF7F3` -> `#FFFFFF`
+yapildi, boylece o jetonu kullanan 30'dan fazla ekran tek hamlede
+degisti. Karsilama icin yeni jeton: `renk.karsilamaZemini` (#FAF7F3),
+yalnizca `karsilama.tsx` ve `SicaklikZemin.tsx` kullaniyor.
+
+**DIKKAT - yeni ekran yaparken:** `renk.yuzey` de beyaz. Yani kart ile
+sayfa zemini artik RENKLE ayrilmiyor; ayrimi `renk.cizgi` kenarligi ve
+`golge.kart` tasiyor. Kenarliksiz ve golgesiz bir kart beyaz zeminde
+gorunmez olur. Mevcut ekranlar kontrol edildi (ayarlar, profil,
+kesfet, kisiler): hepsinde kenarlik ya da golge zaten vardi.
+
 ### DEVIR NOTU - 2026-08-27 (kalici yayin adresi)
 
 **Uygulama artik kalici bir adreste yayinda: https://slooin.expo.app**

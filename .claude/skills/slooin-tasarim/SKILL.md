@@ -97,7 +97,8 @@ renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
 | `renk.metin` | `#17130F` | Ana metin (saf siyah degil) |
 | `renk.metinIkincil` | `#6E6660` | Aciklama, zaman damgasi |
 | `renk.metinSoluk` | `#A39B93` | Yer tutucu, pasif |
-| `renk.zemin` | `#FAF7F3` | Sayfa zemini (sicak beyaz) |
+| `renk.zemin` | `#FFFFFF` | Sayfa zemini - TAM BEYAZ (kullanicinin karari 2026-08-27) |
+| `renk.karsilamaZemini` | `#FAF7F3` | YALNIZCA karsilama ekrani; beyaz kuralinin tek istisnasi |
 | `renk.yuzey` | `#FFFFFF` | Kart, yuzer yuzey |
 | `renk.cizgi` | `#EFEAE5` | Ayirici, kenarlik |
 
@@ -143,7 +144,10 @@ dugmeli basligi `src/tasarim/UstCubuk.tsx` icinde. Alt gezinme cubugu
 **Ikincil eylem**: zeminsiz, yalnizca metin. Vurgulu kelime
 `govdeKalin` + `renk.metin`.
 
-**Liste satiri**: `renk.yuzey` zemin, altta `renk.cizgi` ayirici. Ust
+**Liste satiri**: `renk.yuzey` zemin, altta `renk.cizgi` ayirici.
+Sayfa zemini de beyaz oldugu icin kart ile zemin RENKLE ayrilmiyor;
+ayrimi kenarlik (`renk.cizgi`) ve `golge.kart` tasiyor. Yeni bir kart
+yaparken kenarlik ya da golge vermeyi UNUTMA, yoksa kart kayboluyor. Ust
 satir ad (`govdeOrta`, `olcek.govde`), alt satir baglam
 (`renk.metinIkincil`, `olcek.kucuk`), parcalar ` · ` ile birlesir ve
 bos olanlar once elenir (`filter(Boolean).join(' · ')`).

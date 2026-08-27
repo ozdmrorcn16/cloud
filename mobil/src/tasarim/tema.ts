@@ -33,9 +33,24 @@ export const renk = {
   /** Soluk metin: yer tutucu, pasif durum. */
   metinSoluk: '#A39B93',
 
-  /** Sayfa zemini. Saf beyaz degil; fotograf kapaklari uzerinde
-   *  parlamasin diye bir tik sicak. */
-  zemin: '#FAF7F3',
+  /**
+   * Sayfa zemini: TAM BEYAZ.
+   *
+   * Kullanicinin karari (2026-08-27): "Ilk baslangic ekrani disindaki
+   * butun sayfalarin arka planini tam beyaz yap." Onceki deger
+   * #FAF7F3 idi (bir tik sicak beyaz). Yalnizca karsilama ekrani o
+   * sicak tonu koruyor - onun jetonu `karsilamaZemini`.
+   *
+   * DIKKAT: `yuzey` de beyaz. Yani kart ve satirlar artik zeminden
+   * RENKLE ayrilmiyor; ayrimi `golge.kart` ve `cizgi` tasiyor.
+   */
+  zemin: '#FFFFFF',
+  /**
+   * YALNIZCA karsilama ekrani. Sicaklik zemininin altindaki taban
+   * renk ve o ekrandaki ikonlarin ic dolgusu bu tonu kullaniyor;
+   * beyaz olsalardi lekelerin uzerinde delik gibi dururlardi.
+   */
+  karsilamaZemini: '#FAF7F3',
   /** Kart ve yuzer yuzeyler. */
   yuzey: '#FFFFFF',
   /** Ayirici cizgi ve kenarlik. */

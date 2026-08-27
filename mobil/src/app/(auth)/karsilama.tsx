@@ -101,7 +101,7 @@ function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' 
             />
             {/* Ignenin deligi: koyu daire kalkinca zemin rengi olmali,
                 yoksa siyah bir nokta gibi duruyor. */}
-            <Circle cx={12} cy={9.6} r={2.7} fill={renk.zemin} />
+            <Circle cx={12} cy={9.6} r={2.7} fill={renk.karsilamaZemini} />
           </>
         )}
         {ad === 'kisiler' && (
@@ -224,7 +224,8 @@ export default function KarsilamaEkrani() {
 const stiller = StyleSheet.create({
   sayfa: {
     flex: 1,
-    backgroundColor: renk.zemin,
+    // Karsilama, beyaz zemin kuralinin TEK istisnasi.
+    backgroundColor: renk.karsilamaZemini,
     paddingHorizontal: bosluk.xl,
     paddingTop: 44,
     paddingBottom: bosluk.l,

@@ -74,7 +74,7 @@ export function SicaklikZemin() {
           ))}
         </Defs>
 
-        <Rect x={0} y={0} width={EN} height={BOY} fill={renk.zemin} />
+        <Rect x={0} y={0} width={EN} height={BOY} fill={renk.karsilamaZemini} />
 
         {LEKELER.map(([x, y, yaricap], i) => (
           <Circle key={i} cx={x} cy={y} r={yaricap} fill={`url(#leke${i})`} />
