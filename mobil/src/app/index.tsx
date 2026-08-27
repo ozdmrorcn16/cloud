@@ -89,7 +89,7 @@ export default function AnaSayfa() {
   return (
     <View style={stiller.kok}>
       <View style={stiller.ustCubuk}>
-        <MarkaYazisi genislik={104} />
+        <MarkaYazisi genislik={88} />
       </View>
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -170,9 +170,13 @@ const stiller = StyleSheet.create({
 
   kok: { flex: 1, backgroundColor: renk.zemin },
 
+  // Marka ORTADA ve yukarida (kullanicinin istegi 2026-08-27:
+  // "slooin yazisini biraz kucult ve yukari ortaya koy"). Onceden
+  // sola dayaliydi ve 104 genisligindeydi.
   ustCubuk: {
+    alignItems: 'center',
     paddingHorizontal: bosluk.xl,
-    paddingTop: bosluk.xxl + bosluk.m,
+    paddingTop: bosluk.xl,
     paddingBottom: bosluk.m,
   },
 
