@@ -189,7 +189,11 @@ gonderimini daha onemli bulmasi.
 **Riski sinirlayan uc onlem:**
 
 - IP basina saatte 15 sorgu tavani. Tavan asilirsa fonksiyon cevap
-  vermiyor, hata firlatiyor.
+  vermiyor, hata firlatiyor. Kaynak adresi `cf-connecting-ip`
+  basligindan okunuyor; ilk yazimda `x-forwarded-for`in ILK parcasi
+  kullaniliyordu ve o parca cagiran tarafindan uydurulabildigi icin
+  tavan pratikte hic devreye girmiyordu (olculerek bulundu ve ayni gun
+  duzeltildi, migrasyon 20260827093000).
 - Istemci, cevap alamadiginda ESKI akisa duesuyor (kodu gonderiyor).
   Yani mesru kullanici engellenmiyor, tarayici da cevap alamiyor.
 - Dogrulama ekranindaki kontrol KALDIRILMADI; son kapi yerinde duruyor.
