@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-08-26 — [2026-08-26-f5f68d83.md](oturumlar/2026-08-26-f5f68d83.md) — profil oluşturma ekranından devam
+- 2026-08-26 — [2026-08-26-6938e64a.md](oturumlar/2026-08-26-6938e64a.md) — profilden devam
 - 2026-08-25 — [2026-08-25-f5f68d83.md](oturumlar/2026-08-25-f5f68d83.md) — profil oluşturma ekranından devam
 - 2026-08-25 — [2026-08-25-906da1b5.md](oturumlar/2026-08-25-906da1b5.md) — Telefonda denemeye devam: Expo Go olmadı, APK (EAS build) yoluna geçiyoruz. CLAU…
 - 2026-08-25 — [2026-08-25-6938e64a.md](oturumlar/2026-08-25-6938e64a.md) — profilden devam

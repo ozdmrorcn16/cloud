@@ -131,6 +131,92 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### DEVIR NOTU - 2026-08-26/27 (arayuz tasarimi, ucuncu oturumun DEVAMI)
+
+Bu bolum asagidaki 2026-08-26 notunun UZERINE gelir; o not gunun ilk
+yarisini anlatiyor, burasi geri kalanini. Calisma dali ayni
+(`claude/plan2-moderasyon-paneli`), her sey commit'li ve push'lu.
+
+**Yeni ekranlar ve bilesenler**
+
+| Dosya | Ne |
+|---|---|
+| `src/tasarim/CanliHarita.tsx` | Merkezde kullanici, cevresinde mekanlar GERCEK yon/mesafeyle. Gercek harita DEGIL - sebebi asagida. |
+| `src/tasarim/CheckInKarti.tsx` | Ana sayfa VE profildeki anilar ayni karti kullaniyor. |
+| `src/app/harita/[mekanId].tsx` | Bir check-in'in konumu; karta basinca aciliyor. |
+| `src/app/profil/duzenle.tsx` | Profilini duzenle: ad, biyografi (+ kullanici adi ekranina baglanti). |
+| `lib/etiket.ts` | Check-in'de arkadas etiketleme. |
+| `lib/hata-metni.ts` | Sunucu hatalarinin TEK ceviri kapisi. |
+| `lib/kod-gonderim.ts` | SMS kod gonderim sayaci (cihazda, numara basina). |
+| `lib/zaman.ts` | Gorece zaman + "su an burada" esigi + tam zaman. |
+
+**Alt gezinme:** Kesfet sekmesi ORTADAKI BUYUK TURUNCU CHECK-IN
+DUGMESINE donustu. Cubuk: Ana sayfa / Kisiler / [CHECK-IN] / Mesajlar /
+Profil. `/kisiler` CIKARILAMAZ - o ekrana cubuk disinda giris yok.
+
+**Kalici kararlar (tekrar onerme):**
+
+- **Gercek harita yok, kendimiz ciziyoruz.** `react-native-maps`in web
+  destegi yok ve uygulama telefonda TARAYICIDAN deneniyor; tile
+  servisi ayri bagimlilik/kota/ucret demek. Native derlemeye gecilirse
+  ayni bilesenin arkasina gercek harita takilabilir.
+- **Haritada ve kartlarda YUZ YOK.** `yakin_mekanlar_yogunluk` bilerek
+  yalnizca SAYI donduruyor; kimin nerede oldugu check-in yapmadan ya da
+  bag kurmadan gorunmez.
+- **Etiketleme kurallari POLITIKADA, arayuzde degil** (migrasyon
+  20260826200000): yalnizca karsilikli bagli kisi etiketlenebilir ve
+  ETIKETLENEN kisi kendi etiketini kaldirabilir. Gorunurluk icin ayri
+  kural yok - select politikasi `check_inler`e bakiyor, onun RLS'i
+  devrede.
+- **Profil fotografi: TEK dosya, eskisi hicbir yerde gorunmez.**
+  Migrasyon 20260826210000 + 20260826220000: bir dosya ancak sahibinin
+  GUNCEL profil fotografiysa okunabiliyor - SAHIBI DAHIL kimse eskisini
+  goremiyor. `profilFotografiniDegistir` klasoru temizliyor (yeni dosya
+  disinda her sey siliniyor). Bunu yapmak guvenli, cunku
+  `profil-fotograflari` kovasi YALNIZCA profil fotografi tutuyor;
+  check-in fotograflari ayri kovada.
+- **"Şu an burada" YALNIZCA ILK BIR SAAT.** Check-in 4 saat canli
+  kalmaya devam ediyor; degisen sadece etiket.
+- **Silme iki adimli** (akis, profil canli serit, anilar). Geri
+  alinamayan islem tek dokunusla yapilmiyor.
+
+**Ortam tuzaklari - ikisi de bu oturumda yasandi:**
+
+1. **Bash heredoc'a Turkce karakter GECIRME.** Windows'ta bozuluyor ve
+   desen eslesmiyor. Turkce metin iceren duzenleme betigini once
+   DOSYAYA yaz (Write), sonra `python <dosya>` ile calistir.
+2. **Python'da `\b` BACKSPACE kacisidir.** Ham olmayan bir dizede
+   regex'e `\b` yazarsan dosyaya gercek bir kontrol karakteri
+   gidiyor ve regex sessizce hic eslesmiyor. Ham dize (`r"..."`)
+   kullan. Bir kez yasandi, testi yakaladi.
+
+**Guvenlik taramasi elle kosuluyor** (eklenti hook'lari bu oturumda
+yuklenmemisti):
+
+```bash
+SG=~/.claude/plugins/cache/claude-code-plugins/security-guidance/2.0.0
+printf '{"hook_event_name":"PostToolUse","cwd":"C:/Users/orcns/projects/cloud","tool_name":"Edit","tool_input":{"file_path":"<mutlak yol>"}}' \
+  | bash "$SG/hooks/sg-python.sh" "$SG/hooks/security_reminder_hook.py"
+```
+
+Cikti bossa temiz. **LLM katmanlari bu makinede HIC calismadi**
+(`ANTHROPIC_API_KEY` yok) - yeniden baslatmak bunu degistirmez.
+
+**Acik isler:**
+
+1. Supabase auth HIZ SINIRLARI gozden gecirilmedi (panelden yapilir).
+   Istemcideki kod gonderim sayaci en kolay istismar yolunu kapatiyor
+   ama asil sinir sunucuda.
+2. Diger diller (en/de/es/fr/ru/ar) geride; eksik anahtar artik
+   Turkce'ye duesuyor, yani ham anahtar gorunmuyor. Toplu ceviri
+   tasarim bitince.
+3. Anilar ekraninda `mekanAnilariniGetir` artik cagrilmiyor (mekan
+   detayindan anilar kaldirildi) ama fonksiyon lib'de duruyor.
+4. Onizleme tuneli her calistirmada adres degistiriyor.
+
+**Test hesaplari** asagidaki bolumde; kayit akisini denemek icin TEK
+uygun numara `05550000003`.
+
 ### DEVIR NOTU - 2026-08-26 (arayuz tasarimi, ucuncu oturum)
 
 Calisma dali `claude/plan2-moderasyon-paneli`, her sey push edildi.
