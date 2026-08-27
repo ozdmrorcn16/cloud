@@ -35,13 +35,18 @@ function CheckInIkonu() {
   )
 }
 
-const YARICAP_SECENEKLERI = [
-  { etiket: '1 km', metre: 1000 },
-  { etiket: '2 km', metre: 2000 },
-  { etiket: '5 km', metre: 5000 },
-] as const
-
-const VARSAYILAN_YARICAP_METRE = 5000
+/*
+ * YARICAP SECIMI YOK (kullanicinin karari 2026-08-28).
+ *
+ * Onceden ekranin en ustunde 1 km / 2 km / 5 km cipleri vardi ve
+ * liste o mesafeye kirpiliyordu. Kullanici hem ciplerin kalkmasini
+ * hem de mesafe sinirinin tamamen kalkmasini istedi: "gorunus olarak
+ * bir km siniri olmucak oncelik olarak ama en ustlerde konumuna en
+ * yakin yerler gorunecek".
+ *
+ * Sunucuya artik yaricap GONDERILMIYOR; siralamayi mesafe yapiyor.
+ * Tek mesafe kurali check-in'de kaldi ve 1 km (sunucuda zorlaniyor).
+ */
 
 /** 240 m / 1,2 km gibi kisa ve okunur mesafe. */
 function mesafeYazisi(metre: number): string {
@@ -53,7 +58,6 @@ export default function KesfetEkrani() {
   const router = useRouter()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [arama, setArama] = useState('')
-  const [yaricapMetre, setYaricapMetre] = useState(VARSAYILAN_YARICAP_METRE)
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -62,7 +66,7 @@ export default function KesfetEkrani() {
   const [ilkYuklemeBitti, setIlkYuklemeBitti] = useState(false)
   const istekSirasi = useRef(0)
 
-  async function yukle(metre = yaricapMetre, metin = arama) {
+  async function yukle(metin = arama) {
     // Yaris korumasi: hizli yazarken istekler sirayla degil paralel
     // doner. Sira numarasi olmadan eski ve yavas bir istek, yeni
     // sonucun uzerine yaziyor ve liste yanlis kaliyordu.
@@ -72,10 +76,11 @@ export default function KesfetEkrani() {
     try {
       const konum = cihazKonumu ?? (await cihazKonumunuAl())
       setCihazKonumu(konum)
+      // Yaricap yerine null: mesafe siniri yok, siralama en yakindan.
       const sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
-        metre,
+        null,
         metin || undefined
       )
       if (sira !== istekSirasi.current) return
@@ -102,7 +107,7 @@ export default function KesfetEkrani() {
   useEffect(() => {
     if (!cihazKonumu) return
     const zamanlayici = setTimeout(() => {
-      yukle(yaricapMetre, arama)
+      yukle(arama)
     }, 300)
     return () => clearTimeout(zamanlayici)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,11 +118,6 @@ export default function KesfetEkrani() {
     // bekletmeli etki atiyor. Yazma ile ag istegini ayirmak, yazi
     // kutusunun her tusta yeniden olusmasini engelliyor.
     setArama(metin)
-  }
-
-  async function yaricapDegisti(metre: number) {
-    setYaricapMetre(metre)
-    await yukle(metre, arama)
   }
 
   // Kesfet akisi "su an nereye gidip birileriyle karsilasabilirim"
@@ -216,27 +216,6 @@ export default function KesfetEkrani() {
   return (
     <View style={stiller.kok}>
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
-      <View style={stiller.ustBar}>
-        <View style={stiller.yaricapSatiri}>
-          {YARICAP_SECENEKLERI.map((s) => (
-            <Pressable
-              key={s.metre}
-              style={[stiller.yaricapCipi, s.metre === yaricapMetre && stiller.yaricapCipiSecili]}
-              onPress={() => yaricapDegisti(s.metre)}
-            >
-              <Text
-                style={[
-                  stiller.yaricapYazi,
-                  s.metre === yaricapMetre && stiller.yaricapYaziSecili,
-                ]}
-              >
-                {s.etiket}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
       {/* Liste DOLUYKEN olusan hata (ornegin arama sirasinda ag
           kopmasi) tam ekran hata ekranini tetiklemez; sessizce
           yutulmamasi icin ustte bir serit olarak gorunur. */}
@@ -314,8 +293,8 @@ export default function KesfetEkrani() {
             </>
           ) : suzulmus.length === 0 ? (
             <Text style={stiller.aramaDurumYazi}>
-              “{arama.trim()}” için yakınında bir yer bulunamadı. Yarıçapı
-              büyütmeyi deneyebilirsin.
+              “{arama.trim()}” için bir yer bulunamadı. Adın yazılışını
+              değiştirmeyi deneyebilirsin.
             </Text>
           ) : (
             <Text style={stiller.aramaDurumYazi}>
@@ -456,7 +435,9 @@ const stiller = StyleSheet.create({
 
   kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1, backgroundColor: renk.zemin },
-  icerik: { paddingTop: bosluk.xxl + bosluk.m, paddingBottom: ALT_GEZINME_PAYI },
+  // Harita EN USTTE. Onceden burada yaricap cipleri vardi ve ust pay
+  // onlara ayrilmisti; cipler kalkinca harita bosluga tasindi.
+  icerik: { paddingTop: bosluk.m, paddingBottom: ALT_GEZINME_PAYI },
   ortala: {
     flex: 1,
     alignItems: 'center',
@@ -484,12 +465,6 @@ const stiller = StyleSheet.create({
 
   // Marka yazisi kaldirildi (kullanicinin istegi 2026-08-26); geriye
   // yalnizca yaricap cipleri kaldi ve saga hizali duruyor.
-  ustBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: bosluk.xl,
-  },
   marka: {
     fontFamily: yazi.ekranBasligi,
     fontSize: 22,
@@ -497,19 +472,6 @@ const stiller = StyleSheet.create({
     letterSpacing: -0.6,
   },
   markaNokta: { color: renk.turuncu },
-  yaricapSatiri: { flexDirection: 'row', gap: bosluk.xs },
-  yaricapCipi: {
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 6,
-    paddingHorizontal: bosluk.m,
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-  },
-  yaricapCipiSecili: { backgroundColor: renk.turuncuZemin, borderColor: renk.turuncuZemin },
-  yaricapYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.minik, color: renk.metinIkincil },
-  yaricapYaziSecili: { color: renk.turuncuKoyu },
-
   baslik: {
     fontFamily: yazi.ekranBasligi,
     fontSize: 30,

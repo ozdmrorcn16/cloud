@@ -44,7 +44,8 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, 5000, undefined)
+    // Ucuncu arguman null: mesafe siniri GONDERILMIYOR.
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, undefined)
   })
 
   it('bir mekana basinca detay ekranina yonlendirir', async () => {
@@ -140,28 +141,31 @@ describe('MekanAramaEkrani', () => {
     expect(screen.queryByText('0 kişi burada')).toBeNull()
   })
 
-  it('yaricap secicisi 5 km ustunu sunmaz', async () => {
+  it('ekranda yaricap secici YOK', async () => {
+    // Kullanicinin karari 2026-08-28: km cipleri kaldirildi, liste
+    // mesafeyle kirpilmiyor.
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
 
-    expect(screen.queryByText('10 km')).toBeNull()
-    expect(screen.getByText('5 km')).toBeTruthy()
+    expect(screen.queryByText('1 km')).toBeNull()
+    expect(screen.queryByText('2 km')).toBeNull()
+    expect(screen.queryByText('5 km')).toBeNull()
   })
 
-  it('yaricap degistirilince yeni yaricapla sorgu yapar', async () => {
+  it('aramada da mesafe siniri gondermez', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanAramaEkrani />)
-    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, 5000, undefined))
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('1 km'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kahve')
 
     await waitFor(() => {
-      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, 1000, undefined)
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, 'kahve')
     })
   })
 })

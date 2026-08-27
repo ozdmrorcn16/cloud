@@ -131,6 +131,46 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KARAR: mesafe siniri kalkti, check-in 1 km (2026-08-28)
+
+Kullanicinin karari: kesfet ekranindaki "1 km / 2 km / 5 km" cipleri
+KALDIRILDI, harita en ustte. Liste ve arama artik mesafeyle
+kirpilmiyor; siralama en yakindan. Tek mesafe kurali check-in'de ve
+**500 m degil 1 km** (migrasyon 20260828090000, sunucuda zorlaniyor).
+
+`yakin_mekanlar_yogunluk` artik `p_yaricap_metre = null` kabul ediyor;
+null gelirse `ST_DWithin` hic uygulanmiyor, PostGIS'in KNN operatoru
+(`<->`) en yakin 50 kaydi veriyor. Istemci null gonderiyor.
+
+**ARAMADA MALIYET KILOMETREYLE DEGIL SAYIYLA SINIRLI - olculdu.**
+`ad` uzerinde `like '%...%'` var ve **pg_trgm indeksi KURULU DEGIL**
+(veritabani 500 MB ucretsiz sinirin dibinde). Bursa merkezinden
+olculen gercek sureler:
+
+| Sorgu | Sure |
+|---|---|
+| yaricapsiz, aramasiz (KNN + limit 50) | 125 ms |
+| yaricapsiz, NADIR arama terimi | **47.700 ms** |
+| 200 km yaricap, nadir terim | **13.900 ms** |
+| 25 km yaricap, nadir terim | 710 ms |
+| en yakin 20.000 mekan havuzu, nadir terim | 470 ms |
+
+PostgREST zaman asimi 8 saniye, yani ilk iki satir kullaniciya hata
+olarak doner. Bu yuzden arama en yakin **20.000 mekan** icinde
+yapiliyor. Kullanicinin gordugu sey "km siniri yok, en yakinlar
+ustte"; maliyet ise arama terimi ne olursa olsun sabit.
+
+**BILINEN SINIR:** Bursa merkezinde 20.000 mekan ~18 km'ye denk geliyor
+(5.000 -> 8 km, 50.000 -> 79 km). Yani BASKA BIR SEHIRDEKI mekan
+aramada CIKMAZ. Bunu kaldirmanin tek yolu `tr_kucuk(ad)` uzerinde
+pg_trgm GIN indeksi; `ad` sutunu 19 MB, indeks tahminen 40-90 MB ve
+ucretsiz katmanda ~80 MB bos yer var - denemek canli veritabanini
+500 MB sinirina dayama riski tasidigi icin YAPILMADI. Pro plana
+gecilirse ilk yapilacak islerden biri budur.
+
+Test mekanlarinin arasi 1.967 m olcuIdu, yani 1 km'lik yeni check-in
+kurali `test:gorunurluk` senaryolarini bozmuyor.
+
 ### KARAR: sayfa zemini TAM BEYAZ (2026-08-27)
 
 Kullanicinin karari: "Ilk baslangic ekrani disindaki butun sayfalarin

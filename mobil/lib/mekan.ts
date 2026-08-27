@@ -84,16 +84,28 @@ export type MekanYogunlukIle = Mekan & { kisiSayisi: number }
 
 type MekanYogunlukSatiri = MekanSatiri & { kisi_sayisi: number }
 
+/**
+ * Yakindaki mekanlar, canli kisi sayilariyla.
+ *
+ * `yaricapMetre` VERILMEZSE mesafe siniri hic uygulanmiyor; sunucu en
+ * yakindan baslayarak 50 kayit donduruyor (kullanicinin karari
+ * 2026-08-28: "gorunus olarak bir km siniri olmucak ... ama en
+ * ustlerde konumuna en yakin yerler gorunecek").
+ *
+ * Aramada da mesafe siniri yok; sunucu tarafinda maliyet KILOMETREYLE
+ * degil taranan mekan SAYISIYLA sinirlaniyor. Ayrinti ve olcum
+ * degerleri migrasyon 20260828090000 icinde.
+ */
 export async function yakinMekanlariYogunlukIleGetir(
   lat: number,
   lng: number,
-  yaricapMetre: number,
+  yaricapMetre?: number | null,
   arama?: string
 ): Promise<MekanYogunlukIle[]> {
   const { data, error } = await supabase.rpc('yakin_mekanlar_yogunluk', {
     p_lat: lat,
     p_lng: lng,
-    p_yaricap_metre: yaricapMetre,
+    p_yaricap_metre: yaricapMetre ?? null,
     p_arama: arama ?? null,
   })
   if (error) throw new Error(hataMetni(error))
