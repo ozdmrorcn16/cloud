@@ -442,12 +442,24 @@ Olcek: baslik 26 / altBaslik 19 / govde 15 / kucuk 13 / minik 11.
 - Hesabi olmayan HERKES, HER acilista goruyor (hesap olusturana kadar).
   Onceki "yalnizca ilk indirene goster" kurali ve onu tasiyan cihaz
   isareti (`lib/ilk-acilis.ts`) kaldirildi.
-- Arka plan `src/tasarim/KrokiZemin.tsx`: cizilmis harita, check-in
-  igneleri, insan ikonlari ve NABIZ gibi atan halkalar. Fotograf degil
-  cizim - uzerine metin biniyor, fotografta karartma gerekir ve
-  karartma acik kimligi bozar. Hareket tek yerde; "hareketi azalt"
-  aciksa hic baslamiyor.
+- Arka plan `src/tasarim/SicaklikZemin.tsx`: SICAKLIK HARITASI -
+  zemin uzerinde yumusak turuncu lekeler, harita mobilyasi (yol, ada,
+  insan ikonu) YOK. **KrokiZemin 2026-08-27'de SILINDI**; kullaniciya
+  alti arka plan onerisi gorsel olarak sunuldu ve bunu secti
+  (`tasarim/arka-plan-fikirleri.html`, oneri 1).
+  Gerekce: cizilmis sokak izgarasi "burasi neresi" sorusunu aciyordu
+  ve cevabi yoktu - kullanici henuz giris yapmadigi icin gercek bir
+  yer gosterilemez. Sicaklik lekesi ayni seyi soruyu acmadan soyluyor.
+  Lekelerin kenar cizgisi yok ve en koyusu %34 opaklikta; kroki
+  zemindeki beyaz yol seritleri metnin arkasindan gecen sert kenarlar
+  uretiyordu.
+  **HAREKET ARTIK YOK** - nabiz gibi atan halkalar KrokiZemin ile
+  birlikte gitti. Istenirse lekelere cok yavas bir "nefes" eklenebilir;
+  o zaman "hareketi azalt" kontrolu de geri gelmeli.
 - Sozlesme onayi ve slogan bu ekrandan KALDIRILDI.
+- ORNEK CHECK-IN KARTLARI da KALDIRILDI (2026-08-27, kullanicinin
+  istegi: "Sahille kampus yazili yerleri kaldir"). Uydurma mekan adi
+  ve uydurma kisi sayisi tasiyorlardi. Tekrar onerme.
 
 #### EKRAN GORUNTUSU ARACI
 

@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router'
 import Svg, { Path, Circle, G } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { KrokiZemin } from '../../tasarim/KrokiZemin'
+import { SicaklikZemin } from '../../tasarim/SicaklikZemin'
 import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 
@@ -161,7 +161,7 @@ export default function KarsilamaEkrani() {
     <View style={stiller.sayfa}>
       {/* Kroki butun ekrani kapliyor, icerik onun ustunde duruyor
           (kullanicinin karari 2026-08-25). */}
-      <KrokiZemin />
+      <SicaklikZemin />
 
       <View style={stiller.ust}>
         {/* Kullanicinin istegi (2026-08-25): ustte isaret, altinda
