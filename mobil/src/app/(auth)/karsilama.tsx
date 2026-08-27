@@ -150,27 +150,6 @@ const OZELLIKLER = [
   { no: 4, ikon: 'yogunluk' },
 ] as const
 
-/**
- * Ornek kartlarin basindaki check-in isareti.
- *
- * Onceden turuncu bir noktaydi (kullanicinin istegi 2026-08-26:
- * "baslarindaki turuncu nokta yerine de checkin ikonu koy"). Nokta
- * "canli" diyordu ama NE oldugunu soylemiyordu; igne dogrudan
- * check-in'i anlatiyor ve profildeki canli seritle ayni dili
- * konusuyor.
- */
-function CheckInIsareti() {
-  return (
-    <Svg width={26} height={26} viewBox="0 0 24 24">
-      <Path
-        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
-        fill={renk.turuncu}
-      />
-      <Circle cx={12} cy={9.7} r={2.7} fill={renk.turuncuZemin} />
-    </Svg>
-  )
-}
-
 export default function KarsilamaEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -191,9 +170,12 @@ export default function KarsilamaEkrani() {
         <MarkaYazisi genislik={168} style={stiller.markaYazisi} />
 
         {/* SLOGAN YOK. 2026-08-26'da bir kez geri getirildi ve ayni
-            gun kullanicinin karariyla yeniden kaldirildi: acilis
-            ekraninda cumle degil, uygulamanin kendisi gosteriliyor -
-            ornek check-in kartlari ve dort baslik. */}
+            gun kullanicinin karariyla yeniden kaldirildi.
+
+            ORNEK CHECK-IN KARTLARI DA YOK. Ayni gun eklenmislerdi,
+            2026-08-27'de kullanicinin istegiyle kaldirildi: uydurma
+            mekan adlari ve uydurma kisi sayilari tasiyorlardi. Geriye
+            kroki zemin, marka ve dort baslik kaldi. Tekrar onerme. */}
       </View>
 
       {/* Uygulamanin ne yaptigini anlatan tek yer: ikon + tek satirlik
@@ -202,26 +184,6 @@ export default function KarsilamaEkrani() {
           ORTALANDI - artik sola dayali bir liste degil, ortada duran
           dort satir. */}
       <View style={stiller.ustBosluk} />
-
-      {/* Uygulamayi ANLATMAK yerine GOSTEREN parca: haritanin uzerinde
-          yuzen iki ornek check-in karti. Sayilar ve mekan adlari ornek
-          - gercek veri gosterilemez, kullanici henuz giris yapmadi. */}
-      <View style={stiller.ornekKartlar}>
-        {[1, 2].map((n) => (
-          <View
-            key={n}
-            style={[stiller.ornekKart, n === 1 ? stiller.ornekKartSol : stiller.ornekKartSag]}
-          >
-            <CheckInIsareti />
-            <View style={stiller.ornekMetin}>
-              <Text style={stiller.ornekAd}>{t(`karsilama.ornek${n}Ad`)}</Text>
-              <Text style={stiller.ornekAlt}>{t(`karsilama.ornek${n}Alt`)}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={stiller.ortaBosluk} />
 
       <View style={stiller.adimlar}>
         {OZELLIKLER.map(({ no, ikon }) => (
@@ -269,30 +231,6 @@ const stiller = StyleSheet.create({
   },
 
   markaYazisi: { marginTop: bosluk.s },
-  ornekKartlar: { gap: bosluk.m },
-  ornekKart: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.kart,
-    paddingVertical: bosluk.m,
-    paddingHorizontal: bosluk.l,
-    ...golge.kart,
-  },
-  // Kartlar ONCE birbirine gore kaydirilmisti ("yuzuyor gibi dursun");
-  // kullanici 2026-08-26'da esit ve alt alta olmalarini istedi. Kaydirma
-  // kaldirildi, iki kart da tam genislikte.
-  ornekKartSol: {},
-  ornekKartSag: {},
-  ornekMetin: { flex: 1 },
-  ornekAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
-  ornekAlt: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 1,
-  },
 
   adimlar: {
     // Blok, marka kilidi ile butonlarin ARASINA ortalaniyor: ustunde ve
@@ -359,7 +297,6 @@ const stiller = StyleSheet.create({
   // insan baloncuklari ve nabiz halkasi metnin altina girip okumayi
   // bozuyor. Bu yuzden ust bosluklar kucuk, alt bosluk buyuk.
   ustBosluk: { flex: 0.8 },
-  ortaBosluk: { flex: 0.55 },
   esnekBosluk: { flex: 1.05 },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 

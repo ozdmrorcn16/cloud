@@ -33,10 +33,6 @@ export default {
     // Acilistaki ornek check-in kartlari. GERCEK VERI DEGIL: kullanici
     // henuz giris yapmamis ve kimin nerede oldugu giris oncesi
     // gosterilemez. Mekan adlari da bilerek jenerik.
-    ornek1Ad: 'Sahil Yürüyüş Yolu',
-    ornek1Alt: '7 kişi şu an burada',
-    ornek2Ad: 'Kampüs Kütüphanesi',
-    ornek2Alt: '3 kişi şu an burada',
     // Dort ozellik, YALNIZCA BASLIK. Basliklarin altindaki aciklama
     // satirlari kullanicinin karariyla kaldirildi (2026-08-26): baslik
     // zaten ne oldugunu soyluyordu, aciklama ayni seyi tekrar ediyordu.
