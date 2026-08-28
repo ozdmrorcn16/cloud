@@ -473,7 +473,29 @@ const stiller = StyleSheet.create({
     color: renk.metinIkincil,
   },
 
-  kimlik: { alignItems: 'center', gap: bosluk.l },
+  /**
+   * KIMLIK BLOGU TURUNCU ZEMINDE (kullanicinin istegi 2026-08-28,
+   * referans: eski Swarm profil basligi).
+   *
+   * Tam genislik icin negatif yatay pay: sayfanin kendi yan payi
+   * `icerik` uzerinde duruyor, blok onu geri aliyor ve kendi payini
+   * koyuyor. Boylece renk kenardan kenara gidiyor.
+   *
+   * NOT - kimlik kurali gerilimi: "turuncu yalnizca eylem ve canlilik
+   * icindir" kurali duruyor ve bu blok dekoratif bir turuncu. Kullanici
+   * bilerek istedi; blogun icindeki hicbir sey turuncu DEGIL, yani
+   * ekranin geri kalaninda turuncunun anlami korunuyor.
+   */
+  kimlik: {
+    alignItems: 'center',
+    gap: bosluk.l,
+    backgroundColor: renk.turuncu,
+    marginHorizontal: -bosluk.xl,
+    paddingHorizontal: bosluk.xl,
+    paddingTop: bosluk.xl,
+    paddingBottom: bosluk.l,
+    marginBottom: bosluk.l,
+  },
   avatarBasilir: { marginBottom: bosluk.xs },
   fotografRozeti: {
     position: 'absolute',
@@ -484,19 +506,26 @@ const stiller = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: renk.metin,
     borderWidth: 2.5,
-    borderColor: renk.zemin,
+    borderColor: renk.turuncu,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fotografDurumu: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
-    color: renk.metinIkincil,
+    color: '#FFFFFF',
   },
   // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
-  avatar: { width: 104, height: 104, borderRadius: 52 },
+  avatar: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    // Turuncu zeminde fotografi ayiran beyaz halka.
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+  },
   avatarYok: {
-    backgroundColor: renk.turuncuZemin,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -508,31 +537,32 @@ const stiller = StyleSheet.create({
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
-  sayiAyirici: { width: 1, height: 28, backgroundColor: renk.cizgi },
+  // Turuncu zeminde: ayirici ve ikincil metinler beyazin soluk hali.
+  sayiAyirici: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.35)' },
   sayi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
-    color: renk.metin,
+    color: '#FFFFFF',
     letterSpacing: -0.4,
   },
   sayiEtiket: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
+    color: 'rgba(255,255,255,0.85)',
     marginTop: 2,
   },
 
   ad: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
-    color: renk.metin,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   biyografi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 20,
-    color: renk.metinIkincil,
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
     marginTop: 2,
   },
