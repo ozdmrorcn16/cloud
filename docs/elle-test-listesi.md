@@ -47,6 +47,11 @@ mekân listesi boş kalır; bu bir hata değil.
 > where takip_eden_id in (select id from auth.users
 >   where phone in ('905550000000','905550000001','905550000002'));
 > ```
+>
+> Ayrıca `05550000001` ve `05550000002` hesaplarına **örnek profil
+> fotoğrafı** yüklendi (düz renk kareler, gerçek yüz değil). Akıştaki
+> avatarı doğrulamak içindi. Temizlemek için `profiller.fotograflar`
+> alanını boş diziye çekmek yeterli.
 
 > **Dikkat:** kayıt akışını (numara → SMS → profil oluştur) baştan sona
 > denemek için şu an **boş bir test numarası yok**. `05550000003` geçen

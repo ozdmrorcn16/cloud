@@ -24,6 +24,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     kullaniciAdi: 'Ada',
     mekanId: 'mekan-1',
     mekanSemti: 'Nilüfer',
+    avatarUrl: null,
     mekanAdi: 'Sahil Kafe',
     notMetni: 'guzel bir aksam',
     fotografUrl: null,
@@ -58,6 +59,30 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
 
     expect(await screen.findByTestId('akis-fotografi')).toBeTruthy()
+  })
+
+  it('profil fotografi varsa serit isaretinde o gorunur', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ avatarUrl: 'https://imzali/avatar.jpg' }),
+    ])
+
+    await render(<AnaSayfa />)
+
+    expect(await screen.findByTestId('akis-avatari')).toBeTruthy()
+  })
+
+  it('fotograf yoksa ADIN bas harfi gorunur - kullanici adinin degil', async () => {
+    // Kullanicinin karari 2026-08-28. `kullaniciAdi` alani adi tasiyor
+    // (check_inler'de denormalize duran ad, karar #18); bas harf de
+    // ondan aliniyor.
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ avatarUrl: null, kullaniciAdi: 'Deniz' }),
+    ])
+
+    await render(<AnaSayfa />)
+
+    expect(await screen.findByText('D')).toBeTruthy()
+    expect(screen.queryByTestId('akis-avatari')).toBeNull()
   })
 
   it('canli check-in "su an burada" rozetiyle gosterilir', async () => {

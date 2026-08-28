@@ -124,6 +124,7 @@ export default function AnaSayfa() {
                   fotografUrl: item.fotografUrl,
                   olusturmaZamani: item.olusturmaZamani,
                   kisiAdi: item.kullaniciAdi,
+                  avatarUrl: item.avatarUrl,
                   canliMi: item.canliMi,
                   benimMi: item.benimMi,
                 }}

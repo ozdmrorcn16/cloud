@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
-import { checkInFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrl, profilFotografiUrl } from './fotograf-url'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
 
@@ -38,6 +38,16 @@ export type AkisOgesi = {
   benimMi: boolean
   /** Bu check-in'de etiketlenen arkadaslar. */
   etiketler: Etiket[]
+  /**
+   * Kaydi atan kisinin GUNCEL profil fotografi; yoksa null.
+   *
+   * Kullanicinin karari (2026-08-28): akista kimin kaydiysa onun
+   * profil resmi gorunur, fotografi yoksa ADININ bas harfi. Yol
+   * `profil_fotograflari` RPC'sinden geliyor - `profiller` tablosu
+   * yalnizca kendi satirini okumaya izin verdigi icin dogrudan
+   * okunamiyor. Engelleme o RPC'de iki yonlu kesiliyor.
+   */
+  avatarUrl: string | null
 }
 
 type AkisSatiri = {
@@ -81,6 +91,12 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
     satirlar.map((s) => s.id)
   ).catch(() => ({}))
 
+  // Avatarlar: once yollar TEK CAGRIDA aliniyor, sonra imzalaniyor.
+  // Kisi basina bir kere - ayni kisinin birden fazla kaydi olabilir.
+  const avatarlar = await avatarlariGetir([
+    ...new Set(satirlar.map((s) => s.kullanici_id)),
+  ]).catch(() => ({}) as Record<string, string | null>)
+
   return Promise.all(
     satirlar.map(async (satir) => ({
       id: satir.id,
@@ -97,6 +113,33 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
       canliMi: satir.konum !== null,
       benimMi: satir.kullanici_id === benimId,
       etiketler: etiketler[satir.id] ?? [],
+      avatarUrl: avatarlar[satir.kullanici_id] ?? null,
     }))
   )
+}
+
+/**
+ * Kimlik -> imzalanmis profil fotografi adresi.
+ *
+ * Fotografi olmayan kisi sonucta HIC gorunmuyor; cagiran taraf da
+ * bunu "fotograf yok" diye okuyup bas harfe duesuyor. Okuma
+ * basarisiz olursa akis yine ciziliyor - avatar yuzunden butun akisi
+ * kaybetmek yanlis olur.
+ */
+async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
+  if (kimlikler.length === 0) return {}
+
+  const { data, error } = await supabase.rpc('profil_fotograflari', {
+    p_kimlikler: kimlikler,
+  })
+  if (error) return {}
+
+  const satirlar = (data ?? []) as { id: string; fotograf: string | null }[]
+  const eslesme: Record<string, string | null> = {}
+  await Promise.all(
+    satirlar.map(async (s) => {
+      eslesme[s.id] = s.fotograf ? await profilFotografiUrl(s.fotograf) : null
+    })
+  )
+  return eslesme
 }

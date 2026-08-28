@@ -37,8 +37,15 @@ export type TunelAnisi = {
   notMetni: string | null
   fotografUrl: string | null
   olusturmaZamani: string
-  /** AKISTA: kimin kaydi. Verilirse isaret bas harfe donuyor. */
+  /**
+   * AKISTA: kimin kaydi. Bu ALAN ADIDIR, kullanici adi degil -
+   * isaretteki bas harf de buradan aliniyor (kullanicinin karari
+   * 2026-08-28: "kullanici adinin bas harfi degil, yazdigi isim
+   * yerindeki isminin bas harfi").
+   */
   kisiAdi?: string | null
+  /** AKISTA: kisinin guncel profil fotografi; yoksa bas harf cizilir. */
+  avatarUrl?: string | null
   /** AKISTA: kisi su an orada mi. */
   canliMi?: boolean
   /** AKISTA: kendi kaydi mi (silme yalnizca kendi kayitlarinda). */
@@ -138,8 +145,20 @@ export function TunelSatiri({
         accessibilityRole="button"
         accessibilityLabel={`${ani.mekanAdi}, ${altParcalar.join(', ')}`}
       >
-        <View style={stiller.isaret}>
-          {ani.kisiAdi ? <Text style={stiller.basHarf}>{basHarf}</Text> : <Igne />}
+        <View style={[stiller.isaret, Boolean(ani.avatarUrl) && stiller.isaretFotografli]}>
+          {ani.avatarUrl ? (
+            <Image
+              source={{ uri: ani.avatarUrl }}
+              style={stiller.avatar}
+              contentFit="cover"
+              transition={120}
+              testID="akis-avatari"
+            />
+          ) : ani.kisiAdi ? (
+            <Text style={stiller.basHarf}>{basHarf}</Text>
+          ) : (
+            <Igne />
+          )}
         </View>
 
         <View style={stiller.ustSatir}>
@@ -291,6 +310,11 @@ const stiller = StyleSheet.create({
     fontSize: olcek.kucuk,
     color: '#FFFFFF',
   },
+  // Fotograf varsa turuncu dolgu gorunmemeli: fotograf cerceveyi
+  // tamamen dolduruyor, arkasindaki turuncu yalnizca yuklenirken
+  // gorunurdu ve kenarda turuncu bir halka birakiyordu.
+  isaretFotografli: { backgroundColor: '#F6F1EB', overflow: 'hidden' },
+  avatar: { width: '100%', height: '100%' },
 
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   mekanAdi: {

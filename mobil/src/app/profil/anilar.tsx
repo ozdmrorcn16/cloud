@@ -70,6 +70,7 @@ export default function AnilarEkrani() {
       mekanId: ani.mekanId,
       mekanAdi: ani.mekanAdi,
     mekanSemti: ani.mekanSemti,
+    avatarUrl: null,
       notMetni: ani.notMetni,
       fotografUrl: ani.fotografUrl,
       olusturmaZamani: ani.olusturmaZamani,

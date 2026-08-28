@@ -84,6 +84,7 @@ describe('akisiGetir', () => {
       mekanId: 'mekan-1',
       mekanAdi: 'Sahil Kafe',
       mekanSemti: 'Nilüfer',
+      avatarUrl: null,
       notMetni: 'guzel bir aksam',
       fotografUrl: null,
       olusturmaZamani: '2026-08-25T10:00:00Z',
