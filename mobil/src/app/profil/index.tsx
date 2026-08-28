@@ -494,7 +494,11 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.xl,
     paddingTop: bosluk.xl,
     paddingBottom: bosluk.l,
-    marginBottom: bosluk.l,
+    // Bandin altindaki bosluk DARALTILDI (kullanicinin istegi
+    // 2026-08-28): band ile "Anilar" arasinda genis bir beyaz aralik
+    // kaliyordu. Alt pay bolum basliginin kendi ust payiyla toplaniyor,
+    // bu yuzden buradan tamamen kaldirildi.
+    marginBottom: 0,
   },
   avatarBasilir: { marginBottom: bosluk.xs },
   fotografRozeti: {
@@ -635,7 +639,8 @@ const stiller = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: bosluk.xxl,
+    // xxl -> l: turuncu band gelince aradaki bosluk fazla kaciyordu.
+    marginTop: bosluk.l,
     marginBottom: bosluk.s,
   },
   bolumAd: {

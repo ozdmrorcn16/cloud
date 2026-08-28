@@ -131,6 +131,34 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ORTAM TUZAGI: `eas deploy` ANINDA YAYINA GECMIYOR (2026-08-28)
+
+Iki kez yasandi ve ikincisinde OLCULEREK dogrulandi. `eas deploy --prod`
+komutu "Production URL" yazip basariyla donuyor, ama adresi hemen o an
+acarsan BIR ONCEKI surumu gorebiliyorsun.
+
+Belirtisi yaniltici: degisiklik yapiyorsun, testler geciyor, yayina
+aliyorsun, ekran goruntusu aliyorsun ve ESKI hali goruyorsun. Ilk
+seferinde bunu "expo export eski onbellegi kullandi" diye teshis
+ettim - **o teshis YANLISTI**. Ikinci seferinde olctum:
+
+- `dist/` icindeki paket DOGRUYDU (`grep marginTop:32` sifir sonuc,
+  yani yeni degerler pakette).
+- `--clear` ile ve `dist`/`.expo`/`node_modules/.cache` tamamen
+  silinerek yeniden uretilen paketin **hash'i degismedi** - yani
+  export zaten dogru calisiyordu.
+- Ayni komutu tekrar `eas deploy --prod` ile yayinlayip olcunce
+  degerler dogru geldi.
+
+**KURAL: bir degisikligin yayina gectigini ekran goruntusuyle
+dogrularken, goruntu eskiyi gosteriyorsa once YENIDEN YAYINLA.**
+Metro onbellegini suclamadan once bunu dene.
+
+Olcum icin gozle bakmak yerine sayisal yontem daha guvenilir: sayfadaki
+ogelerin `getBoundingClientRect()` ve `getComputedStyle()` degerlerini
+puppeteer ile dokmek. Bosluk tartismasinda "sanki degismemis" demek
+yerine `marginTop: 32px` -> `16px` diye kesin sonuc verir.
+
 ### KARAR: mesafe siniri kalkti, check-in 1 km (2026-08-28)
 
 Kullanicinin karari: kesfet ekranindaki "1 km / 2 km / 5 km" cipleri
