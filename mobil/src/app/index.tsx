@@ -297,6 +297,9 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     color: renk.metin,
+    // Yer tutucu ve yazilan metin ORTALI (kullanicinin istegi
+    // 2026-08-28). textAlign ikisini birden ortaliyor.
+    textAlign: 'center',
   },
 
   ustCubuk: {

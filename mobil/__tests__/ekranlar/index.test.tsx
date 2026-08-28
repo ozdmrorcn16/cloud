@@ -146,7 +146,7 @@ describe('AnaSayfa', () => {
 
     await render(<AnaSayfa />)
     await fireEvent.changeText(
-      screen.getByPlaceholderText('Kullanıcı adı ya da isim ara'),
+      screen.getByPlaceholderText('Ara'),
       'deniz'
     )
 

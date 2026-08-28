@@ -136,7 +136,7 @@ export default {
   },
 
   anaSayfa: {
-    aramaYerTutucu: 'Kullanıcı adı ya da isim ara',
+    aramaYerTutucu: 'Ara',
     baslik: 'slooin',
     suAnBurada: 'şu an burada',
     bosBaslik: 'Akışın henüz boş',
