@@ -17,6 +17,7 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { profilFotografiniDegistir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { AniTuneli } from '../../tasarim/AniTuneli'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 /** Anilar bolumunde kac satir onizlenir. Tamami ayri ekranda. */
@@ -378,23 +379,24 @@ export default function ProfilEkrani() {
                 <Text style={stiller.bosAciklama}>{t('profil.bosAniAciklama')}</Text>
               </View>
             ) : (
-              anilar.slice(0, ONIZLEME_ADEDI).map((ani) => (
-                <Pressable
-                  key={ani.id}
-                  style={stiller.aniSatiri}
-                  onPress={() => router.push(`/mekanlar/${ani.mekanId}`)}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.aniMekan} numberOfLines={1}>
-                    {ani.mekanAdi}
-                  </Text>
-                  <Text style={stiller.aniAlt} numberOfLines={1}>
-                    {[ani.notMetni, tarihiBicimlendir(ani.olusturmaZamani)]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Text>
-                </Pressable>
-              ))
+              /* ZAMAN TUNELI (kullanicinin karari 2026-08-28). Onceden
+                 her ani duz bir satirdi: mekan adi + "not · 12.08.2026".
+                 Tunel ayni veriyi gun ayraclariyla, saatle, semtle ve
+                 varsa fotografla gosteriyor - anilarin cogunda fotograf
+                 olmadigi icin izgara yerine bu desen secildi. */
+              <AniTuneli
+                anilar={anilar.map((ani) => ({
+                  id: ani.id,
+                  mekanId: ani.mekanId,
+                  mekanAdi: ani.mekanAdi,
+                  semt: ani.mekanSemti,
+                  notMetni: ani.notMetni,
+                  fotografUrl: ani.fotografUrl,
+                  olusturmaZamani: ani.olusturmaZamani,
+                }))}
+                enFazla={ONIZLEME_ADEDI}
+                onAniSec={(ani) => router.push(`/mekanlar/${ani.mekanId}`)}
+              />
             )}
           </>
         )}

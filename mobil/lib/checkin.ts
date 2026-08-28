@@ -101,6 +101,8 @@ export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorun
 
 export type AniGorunumu = CheckIn & {
   mekanAdi: string
+  /** Mekanin semti; bilinmiyorsa null. */
+  mekanSemti: string | null
   mekanKonumu: { lat: number; lng: number }
   /** check_inler'de denormalize duran ad (karar #18). */
   kullaniciAdi: string | null
@@ -110,7 +112,7 @@ export type AniGorunumu = CheckIn & {
 }
 
 type CheckInSatiriMekanli = CheckInSatiri & {
-  mekanlar: { ad: string; konum: string }
+  mekanlar: { ad: string; konum: string; semt: string | null }
   kullanici_adi: string | null
 }
 
@@ -118,7 +120,7 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
   const { data, error } = await supabase
     .from('check_inler')
     .select(
-      'id, mekan_id, kullanici_adi, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum)'
+      'id, mekan_id, kullanici_adi, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
     )
     .eq('kullanici_id', kullaniciId)
     .is('konum', null)
@@ -135,6 +137,8 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
     satirlar.map(async (satir) => ({
       ...satiriCheckInACevir(satir),
       mekanAdi: satir.mekanlar.ad,
+      // Semt zaman tunelindeki alt satirda kullaniliyor.
+      mekanSemti: satir.mekanlar.semt,
       mekanKonumu: noktayiCoz(satir.mekanlar.konum),
       kullaniciAdi: satir.kullanici_adi,
       fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
