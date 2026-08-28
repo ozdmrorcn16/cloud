@@ -27,6 +27,8 @@ export type AkisOgesi = {
   kullaniciAdi: string | null
   mekanId: string
   mekanAdi: string
+  /** Mekanin semti; zaman tunelindeki alt satirda kullaniliyor. */
+  mekanSemti: string | null
   notMetni: string | null
   /** Imzalanmis fotograf adresi; fotograf yoksa ya da imzalanamadiysa null. */
   fotografUrl: string | null
@@ -47,7 +49,7 @@ type AkisSatiri = {
   fotograf: string | null
   olusturma_zamani: string
   konum: string | null
-  mekanlar: { ad: string } | null
+  mekanlar: { ad: string; semt: string | null } | null
 }
 
 export const AKIS_SAYFA_BOYU = 30
@@ -63,7 +65,7 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
   const { data, error } = await supabase
     .from('check_inler')
     .select(
-      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, fotograf, olusturma_zamani, konum, mekanlar(ad)'
+      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, fotograf, olusturma_zamani, konum, mekanlar(ad, semt)'
     )
     .in('kullanici_id', kimlikler)
     .order('olusturma_zamani', { ascending: false })
@@ -88,6 +90,7 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
       // Mekan satiri okunamazsa (silinmis ya da gizlenmis) akis ogesi
       // yine de gosterilir; adsiz bir satir, kaybolan bir satirdan iyidir.
       mekanAdi: satir.mekanlar?.ad ?? '',
+      mekanSemti: satir.mekanlar?.semt ?? null,
       notMetni: satir.not_metni,
       fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
       olusturmaZamani: satir.olusturma_zamani,

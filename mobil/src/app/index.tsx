@@ -4,7 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
 import { checkIniSil } from '../../lib/checkin'
-import { CheckInKarti } from '../tasarim/CheckInKarti'
+import { TunelSatiri, GunAyraci, gunEtiketi } from '../tasarim/AniTuneli'
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
@@ -101,15 +101,50 @@ export default function AnaSayfa() {
         showsVerticalScrollIndicator={false}
         refreshing={yenileniyor}
         onRefresh={yenile}
-        renderItem={({ item }) => (
-          <CheckInKarti
-            oge={item}
-            zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
-            silOnayiAcik={silOnayi === item.id}
-            onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
-            onSil={sil}
-          />
-        )}
+        renderItem={({ item, index }) => {
+          // ZAMAN TUNELI (kullanicinin karari 2026-08-28): akis artik
+          // kart yigini degil, profildekiyle AYNI dikey serit. Gun
+          // ayraci yalnizca gun degistiginde ciziliyor; karsilastirma
+          // bir onceki ogeyle yapiliyor cunku liste zaten en yeniden
+          // eskiye sirali.
+          const etiket = gunEtiketi(item.olusturmaZamani)
+          const oncekiEtiket =
+            index > 0 ? gunEtiketi(ogeler[index - 1].olusturmaZamani) : null
+
+          return (
+            <>
+              {etiket !== oncekiEtiket && <GunAyraci etiket={etiket} />}
+              <TunelSatiri
+                ani={{
+                  id: item.id,
+                  mekanId: item.mekanId,
+                  mekanAdi: item.mekanAdi,
+                  semt: item.mekanSemti,
+                  notMetni: item.notMetni,
+                  fotografUrl: item.fotografUrl,
+                  olusturmaZamani: item.olusturmaZamani,
+                  kisiAdi: item.kullaniciAdi,
+                  canliMi: item.canliMi,
+                  benimMi: item.benimMi,
+                }}
+                sonuncu={index === ogeler.length - 1}
+                onAniSec={(ani) => router.push(`/mekanlar/${ani.mekanId}`)}
+                onKisiSec={() => {
+                  // `as never`: '/profil' klasor rotasi oldugu icin
+                  // expo-router'in urettigi tiplenmis rota birlesiminde
+                  // gorunmuyor. CheckInKarti da ayni kacisi kullaniyordu.
+                  const kisiYolu = item.benimMi
+                    ? '/profil'
+                    : `/kullanici/${item.kullaniciId}`
+                  router.push(kisiYolu as never)
+                }}
+                silOnayiAcik={silOnayi === item.id}
+                onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
+                onSil={sil}
+              />
+            </>
+          )
+        }}
         ListEmptyComponent={
           yukleniyor ? (
             <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>

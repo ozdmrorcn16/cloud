@@ -22,7 +22,7 @@ function satir(ustune: Record<string, unknown> = {}) {
     fotograf: null,
     olusturma_zamani: '2026-08-25T10:00:00Z',
     konum: null,
-    mekanlar: { ad: 'Sahil Kafe' },
+    mekanlar: { ad: 'Sahil Kafe', semt: 'Nilüfer' },
     ...ustune,
   }
 }
@@ -83,6 +83,7 @@ describe('akisiGetir', () => {
       kullaniciAdi: 'Ada',
       mekanId: 'mekan-1',
       mekanAdi: 'Sahil Kafe',
+      mekanSemti: 'Nilüfer',
       notMetni: 'guzel bir aksam',
       fotografUrl: null,
       olusturmaZamani: '2026-08-25T10:00:00Z',

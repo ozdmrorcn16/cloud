@@ -2,26 +2,31 @@ import { Fragment } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import Svg, { Path, Circle } from 'react-native-svg'
+import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 
 /**
- * ANI ZAMAN TUNELI.
+ * ZAMAN TUNELI - anilarin ve akisin ortak gosterimi.
  *
- * Kullanicinin karari (2026-08-28): profil ekranindaki anilar dikey bir
- * zaman tuneli olarak gosteriliyor. Desen eski Swarm'dan alindi -
- * kullanici o ekranlari gonderip "buna donucez" dedi, alti secenek
- * icinden bunu secti.
+ * Kullanicinin karari (2026-08-28): once profil ekranindaki anilar,
+ * ardindan ANA SAYFADAKI AKIS bu desene gecirildi. Desen eski
+ * Swarm'dan; kullanici o ekranlari gonderip alti oneri icinden bunu
+ * secti.
  *
- * NEDEN IZGARA DEGIL: bizim anilarimiz FOTOGRAF DEGIL, YER VE ZAMAN.
- * Anilarin cogunda fotograf olmayacak; Instagram tipi bir izgarada bu
- * bos kareler demek. Tunelde ise fotografsiz bir ani da kendi basina
- * anlamli bir satir: mekan adi, semt, saat, not. Fotograf varsa ayni
- * satirin icine giriyor, ayri bir duzen gerekmiyor.
+ * NEDEN IZGARA DEGIL: bizim kayitlarimiz FOTOGRAF DEGIL, YER VE ZAMAN.
+ * Cogunda fotograf olmayacak; Instagram tipi bir izgarada bu bos
+ * kareler demek. Tunelde fotografsiz bir satir da kendi basina
+ * anlamli: mekan adi, semt, saat, not.
  *
- * SWARM'DAN ALINMAYAN: renkli kutular (turuncu/yesil/mavi/kirmizi/mor).
- * Slooin'de turuncu bir anlam tasiyor - bir sey turuncuysa ya
- * tiklanabilir ya "su an oluyor" demektir. Alti ayri renk o anlami
- * siler. Burada turuncu yalnizca serit ve isaretlerde.
+ * SWARM'DAN ALINMAYAN: renkli kutular. Slooin'de turuncu bir anlam
+ * tasiyor - bir sey turuncuysa ya tiklanabilir ya "su an oluyor"
+ * demektir. Alti ayri renk o anlami siler.
+ *
+ * IKI KULLANIM BICIMI VAR:
+ *   `AniTuneli`   - listeyi kendisi ciziyor (profil: kisa onizleme).
+ *   `TunelSatiri` - tek satir; ana sayfa bunu FlatList icinde
+ *                   kullaniyor, boylece sanallastirma ve asagi cekip
+ *                   yenileme korunuyor.
  */
 
 export type TunelAnisi = {
@@ -32,6 +37,12 @@ export type TunelAnisi = {
   notMetni: string | null
   fotografUrl: string | null
   olusturmaZamani: string
+  /** AKISTA: kimin kaydi. Verilirse isaret bas harfe donuyor. */
+  kisiAdi?: string | null
+  /** AKISTA: kisi su an orada mi. */
+  canliMi?: boolean
+  /** AKISTA: kendi kaydi mi (silme yalnizca kendi kayitlarinda). */
+  benimMi?: boolean
 }
 
 function Igne() {
@@ -47,7 +58,7 @@ function Igne() {
 }
 
 /** Gunun basina konan ayrac metni: Bugun / Dun / 12 Ağustos. */
-function gunEtiketi(iso: string, simdi = new Date()): string {
+export function gunEtiketi(iso: string, simdi = new Date()): string {
   const tarih = new Date(iso)
   const gunFarki = Math.floor(
     (yeniGun(simdi).getTime() - yeniGun(tarih).getTime()) / 86400000
@@ -76,68 +87,153 @@ function saat(iso: string): string {
   return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
 }
 
+export function GunAyraci({ etiket }: { etiket: string }) {
+  return (
+    <View style={stiller.gunSatiri}>
+      <Text style={stiller.gunYazi}>{etiket}</Text>
+    </View>
+  )
+}
+
+type SatirProps = {
+  ani: TunelAnisi
+  onAniSec: (ani: TunelAnisi) => void
+  /** Verilirse kisi adina dokununca cagriliyor (akis). */
+  onKisiSec?: (ani: TunelAnisi) => void
+  /** Silme iki adimli: once onay satiri acilir. */
+  silOnayiAcik?: boolean
+  onSilOnayi?: (id: string) => void
+  onSil?: (id: string) => void
+  /** Son satirda serit asagi sarkmasin. */
+  sonuncu?: boolean
+}
+
+export function TunelSatiri({
+  ani,
+  onAniSec,
+  onKisiSec,
+  silOnayiAcik,
+  onSilOnayi,
+  onSil,
+  sonuncu,
+}: SatirProps) {
+  const { t } = useDil()
+  const silinebilir = Boolean(ani.benimMi && onSilOnayi)
+  const basHarf = (ani.kisiAdi ?? '').trim().charAt(0).toLocaleUpperCase('tr-TR')
+
+  // Canlilik alt satirin ICINDE degil, AYRI bir rozet: hem gozle
+  // ayirt ediliyor hem de erisilebilirlik agacinda kendi ogesi oluyor.
+  const altParcalar = [ani.semt ?? '', saat(ani.olusturmaZamani)].filter(Boolean)
+
+  return (
+    <View style={stiller.satirKok}>
+      {/* Serit her satirin icinde ciziliyor; satirlar bitisik oldugu
+          icin kesintisiz tek bir cizgi gibi gorunuyor. Son satirda
+          asagi sarkmamasi icin kisaltiliyor. */}
+      <View style={[stiller.serit, sonuncu && stiller.seritSon]} />
+
+      <Pressable
+        style={stiller.ani}
+        onPress={() => onAniSec(ani)}
+        accessibilityRole="button"
+        accessibilityLabel={`${ani.mekanAdi}, ${altParcalar.join(', ')}`}
+      >
+        <View style={stiller.isaret}>
+          {ani.kisiAdi ? <Text style={stiller.basHarf}>{basHarf}</Text> : <Igne />}
+        </View>
+
+        <View style={stiller.ustSatir}>
+          <Text style={stiller.mekanAdi} numberOfLines={1}>
+            {ani.mekanAdi}
+          </Text>
+          {ani.canliMi && (
+            <View style={stiller.canliRozet}>
+              <View style={stiller.canliNokta} />
+              <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={stiller.bilgi} numberOfLines={1}>
+          {ani.kisiAdi ? (
+            <Text
+              style={stiller.kisi}
+              onPress={onKisiSec ? () => onKisiSec(ani) : undefined}
+            >
+              {ani.kisiAdi}
+            </Text>
+          ) : null}
+          {ani.kisiAdi && altParcalar.length > 0 ? ' · ' : ''}
+          {altParcalar.join(' · ')}
+        </Text>
+
+        {ani.notMetni ? <Text style={stiller.not}>{ani.notMetni}</Text> : null}
+
+        {ani.fotografUrl ? (
+          <Image
+            source={{ uri: ani.fotografUrl }}
+            style={stiller.fotograf}
+            contentFit="cover"
+            transition={150}
+            testID="akis-fotografi"
+          />
+        ) : null}
+
+        {silinebilir && !silOnayiAcik && (
+          <Pressable
+            onPress={() => onSilOnayi?.(ani.id)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('ortak.sil')}
+          >
+            <Text style={stiller.silAc}>{t('ortak.sil')}</Text>
+          </Pressable>
+        )}
+
+        {silinebilir && silOnayiAcik && (
+          <View style={stiller.silOnayi}>
+            <Text style={stiller.silSoru}>{t('anaSayfa.silOnay')}</Text>
+            <View style={stiller.silDugmeleri}>
+              <Pressable onPress={() => onSilOnayi?.(ani.id)} accessibilityRole="button">
+                <Text style={stiller.vazgec}>{t('ortak.vazgec')}</Text>
+              </Pressable>
+              <Pressable onPress={() => onSil?.(ani.id)} accessibilityRole="button">
+                <Text style={stiller.silOnayla}>{t('ortak.sil')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </Pressable>
+    </View>
+  )
+}
+
 type Props = {
   anilar: readonly TunelAnisi[]
-  /** Bir aniya dokununca cagriliyor. */
   onAniSec: (ani: TunelAnisi) => void
-  /** Verilirse yalnizca ilk bu kadar ani ciziliyor (profil onizlemesi). */
+  /** Verilirse yalnizca ilk bu kadar kayit ciziliyor (profil onizlemesi). */
   enFazla?: number
 }
 
 export function AniTuneli({ anilar, onAniSec, enFazla }: Props) {
   const gosterilecek = enFazla ? anilar.slice(0, enFazla) : anilar
-
   let oncekiGun: string | null = null
 
   return (
-    <View style={stiller.tunel}>
-      {/* Dikey serit. Mutlak konumlu; son aninin ortasinda bitmesi icin
-          alt payi var, yoksa bosluga sarkiyor. */}
-      <View style={stiller.serit} />
-
-      {gosterilecek.map((ani) => {
+    <View>
+      {gosterilecek.map((ani, i) => {
         const etiket = gunEtiketi(ani.olusturmaZamani)
         const gunDegisti = etiket !== oncekiGun
         oncekiGun = etiket
 
-        const altSatir = [ani.semt ?? '', saat(ani.olusturmaZamani)]
-          .filter(Boolean)
-          .join(' · ')
-
         return (
           <Fragment key={ani.id}>
-            {gunDegisti && (
-              <View style={stiller.gunSatiri}>
-                <Text style={stiller.gunYazi}>{etiket}</Text>
-              </View>
-            )}
-
-            <Pressable
-              style={stiller.ani}
-              onPress={() => onAniSec(ani)}
-              accessibilityRole="button"
-              accessibilityLabel={`${ani.mekanAdi}, ${altSatir}`}
-            >
-              <View style={stiller.isaret}>
-                <Igne />
-              </View>
-
-              <Text style={stiller.mekanAdi} numberOfLines={1}>
-                {ani.mekanAdi}
-              </Text>
-              {altSatir.length > 0 && <Text style={stiller.bilgi}>{altSatir}</Text>}
-
-              {ani.notMetni ? <Text style={stiller.not}>{ani.notMetni}</Text> : null}
-
-              {ani.fotografUrl ? (
-                <Image
-                  source={{ uri: ani.fotografUrl }}
-                  style={stiller.fotograf}
-                  contentFit="cover"
-                  transition={150}
-                />
-              ) : null}
-            </Pressable>
+            {gunDegisti && <GunAyraci etiket={etiket} />}
+            <TunelSatiri
+              ani={ani}
+              onAniSec={onAniSec}
+              sonuncu={i === gosterilecek.length - 1}
+            />
           </Fragment>
         )
       })}
@@ -149,19 +245,19 @@ const SERIT_SOL = 15
 const ISARET_CAP = 30
 
 const stiller = StyleSheet.create({
-  tunel: { paddingLeft: 40, position: 'relative' },
+  satirKok: { paddingLeft: 40, position: 'relative' },
   serit: {
     position: 'absolute',
     left: SERIT_SOL,
-    top: 6,
-    bottom: 10,
+    top: 0,
+    bottom: 0,
     width: 2,
     backgroundColor: '#FFD9B8',
   },
+  seritSon: { bottom: undefined, height: ISARET_CAP / 2 },
 
   gunSatiri: {
     alignSelf: 'flex-start',
-    marginLeft: -40,
     marginTop: bosluk.m,
     marginBottom: bosluk.s,
     backgroundColor: '#F6F1EB',
@@ -175,7 +271,7 @@ const stiller = StyleSheet.create({
     color: renk.metinIkincil,
   },
 
-  ani: { marginBottom: bosluk.l, position: 'relative' },
+  ani: { paddingBottom: bosluk.l, position: 'relative' },
   isaret: {
     position: 'absolute',
     left: -40,
@@ -190,18 +286,48 @@ const stiller = StyleSheet.create({
     borderWidth: 3,
     borderColor: renk.zemin,
   },
+  basHarf: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.kucuk,
+    color: '#FFFFFF',
+  },
 
+  ustSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   mekanAdi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
     color: renk.metin,
+    flexShrink: 1,
   },
+  canliRozet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 3,
+    paddingHorizontal: bosluk.s,
+  },
+  canliNokta: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: renk.turuncu,
+  },
+  canliYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.turuncuKoyu,
+  },
+
   bilgi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
     marginTop: 2,
   },
+  kisi: { fontFamily: yazi.govdeKalin, color: renk.metin },
+
   not: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
@@ -215,4 +341,20 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.s,
     backgroundColor: '#F6F1EB',
   },
+
+  silAc: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+    marginTop: bosluk.s,
+  },
+  silOnayi: { marginTop: bosluk.s, gap: bosluk.s },
+  silSoru: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silDugmeleri: { flexDirection: 'row', gap: 20 },
+  vazgec: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
+  silOnayla: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#C0392B' },
 })

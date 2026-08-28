@@ -23,6 +23,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     kullaniciId: 'kullanici-2',
     kullaniciAdi: 'Ada',
     mekanId: 'mekan-1',
+    mekanSemti: 'Nilüfer',
     mekanAdi: 'Sahil Kafe',
     notMetni: 'guzel bir aksam',
     fotografUrl: null,
