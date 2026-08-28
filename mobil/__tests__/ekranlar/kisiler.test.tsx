@@ -81,7 +81,10 @@ describe('KisilerEkrani', () => {
 
     const gorseller = screen.getAllByTestId('kisi-fotografi')
     expect(gorseller).toHaveLength(1)
-    expect(gorseller[0].props.source).toEqual({ uri: 'https://ornek/imzali-foto.jpg' })
+    // expo-image kaynagi DIZIYE normallestiriyor (react-native'in
+    // Image'i tek nesne veriyordu). Onemli olan imzalanmis adresin
+    // gorsele gecmesi.
+    expect(gorseller[0].props.source).toEqual([{ uri: 'https://ornek/imzali-foto.jpg' }])
   })
 
   it('gec donen eski arama, yeni aramanin sonuclarinin uzerine yazmaz', async () => {

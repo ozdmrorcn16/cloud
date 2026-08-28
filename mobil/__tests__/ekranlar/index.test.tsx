@@ -10,6 +10,11 @@ jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
 jest.mock('../../lib/checkin', () => ({ checkIniSil: jest.fn() }))
 
 const mockRouterPush = jest.fn()
+jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
+jest.mock('../../lib/fotograf-url', () => ({
+  profilFotografiUrl: jest.fn().mockResolvedValue('https://imzali/kisi.jpg'),
+}))
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush }),
   useFocusEffect: (effect: () => void) => {
@@ -128,6 +133,27 @@ describe('AnaSayfa', () => {
     fireEvent.press(await screen.findByText('Sahil Kafe'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar/mekan-1')
+  })
+
+  it('arama sutununa yazilinca akis yerine KISI sonuclari cikar', async () => {
+    // Kullanicinin istegi 2026-08-28: markanin altindaki sutundan
+    // kullanici adi ya da isimle kisi aranabiliyor.
+    const { kisiAra } = require('../../lib/kisi-ara')
+    ;(kisiAra as jest.Mock).mockResolvedValue([
+      { id: 'k-9', kullaniciAdi: 'denizy', ad: 'Deniz Yılmaz', fotograf: 'k-9/a.jpg' },
+    ])
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+
+    await render(<AnaSayfa />)
+    await fireEvent.changeText(
+      screen.getByPlaceholderText('Kullanıcı adı ya da isim ara'),
+      'deniz'
+    )
+
+    expect(await screen.findByText('denizy')).toBeTruthy()
+    expect(await screen.findByText('Deniz Yılmaz')).toBeTruthy()
+    // Akis ekrandan cekiliyor: arama sonucu onun YERINE geliyor.
+    expect(screen.queryByText('Sahil Kafe')).toBeNull()
   })
 
   it('akis bosken kesfetmeye yonlendirir', async () => {

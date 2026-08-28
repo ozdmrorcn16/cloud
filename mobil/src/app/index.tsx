@@ -1,10 +1,13 @@
-import { useCallback, useState } from 'react'
-import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native'
+import { useCallback, useRef, useState } from 'react'
+import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
 import { checkIniSil } from '../../lib/checkin'
 import { TunelSatiri, GunAyraci, gunEtiketi } from '../tasarim/AniTuneli'
+import { KisiSatiri, type KisiSatirVerisi } from '../tasarim/KisiSatiri'
+import { kisiAra } from '../../lib/kisi-ara'
+import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
@@ -48,6 +51,52 @@ export default function AnaSayfa() {
   // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
 
+  // KISI ARAMA (kullanicinin istegi 2026-08-28): markanin hemen
+  // altinda bir arama sutunu; kullanici adi ya da isim yazilinca
+  // akisin YERINE sonuclar ciziliyor.
+  const [arama, setArama] = useState('')
+  const [sonuclar, setSonuclar] = useState<KisiSatirVerisi[]>([])
+  const [aramaDurumu, setAramaDurumu] = useState<string | null>(null)
+  // Yavas donen eski bir istek yeninin uzerine yazmasin diye sira
+  // numarasi. Imzalama da async oldugu icin kontrol iki kez yapiliyor.
+  const sonIstekRef = useRef(0)
+
+  async function aramaDegisti(yeni: string) {
+    setArama(yeni)
+    const istekNo = ++sonIstekRef.current
+    const temiz = yeni.trim()
+
+    if (temiz.length < 2) {
+      setSonuclar([])
+      setAramaDurumu(temiz.length === 0 ? null : t('kisiler.enAzIki'))
+      return
+    }
+
+    try {
+      const bulunanlar = await kisiAra(temiz)
+      if (istekNo !== sonIstekRef.current) return
+
+      const satirlar = await Promise.all(
+        bulunanlar.map(async (kisi) => ({
+          id: kisi.id,
+          kullaniciAdi: kisi.kullaniciAdi,
+          ad: kisi.ad,
+          fotografUrl: kisi.fotograf ? await profilFotografiUrl(kisi.fotograf) : null,
+        }))
+      )
+      if (istekNo !== sonIstekRef.current) return
+
+      setSonuclar(satirlar)
+      setAramaDurumu(satirlar.length === 0 ? t('kisiler.bulunamadi') : null)
+    } catch (e) {
+      if (istekNo !== sonIstekRef.current) return
+      setSonuclar([])
+      setAramaDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
+
+  const aramaAcik = arama.trim().length > 0
+
   async function yukle() {
     try {
       setOgeler(await akisiGetir())
@@ -88,12 +137,39 @@ export default function AnaSayfa() {
 
   return (
     <View style={stiller.kok}>
+      {/* Marka EN USTTE, hemen altinda arama sutunu (kullanicinin
+          istegi 2026-08-28). */}
       <View style={stiller.ustCubuk}>
         <MarkaYazisi genislik={88} />
       </View>
 
+      <TextInput
+        style={stiller.aramaKutusu}
+        placeholder={t('anaSayfa.aramaYerTutucu')}
+        placeholderTextColor={renk.metinSoluk}
+        autoCapitalize="none"
+        autoCorrect={false}
+        value={arama}
+        onChangeText={aramaDegisti}
+        returnKeyType="search"
+      />
+
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
+      {aramaAcik ? (
+        <FlatList
+          data={sonuclar}
+          keyExtractor={(k) => k.id}
+          contentContainerStyle={stiller.liste}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
+            <KisiSatiri kisi={item} onSec={(k) => router.push(`/kullanici/${k.id}`)} />
+          )}
+          ListEmptyComponent={
+            aramaDurumu ? <Text style={stiller.durum}>{aramaDurumu}</Text> : null
+          }
+        />
+      ) : (
       <FlatList
         data={ogeler}
         keyExtractor={(o) => o.id}
@@ -165,7 +241,7 @@ export default function AnaSayfa() {
           )
         }
       />
-
+      )}
     </View>
   )
 }
@@ -209,6 +285,20 @@ const stiller = StyleSheet.create({
   // Marka ORTADA ve yukarida (kullanicinin istegi 2026-08-27:
   // "slooin yazisini biraz kucult ve yukari ortaya koy"). Onceden
   // sola dayaliydi ve 104 genisligindeydi.
+  aramaKutusu: {
+    marginHorizontal: bosluk.l,
+    marginBottom: bosluk.m,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 12,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+
   ustCubuk: {
     alignItems: 'center',
     paddingHorizontal: bosluk.xl,

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { View, Text, TextInput, Image, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { kisiAra, type KisiSonucu } from '../../lib/kisi-ara'
+import { KisiSatiri } from '../tasarim/KisiSatiri'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
@@ -87,35 +88,9 @@ export default function KisilerEkrani() {
           contentContainerStyle={stiller.liste}
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
-            <Pressable
-              style={stiller.satir}
-              onPress={() => router.push(`/kullanici/${item.id}`)}
-              accessibilityRole="button"
-            >
-              {item.fotografUrl ? (
-                <Image
-                  testID="kisi-fotografi"
-                  source={{ uri: item.fotografUrl }}
-                  style={stiller.fotograf}
-                />
-              ) : (
-                // Fotografi olmayan icin bas harf: bos bir daire
-                // birakmak satiri eksik gosteriyor.
-                <View style={[stiller.fotograf, stiller.fotografYok]}>
-                  <Text style={stiller.basHarf}>
-                    {(item.ad || item.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View style={stiller.satirOrta}>
-                <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-                  {item.kullaniciAdi}
-                </Text>
-                <Text style={stiller.ad} numberOfLines={1}>
-                  {item.ad}
-                </Text>
-              </View>
-            </Pressable>
+            // Satir ORTAK BILESENDE: ayni duzen ana sayfadaki aramada
+            // da kullaniliyor, iki kopya zamanla birbirinden ayrilirdi.
+            <KisiSatiri kisi={item} onSec={(k) => router.push(`/kullanici/${k.id}`)} />
           )}
         />
       </View>
