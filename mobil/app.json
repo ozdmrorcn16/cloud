@@ -21,8 +21,11 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "web": {
@@ -50,7 +53,8 @@
         "expo-image-picker",
         {
           "photosPermission": "Slooin, profil ve mekân fotoğrafı ekleyebilmen için galerine erişir.",
-          "cameraPermission": "Slooin, mekânda fotoğraf çekebilmen için kameranı kullanır."
+          "cameraPermission": "Slooin, mekânda fotoğraf çekebilmen için kameranı kullanır.",
+          "microphonePermission": false
         }
       ],
       "expo-notifications",
