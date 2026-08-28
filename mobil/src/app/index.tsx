@@ -14,6 +14,28 @@ import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
+/** Arama kutusunun basindaki buyutec. */
+function BuyutecIkonu() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24">
+      <Circle
+        cx={11}
+        cy={11}
+        r={7}
+        stroke={renk.metinIkincil}
+        strokeWidth={2}
+        fill="none"
+      />
+      <Path
+        d="M16.5 16.5 21 21"
+        stroke={renk.metinIkincil}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  )
+}
+
 function KonumIkonu() {
   return (
     <Svg width={13} height={13} viewBox="0 0 24 24">
@@ -143,16 +165,22 @@ export default function AnaSayfa() {
         <MarkaYazisi genislik={88} />
       </View>
 
-      <TextInput
-        style={stiller.aramaKutusu}
-        placeholder={t('anaSayfa.aramaYerTutucu')}
-        placeholderTextColor={renk.metinSoluk}
-        autoCapitalize="none"
-        autoCorrect={false}
-        value={arama}
-        onChangeText={aramaDegisti}
-        returnKeyType="search"
-      />
+      {/* Instagram duzeni (kullanicinin gonderdigi referans): kenarliksiz
+          DOLGULU kutu, solda buyutec, hemen yaninda sola dayali metin.
+          Onceki hali beyaz zeminli-kenarlikliydi ve yazi ortaliydi. */}
+      <View style={stiller.aramaKutusu}>
+        <BuyutecIkonu />
+        <TextInput
+          style={stiller.aramaGirdisi}
+          placeholder={t('anaSayfa.aramaYerTutucu')}
+          placeholderTextColor={renk.metinIkincil}
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={arama}
+          onChangeText={aramaDegisti}
+          returnKeyType="search"
+        />
+      </View>
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -286,20 +314,23 @@ const stiller = StyleSheet.create({
   // "slooin yazisini biraz kucult ve yukari ortaya koy"). Onceden
   // sola dayaliydi ve 104 genisligindeydi.
   aramaKutusu: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.s,
     marginHorizontal: bosluk.l,
     marginBottom: bosluk.m,
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
+    // Kenarlik yok, dolgu var. Ton gun ayraclariyla ayni (#F6F1EB):
+    // beyaz sayfada kendini belli ediyor ama dikkat cekmiyor.
+    backgroundColor: '#F6F1EB',
     borderRadius: yuvarlak.kart,
-    paddingHorizontal: bosluk.l,
-    paddingVertical: 12,
+    paddingHorizontal: bosluk.m,
+    paddingVertical: 11,
+  },
+  aramaGirdisi: {
+    flex: 1,
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     color: renk.metin,
-    // Yer tutucu ve yazilan metin ORTALI (kullanicinin istegi
-    // 2026-08-28). textAlign ikisini birden ortaliyor.
-    textAlign: 'center',
   },
 
   ustCubuk: {
