@@ -33,6 +33,21 @@ mekân listesi boş kalır; bu bir hata değil.
 | `05550000003` | — | `123456` | **Profili var** (`asdfgh`) — artık kayıt akışı için uygun değil |
 | `05550000008` | `test1234` | yok | Profilsiz, SMS alamıyor — sadece giriş ekranından |
 
+> **Örnek akış verisi (2026-08-28, SAHTE).** Zaman tünelini dolu
+> görebilmek için `05550000000` ile `05550000001` ve `05550000002`
+> arasında **karşılıklı takip** kuruldu ve üç hesaba toplam 9 check-in
+> eklendi (ikisi canlı, "şu an burada" rozetli). Hiçbiri gerçek
+> kullanıcı hareketi değil. Temizlemek için:
+>
+> ```sql
+> delete from public.check_inler
+> where kullanici_id in (select id from auth.users
+>   where phone in ('905550000000','905550000001','905550000002'));
+> delete from public.takipler
+> where takip_eden_id in (select id from auth.users
+>   where phone in ('905550000000','905550000001','905550000002'));
+> ```
+
 > **Dikkat:** kayıt akışını (numara → SMS → profil oluştur) baştan sona
 > denemek için şu an **boş bir test numarası yok**. `05550000003` geçen
 > oturumda profil oluşturarak harcandı. Çözüm ikisinden biri: Supabase
