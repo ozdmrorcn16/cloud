@@ -89,6 +89,33 @@
   .etiket-sat i { color: #FE7813; font-style: normal; font-weight: 700; }
   .etiket-sat small { color: #a49b92; font-weight: 400; font-size: 13px; }
   .tahta > div.telefon { margin-bottom: 40px; }
+
+  /* --- zaman tuneli (Swarm deseni, Slooin kimligiyle) --- */
+  .tunel { position: relative; padding-left: 40px; margin-top: 6px; }
+  .tunel:before {
+    content: ''; position: absolute; left: 15px; top: 6px; bottom: 10px;
+    width: 2px; background: #FFD9B8;
+  }
+  .gun {
+    font-size: 12px; font-weight: 600; color: #6E6660; background: #F6F1EB;
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    margin: 14px 0 10px -40px; position: relative;
+  }
+  .ani { position: relative; margin-bottom: 18px; }
+  .ani .isaret {
+    position: absolute; left: -40px; top: 0; width: 32px; height: 32px;
+    border-radius: 999px; background: #FE7813; display: grid; place-items: center;
+    border: 3px solid #fff;
+  }
+  .ani .isaret svg { width: 16px; height: 16px; }
+  .ani .yer { font-size: 15px; font-weight: 600; color: #17130F; }
+  .ani .bilgi { font-size: 13px; color: #6E6660; margin-top: 2px; }
+  .ani .not { font-size: 14px; color: #17130F; margin-top: 7px; line-height: 1.4; }
+  .ani .not b { color: #FE7813; font-weight: 600; }
+  .ani .foto {
+    height: 96px; border-radius: 12px; margin-top: 9px;
+    background: linear-gradient(145deg,#FFD9B8,#FE7813);
+  }
 </style>
 
 <div id="tahta" class="tahta"></div>
@@ -223,12 +250,61 @@
     <div class="baslik" style="margin-top:14px">Son anıların</div>
     ${izgara(3)}`
 
+  // ---- 6. ZAMAN TUNELI (eski Swarm deseni) ---------------------------
+  // Kullanicinin gonderdigi eski Swarm ekranlarindan alinan desen:
+  // dikey bir serit boyunca dizilmis anilar. Bizim anilarimiz FOTOGRAF
+  // DEGIL, YER VE ZAMAN oldugu icin izgaradan daha uygun - fotografsiz
+  // bir ani izgarada bos kare, tunelde ise kendi basina anlamli.
+  // Renkli kutular ALINMADI: Slooin'de turuncu yalnizca eylem ve
+  // canlilik demek, alti ayri renk o anlami siler.
+  const p6 = ust + `
+    <div class="satir" style="gap:16px">
+      <div class="avatar" style="width:60px;height:60px;font-size:24px">D</div>
+      <div class="buyu"><div class="ad">Deniz Yılmaz</div>
+        <div class="bio">24 anı · 11 yer · 18 arkadaş</div></div>
+      <div class="dugme" style="padding:8px 14px">Düzenle</div>
+    </div>
+
+    <div class="tunel">
+      <div class="gun">Bugün</div>
+
+      <div class="ani">
+        <div class="isaret">${I.igne}</div>
+        <div class="yer">Kahve Durağı</div>
+        <div class="bilgi">Nilüfer · 14:41 · <span style="color:#E06509;font-weight:600">7 kişi buradaydı</span></div>
+        <div class="not">Sabah kalabalığı bitmiş, güzel oldu. — <b>Ela</b>, <b>Mert</b> ile</div>
+      </div>
+
+      <div class="ani">
+        <div class="isaret">${I.igne}</div>
+        <div class="yer">Sahil Yürüyüş Yolu</div>
+        <div class="bilgi">Nilüfer · 12:28</div>
+        <div class="foto"></div>
+      </div>
+
+      <div class="gun">Dün</div>
+
+      <div class="ani">
+        <div class="isaret">${I.igne}</div>
+        <div class="yer">Kent Meydanı</div>
+        <div class="bilgi">Osmangazi · 19:23 · <span style="color:#E06509;font-weight:600">13 kişi buradaydı</span></div>
+        <div class="not">Konser vardı, tesadüfen denk geldim.</div>
+      </div>
+
+      <div class="ani">
+        <div class="isaret">${I.igne}</div>
+        <div class="yer">Uludağ Üniversitesi</div>
+        <div class="bilgi">Nilüfer · 11:05</div>
+      </div>
+    </div>`
+
   const SECENEKLER = [
     ['1', 'Instagram düzeni', 'avatar solda küçük, sayılar yanında', p1],
     ['2', 'Anı ızgarası', 'kimlik minimum, ekran anılara ait', p2],
     ['3', 'Harita profili', 'gittiğin yerler haritada birikiyor', p3],
     ['4', 'Canlı durum önde', 'kim değil, şu an nerede', p4],
     ['5', 'Kartlı özet', 'boşluğu hesaplanabilir veriyle doldurur', p5],
+    ['6', 'Zaman tüneli', 'eski Swarm deseni, Slooin kimliğiyle', p6],
   ]
 
   document.getElementById('tahta').innerHTML = SECENEKLER.map(([no, ad, not, ic]) =>
