@@ -112,23 +112,21 @@ describe('ProfilEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
   })
 
-  it('canli check-in varsa mekan adiyla serit gosterir', async () => {
-    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
-      id: 'checkin-9',
-      mekanId: 'mekan-2',
-      mekanAdi: 'Kordon',
-      notMetni: null,
-      fotograf: null,
-      olusturmaZamani: '2026-08-25T10:00:00Z',
-      bitisZamani: '2026-08-25T14:00:00Z',
-      canliMi: true,
-      bulunurluk: 'herkese_acik',
-    })
+  it('canli check-in ANILAR LISTESINDE rozetiyle gorunur, ayri serit YOK', async () => {
+    // Kullanicinin karari 2026-08-29: profildeki "Şu an buradasın"
+    // seridi kaldirildi; canli check-in yalnizca ani akisinda,
+    // "şu an burada" rozetiyle gorunuyor.
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ id: 'ani-canli', mekanAdi: 'Kordon', canliMi: true }),
+    ])
 
     await render(<ProfilEkrani />)
 
-    expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
+    expect(await screen.findByText('şu an burada')).toBeTruthy()
     expect(screen.getByText('Kordon')).toBeTruthy()
+    // Eski serit ve eylemleri artik profilde DEGIL.
+    expect(screen.queryByText('Şu an buradasın')).toBeNull()
+    expect(screen.queryByText('Ayrıl')).toBeNull()
   })
 
   it('canli check-in yoksa profilde HICBIR serit ya da kart cizilmiyor', async () => {
@@ -141,29 +139,6 @@ describe('ProfilEkrani', () => {
     expect(screen.queryByText('Şu an bir yerde değilsin')).toBeNull()
     expect(screen.queryByText('Bir yere check-in yap')).toBeNull()
     expect(screen.queryByText('Şu an buradasın')).toBeNull()
-  })
-
-  it('ayril basilinca check-inden cikar ve serit kaybolur', async () => {
-    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
-      id: 'checkin-9',
-      mekanId: 'mekan-2',
-      mekanAdi: 'Kordon',
-      notMetni: null,
-      fotograf: null,
-      olusturmaZamani: '2026-08-25T10:00:00Z',
-      bitisZamani: '2026-08-25T14:00:00Z',
-      canliMi: true,
-      bulunurluk: 'herkese_acik',
-    })
-    ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
-
-    await render(<ProfilEkrani />)
-    fireEvent.press(await screen.findByText('Ayrıl'))
-
-    await waitFor(() => expect(checkIndenAyril).toHaveBeenCalledWith('checkin-9'))
-    // Ayrildiktan sonra ekran yeniden cekiliyor: artik canli check-in yok.
-    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
-    await waitFor(() => expect(aktifCheckInimiGetir).toHaveBeenCalledTimes(2))
   })
 
   it('anilar bosken yon veren bir metin gosterir', async () => {

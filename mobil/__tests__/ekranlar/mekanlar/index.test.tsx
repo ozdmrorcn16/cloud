@@ -19,10 +19,19 @@ jest.mock('../../../lib/mekan', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+jest.mock('../../../lib/checkin', () => ({
+  aktifCheckInimiGetir: jest.fn().mockResolvedValue(null),
+  checkIndenAyril: jest.fn(),
+  checkIniSil: jest.fn(),
+}))
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush, replace: jest.fn() }),
   // Alt gezinme cubugu hangi sekmenin aktif oldugunu yoldan okuyor.
   usePathname: () => '/mekanlar',
+  useFocusEffect: (effect: () => void) => {
+    require('react').useEffect(effect, [])
+  },
 }))
 
 beforeEach(() => {
@@ -139,6 +148,67 @@ describe('MekanAramaEkrani', () => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
     expect(screen.queryByText('0 kişi burada')).toBeNull()
+  })
+
+  it('bu mekanda check-in VARSA "Check-in yap" yerine durum ve eylemler cikar', async () => {
+    // Kullanicinin istegi 2026-08-29: yapilan check-inin uzerinde
+    // "Check-in yap" yazmayacak, baska mekan secilene kadar.
+    const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      { id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', semt: 'Nilüfer', kaynak: 'kullanici',
+        konum: { lat: 41.015, lng: 28.979 }, adres: null, osmId: null,
+        ekleyenKullanici: null, olusturuldu: '2026-08-29T10:00:00Z', kisiSayisi: 0 },
+    ])
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'checkin-1',
+      mekanId: 'mekan-1',
+      mekanAdi: 'Sahil Kafe',
+      notMetni: null,
+      fotograf: null,
+      olusturmaZamani: '2026-08-29T10:00:00Z',
+      bitisZamani: '2026-08-29T10:30:00Z',
+      canliMi: true,
+      bulunurluk: 'herkese_acik',
+    })
+
+    await render(<MekanAramaEkrani />)
+
+    expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
+    expect(screen.getByText('Ayrıldım')).toBeTruthy()
+    expect(screen.getByText('Sil')).toBeTruthy()
+    expect(screen.queryByText('Check-in yap')).toBeNull()
+  })
+
+  it('check-in BASKA bir mekandaysa kart o mekani gosterir', async () => {
+    // Kullanicinin istegi 2026-08-29: kart en yakini degil, check-in
+    // yapilan yeri gostermeli - "baska mekan secene kadar".
+    const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      { id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', semt: 'Nilüfer', kaynak: 'kullanici',
+        konum: { lat: 41.015, lng: 28.979 }, adres: null, osmId: null,
+        ekleyenKullanici: null, olusturuldu: '2026-08-29T10:00:00Z', kisiSayisi: 0 },
+    ])
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'checkin-2',
+      mekanId: 'mekan-uzak',
+      mekanAdi: 'Kent Meydanı',
+      notMetni: null,
+      fotograf: null,
+      olusturmaZamani: '2026-08-29T10:00:00Z',
+      bitisZamani: '2026-08-29T10:30:00Z',
+      canliMi: true,
+      bulunurluk: 'herkese_acik',
+    })
+
+    await render(<MekanAramaEkrani />)
+
+    // Kart, listede olmayan check-in mekanini gosteriyor.
+    expect(await screen.findByText('Kent Meydanı')).toBeTruthy()
+    expect(screen.getByText('Şu an buradasın')).toBeTruthy()
+    // Hicbir yerde "Check-in yap" yok.
+    expect(screen.queryByText('Check-in yap')).toBeNull()
   })
 
   it('ekranda yaricap secici YOK', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -9,9 +9,15 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
+import {
+  aktifCheckInimiGetir,
+  checkIndenAyril,
+  checkIniSil,
+  type AktifCheckIn,
+} from '../../../lib/checkin'
 import {
   yakinMekanlariYogunlukIleGetir,
   kesfetIcinSuz,
@@ -59,6 +65,12 @@ export default function KesfetEkrani() {
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [arama, setArama] = useState('')
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
+  // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
+  // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
+  // Ayrıldım ve Sil sunuyor. Baska bir mekan secilene kadar boyle.
+  const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
+  // Silme GERI ALINAMAZ: once onay satiri aciliyor.
+  const [silOnayi, setSilOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   // Ilk acilis bittikten sonra ekran duzeni bir daha tam ekran
@@ -100,6 +112,48 @@ export default function KesfetEkrani() {
     yukle()
     // Ilk yukleme; sonrakiler kullanici etkilesimiyle tetikleniyor.
   }, [])
+
+  // Aktif check-in her odaklanmada tazeleniyor: kullanici check-in
+  // yapip geri dondugunde kart dogru hali gostermeli.
+  useFocusEffect(
+    useCallback(() => {
+      let iptal = false
+      aktifCheckInimiGetir()
+        .then((c) => {
+          if (!iptal) setAktifCheckIn(c)
+        })
+        .catch(() => {
+          if (!iptal) setAktifCheckIn(null)
+        })
+      return () => {
+        iptal = true
+      }
+    }, [])
+  )
+
+  async function ayril() {
+    if (!aktifCheckIn) return
+    try {
+      await checkIndenAyril(aktifCheckIn.id)
+      setAktifCheckIn(null)
+      setSilOnayi(false)
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+    }
+  }
+
+  async function canliyiSil() {
+    if (!aktifCheckIn) return
+    try {
+      await checkIniSil(aktifCheckIn.id)
+      setAktifCheckIn(null)
+      setSilOnayi(false)
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+    }
+  }
 
   // Arama kutusu her harfte istek ATMIYOR. Onceki surumde her tusa
   // basista sunucuya gidiliyordu; bu hem agi bosa yoruyor hem de
@@ -148,10 +202,32 @@ export default function KesfetEkrani() {
     )
   }, [suzulmus, cihazKonumu])
 
+  /**
+   * KARTTAKI MEKAN.
+   *
+   * Aktif bir check-in varsa kart ONU gosteriyor, en yakini degil
+   * (kullanicinin istegi 2026-08-29: "yaptigin checkinin uzerinde hala
+   * checkin yap ibaresi olmasin baska mekan secene kadar"). Check-in
+   * yapilan mekan listede olmayabilir - baska bir sehirde ya da
+   * yakinlik siralamasinin disinda kalabilir - o yuzden ad check-in
+   * kaydindan aliniyor, semt ve kisi sayisi ise listede varsa oradan.
+   */
+  const kartMekani = aktifCheckIn
+    ? {
+        id: aktifCheckIn.mekanId,
+        ad: aktifCheckIn.mekanAdi,
+        listedeki: suzulmus.find((m) => m.id === aktifCheckIn.mekanId) ?? null,
+      }
+    : enYakin
+      ? { id: enYakin.id, ad: enYakin.ad, listedeki: enYakin }
+      : null
+
+  const kartCanli = Boolean(aktifCheckIn)
+
   // "Buradasin" kartindaki mekan LISTEDE TEKRAR EDILMIYOR: ayni ad
   // ekranda iki kez gorunuyordu. Referans tasarimda da alttaki liste
   // "yakinindaki DIGER mekanlar" anlamina geliyor.
-  const liste = enYakin ? suzulmus.filter((m) => m.id !== enYakin.id) : suzulmus
+  const liste = kartMekani ? suzulmus.filter((m) => m.id !== kartMekani.id) : suzulmus
 
   const canlilar = liste.filter((m) => m.kisiSayisi > 0)
   const sakinler = liste.filter((m) => m.kisiSayisi === 0)
@@ -232,31 +308,83 @@ export default function KesfetEkrani() {
 
       {/* Su an bulundugun yer: en yakin mekan. Check-in bir mekan
           secilerek yapiliyor, dolayisiyla en yakin mekan dogal aday. */}
-      {enYakin && (
+      {kartMekani && (
         <View style={stiller.buradaKart}>
           <View style={stiller.buradaUst}>
             <View style={stiller.buradaMetin}>
               <Text style={stiller.buradaAd} numberOfLines={1}>
-                {enYakin.ad}
+                {kartMekani.ad}
               </Text>
-              <Text style={stiller.buradaAlt} numberOfLines={1}>
-                {[enYakin.semt ?? '', uzaklik(enYakin)].filter(Boolean).join(' · ')}
-              </Text>
+              {kartMekani.listedeki && (
+                <Text style={stiller.buradaAlt} numberOfLines={1}>
+                  {[kartMekani.listedeki.semt ?? '', uzaklik(kartMekani.listedeki)]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              )}
             </View>
-            {enYakin.kisiSayisi > 0 && (
+            {(kartMekani.listedeki?.kisiSayisi ?? 0) > 0 && (
               <View style={stiller.buradaSayiAlani}>
-                <Text style={stiller.buradaSayi}>{enYakin.kisiSayisi}</Text>
+                <Text style={stiller.buradaSayi}>{kartMekani.listedeki?.kisiSayisi}</Text>
                 <Text style={stiller.buradaSayiEtiket}>kişi burada</Text>
               </View>
             )}
           </View>
-          <Pressable
-            style={stiller.checkInButonu}
-            onPress={() => router.push(`/check-in/${enYakin.id}`)}
-            accessibilityRole="button"
-          >
-            <Text style={stiller.checkInYazi}>Check-in yap</Text>
-          </Pressable>
+          {/* BU MEKANDA ZATEN CHECK-IN VARSA "Check-in yap" YOK
+              (kullanicinin istegi 2026-08-29). Yerine durum ve iki
+              eylem: Ayrıldım ve Sil. Baska bir mekan secilene kadar
+              boyle kaliyor. */}
+          {kartCanli ? (
+            <>
+              <View style={stiller.canliSerit}>
+                <View style={stiller.buradaNokta} />
+                <Text style={stiller.canliYazi}>Şu an buradasın</Text>
+              </View>
+              <View style={stiller.canliEylemler}>
+                <Pressable
+                  style={stiller.ikincilButon}
+                  onPress={ayril}
+                  accessibilityRole="button"
+                >
+                  <Text style={stiller.ikincilButonYazi}>Ayrıldım</Text>
+                </Pressable>
+                <Pressable
+                  style={stiller.ikincilButon}
+                  onPress={() => setSilOnayi(!silOnayi)}
+                  accessibilityRole="button"
+                >
+                  <Text style={stiller.silYazi}>Sil</Text>
+                </Pressable>
+              </View>
+
+              {/* SILME GERI ALINAMAZ; ayrilmaktan farki burada yaziyor:
+                  ayrilma check-in'i aniya cevirir, silme satiri
+                  tamamen kaldirir. */}
+              {silOnayi && (
+                <View style={stiller.silOnayAlani}>
+                  <Text style={stiller.silOnaySoru}>
+                    Bu check-in kalıcı olarak silinsin mi? Anılarında da kalmaz.
+                  </Text>
+                  <View style={stiller.silOnayDugmeleri}>
+                    <Pressable onPress={() => setSilOnayi(false)} accessibilityRole="button">
+                      <Text style={stiller.vazgecYazi}>Vazgeç</Text>
+                    </Pressable>
+                    <Pressable onPress={canliyiSil} accessibilityRole="button">
+                      <Text style={stiller.silYazi}>Sil</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+            </>
+          ) : (
+            <Pressable
+              style={stiller.checkInButonu}
+              onPress={() => router.push(`/check-in/${kartMekani.id}`)}
+              accessibilityRole="button"
+            >
+              <Text style={stiller.checkInYazi}>Check-in yap</Text>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -384,6 +512,41 @@ const stiller = StyleSheet.create({
   // Ikon satirin SOL BASINDA (kullanicinin istegi 2026-08-26);
   // pay da ona gore sagda.
   satirCheckIn: { paddingRight: 12, paddingVertical: 4 },
+
+  canliSerit: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+  buradaNokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: renk.turuncu },
+  canliYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuKoyu,
+  },
+  canliEylemler: { flexDirection: 'row', gap: bosluk.s },
+  ikincilButon: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: yuvarlak.hap,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
+  ikincilButonYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#C0392B' },
+  silOnayAlani: { gap: bosluk.s },
+  silOnaySoru: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silOnayDugmeleri: { flexDirection: 'row', gap: 20 },
+  vazgecYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
 
   buradaKart: {
     backgroundColor: renk.yuzey,

@@ -76,31 +76,15 @@ function AyarlarIkonu() {
  * listesine gidiyordu. Instagram ve Swarm'da o sekme kisinin kendisini
  * gosterir, bir alt sayfasini degil.
  *
- * Ekranin omurgasi uygulamanin tek sorusudur - "su an nerede insan
- * var?" - kendine cevrilmis hali: en ustte kimlik, hemen altinda SU AN
- * neredesin seridi, sonra gecmis (anilar). Canli seritteki turuncu
- * kimligin mesru kullanimi: "su an oluyor" demek.
- */
-/**
- * Canli seritteki check-in isareti.
+ * Duzen: en ustte kimlik bandi, altinda Anilar / Yerler sekmeleri.
  *
- * Onceden yalnizca turuncu bir noktaydi (kullanicinin istegi
- * 2026-08-26: "checkin yaninda turuncu nokta degil checkin ikonu
- * olsun"). Nokta "bir sey aktif" diyordu ama NE oldugunu
- * soylemiyordu; igne dogrudan check-in'i anlatiyor.
+ * CANLI SERIT KALDIRILDI (kullanicinin karari 2026-08-29: "profilden
+ * şu an buradasın tarafini kaldiralim, sadece ani akisinda gorunecek
+ * check-inler"). Canli check-in zaten anilar listesinde en ustte ve
+ * zaman tuneli onu "şu an burada" rozetiyle ciziyor; ayri bir serit
+ * ayni bilgiyi iki kez gosteriyordu. "Ayrıldım" ve "Sil" eylemleri
+ * check-in ekranindaki kartta duruyor.
  */
-function CanliCheckInIkonu() {
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24">
-      <Path
-        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
-        fill={renk.turuncu}
-      />
-      <Circle cx={12} cy={9.7} r={2.7} fill={renk.turuncuZemin} />
-    </Svg>
-  )
-}
-
 export default function ProfilEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -111,7 +95,6 @@ export default function ProfilEkrani() {
   // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler).
   const [sekme, setSekme] = useState<'anilar' | 'yerler'>('anilar')
   const [bagSayisi, setBagSayisi] = useState(0)
-  const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
   // Silme geri alinamaz: once onay.
   const [silOnayi, setSilOnayi] = useState(false)
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
@@ -128,15 +111,18 @@ export default function ProfilEkrani() {
         return
       }
 
-      const [anilarVerisi, baglar, canli, foto] = await Promise.all([
+      // Aktif check-in ARTIK AYRICA CEKILMIYOR (kullanicinin karari
+      // 2026-08-29: "profilden şu an buradasın tarafini kaldiralim,
+      // sadece ani akisinda gorunecek check-inler"). Canli kayit zaten
+      // `kullanicininAnilariniGetir` icinde geliyor ve tunel onu
+      // "şu an burada" rozetiyle ciziyor; ayri bir istek gereksizdi.
+      const [anilarVerisi, baglar, foto] = await Promise.all([
         kullanicininAnilariniGetir(kendi.id),
         takipcilerimiGetir(),
-        aktifCheckInimiGetir(),
         kendi.fotograflar[0] ? profilFotografiUrl(kendi.fotograflar[0]) : Promise.resolve(null),
       ])
       setAnilar(anilarVerisi)
       setBagSayisi(baglar.length)
-      setAktifCheckIn(canli)
       setFotografUrl(foto)
       setHata(null)
     } catch (e) {
@@ -209,30 +195,6 @@ export default function ProfilEkrani() {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       setFotografYukleniyor(false)
-    }
-  }
-
-  async function canliyiSil() {
-    if (!aktifCheckIn) return
-    try {
-      await checkIniSil(aktifCheckIn.id)
-      // Ayrilmaktan FARKI: ayrilma check-in'i aniya cevirir, silme
-      // satiri tamamen kaldirir - akista da anilarda da kalmaz.
-      setAktifCheckIn(null)
-      setSilOnayi(false)
-      await yukle()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function ayril() {
-    if (!aktifCheckIn) return
-    try {
-      await checkIndenAyril(aktifCheckIn.id)
-      await yukle()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -387,56 +349,6 @@ export default function ProfilEkrani() {
                 </Pressable>
               </View>
 
-              {/* CANLI DURUM BANDIN ICINDE (kullanicinin secimi
-                  2026-08-29). Onceden bandin altinda ayri bir kartti;
-                  uygulamanin tek sorusu artik profilde de en ustte
-                  cevaplaniyor. */}
-              {aktifCheckIn ? (
-              <>
-              <View style={stiller.canliKart}>
-                <CanliCheckInIkonu />
-                <View style={stiller.canliOrta}>
-                  <Text style={stiller.canliEtiket}>{t('profil.canliEtiket')}</Text>
-                  <Text style={stiller.canliMekan} numberOfLines={1}>
-                    {aktifCheckIn.mekanAdi}
-                  </Text>
-                </View>
-                <View style={stiller.canliEylemler}>
-                  <Pressable onPress={ayril} accessibilityRole="button" hitSlop={8}>
-                    <Text style={stiller.ayril}>{t('profil.ayril')}</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => setSilOnayi(!silOnayi)}
-                    accessibilityRole="button"
-                    hitSlop={8}
-                  >
-                    <Text style={stiller.canliSil}>{t('profil.canliSil')}</Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* SILME GERI ALINAMAZ. Ayrilmaktan farki burada yaziyor:
-                  ayrilma check-in'i aniya cevirir, silme satiri
-                  tamamen kaldirir. */}
-              {silOnayi && (
-                <View style={stiller.silOnayAlani}>
-                  <Text style={stiller.silOnaySoru}>{t('profil.canliSilOnay')}</Text>
-                  <View style={stiller.silOnayDugmeleri}>
-                    <Pressable
-                      onPress={() => setSilOnayi(false)}
-                      accessibilityRole="button"
-                      hitSlop={8}
-                    >
-                      <Text style={stiller.vazgecYazi}>{t('ortak.vazgec')}</Text>
-                    </Pressable>
-                    <Pressable onPress={canliyiSil} accessibilityRole="button" hitSlop={8}>
-                      <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              )}
-              </>
-            ) : null}
             </View>
 
             {/* SEKMELER: ayni veriye iki bakis (kullanicinin secimi
