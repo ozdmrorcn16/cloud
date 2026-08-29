@@ -85,6 +85,44 @@ function AyarlarIkonu() {
  * ayni bilgiyi iki kez gosteriyordu. "Ayrıldım" ve "Sil" eylemleri
  * check-in ekranindaki kartta duruyor.
  */
+/**
+ * YERLER SEKMESINDEKI SIRA ROZETI.
+ *
+ * Kullanicinin istegi (2026-08-29): ilk bes sira digerlerinden ayri
+ * gorunsun, "altin bronz gumus gibi".
+ *
+ * Ilk uc madalya renginde; 4 ve 5 madalya DEGIL ama yine de dolu bir
+ * rozet - "ilk bese girdi" demek icin. Altisi ve sonrasi duz rakam.
+ *
+ * KIMLIK NOTU: bunlar turuncu DEGIL. Kural geregi turuncu eylem ve
+ * canlilik demek; sira bilgisi ikisi de degil. Madalya renkleri
+ * anlam tasiyor (birincilik/ikincilik), dekorasyon degil.
+ */
+const MADALYALAR = [
+  { zemin: '#FBEFD0', kenar: '#E3B93E', yazi: '#8A6206' }, // altin
+  { zemin: '#EEF1F3', kenar: '#B4BCC3', yazi: '#5C666E' }, // gumus
+  { zemin: '#F7E7D8', kenar: '#C88B4E', yazi: '#8A5320' }, // bronz
+  { zemin: '#F6F1EB', kenar: '#E2D8CD', yazi: '#6E6660' }, // 4
+  { zemin: '#F6F1EB', kenar: '#E2D8CD', yazi: '#6E6660' }, // 5
+] as const
+
+function SiraRozeti({ sira }: { sira: number }) {
+  const madalya = MADALYALAR[sira - 1]
+  if (!madalya) {
+    return <Text style={stiller.yerSiraDuz}>{sira}</Text>
+  }
+  return (
+    <View
+      style={[
+        stiller.yerSiraRozet,
+        { backgroundColor: madalya.zemin, borderColor: madalya.kenar },
+      ]}
+    >
+      <Text style={[stiller.yerSiraRozetYazi, { color: madalya.yazi }]}>{sira}</Text>
+    </View>
+  )
+}
+
 export default function ProfilEkrani() {
   const router = useRouter()
   const { t } = useDil()
@@ -396,7 +434,7 @@ export default function ProfilEkrani() {
                     onPress={() => router.push(`/check-in/${yer.mekanId}`)}
                     accessibilityRole="button"
                   >
-                    <Text style={stiller.yerSira}>{i + 1}</Text>
+                    <SiraRozeti sira={i + 1} />
                     <View style={stiller.yerOrta}>
                       <Text style={stiller.yerAd} numberOfLines={1}>
                         {yer.ad}
@@ -624,8 +662,23 @@ const stiller = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
-  yerSira: {
-    width: 22,
+  // Ilk bes: dolu rozet. Genislik duz rakamla AYNI (28) ki satirlar
+  // birbirine gore kaymasin.
+  yerSiraRozet: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  yerSiraRozetYazi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.kucuk,
+  },
+  yerSiraDuz: {
+    width: 28,
+    textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
     color: renk.metinSoluk,
