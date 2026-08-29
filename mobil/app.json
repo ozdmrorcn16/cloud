@@ -8,7 +8,11 @@
     "scheme": "slooin",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.slooin.app"
+      "bundleIdentifier": "com.slooin.app",
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.slooin.app",

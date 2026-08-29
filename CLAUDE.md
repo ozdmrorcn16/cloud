@@ -131,6 +131,31 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ORTAM TUZAGI: `mobil/.expo` KLASORUNU SILME (2026-08-29)
+
+`mobil/.expo/types/router.d.ts` expo-router'in URETTIGI tip dosyasidir
+ve `tsconfig.json` onu `include` ediyor. Klasor gitignore'da, yani
+depoda yok - yalnizca yerelde uretiliyor.
+
+Silinirse `npx tsc --noEmit` ALAKASIZ gorunen hatalar veriyor, ornek:
+
+    src/app/_layout.tsx(51,57): error TS2493:
+    Tuple type '[string]' of length '1' has no element at index '1'
+
+Sebep: `segments` dizisinin tipi daralıyor. Kodda hicbir sey bozuk
+degil.
+
+**Yeniden uretmenin yolu `expo export` DEGIL** (denendi, uretmiyor).
+Dev sunucusunu bir kez calistirmak gerekiyor:
+
+```bash
+cd mobil && npx expo start --web --port 8099    # ~40 sn bekle
+# .expo/types/router.d.ts olusunca sunucuyu kapat
+```
+
+Onbellek temizligi yaparken `dist` ve `node_modules/.cache` silinebilir
+ama `.expo` SILINMEMELI.
+
 ### ORTAM TUZAGI: `eas deploy` ANINDA YAYINA GECMIYOR (2026-08-28)
 
 Iki kez yasandi ve ikincisinde OLCULEREK dogrulandi. `eas deploy --prod`
