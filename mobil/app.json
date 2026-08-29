@@ -74,6 +74,12 @@
         "projectId": "972aa05d-569b-4a5a-ab75-2b149fd8588c"
       }
     },
-    "owner": "byorcun"
+    "owner": "byorcun",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/972aa05d-569b-4a5a-ab75-2b149fd8588c"
+    }
   }
 }
