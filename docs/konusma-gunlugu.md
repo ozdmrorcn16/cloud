@@ -42,6 +42,11 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-29 — [2026-08-29-f5f68d83.md](oturumlar/2026-08-29-f5f68d83.md) — profil oluşturma ekranından devam
+- 2026-08-29 — [2026-08-29-5de6e87c.md](oturumlar/2026-08-29-5de6e87c.md) — eklentiler aktif mi
+- 2026-08-28 — [2026-08-28-5de6e87c.md](oturumlar/2026-08-28-5de6e87c.md) — eklentiler aktif mi
+- 2026-08-27 — [2026-08-27-f5f68d83.md](oturumlar/2026-08-27-f5f68d83.md) — profil oluşturma ekranından devam
+- 2026-08-27 — [2026-08-27-5de6e87c.md](oturumlar/2026-08-27-5de6e87c.md) — eklentiler aktif mi
 - 2026-08-26 — [2026-08-26-f5f68d83.md](oturumlar/2026-08-26-f5f68d83.md) — profil oluşturma ekranından devam
 - 2026-08-26 — [2026-08-26-6938e64a.md](oturumlar/2026-08-26-6938e64a.md) — profilden devam
 - 2026-08-25 — [2026-08-25-f5f68d83.md](oturumlar/2026-08-25-f5f68d83.md) — profil oluşturma ekranından devam

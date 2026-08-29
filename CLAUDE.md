@@ -131,6 +131,54 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### DEVIR NOTU - 2026-08-27/30 (tasarim turu, yayin ve TestFlight)
+
+Calisma dali ayni: `claude/plan2-moderasyon-paneli`. Her sey commit'li
+ve push'lu.
+
+**EN ONEMLI DEGISIKLIK: UYGULAMA KALICI ADRESTE YAYINDA.**
+`https://slooin.expo.app` - EAS Hosting. Tunel yolu birakildi.
+Yayinlamak icin `cd mobil && npm run yayinla`.
+
+**BEKLEYEN TEK IS: TestFlight.** Kullanici Apple Developer hesabini
+acti. Benim tarafimdaki hazirlik BITTI (EAS production ortamina
+Supabase degiskenleri tanimlandi, app.json'a ihracat uyumlulugu ve
+tablet bayraklari eklendi, kullanilmayan mikrofon izni engellendi).
+Kalan adim KULLANICININ kendi terminalinde:
+
+```
+npx eas-cli build --platform ios --profile production
+# Apple girisi + 2FA; Bundle ID, sertifika, profil ve PUSH KEY icin
+# "evet" denecek. Push key atlanirsa bildirim calismaz.
+npx eas-cli submit --platform ios --latest
+```
+
+**Bu turda degisen ekranlar (hepsi yayinda):**
+
+| Ekran | Ne oldu |
+|---|---|
+| Karsilama | Ornek kartlar kalkti; arka plan sicaklik haritasi (`SicaklikZemin`) |
+| Ana sayfa | Marka uste, altinda "Ara" kutusu (KISI aramasi, mekan degil); akis ZAMAN TUNELI |
+| Profil | Turuncu kimlik bandi, uc sayi (Ani/Yer/Arkadas), Duzenle+Paylas, Anilar/Yerler sekmeleri, kurdeleli madalya rozetleri |
+| Check-in (kesfet) | Km cipleri kalkti, harita en ustte; aktif check-in varsa kart o mekani ve Ayrildim/Sil gosteriyor |
+| Bildirimler | YENI sekme (Kisiler'in yerine): arkadaslik istekleri + etiket onaylari |
+| Ayarlar | "Profilini duzenle" ve "Gecmis anilarim" satirlari kalkti |
+| Mekan detayi | SILINDI |
+
+**Kalici kararlar (tekrar onerme):** sayfa zemini TAM BEYAZ (yalnizca
+karsilama sicak); profilde ayri "su an buradasin" seridi YOK; check-in
+ekraninda gorunurluk secimi YOK (Ayarlar'daki varsayilan kullaniliyor).
+
+**ACIK BORCLAR:**
+1. `test:gorunurluk` icinde ETIKET ONAYI senaryosu yok
+   (`docs/plan2-takip-isleri.md`).
+2. Veritabani 420/500 MB - ucretsiz katmanin dibinde. Pro'ya gecis
+   karari kullanicida.
+3. Gun ayraci metinleri (Bugun/Dun/ay adlari) `AniTuneli` icinde
+   sabit, sozlukte degil.
+4. Test hesaplarindaki ornek veriler SAHTE; silme komutu
+   `docs/elle-test-listesi.md` icinde.
+
 ### KARAR: mekan detay ekrani SILINDI (2026-08-29)
 
 Kullanicinin karari: "Checkin yaptiktan sonra bu ekran gelmesin
