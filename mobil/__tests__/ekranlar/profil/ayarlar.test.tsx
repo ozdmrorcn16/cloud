@@ -72,10 +72,14 @@ describe('AyarlarEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/check-in-gorunurlugu')
   })
 
-  it('ani gorunurlugu satiri kendi ekranina goturur', async () => {
+  it('Profilini duzenle ve Gecmis anilarim satirlari ARTIK YOK', async () => {
+    // Kullanicinin karari 2026-08-30. Profil duzenleme artik profil
+    // bandindaki dugmede; ani gorunurlugu menuden kaldirildi.
     await render(<AyarlarEkrani />)
-    fireEvent.press(await screen.findByText('Geçmiş anılarım'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/profil/ani-gorunurlugu')
+
+    expect(await screen.findByText('Kullanıcı adı')).toBeTruthy()
+    expect(screen.queryByText('Profilini düzenle')).toBeNull()
+    expect(screen.queryByText('Geçmiş anılarım')).toBeNull()
   })
 
   it('engellenenler satiri listeye goturur', async () => {

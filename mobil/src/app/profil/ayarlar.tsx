@@ -115,11 +115,10 @@ export default function AyarlarEkrani() {
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         <Bolum baslik={t('ayarlar.bolumHesap')}>
-          <Satir
-            ikon={<KisiIkonu />}
-            etiket={t('ayarlar.profiliDuzenle')}
-            onPress={() => router.push('/profil/duzenle')}
-          />
+          {/* "Profilini duzenle" satiri KALDIRILDI (kullanicinin karari
+              2026-08-30): ayni islem artik profil bandindaki dugmede,
+              tek dokunus uzakta. Ayarlar'da ikinci bir kapi tutmak
+              gereksizdi. Ekranin kendisi (`/profil/duzenle`) duruyor. */}
           <Satir
             ikon={<KisiIkonu />}
             etiket={t('ayarlar.kullaniciAdi')}
@@ -141,11 +140,11 @@ export default function AyarlarEkrani() {
             deger={varsayilanBulunurluk ? BULUNURLUK_ETIKETI[varsayilanBulunurluk] : undefined}
             onPress={() => router.push('/profil/check-in-gorunurlugu')}
           />
-          <Satir
-            ikon={<GozIkonu />}
-            etiket={t('ayarlar.aniGorunurlugu')}
-            onPress={() => router.push('/profil/ani-gorunurlugu')}
-          />
+          {/* "Gecmis anilarim" satiri KALDIRILDI (kullanicinin karari
+              2026-08-30). Ekran (`/profil/ani-gorunurlugu`) duruyor ama
+              artik menuden erisilmiyor; ani gorunurlugu, check-in
+              yapilirken secilen bulunurlugun aniya donusmesiyle
+              belirleniyor. */}
           <Satir
             ikon={<AramaIkonu />}
             etiket={t('ayarlar.aramadaGorun')}

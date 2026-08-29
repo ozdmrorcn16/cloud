@@ -17,12 +17,6 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
-const SECENEKLER: { deger: Bulunurluk; etiket: string; aciklama: string }[] = [
-  { deger: 'herkese_acik', etiket: 'Herkese açık', aciklama: 'Buradakiler ve takipçilerin görür' },
-  { deger: 'takipcilerim', etiket: 'Sadece takipçilerim', aciklama: 'Buradaki yabancılar görmez' },
-  { deger: 'gizli', etiket: 'Gizli', aciklama: 'Kimse görmez' },
-]
-
 export default function CheckInEkrani() {
   const router = useRouter()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
@@ -232,20 +226,15 @@ export default function CheckInEkrani() {
       </Pressable>
       {yerelFotoUri && <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} />}
 
-      <Text style={stiller.altBaslik}>Seni kim görsün</Text>
-      {SECENEKLER.map((secenek) => (
-        <Pressable
-          key={secenek.deger}
-          accessibilityLabel={`Bulunurluk: ${secenek.deger}${
-            bulunurluk === secenek.deger ? ', seçili' : ''
-          }`}
-          style={[stiller.secenek, bulunurluk === secenek.deger && stiller.secenekSecili]}
-          onPress={() => bulunurlukDegistir(secenek.deger)}
-        >
-          <Text style={stiller.secenekEtiketi}>{secenek.etiket}</Text>
-          <Text style={stiller.secenekAciklamasi}>{secenek.aciklama}</Text>
-        </Pressable>
-      ))}
+      {/* "SENI KIM GORSUN" SECIMI BU EKRANDAN KALDIRILDI (kullanicinin
+          karari 2026-08-30). Gorunurluk artik her check-in'de
+          sorulmuyor; Ayarlar > "Yeni check-in'lerim" altindaki
+          VARSAYILAN tercih kullaniliyor.
+
+          Tercih yine de degistirilebiliyor: bu ekran acilirken
+          `varsayilanBulunurluguGetir` okunuyor ve ilk kullanim
+          uyarisindaki "Gizli yap" hala calisiyor. Yani secim kayboldu
+          degil, her seferinde sorulmaktan cikip ayarlara tasindi. */}
 
       {uyari && <Text style={stiller.uyari}>{uyari}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -340,33 +329,6 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
     color: renk.metin,
-  },
-  altBaslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.metin,
-    letterSpacing: -0.3,
-    marginBottom: bosluk.s,
-  },
-  secenek: {
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
-    padding: bosluk.l,
-    marginBottom: bosluk.s,
-  },
-  secenekSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
-  secenekEtiketi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  secenekAciklamasi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 2,
   },
   uyariMetni: {
     fontFamily: yazi.govde,

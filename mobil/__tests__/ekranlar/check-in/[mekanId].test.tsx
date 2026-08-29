@@ -104,14 +104,20 @@ describe('CheckInEkrani', () => {
     })
   })
 
-  it('secilen bulunurluk degerini check-in-e gecirir', async () => {
-    ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
+  it('AYARLARDAKI varsayilan bulunurlugu check-in-e gecirir', async () => {
+    // Kullanicinin karari 2026-08-30: "Seni kim gorsun" secimi bu
+    // ekrandan kaldirildi. Deger artik Ayarlar'daki varsayilandan
+    // geliyor, her check-in'de sorulmuyor.
+    ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('takipcilerim')
     ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'ci-1' })
 
     await render(<CheckInEkrani />)
     await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('Sadece takipçilerim'))
+    // Ekranda secim satiri YOK.
+    expect(screen.queryByText('Seni kim görsün')).toBeNull()
+    expect(screen.queryByText('Sadece takipçilerim')).toBeNull()
+
     await fireEvent.press(screen.getByText('Check-in yap'))
 
     // notMetni ve fotograf bu senaryoda gercekten undefined (not yazilmadi,
@@ -124,12 +130,6 @@ describe('CheckInEkrani', () => {
         undefined, undefined, 'takipcilerim'
       )
     )
-  })
-
-  it('varsayilan bulunurlugu onceden secili gosterir', async () => {
-    ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('gizli')
-    await render(<CheckInEkrani />)
-    expect(await screen.findByLabelText('Bulunurluk: gizli, seçili')).toBeTruthy()
   })
 
   it('varsayilan bulunurluk cozulmeden gonder butonu devre disi kalir', async () => {
@@ -149,16 +149,15 @@ describe('CheckInEkrani', () => {
     expect(checkInYap).not.toHaveBeenCalled()
 
     cozBekleneni('herkese_acik')
-    // Yalnizca "cagrildi mi" beklemek yetmez: mock zaten ilk render'da
-    // cagrildi. Butonun gercekten etkinlestigini (secenegin secili
-    // gorunmesini) beklemek gerekiyor, yoksa ikinci basis hala
-    // devre disiyken gerceklesir.
-    await waitFor(() =>
-      expect(screen.getByLabelText('Bulunurluk: herkese_acik, seçili')).toBeTruthy()
-    )
+    // Secim satiri kalktigi icin "secili gorunuyor mu" diye bakilamiyor.
+    // Butonun gercekten etkinlestiginin olcutu artik davranis: ikinci
+    // basiste checkInYap CAGRILIYOR.
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
-    await fireEvent.press(buttons[buttons.length - 1])
-    await waitFor(() => expect(checkInYap).toHaveBeenCalled())
+    await waitFor(async () => {
+      await fireEvent.press(screen.getAllByText('Check-in yap').slice(-1)[0])
+      expect(checkInYap).toHaveBeenCalled()
+    })
   })
 
   it('profil okumasi basarisiz olursa gizliye duser, herkese_acik gondermez', async () => {
@@ -166,9 +165,8 @@ describe('CheckInEkrani', () => {
     ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
 
     await render(<CheckInEkrani />)
-    await waitFor(() => {
-      expect(screen.getByLabelText('Bulunurluk: gizli, seçili')).toBeTruthy()
-    })
+    // Artik ekranda secim satiri yok; dogru olcut GONDERILEN deger.
+    await waitFor(() => expect(varsayilanBulunurluguGetir).toHaveBeenCalled())
 
     const buttons = screen.getAllByText('Check-in yap')
     await fireEvent.press(buttons[buttons.length - 1])
