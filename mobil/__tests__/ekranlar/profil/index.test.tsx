@@ -31,6 +31,7 @@ function ani(ustune: Record<string, unknown> = {}) {
     id: 'ani-1',
     mekanId: 'mekan-1',
     mekanAdi: 'Sahil Kafe',
+    mekanSemti: 'Nilüfer',
     mekanKonumu: { lat: 41, lng: 29 },
     notMetni: 'harika bir aksamdi',
     fotograf: null,
@@ -80,8 +81,33 @@ describe('ProfilEkrani', () => {
 
     expect(await screen.findByText('2')).toBeTruthy()
     expect(screen.getByText('Anı')).toBeTruthy()
-    expect(screen.getByText('1')).toBeTruthy()
+    // Uc sayi var: iki ani AYNI mekanda oldugu icin Yer 1, arkadas da 1.
+    expect(screen.getByText('Yer')).toBeTruthy()
+    expect(screen.getAllByText('1')).toHaveLength(2)
     expect(screen.getByText('Arkadaşlarım')).toBeTruthy()
+  })
+
+  it('Yerler sekmesi en cok gidilen mekani kac kez gidildigiyle listeler', async () => {
+    // Kullanicinin secimi 2026-08-29. Sunucuda yeni sorgu yok; ayni
+    // anilardan gruplaniyor.
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani(),
+      ani({ id: 'ani-2' }),
+      ani({ id: 'ani-3', mekanId: 'mekan-2', mekanAdi: 'Kent Meydanı' }),
+    ])
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Yerler'))
+
+    expect(await screen.findByText('2 kez')).toBeTruthy()
+    expect(screen.getByText('1 kez')).toBeTruthy()
+    expect(screen.getByText('Kent Meydanı')).toBeTruthy()
+  })
+
+  it('Profili duzenle dugmesi duzenleme ekranina goturur', async () => {
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Profili düzenle'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
   })
 
   it('canli check-in varsa mekan adiyla serit gosterir', async () => {

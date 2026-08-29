@@ -258,6 +258,15 @@ export default {
   },
 
   profil: {
+    yerSayisi: 'Yer',
+    duzenle: 'Profili düzenle',
+    paylas: 'Paylaş',
+    paylasilamadi: 'Paylaşım bu cihazda açılamadı.',
+    sekmeAnilar: 'Anılar',
+    sekmeYerler: 'Yerler',
+    kezSayisi: '{{sayi}} kez',
+    bosYerBaslik: 'Henüz bir yere gitmedin',
+    bosYerAciklama: 'Check-in yaptıkça en çok gittiğin yerler burada sıralanır.',
     ayarlar: 'Ayarlar',
     aniSayisi: 'Anı',
     bagSayisi: 'Arkadaşlarım',

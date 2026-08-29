@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Image, ScrollView, Pressable, Share, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import * as ImagePicker from 'expo-image-picker'
@@ -107,6 +107,9 @@ export default function ProfilEkrani() {
   const [profil, setProfil] = useState<KendiProfil | null>(null)
   const [fotografUrl, setFotografUrl] = useState<string | null>(null)
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
+  // Sekme (kullanicinin secimi 2026-08-29): ayni veriye iki bakis -
+  // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler).
+  const [sekme, setSekme] = useState<'anilar' | 'yerler'>('anilar')
   const [bagSayisi, setBagSayisi] = useState(0)
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
   // Silme geri alinamaz: once onay.
@@ -151,6 +154,41 @@ export default function ProfilEkrani() {
       yukle()
     }, [])
   )
+
+  /**
+   * YERLER: kullanicinin gittigi mekanlar, cok gidilenden aza.
+   *
+   * Sunucuda yeni bir sorgu YOK - ekran zaten butun anilari cekiyor,
+   * gruplama burada yapiliyor. Aktif check-in de sayiliyor: su an
+   * bulundugun yer de "gittigin yer"dir.
+   */
+  const yerler = (() => {
+    const sayac = new Map<string, { ad: string; semt: string | null; adet: number }>()
+    const ekle = (mekanId: string, ad: string, semt: string | null) => {
+      const mevcut = sayac.get(mekanId)
+      if (mevcut) mevcut.adet += 1
+      else sayac.set(mekanId, { ad, semt, adet: 1 })
+    }
+    anilar.forEach((a) => ekle(a.mekanId, a.mekanAdi, a.mekanSemti))
+    if (aktifCheckIn) ekle(aktifCheckIn.mekanId, aktifCheckIn.mekanAdi, null)
+    return [...sayac.entries()]
+      .map(([mekanId, v]) => ({ mekanId, ...v }))
+      .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
+  })()
+
+  async function profiliPaylas() {
+    if (!profil) return
+    try {
+      // Baglanti giris istiyor; paylasilan sey bir davet, herkese acik
+      // bir sayfa degil. Metin bunu ima ediyor.
+      await Share.share({
+        message: `Slooin'de beni bul: @${profil.kullaniciAdi}\nhttps://slooin.expo.app/kullanici/${profil.id}`,
+      })
+    } catch {
+      // Web'de paylasim penceresi olmayabilir; akisi kilitlemiyoruz.
+      setHata(t('profil.paylasilamadi'))
+    }
+  }
 
   async function fotografDegistir() {
     const sonuc = await ImagePicker.launchImageLibraryAsync({
@@ -298,6 +336,19 @@ export default function ProfilEkrani() {
                   <Text style={stiller.sayi}>{anilar.length}</Text>
                   <Text style={stiller.sayiEtiket}>{t('profil.aniSayisi')}</Text>
                 </Pressable>
+
+                {/* YER SAYISI (kullanicinin secimi 2026-08-29): kac
+                    FARKLI mekana gidildigi. Bu uygulamanin asil olcusu
+                    bu; mevcut veriden hesaplaniyor, yeni sorgu yok. */}
+                <View style={stiller.sayiAyirici} />
+                <Pressable
+                  style={stiller.sayiHucre}
+                  onPress={() => setSekme('yerler')}
+                  accessibilityRole="button"
+                >
+                  <Text style={stiller.sayi}>{yerler.length}</Text>
+                  <Text style={stiller.sayiEtiket}>{t('profil.yerSayisi')}</Text>
+                </Pressable>
                 <View style={stiller.sayiAyirici} />
                 <Pressable
                   style={stiller.sayiHucre}
@@ -308,10 +359,34 @@ export default function ProfilEkrani() {
                   <Text style={stiller.sayiEtiket}>{t('profil.bagSayisi')}</Text>
                 </Pressable>
               </View>
-            </View>
 
+              {/* Profili duzenle ARTIK BURADA (kullanicinin secimi
+                  2026-08-29). Onceden Ayarlar'in icine gomuluydu; en
+                  cok kullanilan islem iki dokunus uzaktaydi. */}
+              <View style={stiller.bandDugmeleri}>
+                <Pressable
+                  style={[stiller.bandDugme, stiller.bandDugmeDolu]}
+                  onPress={() => router.push('/profil/duzenle')}
+                  accessibilityRole="button"
+                >
+                  <Text style={[stiller.bandDugmeYazi, stiller.bandDugmeYaziDolu]}>
+                    {t('profil.duzenle')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={stiller.bandDugme}
+                  onPress={profiliPaylas}
+                  accessibilityRole="button"
+                >
+                  <Text style={stiller.bandDugmeYazi}>{t('profil.paylas')}</Text>
+                </Pressable>
+              </View>
 
-            {aktifCheckIn ? (
+              {/* CANLI DURUM BANDIN ICINDE (kullanicinin secimi
+                  2026-08-29). Onceden bandin altinda ayri bir kartti;
+                  uygulamanin tek sorusu artik profilde de en ustte
+                  cevaplaniyor. */}
+              {aktifCheckIn ? (
               <>
               <View style={stiller.canliKart}>
                 <CanliCheckInIkonu />
@@ -357,12 +432,29 @@ export default function ProfilEkrani() {
               )}
               </>
             ) : null}
+            </View>
 
-            <View style={stiller.bolumBasligi}>
-              <Text style={stiller.bolumAd} accessibilityRole="header">
-                {t('profil.anilarBaslik')}
-              </Text>
-              {anilar.length > ONIZLEME_ADEDI && (
+            {/* SEKMELER: ayni veriye iki bakis (kullanicinin secimi
+                2026-08-29). Anilar zaman sirasi, Yerler ise en cok
+                gidilenden aza. Ikincisi sunucuda yeni bir sorgu
+                gerektirmiyor; ayni anilardan gruplaniyor. */}
+            <View style={stiller.sekmeler}>
+              {(['anilar', 'yerler'] as const).map((s) => (
+                <Pressable
+                  key={s}
+                  style={[stiller.sekme, sekme === s && stiller.sekmeAktif]}
+                  onPress={() => setSekme(s)}
+                  accessibilityRole="button"
+                >
+                  <Text style={[stiller.sekmeYazi, sekme === s && stiller.sekmeYaziAktif]}>
+                    {s === 'anilar' ? t('profil.sekmeAnilar') : t('profil.sekmeYerler')}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {sekme === 'anilar' && anilar.length > ONIZLEME_ADEDI && (
+              <View style={stiller.tumuSatiri}>
                 <Pressable
                   onPress={() => router.push('/profil/anilar')}
                   accessibilityRole="button"
@@ -370,10 +462,37 @@ export default function ProfilEkrani() {
                 >
                   <Text style={stiller.tumu}>{t('profil.tumu')}</Text>
                 </Pressable>
-              )}
-            </View>
+              </View>
+            )}
 
-            {anilar.length === 0 ? (
+            {sekme === 'yerler' ? (
+              yerler.length === 0 ? (
+                <View style={stiller.bosAlan}>
+                  <Text style={stiller.bosBaslik}>{t('profil.bosYerBaslik')}</Text>
+                  <Text style={stiller.bosAciklama}>{t('profil.bosYerAciklama')}</Text>
+                </View>
+              ) : (
+                yerler.map((yer, i) => (
+                  <Pressable
+                    key={yer.mekanId}
+                    style={stiller.yerSatiri}
+                    onPress={() => router.push(`/mekanlar/${yer.mekanId}`)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={stiller.yerSira}>{i + 1}</Text>
+                    <View style={stiller.yerOrta}>
+                      <Text style={stiller.yerAd} numberOfLines={1}>
+                        {yer.ad}
+                      </Text>
+                      {yer.semt ? <Text style={stiller.yerSemt}>{yer.semt}</Text> : null}
+                    </View>
+                    <Text style={stiller.yerAdet}>
+                      {t('profil.kezSayisi', { sayi: yer.adet })}
+                    </Text>
+                  </Pressable>
+                ))
+              )
+            ) : anilar.length === 0 ? (
               <View style={stiller.bosAlan}>
                 <Text style={stiller.bosBaslik}>{t('profil.bosAniBaslik')}</Text>
                 <Text style={stiller.bosAciklama}>{t('profil.bosAniAciklama')}</Text>
@@ -540,6 +659,68 @@ const stiller = StyleSheet.create({
   },
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
+
+  // Bandin icindeki dugmeler: dolu olan birincil (Profili duzenle),
+  // hayalet olan ikincil (Paylas). Ikisi de turuncu zemin uzerinde.
+  bandDugmeleri: { flexDirection: 'row', gap: bosluk.s, alignSelf: 'stretch' },
+  bandDugme: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.55)',
+  },
+  bandDugmeDolu: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
+  bandDugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#FFFFFF' },
+  bandDugmeYaziDolu: { color: renk.turuncuKoyu },
+
+  // Sekmeler: alt cizgi secili olani gosteriyor.
+  sekmeler: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+    marginTop: bosluk.l,
+  },
+  sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.m },
+  sekmeAktif: { borderBottomWidth: 2, borderBottomColor: renk.metin, marginBottom: -1 },
+  sekmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
+  sekmeYaziAktif: { color: renk.metin },
+  tumuSatiri: { alignItems: 'flex-end', marginTop: bosluk.m },
+
+  // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
+  yerSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
+  yerSira: {
+    width: 22,
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+  },
+  yerOrta: { flex: 1 },
+  yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  yerSemt: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 1,
+  },
+  yerAdet: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuKoyu,
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 4,
+    paddingHorizontal: bosluk.m,
+    overflow: 'hidden',
+  },
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
   // Turuncu zeminde: ayirici ve ikincil metinler beyazin soluk hali.
   sayiAyirici: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.35)' },
