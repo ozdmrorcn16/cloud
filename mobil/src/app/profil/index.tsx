@@ -559,7 +559,10 @@ const stiller = StyleSheet.create({
   sayfa: { flex: 1 },
   icerik: {
     paddingHorizontal: bosluk.xl,
-    paddingTop: bosluk.xxl + bosluk.m,
+    // Ust pay 44 -> 16 (kullanicinin istegi 2026-08-29: "biraz daha
+    // kucultup yukari tasi"). Durum cubugunun altindaki bosluk
+    // gereginden genisti.
+    paddingTop: bosluk.l,
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
@@ -568,7 +571,7 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: bosluk.m,
-    marginBottom: bosluk.l,
+    marginBottom: bosluk.m,
   },
   kullaniciAdi: {
     flexShrink: 1,
@@ -607,12 +610,14 @@ const stiller = StyleSheet.create({
    */
   kimlik: {
     alignItems: 'center',
-    gap: bosluk.l,
+    // Band KUCULDU (kullanicinin istegi 2026-08-29): ogeler arasi
+    // bosluk 16 -> 12, ust pay 24 -> 16, alt pay 16 -> 12.
+    gap: bosluk.m,
     backgroundColor: renk.turuncu,
     marginHorizontal: -bosluk.xl,
     paddingHorizontal: bosluk.xl,
-    paddingTop: bosluk.xl,
-    paddingBottom: bosluk.l,
+    paddingTop: bosluk.l,
+    paddingBottom: bosluk.m,
     // Bandin altindaki bosluk DARALTILDI (kullanicinin istegi
     // 2026-08-28): band ile "Anilar" arasinda genis bir beyaz aralik
     // kaliyordu. Alt pay bolum basliginin kendi ust payiyla toplaniyor,
@@ -640,9 +645,10 @@ const stiller = StyleSheet.create({
   },
   // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
   avatar: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    // 104 -> 88: band kuculurken capa da orantili kuculdu.
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     // Turuncu zeminde fotografi ayiran beyaz halka.
     borderWidth: 4,
     borderColor: '#FFFFFF',
@@ -654,7 +660,7 @@ const stiller = StyleSheet.create({
   },
   basHarf: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: 34,
+    fontSize: 30,
     color: renk.turuncu,
   },
 
