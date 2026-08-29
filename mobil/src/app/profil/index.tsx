@@ -244,7 +244,11 @@ export default function ProfilEkrani() {
       >
         <View style={stiller.ustCubuk}>
           <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-            {profil ? `@${profil.kullaniciAdi}` : ''}
+            {/* @ ISARETI YOK (kullanicinin istegi 2026-08-29).
+                Bu satir sayfanin kimlik basligi; isaret sus kaliyordu.
+                Baska ekranlarda @ DURUYOR - orada ad ile kullanici
+                adini birbirinden ayirmaya yariyor. */}
+            {profil ? profil.kullaniciAdi : ''}
           </Text>
           <Pressable
             onPress={() => router.push('/profil/ayarlar')}
@@ -576,9 +580,10 @@ const stiller = StyleSheet.create({
   kullaniciAdi: {
     flexShrink: 1,
     fontFamily: yazi.ekranBasligi,
-    // Kucultuldu (kullanicinin istegi 2026-08-27): baslik boyutunda
+    // Iki kez kucultuldu (2026-08-27 ve 2026-08-29): baslik boyutunda
     // sayfanin en agir ogesiydi ve profil fotografiyla yarisiyordu.
-    fontSize: olcek.altBaslik,
+    // Olcegin disina cikilmadi: 19 -> 15.
+    fontSize: olcek.govde,
     color: renk.metin,
     letterSpacing: -0.3,
   },
