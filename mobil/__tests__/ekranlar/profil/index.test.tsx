@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import ProfilEkrani from '../../../src/app/profil/index'
-import { kendiProfilimiGetir } from '../../../lib/profil'
+import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
 import {
   kullanicininAnilariniGetir,
@@ -9,7 +9,16 @@ import {
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 
-jest.mock('../../../lib/profil', () => ({ kendiProfilimiGetir: jest.fn() }))
+jest.mock('../../../lib/profil', () => ({
+  kendiProfilimiGetir: jest.fn(),
+  profilFotografiniDegistir: jest.fn(),
+  profilFotografiniKaldir: jest.fn(),
+}))
+const mockGaleriAc = jest.fn()
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: (...a: unknown[]) => mockGaleriAc(...a),
+  MediaTypeOptions: { Images: 'Images' },
+}))
 jest.mock('../../../lib/fotograf-url', () => ({ profilFotografiUrl: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({
   kullanicininAnilariniGetir: jest.fn(),
@@ -168,5 +177,71 @@ describe('ProfilEkrani', () => {
     fireEvent.press(await screen.findByText('Profilini oluştur'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/profil-olustur')
+  })
+
+  describe('profil fotografi (kullanicinin istegi 2026-08-30)', () => {
+    beforeEach(() => {
+      ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
+        id: 'kullanici-1',
+        kullaniciAdi: 'orcun',
+        ad: 'Orcun Ozdemir',
+        biyografi: null,
+        fotograflar: ['kullanici-1/1.jpg'],
+      })
+      ;(profilFotografiUrl as jest.Mock).mockResolvedValue('https://ornek/foto.jpg')
+      mockGaleriAc.mockResolvedValue({ canceled: true })
+      ;(profilFotografiniKaldir as jest.Mock).mockResolvedValue(undefined)
+    })
+
+    it('yalnizca + rozeti galeriyi acar; fotografa basmak acmaz', async () => {
+      await render(<ProfilEkrani />)
+      await screen.findByTestId('profil-fotografi')
+
+      await fireEvent.press(screen.getByLabelText('Profil fotoğrafını büyüt'))
+      expect(mockGaleriAc).not.toHaveBeenCalled()
+
+      await fireEvent.press(screen.getByLabelText('Profil fotoğrafı ekle'))
+      expect(mockGaleriAc).toHaveBeenCalledTimes(1)
+    })
+
+    it('fotografa basinca buyuk gorunum acilir, Kapat ile kapanir', async () => {
+      await render(<ProfilEkrani />)
+      await screen.findByTestId('profil-fotografi')
+
+      expect(screen.queryByTestId('profil-fotografi-buyuk')).toBeNull()
+      await fireEvent.press(screen.getByLabelText('Profil fotoğrafını büyüt'))
+      expect(screen.getByTestId('profil-fotografi-buyuk')).toBeTruthy()
+      expect(screen.getByText('Fotoğrafı kaldır')).toBeTruthy()
+
+      await fireEvent.press(screen.getByLabelText('Kapat'))
+      expect(screen.queryByTestId('profil-fotografi-buyuk')).toBeNull()
+    })
+
+    it('kaldirma iki adimli: onaylayinca sunucuya gider ve profil yenilenir', async () => {
+      await render(<ProfilEkrani />)
+      await screen.findByTestId('profil-fotografi')
+      await fireEvent.press(screen.getByLabelText('Profil fotoğrafını büyüt'))
+
+      await fireEvent.press(screen.getByText('Fotoğrafı kaldır'))
+      expect(profilFotografiniKaldir).not.toHaveBeenCalled()
+      expect(screen.getByText('Fotoğrafın kaldırılsın mı?')).toBeTruthy()
+
+      await fireEvent.press(screen.getAllByText('Fotoğrafı kaldır')[0])
+      await waitFor(() => expect(profilFotografiniKaldir).toHaveBeenCalledTimes(1))
+      await waitFor(() => expect(kendiProfilimiGetir).toHaveBeenCalledTimes(2))
+      expect(screen.queryByTestId('profil-fotografi-buyuk')).toBeNull()
+    })
+
+    it('Vazgec onayi geri alir, fotograf kaldirilmaz', async () => {
+      await render(<ProfilEkrani />)
+      await screen.findByTestId('profil-fotografi')
+      await fireEvent.press(screen.getByLabelText('Profil fotoğrafını büyüt'))
+      await fireEvent.press(screen.getByText('Fotoğrafı kaldır'))
+
+      await fireEvent.press(screen.getByText('Vazgeç'))
+
+      expect(screen.queryByText('Fotoğrafın kaldırılsın mı?')).toBeNull()
+      expect(profilFotografiniKaldir).not.toHaveBeenCalled()
+    })
   })
 })

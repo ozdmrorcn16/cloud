@@ -124,7 +124,30 @@ export async function profilFotografiniDegistir(yerelUri: string): Promise<strin
 }
 
 /**
- * Kullanicinin klasorunde YENI DOSYA DISINDA ne varsa siler.
+ * Profil fotografini KALDIRIR (kullanicinin istegi 2026-08-30: buyuk
+ * gorunumde "Kaldir" dugmesi).
+ *
+ * Sira: once profil satiri bosaltilir, sonra klasordeki HER dosya
+ * silinir. Satir bosalinca okuma politikasi zaten hicbir dosyayi
+ * acmiyor; dosya silme basarisiz olsa da fotograf gorunmez olur.
+ */
+export async function profilFotografiniKaldir(): Promise<void> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const kullaniciId = kullaniciVerisi.user?.id
+  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+
+  const { error } = await supabase
+    .from('profiller')
+    .update({ fotograflar: [] })
+    .eq('id', kullaniciId)
+  if (error) throw new Error(hataMetni(error))
+
+  await klasoruTemizle(kullaniciId, null)
+}
+
+/**
+ * Kullanicinin klasorunde KORUNACAK DOSYA DISINDA ne varsa siler
+ * (korunacak yol null ise hepsini).
  *
  * `fotograflar` alanindaki eski yolu silmek yetmiyor: onceki
  * kosumlardan, yarim kalmis yuklemelerden ya da eski cok fotografli
@@ -135,7 +158,7 @@ export async function profilFotografiniDegistir(yerelUri: string): Promise<strin
  * olsa dosyalar gorunmez kaliyor (okuma politikasi guncel olmayan
  * dosyayi sahibine bile acmiyor).
  */
-async function klasoruTemizle(kullaniciId: string, korunacakYol: string): Promise<void> {
+async function klasoruTemizle(kullaniciId: string, korunacakYol: string | null): Promise<void> {
   try {
     const { data: dosyalar, error } = await supabase.storage
       .from('profil-fotograflari')

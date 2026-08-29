@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { View, Text, Image, ScrollView, Pressable, Share, StyleSheet } from 'react-native'
+import { View, Text, Image, ScrollView, Pressable, Share, Modal, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import * as ImagePicker from 'expo-image-picker'
@@ -14,7 +14,7 @@ import {
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
-import { profilFotografiniDegistir } from '../../../lib/profil'
+import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { AniTuneli } from '../../tasarim/AniTuneli'
@@ -162,6 +162,10 @@ export default function ProfilEkrani() {
   // Silme geri alinamaz: once onay.
   const [silOnayi, setSilOnayi] = useState(false)
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
+  // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
+  // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
+  const [buyukAcik, setBuyukAcik] = useState(false)
+  const [kaldirOnayi, setKaldirOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
@@ -262,6 +266,24 @@ export default function ProfilEkrani() {
     }
   }
 
+  function buyukKapat() {
+    setBuyukAcik(false)
+    setKaldirOnayi(false)
+  }
+
+  async function fotografKaldir() {
+    setFotografYukleniyor(true)
+    try {
+      await profilFotografiniKaldir()
+      buyukKapat()
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    } finally {
+      setFotografYukleniyor(false)
+    }
+  }
+
   return (
     <View style={stiller.kok}>
       <ScrollView
@@ -308,23 +330,27 @@ export default function ProfilEkrani() {
         {profil && (
           <>
             {/* AVATAR YUKARIDA VE ORTADA (kullanicinin karari
-                2026-08-26). Basilinca fotograf secilir: profil
-                fotografinin TEK GIRIS NOKTASI burasi - hesap olusturma
-                adiminda artik sorulmuyor. */}
+                2026-08-26). Profil fotografinin TEK GIRIS NOKTASI
+                burasi - hesap olusturma adiminda artik sorulmuyor.
+
+                IKI AYRI DOKUNUS (kullanicinin istegi 2026-08-30):
+                yalnizca + rozeti fotograf secer; fotografin kendisine
+                basinca buyuk gorunum acilir, orada "Kaldir" var.
+                Fotograf yokken bas harfe basmak bir sey yapmiyor. */}
             <View style={stiller.kimlik}>
-              <Pressable
-                onPress={fotografDegistir}
-                disabled={fotografYukleniyor}
-                accessibilityRole="button"
-                accessibilityLabel="Profil fotoğrafını değiştir"
-                style={stiller.avatarBasilir}
-              >
+              <View style={stiller.avatarBasilir}>
                 {fotografUrl ? (
-                  <Image
-                    testID="profil-fotografi"
-                    source={{ uri: fotografUrl }}
-                    style={stiller.avatar}
-                  />
+                  <Pressable
+                    onPress={() => setBuyukAcik(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('profil.fotografiBuyut')}
+                  >
+                    <Image
+                      testID="profil-fotografi"
+                      source={{ uri: fotografUrl }}
+                      style={stiller.avatar}
+                    />
+                  </Pressable>
                 ) : (
                   // Fotografi olmayanda bos daire birakmak profili eksik
                   // gosteriyor; bas harf kimligi tasiyor.
@@ -336,7 +362,14 @@ export default function ProfilEkrani() {
                 )}
                 {/* Rozet KOYU, turuncu degil: ekrandaki turuncu eylem
                     canli check-in seridi. */}
-                <View style={stiller.fotografRozeti}>
+                <Pressable
+                  style={stiller.fotografRozeti}
+                  onPress={fotografDegistir}
+                  disabled={fotografYukleniyor}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('profil.fotografEkle')}
+                  hitSlop={8}
+                >
                   <Svg width={14} height={14} viewBox="0 0 24 24">
                     <Path
                       d="M12 5v14M5 12h14"
@@ -345,8 +378,8 @@ export default function ProfilEkrani() {
                       strokeLinecap="round"
                     />
                   </Svg>
-                </View>
-              </Pressable>
+                </Pressable>
+              </View>
 
               {fotografYukleniyor && (
                 <Text style={stiller.fotografDurumu}>Yükleniyor…</Text>
@@ -505,6 +538,76 @@ export default function ProfilEkrani() {
         )}
       </ScrollView>
 
+      {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
+          Kapat, altta Kaldir. Kaldirma geri alinamaz, o yuzden iki
+          adimli (uygulamadaki diger silmelerle ayni kural). */}
+      <Modal
+        visible={buyukAcik}
+        transparent
+        animationType="fade"
+        onRequestClose={buyukKapat}
+      >
+        <View style={stiller.buyukZemin}>
+          <Pressable
+            style={stiller.buyukKapat}
+            onPress={buyukKapat}
+            accessibilityRole="button"
+            accessibilityLabel={t('profil.kapat')}
+            hitSlop={12}
+          >
+            <Svg width={26} height={26} viewBox="0 0 24 24">
+              <Path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="#FFFFFF"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+              />
+            </Svg>
+          </Pressable>
+
+          {fotografUrl && (
+            <Image
+              testID="profil-fotografi-buyuk"
+              source={{ uri: fotografUrl }}
+              style={stiller.buyukFotograf}
+              resizeMode="contain"
+            />
+          )}
+
+          <View style={stiller.buyukAlt}>
+            {kaldirOnayi ? (
+              <>
+                <Text style={stiller.buyukOnayMetni}>{t('profil.fotografKaldirOnay')}</Text>
+                <View style={stiller.buyukOnaySatiri}>
+                  <Pressable
+                    style={[stiller.buyukDugme, stiller.buyukDugmeTehlike]}
+                    onPress={fotografKaldir}
+                    disabled={fotografYukleniyor}
+                    accessibilityRole="button"
+                  >
+                    <Text style={stiller.buyukDugmeYazi}>{t('profil.fotografKaldir')}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={stiller.buyukDugme}
+                    onPress={() => setKaldirOnayi(false)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={stiller.buyukDugmeYazi}>{t('ortak.vazgec')}</Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <Pressable
+                style={stiller.buyukDugme}
+                onPress={() => setKaldirOnayi(true)}
+                accessibilityRole="button"
+              >
+                <Text style={stiller.buyukDugmeYazi}>{t('profil.fotografKaldir')}</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -610,6 +713,50 @@ const stiller = StyleSheet.create({
     marginBottom: 0,
   },
   avatarBasilir: { marginBottom: bosluk.xs },
+
+  // Buyuk gorunum
+  buyukZemin: {
+    flex: 1,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buyukKapat: {
+    position: 'absolute',
+    top: bosluk.xxl + bosluk.xl,
+    right: bosluk.xl,
+    zIndex: 1,
+  },
+  buyukFotograf: { width: '100%', aspectRatio: 1 },
+  buyukAlt: {
+    position: 'absolute',
+    left: bosluk.xl,
+    right: bosluk.xl,
+    bottom: bosluk.xxl + bosluk.xl,
+    alignItems: 'center',
+    gap: bosluk.m,
+  },
+  buyukOnayMetni: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  buyukOnaySatiri: { flexDirection: 'row', gap: bosluk.s },
+  buyukDugme: {
+    minWidth: 140,
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: bosluk.xl,
+    borderRadius: yuvarlak.hap,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
+  buyukDugmeTehlike: { backgroundColor: '#C0392B', borderColor: '#C0392B' },
+  buyukDugmeYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
   fotografRozeti: {
     position: 'absolute',
     right: -2,

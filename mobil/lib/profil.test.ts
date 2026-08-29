@@ -1,8 +1,13 @@
-import { baskasininProfiliniGetir, kendiProfilimiGetir } from './profil'
+import { baskasininProfiliniGetir, kendiProfilimiGetir, profilFotografiniKaldir } from './profil'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
-  supabase: { rpc: jest.fn(), from: jest.fn(), auth: { getUser: jest.fn() } },
+  supabase: {
+    rpc: jest.fn(),
+    from: jest.fn(),
+    auth: { getUser: jest.fn() },
+    storage: { from: jest.fn() },
+  },
 }))
 
 beforeEach(() => {
@@ -93,5 +98,35 @@ describe('kendiProfilimiGetir', () => {
   it('oturum yoksa hata firlatir', async () => {
     oturumuKur(null)
     await expect(kendiProfilimiGetir()).rejects.toThrow('Oturum bulunamadı')
+  })
+})
+
+describe('profilFotografiniKaldir', () => {
+  it('profil satirini bosaltir, sonra klasordeki her dosyayi siler', async () => {
+    ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'kullanici-1' } } })
+    const eq = jest.fn().mockResolvedValue({ error: null })
+    const update = jest.fn(() => ({ eq }))
+    ;(supabase.from as jest.Mock).mockReturnValue({ update })
+    const list = jest.fn().mockResolvedValue({ data: [{ name: '1.jpg' }, { name: '2.jpg' }], error: null })
+    const remove = jest.fn().mockResolvedValue({ error: null })
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ list, remove })
+
+    await profilFotografiniKaldir()
+
+    expect(update).toHaveBeenCalledWith({ fotograflar: [] })
+    expect(eq).toHaveBeenCalledWith('id', 'kullanici-1')
+    expect(list).toHaveBeenCalledWith('kullanici-1')
+    expect(remove).toHaveBeenCalledWith(['kullanici-1/1.jpg', 'kullanici-1/2.jpg'])
+  })
+
+  it('satir guncellenemezse hata firlatir ve dosyaya dokunmaz', async () => {
+    ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'kullanici-1' } } })
+    const eq = jest.fn().mockResolvedValue({ error: { message: 'izin yok' } })
+    ;(supabase.from as jest.Mock).mockReturnValue({ update: jest.fn(() => ({ eq })) })
+    const list = jest.fn()
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ list, remove: jest.fn() })
+
+    await expect(profilFotografiniKaldir()).rejects.toThrow()
+    expect(list).not.toHaveBeenCalled()
   })
 })
