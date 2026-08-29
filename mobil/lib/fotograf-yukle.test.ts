@@ -1,30 +1,45 @@
 import { fotografYukle } from './fotograf-yukle'
 import { supabase } from './supabase'
-import * as FileSystem from 'expo-file-system'
 
-jest.mock('./supabase', () => ({
-  supabase: { storage: { from: jest.fn() } },
-}))
+// Dosya okuma SDK 54+ `File` API'siyle: eski readAsStringAsync gercek
+// cihazda kirmizi uyariyla patliyordu ve profil fotografi eklenemiyordu
+// (TestFlight'taki ilk deneme, 2026-08-30). Ayrinti lib/dosya-oku.ts.
+const mockArrayBuffer = jest.fn()
 jest.mock('expo-file-system', () => ({
-  readAsStringAsync: jest.fn().mockResolvedValue('base64icerik'),
-  EncodingType: { Base64: 'base64' },
+  File: jest.fn().mockImplementation(() => ({ arrayBuffer: mockArrayBuffer })),
 }))
+
+const mockUpload = jest.fn()
+jest.mock('./supabase', () => ({
+  supabase: { storage: { from: jest.fn(() => ({ upload: mockUpload })) } },
+}))
+
+const BAYTLAR = new Uint8Array([1, 2, 3]).buffer
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  mockArrayBuffer.mockResolvedValue(BAYTLAR)
+  mockUpload.mockResolvedValue({ data: { path: 'kullanici-1/123.jpg' }, error: null })
+})
 
 describe('fotografYukle', () => {
-  it('dosyayi kullanici klasorune yukler ve path doner', async () => {
-    const uploadMock = jest.fn().mockResolvedValue({ data: { path: 'kullanici-1/123.jpg' }, error: null })
-    ;(supabase.storage.from as jest.Mock).mockReturnValue({ upload: uploadMock })
-
+  it('dosyayi File API ile okuyup kullanici klasorune ham baytlarla yukler, path doner', async () => {
     const sonuc = await fotografYukle('kullanici-1', 'file:///gecici/foto.jpg')
 
-    expect(FileSystem.readAsStringAsync).toHaveBeenCalledWith('file:///gecici/foto.jpg', {
-      encoding: 'base64',
-    })
-    expect(uploadMock).toHaveBeenCalledWith(
+    const { File } = jest.requireMock('expo-file-system')
+    expect(File).toHaveBeenCalledWith('file:///gecici/foto.jpg')
+    expect(supabase.storage.from).toHaveBeenCalledWith('profil-fotograflari')
+    expect(mockUpload).toHaveBeenCalledWith(
       expect.stringMatching(/^kullanici-1\/\d+\.jpg$/),
-      expect.anything(),
+      BAYTLAR,
       { contentType: 'image/jpeg' }
     )
     expect(sonuc).toBe('kullanici-1/123.jpg')
+  })
+
+  it('yukleme hatasini oldugu gibi firlatir', async () => {
+    mockUpload.mockResolvedValue({ data: null, error: new Error('Kova yok') })
+
+    await expect(fotografYukle('kullanici-1', 'file:///gecici/foto.jpg')).rejects.toThrow('Kova yok')
   })
 })
