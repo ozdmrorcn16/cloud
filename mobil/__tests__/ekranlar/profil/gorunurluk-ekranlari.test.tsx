@@ -35,9 +35,16 @@ describe('CheckInGorunurluguEkrani', () => {
   it('secim degisince kaydeder', async () => {
     await render(<CheckInGorunurluguEkrani />)
 
-    await fireEvent.press(await screen.findByText('Gizli'))
+    await fireEvent.press(await screen.findByText('Sadece takipçilerim'))
 
-    await waitFor(() => expect(varsayilanBulunurluguAyarla).toHaveBeenCalledWith('gizli'))
+    await waitFor(() => expect(varsayilanBulunurluguAyarla).toHaveBeenCalledWith('takipcilerim'))
+  })
+
+  it('gizli secenegini artik gostermiyor', async () => {
+    await render(<CheckInGorunurluguEkrani />)
+
+    await screen.findByText('Herkese açık')
+    expect(screen.queryByText('Gizli')).toBeNull()
   })
 
   it('kaydetme basarisiz olursa secim eski haline doner', async () => {
@@ -46,7 +53,7 @@ describe('CheckInGorunurluguEkrani', () => {
     )
 
     await render(<CheckInGorunurluguEkrani />)
-    await fireEvent.press(await screen.findByText('Gizli'))
+    await fireEvent.press(await screen.findByText('Sadece takipçilerim'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     await waitFor(() =>

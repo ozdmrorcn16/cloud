@@ -250,9 +250,6 @@ export default {
     baslik: 'Yeni check-in’lerim',
     geri: 'Geri',
     aciklama: 'Bundan sonra yaptığın check-in’ler bu ayarla başlar; her check-in’de tek tek değiştirebilirsin.',
-    herkeseAcikAciklama: 'Buradakiler ve takipçilerin görür',
-    takipcilerimAciklama: 'Buradaki yabancılar görmez',
-    gizliAciklama: 'Kimse görmez',
   },
 
   aniGorunurlugu: {
