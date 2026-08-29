@@ -1,4 +1,4 @@
-import { gorecelZaman, suAnBuradaMi, tamZaman } from './zaman'
+import { gorecelZaman, suAnBuradaMi, tamZaman, goreceZamanGosterilir, saatYazisi } from './zaman'
 
 const DAKIKA = 60 * 1000
 const SAAT = 60 * DAKIKA
@@ -18,15 +18,15 @@ function oncesi(ms: number): string {
 }
 
 describe('suAnBuradaMi', () => {
-  it('CANLI ve bir saatten yeniyse "şu an burada" gosterilir', () => {
+  it('CANLI ve 30 dakikadan yeniyse "şu an burada" gosterilir', () => {
     expect(suAnBuradaMi(oncesi(5 * DAKIKA), true)).toBe(true)
-    expect(suAnBuradaMi(oncesi(59 * DAKIKA), true)).toBe(true)
+    expect(suAnBuradaMi(oncesi(29 * DAKIKA), true)).toBe(true)
   })
 
-  it('bir saat DOLUNCA artik "şu an burada" DEGIL', () => {
-    // Check-in 4 saat canli kalmaya devam ediyor; degisen yalnizca
-    // etiket. "Su an" iddiasi bir saatten sonra dogru hissettirmiyor.
-    expect(suAnBuradaMi(oncesi(SAAT + DAKIKA), true)).toBe(false)
+  it('30 dakika DOLUNCA artik "şu an burada" DEGIL', () => {
+    // Kullanicinin karari 2026-08-29: 4 saat kurali kalkti, canlilik
+    // penceresi 30 dakika. Sunucu tarafi da ayni sureye cekildi.
+    expect(suAnBuradaMi(oncesi(31 * DAKIKA), true)).toBe(false)
     expect(suAnBuradaMi(oncesi(3 * SAAT), true)).toBe(false)
   })
 
@@ -57,5 +57,25 @@ describe('tamZaman', () => {
   it('gun.ay.yil saat:dakika bicimini verir', () => {
     // Yerel saat dilimine gore uretiliyor; bicim dogrulaniyor.
     expect(tamZaman(new Date(2026, 7, 27, 9, 5).toISOString())).toBe('27.08.2026 09:05')
+  })
+})
+
+describe('goreceZamanGosterilir', () => {
+  it('bir saate kadar gorece zaman gosterilir', () => {
+    expect(goreceZamanGosterilir(oncesi(35 * DAKIKA))).toBe(true)
+    expect(goreceZamanGosterilir(oncesi(SAAT - DAKIKA))).toBe(true)
+  })
+
+  it('bir saati GECINCE gorece zaman kalkar, geriye saat kalir', () => {
+    // Kullanicinin karari: "1 saat sonrasinda ibare kalkicak sadece
+    // tarih saat bilgileri kalmaya devam edicek".
+    expect(goreceZamanGosterilir(oncesi(SAAT + DAKIKA))).toBe(false)
+    expect(goreceZamanGosterilir(oncesi(5 * SAAT))).toBe(false)
+  })
+})
+
+describe('saatYazisi', () => {
+  it('yalnizca saat ve dakika yazar', () => {
+    expect(saatYazisi('2026-08-29T09:05:00')).toBe('09:05')
   })
 })

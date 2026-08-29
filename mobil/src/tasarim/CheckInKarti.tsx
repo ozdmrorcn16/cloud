@@ -133,7 +133,7 @@ export function CheckInKarti({
         )}
 
         {/* "Şu an burada" YALNIZCA ILK BIR SAAT (kullanicinin karari
-            2026-08-27). Check-in 4 saat canli kalsa bile bir saatten
+            2026-08-27). Check-in artik 30 dakika canli kaliyor; bir saatten
             sonra "2 saat önce" yaziyor - "su an" iddiasi o kadar
             surmuyor. */}
         {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (

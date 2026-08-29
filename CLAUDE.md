@@ -332,8 +332,21 @@ Profil. `/kisiler` CIKARILAMAZ - o ekrana cubuk disinda giris yok.
   disinda her sey siliniyor). Bunu yapmak guvenli, cunku
   `profil-fotograflari` kovasi YALNIZCA profil fotografi tutuyor;
   check-in fotograflari ayri kovada.
-- **"Şu an burada" YALNIZCA ILK BIR SAAT.** Check-in 4 saat canli
-  kalmaya devam ediyor; degisen sadece etiket.
+- **CHECK-IN CANLILIK PENCERESI 30 DAKIKA** (kullanicinin karari
+  2026-08-29; onceki kural "4 saat canli, ilk bir saat etiket" idi ve
+  KALDIRILDI). Zaman etiketi uc kademeli:
+    0-30 dk    "şu an burada"
+    30-60 dk   gorece zaman: "35 dk önce", "1 saat önce"
+    60 dk+     ibare yok; yalnizca tarih ve saat
+  Sunucu ayni pencerede: `check_in_yap` artik `now() + 30 minutes`
+  yaziyor (migrasyon 20260829100000) ve her 10 dakikada bir calisan
+  cron kaydi aniya cevirip `konum`u siliyor. Yani canlilik suresi ile
+  etiket suresi AYNI - onceden etiket bir saatte susuyordu ama kayit
+  dort saat canli kaliyordu.
+  Yan etkiler: yogunluk sayaci ("7 kisi burada") da 30 dakikalik
+  pencereye dondu, ve koordinat en fazla ~40 dakika sakli kaliyor
+  (30 dk + cron araligi) - gizlilik metnindeki "~4 saat" ifadeleri
+  bu yuzden "~30 dakika" olarak guncellendi.
 - **Silme iki adimli** (akis, profil canli serit, anilar). Geri
   alinamayan islem tek dokunusla yapilmiyor.
 

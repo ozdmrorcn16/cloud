@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
+import { goreceZamanGosterilir, gorecelZaman, saatYazisi } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 
 /**
@@ -89,10 +90,7 @@ function yeniGun(t: Date): Date {
   return new Date(t.getFullYear(), t.getMonth(), t.getDate())
 }
 
-function saat(iso: string): string {
-  const t = new Date(iso)
-  return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
-}
+
 
 export function GunAyraci({ etiket }: { etiket: string }) {
   return (
@@ -130,7 +128,17 @@ export function TunelSatiri({
 
   // Canlilik alt satirin ICINDE degil, AYRI bir rozet: hem gozle
   // ayirt ediliyor hem de erisilebilirlik agacinda kendi ogesi oluyor.
-  const altParcalar = [ani.semt ?? '', saat(ani.olusturmaZamani)].filter(Boolean)
+  //
+  // ZAMAN UC KADEMELI (kullanicinin karari 2026-08-29):
+  //   rozet varken (ilk 30 dk)  -> saat
+  //   30-60 dk arasi            -> "35 dk önce"
+  //   1 saatten eski            -> saat (tarihi gun ayraci veriyor)
+  const zaman =
+    !ani.canliMi && goreceZamanGosterilir(ani.olusturmaZamani)
+      ? gorecelZaman(ani.olusturmaZamani, t)
+      : saatYazisi(ani.olusturmaZamani)
+
+  const altParcalar = [ani.semt ?? '', zaman].filter(Boolean)
 
   return (
     <View style={stiller.satirKok}>
