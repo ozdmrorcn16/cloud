@@ -3,6 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter, usePathname } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { konusmalarimiGetir } from '../../lib/sohbet'
+import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
+import { bekleyenEtiketleriGetir } from '../../lib/etiket'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
 
 /**
@@ -65,21 +67,24 @@ const SEKMELER: Sekme[] = [
     ),
   },
   {
-    ad: 'Kişiler',
-    yol: '/kisiler',
-    onEk: '/kisiler',
+    // KISILER SEKMESI KALDIRILDI, YERINE BILDIRIMLER (kullanicinin
+    // karari 2026-08-29). Kisi arama artik ANA SAYFANIN ustundeki
+    // sutunda; ayri bir sekmeye gerek kalmadi. `/kisiler` ekrani
+    // duruyor ve calisiyor, yalnizca cubuktan giris kalkti.
+    ad: 'Bildirimler',
+    yol: '/bildirimler',
+    onEk: '/bildirimler',
     ikon: (aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">
-        <Circle cx={9} cy={8} r={3.4} stroke={ikonRengi(aktif)} strokeWidth={1.8} fill="none" />
         <Path
-          d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"
+          d="M12 3.5a5.5 5.5 0 0 0-5.5 5.5v3.2L5 15.5h14l-1.5-3.3V9A5.5 5.5 0 0 0 12 3.5z"
           stroke={ikonRengi(aktif)}
           strokeWidth={1.8}
-          fill="none"
-          strokeLinecap="round"
+          fill={aktif ? renk.turuncuZemin : 'none'}
+          strokeLinejoin="round"
         />
         <Path
-          d="M16 8.5a3 3 0 0 1 0 5M17.5 19c0-2.2-.8-3.8-2-4.8"
+          d="M10 18.2a2.2 2.2 0 0 0 4 0"
           stroke={ikonRengi(aktif)}
           strokeWidth={1.8}
           fill="none"
@@ -161,6 +166,7 @@ export function AltGezinme() {
   const router = useRouter()
   const yol = usePathname()
   const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
+  const [bekleyenBildirim, setBekleyenBildirim] = useState(0)
 
   // Rozet cubugun kendi isi: cubuk artik her ekranda duruyor (kullanicinin
   // karari 2026-08-25), dolayisiyla sayiyi tek tek ekranlardan prop olarak
@@ -175,6 +181,24 @@ export function AltGezinme() {
       })
       .catch(() => {
         if (!iptal) setOkunmamisMesaj(0)
+      })
+    return () => {
+      iptal = true
+    }
+  }, [yol])
+
+  // BILDIRIM SAYACI (kullanicinin karari 2026-08-29): gelen arkadaslik
+  // istekleri + bekleyen etiketler. Ikisi de KARAR BEKLEYEN seyler;
+  // bilgilendirme amacli bildirim sayilmiyor. Mesaj sayaciyla ayni
+  // desen: yol degistikce tazeleniyor, hata olursa sifira duesuyor.
+  useEffect(() => {
+    let iptal = false
+    Promise.all([gelenIstekleriGetir(), bekleyenEtiketleriGetir()])
+      .then(([istekler, etiketler]) => {
+        if (!iptal) setBekleyenBildirim(istekler.takip.length + etiketler.length)
+      })
+      .catch(() => {
+        if (!iptal) setBekleyenBildirim(0)
       })
     return () => {
       iptal = true
@@ -197,7 +221,12 @@ export function AltGezinme() {
           // Ana sayfanin oneki "/" oldugu icin startsWith her yolu
           // eslestirirdi; o sekme yalnizca tam eslesmede aktif.
           const aktif = s.onEk === '/' ? yol === '/' : yol.startsWith(s.onEk)
-          const rozet = s.yol === '/mesajlar' ? okunmamisMesaj : 0
+          const rozet =
+            s.yol === '/mesajlar'
+              ? okunmamisMesaj
+              : s.yol === '/bildirimler'
+                ? bekleyenBildirim
+                : 0
           return (
             <React.Fragment key={s.yol}>
             {merkez}

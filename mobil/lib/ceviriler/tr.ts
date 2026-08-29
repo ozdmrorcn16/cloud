@@ -118,6 +118,19 @@ export default {
     beklenmeyenHata: 'Beklenmeyen bir hata oluştu.',
   },
 
+  bildirimler: {
+    baslik: 'Bildirimler',
+    arkadaslikBolumu: 'Arkadaşlık istekleri',
+    etiketBolumu: 'Etiketlenme istekleri',
+    arkadaslikMetni: '{{ad}} seninle arkadaş olmak istiyor.',
+    etiketMetni: '{{ad}}, {{mekan}} check-in’inde seni etiketlemek istiyor.',
+    kabul: 'Kabul et',
+    onayla: 'Onayla',
+    reddet: 'Reddet',
+    bosBaslik: 'Yeni bir şey yok',
+    bosAciklama:
+      'Arkadaşlık istekleri ve seni etiketlemek isteyenler burada görünür.',
+  },
   kisiler: {
     baslik: 'Kişi ara',
     yerTutucu: 'Kullanıcı adı ya da isim',

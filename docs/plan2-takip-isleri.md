@@ -133,3 +133,22 @@ cunku tek operatorlu bir ic arac.
 - **Kademe 1 pencere genisligi (20 mesaj) sunucuda sabit.** Panel bir
   genislik soyleyemez. Bilincli: istemcinin secebilecegi bir sinir,
   sinir degildir.
+
+## [SONRA] Etiket onayinin CANLI senaryo kapsami yok (2026-08-29)
+
+Etiketleme onaya baglandi (migrasyon 20260829090000): yeni etiket
+`bekliyor` durumunda giriyor, yalnizca ETIKETLENEN kisi onaylayabiliyor,
+onaylanana kadar baskalarina gorunmuyor.
+
+Kurallar POLITIKALARDA ve dogru yazildigi okunarak dogrulandi; jest
+tarafinda bes yeni test var. Ama `test:gorunurluk` icinde etiketlerle
+ilgili HIC senaryo yok - o paket bugune kadar etiket tablosuna hic
+dokunmamis. Yani su uc kural CANLI veritabaninda dogrulanmadi:
+
+1. Etiketleyen kisi kendi etigini onaylayamaz (UPDATE politikasi
+   yalnizca `kullanici_id = auth.uid()` icin aciliyor).
+2. Bekleyen etiket ucuncu bir kisiye gorunmuyor.
+3. Etiket 'bekliyor' disinda bir durumla INSERT edilemiyor.
+
+Eklenecek yer: `mobil/gorunurluk-testleri/calistir.ts`, uc kullanicili
+(A etiketler, B karar verir, C bakar) yeni bir senaryo.

@@ -4,10 +4,16 @@ import { hataMetni } from './hata-metni'
 /**
  * CHECK-IN'DE ARKADAS ETIKETLEME.
  *
- * Kurallar politikalarda, burada degil (bkz. migrasyon
- * 20260826200000): yalnizca karsilikli bagli oldugun kisi
- * etiketlenebilir, etiketlenen kisi kendi etiketini kaldirabilir ve
- * bir check-in'i goremeyen onun etiketlerini de goremez.
+ * Kurallar politikalarda, burada degil (bkz. migrasyonlar
+ * 20260826200000 ve 20260829090000): yalnizca karsilikli bagli oldugun
+ * kisi etiketlenebilir ve bir check-in'i goremeyen onun etiketlerini de
+ * goremez.
+ *
+ * ETIKET ONAY ISTIYOR (kullanicinin karari 2026-08-29): yeni etiket
+ * `bekliyor` durumunda giriyor ve ONAYLANANA KADAR baskalarina
+ * gorunmuyor. Etiketlenen kisi bildirim ekranindan onaylar ya da
+ * reddeder. Reddedilen satir SILINMIYOR - birincil anahtar oldugu icin
+ * ayni etiketin tekrar gonderilmesini de engelliyor.
  *
  * Buradaki kod o kurallari TEKRARLAMIYOR - istemcide yapilan kontrol
  * yalnizca kullaniciya hizli geri bildirim icindir; baglayici olan
@@ -18,6 +24,16 @@ export type Etiket = {
   kullaniciId: string
   /** Etiketlenen kisinin adi; profiller'den okunuyor. */
   ad: string | null
+}
+
+/** Bildirim ekranindaki bekleyen etiket istegi. */
+export type BekleyenEtiket = {
+  checkInId: string
+  mekanAdi: string
+  etiketleyenId: string
+  etiketleyenAd: string
+  etiketleyenKullaniciAdi: string
+  olusturuldu: string
 }
 
 type EtiketSatiri = {
@@ -37,10 +53,14 @@ export async function etiketleriGetir(
 ): Promise<Record<string, Etiket[]>> {
   if (checkInIdler.length === 0) return {}
 
+  // Yalnizca ONAYLANMIS etiketler cekiliyor. Politika bekleyen
+  // etiketi iki tarafa gosteriyor; akista ve profilde gostermek
+  // istedigimiz sey ise yalnizca onaylanmis olan.
   const { data, error } = await supabase
     .from('check_in_etiketleri')
     .select('check_in_id, kullanici_id, profiller(ad)')
     .in('check_in_id', checkInIdler)
+    .eq('durum', 'onaylandi')
   if (error) throw new Error(hataMetni(error))
 
   const gruplar: Record<string, Etiket[]> = {}
@@ -90,5 +110,48 @@ export async function etiketiKaldir(
     .delete()
     .eq('check_in_id', checkInId)
     .eq('kullanici_id', kullaniciId)
+  if (error) throw new Error(hataMetni(error))
+}
+
+/** Bildirim ekrani: beni etiketlemek isteyen bekleyen istekler. */
+export async function bekleyenEtiketleriGetir(): Promise<BekleyenEtiket[]> {
+  const { data, error } = await supabase.rpc('bekleyen_etiketlerim')
+  if (error) throw new Error(hataMetni(error))
+
+  type Satir = {
+    check_in_id: string
+    mekan_adi: string
+    etiketleyen_id: string
+    etiketleyen_ad: string
+    etiketleyen_kullanici_adi: string
+    olusturuldu: string
+  }
+  return (data as Satir[]).map((s) => ({
+    checkInId: s.check_in_id,
+    mekanAdi: s.mekan_adi,
+    etiketleyenId: s.etiketleyen_id,
+    etiketleyenAd: s.etiketleyen_ad,
+    etiketleyenKullaniciAdi: s.etiketleyen_kullanici_adi,
+    olusturuldu: s.olusturuldu,
+  }))
+}
+
+/**
+ * Bekleyen bir etiketi onaylar ya da reddeder.
+ *
+ * Yalnizca ETIKETLENEN kisi cagirabilir ve yalnizca bekleyen bir
+ * etikette calisir; ikisini de politika zorluyor. Reddedilen satir
+ * duruyor, silinmiyor.
+ */
+export async function etiketiYanitla(checkInId: string, onay: boolean): Promise<void> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const benimId = kullaniciVerisi.user?.id
+  if (!benimId) throw new Error('Oturum bulunamadı')
+
+  const { error } = await supabase
+    .from('check_in_etiketleri')
+    .update({ durum: onay ? 'onaylandi' : 'reddedildi' })
+    .eq('check_in_id', checkInId)
+    .eq('kullanici_id', benimId)
   if (error) throw new Error(hataMetni(error))
 }
