@@ -111,13 +111,39 @@ function SiraRozeti({ sira }: { sira: number }) {
   if (!madalya) {
     return <Text style={stiller.yerSiraDuz}>{sira}</Text>
   }
+
+  // Kurdeleli madalya (kullanicinin secimi 2026-08-30, dort varyant
+  // icinden). Rakam SVG'nin ICINDE degil, USTUNDE duran bir RN metni:
+  // react-native-svg'nin kendi Text'i uygulamanin yazi ailesini
+  // almiyor ve olcekle oynadiginda kayiyor.
   return (
-    <View
-      style={[
-        stiller.yerSiraRozet,
-        { backgroundColor: madalya.zemin, borderColor: madalya.kenar },
-      ]}
-    >
+    <View style={stiller.yerSiraAlan}>
+      <Svg width={34} height={36} viewBox="0 0 34 36">
+        {/* Kurdele: dairenin altindan sarkan iki uc. */}
+        <Path
+          d="M11 24 L8.5 34 L13.5 31.5 L17 34 L20.5 31.5 L25.5 34 L23 24z"
+          fill={madalya.kenar}
+          opacity={0.55}
+        />
+        <Circle
+          cx={17}
+          cy={14.5}
+          r={12}
+          fill={madalya.zemin}
+          stroke={madalya.kenar}
+          strokeWidth={1.4}
+        />
+        {/* Ic halka: madalya kabartmasi hissi. */}
+        <Circle
+          cx={17}
+          cy={14.5}
+          r={8.6}
+          fill="none"
+          stroke={madalya.kenar}
+          strokeWidth={0.7}
+          opacity={0.6}
+        />
+      </Svg>
       <Text style={[stiller.yerSiraRozetYazi, { color: madalya.yazi }]}>{sira}</Text>
     </View>
   )
@@ -662,22 +688,21 @@ const stiller = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
-  // Ilk bes: dolu rozet. Genislik duz rakamla AYNI (28) ki satirlar
-  // birbirine gore kaymasin.
-  yerSiraRozet: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // Ilk bes: kurdeleli madalya. Genislik duz rakamla AYNI (34) ki
+  // altinci satirdan itibaren metinler sola kaymasin.
+  yerSiraAlan: { width: 34, height: 36, alignItems: 'center', justifyContent: 'center' },
   yerSiraRozetYazi: {
+    position: 'absolute',
+    // Dairenin merkezi 36'lik kutunun 14.5'inde; metin optik olarak
+    // oraya oturtuluyor.
+    top: 7,
+    width: 34,
+    textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
   },
   yerSiraDuz: {
-    width: 28,
+    width: 34,
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
