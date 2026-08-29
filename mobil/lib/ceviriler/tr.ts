@@ -196,7 +196,6 @@ export default {
     kullaniciAdiEtiket: 'Kullanıcı adı',
     biyografiEtiket: 'Biyografi',
     biyografiYerTutucu: 'Kendinden kısaca bahset',
-    biyografiIpucu: 'Biyografin profilinde adının altında görünür.',
     kaydediliyor: 'Kaydediliyor…',
     kaydedildi: 'Profilin güncellendi.',
   },

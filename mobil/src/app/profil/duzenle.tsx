@@ -142,8 +142,6 @@ export default function ProfilDuzenleEkrani() {
           multiline
           maxLength={EN_FAZLA_BIYOGRAFI}
         />
-        <Text style={stiller.ipucu}>{t('profilDuzenle.biyografiIpucu')}</Text>
-
         <Pressable
           style={stiller.birincil}
           onPress={kaydet}
@@ -196,14 +194,6 @@ const stiller = StyleSheet.create({
 
   satir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   satirYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metin },
-
-  ipucu: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 18,
-    color: renk.metinIkincil,
-    marginTop: bosluk.s,
-  },
 
   hata: {
     fontFamily: yazi.govdeOrta,
