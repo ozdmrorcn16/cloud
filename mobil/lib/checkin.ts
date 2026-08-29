@@ -123,7 +123,12 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
       'id, mekan_id, kullanici_adi, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
     )
     .eq('kullanici_id', kullaniciId)
-    .is('konum', null)
+    // KONUM FILTRESI KALDIRILDI (kullanicinin bildirdigi eksik,
+    // 2026-08-29): `.is('konum', null)` yalnizca ANILARI getiriyordu,
+    // yani yeni yapilan bir check-in profil listesinde 30 dakika
+    // boyunca HIC gorunmuyordu ve "Anı" sayaci da artmiyordu.
+    // Artik canli check-in de listede; tunel onu "şu an burada"
+    // rozetiyle ciziyor. Gorunurluk yine RLS'in isi.
     .order('olusturma_zamani', { ascending: false })
   if (error) throw new Error(hataMetni(error))
   const satirlar = data as unknown as CheckInSatiriMekanli[]

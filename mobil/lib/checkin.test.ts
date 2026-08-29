@@ -157,19 +157,27 @@ describe('mekanAnilariniGetir', () => {
 })
 
 describe('kullanicininAnilariniGetir', () => {
-  it('yalnizca kendi aniya donusmus check-inlerini mekan bilgisiyle getirir', async () => {
+  it('kendi check-inlerini mekan bilgisiyle getirir - CANLI OLANLAR DA DAHIL', async () => {
     const order = jest.fn().mockResolvedValue({
       data: [
         {
           id: 'checkin-3', mekan_id: 'mekan-1', not_metni: 'harika', fotograf: null,
           olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, bulunurluk: 'herkese_acik', mekanlar: { ad: 'Sahil Kafe', konum: 'POINT(28.979 41.015)' },
+          konum: null, bulunurluk: 'herkese_acik', mekanlar: { ad: 'Sahil Kafe', semt: 'Nilüfer', konum: 'POINT(28.979 41.015)' },
+        },
+        {
+          // CANLI check-in: konum dolu. Onceden `.is('konum', null)`
+          // filtresi bunu eliyordu ve yeni check-in profilde 30 dakika
+          // gorunmuyordu (kullanicinin bildirdigi eksik, 2026-08-29).
+          id: 'checkin-4', mekan_id: 'mekan-2', not_metni: null, fotograf: null,
+          olusturma_zamani: '2026-08-29T10:00:00Z', bitis_zamani: '2026-08-29T10:30:00Z',
+          konum: 'POINT(28.9 41.0)', bulunurluk: 'herkese_acik',
+          mekanlar: { ad: 'Kent Meydanı', semt: 'Osmangazi', konum: 'POINT(28.9 41.0)' },
         },
       ],
       error: null,
     })
-    const is_ = jest.fn().mockReturnValue({ order })
-    const eq = jest.fn().mockReturnValue({ is: is_ })
+    const eq = jest.fn().mockReturnValue({ order })
     const select = jest.fn().mockReturnValue({ eq })
     ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select })
 
@@ -177,8 +185,13 @@ describe('kullanicininAnilariniGetir', () => {
 
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(sonuc[0].mekanAdi).toBe('Sahil Kafe')
+    expect(sonuc[0].mekanSemti).toBe('Nilüfer')
     expect(sonuc[0].mekanKonumu).toEqual({ lat: 41.015, lng: 28.979 })
     expect(sonuc[0].bulunurluk).toBe('herkese_acik')
+    // Canli olan da listede ve canliMi ile isaretli.
+    expect(sonuc).toHaveLength(2)
+    expect(sonuc[1].mekanAdi).toBe('Kent Meydanı')
+    expect(sonuc[1].canliMi).toBe(true)
   })
 })
 

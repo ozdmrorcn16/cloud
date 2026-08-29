@@ -169,8 +169,9 @@ export default function ProfilEkrani() {
       if (mevcut) mevcut.adet += 1
       else sayac.set(mekanId, { ad, semt, adet: 1 })
     }
+    // Canli check-in ARTIK `anilar` icinde geliyor; ayrica eklemek
+    // ayni mekani iki kez sayardi.
     anilar.forEach((a) => ekle(a.mekanId, a.mekanAdi, a.mekanSemti))
-    if (aktifCheckIn) ekle(aktifCheckIn.mekanId, aktifCheckIn.mekanAdi, null)
     return [...sayac.entries()]
       .map(([mekanId, v]) => ({ mekanId, ...v }))
       .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
@@ -516,6 +517,9 @@ export default function ProfilEkrani() {
                   notMetni: ani.notMetni,
                   fotografUrl: ani.fotografUrl,
                   olusturmaZamani: ani.olusturmaZamani,
+                  // Canli check-in artik bu listede; tunel rozeti
+                  // buradan cikiyor.
+                  canliMi: ani.canliMi,
                 }))}
                 enFazla={ONIZLEME_ADEDI}
                 onAniSec={(ani) => router.push(`/mekanlar/${ani.mekanId}`)}
