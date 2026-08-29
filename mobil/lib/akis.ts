@@ -125,8 +125,12 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
  * bunu "fotograf yok" diye okuyup bas harfe duesuyor. Okuma
  * basarisiz olursa akis yine ciziliyor - avatar yuzunden butun akisi
  * kaybetmek yanlis olur.
+ *
+ * Disari acik: bildirim ekrani da ayni yardimciyla avatar cekiyor
+ * (2026-08-30), boylece "kimin fotografi gorunur" kurali tek yerde
+ * (profil_fotograflari RPC'si) kaliyor.
  */
-async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
+export async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
   if (kimlikler.length === 0) return {}
 
   const { data, error } = await supabase.rpc('profil_fotograflari', {

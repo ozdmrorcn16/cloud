@@ -8,9 +8,11 @@ import {
   etiketiYanitla,
   type BekleyenEtiket,
 } from '../../lib/etiket'
+import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { Avatar } from '../tasarim/Avatar'
 
 /**
  * BILDIRIMLER.
@@ -27,12 +29,23 @@ import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
  * BURADA YOK; bu ekran yalnizca senden bir sey bekleyen seyleri
  * gosteriyor. Okundu/okunmadi durumu da tutulmuyor - bir sey
  * yanitlandiginda listeden kalkiyor, sayac da o listeden geliyor.
+ *
+ * SATIR DUZENI (kullanicinin karari 2026-08-30, Instagram'in bildirim
+ * satiri ornek): solda yuvarlak profil fotografi, yaninda KULLANICI ADI
+ * kalin ve ayni cumlenin icinde devam eden bildirim metni. Kart
+ * kenarligi yok; satirlar ince cizgiyle ayriliyor. Eylem dugmeleri
+ * metnin altinda, fotografin degil metnin hizasinda.
+ *
+ * Avatarlar `profil_fotograflari` RPC'sinden geliyor (akisla ayni
+ * yol): kimin fotografinin gorunecegine sunucu karar veriyor,
+ * fotografi olmayan ya da okunamayan kisi bas harfe dusuyor.
  */
 export default function BildirimlerEkrani() {
   const router = useRouter()
   const { t } = useDil()
   const [takipIstekleri, setTakipIstekleri] = useState<BagKisi[]>([])
   const [etiketler, setEtiketler] = useState<BekleyenEtiket[]>([])
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState<string | null>(null)
 
@@ -45,6 +58,16 @@ export default function BildirimlerEkrani() {
       setTakipIstekleri(istekler.takip)
       setEtiketler(bekleyen)
       setHata(null)
+
+      // Avatarlar listeden SONRA ve ayri geliyor: fotograf okunamazsa
+      // bildirimler yine gorunur, yalnizca bas harf cizilir.
+      const kimlikler = Array.from(
+        new Set([
+          ...istekler.takip.map((k) => k.id),
+          ...bekleyen.map((e) => e.etiketleyenId),
+        ])
+      )
+      setAvatarlar(await avatarlariGetir(kimlikler))
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
@@ -100,36 +123,19 @@ export default function BildirimlerEkrani() {
           <>
             <Text style={stiller.bolumAd}>{t('bildirimler.arkadaslikBolumu')}</Text>
             {takipIstekleri.map((kisi) => (
-              <View key={kisi.id} style={stiller.satir}>
-                <Pressable
-                  style={stiller.satirMetin}
-                  onPress={() => router.push(`/kullanici/${kisi.id}`)}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.satirBaslik} numberOfLines={2}>
-                    {t('bildirimler.arkadaslikMetni', { ad: kisi.ad ?? kisi.kullaniciAdi })}
-                  </Text>
-                  <Text style={stiller.satirAlt}>@{kisi.kullaniciAdi}</Text>
-                </Pressable>
-                <View style={stiller.eylemler}>
-                  <Pressable
-                    style={[stiller.dugme, stiller.dugmeDolu]}
-                    onPress={() => takibiYanitla(kisi.id, true)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={[stiller.dugmeYazi, stiller.dugmeYaziDolu]}>
-                      {t('bildirimler.kabul')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={stiller.dugme}
-                    onPress={() => takibiYanitla(kisi.id, false)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={stiller.dugmeYazi}>{t('bildirimler.reddet')}</Text>
-                  </Pressable>
-                </View>
-              </View>
+              <BildirimSatiri
+                key={kisi.id}
+                kullaniciId={kisi.id}
+                kullaniciAdi={kisi.kullaniciAdi}
+                ad={kisi.ad}
+                fotografUrl={avatarlar[kisi.id] ?? null}
+                metin={t('bildirimler.arkadaslikMetni')}
+                olumluYazi={t('bildirimler.kabul')}
+                olumsuzYazi={t('bildirimler.reddet')}
+                onProfil={() => router.push(`/kullanici/${kisi.id}`)}
+                onOlumlu={() => takibiYanitla(kisi.id, true)}
+                onOlumsuz={() => takibiYanitla(kisi.id, false)}
+              />
             ))}
           </>
         )}
@@ -138,36 +144,19 @@ export default function BildirimlerEkrani() {
           <>
             <Text style={stiller.bolumAd}>{t('bildirimler.etiketBolumu')}</Text>
             {etiketler.map((e) => (
-              <View key={e.checkInId} style={stiller.satir}>
-                <Pressable
-                  style={stiller.satirMetin}
-                  onPress={() => router.push(`/kullanici/${e.etiketleyenId}`)}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.satirBaslik} numberOfLines={3}>
-                    {t('bildirimler.etiketMetni', { ad: e.etiketleyenAd, mekan: e.mekanAdi })}
-                  </Text>
-                  <Text style={stiller.satirAlt}>@{e.etiketleyenKullaniciAdi}</Text>
-                </Pressable>
-                <View style={stiller.eylemler}>
-                  <Pressable
-                    style={[stiller.dugme, stiller.dugmeDolu]}
-                    onPress={() => etiketiKararaBagla(e.checkInId, true)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={[stiller.dugmeYazi, stiller.dugmeYaziDolu]}>
-                      {t('bildirimler.onayla')}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={stiller.dugme}
-                    onPress={() => etiketiKararaBagla(e.checkInId, false)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={stiller.dugmeYazi}>{t('bildirimler.reddet')}</Text>
-                  </Pressable>
-                </View>
-              </View>
+              <BildirimSatiri
+                key={e.checkInId}
+                kullaniciId={e.etiketleyenId}
+                kullaniciAdi={e.etiketleyenKullaniciAdi}
+                ad={e.etiketleyenAd}
+                fotografUrl={avatarlar[e.etiketleyenId] ?? null}
+                metin={t('bildirimler.etiketMetni', { mekan: e.mekanAdi })}
+                olumluYazi={t('bildirimler.onayla')}
+                olumsuzYazi={t('bildirimler.reddet')}
+                onProfil={() => router.push(`/kullanici/${e.etiketleyenId}`)}
+                onOlumlu={() => etiketiKararaBagla(e.checkInId, true)}
+                onOlumsuz={() => etiketiKararaBagla(e.checkInId, false)}
+              />
             ))}
           </>
         )}
@@ -175,6 +164,75 @@ export default function BildirimlerEkrani() {
     </View>
   )
 }
+
+/**
+ * Tek bildirim satiri. Iki bildirim turu de ayni satiri kullaniyor;
+ * degisen yalnizca metin ve dugme yazilari.
+ *
+ * Kullanici adi ile metin TEK Text icinde ic ice: boylece uzun mekan
+ * adlarinda satir dogal olarak kiriliyor ve kalin ad ile normal metin
+ * ayni satir yuksekligini paylasiyor.
+ */
+function BildirimSatiri({
+  kullaniciId,
+  kullaniciAdi,
+  ad,
+  fotografUrl,
+  metin,
+  olumluYazi,
+  olumsuzYazi,
+  onProfil,
+  onOlumlu,
+  onOlumsuz,
+}: {
+  kullaniciId: string
+  kullaniciAdi: string
+  ad: string | null
+  fotografUrl: string | null
+  metin: string
+  olumluYazi: string
+  olumsuzYazi: string
+  onProfil: () => void
+  onOlumlu: () => void
+  onOlumsuz: () => void
+}) {
+  return (
+    <View style={stiller.satir} testID={`bildirim-${kullaniciId}`}>
+      <Pressable onPress={onProfil} accessibilityRole="button" accessibilityLabel={kullaniciAdi}>
+        <Avatar
+          fotografUrl={fotografUrl}
+          ad={ad}
+          kullaniciAdi={kullaniciAdi}
+          cap={AVATAR_CAPI}
+          testID="bildirim-avatar"
+        />
+      </Pressable>
+
+      <View style={stiller.sag}>
+        <Pressable onPress={onProfil} accessibilityRole="button">
+          <Text style={stiller.metin}>
+            <Text style={stiller.kullaniciAdi}>{kullaniciAdi}</Text> {metin}
+          </Text>
+        </Pressable>
+
+        <View style={stiller.eylemler}>
+          <Pressable
+            style={[stiller.dugme, stiller.dugmeDolu]}
+            onPress={onOlumlu}
+            accessibilityRole="button"
+          >
+            <Text style={[stiller.dugmeYazi, stiller.dugmeYaziDolu]}>{olumluYazi}</Text>
+          </Pressable>
+          <Pressable style={stiller.dugme} onPress={onOlumsuz} accessibilityRole="button">
+            <Text style={stiller.dugmeYazi}>{olumsuzYazi}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  )
+}
+
+const AVATAR_CAPI = 48
 
 const stiller = StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
@@ -203,36 +261,36 @@ const stiller = StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
     marginTop: bosluk.l,
-    marginBottom: bosluk.s,
+    marginBottom: bosluk.xs,
   },
 
   satir: {
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
-    padding: bosluk.l,
-    marginBottom: bosluk.m,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
   },
-  satirMetin: {},
-  satirBaslik: {
+  sag: { flex: 1 },
+  metin: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     color: renk.metin,
     lineHeight: 21,
   },
-  satirAlt: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 2,
+  kullaniciAdi: {
+    fontFamily: yazi.govdeKalin,
+    color: renk.metin,
   },
 
-  eylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.m },
+  eylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.s },
   dugme: {
-    flex: 1,
+    minWidth: 96,
     alignItems: 'center',
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: bosluk.l,
+    borderRadius: yuvarlak.hap,
     borderWidth: 1,
     borderColor: renk.cizgi,
   },

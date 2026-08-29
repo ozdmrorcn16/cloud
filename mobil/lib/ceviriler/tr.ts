@@ -122,8 +122,9 @@ export default {
     baslik: 'Bildirimler',
     arkadaslikBolumu: 'Arkadaşlık istekleri',
     etiketBolumu: 'Etiketlenme istekleri',
-    arkadaslikMetni: '{{ad}} seninle arkadaş olmak istiyor.',
-    etiketMetni: '{{ad}}, {{mekan}} check-in’inde seni etiketlemek istiyor.',
+    // Kullanici adi satirda AYRI ve kalin basiliyor; metin onun devami.
+    arkadaslikMetni: 'seninle arkadaş olmak istiyor.',
+    etiketMetni: '{{mekan}} check-in’inde seni etiketlemek istiyor.',
     kabul: 'Kabul et',
     onayla: 'Onayla',
     reddet: 'Reddet',
