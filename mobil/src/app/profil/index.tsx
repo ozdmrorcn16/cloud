@@ -393,7 +393,7 @@ export default function ProfilEkrani() {
                   <Pressable
                     key={yer.mekanId}
                     style={stiller.yerSatiri}
-                    onPress={() => router.push(`/mekanlar/${yer.mekanId}`)}
+                    onPress={() => router.push(`/check-in/${yer.mekanId}`)}
                     accessibilityRole="button"
                   >
                     <Text style={stiller.yerSira}>{i + 1}</Text>
@@ -434,7 +434,7 @@ export default function ProfilEkrani() {
                   canliMi: ani.canliMi,
                 }))}
                 enFazla={ONIZLEME_ADEDI}
-                onAniSec={(ani) => router.push(`/mekanlar/${ani.mekanId}`)}
+                onAniSec={(ani) => router.push(`/check-in/${ani.mekanId}`)}
               />
             )}
           </>

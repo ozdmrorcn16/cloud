@@ -373,7 +373,7 @@ export default function KullaniciProfiliEkrani() {
             <Pressable
               key={ani.id}
               style={stiller.aniSatiri}
-              onPress={() => router.push(`/mekanlar/${ani.mekanId}`)}
+              onPress={() => router.push(`/check-in/${ani.mekanId}`)}
               accessibilityRole="button"
             >
               {ani.fotografUrl && (

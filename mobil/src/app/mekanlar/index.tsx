@@ -303,7 +303,7 @@ export default function KesfetEkrani() {
       <CanliHarita
         merkez={cihazKonumu}
         mekanlar={suzulmus}
-        onMekanSec={(id) => router.push(`/mekanlar/${id}`)}
+        onMekanSec={(id) => router.push(`/check-in/${id}`)}
       />
 
       {/* Su an bulundugun yer: en yakin mekan. Check-in bir mekan
@@ -444,7 +444,7 @@ export default function KesfetEkrani() {
           renderItem={({ item }) => (
             <Pressable
               style={stiller.kart}
-              onPress={() => router.push(`/mekanlar/${item.id}`)}
+              onPress={() => router.push(`/check-in/${item.id}`)}
             >
               <View style={stiller.canliRozet}>
                 <View style={stiller.canliNokta} />
@@ -469,7 +469,7 @@ export default function KesfetEkrani() {
           <Pressable
             key={item.id}
             style={stiller.satir}
-            onPress={() => router.push(`/mekanlar/${item.id}`)}
+            onPress={() => router.push(`/check-in/${item.id}`)}
           >
             {/* Satirin kendisi mekan detayini aciyor; bu igne DOGRUDAN
                 check-in'e goturuyor. Iki hedef ayni satirda oldugu

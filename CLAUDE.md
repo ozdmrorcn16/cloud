@@ -131,6 +131,29 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KARAR: mekan detay ekrani SILINDI (2026-08-29)
+
+Kullanicinin karari: "Checkin yaptiktan sonra bu ekran gelmesin
+checkin ekraninda kalmaya devam etsin o attigim ekrani sil".
+
+`src/app/mekanlar/[id].tsx` ve testi SILINDI. O ekran bir mekanin
+adini, semtini ve orada su an olan kisileri gosteriyordu; check-in
+sonrasi otomatik olarak aciliyordu.
+
+Iki degisiklik birlikte yapildi:
+1. `check_in_yap` sonrasi yonlendirme `/mekanlar/<id>` yerine
+   `/mekanlar` (check-in sekmesi). Kart zaten "Şu an buradasın"
+   haline geciyor, yani kullanici sonucu ayni ekranda goruyor.
+2. Mekan detayina giden ON BAGLANTI `/check-in/<id>` adresine
+   yonlendirildi (akis, profil, anilar, kesfet listesi, harita,
+   mekan ekleme, check-in karti). Yani bir mekana dokununca artik
+   o mekanin check-in ekrani aciliyor.
+
+KAYBEDILEN ISLEV, bilerek: "bu mekanda su an kimler var" listesi
+artik hicbir yerde gosterilmiyor. Yogunluk SAYISI kesfet listesinde
+duruyor ama kimlikler yok. Geri istenirse o ekranin git gecmisinde
+tam hali duruyor.
+
 ### ORTAM TUZAGI: `mobil/.expo` KLASORUNU SILME (2026-08-29)
 
 `mobil/.expo/types/router.d.ts` expo-router'in URETTIGI tip dosyasidir

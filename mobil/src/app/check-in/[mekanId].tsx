@@ -152,7 +152,10 @@ export default function CheckInEkrani() {
         }
       }
 
-      router.replace(`/mekanlar/${mekanId}`)
+      // Check-in sonrasi MEKAN DETAYINA gidilmiyor (kullanicinin
+      // karari 2026-08-29): kullanici check-in sekmesinde kaliyor,
+      // kart zaten "Şu an buradasın" haline geciyor.
+      router.replace('/mekanlar')
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
         setHata('İnternet bağlantısı yok, tekrar dene')

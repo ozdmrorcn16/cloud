@@ -233,7 +233,7 @@ export default function AnaSayfa() {
                   benimMi: item.benimMi,
                 }}
                 sonuncu={index === ogeler.length - 1}
-                onAniSec={(ani) => router.push(`/mekanlar/${ani.mekanId}`)}
+                onAniSec={(ani) => router.push(`/check-in/${ani.mekanId}`)}
                 onKisiSec={() => {
                   // `as never`: '/profil' klasor rotasi oldugu icin
                   // expo-router'in urettigi tiplenmis rota birlesiminde

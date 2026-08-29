@@ -94,7 +94,7 @@ export function CheckInKarti({
           <Text style={stiller.ayirac}> - </Text>
           <Text
             style={stiller.mekanAdi}
-            onPress={() => router.push(`/mekanlar/${oge.mekanId}`)}
+            onPress={() => router.push(`/check-in/${oge.mekanId}`)}
           >
             {oge.mekanAdi}
           </Text>

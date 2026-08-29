@@ -71,7 +71,7 @@ export default function MekanEkleEkrani() {
         cihazKonumu,
         adres.trim() || undefined
       )
-      router.replace(`/mekanlar/${yeniMekan.id}`)
+      router.replace(`/check-in/${yeniMekan.id}`)
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
     } finally {
@@ -107,7 +107,7 @@ export default function MekanEkleEkrani() {
             data={benzerMekanlar}
             keyExtractor={(m) => m.id}
             renderItem={({ item }) => (
-              <Pressable onPress={() => router.push(`/mekanlar/${item.id}`)}>
+              <Pressable onPress={() => router.push(`/check-in/${item.id}`)}>
                 <Text style={stiller.benzerMekan}>{item.ad}</Text>
               </Pressable>
             )}

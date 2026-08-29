@@ -34,7 +34,7 @@ beforeEach(async () => {
 })
 
 describe('CheckInEkrani', () => {
-  it('not ile check-in yapar ve mekan ekranina yonlendirir', async () => {
+  it('not ile check-in yapar ve check-in sekmesinde kalir', async () => {
     ;(checkInYap as jest.Mock).mockResolvedValue({
       id: 'checkin-1', mekanId: 'mekan-1', notMetni: 'harika', fotograf: null,
       olusturmaZamani: '2026-08-14T10:00:00Z', bitisZamani: '2026-08-14T14:00:00Z', canliMi: true,
@@ -48,7 +48,9 @@ describe('CheckInEkrani', () => {
     await waitFor(() => {
       expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', undefined, 'herkese_acik')
     })
-    expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar/mekan-1')
+    // Check-in sonrasi mekan detayina degil, CHECK-IN SEKMESINE
+    // donuluyor (kullanicinin karari 2026-08-29).
+    expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar')
   })
 
   it('sunucu mesafe hatasi donerse gosterir', async () => {

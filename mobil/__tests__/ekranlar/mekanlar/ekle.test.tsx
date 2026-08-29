@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 
 describe('MekanEkleEkrani', () => {
-  it('gecerli bilgilerle mekanEkle cagirir ve yeni mekana yonlendirir', async () => {
+  it('gecerli bilgilerle mekanEkle cagirir ve yeni mekanin check-in ekranina yonlendirir', async () => {
     ;(mekanEkle as jest.Mock).mockResolvedValue({
       id: 'mekan-yeni', ad: 'Yeni Kafe', tur: 'kafe', adres: null, osmId: null,
       konum: { lat: 41.015, lng: 28.979 },
@@ -38,7 +38,7 @@ describe('MekanEkleEkrani', () => {
         'Yeni Kafe', 'Kafe', { lat: 41.015, lng: 28.979 }, { lat: 41.015, lng: 28.979 }, undefined
       )
     })
-    expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar/mekan-yeni')
+    expect(mockRouterReplace).toHaveBeenCalledWith('/check-in/mekan-yeni')
   })
 
   it('sunucu mesafe hatasi donerse gosterir', async () => {

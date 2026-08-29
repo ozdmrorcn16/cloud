@@ -57,7 +57,7 @@ describe('MekanAramaEkrani', () => {
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, undefined)
   })
 
-  it('bir mekana basinca detay ekranina yonlendirir', async () => {
+  it('bir mekana basinca check-in ekranina yonlendirir', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -77,7 +77,7 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => screen.getByText('Moda Parkı'))
     await fireEvent.press(screen.getByText('Moda Parkı'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/mekanlar/mekan-2')
+    expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-2')
   })
 
   it('konum izni verilmezse hata gosterir', async () => {
