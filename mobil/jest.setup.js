@@ -6,6 +6,11 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
   'placeholder-anon-key-pending-task-2'
 
+// Guvenli alan: testte cihaz yok, paketin kendi mock'u sifir inset verir.
+jest.mock('react-native-safe-area-context', () =>
+  require('react-native-safe-area-context/jest/mock').default
+)
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 )

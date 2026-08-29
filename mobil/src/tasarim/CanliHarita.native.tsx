@@ -21,9 +21,12 @@ export type { HaritaMekani } from './CanliHarita'
  *
  * YUZ YOK (mevcut karar): igneler yalnizca kisi SAYISI tasiyor.
  *
- * Kaydirma KAPALI, yakinlastirma ACIK: harita bir ScrollView'un
- * icinde 260 px'lik bir kart; tek parmakla kaydirma sayfa
- * kaydirmasiyla cakisiyordu. Igneler yine dokunulabilir.
+ * Kaydirma ve yakinlastirma ACIK (kullanicinin TestFlight'taki ilk
+ * geri bildirimi 2026-08-30: "kaydirmakta zorlaniyorum"). Ilk surumde
+ * kaydirma kapaliydi - sayfa kaydirmasiyla cakisir diye - ama gercek
+ * bir haritanin parmakla kaymamasi bozuk hissettiriyor. Parmak
+ * haritadayken harita, disindayken sayfa kayar; Instagram ve Google
+ * uygulamalarindaki kart haritalar da boyle.
  */
 
 /** Haritada en fazla kac mekan ignesi cizilir. */
@@ -110,8 +113,9 @@ export function CanliHarita({
         testID="canli-harita"
         style={StyleSheet.absoluteFill}
         initialRegion={bolge}
-        scrollEnabled={false}
+        scrollEnabled
         zoomEnabled
+        moveOnMarkerPress={false}
         rotateEnabled={false}
         pitchEnabled={false}
         showsUserLocation={false}

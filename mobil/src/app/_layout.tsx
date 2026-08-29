@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { useFonts } from 'expo-font'
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   InstrumentSans_400Regular,
   InstrumentSans_500Medium,
@@ -12,6 +13,7 @@ import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
+import { renk } from '../tasarim/tema'
 
 /**
  * Dil tercihi cihazdan okunana kadar ekran cizilmiyor. Yazi tipleriyle
@@ -28,6 +30,14 @@ function YonlendirmeKontrolu() {
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
   const router = useRouter()
+  // GUVENLI ALAN (2026-08-30, TestFlight'taki ilk denemede bulundu):
+  // gercek uygulamada ekran centigin/saatin ALTINA giriyordu, ustteki
+  // basliklar okunmuyordu. Tarayicida bu alani Safari kendisi
+  // birakiyor, native'de biz birakmak zorundayiz. Pay cihazdan
+  // okunuyor (her iPhone modelinde farkli), tek yerde - kokte -
+  // uygulaniyor; ekranlar kendi ic paylarini oldugu gibi koruyor.
+  // Web'de deger sifir, yani web gorunumu degismiyor.
+  const insets = useSafeAreaInsets()
   // Oturum acik ve profil hazir oldugunda push jetonunu kaydet ve
   // bildirime dokunma dinleyicisini kur. bildirimleriBaslat web'de,
   // izin reddinde ve gercek cihaz olmayan ortamda sessizce doner.
@@ -94,16 +104,21 @@ function YonlendirmeKontrolu() {
     segments[0] !== 'profil-olustur' &&
     segments[0] !== 'hesap-durumu'
 
+  // Alt pay AYRI bir kutuda: gezinme cubugu kendi konumunu insets'ten
+  // aliyor; ekran icerigi ise ana ekran gostergesinin ustunde bitiyor.
   return (
-    <View style={stiller.kok}>
-      <Slot />
+    <View style={[stiller.kok, { paddingTop: insets.top }]}>
+      <View style={[stiller.icerik, { paddingBottom: insets.bottom }]}>
+        <Slot />
+      </View>
       {uygulamaIcinde && <AltGezinme />}
     </View>
   )
 }
 
 const stiller = StyleSheet.create({
-  kok: { flex: 1 },
+  kok: { flex: 1, backgroundColor: renk.zemin },
+  icerik: { flex: 1 },
 })
 
 export default function KokLayout() {
@@ -120,10 +135,12 @@ export default function KokLayout() {
   if (!yaziHazir) return null
 
   return (
-    <DilSaglayici>
-      <OturumSaglayici>
-        <DilBekleyerek />
-      </OturumSaglayici>
-    </DilSaglayici>
+    <SafeAreaProvider>
+      <DilSaglayici>
+        <OturumSaglayici>
+          <DilBekleyerek />
+        </OturumSaglayici>
+      </DilSaglayici>
+    </SafeAreaProvider>
   )
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter, usePathname } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { bekleyenEtiketleriGetir } from '../../lib/etiket'
@@ -165,6 +166,9 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
 export function AltGezinme() {
   const router = useRouter()
   const yol = usePathname()
+  // Cubuk ana ekran gostergesinin (iPhone'daki alt cizgi) USTUNDE
+  // durur; web'de inset sifir, cubuk eskisi gibi en altta.
+  const insets = useSafeAreaInsets()
   const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
   const [bekleyenBildirim, setBekleyenBildirim] = useState(0)
 
@@ -206,7 +210,7 @@ export function AltGezinme() {
   }, [yol])
 
   return (
-    <View style={stiller.kapsayici} pointerEvents="box-none">
+    <View style={[stiller.kapsayici, { bottom: insets.bottom }]} pointerEvents="box-none">
       <View style={stiller.cubuk}>
         {SEKMELER.map((s, sira) => {
           // Dugme ORTAYA giriyor: iki sekme solda, iki sekme sagda.
