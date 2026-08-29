@@ -65,13 +65,22 @@ kaydinin ne zaman ve hangi metin surumu icin alindigi saklanmali.
 
 ### 3. Yurt disina aktarim (KVKK m.9) - EKSIK, hukukcu onayi
 
-Iki aktarim var ve ikisi de bugun belgelenmemis:
+Uc aktarim var ve ucu de bugun belgelenmemis:
 
 - **Supabase**, proje bolgesi `eu-central-1` (Almanya). Butun kisisel
   veri Turkiye disinda tutuluyor.
 - **Expo Push API** (ABD), bildirim gonderiminde. Icerik tasimiyor
   (karar 48) ama cihaz jetonu ve alici bilgisi gidiyor - bu da kisisel
   veridir.
+- **Apple Haritalar / Google Haritalar** (2026-08-30, yalnizca iOS ve
+  Android uygulamalarinda; web'de yok). Harita zemini cizilirken
+  ekranda gorunen bolgenin koordinatlari saglayiciya gider. Kimlik,
+  hesap ya da check-in gitmez; ama kesfet ekraninda o bolge
+  kullanicinin bulundugu yerdir, yani dolayli olarak konum verisidir.
+  Gizlilik metni madde 5'e yazildi. Dort soru:
+  hangi veri = gorunen harita bolgesi; dayanak = konum izni ve
+  aydinlatma; sure = uygulama tarafinda saklama yok, saglayicinin
+  politikasi; kim gorur = Apple (iOS) / Google (Android).
 
 2024 degisikligiyle standart sozlesme yolu acildi; kullanilan yol ne
 olursa olsun Kurum'a bildirim ve belgeleme gerekiyor. **Bir danismana

@@ -48,3 +48,28 @@ jest.mock('./src/tasarim/AltGezinme', () => ({
   AltGezinme: () => null,
   ALT_GEZINME_PAYI: 96,
 }))
+
+// Gercek harita (react-native-maps) yalnizca cihazda calisiyor; jest'te
+// MapView duz bir View, Marker ise dokunulabilir bir View. jest-expo iOS
+// ontanimli oldugu icin ekran testleri CanliHarita'nin NATIVE surumunu
+// render ediyor ve bu mock'a ihtiyac duyuyor. Marker'a verilen testID
+// sabit ("harita-ignesi") - testler igne sayisini oradan sayiyor.
+jest.mock('react-native-maps', () => {
+  const React = require('react')
+  const { View, Pressable } = require('react-native')
+  const MapView = React.forwardRef((props, ref) => {
+    React.useImperativeHandle(ref, () => ({ animateToRegion: jest.fn() }))
+    return React.createElement(View, { testID: props.testID }, props.children)
+  })
+  const Marker = (props) =>
+    React.createElement(
+      Pressable,
+      {
+        testID: 'harita-ignesi',
+        onPress: props.onPress,
+        accessibilityLabel: props.accessibilityLabel,
+      },
+      props.children
+    )
+  return { __esModule: true, default: MapView, Marker, PROVIDER_GOOGLE: 'google' }
+})

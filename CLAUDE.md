@@ -131,6 +131,43 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### GERCEK HARITA (iOS + Android) EKLENDI - 2026-08-30
+
+Kullanicinin karari: kesfet ve check-in harita ekranindaki radar
+cizimi yerine GERCEK harita, iOS ve Android'de; web'de radar kaliyor.
+Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
+(anahtarsiz, ucretsiz), Android'de Google Haritalar. Spec:
+`docs/superpowers/specs/2026-08-30-gercek-harita-design.md`.
+
+- `src/tasarim/CanliHarita.native.tsx` (gercek harita) ve
+  `CanliHarita.tsx` (web radari) AYNI arayuzu veriyor; ekranlar
+  degismedi. Metro platforma gore dosyayi seciyor.
+- `app.config.js` YENI: app.json'u alip `react-native-maps`
+  eklentisini ekliyor; Android anahtari `GOOGLE_MAPS_ANDROID_ANAHTARI`
+  cevre degiskeninden. ANAHTAR DEPOYA YAZILMAZ. Prebuild ile
+  dogrulandi: degisken varsa manifest'e `com.google.android.geo.API_KEY`
+  giriyor.
+- jest-expo iOS ontanimli oldugu icin ekran testleri artik NATIVE
+  bileseni render ediyor; `react-native-maps` mock'u `jest.setup.js`
+  icinde (Marker testID: `harita-ignesi`).
+- Kaydirma kapali, yakinlastirma acik (ScrollView icindeki kartta tek
+  parmak kaydirma sayfayla cakisiyordu). Sistemin mavi konum noktasi
+  kapali; merkez bizim turuncu igne. Yuz yok.
+- Gizlilik metni madde 5 ve `docs/kvkk-uyum-listesi.md` 3. madde:
+  harita saglayicisina giden veri yazildi.
+
+**KALAN (kullanicida):**
+1. iOS: TestFlight derlemesi - harita orada ilk kez GORULECEK.
+2. Android: Google Cloud'da Maps SDK for Android anahtari almak
+   (faturalandirma hesabi sart, mobil SDK ucretsiz), anahtari paket
+   adina (`com.slooin.app`) ve imza SHA-1'ine kisitlamak, sonra
+   `eas env:create --environment production --name
+   GOOGLE_MAPS_ANDROID_ANAHTARI --value <anahtar>` (preview icin de).
+   Anahtar yokken Android'de harita zemini gri kalir.
+3. `npx expo-doctor` 14 paketin guncel olmadigini soyluyor
+   (react-native 0.86.2 -> 0.86.3 vb.) - bu ISTEN ONCE de vardi,
+   harita degisikligiyle ilgisi yok; ayri bir bakim isi.
+
 ### DEVIR NOTU - 2026-08-27/30 (tasarim turu, yayin ve TestFlight)
 
 Calisma dali ayni: `claude/plan2-moderasyon-paneli`. Her sey commit'li

@@ -67,6 +67,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
     paragraflar: [
       "Supabase (veritabanı ve dosya depolama) sunucuları Almanya'da (eu-central-1 bölgesi). Bütün kişisel verin Türkiye dışında, Avrupa Birliği sınırları içinde tutulur.",
       "Expo Push API (bildirim gönderimi) sunucuları Amerika Birleşik Devletleri'nde. Bildirim gönderirken cihazının bildirim jetonu, kime gönderildiği bilgisi ve bildirimi tetikleyen kişinin adı buradan geçer (örneğin 'Deniz sana mesaj gönderdi' gibi). Mesajın metni bildirime hiçbir zaman eklenmez, ama bir başkasının adı da kişisel veridir ve bu aktarımın bir parçasıdır.",
+      "Harita zemini iOS'ta Apple Haritalar, Android'de Google Haritalar tarafından sağlanır. Harita çizilirken ekranda görünen bölgenin koordinatları bu sağlayıcıya gider; kimliğin, hesabın ya da check-in'lerin gitmez. Web sürümünde gerçek harita yoktur, bu aktarım da olmaz.",
     ],
   },
   {

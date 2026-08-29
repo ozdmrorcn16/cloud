@@ -143,6 +143,11 @@ Verilerin iki ayri yerde islenir:
   baska bir kullanicinin adi da kisisel veridir ve bu aktarimin bir
   parcasidir - "icerik tasimaz" ifadesi yalnizca mesaj metni icin
   gecerlidir, "hicbir kisisel veri gitmiyor" anlamina gelmez.
+- **Harita zemini** (2026-08-30'dan itibaren, yalnizca iOS ve Android
+  uygulamalarinda): iOS'ta **Apple Haritalar**, Android'de **Google
+  Haritalar**. Harita cizilirken ekranda gorunen bolgenin koordinatlari
+  saglayiciya gider; kimligin, hesabin ya da check-in'lerin gitmez.
+  Web surumunde gercek harita yoktur, bu aktarim da olmaz.
 
 ## 6. Saklama sureleri
 
