@@ -1,0 +1,130 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Slooin — profil bandı renk denemeleri</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2a2622; font-family: 'Instrument Sans', system-ui, sans-serif; padding: 24px; }
+
+  .telefon { position: relative; width: 390px; height: 620px; overflow: hidden;
+             background: #fff; }
+  .ustSatir { display: flex; align-items: center; justify-content: space-between;
+              padding: 26px 20px 16px; }
+  .kullaniciAdi { font-size: 19px; font-weight: 700; color: #17130F; letter-spacing: -0.3px; }
+
+  .band { padding: 24px 20px 16px; }
+  .avatar { width: 104px; height: 104px; border-radius: 999px;
+            display: grid; place-items: center; font-size: 34px; font-weight: 700;
+            margin: 0 auto; position: relative; }
+  .rozet { position: absolute; right: -2px; bottom: -2px; width: 28px; height: 28px;
+           border-radius: 999px; background: #17130F; display: grid; place-items: center;
+           color: #fff; font-size: 17px; font-weight: 600; line-height: 1; }
+  .ad { font-size: 19px; font-weight: 600; text-align: center; margin-top: 14px; }
+  .bio { font-size: 13px; text-align: center; margin-top: 3px; }
+  .sayilar { display: flex; align-items: center; margin-top: 18px; }
+  .sayilar > .h { flex: 1; text-align: center; }
+  .sayilar .s { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; }
+  .sayilar .e { font-size: 13px; margin-top: 2px; }
+  .ayirici { width: 1px; height: 28px; }
+  .dugmeler { display: flex; gap: 8px; margin-top: 16px; }
+  .dugme { flex: 1; text-align: center; padding: 9px 0; border-radius: 10px;
+           font-size: 14px; font-weight: 600; border: 1px solid; }
+
+  .sekmeler { display: flex; border-bottom: 1px solid #EFEAE5; }
+  .sekmeler div { flex: 1; text-align: center; padding: 12px 0; font-size: 14px;
+                  font-weight: 600; color: #A39B93; }
+  .sekmeler div.aktif { color: #17130F; box-shadow: inset 0 -2px 0 #17130F; }
+
+  .tunel { padding: 14px 20px 0 60px; position: relative; }
+  .tunel:before { content: ''; position: absolute; left: 35px; top: 22px; bottom: 0;
+                  width: 2px; background: #FFD9B8; }
+  .ani { position: relative; margin-bottom: 14px; }
+  .ani .isaret { position: absolute; left: -40px; top: 0; width: 30px; height: 30px;
+                 border-radius: 999px; background: #FE7813; border: 3px solid #fff; }
+  .ani .yer { font-size: 15px; font-weight: 600; color: #17130F; }
+  .ani .alt { font-size: 13px; color: #6E6660; margin-top: 2px; }
+
+  .etiket-sat { color: #FAF7F3; font-size: 15px; font-weight: 600; margin: 0 0 10px;
+                display: flex; align-items: baseline; gap: 10px; }
+  .etiket-sat i { color: #FE7813; font-style: normal; font-weight: 700; }
+  .etiket-sat small { color: #a49b92; font-weight: 400; font-size: 13px; }
+  .tahta > div.telefon { margin-bottom: 36px; }
+</style>
+
+<div id="tahta" class="tahta"></div>
+
+<script>
+  const disli = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#17130F" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.9 1.2v.18a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.96-1.14l-.06.06A2 2 0 1 1 4.16 16.4l.06-.06A1.7 1.7 0 0 0 3.08 13.5H2.9a2 2 0 1 1 0-4H3a1.7 1.7 0 0 0 1.14-2.96l-.06-.06A2 2 0 1 1 6.9 3.65l.06.06a1.7 1.7 0 0 0 2.9-1.2V2.4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0 1.2 2.9h.18a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.47 1z"/></svg>'
+
+  /**
+   * Her varyant yalnizca RENK degistiriyor; duzen birebir ayni ki
+   * karsilastirma renk uzerinden yapilabilsin.
+   */
+  function telefon(no, r) {
+    return `<div class="telefon" id="s${no}">
+      <div class="ustSatir"><div class="kullaniciAdi">@deniz</div>${disli}</div>
+      <div class="band" style="background:${r.band}">
+        <div class="avatar" style="background:${r.avatarZemin};color:${r.avatarYazi};
+             ${r.avatarHalka ? `border:4px solid ${r.avatarHalka}` : ''}">
+          D<div class="rozet">+</div>
+        </div>
+        <div class="ad" style="color:${r.baslik}">Deniz Yılmaz</div>
+        <div class="bio" style="color:${r.ikincil}">Kahve, uzun yürüyüşler.</div>
+        <div class="sayilar">
+          <div class="h"><div class="s" style="color:${r.baslik}">24</div>
+            <div class="e" style="color:${r.ikincil}">Anı</div></div>
+          <div class="ayirici" style="background:${r.ayirici}"></div>
+          <div class="h"><div class="s" style="color:${r.baslik}">11</div>
+            <div class="e" style="color:${r.ikincil}">Yer</div></div>
+          <div class="ayirici" style="background:${r.ayirici}"></div>
+          <div class="h"><div class="s" style="color:${r.baslik}">18</div>
+            <div class="e" style="color:${r.ikincil}">Arkadaş</div></div>
+        </div>
+        <div class="dugmeler">
+          <div class="dugme" style="background:${r.dolu};color:${r.doluYazi};border-color:${r.dolu}">Profili düzenle</div>
+          <div class="dugme" style="color:${r.baslik};border-color:${r.kenarlik}">Paylaş</div>
+        </div>
+      </div>
+      <div class="sekmeler"><div class="aktif">Anılar</div><div>Yerler</div></div>
+      <div class="tunel">
+        <div class="ani"><div class="isaret"></div>
+          <div class="yer">Kahve Durağı</div><div class="alt">Nilüfer · 14:41</div></div>
+        <div class="ani"><div class="isaret"></div>
+          <div class="yer">Sahil Yürüyüş Yolu</div><div class="alt">Nilüfer · 12:28</div></div>
+      </div>
+    </div>`
+  }
+
+  const VARYANTLAR = [
+    ['1', 'Mevcut - düz turuncu', 'bugün yayında olan', {
+      band: '#FE7813', baslik: '#fff', ikincil: 'rgba(255,255,255,.85)',
+      ayirici: 'rgba(255,255,255,.35)', avatarZemin: '#fff', avatarYazi: '#FE7813',
+      avatarHalka: '#fff', dolu: '#fff', doluYazi: '#E06509', kenarlik: 'rgba(255,255,255,.55)',
+    }],
+    ['2', 'Gradyan turuncu', 'aynı renk ailesi, düz değil derinlikli', {
+      band: 'linear-gradient(160deg,#FF9040 0%,#FE7813 45%,#DD5A00 100%)',
+      baslik: '#fff', ikincil: 'rgba(255,255,255,.85)',
+      ayirici: 'rgba(255,255,255,.35)', avatarZemin: '#fff', avatarYazi: '#FE7813',
+      avatarHalka: '#fff', dolu: '#fff', doluYazi: '#E06509', kenarlik: 'rgba(255,255,255,.55)',
+    }],
+    ['3', 'Koyu band', 'turuncu yalnızca eylemde kalır', {
+      band: '#17130F', baslik: '#fff', ikincil: 'rgba(255,255,255,.7)',
+      ayirici: 'rgba(255,255,255,.22)', avatarZemin: '#FFF3E8', avatarYazi: '#FE7813',
+      avatarHalka: '#2A2420', dolu: '#FE7813', doluYazi: '#fff', kenarlik: 'rgba(255,255,255,.4)',
+    }],
+    ['4', 'Sıcak krem', 'en sakin; metin koyu, turuncu vurgu', {
+      band: '#FFF3E8', baslik: '#17130F', ikincil: '#6E6660',
+      ayirici: '#EFD9C4', avatarZemin: '#fff', avatarYazi: '#FE7813',
+      avatarHalka: '#fff', dolu: '#FE7813', doluYazi: '#fff', kenarlik: '#E8CDB4',
+    }],
+    ['5', 'Band yok', 'beyaz sayfa, turuncu sadece avatar halkasında', {
+      band: '#FFFFFF', baslik: '#17130F', ikincil: '#6E6660',
+      ayirici: '#EFEAE5', avatarZemin: '#FFF3E8', avatarYazi: '#FE7813',
+      avatarHalka: '#FE7813', dolu: '#FE7813', doluYazi: '#fff', kenarlik: '#EFEAE5',
+    }],
+  ]
+
+  document.getElementById('tahta').innerHTML = VARYANTLAR.map(([no, ad, not, r]) =>
+    `<div class="etiket-sat"><i>${no}</i> ${ad} <small>${not}</small></div>${telefon(no, r)}`
+  ).join('')
+</script>
