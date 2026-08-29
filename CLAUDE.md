@@ -172,8 +172,9 @@ ekraninda gorunurluk secimi YOK (Ayarlar'daki varsayilan kullaniliyor).
 **ACIK BORCLAR:**
 1. `test:gorunurluk` icinde ETIKET ONAYI senaryosu yok
    (`docs/plan2-takip-isleri.md`).
-2. Veritabani 420/500 MB - ucretsiz katmanin dibinde. Pro'ya gecis
-   karari kullanicida.
+2. ~~Veritabani 420/500 MB~~ KAPANDI: 2026-08-30'da Supabase PRO
+   plana gecildi; pg_trgm indeksi kuruldu, arama havuzu kalkti
+   (migrasyon 20260830090000). Guven esigi (0.60) hala acik karar.
 3. Gun ayraci metinleri (Bugun/Dun/ay adlari) `AniTuneli` icinde
    sabit, sozlukte degil.
 4. Test hesaplarindaki ornek veriler SAHTE; silme komutu
@@ -266,8 +267,20 @@ kirpilmiyor; siralama en yakindan. Tek mesafe kurali check-in'de ve
 null gelirse `ST_DWithin` hic uygulanmiyor, PostGIS'in KNN operatoru
 (`<->`) en yakin 50 kaydi veriyor. Istemci null gonderiyor.
 
-**ARAMADA MALIYET KILOMETREYLE DEGIL SAYIYLA SINIRLI - olculdu.**
-`ad` uzerinde `like '%...%'` var ve **pg_trgm indeksi KURULU DEGIL**
+**GUNCELLEME 2026-08-30: PRO PLANA GECILDI, pg_trgm INDEKSI KURULDU,
+ARAMA HAVUZU KALKTI** (migrasyon 20260830090000). Asagidaki olcum
+tablosu tarihsel kayit; "20.000 mekan havuzu" ve "baska sehirdeki
+mekan aramada cikmaz" siniri ARTIK YOK. `mekanlar_ad_trgm_idx`
+(`tr_kucuk(ad)` uzerinde GIN, 51 MB; veritabani 471 MB) kuruldu ve
+`yakin_mekanlar_yogunluk` tek sorgu bicimine indi: filtre butun
+tabloda, siralama en yakindan, limit 50. Planlayici terime gore
+indeks seciyor - nadir terimde trgm (47.700 ms -> 177 ms), yaygin
+terimde ("kafe") konum indeksi + filtre (~900 ms, degismedi).
+`tr_kucuk` IMMUTABLE; fonksiyon degisirse indeks yeniden kurulmali.
+
+**ARAMADA MALIYET KILOMETREYLE DEGIL SAYIYLA SINIRLI - olculdu**
+(TARIHSEL, 2026-08-28; yukaridaki guncellemeye bak).
+`ad` uzerinde `like '%...%'` vardi ve pg_trgm indeksi kurulu degildi
 (veritabani 500 MB ucretsiz sinirin dibinde). Bursa merkezinden
 olculen gercek sureler:
 
@@ -279,18 +292,9 @@ olculen gercek sureler:
 | 25 km yaricap, nadir terim | 710 ms |
 | en yakin 20.000 mekan havuzu, nadir terim | 470 ms |
 
-PostgREST zaman asimi 8 saniye, yani ilk iki satir kullaniciya hata
-olarak doner. Bu yuzden arama en yakin **20.000 mekan** icinde
-yapiliyor. Kullanicinin gordugu sey "km siniri yok, en yakinlar
-ustte"; maliyet ise arama terimi ne olursa olsun sabit.
-
-**BILINEN SINIR:** Bursa merkezinde 20.000 mekan ~18 km'ye denk geliyor
-(5.000 -> 8 km, 50.000 -> 79 km). Yani BASKA BIR SEHIRDEKI mekan
-aramada CIKMAZ. Bunu kaldirmanin tek yolu `tr_kucuk(ad)` uzerinde
-pg_trgm GIN indeksi; `ad` sutunu 19 MB, indeks tahminen 40-90 MB ve
-ucretsiz katmanda ~80 MB bos yer var - denemek canli veritabanini
-500 MB sinirina dayama riski tasidigi icin YAPILMADI. Pro plana
-gecilirse ilk yapilacak islerden biri budur.
+PostgREST zaman asimi 8 saniye; bu yuzden arama o gun en yakin
+20.000 mekan icinde yapilmisti (Bursa merkezinde ~18 km). Bu sinir
+2026-08-30'da kaldirildi.
 
 Test mekanlarinin arasi 1.967 m olcuIdu, yani 1 km'lik yeni check-in
 kurali `test:gorunurluk` senaryolarini bozmuyor.
