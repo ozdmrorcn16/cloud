@@ -39,9 +39,9 @@ try {
   await sayfa.evaluate(() => document.fonts.ready)
   await new Promise((c) => setTimeout(c, 800))
 
-  const numaralar = (process.env.SLOOIN_TAHTA_ADET ?? '6') === '5'
-    ? ['1', '2', '3', '4', '5']
-    : ['1', '2', '3', '4', '5', '6']
+  // Kac secenek cizilecegi tahtaya gore degisiyor.
+  const adet = Number(process.env.SLOOIN_TAHTA_ADET ?? '6')
+  const numaralar = Array.from({ length: adet }, (_, i) => String(i + 1))
   for (const no of numaralar) {
     const oge = await sayfa.$('#s' + no)
     if (!oge) throw new Error('secenek bulunamadi: ' + no)

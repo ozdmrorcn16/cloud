@@ -1,0 +1,147 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Slooin — sıra rozeti denemeleri</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2a2622; font-family: 'Instrument Sans', system-ui, sans-serif; padding: 24px; }
+
+  .telefon { width: 390px; height: 560px; background: #fff; overflow: hidden; padding: 18px 20px; }
+  .sekmeler { display: flex; border-bottom: 1px solid #EFEAE5; margin-bottom: 6px; }
+  .sekmeler div { flex: 1; text-align: center; padding: 11px 0; font-size: 14px; font-weight: 600; color: #A39B93; }
+  .sekmeler div.aktif { color: #17130F; box-shadow: inset 0 -2px 0 #17130F; }
+
+  .satir { display: flex; align-items: center; gap: 12px; padding: 11px 0;
+           border-bottom: 1px solid #EFEAE5; }
+  .satir .buyu { flex: 1; min-width: 0; }
+  .satir .ad { font-size: 15px; font-weight: 600; color: #17130F;
+               white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .satir .semt { font-size: 13px; color: #6E6660; margin-top: 1px; }
+  .satir .adet { font-size: 13px; font-weight: 600; color: #E06509; background: #FFF3E8;
+                 border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+  .rozetAlan { width: 34px; display: flex; align-items: center; justify-content: center; }
+  .duzRakam { width: 34px; text-align: center; font-size: 13px; font-weight: 700; color: #A39B93; }
+
+  .etiket-sat { color: #FAF7F3; font-size: 15px; font-weight: 600; margin: 0 0 10px;
+                display: flex; align-items: baseline; gap: 10px; }
+  .etiket-sat i { color: #FE7813; font-style: normal; font-weight: 700; }
+  .etiket-sat small { color: #a49b92; font-weight: 400; font-size: 13px; }
+  .tahta > div.telefon { margin-bottom: 36px; }
+</style>
+
+<div id="tahta" class="tahta"></div>
+
+<script>
+  // Madalya renkleri: zemin, kenar/cizgi, yazi
+  const RENK = [
+    { z: '#FBEFD0', k: '#E3B93E', y: '#8A6206' }, // altin
+    { z: '#EEF1F3', k: '#B4BCC3', y: '#5C666E' }, // gumus
+    { z: '#F7E7D8', k: '#C88B4E', y: '#8A5320' }, // bronz
+    { z: '#F6F1EB', k: '#E2D8CD', y: '#6E6660' },
+    { z: '#F6F1EB', k: '#E2D8CD', y: '#6E6660' },
+  ]
+
+  /** A - MUHURLU ROZET: kenari centikli, damga gibi. */
+  function muhur(n, r) {
+    const dis = []
+    const dilim = 24
+    for (let i = 0; i < dilim; i++) {
+      const a = (i / dilim) * Math.PI * 2
+      const yc = i % 2 === 0 ? 15 : 12.6
+      dis.push(`${17 + Math.cos(a) * yc},${17 + Math.sin(a) * yc}`)
+    }
+    return `<svg width="34" height="34" viewBox="0 0 34 34">
+      <polygon points="${dis.join(' ')}" fill="${r.z}" stroke="${r.k}" stroke-width="1.2"
+        stroke-linejoin="round"/>
+      <text x="17" y="21.5" text-anchor="middle" font-family="Instrument Sans"
+        font-size="13" font-weight="700" fill="${r.y}">${n}</text>
+    </svg>`
+  }
+
+  /** B - DEFNE CELENGI: rakamin iki yaninda yaprak dallari. */
+  function defne(n, r) {
+    const yaprak = (x, y, don) =>
+      `<ellipse cx="${x}" cy="${y}" rx="2.1" ry="3.4" fill="${r.k}"
+        transform="rotate(${don} ${x} ${y})" opacity=".9"/>`
+    let sol = '', sag = ''
+    const konum = [[7.6, 21, -35], [6.2, 17, -15], [6.6, 13, 10]]
+    konum.forEach(([x, y, d]) => {
+      sol += yaprak(x, y, d)
+      sag += yaprak(34 - x, y, -d)
+    })
+    return `<svg width="34" height="34" viewBox="0 0 34 34">
+      <circle cx="17" cy="17" r="11.5" fill="${r.z}"/>
+      ${sol}${sag}
+      <text x="17" y="21.5" text-anchor="middle" font-family="Instrument Sans"
+        font-size="13" font-weight="700" fill="${r.y}">${n}</text>
+    </svg>`
+  }
+
+  /** C - KURDELELI MADALYA: daire + altinda iki kurdele ucu. */
+  function kurdele(n, r) {
+    return `<svg width="34" height="36" viewBox="0 0 34 36">
+      <path d="M11 24 L8.5 34 L13.5 31.5 L17 34 L20.5 31.5 L25.5 34 L23 24z"
+        fill="${r.k}" opacity=".55"/>
+      <circle cx="17" cy="14.5" r="12" fill="${r.z}" stroke="${r.k}" stroke-width="1.4"/>
+      <circle cx="17" cy="14.5" r="8.6" fill="none" stroke="${r.k}" stroke-width=".7" opacity=".6"/>
+      <text x="17" y="19" text-anchor="middle" font-family="Instrument Sans"
+        font-size="12.5" font-weight="700" fill="${r.y}">${n}</text>
+    </svg>`
+  }
+
+  /** D - YILDIZLI CIFT HALKA: ince dis halka, ustunde kucuk yildiz. */
+  function yildiz(n, r) {
+    const y = (cx, cy, d) => {
+      const p = []
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2 - Math.PI / 2
+        const yc = i % 2 === 0 ? d : d * 0.45
+        p.push(`${cx + Math.cos(a) * yc},${cy + Math.sin(a) * yc}`)
+      }
+      return `<polygon points="${p.join(' ')}" fill="${r.k}"/>`
+    }
+    return `<svg width="34" height="34" viewBox="0 0 34 34">
+      <circle cx="17" cy="18" r="13" fill="none" stroke="${r.k}" stroke-width="1" opacity=".55"/>
+      <circle cx="17" cy="18" r="10.4" fill="${r.z}" stroke="${r.k}" stroke-width="1.2"/>
+      ${y(17, 4.6, 4.2)}
+      <text x="17" y="22.4" text-anchor="middle" font-family="Instrument Sans"
+        font-size="12.5" font-weight="700" fill="${r.y}">${n}</text>
+    </svg>`
+  }
+
+  const YERLER = [
+    ['TÜVTÜRK Nilüfer Araç Muayene…', 'Nilüfer', '3 kez'],
+    ['Alsekan Spor Merkezi', 'Yıldırım', '2 kez'],
+    ['Unpa Pastaneleri', 'Nilüfer', '2 kez'],
+    ['BTU Halı Saha', 'Yıldırım', '1 kez'],
+    ['Candan Cağ Kebap', 'Yıldırım', '1 kez'],
+    ['Tebesir Cafe', 'Yıldırım', '1 kez'],
+    ['Uludağ Üniversitesi Anaokulu', 'Nilüfer', '1 kez'],
+  ]
+
+  function telefon(no, ciz) {
+    const satirlar = YERLER.map(([ad, semt, adet], i) => {
+      const rozet = i < 5
+        ? `<div class="rozetAlan">${ciz(i + 1, RENK[i])}</div>`
+        : `<div class="duzRakam">${i + 1}</div>`
+      return `<div class="satir">${rozet}
+        <div class="buyu"><div class="ad">${ad}</div><div class="semt">${semt}</div></div>
+        <div class="adet">${adet}</div></div>`
+    }).join('')
+    return `<div class="telefon" id="s${no}">
+      <div class="sekmeler"><div>Anılar</div><div class="aktif">Yerler</div></div>
+      ${satirlar}
+    </div>`
+  }
+
+  const SECENEKLER = [
+    ['1', 'Mühürlü rozet', 'kenarı çentikli, damga gibi', muhur],
+    ['2', 'Defne çelengi', 'rakamın iki yanında yaprak dalları', defne],
+    ['3', 'Kurdeleli madalya', 'daire + altında kurdele uçları', kurdele],
+    ['4', 'Yıldızlı çift halka', 'ince dış halka, üstünde yıldız', yildiz],
+  ]
+
+  document.getElementById('tahta').innerHTML = SECENEKLER.map(([no, ad, not, ciz]) =>
+    `<div class="etiket-sat"><i>${no}</i> ${ad} <small>${not}</small></div>${telefon(no, ciz)}`
+  ).join('')
+</script>
