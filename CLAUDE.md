@@ -168,51 +168,39 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
    (react-native 0.86.2 -> 0.86.3 vb.) - bu ISTEN ONCE de vardi,
    harita degisikligiyle ilgisi yok; ayri bir bakim isi.
 
-### DEVAM EDEN IS: FOURSQUARE TEK KAYNAK YUKLEMESI (2026-08-30, gece)
+### MEKAN VERISI: FOURSQUARE TEK KAYNAK (2026-08-30) - TAMAMLANDI
 
-Kullanicinin kararlari sirasiyla: (1) Foursquare'i cek, (2) birlestirme
-degil TEK KAYNAK Foursquare - "daha tutarli, temiz"; Overture yalnizca
-ilce/adres bilgisini bagislar, sonra silinir (check-in yapilmis 16 mekan
-haric), (3) "Mekanlarin ilce ve adres bilgisi olsun", (4) veritabani
-compute buyutulmeyecek, yavas ucretsiz yoldan devam.
+Karar 79-80 (`docs/konusma-gunlugu.md`). Overture SILINDI (877.864
+satir; test check-in'leri de gitti - kullanicinin karari). `mekanlar`
+= 5.980.482 Foursquare kaydi + 3 test mekani. Kaynak `'foursquare'`,
+kimlik `fsq_place_id` (tekil indeks). Tur gizleme kurali degismedi
+(`turuGosterilir`: yalnizca 'kullanici'). Veritabani 3,1 GB; compute
+MEDIUM (kalici boyut karari kullanicida - Nano'da 6 milyon satir
+calismiyor, bkz. karar 80).
 
-DURUM (oturum bittiginde bakilacak):
-- `fsq_hazirlik` tablosunda 5.980.482 Foursquare satiri (kapali,
-  bayrakli ve mekan olmayan kategoriler elenmis) YUKLU.
-- `mekanlar`'a aktarim ARTIK SUNUCUDA, pg_cron ile (migrasyon
-  20260830130000): `fsq_aktarim_adimi()` dakikada bir, 45 sn butceyle
-  0,02 derecelik dilimler aktarir; ilerleme `fsq_aktarim_ilerleme`
-  tablosunda (bant/simdiki/eklenen/bitti). Istemci tarafi (PostgREST)
-  DENENDI VE BIRAKILDI: en kucuk compute'ta disk kotasi tukenince bir
-  dilim 60 sn gateway sinirini asiyor, istemci vazgecince ifade
-  sunucuda suruyor, tekrar deneme kilit yarisina giriyor
-  (ShareLock -> lock timeout). Istemci kosumlari 2,4 milyon satiri
-  aktarmisti; cron bantlari o noktalardan basliyor (28.70 / 36.10 /
-  38.30). IZLEME: `select * from fsq_aktarim_ilerleme`. BITINCE:
-  `select cron.unschedule('fsq-aktarim')`.
-- Veritabani asiri yuk altinda MCP baglantilari bile zaman asimina
-  dusuyor; birkac dakika bekleyip tekrar denemek gerekiyor.
-- mekanlar uzerindeki konum/tur/kategori/trgm indeksleri aktarim icin
-  KULLANICININ ONAYIYLA GECICI OLARAK DUSURULDU. Aktarim bitince
-  YENIDEN KURULMALI (sirasiyla): mekanlar_konum_idx (gist konum),
-  mekanlar_ad_trgm_idx (gin tr_kucuk(ad) gin_trgm_ops),
-  mekanlar_tur_idx, mekanlar_kategori_idx; sonra ANALYZE. Indeksler
-  yokken uygulamada kesfet/arama calismaz.
-- Ilce/adres zenginlestirme YERELDE suruyor: `araclar/fsq-semt-doldur.py`
-  -> `araclar/fsq-tr-semtli.parquet` (semt: 300 m icindeki en yakin
-  Overture; adres: 60 m icinde adi eslesen Overture). Bitince
-  `FSQ_PARQUET=araclar/fsq-tr-semtli.parquet` ile yukleyici yeniden
-  kosulur - ama hedef tablo mekanlar olmali (fsq_place_id uzerinden
-  upsert; yukleyiciye FSQ_TABLO ekleme gerekiyor, henuz yok).
-- Check-in yapilmis 16 Overture mekanindan 11'i Foursquare karsiligina
-  baglandi (`fsq-checkin-koru.mjs`); 5'i Foursquare'de yok, Overture
-  satiri olarak kalacak.
-- SONRA: Overture satirlari silinir
-  (`delete from mekanlar where kaynak='overture' and id not in (select
-  mekan_id from check_inler)`; 877 bin satir, tur_duzeltme_gecmisi
-  cascade), VACUUM, test:sema + test:gorunurluk, telefonda kesfet/arama,
-  karar defteri (konusma-gunlugu) ve bu notun temizlenmesi.
-- Kullanicinin HF token'i sohbete yapistirildi; iptal etmesi istendi.
+**Boru hatti (aylik tazeleme icin):** `araclar/README.md` "Foursquare"
+bolumu. Kisaca: `fsq-indir.py` (HF token) -> `mekan-yukle-foursquare.py`
+(fsq_hazirlik) -> pg_cron `fsq_aktarim_adimi` (migrasyon 20260830130000)
+-> `fsq_bitis_adimi` (20260830140000; tazelemede Overture silme adimi
+YOK, sadece indeks/temizlik). Istemciden dilim dilim RPC cagirmak
+Nano'da CALISMADI (60 sn gateway, hayalet ifadeler, kilit yarisi) -
+sunucu tarafi cron tek guvenilir yol.
+
+**ACIK ISLER (bu isten kalan):**
+1. Ilce/adres zenginlestirme: `araclar/fsq-semt-doldur.py` yerelde
+   (hucre modu semt + 60 m ad eslesmeli adres) -> `fsq-tr-semtli.parquet`.
+   Bitince mekanlar'a fsq_place_id uzerinden upsert edilmeli (yukleyiciye
+   hedef tablo secenegi gerekiyor). Su an semt dolu: 1,93 milyon,
+   adres dolu: 2,13 milyon / 5,98 milyon. AYRICA: il adi (or. "Bursa")
+   semt olarak kalmis kayitlar var - 81 il adi semt sayilmamali.
+2. `kategori-eslemesi.py`, `tur-duzeltmeleri*.py`, `mekan-yukle-overture.py`
+   artik TARIHSEL (Overture yok). Silinmedi; README'de isaretlenmeli.
+3. `gers_id` sutunu ve `mekanlar_gers_id_benzersiz` kisiti bos duruyor;
+   ileride dusurulebilir.
+4. Foursquare'de dahili kopyalar var (Bursa yeme-icmede 251 cift, 40 m
+   icinde ayni ad); tekillestirme yapilmadi.
+5. Lisans: Apache 2.0 - NOTICE metni belgeye konmali (magaza oncesi).
+6. Kullanicinin HF token'i sohbete yapistirildi; iptal etmesi istendi.
 
 ### FOURSQUARE DENEMESI - 2026-08-30 (karar bekliyor)
 

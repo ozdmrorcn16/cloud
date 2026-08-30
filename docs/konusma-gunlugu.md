@@ -42,8 +42,13 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-08-30 — [2026-08-30-5de6e87c.md](oturumlar/2026-08-30-5de6e87c.md) — eklentiler aktif mi
+- 2026-08-30 — [2026-08-30-5128d252.md](oturumlar/2026-08-30-5128d252.md) — claude --model fable
+- 2026-08-30 — [2026-08-30-11f3a4eb.md](oturumlar/2026-08-30-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
 - 2026-08-29 — [2026-08-29-f5f68d83.md](oturumlar/2026-08-29-f5f68d83.md) — profil oluşturma ekranından devam
 - 2026-08-29 — [2026-08-29-5de6e87c.md](oturumlar/2026-08-29-5de6e87c.md) — eklentiler aktif mi
+- 2026-08-29 — [2026-08-29-5128d252.md](oturumlar/2026-08-29-5128d252.md) — claude --model fable
+- 2026-08-29 — [2026-08-29-11f3a4eb.md](oturumlar/2026-08-29-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
 - 2026-08-28 — [2026-08-28-5de6e87c.md](oturumlar/2026-08-28-5de6e87c.md) — eklentiler aktif mi
 - 2026-08-27 — [2026-08-27-f5f68d83.md](oturumlar/2026-08-27-f5f68d83.md) — profil oluşturma ekranından devam
 - 2026-08-27 — [2026-08-27-5de6e87c.md](oturumlar/2026-08-27-5de6e87c.md) — eklentiler aktif mi
@@ -985,3 +990,31 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     bu yuzden panele giris yapilamiyor ve pozitif yon dogrulanamadi;
     negatif yon (aal1 ile kapi kapali) gercek bir moderator hesabiyla
     dogrulandi. Ayrinti `docs/plan2-takip-isleri.md`.
+
+79. **MEKAN VERISI FOURSQUARE TEK KAYNAK OLDU; OVERTURE SILINDI**
+    (2026-08-30). Once "Foursquare verilerini cekip bir deneme yapalim"
+    dendi; deneme raporu (`docs/foursquare-denemesi-2026-08-30.md`)
+    Overture'in kalmasini, Foursquare'in sosyal turlerde ek kaynak
+    olmasini onerdi. Kullanici sirasiyla: "birlestirmeyelim sadece
+    Foursquare'i cekelim" -> "kapali ve bayraklilari alma, iki veriyi
+    birlestirip en dogru veriyi olustur" -> (tutarlilik sorusu uzerine)
+    "onerini uygula": FOURSQUARE TEK KAYNAK, Overture yalnizca ilce ve
+    adres bilgisini bagislar ("Mekanlarin ilce ve adres bilgisi olsun"),
+    sonra silinir. Son karar: "check-in yapilmis 16 mekan da silinebilir,
+    test icindi; test icin yapilmis seyleri sil, Foursquare ile yeni
+    temiz bir konum verisi baslat" -> butun Overture satirlari ve onlara
+    bagli test check-in'leri silindi. Sonuc: 5.980.482 Foursquare kaydi
+    (kapali, bayrakli ve apartman/toplu konut/ofis/fabrika/yol/etkinlik
+    kategorileri disarida), 302 tur, veritabani 3,1 GB. Arama 55 ms,
+    yakin mekan 53 ms. Tur gizleme kurali (karar 2026-08-24) DEGISMEDI.
+
+80. **SUPABASE COMPUTE BUYUTULDU: NANO -> MEDIUM** (2026-08-30). Yukleme
+    en kucuk sunucuda (224 MB shared_buffers) diske takildi: 25 dakikada
+    0,01 derece ilerledi, MCP ve PostgREST baglantilari bile zaman
+    asimina dustu. Kullanici once "yavas ucretsiz yoldan devam" dedi,
+    sonra rakamlari gorunce ("saatlik oranlanan 60 $/ay, bu is icin bir
+    cay parasi") Medium'a gecirdi; ayni is 5 dakikada 2,25 milyon satir
+    ilerledi. Kalici boyut karari kullanicida; 6 milyon mekanla Nano'ya
+    donmek uygulamayi da yavaslatir. "Kendi sunucumuz" sorusuna cevap:
+    mumkun ama isletme yuku bize kalir; magaza oncesi yonetilen kalmasi,
+    fatura 100 $/ay'i gecince yeniden bakilmasi onerildi.
