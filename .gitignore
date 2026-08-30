@@ -36,3 +36,4 @@ araclar/fsq-tr.parquet
 araclar/fsq-kategoriler.parquet
 araclar/fsq-yukleme-log.txt
 araclar/fsq-yukleme-*.log
+mobil/araclar/_db-nabiz.mjs
