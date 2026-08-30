@@ -306,8 +306,17 @@ const stiller = StyleSheet.create({
   // Icerik krokinin ALT KALABALIGINA duesmemeli: haritanin dibindeki
   // insan baloncuklari ve nabiz halkasi metnin altina girip okumayi
   // bozuyor. Bu yuzden ust bosluklar kucuk, alt bosluk buyuk.
-  ustBosluk: { flex: 0.8 },
-  esnekBosluk: { flex: 1.05 },
+  // Dort baslik, marka kilidi ile check-in sahnesinin ARASINA
+  // ortalaniyor (kullanicinin duzeltmesi 2026-08-30: "biraz asagi cek
+  // ortala"). Onceden 0.8 / 1.05 idi, yani blok yukari kacikti.
+  //
+  // Oran neden 1.4 / 1, yani neden tam esit degil: sahnenin ust
+  // kenari ile nabiz halkasinin GORUNEN ust kenari arasinda ~24 px
+  // olu alan var (halka, ignenin basina ortalaniyor). Esit bolunce
+  // alttaki bosluk gozde o kadar fazla duruyordu. Sahnenin olculeri
+  // degisirse bu oran da yeniden bakilmali.
+  ustBosluk: { flex: 1.4 },
+  esnekBosluk: { flex: 1 },
   // Sayfanin yatay payini geri aliyor: sahne ekranin tam genisliginde.
   sahneAlani: { marginHorizontal: -bosluk.xl },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
