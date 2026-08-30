@@ -355,9 +355,15 @@ ettim - **o teshis YANLISTI**. Ikinci seferinde olctum:
 - Ayni komutu tekrar `eas deploy --prod` ile yayinlayip olcunce
   degerler dogru geldi.
 
-**GERCEK SEBEP OLCULDU (2026-08-30): Cloudflare `index.html`'i
-onbellekte tutuyor; yeniden yayinlamak bunu HIZLANDIRMIYOR, beklemek
-gerekiyor.** Ustteki "once yeniden yayinla" tavsiyesi yanlisti.
+**ONCE SUNU KONTROL ET: `eas deploy --prod` TEK BASINA DERLEMEZ.**
+Yalnizca `dist/` klasorunde NE VARSA onu yukler. Kodu degistirip
+`npx eas-cli deploy --prod` calistirirsan ESKI paketi yayinlarsin ve
+"yayin gecmiyor" sanirsin. Bu iki kez yasandi (2026-08-30). Dogru
+komut `npm run yayinla` - once `expo export`, sonra deploy.
+
+**Ikinci sebep, o da olculdu: Cloudflare `index.html`'i onbellekte
+tutuyor; yeniden yayinlamak bunu HIZLANDIRMIYOR, beklemek gerekiyor.**
+Ustteki "once yeniden yayinla" tavsiyesi yanlisti.
 
 Olcum yontemi (gozle bakmaktan cok daha guvenilir): `index.html`
 icindeki paket adi karsilastirilir.
