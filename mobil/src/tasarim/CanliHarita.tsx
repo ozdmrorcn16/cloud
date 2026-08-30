@@ -37,6 +37,19 @@ import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 /** Ekrandaki en kucuk gosterim yaricapi - her sey merkeze yigilmasin. */
 const EN_AZ_GOSTERIM_METRE = 300
 
+/**
+ * Cerceve yaricapi bundan BUYUK olmasin (kullanicinin istegi
+ * 2026-08-30: "harita cok uzaktan, biraz daha adrese yakin baslasin").
+ *
+ * Oncesinde cerceve EN UZAK igneye gore aciliyordu; liste 10 km oteye
+ * kadar mekan tasiyabildigi icin harita bazen sehir olceginde
+ * basliyordu ve merkezdeki mekan bir nokta kaliyordu. Check-in kurali
+ * zaten 1 km, yani ekranda islem yapilabilir her yer bu cercevenin
+ * icinde. Daha uzaktakiler kadraj disinda kaliyor; kullanici isterse
+ * uzaklastirabiliyor.
+ */
+const EN_FAZLA_GOSTERIM_METRE = 800
+
 /** Haritada en fazla kac mekan ignesi cizilir. */
 const EN_FAZLA_IGNE = 12
 
@@ -158,7 +171,10 @@ export function CanliHarita({
     if (mesafeli.length === 0) return { yerlesimler: [] as Yerlesim[], gosterimMetre: 0 }
 
     const enUzak = Math.max(...mesafeli.map((m) => m.metre))
-    const gosterim = Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.12)
+    const gosterim = Math.min(
+      EN_FAZLA_GOSTERIM_METRE,
+      Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.12)
+    )
 
     const konan: Yerlesim[] = []
     for (const { mekan, metre } of mesafeli) {
