@@ -19,3 +19,9 @@ create unique index if not exists mekanlar_fsq_place_id_benzersiz
 
 comment on column public.mekanlar.fsq_place_id is
   'Foursquare OS Places kimligi. Dolu ise kayit Foursquare''dan geldi ya da Foursquare ile eslestirildi (2026-08-30).';
+
+-- kaynak kisitina 'foursquare' eklendi (ayni gun, aktarim sirasinda bulundu:
+-- eski kisit yalnizca kullanici/osm/overture kabul ediyordu).
+alter table public.mekanlar drop constraint if exists mekanlar_kaynak_gecerli;
+alter table public.mekanlar add constraint mekanlar_kaynak_gecerli
+  check (kaynak = any (array['kullanici'::text, 'osm'::text, 'overture'::text, 'foursquare'::text]));

@@ -168,6 +168,46 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
    (react-native 0.86.2 -> 0.86.3 vb.) - bu ISTEN ONCE de vardi,
    harita degisikligiyle ilgisi yok; ayri bir bakim isi.
 
+### DEVAM EDEN IS: FOURSQUARE TEK KAYNAK YUKLEMESI (2026-08-30, gece)
+
+Kullanicinin kararlari sirasiyla: (1) Foursquare'i cek, (2) birlestirme
+degil TEK KAYNAK Foursquare - "daha tutarli, temiz"; Overture yalnizca
+ilce/adres bilgisini bagislar, sonra silinir (check-in yapilmis 16 mekan
+haric), (3) "Mekanlarin ilce ve adres bilgisi olsun", (4) veritabani
+compute buyutulmeyecek, yavas ucretsiz yoldan devam.
+
+DURUM (oturum bittiginde bakilacak):
+- `fsq_hazirlik` tablosunda 5.980.482 Foursquare satiri (kapali,
+  bayrakli ve mekan olmayan kategoriler elenmis) YUKLU.
+- `mekanlar`'a aktarim SURUYOR: `mobil/araclar/fsq-birlestir.mjs`
+  uc paralel surec (FSQ_RPC=fsq_aktar, boylam dilimleri 25.6-32 /
+  32-38 / 38-44.9), loglar `araclar/fsq-aktarim-*.log`. Hiz disk
+  yuzunden ~120 satir/sn (compute en kucuk boy: 224 MB shared_buffers);
+  tahmini 10+ saat. `fsq_aktar` idempotent (on conflict fsq_place_id),
+  yarim kalirsa AYNI komutla yeniden baslatilir; tamamlanan dilimler
+  hizla gecer.
+- mekanlar uzerindeki konum/tur/kategori/trgm indeksleri aktarim icin
+  KULLANICININ ONAYIYLA GECICI OLARAK DUSURULDU. Aktarim bitince
+  YENIDEN KURULMALI (sirasiyla): mekanlar_konum_idx (gist konum),
+  mekanlar_ad_trgm_idx (gin tr_kucuk(ad) gin_trgm_ops),
+  mekanlar_tur_idx, mekanlar_kategori_idx; sonra ANALYZE. Indeksler
+  yokken uygulamada kesfet/arama calismaz.
+- Ilce/adres zenginlestirme YERELDE suruyor: `araclar/fsq-semt-doldur.py`
+  -> `araclar/fsq-tr-semtli.parquet` (semt: 300 m icindeki en yakin
+  Overture; adres: 60 m icinde adi eslesen Overture). Bitince
+  `FSQ_PARQUET=araclar/fsq-tr-semtli.parquet` ile yukleyici yeniden
+  kosulur - ama hedef tablo mekanlar olmali (fsq_place_id uzerinden
+  upsert; yukleyiciye FSQ_TABLO ekleme gerekiyor, henuz yok).
+- Check-in yapilmis 16 Overture mekanindan 11'i Foursquare karsiligina
+  baglandi (`fsq-checkin-koru.mjs`); 5'i Foursquare'de yok, Overture
+  satiri olarak kalacak.
+- SONRA: Overture satirlari silinir
+  (`delete from mekanlar where kaynak='overture' and id not in (select
+  mekan_id from check_inler)`; 877 bin satir, tur_duzeltme_gecmisi
+  cascade), VACUUM, test:sema + test:gorunurluk, telefonda kesfet/arama,
+  karar defteri (konusma-gunlugu) ve bu notun temizlenmesi.
+- Kullanicinin HF token'i sohbete yapistirildi; iptal etmesi istendi.
+
 ### FOURSQUARE DENEMESI - 2026-08-30 (karar bekliyor)
 
 Kullanicinin istegiyle Foursquare OS Places (Hugging Face, kapili,

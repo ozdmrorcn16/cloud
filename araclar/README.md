@@ -19,7 +19,7 @@ Deneme raporu: `docs/foursquare-denemesi-2026-08-30.md`.
    hazirlik tablosuna upsert (1.000'lik paketler). Tek surec ~40 bin
    satir/dk; paralel icin `FSQ_BASLANGIC`/`FSQ_BITIS` ile aralik ver,
    her surec yalnizca kendi araligini okur (~1,5 GB bellek).
-4. `node araclar/fsq-birlestir.mjs` - sunucudaki `fsq_birlestir(lng0,
+4. `node mobil/araclar/fsq-birlestir.mjs` - sunucudaki `fsq_birlestir(lng0,
    lng1)` fonksiyonunu boylam dilimleri halinde cagirir: 60 m icinde +
    ad benzerligi (pg_trgm) olan Overture kaydina kimlik islenir,
    eslesmeyenler yeni satir olur. Zaman asimina dusen dilim ikiye

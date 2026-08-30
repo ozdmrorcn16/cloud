@@ -15,7 +15,7 @@ olusur. Adimlar:
 
 Kullanim (mobil/.env yuklu kabuk):
   python araclar/mekan-yukle-foursquare.py yukle       # 3. adim
-  node   araclar/fsq-birlestir.mjs                     # 4. adim (dilim dilim RPC)
+  node mobil/araclar/fsq-birlestir.mjs                     # 4. adim (dilim dilim RPC)
 
 Gerekli cevre degiskenleri: EXPO_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 """
@@ -25,7 +25,8 @@ import time
 import importlib.util
 
 BURASI = os.path.dirname(os.path.abspath(__file__))
-PARQUET = os.path.join(BURASI, 'fsq-tr.parquet')
+# FSQ_PARQUET ile baska bir dosya (or. semt islenmis kesit) verilebilir.
+PARQUET = os.environ.get('FSQ_PARQUET') or os.path.join(BURASI, 'fsq-tr.parquet')
 PARCA = 1000
 
 
@@ -95,15 +96,18 @@ def yukle() -> None:
     t0 = time.time()
     for i in range(0, len(satirlar), PARCA):
         parca = satirlar[i:i + PARCA]
-        for deneme in range(5):
+        # PostgREST yuk altinda "PGRST002 schema cache" ile kisa sureli
+        # dusebiliyor (3 paralel surecte yasandi); uzun geri cekilmeyle
+        # 12 deneme.
+        for deneme in range(12):
             try:
                 supabase.table('fsq_hazirlik').upsert(parca, on_conflict='fsq_place_id').execute()
                 break
             except Exception as e:  # ag/zaman asimi: bekle, yeniden dene
-                if deneme == 4:
+                if deneme == 11:
                     raise
-                print(f'   {i}: hata, yeniden deneniyor ({e})')
-                time.sleep(3 * (deneme + 1))
+                print(f'   {baslangic + i}: hata, yeniden deneniyor ({str(e)[:80]})', flush=True)
+                time.sleep(min(60, 5 * (deneme + 1)))
         if (i // PARCA) % 50 == 0 or i + PARCA >= len(satirlar):
             gecen = time.time() - t0
             print(f'{baslangic + min(i + PARCA, len(satirlar)):,}/{bitis:,}  ({gecen:.0f} sn)', flush=True)
