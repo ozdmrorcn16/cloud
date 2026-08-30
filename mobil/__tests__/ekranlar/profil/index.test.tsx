@@ -126,7 +126,14 @@ describe('ProfilEkrani', () => {
     // seridi kaldirildi; canli check-in yalnizca ani akisinda,
     // "şu an burada" rozetiyle gorunuyor.
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      ani({ id: 'ani-canli', mekanAdi: 'Kordon', canliMi: true }),
+      // Rozet 30 dakikalik canlilik penceresine bagli (karar 2026-08-29);
+      // kayit yeni olmali.
+      ani({
+        id: 'ani-canli',
+        mekanAdi: 'Kordon',
+        canliMi: true,
+        olusturmaZamani: new Date().toISOString(),
+      }),
     ])
 
     await render(<ProfilEkrani />)

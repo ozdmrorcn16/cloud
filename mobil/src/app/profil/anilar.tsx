@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import { kullanicininAnilariniGetir, checkIniSil, type AniGorunumu } from '../../../lib/checkin'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
-import type { AkisOgesi } from '../../../lib/akis'
+import { anidanAkisOgesi } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
@@ -26,6 +26,7 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 export default function AnilarEkrani() {
   const { t } = useDil()
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
+  const [kullaniciId, setKullaniciId] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   // Silme geri alinamaz: once onay.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
@@ -35,6 +36,7 @@ export default function AnilarEkrani() {
       const { data: kullaniciVerisi } = await supabase.auth.getUser()
       const kullaniciId = kullaniciVerisi.user?.id
       if (!kullaniciId) return
+      setKullaniciId(kullaniciId)
       setAnilar(await kullanicininAnilariniGetir(kullaniciId))
       setHata(null)
     } catch (e) {
@@ -56,30 +58,6 @@ export default function AnilarEkrani() {
     }
   }
 
-  /**
-   * Ani satirini kartin bekledigi bicime cevirir.
-   *
-   * Burasi HEP kendi anilarim: `benimMi` sabit true, dolayisiyla silme
-   * dugmesi her satirda var.
-   */
-  function karta(ani: AniGorunumu): AkisOgesi {
-    return {
-      id: ani.id,
-      kullaniciId: '',
-      kullaniciAdi: ani.kullaniciAdi,
-      mekanId: ani.mekanId,
-      mekanAdi: ani.mekanAdi,
-    mekanSemti: ani.mekanSemti,
-    avatarUrl: null,
-      notMetni: ani.notMetni,
-      fotografUrl: ani.fotografUrl,
-      olusturmaZamani: ani.olusturmaZamani,
-      canliMi: ani.canliMi,
-      benimMi: true,
-      etiketler: ani.etiketler,
-    }
-  }
-
   return (
     <View style={stiller.kapsayici}>
       <UstCubuk baslik="Anılarım" geriEtiketi="Geri" />
@@ -90,7 +68,7 @@ export default function AnilarEkrani() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <CheckInKarti
-            oge={karta(item)}
+            oge={anidanAkisOgesi(item, { kullaniciId, avatarUrl: null })}
             zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}

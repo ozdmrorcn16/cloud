@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
 import { checkInFotografiUrl, profilFotografiUrl } from './fotograf-url'
+import type { AniGorunumu } from './checkin'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
 
@@ -19,6 +20,33 @@ import { etiketleriGetir, type Etiket } from './etiket'
  * Kural olarak: buraya bir gorunurluk kosulu eklemek gerekiyorsa yeri
  * istemci degil, politikadir.
  */
+
+/**
+ * Bir ani satirini (kendi check-in'lerim) kartin bekledigi bicime
+ * cevirir. Profil onizlemesi ve Anilarim ekrani ayni karti kullaniyor
+ * (kullanicinin karari 2026-08-30); cevirici tek yerde dursun.
+ */
+export function anidanAkisOgesi(
+  ani: AniGorunumu,
+  secenekler: { kullaniciId: string; avatarUrl: string | null }
+): AkisOgesi {
+  return {
+    id: ani.id,
+    kullaniciId: secenekler.kullaniciId,
+    kullaniciAdi: ani.kullaniciAdi,
+    mekanId: ani.mekanId,
+    mekanAdi: ani.mekanAdi,
+    mekanSemti: ani.mekanSemti,
+    notMetni: ani.notMetni,
+    fotografUrl: ani.fotografUrl,
+    olusturmaZamani: ani.olusturmaZamani,
+    canliMi: ani.canliMi,
+    benimMi: true,
+    // Eski kayitlarda/testlerde alan eksik olabiliyor; kart bos liste bekliyor.
+    etiketler: ani.etiketler ?? [],
+    avatarUrl: secenekler.avatarUrl,
+  }
+}
 
 export type AkisOgesi = {
   id: string

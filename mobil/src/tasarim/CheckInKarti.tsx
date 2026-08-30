@@ -1,4 +1,5 @@
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
+import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import type { AkisOgesi } from '../../lib/akis'
@@ -7,15 +8,20 @@ import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
 
 /**
- * CHECK-IN KARTI - ana sayfada ve profildeki anilarda AYNI kart.
+ * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
+ * ekraninda AYNI kart.
  *
- * Kullanicinin karari (2026-08-26): "Anasayfaya dusen, kullanicinin
- * profilinde anilarda gorunecek" ve "ortak olsun". Kart onceden
- * yalnizca ana sayfada duruyordu; iki yerde iki ayri duzen, ayni
- * icerigin iki farkli okunusu demekti.
+ * Kullanicinin karari (2026-08-30, Anilarim ekraninin goruntusunu
+ * gonderip): "Ayni bu gorunus: kullanici adi - check-in ismi, not
+ * varsa yaninda not, fotograf varsa altina; ana sayfa akisinda ve
+ * profil akisinda da bu gorunus olacak; mekan ismi turuncu ve
+ * tiklanabilir." Zaman tuneli deseni (AniTuneli) bu kararla KALDIRILDI.
  *
- * Duzen: [profil resmi] kullanici adi - MEKAN ADI (turuncu) -
- * etiketlenen arkadaslar, altinda fotograf ve not.
+ * Duzen: [profil resmi] AD - MEKAN ADI (turuncu) - etiketlenenler
+ *        tam zaman
+ *        not
+ *        fotograf
+ *        sagda gorece zaman ("7 saat önce") ya da "şu an burada"
  *
  * Ad, mekan ve etiketler TEK metin akisinda: ayri View'lara bolununce
  * uzun mekan adlari satiri tasiriyordu. Ic ice `Text` ile parcalar
@@ -47,7 +53,7 @@ export function CheckInKarti({
   onSil,
 }: {
   oge: AkisOgesi
-  /** "1 sa" gibi gorece zaman; kart bicimlendirmeyi ustlenmiyor. */
+  /** "7 saat önce" gibi gorece zaman; kart bicimlendirmeyi ustlenmiyor. */
   zamanYazisi: string
   silOnayiAcik?: boolean
   /** Verilmezse silme dugmesi hic cizilmez. */
@@ -59,6 +65,9 @@ export function CheckInKarti({
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   const silinebilir = oge.benimMi && Boolean(onSilOnayi)
+  // Bas harf ADDAN (kullanicinin karari 2026-08-28): `kullaniciAdi`
+  // alani check_inler'de denormalize duran ADI tasiyor (karar #18).
+  const basHarf = (oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')
 
   return (
     <Pressable
@@ -76,48 +85,56 @@ export function CheckInKarti({
           accessibilityRole="button"
           accessibilityLabel={oge.kullaniciAdi ?? ''}
         >
-          <View style={stiller.avatar}>
-            <Text style={stiller.basHarf}>
-              {(oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-            </Text>
-          </View>
+          {oge.avatarUrl ? (
+            <HizliImage
+              testID="akis-avatari"
+              source={{ uri: oge.avatarUrl }}
+              style={stiller.avatar}
+              contentFit="cover"
+              transition={120}
+            />
+          ) : (
+            <View style={[stiller.avatar, stiller.avatarYok]}>
+              <Text style={stiller.basHarf}>{basHarf}</Text>
+            </View>
+          )}
         </Pressable>
 
         <View style={stiller.orta}>
-        <Text style={stiller.satir}>
-          <Text
-            style={stiller.kullaniciAdi}
-            onPress={() => router.push(kisiYolu as never)}
-          >
-            {oge.kullaniciAdi ?? ''}
-          </Text>
-          <Text style={stiller.ayirac}> - </Text>
-          <Text
-            style={stiller.mekanAdi}
-            onPress={() => router.push(`/check-in/${oge.mekanId}`)}
-          >
-            {oge.mekanAdi}
-          </Text>
-          {oge.etiketler.length > 0 && (
-            <>
-              <Text style={stiller.ayirac}> - </Text>
-              {oge.etiketler.map((etiket, sira) => (
-                <Text key={etiket.kullaniciId}>
-                  {sira > 0 ? <Text style={stiller.ayirac}>, </Text> : null}
-                  <Text
-                    style={stiller.etiket}
-                    onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
-                  >
-                    {etiket.ad ?? ''}
+          <Text style={stiller.satir}>
+            <Text
+              style={stiller.kullaniciAdi}
+              onPress={() => router.push(kisiYolu as never)}
+            >
+              {oge.kullaniciAdi ?? ''}
+            </Text>
+            <Text style={stiller.ayirac}> - </Text>
+            <Text
+              style={stiller.mekanAdi}
+              onPress={() => router.push(`/check-in/${oge.mekanId}`)}
+            >
+              {oge.mekanAdi}
+            </Text>
+            {oge.etiketler.length > 0 && (
+              <>
+                <Text style={stiller.ayirac}> - </Text>
+                {oge.etiketler.map((etiket, sira) => (
+                  <Text key={etiket.kullaniciId}>
+                    {sira > 0 ? <Text style={stiller.ayirac}>, </Text> : null}
+                    <Text
+                      style={stiller.etiket}
+                      onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+                    >
+                      {etiket.ad ?? ''}
+                    </Text>
                   </Text>
-                </Text>
-              ))}
-            </>
-          )}
-        </Text>
-        {/* Tam zaman: gorece etiket "ne kadar once" der, bu da "tam
-            olarak ne zaman". */}
-        <Text style={stiller.tamZaman}>{tamZaman(oge.olusturmaZamani)}</Text>
+                ))}
+              </>
+            )}
+          </Text>
+          {/* Tam zaman: gorece etiket "ne kadar once" der, bu da "tam
+              olarak ne zaman". */}
+          <Text style={stiller.tamZaman}>{tamZaman(oge.olusturmaZamani)}</Text>
         </View>
 
         {silinebilir && (
@@ -132,13 +149,10 @@ export function CheckInKarti({
           </Pressable>
         )}
 
-        {/* "Şu an burada" YALNIZCA ILK BIR SAAT (kullanicinin karari
-            2026-08-27). Check-in artik 30 dakika canli kaliyor; bir saatten
-            sonra "2 saat önce" yaziyor - "su an" iddiasi o kadar
-            surmuyor. */}
+        {/* "Şu an burada" yalnizca canlilik penceresinde (30 dk); sonra
+            gorece zaman. Turuncunun mesru kullanimi: "su an oluyor".
+            Yalnizca nokta yetmiyor - renk tek basina anlam tasimamali. */}
         {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
-          // Turuncunun mesru kullanimi: "su an oluyor". YALNIZCA NOKTA
-          // YETMIYOR - renk tek basina anlam tasimamali.
           <View style={stiller.canliRozet}>
             <View style={stiller.canliNokta} />
             <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
@@ -148,6 +162,9 @@ export function CheckInKarti({
         )}
       </View>
 
+      {/* NOT ONCE, FOTOGRAF ALTINDA (kullanicinin istegi 2026-08-30). */}
+      {oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>}
+
       {oge.fotografUrl && (
         <Image
           testID="akis-fotografi"
@@ -156,8 +173,6 @@ export function CheckInKarti({
           resizeMode="cover"
         />
       )}
-
-      {oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>}
 
       {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla. Onay satiri
           kartin icinde aciliyor - ayri bir ekran ya da sistem uyarisi
@@ -187,6 +202,8 @@ export function CheckInKarti({
   )
 }
 
+const AVATAR_CAPI = 40
+
 const stiller = StyleSheet.create({
   kart: {
     backgroundColor: renk.yuzey,
@@ -198,9 +215,11 @@ const stiller = StyleSheet.create({
   kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
 
   avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: AVATAR_CAPI,
+    height: AVATAR_CAPI,
+    borderRadius: AVATAR_CAPI / 2,
+  },
+  avatarYok: {
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
     justifyContent: 'center',
@@ -271,18 +290,18 @@ const stiller = StyleSheet.create({
     color: renk.turuncuKoyu,
   },
 
-  fotograf: {
-    width: '100%',
-    aspectRatio: 4 / 5,
-    borderRadius: yuvarlak.kart - 4,
-    marginTop: bosluk.m,
-    backgroundColor: renk.cizgi,
-  },
   not: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 21,
     color: renk.metin,
     marginTop: bosluk.m,
+  },
+  fotograf: {
+    width: '100%',
+    aspectRatio: 4 / 5,
+    borderRadius: yuvarlak.kart - 4,
+    marginTop: bosluk.m,
+    backgroundColor: renk.cizgi,
   },
 })

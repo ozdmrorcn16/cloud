@@ -195,7 +195,7 @@ npx eas-cli submit --platform ios --latest
 | Ekran | Ne oldu |
 |---|---|
 | Karsilama | Ornek kartlar kalkti; arka plan sicaklik haritasi (`SicaklikZemin`) |
-| Ana sayfa | Marka uste, altinda "Ara" kutusu (KISI aramasi, mekan degil); akis ZAMAN TUNELI |
+| Ana sayfa | Marka uste, altinda "Ara" kutusu (KISI aramasi, mekan degil); akis ORTAK CHECK-IN KARTI (2026-08-30: zaman tuneli kaldirildi, `AniTuneli.tsx` silindi) |
 | Profil | Turuncu kimlik bandi, uc sayi (Ani/Yer/Arkadas), Duzenle+Paylas, Anilar/Yerler sekmeleri, kurdeleli madalya rozetleri |
 | Check-in (kesfet) | Km cipleri kalkti, harita en ustte; aktif check-in varsa kart o mekani ve Ayrildim/Sil gosteriyor |
 | Bildirimler | YENI sekme (Kisiler'in yerine): arkadaslik istekleri + etiket onaylari |
@@ -212,8 +212,8 @@ ekraninda gorunurluk secimi YOK (Ayarlar'daki varsayilan kullaniliyor).
 2. ~~Veritabani 420/500 MB~~ KAPANDI: 2026-08-30'da Supabase PRO
    plana gecildi; pg_trgm indeksi kuruldu, arama havuzu kalkti
    (migrasyon 20260830090000). Guven esigi (0.60) hala acik karar.
-3. Gun ayraci metinleri (Bugun/Dun/ay adlari) `AniTuneli` icinde
-   sabit, sozlukte degil.
+3. ~~Gun ayraci metinleri~~ KAPANDI: `AniTuneli` 2026-08-30'da silindi
+   (ortak CheckInKarti her yerde), gun ayraci artik yok.
 4. Test hesaplarindaki ornek veriler SAHTE; silme komutu
    `docs/elle-test-listesi.md` icinde.
 

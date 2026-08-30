@@ -17,7 +17,9 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
-import { AniTuneli } from '../../tasarim/AniTuneli'
+import { CheckInKarti } from '../../tasarim/CheckInKarti'
+import { anidanAkisOgesi } from '../../../lib/akis'
+import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 /** Anilar bolumunde kac satir onizlenir. Tamami ayri ekranda. */
@@ -512,27 +514,18 @@ export default function ProfilEkrani() {
                 <Text style={stiller.bosAciklama}>{t('profil.bosAniAciklama')}</Text>
               </View>
             ) : (
-              /* ZAMAN TUNELI (kullanicinin karari 2026-08-28). Onceden
-                 her ani duz bir satirdi: mekan adi + "not · 12.08.2026".
-                 Tunel ayni veriyi gun ayraclariyla, saatle, semtle ve
-                 varsa fotografla gosteriyor - anilarin cogunda fotograf
-                 olmadigi icin izgara yerine bu desen secildi. */
-              <AniTuneli
-                anilar={anilar.map((ani) => ({
-                  id: ani.id,
-                  mekanId: ani.mekanId,
-                  mekanAdi: ani.mekanAdi,
-                  semt: ani.mekanSemti,
-                  notMetni: ani.notMetni,
-                  fotografUrl: ani.fotografUrl,
-                  olusturmaZamani: ani.olusturmaZamani,
-                  // Canli check-in artik bu listede; tunel rozeti
-                  // buradan cikiyor.
-                  canliMi: ani.canliMi,
-                }))}
-                enFazla={ONIZLEME_ADEDI}
-                onAniSec={(ani) => router.push(`/check-in/${ani.mekanId}`)}
-              />
+              /* ORTAK KART (kullanicinin karari 2026-08-30): profil
+                 akisi da ana sayfayla ve Anilarim'la AYNI karti
+                 gosteriyor. Onceki zaman tuneli deseni kaldirildi. */
+              <View>
+                {anilar.slice(0, ONIZLEME_ADEDI).map((ani) => (
+                  <CheckInKarti
+                    key={ani.id}
+                    oge={anidanAkisOgesi(ani, { kullaniciId: profil.id, avatarUrl: fotografUrl })}
+                    zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
+                  />
+                ))}
+              </View>
             )}
           </>
         )}
