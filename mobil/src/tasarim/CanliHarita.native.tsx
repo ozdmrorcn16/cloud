@@ -46,7 +46,7 @@ const EN_AZ_GOSTERIM_METRE = 300
  * icinde. Daha uzaktakiler kadraj disinda kaliyor; kullanici isterse
  * uzaklastirabiliyor.
  */
-const EN_FAZLA_GOSTERIM_METRE = 800
+const EN_FAZLA_GOSTERIM_METRE = 450
 
 const KAYDIRMA_SURESI_MS = 350
 
