@@ -179,13 +179,19 @@ compute buyutulmeyecek, yavas ucretsiz yoldan devam.
 DURUM (oturum bittiginde bakilacak):
 - `fsq_hazirlik` tablosunda 5.980.482 Foursquare satiri (kapali,
   bayrakli ve mekan olmayan kategoriler elenmis) YUKLU.
-- `mekanlar`'a aktarim SURUYOR: `mobil/araclar/fsq-birlestir.mjs`
-  uc paralel surec (FSQ_RPC=fsq_aktar, boylam dilimleri 25.6-32 /
-  32-38 / 38-44.9), loglar `araclar/fsq-aktarim-*.log`. Hiz disk
-  yuzunden ~120 satir/sn (compute en kucuk boy: 224 MB shared_buffers);
-  tahmini 10+ saat. `fsq_aktar` idempotent (on conflict fsq_place_id),
-  yarim kalirsa AYNI komutla yeniden baslatilir; tamamlanan dilimler
-  hizla gecer.
+- `mekanlar`'a aktarim ARTIK SUNUCUDA, pg_cron ile (migrasyon
+  20260830130000): `fsq_aktarim_adimi()` dakikada bir, 45 sn butceyle
+  0,02 derecelik dilimler aktarir; ilerleme `fsq_aktarim_ilerleme`
+  tablosunda (bant/simdiki/eklenen/bitti). Istemci tarafi (PostgREST)
+  DENENDI VE BIRAKILDI: en kucuk compute'ta disk kotasi tukenince bir
+  dilim 60 sn gateway sinirini asiyor, istemci vazgecince ifade
+  sunucuda suruyor, tekrar deneme kilit yarisina giriyor
+  (ShareLock -> lock timeout). Istemci kosumlari 2,4 milyon satiri
+  aktarmisti; cron bantlari o noktalardan basliyor (28.70 / 36.10 /
+  38.30). IZLEME: `select * from fsq_aktarim_ilerleme`. BITINCE:
+  `select cron.unschedule('fsq-aktarim')`.
+- Veritabani asiri yuk altinda MCP baglantilari bile zaman asimina
+  dusuyor; birkac dakika bekleyip tekrar denemek gerekiyor.
 - mekanlar uzerindeki konum/tur/kategori/trgm indeksleri aktarim icin
   KULLANICININ ONAYIYLA GECICI OLARAK DUSURULDU. Aktarim bitince
   YENIDEN KURULMALI (sirasiyla): mekanlar_konum_idx (gist konum),
