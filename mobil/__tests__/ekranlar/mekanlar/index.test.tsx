@@ -71,9 +71,8 @@ describe('MekanAramaEkrani', () => {
     ])
 
     await render(<MekanAramaEkrani />)
-    // EN YAKIN mekan haritanin altindaki "buradasin" kartinda duruyor
-    // ve listede TEKRAR EDILMIYOR; listeye basma davranisi ikinci
-    // mekanla dogrulaniyor.
+    // Not: en yakin mekani ayrica gosteren kart 2026-08-31'de
+    // kaldirildi, artik butun mekanlar listede.
     await waitFor(() => screen.getByText('Moda Parkı'))
     await fireEvent.press(screen.getByText('Moda Parkı'))
 
@@ -106,6 +105,8 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
+    // Arama kutusu artik "Mekan ara" sekmesinin altinda (2026-08-31).
+    await fireEvent.press(screen.getByText('Mekan ara'))
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kafe')
 
     await waitFor(() => {
@@ -232,10 +233,47 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
 
+    await fireEvent.press(screen.getByText('Mekan ara'))
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kahve')
 
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, 'kahve')
     })
+  })
+
+  // Kullanicinin karari 2026-08-31: "En yakin yeri otomatik secen
+  // sutunu kaldir tamamen", yerine haritanin altina iki sekme.
+  it('en yakin mekani otomatik seçen kartı GOSTERMIYOR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Sahil Kafe'))
+
+    expect(screen.queryByText('Check-in yap')).toBeNull()
+  })
+
+  it('varsayilan sekme Keşfet: arama kutusu gorunmuyor, liste gorunuyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Sahil Kafe'))
+
+    expect(screen.queryByPlaceholderText('Mekan ara')).toBeNull()
+    expect(screen.getByText('Yakınında')).toBeTruthy()
+
+    await fireEvent.press(screen.getByText('Mekan ara'))
+    expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
   })
 })

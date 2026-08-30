@@ -12,6 +12,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
+import { useDil } from '../../../lib/dil'
 import {
   aktifCheckInimiGetir,
   checkIndenAyril,
@@ -29,6 +30,26 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
+/** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
+function BuyutecIkonu({ renk: cizgi }: { renk: string }) {
+  return (
+    <Svg width={17} height={17} viewBox="0 0 24 24">
+      <Circle cx={11} cy={11} r={6.5} stroke={cizgi} strokeWidth={2.2} fill="none" />
+      <Path d="M16 16l4.6 4.6" stroke={cizgi} strokeWidth={2.2} strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+/** Sekme ikonu: pusula ibresi. Konum ignesinden ayrilsin diye. */
+function PusulaIkonu({ renk: cizgi }: { renk: string }) {
+  return (
+    <Svg width={17} height={17} viewBox="0 0 24 24">
+      <Circle cx={12} cy={12} r={9} stroke={cizgi} strokeWidth={2.2} fill="none" />
+      <Path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z" fill={cizgi} />
+    </Svg>
+  )
+}
+
 function CheckInIkonu() {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24">
@@ -62,8 +83,15 @@ function mesafeYazisi(metre: number): string {
 
 export default function KesfetEkrani() {
   const router = useRouter()
+  const { t } = useDil()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [arama, setArama] = useState('')
+  /**
+   * Haritanin altindaki iki sekme (kullanicinin karari 2026-08-31).
+   * 'kesfet' yakindaki mekanlari, 'ara' arama kutusunu gosteriyor.
+   * Varsayilan 'kesfet': ekranin asil isi "su an nerede insan var".
+   */
+  const [sekme, setSekme] = useState<'kesfet' | 'ara'>('kesfet')
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
@@ -167,6 +195,16 @@ export default function KesfetEkrani() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arama])
 
+  /**
+   * Sekme degisince arama metni siliniyor: aksi halde 'kesfet'
+   * sekmesindeki "Yakininda" listesi hala arama sonucuyla suzulmus
+   * kalir ve kullanici bunun sebebini goremez.
+   */
+  function sekmeSec(yeni: 'kesfet' | 'ara') {
+    setSekme(yeni)
+    setArama('')
+  }
+
   function aramaDegisti(metin: string) {
     // Burada yalnizca metin guncelleniyor: istegi yukaridaki
     // bekletmeli etki atiyor. Yazma ile ag istegini ayirmak, yazi
@@ -187,29 +225,16 @@ export default function KesfetEkrani() {
   // mekanlarda gosterilmedigi icin ona gore suzmek de anlamsiz.
   const suzulmus = kesfetListesi
 
-  // En yakin mekan: haritanin altindaki "buradasin" kartinin konusu.
-  // Konumu olmayan kayit disarida: mesafesi bilinmeyen bir mekani "en
-  // yakin" diye gostermek yanlis olur.
-  const enYakin = useMemo(() => {
-    if (!cihazKonumu) return null
-    const olculebilir = suzulmus.filter((m) => m.konum)
-    if (olculebilir.length === 0) return null
-    return olculebilir.reduce((a, b) =>
-      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, a.konum.lat, a.konum.lng) <=
-      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, b.konum.lat, b.konum.lng)
-        ? a
-        : b
-    )
-  }, [suzulmus, cihazKonumu])
-
   /**
-   * KARTTAKI MEKAN.
+   * Haritanin altindaki kart YALNIZCA AKTIF CHECK-IN varken cikiyor.
    *
-   * Aktif bir check-in varsa kart ONU gosteriyor, en yakini degil
-   * (kullanicinin istegi 2026-08-29: "yaptigin checkinin uzerinde hala
-   * checkin yap ibaresi olmasin baska mekan secene kadar"). Check-in
-   * yapilan mekan listede olmayabilir - baska bir sehirde ya da
-   * yakinlik siralamasinin disinda kalabilir - o yuzden ad check-in
+   * Onceden aktif check-in yoksa EN YAKIN mekani secip "Check-in yap"
+   * diyordu; kullanicinin karari (2026-08-31): "En yakin yeri otomatik
+   * secen sutunu kaldir tamamen". Kart canli halde KALDI, cunku
+   * check-in'i bitirmenin (Ayrildim) ve silmenin tek yolu o.
+   *
+   * Check-in yapilan mekan listede olmayabilir - baska bir sehirde ya
+   * da yakinlik siralamasinin disinda kalabilir - o yuzden ad check-in
    * kaydindan aliniyor, semt ve kisi sayisi ise listede varsa oradan.
    */
   const kartMekani = aktifCheckIn
@@ -218,9 +243,7 @@ export default function KesfetEkrani() {
         ad: aktifCheckIn.mekanAdi,
         listedeki: suzulmus.find((m) => m.id === aktifCheckIn.mekanId) ?? null,
       }
-    : enYakin
-      ? { id: enYakin.id, ad: enYakin.ad, listedeki: enYakin }
-      : null
+    : null
 
   const kartCanli = Boolean(aktifCheckIn)
 
@@ -306,8 +329,37 @@ export default function KesfetEkrani() {
         onMekanSec={(id) => router.push(`/check-in/${id}`)}
       />
 
-      {/* Su an bulundugun yer: en yakin mekan. Check-in bir mekan
-          secilerek yapiliyor, dolayisiyla en yakin mekan dogal aday. */}
+      {/* IKI SEKME: haritanin altinda, yan yana (kullanicinin karari
+          2026-08-31, uc tasarim arasindan "sekme cifti" secildi).
+          Dugme degil SEKME: alttaki icerigi degistiriyorlar. */}
+      <View style={stiller.sekmeCubugu}>
+        <Pressable
+          style={[stiller.sekme, sekme === 'ara' && stiller.sekmeSecili]}
+          onPress={() => sekmeSec('ara')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: sekme === 'ara' }}
+        >
+          <BuyutecIkonu renk={sekme === 'ara' ? renk.turuncu : renk.metinSoluk} />
+          <Text style={[stiller.sekmeYazi, sekme === 'ara' && stiller.sekmeYaziSecili]}>
+            {t('kesfet.sekmeAra')}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[stiller.sekme, sekme === 'kesfet' && stiller.sekmeSecili]}
+          onPress={() => sekmeSec('kesfet')}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: sekme === 'kesfet' }}
+        >
+          <PusulaIkonu renk={sekme === 'kesfet' ? renk.turuncu : renk.metinSoluk} />
+          <Text style={[stiller.sekmeYazi, sekme === 'kesfet' && stiller.sekmeYaziSecili]}>
+            {t('kesfet.sekmeKesfet')}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Aktif check-in kartI: check-in'i bitirmenin (Ayrıldım) ve
+          silmenin tek yolu bu, o yuzden iki sekmede de duruyor. */}
       {kartMekani && (
         <View style={stiller.buradaKart}>
           <View style={stiller.buradaUst}>
@@ -388,6 +440,7 @@ export default function KesfetEkrani() {
         </View>
       )}
 
+      {sekme === 'kesfet' && (
       <Text style={stiller.ozet}>
         {toplamKisi > 0 ? (
           <>
@@ -398,7 +451,11 @@ export default function KesfetEkrani() {
         )}
       </Text>
 
-      <TextInput
+      )}
+
+      {sekme === 'ara' && (
+        <>
+          <TextInput
         style={stiller.arama}
         placeholder="Mekan ara"
         placeholderTextColor={renk.metinSoluk}
@@ -406,8 +463,8 @@ export default function KesfetEkrani() {
         onChangeText={aramaDegisti}
         autoCorrect={false}
         autoCapitalize="none"
-        returnKeyType="search"
-      />
+            returnKeyType="search"
+          />
 
       {/* Arama sirasinda ekran duzeni DEGISMIYOR; durum yalnizca bu
           ince seritle anlatiliyor. Boylece yazi kutusu agacta kaliyor
@@ -432,9 +489,14 @@ export default function KesfetEkrani() {
         </View>
       )}
 
+        </>
+      )}
+
       {/* Canli mekanlar one cikiyor: uygulamanin tek sorusu "su an
-          nerede insan var". Kimse yoksa bu bolum hic cizilmiyor. */}
-      {canlilar.length > 0 && (
+          nerede insan var". Kimse yoksa bu bolum hic cizilmiyor.
+          Yalnizca kesfet sekmesinde: arama sonuclari arasinda "canli"
+          vurgusu aramayi bolerdi. */}
+      {sekme === 'kesfet' && canlilar.length > 0 && (
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -461,7 +523,9 @@ export default function KesfetEkrani() {
         />
       )}
 
-      <Text style={stiller.bolumBasligi}>Yakınında</Text>
+      <Text style={stiller.bolumBasligi}>
+        {sekme === 'kesfet' ? 'Yakınında' : 'Sonuçlar'}
+      </Text>
       {sakinler.length === 0 ? (
         <Text style={stiller.bosDurum}>Bu filtreyle yakında mekan yok.</Text>
       ) : (
@@ -644,6 +708,38 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.xl,
     marginTop: bosluk.l,
   },
+  /**
+   * Sekme cubugu: iki sekme tek kabugun icinde, secili olan beyaz ve
+   * golgeli. Uc tasarim onerisi arasindan "B - sekme cifti" secildi
+   * (kullanici, 2026-08-31).
+   */
+  sekmeCubugu: {
+    flexDirection: 'row',
+    backgroundColor: '#F2EFEB',
+    borderRadius: yuvarlak.hap,
+    padding: 4,
+    marginTop: bosluk.l,
+  },
+  sekme: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: bosluk.s,
+    paddingVertical: 11,
+    borderRadius: yuvarlak.hap,
+  },
+  sekmeSecili: {
+    backgroundColor: renk.yuzey,
+    ...golge.kart,
+  },
+  sekmeYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
+  sekmeYaziSecili: { color: renk.metin },
+
   ozet: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,

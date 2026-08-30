@@ -322,6 +322,11 @@ export default {
     baskaNumara: 'Başka bir numarayla devam et',
   },
 
+  kesfet: {
+    sekmeAra: 'Mekan ara',
+    sekmeKesfet: 'Keşfet',
+  },
+
   checkInHaritasi: {
     geri: 'Geri',
     haritaAcikla: 'Haritaya dokunarak yol tarifi al',
