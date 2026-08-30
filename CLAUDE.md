@@ -337,9 +337,28 @@ ettim - **o teshis YANLISTI**. Ikinci seferinde olctum:
 - Ayni komutu tekrar `eas deploy --prod` ile yayinlayip olcunce
   degerler dogru geldi.
 
-**KURAL: bir degisikligin yayina gectigini ekran goruntusuyle
-dogrularken, goruntu eskiyi gosteriyorsa once YENIDEN YAYINLA.**
-Metro onbellegini suclamadan once bunu dene.
+**GERCEK SEBEP OLCULDU (2026-08-30): Cloudflare `index.html`'i
+onbellekte tutuyor; yeniden yayinlamak bunu HIZLANDIRMIYOR, beklemek
+gerekiyor.** Ustteki "once yeniden yayinla" tavsiyesi yanlisti.
+
+Olcum yontemi (gozle bakmaktan cok daha guvenilir): `index.html`
+icindeki paket adi karsilastirilir.
+
+```bash
+# yerelde uretilen paket
+grep -o 'entry-[a-f0-9]*\.js' mobil/dist/index.html | head -1
+# yayindaki paket
+curl -s https://slooin.expo.app/ | grep -o 'entry-[a-f0-9]*\.js' | head -1
+# yayinin KENDI adresi - burasi HEP guncel gelir
+curl -s https://slooin--<hash>.expo.app/ | grep -o 'entry-[a-f0-9]*\.js' | head -1
+```
+
+Dagitimin kendi adresi yeni paketi gosteriyor ama uretim adresi eskiyi
+gosteriyorsa is DOGRU yayinlanmistir, yalnizca kenar onbellegi henuz
+donmemistir. Olculen sure ~3-4 dakika (`curl -sI` ciktisindaki `Age`
+basligi onbellegin yasini veriyor). Bu surede ikinci kez
+`eas deploy --prod` calistirmak hicbir sey degistirmiyor - iki kez
+denendi. 20 saniyede bir yoklayip beklemek dogru davranis.
 
 Olcum icin gozle bakmak yerine sayisal yontem daha guvenilir: sayfadaki
 ogelerin `getBoundingClientRect()` ve `getComputedStyle()` degerlerini
