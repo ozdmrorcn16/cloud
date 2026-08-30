@@ -168,6 +168,19 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
    (react-native 0.86.2 -> 0.86.3 vb.) - bu ISTEN ONCE de vardi,
    harita degisikligiyle ilgisi yok; ayri bir bakim isi.
 
+### FOURSQUARE DENEMESI - 2026-08-30 (karar bekliyor)
+
+Kullanicinin istegiyle Foursquare OS Places (Hugging Face, kapili,
+Apache 2.0) Bursa kesiti indirilip Overture verimizle karsilastirildi.
+Rapor: `docs/foursquare-denemesi-2026-08-30.md`. Ozet: sosyal
+mekanlarda (kafe/restoran/bar/park) Foursquare bizim ~10 katimiz kayit
+tasiyor; tur dogrulugu Overture'a BENZER (tur sorununu cozmuyor);
+gurultu ve eskilik var. ONERI: Overture kalsin, Foursquare yalnizca
+sosyal turlerde EK kaynak olarak birlestirilsin. Karar kullanicida.
+Deneme icin acilan gecici RPC'ler dusuruldu; canliya dokunulmadi.
+Kullanicinin HF token'i sohbete yapistirildi - iptal etmesi istendi;
+oturum kaydi betigine `hf_...` maskesi eklendi.
+
 ### DEVIR NOTU - 2026-08-27/30 (tasarim turu, yayin ve TestFlight)
 
 Calisma dali ayni: `claude/plan2-moderasyon-paneli`. Her sey commit'li
