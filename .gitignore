@@ -30,3 +30,8 @@ araclar/kategori-tam.txt
 araclar/kategori-dagilim.txt
 araclar/indirme-log.txt
 araclar/yukleme-log.txt
+
+# Foursquare yukleme araclarinin urettigi buyuk dosyalar (2026-08-30)
+araclar/fsq-tr.parquet
+araclar/fsq-kategoriler.parquet
+araclar/fsq-yukleme-log.txt
