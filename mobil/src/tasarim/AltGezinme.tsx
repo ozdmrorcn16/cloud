@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter, usePathname } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets, initialWindowMetrics } from 'react-native-safe-area-context'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { bekleyenEtiketleriGetir } from '../../lib/etiket'
@@ -167,7 +167,8 @@ export function AltGezinme() {
   const router = useRouter()
   const yol = usePathname()
   // Cubuk ana ekran gostergesinin (iPhone'daki alt cizgi) USTUNDE
-  // durur; web'de inset sifir, cubuk eskisi gibi en altta.
+  // durur; web'de inset sifir, cubuk eskisi gibi en altta. Icerik
+  // cubugun ALTINDAN ekranin dibine kadar akiyor (2026-08-30).
   const insets = useSafeAreaInsets()
   const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
   const [bekleyenBildirim, setBekleyenBildirim] = useState(0)
@@ -210,7 +211,10 @@ export function AltGezinme() {
   }, [yol])
 
   return (
-    <View style={[stiller.kapsayici, { bottom: insets.bottom }]} pointerEvents="box-none">
+    <View
+      style={[stiller.kapsayici, { paddingBottom: bosluk.m + insets.bottom }]}
+      pointerEvents="box-none"
+    >
       <View style={stiller.cubuk}>
         {SEKMELER.map((s, sira) => {
           // Dugme ORTAYA giriyor: iki sekme solda, iki sekme sagda.
@@ -264,8 +268,13 @@ export function AltGezinme() {
   )
 }
 
-/** Cubugun altinda kalmamasi icin sayfa iceriginin birakmasi gereken pay. */
-export const ALT_GEZINME_PAYI = 104
+/**
+ * Cubugun altinda kalmamasi icin sayfa iceriginin birakmasi gereken pay.
+ * Icerik artik ekranin dibine kadar aktigi icin alt inset (ana ekran
+ * gostergesi) da paya dahil; web'de sifir. Cihaz olcusu uygulama
+ * acilirken bir kez okunuyor - donmeyle degismiyor.
+ */
+export const ALT_GEZINME_PAYI = 104 + (initialWindowMetrics?.insets.bottom ?? 0)
 
 const stiller = StyleSheet.create({
   kapsayici: {
@@ -274,11 +283,13 @@ const stiller = StyleSheet.create({
     right: 0,
     bottom: 0,
     paddingHorizontal: bosluk.l,
-    paddingBottom: bosluk.l,
   },
   cubuk: {
     flexDirection: 'row',
-    backgroundColor: renk.yuzey,
+    // Yari saydam (kullanicinin istegi 2026-08-30, Instagram ornek):
+    // altindan akan icerik hafifce gorunur. Gercek buzlu cam (blur)
+    // native modul ister ve yeni derleme gerektirir; simdilik saydamlik.
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: yuvarlak.buyuk,
     borderWidth: 1,
     borderColor: renk.cizgi,

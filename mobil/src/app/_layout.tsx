@@ -104,11 +104,13 @@ function YonlendirmeKontrolu() {
     segments[0] !== 'profil-olustur' &&
     segments[0] !== 'hesap-durumu'
 
-  // Alt pay AYRI bir kutuda: gezinme cubugu kendi konumunu insets'ten
-  // aliyor; ekran icerigi ise ana ekran gostergesinin ustunde bitiyor.
+  // ALTTA PAY YOK (kullanicinin istegi 2026-08-30, Instagram ornek):
+  // icerik ekranin en altina kadar, gezinme cubugunun ALTINDAN akar;
+  // ekranlar cubuk icin ALT_GEZINME_PAYI birakiyor, o pay alt inset'i
+  // de iceriyor. Cubuk kendi konumunu insets'ten aliyor.
   return (
     <View style={[stiller.kok, { paddingTop: insets.top }]}>
-      <View style={[stiller.icerik, { paddingBottom: insets.bottom }]}>
+      <View style={stiller.icerik}>
         <Slot />
       </View>
       {uygulamaIcinde && <AltGezinme />}
