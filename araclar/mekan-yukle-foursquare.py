@@ -15,7 +15,7 @@ olusur. Adimlar:
 
 Kullanim (mobil/.env yuklu kabuk):
   python araclar/mekan-yukle-foursquare.py yukle       # 3. adim
-  python araclar/mekan-yukle-foursquare.py birlestir   # 4. adim (SQL yazdirir)
+  node   araclar/fsq-birlestir.mjs                     # 4. adim (dilim dilim RPC)
 
 Gerekli cevre degiskenleri: EXPO_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 """
@@ -59,10 +59,18 @@ def yukle() -> None:
     )
     esleme = _esleme()
     con = duckdb.connect()
+    toplam = con.execute(f"SELECT count(*) FROM read_parquet('{PARQUET}')").fetchone()[0]
+    # Paralel kosum: FSQ_BASLANGIC / FSQ_BITIS ile satir araligi verilir,
+    # birkac surec ayni anda farkli araliklari yukler. Her surec YALNIZCA
+    # kendi araligini okur - dosyanin tamamini belleğe almak surec basina
+    # 5 GB'a cikiyor ve makine tikaniyordu (2026-08-30'da yasandi).
+    baslangic = int(os.environ.get('FSQ_BASLANGIC', '0'))
+    bitis = min(int(os.environ.get('FSQ_BITIS', str(toplam))), toplam)
     ham = con.execute(
         "SELECT fsq_place_id, name, latitude, longitude, address, locality, region, "
         "fsq_category_labels[1], date_refreshed "
-        f"FROM read_parquet('{PARQUET}') ORDER BY fsq_place_id"
+        f"FROM read_parquet('{PARQUET}') ORDER BY fsq_place_id "
+        f"LIMIT {bitis - baslangic} OFFSET {baslangic}"
     ).fetchall()
 
     satirlar = []
@@ -80,14 +88,12 @@ def yukle() -> None:
             'semt': _semt(locality, region),
             'tazelendi': str(tazelendi) if tazelendi else None,
         })
-    print(f'{len(satirlar):,} satir hazirlandi; {len(tur_sayac)} tur.')
+    print(f'{len(satirlar):,} satir hazirlandi ({baslangic:,}-{bitis:,}); {len(tur_sayac)} tur.', flush=True)
     for tur, adet in sorted(tur_sayac.items(), key=lambda x: -x[1])[:15]:
         print(f'   {adet:>8,}  {tur}')
 
-    # Kaldigi yerden devam: hazirlik tablosunda zaten olanlar atlanir.
-    baslangic = int(os.environ.get('FSQ_BASLANGIC', '0'))
     t0 = time.time()
-    for i in range(baslangic, len(satirlar), PARCA):
+    for i in range(0, len(satirlar), PARCA):
         parca = satirlar[i:i + PARCA]
         for deneme in range(5):
             try:
@@ -100,7 +106,7 @@ def yukle() -> None:
                 time.sleep(3 * (deneme + 1))
         if (i // PARCA) % 50 == 0 or i + PARCA >= len(satirlar):
             gecen = time.time() - t0
-            print(f'{min(i + PARCA, len(satirlar)):,}/{len(satirlar):,}  ({gecen:.0f} sn)')
+            print(f'{baslangic + min(i + PARCA, len(satirlar)):,}/{bitis:,}  ({gecen:.0f} sn)', flush=True)
     print('Yukleme bitti.')
 
 
