@@ -48,7 +48,7 @@ const EN_AZ_GOSTERIM_METRE = 300
  * icinde. Daha uzaktakiler kadraj disinda kaliyor; kullanici isterse
  * uzaklastirabiliyor.
  */
-const EN_FAZLA_GOSTERIM_METRE = 450
+const EN_FAZLA_GOSTERIM_METRE = 300
 
 /** Haritada en fazla kac mekan ignesi cizilir. */
 const EN_FAZLA_IGNE = 12
