@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Pressable, Linking, Platform, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Linking, Modal, Platform, StyleSheet } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir, type Mekan } from '../../../lib/mekan'
 import { hataMetni } from '../../../lib/hata-metni'
@@ -133,11 +133,19 @@ export default function CheckInHaritasiEkrani() {
         )}
       </View>
 
-      {/* Secim penceresi ekranin ALTINDAN geliyor. `Alert.alert`
-          kullanilmadi: react-native-web'de calismiyor ve uygulama
-          tarayicidan da aciliyor. */}
-      {secimAcik && (
-        <>
+      {/* Secim penceresi ekranin ALTINDAN geliyor.
+          `Alert.alert` kullanilmadi: react-native-web'de calismiyor ve
+          uygulama tarayicidan da aciliyor.
+          MODAL kullanildi cunku alt gezinme cubugu kokte `<Slot />`den
+          SONRA ciziliyor; ekranin kendi icine konan bir pencere cubugun
+          ALTINDA kaliyor ve ust uste biniyordu (2026-08-30). */}
+      <Modal
+        visible={secimAcik}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSecimAcik(false)}
+      >
+        <View style={stiller.modalKok}>
           <Pressable
             style={stiller.perde}
             onPress={() => setSecimAcik(false)}
@@ -170,8 +178,8 @@ export default function CheckInHaritasiEkrani() {
               <Text style={stiller.vazgecYazi}>{t('checkInHaritasi.vazgec')}</Text>
             </Pressable>
           </View>
-        </>
-      )}
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -221,6 +229,7 @@ const stiller = StyleSheet.create({
     color: renk.metin,
   },
 
+  modalKok: { flex: 1, justifyContent: 'flex-end' },
   perde: {
     position: 'absolute',
     left: 0,
@@ -230,10 +239,8 @@ const stiller = StyleSheet.create({
     backgroundColor: 'rgba(23, 19, 15, 0.35)',
   },
   sayfa: {
-    position: 'absolute',
-    left: bosluk.m,
-    right: bosluk.m,
-    bottom: bosluk.xl,
+    marginHorizontal: bosluk.m,
+    marginBottom: bosluk.xl,
     backgroundColor: renk.yuzey,
     borderRadius: yuvarlak.buyuk,
     padding: bosluk.l,
