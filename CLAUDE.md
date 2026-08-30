@@ -230,16 +230,40 @@ ve push'lu.
 `https://slooin.expo.app` - EAS Hosting. Tunel yolu birakildi.
 Yayinlamak icin `cd mobil && npm run yayinla`.
 
-**BEKLEYEN TEK IS: TestFlight.** Kullanici Apple Developer hesabini
-acti. Benim tarafimdaki hazirlik BITTI (EAS production ortamina
-Supabase degiskenleri tanimlandi, app.json'a ihracat uyumlulugu ve
-tablet bayraklari eklendi, kullanilmayan mikrofon izni engellendi).
-Kalan adim KULLANICININ kendi terminalinde:
+**TESTFLIGHT ARTIK VAR (2026-08-30).** iOS uretim derlemesi alindi ve
+TestFlight'a girdi: build number 3, commit `d13af66`, calisma surumu
+1.0.0, kanal `production`. Yani asagidaki eski "bekleyen is" notu
+KAPANDI.
+
+**UYGULAMANIN IKI AYRI YAYIN YOLU VAR - KARISTIRMA:**
+
+| Hedef | Komut | Ne guncellenir |
+|---|---|---|
+| Web (`slooin.expo.app`) | `npm run yayinla` | YALNIZCA tarayici surumu |
+| TestFlight / magaza (iOS, Android) | `npx eas-cli update --channel production --environment production --message "..."` | Telefondaki uygulama, OTA |
+
+**`npm run yayinla` TESTFLIGHT'I GUNCELLEMEZ.** Bu bir kez yasandi:
+degisiklikler web'de gorunuyordu, kullanici "Testflight'ta
+gorunmuyor" dedi. Ikisi ayri paket.
+
+OTA'nin sartlari: `expo-updates` kurulu (commit d13af66'dan beri),
+`runtimeVersion` policy `appVersion` (su an 1.0.0) ve derlemenin
+kanali ile guncellemenin dali eslesmeli. Dogrulama:
+`npx eas-cli channel:view production` - "Branches pointed at this
+channel" altinda `production` dali ve ayni calisma surumu gorunmeli.
+`--environment` bayragi `--non-interactive` modda ZORUNLU.
+
+YENIDEN DERLEME yalnizca native taraf degisince gerekir (yeni native
+paket, izin, app.json'daki native alanlar). Salt JavaScript/varlik
+degisiklikleri OTA ile gidiyor. Guncelleme telefonda ARKA PLANDA
+iniyor ve BIR SONRAKI acilista uygulaniyor - kullanicinin uygulamayi
+tamamen kapatip acmasi gerekir, bazen iki kez.
+
+Yeni bir native derleme gerekirse (kullanicinin kendi terminalinde,
+Apple girisi + 2FA istiyor):
 
 ```
 npx eas-cli build --platform ios --profile production
-# Apple girisi + 2FA; Bundle ID, sertifika, profil ve PUSH KEY icin
-# "evet" denecek. Push key atlanirsa bildirim calismaz.
 npx eas-cli submit --platform ios --latest
 ```
 
