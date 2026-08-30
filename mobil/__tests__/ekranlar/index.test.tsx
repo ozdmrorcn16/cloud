@@ -30,6 +30,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     mekanId: 'mekan-1',
     mekanSemti: 'Nilüfer',
     avatarUrl: null,
+    rumuz: null,
     mekanAdi: 'Sahil Kafe',
     notMetni: 'guzel bir aksam',
     fotografUrl: null,
@@ -56,6 +57,16 @@ describe('AnaSayfa', () => {
     expect(await screen.findByText('Ada')).toBeTruthy()
     expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     expect(screen.getByText('guzel bir aksam')).toBeTruthy()
+  })
+
+  it('kullanici adi okunduysa kartta AD degil KULLANICI ADI kalin yazar', async () => {
+    // Kullanicinin karari 2026-08-30: kartta "byorcun", bildirimde ad-soyad.
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ rumuz: 'ada_1' })])
+
+    await render(<AnaSayfa />)
+
+    expect(await screen.findByText('ada_1')).toBeTruthy()
+    expect(screen.queryByText('Ada')).toBeNull()
   })
 
   it('fotografli check-in fotografiyla gelir', async () => {

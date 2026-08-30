@@ -31,8 +31,10 @@ import { Avatar } from '../tasarim/Avatar'
  * yanitlandiginda listeden kalkiyor, sayac da o listeden geliyor.
  *
  * SATIR DUZENI (kullanicinin karari 2026-08-30, Instagram'in bildirim
- * satiri ornek): solda yuvarlak profil fotografi, yaninda KULLANICI ADI
- * kalin ve ayni cumlenin icinde devam eden bildirim metni. Kart
+ * satiri ornek): solda yuvarlak profil fotografi, yaninda AD-SOYAD
+ * kalin (ayni gun ikinci karar: "bildirim isim soyisimle gelmeli";
+ * kullanici adi ise check-in kartinda) ve ayni cumlenin icinde devam
+ * eden bildirim metni. Kart
  * kenarligi yok; satirlar ince cizgiyle ayriliyor. Eylem dugmeleri
  * metnin altinda, fotografin degil metnin hizasinda.
  *
@@ -126,8 +128,9 @@ export default function BildirimlerEkrani() {
               <BildirimSatiri
                 key={kisi.id}
                 kullaniciId={kisi.id}
-                kullaniciAdi={kisi.kullaniciAdi}
+                gosterilenAd={kisi.ad || kisi.kullaniciAdi}
                 ad={kisi.ad}
+                kullaniciAdi={kisi.kullaniciAdi}
                 fotografUrl={avatarlar[kisi.id] ?? null}
                 metin={t('bildirimler.arkadaslikMetni')}
                 olumluYazi={t('bildirimler.kabul')}
@@ -147,8 +150,9 @@ export default function BildirimlerEkrani() {
               <BildirimSatiri
                 key={e.checkInId}
                 kullaniciId={e.etiketleyenId}
-                kullaniciAdi={e.etiketleyenKullaniciAdi}
+                gosterilenAd={e.etiketleyenAd || e.etiketleyenKullaniciAdi}
                 ad={e.etiketleyenAd}
+                kullaniciAdi={e.etiketleyenKullaniciAdi}
                 fotografUrl={avatarlar[e.etiketleyenId] ?? null}
                 metin={t('bildirimler.etiketMetni', { mekan: e.mekanAdi })}
                 olumluYazi={t('bildirimler.onayla')}
@@ -169,12 +173,13 @@ export default function BildirimlerEkrani() {
  * Tek bildirim satiri. Iki bildirim turu de ayni satiri kullaniyor;
  * degisen yalnizca metin ve dugme yazilari.
  *
- * Kullanici adi ile metin TEK Text icinde ic ice: boylece uzun mekan
+ * Ad ile metin TEK Text icinde ic ice: boylece uzun mekan
  * adlarinda satir dogal olarak kiriliyor ve kalin ad ile normal metin
  * ayni satir yuksekligini paylasiyor.
  */
 function BildirimSatiri({
   kullaniciId,
+  gosterilenAd,
   kullaniciAdi,
   ad,
   fotografUrl,
@@ -186,6 +191,8 @@ function BildirimSatiri({
   onOlumsuz,
 }: {
   kullaniciId: string
+  /** Kalin basilan: ad-soyad (yoksa kullanici adi). */
+  gosterilenAd: string
   kullaniciAdi: string
   ad: string | null
   fotografUrl: string | null
@@ -198,7 +205,7 @@ function BildirimSatiri({
 }) {
   return (
     <View style={stiller.satir} testID={`bildirim-${kullaniciId}`}>
-      <Pressable onPress={onProfil} accessibilityRole="button" accessibilityLabel={kullaniciAdi}>
+      <Pressable onPress={onProfil} accessibilityRole="button" accessibilityLabel={gosterilenAd}>
         <Avatar
           fotografUrl={fotografUrl}
           ad={ad}
@@ -211,7 +218,7 @@ function BildirimSatiri({
       <View style={stiller.sag}>
         <Pressable onPress={onProfil} accessibilityRole="button">
           <Text style={stiller.metin}>
-            <Text style={stiller.kullaniciAdi}>{kullaniciAdi}</Text> {metin}
+            <Text style={stiller.kullaniciAdi}>{gosterilenAd}</Text> {metin}
           </Text>
         </Pressable>
 

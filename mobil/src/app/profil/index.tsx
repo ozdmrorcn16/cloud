@@ -521,7 +521,11 @@ export default function ProfilEkrani() {
                 {anilar.slice(0, ONIZLEME_ADEDI).map((ani) => (
                   <CheckInKarti
                     key={ani.id}
-                    oge={anidanAkisOgesi(ani, { kullaniciId: profil.id, avatarUrl: fotografUrl })}
+                    oge={anidanAkisOgesi(ani, {
+                      kullaniciId: profil.id,
+                      avatarUrl: fotografUrl,
+                      rumuz: profil.kullaniciAdi,
+                    })}
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                   />
                 ))}

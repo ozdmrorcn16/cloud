@@ -17,7 +17,9 @@ import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
  * profil akisinda da bu gorunus olacak; mekan ismi turuncu ve
  * tiklanabilir." Zaman tuneli deseni (AniTuneli) bu kararla KALDIRILDI.
  *
- * Duzen: [profil resmi] AD - MEKAN ADI (turuncu) - etiketlenenler
+ * Duzen: [profil resmi] KULLANICI ADI - MEKAN ADI (turuncu) - etiketlenenler
+ *        (kullanicinin karari 2026-08-30: kartta "byorcun" gibi kullanici
+ *        adi yazar, ad-soyad DEGIL; bildirimlerde ise ad-soyad)
  *        tam zaman
  *        not
  *        fotograf
@@ -68,6 +70,8 @@ export function CheckInKarti({
   // Bas harf ADDAN (kullanicinin karari 2026-08-28): `kullaniciAdi`
   // alani check_inler'de denormalize duran ADI tasiyor (karar #18).
   const basHarf = (oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')
+  // Kullanici adi okunamadiysa (engel, askidaki hesap, ag) ada dusuyor.
+  const gosterilenAd = oge.rumuz ?? oge.kullaniciAdi ?? ''
 
   return (
     <Pressable
@@ -83,7 +87,7 @@ export function CheckInKarti({
           // "/profil".
           onPress={() => router.push(kisiYolu as never)}
           accessibilityRole="button"
-          accessibilityLabel={oge.kullaniciAdi ?? ''}
+          accessibilityLabel={gosterilenAd}
         >
           {oge.avatarUrl ? (
             <HizliImage
@@ -106,7 +110,7 @@ export function CheckInKarti({
               style={stiller.kullaniciAdi}
               onPress={() => router.push(kisiYolu as never)}
             >
-              {oge.kullaniciAdi ?? ''}
+              {gosterilenAd}
             </Text>
             <Text style={stiller.ayirac}> - </Text>
             <Text

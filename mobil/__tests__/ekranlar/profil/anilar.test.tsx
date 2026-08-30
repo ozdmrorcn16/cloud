@@ -6,6 +6,12 @@ jest.mock('../../../lib/checkin', () => ({
   kullanicininAnilariniGetir: jest.fn(),
   checkIniSil: jest.fn(),
 }))
+jest.mock('../../../lib/profil', () => ({
+  kendiProfilimiGetir: jest.fn().mockResolvedValue({
+    id: 'kullanici-1', kullaniciAdi: 'ada_1', ad: 'Ada', biyografi: null, fotograflar: [],
+  }),
+}))
+jest.mock('../../../lib/fotograf-url', () => ({ profilFotografiUrl: jest.fn() }))
 jest.mock('../../../lib/supabase', () => ({
   supabase: {
     auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) },
@@ -43,7 +49,9 @@ describe('AnilarEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    expect(screen.getByText('Ada')).toBeTruthy()
+    // Kartta KULLANICI ADI yazar (karar 2026-08-30), ad degil.
+    expect(screen.getByText('ada_1')).toBeTruthy()
+    expect(screen.queryByText('Ada')).toBeNull()
     expect(screen.getByText('Berk')).toBeTruthy()
     expect(screen.getByText('harika')).toBeTruthy()
   })

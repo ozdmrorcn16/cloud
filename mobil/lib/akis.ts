@@ -28,7 +28,7 @@ import { etiketleriGetir, type Etiket } from './etiket'
  */
 export function anidanAkisOgesi(
   ani: AniGorunumu,
-  secenekler: { kullaniciId: string; avatarUrl: string | null }
+  secenekler: { kullaniciId: string; avatarUrl: string | null; rumuz: string | null }
 ): AkisOgesi {
   return {
     id: ani.id,
@@ -45,14 +45,22 @@ export function anidanAkisOgesi(
     // Eski kayitlarda/testlerde alan eksik olabiliyor; kart bos liste bekliyor.
     etiketler: ani.etiketler ?? [],
     avatarUrl: secenekler.avatarUrl,
+    rumuz: secenekler.rumuz,
   }
 }
 
 export type AkisOgesi = {
   id: string
   kullaniciId: string
-  /** check_inler'de denormalize duran ad (karar #18). */
+  /** check_inler'de denormalize duran AD (karar #18); bas harf bundan. */
   kullaniciAdi: string | null
+  /**
+   * KULLANICI ADI ("byorcun"). Kartta kalin yazilan bu (kullanicinin
+   * karari 2026-08-30: kartta kullanici adi, bildirimde ad-soyad).
+   * `akis_profilleri` RPC'sinden geliyor; okunamazsa null ve kart
+   * ada duser.
+   */
+  rumuz: string | null
   mekanId: string
   mekanAdi: string
   /** Mekanin semti; zaman tunelindeki alt satirda kullaniliyor. */
@@ -119,11 +127,11 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
     satirlar.map((s) => s.id)
   ).catch(() => ({}))
 
-  // Avatarlar: once yollar TEK CAGRIDA aliniyor, sonra imzalaniyor.
-  // Kisi basina bir kere - ayni kisinin birden fazla kaydi olabilir.
-  const avatarlar = await avatarlariGetir([
+  // Profil ozetleri (kullanici adi + avatar) TEK CAGRIDA, kisi basina
+  // bir kere - ayni kisinin birden fazla kaydi olabilir.
+  const ozetler = await profilOzetleriniGetir([
     ...new Set(satirlar.map((s) => s.kullanici_id)),
-  ]).catch(() => ({}) as Record<string, string | null>)
+  ]).catch(() => ({}) as Record<string, ProfilOzeti>)
 
   return Promise.all(
     satirlar.map(async (satir) => ({
@@ -141,37 +149,62 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
       canliMi: satir.konum !== null,
       benimMi: satir.kullanici_id === benimId,
       etiketler: etiketler[satir.id] ?? [],
-      avatarUrl: avatarlar[satir.kullanici_id] ?? null,
+      avatarUrl: ozetler[satir.kullanici_id]?.avatarUrl ?? null,
+      rumuz: ozetler[satir.kullanici_id]?.rumuz ?? null,
     }))
   )
 }
 
+export type ProfilOzeti = {
+  /** Kullanici adi ("byorcun"). */
+  rumuz: string
+  ad: string
+  /** Imzalanmis guncel profil fotografi; yoksa null. */
+  avatarUrl: string | null
+}
+
 /**
- * Kimlik -> imzalanmis profil fotografi adresi.
+ * Kimlik -> kullanici adi, ad ve imzalanmis profil fotografi.
  *
- * Fotografi olmayan kisi sonucta HIC gorunmuyor; cagiran taraf da
- * bunu "fotograf yok" diye okuyup bas harfe duesuyor. Okuma
- * basarisiz olursa akis yine ciziliyor - avatar yuzunden butun akisi
- * kaybetmek yanlis olur.
+ * `akis_profilleri` RPC'si (2026-08-30): engellenen ya da askidaki
+ * kisi sonucta HIC gorunmuyor; cagiran taraf bunu "bilgi yok" diye
+ * okuyup ada ve bas harfe duser. Okuma basarisiz olursa akis yine
+ * ciziliyor - ozet yuzunden butun akisi kaybetmek yanlis olur.
  *
- * Disari acik: bildirim ekrani da ayni yardimciyla avatar cekiyor
- * (2026-08-30), boylece "kimin fotografi gorunur" kurali tek yerde
- * (profil_fotograflari RPC'si) kaliyor.
+ * Disari acik: bildirim ekrani da ayni yardimciyla avatar cekiyor,
+ * boylece "kim gorunur" kurali tek yerde (RPC) kaliyor.
  */
-export async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
+export async function profilOzetleriniGetir(
+  kimlikler: string[]
+): Promise<Record<string, ProfilOzeti>> {
   if (kimlikler.length === 0) return {}
 
-  const { data, error } = await supabase.rpc('profil_fotograflari', {
+  const { data, error } = await supabase.rpc('akis_profilleri', {
     p_kimlikler: kimlikler,
   })
   if (error) return {}
 
-  const satirlar = (data ?? []) as { id: string; fotograf: string | null }[]
-  const eslesme: Record<string, string | null> = {}
+  const satirlar = (data ?? []) as {
+    id: string
+    kullanici_adi: string
+    ad: string
+    fotograf: string | null
+  }[]
+  const eslesme: Record<string, ProfilOzeti> = {}
   await Promise.all(
     satirlar.map(async (s) => {
-      eslesme[s.id] = s.fotograf ? await profilFotografiUrl(s.fotograf) : null
+      eslesme[s.id] = {
+        rumuz: s.kullanici_adi,
+        ad: s.ad,
+        avatarUrl: s.fotograf ? await profilFotografiUrl(s.fotograf) : null,
+      }
     })
   )
   return eslesme
+}
+
+/** Yalnizca avatar adresleri (bildirim ekrani). */
+export async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
+  const ozetler = await profilOzetleriniGetir(kimlikler)
+  return Object.fromEntries(Object.entries(ozetler).map(([id, o]) => [id, o.avatarUrl]))
 }

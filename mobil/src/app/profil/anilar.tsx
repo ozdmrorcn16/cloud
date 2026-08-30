@@ -5,6 +5,8 @@ import { kullanicininAnilariniGetir, checkIniSil, type AniGorunumu } from '../..
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { anidanAkisOgesi } from '../../../lib/akis'
+import { kendiProfilimiGetir } from '../../../lib/profil'
+import { profilFotografiUrl } from '../../../lib/fotograf-url'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
@@ -27,6 +29,9 @@ export default function AnilarEkrani() {
   const { t } = useDil()
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [kullaniciId, setKullaniciId] = useState('')
+  // Kartta kullanici adi ve kendi avatarim gorunuyor; profil bir kez okunuyor.
+  const [rumuz, setRumuz] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   // Silme geri alinamaz: once onay.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
@@ -38,6 +43,12 @@ export default function AnilarEkrani() {
       if (!kullaniciId) return
       setKullaniciId(kullaniciId)
       setAnilar(await kullanicininAnilariniGetir(kullaniciId))
+      // Profil okunamazsa kart ada duser; anilar yine cizilir.
+      const profil = await kendiProfilimiGetir().catch(() => null)
+      setRumuz(profil?.kullaniciAdi ?? null)
+      setAvatarUrl(
+        profil?.fotograflar?.[0] ? await profilFotografiUrl(profil.fotograflar[0]) : null
+      )
       setHata(null)
     } catch (e) {
       setHata(hataMetni(e))
@@ -68,7 +79,7 @@ export default function AnilarEkrani() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <CheckInKarti
-            oge={anidanAkisOgesi(item, { kullaniciId, avatarUrl: null })}
+            oge={anidanAkisOgesi(item, { kullaniciId, avatarUrl, rumuz })}
             zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}

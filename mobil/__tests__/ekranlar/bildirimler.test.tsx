@@ -54,13 +54,13 @@ describe('BildirimlerEkrani', () => {
 
     await render(<BildirimlerEkrani />)
 
-    expect(await screen.findByText('deniz seninle arkadaş olmak istiyor.')).toBeTruthy()
+    expect(await screen.findByText('Deniz seninle arkadaş olmak istiyor.')).toBeTruthy()
 
     await fireEvent.press(screen.getByText('Kabul et'))
 
     await waitFor(() => expect(takipIsteginiYanitla).toHaveBeenCalledWith('kullanici-3', true))
     await waitFor(() =>
-      expect(screen.queryByText('deniz seninle arkadaş olmak istiyor.')).toBeNull()
+      expect(screen.queryByText('Deniz seninle arkadaş olmak istiyor.')).toBeNull()
     )
   })
 
@@ -70,7 +70,7 @@ describe('BildirimlerEkrani', () => {
     await render(<BildirimlerEkrani />)
 
     expect(
-      await screen.findByText('ada Kahve Durağı check-in’inde seni etiketlemek istiyor.')
+      await screen.findByText('Ada Kahve Durağı check-in’inde seni etiketlemek istiyor.')
     ).toBeTruthy()
   })
 
@@ -125,7 +125,7 @@ describe('BildirimlerEkrani', () => {
     await render(<BildirimlerEkrani />)
 
     expect(
-      await screen.findByText('ada Kahve Durağı check-in’inde seni etiketlemek istiyor.')
+      await screen.findByText('Ada Kahve Durağı check-in’inde seni etiketlemek istiyor.')
     ).toBeTruthy()
   })
 })
