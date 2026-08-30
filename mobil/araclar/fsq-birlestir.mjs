@@ -35,6 +35,14 @@ async function dilim(a, b, derinlik = 0) {
       await dilim(orta, b, derinlik + 1)
       return
     }
+    // Gecici hatalar (kilit zaman asimi, PGRST002 sema onbellegi, JWT saat
+    // kaymasi): bekle, ayni dilimi yeniden dene - islem idempotent.
+    if (derinlik < 8) {
+      console.log(`  ${a.toFixed(3)}-${b.toFixed(3)} hata: ${error.message.slice(0, 70)} - ${10 * (derinlik + 1)} sn sonra yeniden`)
+      await new Promise((r) => setTimeout(r, 10000 * (derinlik + 1)))
+      await dilim(a, b, derinlik + 1)
+      return
+    }
     throw new Error(`${a}-${b}: ${error.message}`)
   }
   const adet = Number(data)
