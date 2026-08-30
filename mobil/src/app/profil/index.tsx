@@ -526,8 +526,7 @@ export default function ProfilEkrani() {
                     oge={anidanAkisOgesi(ani, {
                       kullaniciId: profil.id,
                       avatarUrl: fotografUrl,
-                      // Profilde kullanici adi @ ile gorunur (2026-08-30).
-                      rumuz: `@${profil.kullaniciAdi}`,
+                      rumuz: profil.kullaniciAdi,
                     })}
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                   />

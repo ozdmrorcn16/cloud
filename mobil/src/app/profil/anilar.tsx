@@ -45,8 +45,7 @@ export default function AnilarEkrani() {
       setAnilar(await kullanicininAnilariniGetir(kullaniciId))
       // Profil okunamazsa kart ada duser; anilar yine cizilir.
       const profil = await kendiProfilimiGetir().catch(() => null)
-      // Profilde kullanici adi @ ile gorunur (2026-08-30).
-      setRumuz(profil?.kullaniciAdi ? `@${profil.kullaniciAdi}` : null)
+      setRumuz(profil?.kullaniciAdi ?? null)
       setAvatarUrl(
         profil?.fotograflar?.[0] ? await profilFotografiUrl(profil.fotograflar[0]) : null
       )

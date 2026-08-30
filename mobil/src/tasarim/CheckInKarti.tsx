@@ -71,9 +71,10 @@ export function CheckInKarti({
   // alani check_inler'de denormalize duran ADI tasiyor (karar #18).
   const basHarf = (oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')
   // Kullanici adi okunamadiysa (engel, askidaki hesap, ag) ada dusuyor.
-  // `rumuz` ONCEDEN BICIMLENMIS gelir: profil ekranlari basina @ koyup
-  // gonderiyor (kullanicinin istegi 2026-08-30, yalnizca profil icin),
-  // akis ekrani ham kullanici adini gonderiyor.
+  // KARTTA @ ISARETI YOK (kullanicinin karari 2026-08-30). Bir ara
+  // profildeki kartlara @ konmustu, ayni gun geri alindi. @ yalnizca
+  // profil basliginda ve baskasinin profilinde duruyor - orada kimlik
+  // basligi, burada bir cumlenin oznesi.
   const gosterilenAd = oge.rumuz ?? oge.kullaniciAdi ?? ''
 
   return (
