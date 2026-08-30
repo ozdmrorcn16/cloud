@@ -35,7 +35,7 @@ import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
  */
 
 /** Ekrandaki en kucuk gosterim yaricapi - her sey merkeze yigilmasin. */
-const EN_AZ_GOSTERIM_METRE = 300
+const EN_AZ_GOSTERIM_METRE = 200
 
 /**
  * Cerceve yaricapi bundan BUYUK olmasin (kullanicinin istegi
@@ -48,7 +48,7 @@ const EN_AZ_GOSTERIM_METRE = 300
  * icinde. Daha uzaktakiler kadraj disinda kaliyor; kullanici isterse
  * uzaklastirabiliyor.
  */
-const EN_FAZLA_GOSTERIM_METRE = 300
+const EN_FAZLA_GOSTERIM_METRE = 200
 
 /** Haritada en fazla kac mekan ignesi cizilir. */
 const EN_FAZLA_IGNE = 12
