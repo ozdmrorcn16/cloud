@@ -379,7 +379,23 @@ komut `npm run yayinla` - once `expo export`, sonra deploy.
 tutuyor; yeniden yayinlamak bunu HIZLANDIRMIYOR, beklemek gerekiyor.**
 Ustteki "once yeniden yayinla" tavsiyesi yanlisti.
 
-Olcum yontemi (gozle bakmaktan cok daha guvenilir): `index.html`
+**PAKET ADI KARSILASTIRMASI GUVENILIR DEGIL.** `eas update` kendi
+`expo export`'unu calistirip `dist/` klasorunu YENIDEN YAZIYOR, yani
+deploy'dan sonra update calistirdiysan yereldeki paket adi artik
+yayinlanan paketin adi degil. Bu bir kez yanlis teshise yol acti
+(2026-08-30).
+
+**Dogru yontem ICERIGE bakmak:** yeni eklenen bir ekran metnini ya da
+yolu canli pakette ara.
+
+```bash
+B=$(curl -s https://slooin.expo.app/ | grep -o '_expo/static/js/web/entry-[a-f0-9]*\.js' | head -1)
+curl -s "https://slooin.expo.app/$B" | grep -c 'Hangi haritayla'   # yeni metin
+```
+
+Sifir donerse yayin gecmemis, pozitif donerse gecmis.
+
+Eski yontem (yalnizca deploy calistirildiysa gecerli): `index.html`
 icindeki paket adi karsilastirilir.
 
 ```bash
