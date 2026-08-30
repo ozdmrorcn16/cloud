@@ -477,19 +477,23 @@ async function main() {
   }
 
   await senaryo('11 - Kullanici adi benzersizligi', async () => {
-    // Aktor bilerek A: RPC'de 30 gun kontrolu benzersizlik kontrolunden
-    // once geliyor, dolayisiyla adi degistirilmis bir hesapla denenirse
-    // beklenen "alinmis" mesaji yerine 30 gun mesaji doner ve test
-    // betigin kacinci calismasi oldugu bilgisine bagimli hale gelir.
-    // A'nin kullanici adi hicbir senaryoda degistirilmiyor.
+    // Aktor C: RPC'de 30 gun kontrolu benzersizlik kontrolunden once
+    // geliyor, dolayisiyla adi yakin zamanda degistirilmis bir hesapla
+    // denenirse beklenen "alinmis" mesaji yerine 30 gun mesaji doner.
+    // Onceden aktor A'ydi ve "A'nin adi hicbir senaryoda degismiyor"
+    // varsayimina dayaniyordu; ama A ayni zamanda kullanicinin
+    // TELEFONDA kullandigi test hesabi ve 2026-08-29'da adini uygulamadan
+    // degistirdi - senaryo o gun kirildi. C yalnizca bu betigin
+    // hesabi, adi hic degismiyor.
     const { data: bProfil } = await b.from('profiller').select('kullanici_adi').single()
     const bAdi = (bProfil as { kullanici_adi: string }).kullanici_adi
 
-    const { error } = await a.rpc('kullanici_adi_degistir', { p_yeni_ad: bAdi })
+    const { c: cIstemci } = await ucuncuKullaniciIleBaglan()
+    const { error } = await cIstemci.rpc('kullanici_adi_degistir', { p_yeni_ad: bAdi })
     esitMi(
       error?.message?.includes('alinmis') ?? false,
       true,
-      "A, B'nin kullanici adini alamaz"
+      "C, B'nin kullanici adini alamaz"
     )
   })
 
