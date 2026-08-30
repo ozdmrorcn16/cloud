@@ -28,11 +28,15 @@ async function dilim(a, b, derinlik = 0) {
   const t0 = Date.now()
   const { data, error } = await sb.rpc(RPC, { p_lng0: a, p_lng1: b })
   if (error) {
-    if (derinlik < 4 && /timeout|canceling|57014|504|502/i.test(error.message)) {
-      const orta = (a + b) / 2
-      console.log(`  ${a.toFixed(3)}-${b.toFixed(3)} zaman asimi, ikiye bolunuyor`)
-      await dilim(a, orta, derinlik + 1)
-      await dilim(orta, b, derinlik + 1)
+    // ZAMAN ASIMINDA DILIMI BOLME: istemci vazgecse de sunucudaki ifade
+    // calismaya devam ediyor; ayni satirlari yeniden eklemeye kalkan tekrar
+    // onunla kilit yarisina giriyor ("ShareLock on transaction" -> lock
+    // timeout, 2026-08-30 gece yasandi). Dogrusu: bekle, sonra AYNI dilimi
+    // tekrar dene - bitmis satirlar on conflict ile atlanir.
+    if (derinlik < 8 && /timeout|canceling|57014|504|502|fetch failed/i.test(error.message)) {
+      console.log(`  ${a.toFixed(3)}-${b.toFixed(3)} zaman asimi; 120 sn bekleyip ayni dilim yeniden`)
+      await new Promise((r) => setTimeout(r, 120000))
+      await dilim(a, b, derinlik + 1)
       return
     }
     // Gecici hatalar (kilit zaman asimi, PGRST002 sema onbellegi, JWT saat
