@@ -26,6 +26,61 @@ function DilBekleyerek() {
   return <YonlendirmeKontrolu />
 }
 
+/**
+ * Bu segmentlerde kalinabilir mi, yoksa baska bir ekrana mi gidilmeli?
+ *
+ * Karar SENKRON: hem yonlendirmeyi tetikleyen efekt hem de "bu ekran
+ * cizilsin mi" kontrolu ayni cevabi kullaniyor. Ikisi ayri yerde
+ * hesaplansa birbirinden kayabilir.
+ *
+ * `null` donerse mevcut ekran dogru ekrandir.
+ */
+type Hedef = '/karsilama' | '/hesap-durumu' | '/profil-olustur' | '/'
+
+function hedefRota(
+  oturumVar: boolean,
+  profilVarMi: boolean | null,
+  hesapDurumuVar: boolean,
+  segments: readonly string[]
+): Hedef | null {
+  const authGrubunda = segments[0] === '(auth)'
+  // Dogrulama ekrani kod dogrulandiktan SONRA kendi karar veriyor:
+  // profil yoksa profil olusturmaya gider, varsa oturumu kapatip
+  // "bu numarada zaten hesap var" der. Bu karar bir kac istek suruyor;
+  // o sirada buradan uygulamaya atilirsa mesaj hic gorunmez. Bu yuzden
+  // /dogrula'dan zorla cikarilmiyor.
+  const dogrulamaEkraninda = authGrubunda && segments[1] === 'dogrula'
+  const profilOlusturEkraninda = segments[0] === 'profil-olustur'
+  const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
+
+  // HESABI OLMAYAN HERKES, HER ACILISTA karsilama ekranini gorur
+  // (kullanicinin karari 2026-08-25). Once "yalnizca ilk indirene
+  // gosterilsin" denmisti ve isaret cihazda saklaniyordu; o isaret
+  // tamamen kaldirildi. Hesap olusturan kisi zaten oturum actigi icin
+  // buraya hic dusmuyor.
+  if (!oturumVar) return authGrubunda ? null : '/karsilama'
+
+  // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
+  // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
+  // olabilir) ve profil olusturma ekranina atilirsa orada da yazamadigi
+  // icin sikisir. Bu kol zinciri BURADA bitirir: baska hicbir kol
+  // degerlendirilmez. Aksi halde profil ve ana ekran kollari devreye
+  // girip /hesap-durumu ile diger ekran arasinda sonsuz donme uretir.
+  if (hesapDurumuVar) return hesapDurumuEkraninda ? null : '/hesap-durumu'
+
+  if (profilVarMi === false) return profilOlusturEkraninda ? null : '/profil-olustur'
+
+  if (
+    profilVarMi &&
+    (authGrubunda || profilOlusturEkraninda || hesapDurumuEkraninda) &&
+    !dogrulamaEkraninda
+  ) {
+    return '/'
+  }
+
+  return null
+}
+
 function YonlendirmeKontrolu() {
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
@@ -50,44 +105,20 @@ function YonlendirmeKontrolu() {
     return dinleyiciyiKaldir
   }, [oturum, profilVarMi])
 
-  useEffect(() => {
-    if (yukleniyor) return
-    const authGrubunda = segments[0] === '(auth)'
-    // Dogrulama ekrani kod dogrulandiktan SONRA kendi karar veriyor:
-    // profil yoksa profil olusturmaya gider, varsa oturumu kapatip
-    // "bu numarada zaten hesap var" der. Bu karar bir kac istek
-    // suruyor; o sirada buradan uygulamaya atilirsa mesaj hic
-    // gorunmez. Bu yuzden /dogrula'dan zorla cikarilmiyor.
-    const dogrulamaEkraninda = authGrubunda && segments[1] === 'dogrula'
-    const profilOlusturEkraninda = segments[0] === 'profil-olustur'
-    const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
+  // Yonlendirme karari TEK yerde ve SENKRON hesaplaniyor. Once
+  // yalnizca bir useEffect'in icindeydi; efekt render'dan SONRA
+  // calistigi icin oturumu olmayan biri uygulamayi actiginda bir an
+  // ANA SAYFA (`/`) ciziliyordu - en ustunde 88 px'lik kucuk kelime
+  // markasiyla - ve ancak sonra karsilamaya geciliyordu. Kullanici bunu
+  // "arada ustte yazi, altta yazi" diye bildirdi (2026-08-30).
+  // Cozum: gidilecek bir yer varsa O EKRAN HIC CIZILMIYOR.
+  const hedef = yukleniyor
+    ? null
+    : hedefRota(!!oturum, profilVarMi, !!hesapDurumu, segments)
 
-    if (!oturum && !authGrubunda) {
-      // HESABI OLMAYAN HERKES, HER ACILISTA karsilama ekranini gorur
-      // (kullanicinin karari 2026-08-25). Once "yalnizca ilk indirene
-      // gosterilsin" denmisti ve isaret cihazda saklaniyordu; o isaret
-      // tamamen kaldirildi. Hesap olusturan kisi zaten oturum actigi
-      // icin buraya hic dusmuyor.
-      router.replace('/karsilama')
-    } else if (oturum && hesapDurumu) {
-      // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
-      // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
-      // olabilir) ve profil olusturma ekranina atilirsa orada da yazamadigi
-      // icin sikisir. Bu kol zinciri BURADA bitirir: baska hicbir kol
-      // degerlendirilmez. Aksi halde profil ve ana ekran kollari devreye
-      // girip /hesap-durumu ile diger ekran arasinda sonsuz donme uretir.
-      if (!hesapDurumuEkraninda) router.replace('/hesap-durumu')
-    } else if (oturum && profilVarMi === false && !profilOlusturEkraninda) {
-      router.replace('/profil-olustur')
-    } else if (
-      oturum &&
-      profilVarMi &&
-      (authGrubunda || profilOlusturEkraninda || hesapDurumuEkraninda) &&
-      !dogrulamaEkraninda
-    ) {
-      router.replace('/')
-    }
-  }, [oturum, profilVarMi, hesapDurumu, yukleniyor, segments])
+  useEffect(() => {
+    if (hedef) router.replace(hedef)
+  }, [hedef, router])
 
   // Alt gezinme cubugu HER ekranda duruyor (kullanicinin karari
   // 2026-08-25: "hangi sayfaya girilirse girilsin alttaki sutun sabit
@@ -111,7 +142,9 @@ function YonlendirmeKontrolu() {
   return (
     <View style={[stiller.kok, { paddingTop: insets.top }]}>
       <View style={stiller.icerik}>
-        <Slot />
+        {/* Gidilecek baska bir ekran varsa mevcut ekran HIC cizilmez -
+            yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
+        {yukleniyor || hedef ? null : <Slot />}
       </View>
       {uygulamaIcinde && <AltGezinme />}
     </View>

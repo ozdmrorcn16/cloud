@@ -4,7 +4,7 @@ import Svg, { Path, Circle, G } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { SicaklikZemin } from '../../tasarim/SicaklikZemin'
-import { NabizIsareti } from '../../tasarim/NabizIsareti'
+import { CheckInSahnesi } from '../../tasarim/CheckInSahnesi'
 import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 
@@ -197,11 +197,13 @@ export default function KarsilamaEkrani() {
 
       <View style={stiller.esnekBosluk} />
 
-      {/* Nabiz gibi atan check-in isareti, dugmenin hemen ustunde
-          (kullanicinin karari 2026-08-30). Ekrandaki TEK hareketli
-          oge degil - zemindeki lekeler de nefes aliyor - ama tek
-          ANLATAN hareket bu: "bir yere check-in yapiliyor". */}
-      <NabizIsareti />
+      {/* Check-in sahnesi: nabiz atan igne ve cevresindeki insanlar
+          (kullanicinin karari 2026-08-30). Sayfa yan payini asip
+          ekranin tam genisligine yayiliyor; kenardaki halkalarin
+          tasmasi kadrajin devam ettigi hissini veriyor. */}
+      <View style={stiller.sahneAlani}>
+        <CheckInSahnesi />
+      </View>
 
       <Pressable
         style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
@@ -306,6 +308,8 @@ const stiller = StyleSheet.create({
   // bozuyor. Bu yuzden ust bosluklar kucuk, alt bosluk buyuk.
   ustBosluk: { flex: 0.8 },
   esnekBosluk: { flex: 1.05 },
+  // Sayfanin yatay payini geri aliyor: sahne ekranin tam genisliginde.
+  sahneAlani: { marginHorizontal: -bosluk.xl },
   tik: { color: '#FFFFFF', fontSize: 14, lineHeight: 18, fontFamily: yazi.govdeKalin },
 
   birincil: {

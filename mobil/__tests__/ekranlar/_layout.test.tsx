@@ -12,11 +12,17 @@ const mockRouterPush = jest.fn()
 let mockSegments: string[] = []
 const mockDinleyiciyiKaldir = jest.fn()
 
-jest.mock('expo-router', () => ({
-  Slot: () => null,
-  useRouter: () => ({ replace: mockRouterReplace, push: mockRouterPush }),
-  useSegments: () => mockSegments,
-}))
+jest.mock('expo-router', () => {
+  // Slot gorunur bir oge ciziyor ki "yanlis ekran bir an gorundu mu"
+  // sorusu test edilebilsin.
+  const React = require('react')
+  const { View } = require('react-native')
+  return {
+    Slot: () => React.createElement(View, { testID: 'ekran-icerigi' }),
+    useRouter: () => ({ replace: mockRouterReplace, push: mockRouterPush }),
+    useSegments: () => mockSegments,
+  }
+})
 
 jest.mock('../../lib/oturum', () => ({
   OturumSaglayici: ({ children }: { children: ReactNode }) => children,
@@ -34,6 +40,54 @@ const mockDokunmaDinle = bildirimeDokunmaDinle as jest.Mock
 describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  // 2026-08-30'da yasanan hata: yonlendirme yalnizca bir useEffect'te
+  // yapiliyordu, efekt render'dan SONRA calistigi icin oturumu olmayan
+  // biri uygulamayi actiginda bir an ANA SAYFA ciziliyordu (en ustunde
+  // kucuk kelime markasiyla) ve ancak sonra karsilamaya geciliyordu.
+  it('yonlendirme beklerken mevcut ekrani HIC cizmez', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: null,
+      profilVarMi: null,
+      yukleniyor: false,
+    })
+    mockSegments = ['bazi-ekran']
+
+    const { queryByTestId } = await render(<KokLayout />)
+
+    expect(queryByTestId('ekran-icerigi')).toBeNull()
+    await waitFor(() => {
+      expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
+    })
+  })
+
+  it('dogru ekrandayken icerigi cizer', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: null,
+      profilVarMi: null,
+      yukleniyor: false,
+    })
+    mockSegments = ['(auth)', 'karsilama']
+
+    const { queryByTestId } = await render(<KokLayout />)
+
+    expect(queryByTestId('ekran-icerigi')).not.toBeNull()
+    expect(mockRouterReplace).not.toHaveBeenCalled()
+  })
+
+  it('oturum durumu yuklenirken hicbir ekran cizmez', async () => {
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: null,
+      profilVarMi: null,
+      yukleniyor: true,
+    })
+    mockSegments = ['bazi-ekran']
+
+    const { queryByTestId } = await render(<KokLayout />)
+
+    expect(queryByTestId('ekran-icerigi')).toBeNull()
+    expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 
   it('oturum yokken ve (auth) grubunda degilken /karsilama yonlendirir', async () => {
