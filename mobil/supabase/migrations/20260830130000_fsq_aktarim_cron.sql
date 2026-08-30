@@ -36,13 +36,13 @@ returns void
 language plpgsql
 security definer
 set search_path to 'public'
-set statement_timeout to '3600s'
 as $function$
 declare
   v_baslangic timestamptz := clock_timestamp();
   v_bant record;
   v_adet integer;
-  v_dilim constant double precision := 0.02;
+  -- 0,02 derece yogun sehirde 2 dk'yi asiyordu; kucuk dilim, sik adim.
+  v_dilim constant double precision := 0.005;
 begin
   -- Onceki adim hala calisiyorsa bu adim hic dokunmadan cikar.
   if not pg_try_advisory_xact_lock(424242) then
@@ -71,4 +71,6 @@ $function$;
 
 revoke all on function public.fsq_aktarim_adimi() from public, anon, authenticated;
 
-select cron.schedule('fsq-aktarim', '* * * * *', 'select public.fsq_aktarim_adimi()');
+-- statement_timeout DIS ifadeye uygulanir; fonksiyon icindeki SET yetmez.
+-- Bu yuzden komutun kendisi once sinirsiz yapiyor (2 dk'lik cron sinirina takiliyordu).
+select cron.schedule('fsq-aktarim', '* * * * *', $$set statement_timeout = '0'; select public.fsq_aktarim_adimi();$$);
