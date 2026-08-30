@@ -295,11 +295,13 @@ export default function ProfilEkrani() {
       >
         <View style={stiller.ustCubuk}>
           <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-            {/* @ ISARETI YOK (kullanicinin istegi 2026-08-29).
-                Bu satir sayfanin kimlik basligi; isaret sus kaliyordu.
-                Baska ekranlarda @ DURUYOR - orada ad ile kullanici
-                adini birbirinden ayirmaya yariyor. */}
-            {profil ? profil.kullaniciAdi : ''}
+            {/* @ ISARETI VAR (kullanicinin istegi 2026-08-30:
+                "kullanıcı adları profilde @kullanıcı adı olarak
+                görünsün"). 2026-08-29'da bir kez KALDIRILMISTI (o gun
+                "sus kaliyor" denmisti); yeni istek onun yerine geciyor.
+                Uygulamanin geri kalani zaten @ ile gosteriyor:
+                baskasinin profili, ayarlar, profil duzenleme. */}
+            {profil ? `@${profil.kullaniciAdi}` : ''}
           </Text>
           <Pressable
             onPress={() => router.push('/profil/ayarlar')}
@@ -524,7 +526,8 @@ export default function ProfilEkrani() {
                     oge={anidanAkisOgesi(ani, {
                       kullaniciId: profil.id,
                       avatarUrl: fotografUrl,
-                      rumuz: profil.kullaniciAdi,
+                      // Profilde kullanici adi @ ile gorunur (2026-08-30).
+                      rumuz: `@${profil.kullaniciAdi}`,
                     })}
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                   />

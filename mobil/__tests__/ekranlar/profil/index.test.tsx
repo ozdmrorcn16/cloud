@@ -71,9 +71,9 @@ describe('ProfilEkrani', () => {
   it('kullanici adini, adi ve biyografiyi gosterir', async () => {
     await render(<ProfilEkrani />)
 
-    // Baslikta @ isareti YOK (kullanicinin istegi 2026-08-29).
-    expect(await screen.findByText('orcun')).toBeTruthy()
-    expect(screen.queryByText('@orcun')).toBeNull()
+    // Baslikta @ isareti VAR (kullanicinin istegi 2026-08-30). Bir gun
+    // once kaldirilmisti; yeni istek onun yerine gecti.
+    expect(await screen.findByText('@orcun')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
     expect(screen.getByText('İzmir')).toBeTruthy()
   })

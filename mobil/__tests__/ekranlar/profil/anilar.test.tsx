@@ -49,8 +49,9 @@ describe('AnilarEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    // Kartta KULLANICI ADI yazar (karar 2026-08-30), ad degil.
-    expect(screen.getByText('ada_1')).toBeTruthy()
+    // Kartta KULLANICI ADI yazar (karar 2026-08-30), ad degil; profil
+    // ekranlarinda basinda @ ile.
+    expect(screen.getByText('@ada_1')).toBeTruthy()
     expect(screen.queryByText('Ada')).toBeNull()
     expect(screen.getByText('Berk')).toBeTruthy()
     expect(screen.getByText('harika')).toBeTruthy()
