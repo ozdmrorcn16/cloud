@@ -187,12 +187,26 @@ Nano'da CALISMADI (60 sn gateway, hayalet ifadeler, kilit yarisi) -
 sunucu tarafi cron tek guvenilir yol.
 
 **ACIK ISLER (bu isten kalan):**
-1. Ilce/adres zenginlestirme: `araclar/fsq-semt-doldur.py` yerelde
-   (hucre modu semt + 60 m ad eslesmeli adres) -> `fsq-tr-semtli.parquet`.
-   Bitince mekanlar'a fsq_place_id uzerinden upsert edilmeli (yukleyiciye
-   hedef tablo secenegi gerekiyor). Su an semt dolu: 1,93 milyon,
-   adres dolu: 2,13 milyon / 5,98 milyon. AYRICA: il adi (or. "Bursa")
-   semt olarak kalmis kayitlar var - 81 il adi semt sayilmamali.
+1. ILCE/ADRES ZENGINLESTIRME - SIRADAKI OTURUMUN ILK ISI. Yerel hesap
+   (`araclar/fsq-semt-doldur.py`) oturum kapanirken hala calisiyordu ve
+   oturumla birlikte OLMUS OLABILIR. Adimlar:
+   a) `araclar/fsq-tr-semtli.parquet` VAR MI bak. Yoksa yeniden kos
+      (30-90 dk, guvenli):  `PYTHONIOENCODING=utf-8 python
+      araclar/fsq-semt-doldur.py`  (girdi parquet'leri diskte duruyor).
+   b) Ciktiyi mekanlara isle (mobil/.env yuklu kabuk, PARCA'li upsert;
+      Medium compute'ta ~10-15 dk):
+      `FSQ_PARQUET=araclar/fsq-tr-semtli.parquet FSQ_TABLO=mekanlar
+       python araclar/mekan-yukle-foursquare.py yukle`
+      (FSQ_TABLO=mekanlar: tazelendi alani atlanir, kaynak='foursquare'
+      eklenir, fsq_place_id uzerinden upsert - yalnizca semt/adres/tur
+      gibi alanlar tazelenir.)
+   c) Il adi semt kalmis eski kayitlari temizle (loader'daki ILLER
+      listesi artik onlari null yapiyor ama zenginlestirme dosyasinda
+      olmayan kayitlar icin SQL gerekir):
+      `update mekanlar set semt = null where kaynak='foursquare' and
+       tr_kucuk(semt) in (... ILLER ...)` - MCP zaman asimina duserse
+      cron tek-seferlik is olarak (bkz. fsq_bitis deseni).
+   Su an semt dolu: 1,93 milyon, adres dolu: 2,13 milyon / 5,98 milyon.
 2. `kategori-eslemesi.py`, `tur-duzeltmeleri*.py`, `mekan-yukle-overture.py`
    artik TARIHSEL (Overture yok). Silinmedi; README'de isaretlenmeli.
 3. `gers_id` sutunu ve `mekanlar_gers_id_benzersiz` kisiti bos duruyor;

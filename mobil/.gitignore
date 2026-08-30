@@ -41,3 +41,7 @@ example
 # generated native folders
 /ios
 /android
+araclar/_duck_tmp/
+araclar/fsq-tr-semtli.parquet
+araclar/_korunan.json
+araclar/fsq-birlestirme-*.log
