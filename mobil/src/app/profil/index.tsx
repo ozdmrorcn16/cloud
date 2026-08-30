@@ -494,7 +494,9 @@ export default function ProfilEkrani() {
                   <Pressable
                     key={yer.mekanId}
                     style={stiller.yerSatiri}
-                    onPress={() => router.push(`/check-in/${yer.mekanId}`)}
+                    // Yerler sekmesindeki satir da KONUM ekranini aciyor
+                    // (kullanicinin karari 2026-08-30).
+                    onPress={() => router.push(`/harita/${yer.mekanId}` as never)}
                     accessibilityRole="button"
                   >
                     <SiraRozeti sira={i + 1} />

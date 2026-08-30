@@ -373,7 +373,10 @@ export default function KullaniciProfiliEkrani() {
             <Pressable
               key={ani.id}
               style={stiller.aniSatiri}
-              onPress={() => router.push(`/check-in/${ani.mekanId}`)}
+              // Ani satiri KONUM ekranini aciyor (kullanicinin karari
+              // 2026-08-30): mekan etiketine basan kisi orayi gormek
+              // istiyor, oraya check-in yapmak degil.
+              onPress={() => router.push(`/harita/${ani.mekanId}` as never)}
               accessibilityRole="button"
             >
               {ani.fotografUrl && (
