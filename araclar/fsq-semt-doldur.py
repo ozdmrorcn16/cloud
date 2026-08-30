@@ -26,10 +26,26 @@ import duckdb
 BURASI = os.path.dirname(os.path.abspath(__file__))
 FSQ = os.path.join(BURASI, 'fsq-tr.parquet')
 OVERTURE = os.path.join(BURASI, 'overture-tr.parquet')
-CIKTI = os.path.join(BURASI, 'fsq-tr-semtli.parquet')
+CIKTI = os.path.join(BURASI, 'fsq-tr-sadece-semt.parquet' if os.environ.get('SADECE_SEMT') == '1' else 'fsq-tr-semtli.parquet')
 TEMP = os.path.join(BURASI, '_duck_tmp')
 
 HUCRE_SEMT = 0.003   # ~300 m
+# SADECE_SEMT=1: adres eslestirmesi (pahali) atlanir, yalnizca ilce.
+SADECE_SEMT = os.environ.get('SADECE_SEMT') == '1'
+# 81 il: locality'de il adi varsa semt SAYILMAZ (yukleyiciyle ayni liste).
+ILLER = [
+    'adana', 'adıyaman', 'afyonkarahisar', 'afyon', 'ağrı', 'amasya', 'ankara', 'antalya',
+    'artvin', 'aydın', 'balıkesir', 'bilecik', 'bingöl', 'bitlis', 'bolu', 'burdur', 'bursa',
+    'çanakkale', 'çankırı', 'çorum', 'denizli', 'diyarbakır', 'edirne', 'elazığ', 'erzincan',
+    'erzurum', 'eskişehir', 'gaziantep', 'giresun', 'gümüşhane', 'hakkari', 'hakkâri', 'hatay',
+    'isparta', 'mersin', 'içel', 'istanbul', 'i̇stanbul', 'izmir', 'i̇zmir', 'kars', 'kastamonu',
+    'kayseri', 'kırklareli', 'kırşehir', 'kocaeli', 'konya', 'kütahya', 'malatya', 'manisa',
+    'kahramanmaraş', 'mardin', 'muğla', 'muş', 'nevşehir', 'niğde', 'ordu', 'rize', 'sakarya',
+    'samsun', 'siirt', 'sinop', 'sivas', 'tekirdağ', 'tokat', 'trabzon', 'tunceli', 'şanlıurfa',
+    'uşak', 'van', 'yozgat', 'zonguldak', 'aksaray', 'bayburt', 'karaman', 'kırıkkale', 'batman',
+    'şırnak', 'bartın', 'ardahan', 'iğdır', 'yalova', 'karabük', 'kilis', 'osmaniye', 'düzce',
+    'türkiye', 'turkey',
+]
 HUCRE_ADRES = 0.001  # ~100 m
 
 
@@ -38,6 +54,8 @@ def main() -> None:
     con = duckdb.connect()
     con.execute("INSTALL spatial; LOAD spatial; SET threads=8;")
     con.execute(f"SET memory_limit='9GB'; SET temp_directory='{TEMP}';")
+    con.execute("CREATE TABLE iller (il VARCHAR)")
+    con.executemany("INSERT INTO iller VALUES (?)", [[i] for i in ILLER])
     con.execute("CREATE MACRO trk(x) AS lower(translate(coalesce(x,''), 'İIŞĞÜÖÇÂÎÛışğüöçâîû', 'IISGUOCAIUisguocaiu'))")
     t0 = time.time()
 
@@ -52,7 +70,8 @@ def main() -> None:
       CREATE TABLE fs AS
       SELECT fsq_place_id, name, latitude AS lat, longitude AS lng,
              (locality IS NULL OR trim(locality) = ''
-              OR (region IS NOT NULL AND lower(trim(locality)) = lower(trim(region)))) AS semt_yok,
+              OR (region IS NOT NULL AND lower(trim(locality)) = lower(trim(region)))
+              OR lower(trim(locality)) IN (SELECT il FROM iller)) AS semt_yok,
              (address IS NULL OR trim(address) = '') AS adres_yok,
              cast(floor(latitude / {HUCRE_SEMT}) AS int) AS sy, cast(floor(longitude / {HUCRE_SEMT}) AS int) AS sx,
              cast(floor(latitude / {HUCRE_ADRES}) AS int) AS ay, cast(floor(longitude / {HUCRE_ADRES}) AS int) AS ax
@@ -92,7 +111,10 @@ def main() -> None:
     print('semt bulunan:', con.execute('SELECT count(*) FROM semtler').fetchone()[0], f'({time.time() - t0:.0f} sn)', flush=True)
 
     # --- ADRES: 60 m icinde adi eslesen Overture ---
-    con.execute("""
+    if SADECE_SEMT:
+        con.execute("CREATE TABLE adresler (fsq_place_id VARCHAR, adres VARCHAR)")
+    else:
+      con.execute("""
       CREATE TABLE adresler AS
       SELECT fsq_place_id, adres FROM (
         SELECT f.fsq_place_id, o.adres,
