@@ -28,6 +28,9 @@ BURASI = os.path.dirname(os.path.abspath(__file__))
 # FSQ_PARQUET ile baska bir dosya (or. semt islenmis kesit) verilebilir.
 PARQUET = os.environ.get('FSQ_PARQUET') or os.path.join(BURASI, 'fsq-tr.parquet')
 PARCA = 1000
+# Hedef tablo: 'fsq_hazirlik' (ilk yukleme) ya da 'mekanlar' (aktarimdan sonra
+# semt/adres gibi alanlari fsq_place_id uzerinden yerinde guncellemek icin).
+TABLO = os.environ.get('FSQ_TABLO', 'fsq_hazirlik')
 
 
 def _esleme():
@@ -38,14 +41,33 @@ def _esleme():
     return modul
 
 
+# 81 il. Foursquare `locality` alanina cogu zaman il adini yaziyor
+# ("Bursa"); il, ilce (semt) DEGILDIR - listede gorunmez.
+ILLER = {
+    'adana', 'adıyaman', 'afyonkarahisar', 'afyon', 'ağrı', 'amasya', 'ankara', 'antalya',
+    'artvin', 'aydın', 'balıkesir', 'bilecik', 'bingöl', 'bitlis', 'bolu', 'burdur', 'bursa',
+    'çanakkale', 'çankırı', 'çorum', 'denizli', 'diyarbakır', 'edirne', 'elazığ', 'erzincan',
+    'erzurum', 'eskişehir', 'gaziantep', 'giresun', 'gümüşhane', 'hakkari', 'hakkâri', 'hatay',
+    'isparta', 'mersin', 'içel', 'istanbul', 'i̇stanbul', 'izmir', 'i̇zmir', 'kars', 'kastamonu',
+    'kayseri', 'kırklareli', 'kırşehir', 'kocaeli', 'konya', 'kütahya', 'malatya', 'manisa',
+    'kahramanmaraş', 'mardin', 'muğla', 'muş', 'nevşehir', 'niğde', 'ordu', 'rize', 'sakarya',
+    'samsun', 'siirt', 'sinop', 'sivas', 'tekirdağ', 'tokat', 'trabzon', 'tunceli', 'şanlıurfa',
+    'uşak', 'van', 'yozgat', 'zonguldak', 'aksaray', 'bayburt', 'karaman', 'kırıkkale', 'batman',
+    'şırnak', 'bartın', 'ardahan', 'iğdır', 'yalova', 'karabük', 'kilis', 'osmaniye', 'düzce',
+    'türkiye', 'turkey',
+}
+
+
 def _semt(locality: str | None, region: str | None) -> str | None:
     """Foursquare'in ilce bilgisi zayif: yarisi bos, kalani 'Bursa/bursa/
-    BURSA' gibi. Il adiyla ayni olani atiyoruz (semt degil), gerisini
-    bas harfleri buyuk yaziyoruz."""
+    BURSA' gibi. Il adiyla ayni olani ve 81 il adini atiyoruz (semt
+    degil), gerisini bas harfleri buyuk yaziyoruz."""
     if not locality:
         return None
     l = locality.strip()
     if not l or (region and l.casefold() == region.strip().casefold()):
+        return None
+    if l.casefold() in ILLER:
         return None
     return l if l != l.upper() and l != l.lower() else l.title()
 
@@ -79,7 +101,7 @@ def yukle() -> None:
     for pid, ad, lat, lng, adres, locality, region, etiket, tazelendi in ham:
         tur = esleme.tur_bul(etiket) or 'Mekan'
         tur_sayac[tur] = tur_sayac.get(tur, 0) + 1
-        satirlar.append({
+        satir = {
             'fsq_place_id': pid,
             'ad': ad.strip(),
             'tur': tur,
@@ -87,8 +109,12 @@ def yukle() -> None:
             'konum': f'POINT({lng} {lat})',
             'adres': adres,
             'semt': _semt(locality, region),
-            'tazelendi': str(tazelendi) if tazelendi else None,
-        })
+        }
+        if TABLO == 'fsq_hazirlik':
+            satir['tazelendi'] = str(tazelendi) if tazelendi else None
+        else:
+            satir['kaynak'] = 'foursquare'
+        satirlar.append(satir)
     print(f'{len(satirlar):,} satir hazirlandi ({baslangic:,}-{bitis:,}); {len(tur_sayac)} tur.', flush=True)
     for tur, adet in sorted(tur_sayac.items(), key=lambda x: -x[1])[:15]:
         print(f'   {adet:>8,}  {tur}')
@@ -101,7 +127,7 @@ def yukle() -> None:
         # 12 deneme.
         for deneme in range(12):
             try:
-                supabase.table('fsq_hazirlik').upsert(parca, on_conflict='fsq_place_id').execute()
+                supabase.table(TABLO).upsert(parca, on_conflict='fsq_place_id').execute()
                 break
             except Exception as e:  # ag/zaman asimi: bekle, yeniden dene
                 if deneme == 11:
