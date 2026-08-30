@@ -322,6 +322,16 @@ export default {
     baskaNumara: 'Başka bir numarayla devam et',
   },
 
+  checkInHaritasi: {
+    geri: 'Geri',
+    haritaAcikla: 'Haritaya dokunarak yol tarifi al',
+    haritadaAc: 'Harita uygulamasında aç',
+    secimBaslik: 'Hangi haritayla açalım?',
+    appleHaritalar: 'Apple Haritalar',
+    googleHaritalar: 'Google Haritalar',
+    vazgec: 'Vazgeç',
+  },
+
   giris: {
     telefonYerTutucu: 'Telefon numarası',
     sifreYerTutucu: 'Şifre',

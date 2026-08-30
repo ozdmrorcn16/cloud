@@ -162,13 +162,13 @@ describe('ProfilEkrani', () => {
     expect(await screen.findByText('Henüz bir anın yok')).toBeTruthy()
   })
 
-  it('ani satirina basilinca check-in ekranini acar', async () => {
+  it('ani satirina basilinca KONUM ekranini acar', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
 
     await render(<ProfilEkrani />)
     fireEvent.press(await screen.findByText('Sahil Kafe'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 
   it('ayarlar dugmesi ayarlar ekranini acar', async () => {

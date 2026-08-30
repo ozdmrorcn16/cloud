@@ -137,13 +137,13 @@ describe('AnaSayfa', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
   })
 
-  it('mekan adina basinca check-in ekranini acar', async () => {
+  it('mekan adina basinca KONUM ekranini acar', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
 
     await render(<AnaSayfa />)
     fireEvent.press(await screen.findByText('Sahil Kafe'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 
   it('arama sutununa yazilinca akis yerine KISI sonuclari cikar', async () => {

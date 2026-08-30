@@ -58,12 +58,12 @@ describe('AnilarEkrani', () => {
     expect(screen.getByText('harika')).toBeTruthy()
   })
 
-  it('mekan adina basinca check-in ekranini acar', async () => {
+  it('mekan adina basinca KONUM ekranini acar', async () => {
     await render(<AnilarEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
     await fireEvent.press(screen.getByText('Sahil Kafe'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 
   it('etikete basinca o kisinin profiline gider', async () => {

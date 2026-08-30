@@ -119,7 +119,11 @@ export function CheckInKarti({
             <Text style={stiller.ayirac}> - </Text>
             <Text
               style={stiller.mekanAdi}
-              onPress={() => router.push(`/check-in/${oge.mekanId}`)}
+              // Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
+              // 2026-08-30). Onceden yeni check-in formunu aciyordu;
+              // konum etiketine basan kisi orayi gormek istiyor, oraya
+              // check-in yapmak degil.
+              onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
             >
               {oge.mekanAdi}
             </Text>
