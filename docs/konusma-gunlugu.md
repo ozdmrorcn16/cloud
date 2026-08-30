@@ -40,3 +40,8 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-08-30** — "Kendi Supabase'imizi kursak" sorusu arastirildi; bulgular
+  `docs/arastirma/kendi-sunucumuz-maliyet.md` dosyasinda. Ozet: dusuk olcekte
+  self-hosting daha pahali (~$30 vs $25) ve emek maliyeti haric. Kirilma noktasi
+  aylik ~$300-500 fatura veya 1 TB+ egress. Karar: simdilik Supabase Free,
+  gercek kullanicilarda Pro. Henuz kalici bir teknoloji secimi yapilmadi.
