@@ -192,7 +192,8 @@ sunucu tarafi cron tek guvenilir yol.
    upsert ile mekanlara islendi (FSQ_TABLO=mekanlar; kismi tekil indeks
    tam tekile cevrildi - PostgREST on_conflict kismi indeksle
    eslesemiyor). SONUC: semt dolu 4.725.767, adres dolu 2.343.697 /
-   5.980.485. Il adi semt kalmis ~13 bin kayit SQL ile null yapildi.
+   5.980.485. Il adi semt kalmis kayitlar ve "Osmangazi / Bursa"
+   gibi bolulu biçimler SQL ile temizlendi (ikisi de 0).
 2. `kategori-eslemesi.py`, `tur-duzeltmeleri*.py`, `mekan-yukle-overture.py`
    artik TARIHSEL (Overture yok). Silinmedi; README'de isaretlenmeli.
 3. `gers_id` sutunu ve `mekanlar_gers_id_benzersiz` kisiti bos duruyor;
