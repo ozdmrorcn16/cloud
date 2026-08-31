@@ -197,25 +197,44 @@ degerler 'Burda' / 'Nilüfer, Bursa'. Bunlar zenginlestirmenin
 DOKUNMADIGI kayitlardi (ham locality dolu oldugu icin "dolu olana guven"
 denmisti).
 
-**TURKIYE'DE OSM'DE MAHALLE SINIRI YOK** - olculdu, admin_level=10
-poligon sayisi SIFIR. Var olan sinirlar il (81), ilce (969), belde
-(1.627). Mahalleler yalnizca NOKTA: neighbourhood 11.785, suburb 10.852,
-village 37.565, hamlet 7.582, quarter 679 (toplam 69.391).
+**MAHALLE KAYNAGI: MEKANLARIN KENDI ADRES KAYDI** (OSM DEGIL).
 
-Yontem: her mekana AYNI ILCEDEKI en yakin mahalle merkezi
-(`araclar/osm-mahalle-ata.py`). Ilce kisiti sart - onsuz sinirdaki mekan
-komsu ilcenin mahallesini aliyor. 3 km'den uzak mahalle atanmiyor.
-Kapsama: mekanlarin %99,1'inin 2 km icinde mahalle noktasi var, ortanca
-uzaklik 360 m. **SINIRI: sinir poligonu olmadigi icin mahalle
-sinirindaki mekan komsu mahalleyi alabilir.**
+Ilk surum OSM yerlesim NOKTALARINI kullaniyordu ve YANLIS sonuc verdi.
+Kullanici somut ornek gosterdi: Nilufer'deki bir mekan "Ertugrul"
+gorunuyordu, oysa orasi ALAADDINBEY. Olculdu:
 
-Sonuc: 5.778.097 mahalle, 5.895.360 kayitta ilce (969 poligona
-nokta-icinde testiyle - ilce artik CIKARIM DEGIL). Yeni sutun
-`mekanlar.mahalle`; `semt` ILCE tutmaya devam ediyor. Ekran: mahalle
+    Ertugrul     683 m  (OSM suburb)   <- "en yakin nokta" bunu secti
+    Alaaddinbey 1415 m  (OSM village)  <- dogrusu
+
+**Kok neden nokta/sinir farki:** mahalle merkezine uzaklik, o mahallenin
+ICINDE olup olmadigini soylemiyor. Kullanicinin "yaricapi daraltsak
+duzelmez mi" onerisi de COZMUYOR - 1 km sinirinda Alaaddinbey busbutun
+elenir, yanlis olan Ertugrul yine kazanirdi. Apple Haritalar da ayni
+hatayi yapiyor (tam adres satiri "Ertugrul" diyordu).
+
+Turkiye'de OSM'de mahalle SINIRI yok (admin_level=10 sayisi SIFIR;
+il 81, ilce 969, belde 1.627 var), yani poligonla cozulemiyordu.
+
+**DOGRU KAYNAK mekanlarin kendi `address` alani:** "Alaaddinbey Mah.
+613.sk no 9". Yontem (`araclar/mahalle-adresten.py`): adresten
+'<ad> Mahallesi/Mah./Mh.' kalibi cikarilir, ~300 m'lik hucrede EN SIK ad
+o hucrenin mahallesi sayilir ve hucredeki butun mekanlara yayilir.
+Yayilim sart - adresinde mahalle yazan yalnizca 680 bin kayit var,
+yayilimla kapsama %80,3'e cikiyor (4.802.042 mahalle).
+
+**Kalan %19,7'de mahalle BOS birakiliyor** - kullanicinin karari
+(2026-08-31): "sadece adres kaydi". Bos yerde ekran ilceyi gosteriyor;
+yanlis mahalle gostermektense ilce gosteriliyor. Ayni ilke tur
+verisinde de uygulanmisti.
+
+ILCE ise OSM'den ve DOGRU: 969 ilce POLIGONUNA nokta-icinde testiyle
+atandi (5.895.360 kayit) - poligon oldugu icin ilcede bu sorun yok.
+Yeni sutun `mekanlar.mahalle`; `semt` ILCE tutuyor. Ekran: mahalle
 varsa mahalle, yoksa ilce.
 
-Araclar: `osm-mahalle-cikar.py` (OSM'den nokta+poligon),
-`osm-mahalle-ata.py` (atama), `mahalle-yukle.py` (hazirlik tablosuna).
+Araclar: `mahalle-adresten.py` (ASIL YONTEM), `osm-mahalle-cikar.py` +
+`osm-mahalle-ata.py` (ilce poligonlari icin hala gerekli; mahalle
+atamasi kismi TARIHSEL), `mahalle-yukle.py` (hazirlik tablosuna).
 `araclar/turkiye-osm.pbf` (614 MB) ve `osmconf.ini` gitignored.
 
 **ATIF DUZELTILDI:** kesfet ekraninin altinda hala "Overture Maps
