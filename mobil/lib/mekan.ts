@@ -100,13 +100,26 @@ export async function yakinMekanlariYogunlukIleGetir(
   lat: number,
   lng: number,
   yaricapMetre?: number | null,
-  arama?: string
+  arama?: string,
+  /**
+   * Sunucuda uygulanacak tur suzgeci. Bos birakilirsa suzme yok.
+   *
+   * NEDEN SUNUCUDA: daraltma bir zamanlar ISTEMCIDE yapiliyordu
+   * (`kesfetIcinSuz`) ve sunucu en yakin 50 kaydi tur ayrimi yapmadan
+   * donduruyordu. Kullanicinin bolgesinde olculdu: o 50 kaydin yalnizca
+   * 3'u sosyal turdeydi, oysa 500 m icinde 111 sosyal mekan vardi.
+   * Yani liste dolu bir cevrede bile neredeyse bos gorunuyordu.
+   */
+  turler?: string[] | null,
+  limit?: number | null
 ): Promise<MekanYogunlukIle[]> {
   const { data, error } = await supabase.rpc('yakin_mekanlar_yogunluk', {
     p_lat: lat,
     p_lng: lng,
     p_yaricap_metre: yaricapMetre ?? null,
     p_arama: arama ?? null,
+    p_turler: turler ?? null,
+    p_limit: limit ?? null,
   })
   if (error) throw new Error(hataMetni(error))
   return (data as MekanYogunlukSatiri[]).map((satir) => ({
@@ -129,6 +142,24 @@ export async function yakinMekanlariYogunlukIleGetir(
  * gelir. Kimse bir seyi kaybetmez, yalnizca varsayilan gorunum
  * uygulamanin amacina gore secilir.
  */
+/**
+ * Kesfet listesinin yaricapi. Kullanicinin karari (2026-08-31):
+ * "bulundugum adrese gore en yakin 500 mt icerisindeki konumlar
+ * yakindan uzaga siralanmali".
+ *
+ * ARAMADA UYGULANMAZ: arama butun veritabanini kapsamali, kullanici
+ * baska sehirdeki bir mekani arayabilir.
+ */
+export const KESFET_YARICAP_METRE = 500
+
+/**
+ * Kesfet listesinde en fazla kac mekan. Siralama en yakindan oldugu
+ * icin bu "en yakin 100" demek. Yogun yerlerde 500 m'ye binlerce sosyal
+ * mekan sigiyor (olculdu: Kadikoy 5.363, Taksim 4.045); hepsini
+ * gondermek agi ve listeyi bosuna sisirir.
+ */
+export const KESFET_LIMIT = 100
+
 export const SOSYAL_TURLER = new Set<string>([
   // Yeme icme
   'Kafe', 'Kahveci', 'Çay evi', 'İnternet kafe',
@@ -182,17 +213,13 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
   return mekan.kaynak === 'kullanici'
 }
 
-/** Kesfet akisi icin: arama bosken sosyal turlere daralt. */
-export function kesfetIcinSuz<T extends { tur: string }>(
-  mekanlar: T[],
-  aramaVarMi: boolean
-): T[] {
-  if (aramaVarMi) return mekanlar
-  const sosyal = mekanlar.filter((m) => SOSYAL_TURLER.has(m.tur))
-  // Cevrede hic sosyal mekan yoksa bos ekran gostermek yerine eldekini
-  // gosteriyoruz: kucuk yerlesimlerde liste tamamen bosalabilir.
-  return sosyal.length > 0 ? sosyal : mekanlar
-}
+// `kesfetIcinSuz` 2026-08-31'de KALDIRILDI. Kesfet daraltmasini istemci
+// yapiyordu: sunucudan tur ayrimi olmadan gelen en yakin 50 kayit burada
+// sosyal turlere suzuluyordu. Kullanicinin bolgesinde olculdu - o 50
+// kaydin 3'u sosyaldi, oysa 500 m icinde 111 sosyal mekan vardi, yani
+// liste dolu bir cevrede bosaliyordu. Suzgec artik `p_turler` ile
+// SUNUCUDA uygulaniyor; cevrede hic sosyal mekan yoksa ekran sinirsiz
+// ikinci bir istek atiyor (eski "eldekini goster" davranisinin karsiligi).
 
 /**
  * Tek bir mekanin bilgisi - detay ekraninin basligi icin.

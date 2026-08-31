@@ -21,8 +21,10 @@ import {
 } from '../../../lib/checkin'
 import {
   yakinMekanlariYogunlukIleGetir,
-  kesfetIcinSuz,
   turuGosterilir,
+  SOSYAL_TURLER,
+  KESFET_YARICAP_METRE,
+  KESFET_LIMIT,
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
@@ -116,13 +118,35 @@ export default function KesfetEkrani() {
     try {
       const konum = cihazKonumu ?? (await cihazKonumunuAl())
       setCihazKonumu(konum)
-      // Yaricap yerine null: mesafe siniri yok, siralama en yakindan.
-      const sonuc = await yakinMekanlariYogunlukIleGetir(
+      /**
+       * ARAMA BOSKEN: 500 m yaricap, sosyal turler ve limit SUNUCUYA
+       * gonderiliyor (kullanicinin istegi 2026-08-31).
+       *
+       * Daraltma once istemcide yapiliyordu ve liste dolu bir cevrede
+       * bile bosaliyordu: sunucu tur ayrimi yapmadan en yakin 50 kaydi
+       * donduruyor, istemci onlari sosyal turlere suzuyordu. Kullanicinin
+       * bolgesinde olculdu - o 50 kaydin 3'u sosyaldi, oysa 500 m icinde
+       * 111 sosyal mekan vardi.
+       *
+       * ARAMA VARKEN: sinir yok. Arama butun veritabanini kapsamali;
+       * kullanici baska sehirdeki bir mekani da arayabilir.
+       */
+      const aramaVarMi = (metin ?? '').trim().length > 0
+      let sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
-        null,
-        metin || undefined
+        aramaVarMi ? null : KESFET_YARICAP_METRE,
+        metin || undefined,
+        aramaVarMi ? null : [...SOSYAL_TURLER],
+        aramaVarMi ? null : KESFET_LIMIT
       )
+      // Kucuk yerlesimde 500 m icinde hic sosyal mekan olmayabilir.
+      // Bos ekran gostermek yerine sinirlari kaldirip tekrar soruyoruz -
+      // eski istemci suzgecindeki "hic sosyal yoksa eldekini goster"
+      // davranisinin sunucu tarafindaki karsiligi.
+      if (!aramaVarMi && sonuc.length === 0) {
+        sonuc = await yakinMekanlariYogunlukIleGetir(konum.lat, konum.lng, null, undefined)
+      }
       if (sira !== istekSirasi.current) return
       setMekanlar(sonuc)
     } catch (e) {
@@ -214,12 +238,13 @@ export default function KesfetEkrani() {
 
   // Kesfet akisi "su an nereye gidip birileriyle karsilasabilirim"
   // sorusunu cevapliyor; arama ise butun veritabanini kapsiyor. Bu
-  // yuzden arama BOSKEN liste sosyal turlere daraliyor, bir sey
-  // arandigi anda 133 turun tamami geri geliyor.
-  const kesfetListesi = useMemo(
-    () => kesfetIcinSuz(mekanlar, arama.trim().length > 0),
-    [mekanlar, arama]
-  )
+  // daraltma ARTIK SUNUCUDA yapiliyor (yukaridaki `yukle`), cunku
+  // istemcide yapildiginda liste bosaliyordu.
+  //
+  // ISTEMCIDE BIR DAHA SUZULMEMELI: cevrede hic sosyal mekan yoksa
+  // ekran sinirsiz ikinci bir istek atiyor ve o sonuc tur ayrimi
+  // tasimiyor; burada tekrar suzmek onu da bosaltirdi.
+  const kesfetListesi = mekanlar
 
   // Tur cipleri KALDIRILDI (karar 2026-08-24): tur artik dis kaynakli
   // mekanlarda gosterilmedigi icin ona gore suzmek de anlamsiz.

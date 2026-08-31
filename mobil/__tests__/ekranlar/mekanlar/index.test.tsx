@@ -1,7 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
-import { yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
+import {
+  yakinMekanlariYogunlukIleGetir,
+  SOSYAL_TURLER,
+  KESFET_YARICAP_METRE,
+  KESFET_LIMIT,
+} from '../../../lib/mekan'
 
 // mesafeMetre de mock'lanmali: ekran mekan uzakligini bununla
 // hesapliyor. Yalnizca cihazKonumunuAl mock'lanirsa mesafeMetre
@@ -10,9 +15,9 @@ jest.mock('../../../lib/konum', () => ({
   cihazKonumunuAl: jest.fn(),
   mesafeMetre: jest.fn(() => 240),
 }))
-// kesfetIcinSuz saf bir fonksiyon (ag yok, yan etki yok): mock'lamak
-// yerine GERCEGI kullaniliyor, boylece ekranin suzme davranisi de
-// birlikte dogrulanmis oluyor. Yalnizca ag cagrisi mock'lanir.
+// Sabitler ve saf yardimcilar (SOSYAL_TURLER, KESFET_*) GERCEGIYLE
+// kullaniliyor; boylece ekranin sunucuya gonderdigi suzgec de birlikte
+// dogrulanmis oluyor. Yalnizca ag cagrisi mock'lanir.
 jest.mock('../../../lib/mekan', () => ({
   ...jest.requireActual('../../../lib/mekan'),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
@@ -53,8 +58,18 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    // Ucuncu arguman null: mesafe siniri GONDERILMIYOR.
-    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, undefined)
+    // Kullanicinin istegi (2026-08-31): "en yakin 500 mt icerisindeki
+    // konumlar yakindan uzaga siralanmali". Yaricap ve TUR SUZGECI artik
+    // sunucuya gonderiliyor - daraltma istemcide yapilinca sunucudan
+    // gelen 50 kaydin yalnizca 3'u sosyal cikiyor, liste bosaliyordu.
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+      41.015,
+      28.979,
+      KESFET_YARICAP_METRE,
+      undefined,
+      [...SOSYAL_TURLER],
+      KESFET_LIMIT
+    )
   })
 
   it('bir mekana basinca check-in ekranina yonlendirir', async () => {
@@ -244,7 +259,10 @@ describe('MekanAramaEkrani', () => {
     expect(screen.queryByText('5 km')).toBeNull()
   })
 
-  it('aramada da mesafe siniri gondermez', async () => {
+  // Liste 500 m ile sinirli ama ARAMA degil: kullanici baska sehirdeki
+  // bir mekani da arayabilmeli. Arama varken tur suzgeci de kalkiyor,
+  // yoksa "eczane" araninca sonuc cikmazdi.
+  it('aramada mesafe siniri ve tur suzgeci GONDERMEZ', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
@@ -255,7 +273,14 @@ describe('MekanAramaEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kahve')
 
     await waitFor(() => {
-      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(41.015, 28.979, null, 'kahve')
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+        41.015,
+        28.979,
+        null,
+        'kahve',
+        null,
+        null
+      )
     })
   })
 

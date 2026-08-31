@@ -1,4 +1,4 @@
-import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir, kesfetIcinSuz, turuGosterilir } from './mekan'
+import { yakinMekanlariGetir, mekanEkle, yakinMekanlariYogunlukIleGetir, turuGosterilir } from './mekan'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -121,9 +121,45 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
       p_lng: 28.979,
       p_yaricap_metre: 5000,
       p_arama: 'kafe',
+      p_turler: null,
+      p_limit: null,
     })
     expect(sonuc[0].kisiSayisi).toBe(8)
     expect(sonuc[0].konum).toEqual({ lat: 41.015, lng: 28.979 })
+  })
+
+  it('tur listesini ve limiti sunucuya gonderir', async () => {
+    // Daraltma SUNUCUDA yapilmali. Istemcide yapildiginda sunucu en
+    // yakin 50 kaydi tur ayrimi yapmadan donduruyordu ve kullanicinin
+    // bolgesinde bunlarin yalnizca 3'u sosyal turdeydi; 500 m icindeki
+    // 111 sosyal mekanin geri kalani ekrana hic gelmiyordu.
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [], error: null })
+
+    await yakinMekanlariYogunlukIleGetir(40.2106, 28.9213, 500, undefined, ['Kafe', 'Bar'], 100)
+
+    expect(supabase.rpc).toHaveBeenCalledWith('yakin_mekanlar_yogunluk', {
+      p_lat: 40.2106,
+      p_lng: 28.9213,
+      p_yaricap_metre: 500,
+      p_arama: null,
+      p_turler: ['Kafe', 'Bar'],
+      p_limit: 100,
+    })
+  })
+
+  it('tur ve limit verilmezse sunucu varsayilanlarina birakir', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [], error: null })
+
+    await yakinMekanlariYogunlukIleGetir(41.015, 28.979, null, 'kafe')
+
+    expect(supabase.rpc).toHaveBeenCalledWith('yakin_mekanlar_yogunluk', {
+      p_lat: 41.015,
+      p_lng: 28.979,
+      p_yaricap_metre: null,
+      p_arama: 'kafe',
+      p_turler: null,
+      p_limit: null,
+    })
   })
 
   it('hata donerse firlatir', async () => {
@@ -137,33 +173,6 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
   })
 })
 
-describe('kesfetIcinSuz', () => {
-  const mekanlar = [
-    { tur: 'Kafe' },
-    { tur: 'Restoran' },
-    { tur: 'Banka' },
-    { tur: 'Telefoncu' },
-    { tur: 'Park' },
-  ]
-
-  it('arama bosken yalnizca sosyal turleri birakir', () => {
-    const sonuc = kesfetIcinSuz(mekanlar, false)
-    expect(sonuc.map((m) => m.tur)).toEqual(['Kafe', 'Restoran', 'Park'])
-  })
-
-  it('arama varken BUTUN turleri geri verir', () => {
-    // Kullanicinin karari: arama kapsamli olmali, kesfet secici.
-    const sonuc = kesfetIcinSuz(mekanlar, true)
-    expect(sonuc).toHaveLength(5)
-    expect(sonuc.map((m) => m.tur)).toContain('Banka')
-  })
-
-  it('cevrede hic sosyal mekan yoksa eldekini gosterir, bos ekran degil', () => {
-    // Kucuk yerlesimlerde liste tamamen bosalabilirdi.
-    const yalnizcaSosyalOlmayan = [{ tur: 'Banka' }, { tur: 'Eczane' }]
-    expect(kesfetIcinSuz(yalnizcaSosyalOlmayan, false)).toHaveLength(2)
-  })
-})
 
 describe('turuGosterilir', () => {
   // KARAR (kullanici, 2026-08-24): dis kaynaktan gelen mekanlarda tur
