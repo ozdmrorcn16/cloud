@@ -222,15 +222,20 @@ Araclar: `osm-mahalle-cikar.py` (OSM'den nokta+poligon),
 Foundation" yaziyordu (Overture 2026-08-30'da silinmisti). Dogrusu:
 Foursquare + OpenStreetMap. OSM'in lisansi (ODbL) atfi HUKUKEN sart.
 
-### >>> YARIM IS: MAHALLE AKTARIMI DURAKLATILDI (2026-08-31) <<<
+### MAHALLE AKTARIMI - CALISIYOR (2026-08-31)
 
-**Durum: 1.440.000 / 5.895.360 satir islendi (%24,4). Cron DURDURULDU.**
+**Durum: cron ACIK, ~36.000 satir/dk, bitince KENDINI KAPATIR.**
+Baslangicta 5.895.360 satirdi; kalan sayiyi olcmek icin asagidaki
+"ILERLEME OLCUMU" sorgusuna bak.
 
-Sebep: aktarim uygulamayi yavaslatiyordu. Olculdu - kesfet sorgusu
-normalde 137 ms, aktarim koserken **1.817 ms**. Ayni diski paylasiyorlar.
-Kullanicinin karari: "duraklat, sonra devam et" (test edebilmek icin).
+Gecmisi: aktarim bir ara duraklatildi cunku uygulamayi yavaslatiyor -
+olculdu, kesfet sorgusu normalde 137 ms, aktarim koserken **1.817 ms**;
+ayni diski paylasiyorlar. Kullanici once "duraklat, test edeyim" dedi,
+sonra **"Devam ettir yarım iş bırakma"** deyip tamamlanmasini istedi.
+Yani yavaslik BILINEN ve KABUL EDILEN bir bedel; is bitene kadar
+telefonda ekranlar 1-2 saniye gecikmeli acilabilir.
 
-**DEVAM ETTIRME (kullanici "devam" deyince, tercihen gece):**
+**DEVAM ETTIRME (durdurulmussa):**
 
 ```sql
 select cron.schedule('mahalle-aktarim', '* * * * *',
