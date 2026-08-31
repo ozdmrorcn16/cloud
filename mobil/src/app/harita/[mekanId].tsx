@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { View, Text, Pressable, Linking, Modal, Platform, StyleSheet } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir, type Mekan } from '../../../lib/mekan'
-import { adresCoz } from '../../../lib/adres'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { CanliHarita, type HaritaMekani } from '../../tasarim/CanliHarita'
@@ -52,7 +51,6 @@ export default function CheckInHaritasiEkrani() {
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [mekan, setMekan] = useState<Mekan | null>(null)
   const [cevre, setCevre] = useState<HaritaMekani[]>([])
-  const [cozulenAdres, setCozulenAdres] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [secimAcik, setSecimAcik] = useState(false)
 
@@ -63,12 +61,6 @@ export default function CheckInHaritasiEkrani() {
         if (!gecerli) return
         setMekan(bulunan)
         if (!bulunan) return
-        // Tam adres cihazdan cozuluyor (kullanicinin istegi 2026-08-31).
-        // BEKLETILMIYOR: cevre mekanlarindan bagimsiz, geldiginde
-        // yerine oturuyor; o ana kadar semt gorunuyor.
-        adresCoz(bulunan.konum.lat, bulunan.konum.lng).then((adres) => {
-          if (gecerli) setCozulenAdres(adres)
-        })
         // Cevre baglami; okunamazsa harita yine ciziliyor.
         const yakinlar = await yakinMekanlariYogunlukIleGetir(
           bulunan.konum.lat,
@@ -102,12 +94,18 @@ export default function CheckInHaritasiEkrani() {
   }
 
   /**
-   * En tam olan kazanir. Cihazdan cozulen adres mahalle + cadde + kapi
-   * no + ilce/il tasiyor; veritabanindaki `adres` alani ise cogu kayitta
-   * bos, dolu oldugunda da yarim ("Toros Mahallesi 79001 Sokak"). Semt
-   * en son care - hicbiri yoksa satir cizilmiyor.
+   * Kullanicinin karari (2026-08-31): "konumun üzerine basınca gelen
+   * sayfada varsa tam adresi, yoksa ilçe il bilgisi... tutarlı olmalı."
+   *
+   * CIHAZDAN ADRES COZUMU KALDIRILDI. Apple/Google'in reverseGeocode'u
+   * YANLIS mahalle uretiyordu (bu mekanda "Ertugrul", dogrusu
+   * Alaaddinbey) ve liste ekrani bizim verimizi gosterdigi icin iki
+   * ekran birbirini tutmuyordu. Artik ikisi de ayni kaynaktan okuyor.
    */
-  const adresSatiri = cozulenAdres ?? mekan?.adres ?? mekan?.semt ?? null
+  const adresSatiri =
+    mekan?.adres?.trim() ||
+    [mekan?.semt, mekan?.il].filter(Boolean).join(', ') ||
+    null
 
   return (
     <View style={stiller.kok}>

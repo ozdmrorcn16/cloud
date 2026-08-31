@@ -304,11 +304,23 @@ export default function KesfetEkrani() {
   // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
   function altSatir(m: MekanYogunlukIle): string {
     const parcalar = turuGosterilir(m) ? [m.tur] : []
-    // MAHALLE varsa ilcenin yerine o: `semt` ilce tutuyor (Nilufer),
-    // mahalle bir kademe daha hassas (Ertugrul). Kullanicinin istegi
-    // 2026-08-31.
-    parcalar.push(m.mahalle ?? m.semt ?? '', uzaklik(m))
+    parcalar.push(konumYazisi(m), uzaklik(m))
     return parcalar.filter(Boolean).join(' · ')
+  }
+
+  /**
+   * Satirdaki konum ibaresi. Kullanicinin karari (2026-08-31):
+   * "adresi olana adresi, adresi olmayana ilçe il yazılacak."
+   *
+   * Mahalle YALNIZCA mekanin kendi adres kaydindan geliyor (turetilmis
+   * degil), bu yuzden kayitlarin cogunda bos. Bos oldugunda ilce ve il
+   * birlikte yaziliyor - tek basina "Nilufer" nerede oldugunu yeterince
+   * anlatmiyor. Mahalle varsa ilce/il EKLENMIYOR: "Ertugrul, Nilufer,
+   * Bursa" satiri boguyor.
+   */
+  function konumYazisi(m: MekanYogunlukIle): string {
+    if (m.mahalle) return m.mahalle
+    return [m.semt, m.il].filter(Boolean).join(', ')
   }
 
   function uzaklik(m: MekanYogunlukIle): string {
@@ -414,7 +426,7 @@ export default function KesfetEkrani() {
               </Text>
               {kartMekani.listedeki && (
                 <Text style={stiller.buradaAlt} numberOfLines={1}>
-                  {[kartMekani.listedeki.mahalle ?? kartMekani.listedeki.semt ?? '', uzaklik(kartMekani.listedeki)]
+                  {[konumYazisi(kartMekani.listedeki), uzaklik(kartMekani.listedeki)]
                     .filter(Boolean)
                     .join(' · ')}
                 </Text>

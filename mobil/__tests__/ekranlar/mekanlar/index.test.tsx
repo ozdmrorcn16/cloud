@@ -75,7 +75,7 @@ describe('MekanAramaEkrani', () => {
   // Kullanicinin istegi (2026-08-31): "Mahalle bilgileri yanlis daha
   // hassas ve dogru olmali." `semt` ILCE tutuyor (Nilufer), mahalle bir
   // kademe daha hassas (Ertugrul) ve varsa o gosteriliyor.
-  it('satirda ilce yerine MAHALLE gosterir, mahalle yoksa ilceye duser', async () => {
+  it('mahalle varsa MAHALLE, yoksa ILCE + IL gosterir', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2106, lng: 28.9213 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -84,6 +84,7 @@ describe('MekanAramaEkrani', () => {
         tur: 'Bisikletçi',
         semt: 'Nilüfer',
         mahalle: 'Ertuğrul',
+        il: 'Bursa',
         kaynak: 'foursquare',
         adres: null,
         osmId: null,
@@ -96,6 +97,7 @@ describe('MekanAramaEkrani', () => {
         tur: 'Kafe',
         semt: 'Nilüfer',
         mahalle: null,
+        il: 'Bursa',
         kaynak: 'foursquare',
         adres: null,
         osmId: null,
@@ -107,8 +109,12 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
 
     await waitFor(() => expect(screen.getByText('Alba')).toBeTruthy())
+    // Mahallesi olanda YALNIZCA mahalle: "Ertugrul, Nilufer, Bursa" fazla
+    // uzun ve satiri bogar.
     expect(screen.getByText('Ertuğrul · 240 m')).toBeTruthy()
-    expect(screen.getByText('Nilüfer · 240 m')).toBeTruthy()
+    // Mahallesi olmayanda ilce VE il (kullanicinin karari 2026-08-31:
+    // "adresi olmayana ilçe il yazılacak").
+    expect(screen.getByText('Nilüfer, Bursa · 240 m')).toBeTruthy()
   })
 
   it('bir mekana basinca check-in ekranina yonlendirir', async () => {

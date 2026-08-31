@@ -36,8 +36,9 @@ describe('yakinMekanlariGetir', () => {
         // Kaynakta semt %96.5 dolu ama null olabilir; sunucu alani hic
         // gondermezse de tip null'a dusuyor.
         semt: null,
-        // Mahalle de ayni sekilde: sunucu gondermezse null.
+        // Mahalle ve il de ayni sekilde: sunucu gondermezse null.
         mahalle: null,
+        il: null,
         // Sunucu 'kaynak' gondermezse dis kaynak varsayiliyor; boylece
         // tur GOSTERILMIYOR. Guvenli taraf bu: bilinmeyen kaynagin tur
         // verisine guvenilmez (karar 2026-08-24).

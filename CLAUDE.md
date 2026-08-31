@@ -329,32 +329,32 @@ Elimizdeki Foursquare Apache 2.0 (serbest), OSM ODbL (atifla serbest).
    2026-08-31'de "beklesin, ucretsiz" dedi (compute buyutme reddedildi).
    Bir dahaki toplu veri isinde bunu bastan hesaba kat.
 
-### KONUM EKRANINDA TAM ADRES - 2026-08-31
+### KONUM EKRANI: ADRES KENDI VERIMIZDEN - 2026-08-31
 
-Kullanicinin istegi: "Ben bu sayfada konumun tam adresi gorunsun
-istiyorum." Ekran (`src/app/harita/[mekanId].tsx`) mekan adinin altinda
-yalnizca semti ("Nilüfer") gosteriyordu.
+Ekran `src/app/harita/[mekanId].tsx`, mekan adinin altindaki satir.
+Kullanicinin son karari:
 
-**Veritabanindaki `mekanlar.adres` alani bunu KARSILAMIYOR** - olculdu:
-kayitlarin yalnizca %39,2'sinde dolu ve dolu olanlar da yarim
-("Toros Mahallesi 79001 Sokak" - kapi no ve ilce yok). Kullaniciya iki
-secenek sunuldu, **koordinattan cozmeyi secti.**
+    "Konumun üzerine basınca gelen sayfada varsa tam adresi, yoksa
+     ilçe il bilgisi... bu şekilde düzenle ve tutarlı olmalı."
 
-Cozum `lib/adres.ts`: `expo-location.reverseGeocodeAsync` ile adres
-CIHAZDA cozuluyor (iOS'ta Apple, Android'de Google; ek ucret ve API
-anahtari YOK). `adresYaz()` parcalari tek satira ceviriyor:
-"Ataevler Mahallesi, İzmir Yolu Caddesi No:12, Nilüfer/Bursa".
-Ekranda oncelik: cozulen adres > veritabani adresi > semt.
+Kural: `mekan.adres` varsa O gosterilir, yoksa "ilce, il".
 
-Bilinmesi gerekenler:
-- **Web'de CALISMAZ** (`reverseGeocodeAsync` web'i desteklemiyor).
-  `slooin.expo.app` uzerinde bu ekranda hala semt gorunur - yani
-  degisiklik tarayicidan DOGRULANAMAZ, telefonda bakilmali.
-- **Android'de konum izni istiyor** (Expo belgesi). Izin yoksa cagri
-  hata veriyor, biz onu yutup `null` donuyoruz; semt gorunmeye devam
-  ediyor, ekran patlamiyor.
-- Cozulen adres SAKLANMIYOR, yalnizca ekranda gosteriliyor.
-- Salt JavaScript degisikligi: yeni native paket yok, OTA ile gider.
+**CIHAZDAN ADRES COZUMU DENENDI VE KALDIRILDI (ayni gun).** Once
+`expo-location.reverseGeocodeAsync` ile adres cihazda cozuluyordu
+(`lib/adres.ts`). Kaldirilma sebebi gizlilik ya da maliyet DEGIL,
+DOGRULUK: saglayici yanlis mahalle donduruyordu. Kullanicinin
+gosterdigi ornek - Nilufer'deki bir mekan icin Apple "Ertugrul" diyordu,
+dogrusu ALAADDINBEY. Ustelik liste ekrani kendi verimizden dogru
+mahalleyi gosterdigi icin IKI EKRAN BIRBIRINI TUTMUYORDU; kullanicinin
+istedigi tutarlilik tam olarak buydu.
+
+`lib/adres.ts` ve testleri SILINDI. Gizlilik metnindeki ve
+`docs/kvkk-uyum-listesi.md` icindeki "adres cozumu" aktarim maddesi de
+kaldirildi - artik disari sorgu gitmiyor.
+
+**Ders:** ucuncu taraf bir servis "daha zengin veri" veriyor diye daha
+DOGRU vermiyor. Elimizdeki kayit (mekanin kendi adresi) yerel bilgiyle
+dogrulanabiliyorsa ona guvenmek daha iyi.
 
 **KALAN (kullanicida):**
 1. iOS: TestFlight derlemesi - harita orada ilk kez GORULECEK.

@@ -14,7 +14,7 @@ import sys
 import time
 
 BURASI = os.path.dirname(os.path.abspath(__file__))
-PARQUET = os.environ.get('MH_PARQUET') or os.path.join(BURASI, 'fsq-tr-mahalle-son.parquet')
+PARQUET = os.environ.get('MH_PARQUET') or os.path.join(BURASI, 'fsq-konum-son.parquet')
 PARCA = 1000
 
 
@@ -32,10 +32,10 @@ def main() -> None:
     bitis = min(int(os.environ.get('MH_BITIS', str(toplam))), toplam)
 
     ham = con.execute(
-        f"SELECT fsq_place_id, mahalle, ilce FROM read_parquet('{PARQUET}') "
+        f"SELECT fsq_place_id, mahalle, ilce, il FROM read_parquet('{PARQUET}') "
         f"ORDER BY fsq_place_id LIMIT {bitis - baslangic} OFFSET {baslangic}"
     ).fetchall()
-    satirlar = [{'fsq_place_id': p, 'mahalle': m, 'ilce': i} for p, m, i in ham]
+    satirlar = [{'fsq_place_id': p, 'mahalle': m, 'ilce': i, 'il': l} for p, m, i, l in ham]
     print(f'{len(satirlar):,} satir ({baslangic:,}-{bitis:,})', flush=True)
 
     t0 = time.time()

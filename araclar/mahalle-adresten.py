@@ -1,37 +1,34 @@
-"""Mahalleyi MEKANLARIN KENDI ADRES KAYDINDAN cikarir (OSM yerine).
+"""Mahalle YALNIZCA mekanin kendi adres kaydindan; yoksa ilce + il.
 
-Kullanicinin bildirdigi hata (2026-08-31): Nilufer'deki bir mekan icin
-uygulama "Ertugrul" gosteriyordu, oysa orasi ALAADDINBEY mahallesi.
+Kullanicinin karari (2026-08-31):
 
-NEDEN OSM YONTEMI BIRAKILDI - olculdu, kok neden nokta/sinir farki:
+    "Sadece doğru veriler adresler işlenecek, adresi olana adresi,
+     adresi olmayana ilçe il yazılacak."
+    "Tahmini koordinatla ya da veri işlenmeyecek."
 
-    Ertugrul     683 m  (OSM suburb)   <- "en yakin nokta" bunu secti
-    Alaaddinbey 1415 m  (OSM village)  <- dogrusu buydu
+Bu yuzden burada TAHMIN YOK:
+- Mahalle, YALNIZCA o kaydin kendi `address` alaninda yaziyorsa alinir.
+- Komsuluktan yayma YAPILMAZ. Onceki surumde ~300 m'lik hucrede en sik
+  gecen mahalle o hucredeki diger mekanlara da yaziliyordu; kapsamayi
+  %11,6'dan %80,3'e cikariyordu ama kullanici bunu "uydurma veri"
+  saydigi icin KALDIRILDI.
+- Mahallesi olmayan kayitta ekran ILCE + IL gosterir. Ikisi de nokta-
+  icinde poligon testiyle atanir, yani onlar da tahmin degil.
 
-Mahalle merkezine olan uzaklik, o mahallenin ICINDE olup olmadigini
-soylemiyor. Yaricapi daraltmak da cozmuyor: 1 km sinirinda Alaaddinbey
-busbutun elenir, yanlis olan Ertugrul yine kazanirdi. Apple Haritalar da
-ayni hatayi yapiyor (uygulamadaki tam adres satiri "Ertugrul" diyordu).
+ONCEKI YONTEM NEDEN BIRAKILDI (tarihsel, tekrar denenmesin): mahalle
+OSM'in yerlesim NOKTALARINDAN, "ayni ilcedeki en yakin merkez" kuralıyla
+atanmisti. Kullanici somut hata gosterdi - bir mekan "Ertugrul"
+gorunuyordu, dogrusu ALAADDINBEY:
 
-DOGRU KAYNAK mekanlarin KENDI adres alani:
-    "Alaaddinbey Mah. 613.sk no 9 nilufer bursa"
-    "Alaaddinbey Mahallesi, Sam3 Plaza B Blok"
+    Ertugrul     683 m   <- en yakin nokta
+    Alaaddinbey 1415 m   <- dogrusu
 
-Yontem: adresten '<ad> Mahallesi/Mah./Mh.' kalibi cikarilir, ~300 m'lik
-hucrede EN SIK ad o hucrenin mahallesi sayilir ve hucredeki butun
-mekanlara yayilir. Yayilim sart: adresi olan kayit 2,1 milyon, mahalle
-yazani 696 bin; komsuluk olmadan kapsama %11,6'da kalirdi.
+Mahalle merkezine uzaklik, o mahallenin ICINDE olup olmadigini
+soylemiyor; yaricap daraltmak da cozmuyor (1 km sinirinda dogru olan
+busbutun elenirdi). Apple Haritalar da ayni hatayi yapiyor.
 
-Kapsama %80,6. Kalan %19,4'te mahalle BOS birakilir - kullanicinin
-karari (2026-08-31): "sadece adres kaydi". Bos kalan yerde ekran ilceyi
-gosterir; yanlis mahalle gostermektense ilce gosterilir.
-
-ILCE bu betikten GELMEZ: o `fsq-tr-mahalle-son.parquet` icinde duruyor
-ve 969 OSM ilce poligonuna nokta-icinde testiyle atandi - poligon oldugu
-icin ilcede boyle bir sorun yok.
-
-Girdi:  araclar/fsq-tr.parquet, araclar/fsq-tr-mahalle-son.parquet
-Cikti:  araclar/fsq-mahalle-adres.parquet (fsq_place_id, mahalle, ilce)
+Girdi:  fsq-tr.parquet, osm-ilceler.parquet, osm-iller.parquet
+Cikti:  fsq-mahalle-adres.parquet (fsq_place_id, mahalle, ilce, il)
 """
 import os
 import time
@@ -40,84 +37,90 @@ import duckdb
 
 BURASI = os.path.dirname(os.path.abspath(__file__))
 FSQ = os.path.join(BURASI, 'fsq-tr.parquet')
-ILCELI = os.path.join(BURASI, 'fsq-tr-mahalle-son.parquet')
+ILCELER = os.path.join(BURASI, 'osm-ilceler.parquet')
+ILLER = os.path.join(BURASI, 'osm-iller.parquet')
 CIKTI = os.path.join(BURASI, 'fsq-mahalle-adres.parquet')
 
-HUCRE = 0.003  # ~300 m
-
-# Adresten mahalle adini yakalayan kalip. Sondaki tembel nicelik (?)
-# onemli: adres "X Mahallesi Y Mah." gibi tekrar iceriyorsa ILK adi alir.
+# Adresten mahalle adini yakalayan kalip. Sondaki tembel nicelik onemli:
+# adres birden fazla "Mah." iceriyorsa ILK adi alinir.
 KALIP = (
     r"(?i)([A-Za-zÇĞİÖŞÜçğıöşü0-9\.\- ]{3,40}?)\s*"
     r"(?:mahallesi|mahalles|mah\.|mah |mh\.|mh )"
 )
 
-# Mahalle adi olmayan, adres metninden sizan kaliplar.
+# Mahalle adi olmayan, adres metninden sizan kelimeler.
 COP = ("no", "sk", "sok", "cad", "cd", "blok", "kat", "daire", "apt",
        "plaza", "sitesi", "site", "merkezi", "bulvari", "bulvar")
 
 
 def main() -> None:
     con = duckdb.connect()
+    con.execute('INSTALL spatial; LOAD spatial;')
     con.execute("SET memory_limit='9GB'; SET threads=8;")
     t0 = time.time()
 
     con.execute(f"""
       CREATE TABLE ham AS
       SELECT fsq_place_id AS pid, address AS adres,
-             cast(floor(latitude / {HUCRE}) AS int) AS y,
-             cast(floor(longitude / {HUCRE}) AS int) AS x
+             ST_Point(longitude, latitude) AS nokta
       FROM read_parquet('{FSQ}')
     """)
 
-    con.execute(f"""
-      CREATE TABLE cikan AS
-      SELECT pid, y, x, trim(regexp_extract(adres, '{KALIP}', 1)) AS mahalle
-      FROM ham
-      WHERE adres IS NOT NULL
-        AND regexp_matches(lower(adres), '(mahalle|mah\\.|mah |mh\\.|mh )')
-    """)
-    # Temizlik: cok kisa, sayiyla baslayan ve adres parcasi olan adlar.
+    # --- MAHALLE: yalnizca kendi adresinden ---
     cop_kosul = " AND ".join(f"lower(mahalle) <> '{k}'" for k in COP)
     con.execute(f"""
-      CREATE TABLE temiz AS
-      SELECT pid, y, x, mahalle FROM cikan
+      CREATE TABLE mahalle AS
+      SELECT pid, mahalle FROM (
+        SELECT pid, trim(regexp_extract(adres, '{KALIP}', 1)) AS mahalle
+        FROM ham
+        WHERE adres IS NOT NULL
+          AND regexp_matches(lower(adres), '(mahalle|mah\\.|mah |mh\\.|mh )')
+      )
       WHERE mahalle IS NOT NULL
         AND length(mahalle) between 3 and 40
         AND NOT regexp_matches(mahalle, '^[0-9]')
         AND {cop_kosul}
     """)
-    print('adresten cikan mahalle:',
-          con.execute('SELECT count(*) FROM temiz').fetchone()[0],
+    print('kendi adresinde mahalle yazan:',
+          con.execute('SELECT count(*) FROM mahalle').fetchone()[0],
           f'({time.time() - t0:.0f} sn)', flush=True)
 
-    # Hucre basina EN SIK ad. Cogunluk ayni zamanda yazim varyasyonlarini
-    # da eliyor: "Alaadinbey" ile "Alaaddinbey" ayni hucredeyse yaygin
-    # olan kazaniyor.
-    con.execute("""
-      CREATE TABLE hucre AS
-      SELECT y, x, mahalle FROM (
-        SELECT y, x, mahalle,
-               row_number() OVER (PARTITION BY y, x ORDER BY count(*) DESC, mahalle) AS sira
-        FROM temiz GROUP BY y, x, mahalle
-      ) WHERE sira = 1
+    # --- ILCE ve IL: nokta-icinde poligon testi (tahmin degil) ---
+    con.execute(f"""
+      CREATE TABLE ilce AS
+      SELECT h.pid, i.ad AS ilce
+      FROM ham h JOIN (
+        SELECT ad, ST_GeomFromWKB(geometri) AS g FROM read_parquet('{ILCELER}')
+      ) i ON ST_Within(h.nokta, i.g)
     """)
-    print('mahallesi bilinen hucre:',
-          con.execute('SELECT count(*) FROM hucre').fetchone()[0], flush=True)
+    print('ilcesi bulunan:', con.execute('SELECT count(*) FROM ilce').fetchone()[0],
+          f'({time.time() - t0:.0f} sn)', flush=True)
+
+    con.execute(f"""
+      CREATE TABLE il AS
+      SELECT h.pid, i.ad AS il
+      FROM ham h JOIN (
+        SELECT ad, ST_GeomFromWKB(geometri) AS g FROM read_parquet('{ILLER}')
+      ) i ON ST_Within(h.nokta, i.g)
+    """)
+    print('ili bulunan:', con.execute('SELECT count(*) FROM il').fetchone()[0],
+          f'({time.time() - t0:.0f} sn)', flush=True)
 
     con.execute(f"""
       COPY (
-        SELECT h.pid AS fsq_place_id, c.mahalle, i.ilce
+        SELECT h.pid AS fsq_place_id, m.mahalle, c.ilce, l.il
         FROM ham h
-        LEFT JOIN hucre c ON c.y = h.y AND c.x = h.x
-        LEFT JOIN read_parquet('{ILCELI}') i ON i.fsq_place_id = h.pid
-        WHERE c.mahalle IS NOT NULL OR i.ilce IS NOT NULL
+        LEFT JOIN mahalle m ON m.pid = h.pid
+        LEFT JOIN ilce c ON c.pid = h.pid
+        LEFT JOIN il l ON l.pid = h.pid
+        WHERE m.mahalle IS NOT NULL OR c.ilce IS NOT NULL OR l.il IS NOT NULL
       ) TO '{CIKTI}' (FORMAT parquet, COMPRESSION zstd)
     """)
-    son = con.execute(f"""
-      SELECT count(*), count(mahalle), count(ilce) FROM read_parquet('{CIKTI}')
+    s = con.execute(f"""
+      SELECT count(*), count(mahalle), count(ilce), count(il)
+      FROM read_parquet('{CIKTI}')
     """).fetchone()
-    print(f'yazildi: {son[0]:,} satir | mahalleli {son[1]:,} | ilceli {son[2]:,}'
+    print(f'yazildi: {s[0]:,} satir | mahalle {s[1]:,} | ilce {s[2]:,} | il {s[3]:,}'
           f'  ({time.time() - t0:.0f} sn)', flush=True)
 
 

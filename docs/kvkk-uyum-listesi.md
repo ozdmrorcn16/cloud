@@ -81,22 +81,13 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   hangi veri = gorunen harita bolgesi; dayanak = konum izni ve
   aydinlatma; sure = uygulama tarafinda saklama yok, saglayicinin
   politikasi; kim gorur = Apple (iOS) / Google (Android).
-- **Adres cozumu** (2026-08-31, ayni saglayicilar, yalnizca iOS ve
-  Android). Bir mekanin konum ekrani acilinca o MEKANIN koordinati
-  saglayiciya gonderilip tam adrese cevriliyor
-  (`expo-location.reverseGeocodeAsync`). Ustteki harita zemini
-  maddesinden ONEMLI BIR FARKI var: gonderilen nokta kullanicinin
-  bulundugu yer DEGIL, veritabanimizdaki bir mekanin sabit
-  koordinatidir - yani kullanicinin konumunu ele vermiyor. Yine de
-  cagrinin kendisi kullanicinin o mekanla ilgilendigini saglayiciya
-  gosteriyor; bu yuzden aydinlatmaya yazildi (gizlilik metni madde 5).
-  Sorgu yalnizca ekran acildiginda yapilir, arka planda toplu sorgu
-  yoktur. Dort soru: hangi veri = mekanin koordinati; dayanak =
-  aydinlatma (kullanicinin kendi konumu islenmediginden konum izni
-  gerekcesine dayanmiyor, Android'de teknik olarak izin araniyor);
-  sure = uygulama tarafinda SAKLAMA YOK, cozulen adres yalnizca
-  ekranda gosterilir ve veritabanina yazilmaz; kim gorur = Apple
-  (iOS) / Google (Android).
+- **Adres cozumu** (2026-08-31'de EKLENDI, ayni gun KALDIRILDI).
+  Bir mekanin konum ekrani acilinca koordinati Apple/Google'a gonderip
+  tam adrese cevirmeyi denedik. Kaldirilma sebebi gizlilik degil
+  DOGRULUK: saglayici yanlis mahalle donduruyordu (bir mekanda
+  "Ertugrul", dogrusu Alaaddinbey) ve liste ekraniyla celisiyordu.
+  Artik adres YALNIZCA kendi veritabanimizdan okunuyor, disari hicbir
+  sorgu gitmiyor - yani bu aktarim ARTIK YOK.
 
 2024 degisikligiyle standart sozlesme yolu acildi; kullanilan yol ne
 olursa olsun Kurum'a bildirim ve belgeleme gerekiyor. **Bir danismana

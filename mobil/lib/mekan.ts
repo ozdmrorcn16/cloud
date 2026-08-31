@@ -16,6 +16,13 @@ export type Mekan = {
    */
   mahalle: string | null
   /**
+   * Il. Mahallesi olmayan kayitlarda ekran "ilce, il" gosteriyor
+   * (kullanicinin karari 2026-08-31: "adresi olmayana ilçe il
+   * yazılacak"). Il de tahmin degil: OSM il poligonuna nokta-icinde
+   * testiyle atandi.
+   */
+  il: string | null
+  /**
    * 'kullanici' ya da 'overture'. Tur YALNIZCA 'kullanici' kayitlarinda
    * gosterilir (karar 2026-08-24): dis kaynagin tur verisi guvenilmez,
    * yanlis tur gostermektense hic gostermemek tercih edildi. Bkz.
@@ -33,6 +40,7 @@ type MekanSatiri = {
   tur: string
   semt: string | null
   mahalle?: string | null
+  il?: string | null
   kaynak?: string | null
   adres: string | null
   osm_id: number | null
@@ -46,6 +54,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     tur: satir.tur,
     semt: satir.semt ?? null,
     mahalle: satir.mahalle ?? null,
+    il: satir.il ?? null,
     // Eski RPC'ler kaynak dondurmuyorsa dis kaynak varsayilir: tur
     // gosterilmez. Guvenli taraf bu.
     kaynak: satir.kaynak ?? 'overture',
@@ -248,7 +257,7 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, mahalle, kaynak, adres, osm_id, konum')
+    .select('id, ad, tur, semt, mahalle, il, kaynak, adres, osm_id, konum')
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
