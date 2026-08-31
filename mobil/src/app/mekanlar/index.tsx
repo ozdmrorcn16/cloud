@@ -602,8 +602,13 @@ export default function KesfetEkrani() {
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
         <Text style={stiller.ekleButonuYazi}>Mekan bulamadın mı? Ekle</Text>
       </Pressable>
+      {/* ATIF - guncel tutulmasi ZORUNLU. Overture 2026-08-30'da silindi
+          (karar 79), mekan verisi artik Foursquare; mahalle ve ilce ise
+          OpenStreetMap'ten turetildi. OSM'in lisansi (ODbL) atfi HUKUKEN
+          sart kosuyor, Foursquare'inki (Apache 2.0) kosmuyor ama dogru
+          kaynagi yazmak zaten gerekli. */}
       <Text style={stiller.atif}>
-        Mekan verileri: Overture Maps Foundation ve katkıda bulunanlar
+        Mekan verileri: Foursquare · Mahalle ve ilçe: © OpenStreetMap katkıda bulunanlar
       </Text>
     </ScrollView>
     </View>

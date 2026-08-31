@@ -158,8 +158,15 @@ export async function yakinMekanlariYogunlukIleGetir(
  *
  * ARAMADA UYGULANMAZ: arama butun veritabanini kapsamali, kullanici
  * baska sehirdeki bir mekani arayabilir.
+ *
+ * 2026-08-31'de 500'den 200'e INDIRILDI (kullanicinin istegi: "200 mt en
+ * yakinindaki yerler listelensin en yakindan uzaga"). Bedeli olculdu ve
+ * biliniyor: kullanicinin kendi bolgesinde 200 m icinde 3 sosyal mekan
+ * var, 500 m icinde 111. Yogun yerde fark kapaniyor (Kadikoy 1.456 /
+ * 5.363). Cevrede hic mekan cikmazsa ekran sinirsiz ikinci bir istek
+ * atiyor, yani liste bos kalmiyor.
  */
-export const KESFET_YARICAP_METRE = 500
+export const KESFET_YARICAP_METRE = 200
 
 /**
  * Kesfet listesinde en fazla kac mekan. Siralama en yakindan oldugu
