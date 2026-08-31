@@ -148,6 +148,14 @@ Verilerin iki ayri yerde islenir:
   Haritalar**. Harita cizilirken ekranda gorunen bolgenin koordinatlari
   saglayiciya gider; kimligin, hesabin ya da check-in'lerin gitmez.
   Web surumunde gercek harita yoktur, bu aktarim da olmaz.
+- **Adres cozumu** (2026-08-31'den itibaren, yalnizca iOS ve Android):
+  bir mekanin konum ekranini actiginda o MEKANIN koordinati ayni
+  saglayiciya (iOS'ta Apple, Android'de Google) gonderilip tam adrese
+  cevrilir - mahalle, cadde, kapi numarasi, ilce/il. Gonderilen sey
+  mekanin konumudur, KULLANICININ BULUNDUGU YER DEGIL; sorgu yalnizca o
+  ekran acildiginda yapilir, arka planda toplu sorgu yoktur. Cozulen
+  adres saklanmaz, yalnizca ekranda gosterilir. Web surumunde bu
+  cozum desteklenmez; orada mekanin semti gorunur.
 
 ## 6. Saklama sureleri
 

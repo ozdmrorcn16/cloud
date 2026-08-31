@@ -156,6 +156,33 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
 - Gizlilik metni madde 5 ve `docs/kvkk-uyum-listesi.md` 3. madde:
   harita saglayicisina giden veri yazildi.
 
+### KONUM EKRANINDA TAM ADRES - 2026-08-31
+
+Kullanicinin istegi: "Ben bu sayfada konumun tam adresi gorunsun
+istiyorum." Ekran (`src/app/harita/[mekanId].tsx`) mekan adinin altinda
+yalnizca semti ("Nilüfer") gosteriyordu.
+
+**Veritabanindaki `mekanlar.adres` alani bunu KARSILAMIYOR** - olculdu:
+kayitlarin yalnizca %39,2'sinde dolu ve dolu olanlar da yarim
+("Toros Mahallesi 79001 Sokak" - kapi no ve ilce yok). Kullaniciya iki
+secenek sunuldu, **koordinattan cozmeyi secti.**
+
+Cozum `lib/adres.ts`: `expo-location.reverseGeocodeAsync` ile adres
+CIHAZDA cozuluyor (iOS'ta Apple, Android'de Google; ek ucret ve API
+anahtari YOK). `adresYaz()` parcalari tek satira ceviriyor:
+"Ataevler Mahallesi, İzmir Yolu Caddesi No:12, Nilüfer/Bursa".
+Ekranda oncelik: cozulen adres > veritabani adresi > semt.
+
+Bilinmesi gerekenler:
+- **Web'de CALISMAZ** (`reverseGeocodeAsync` web'i desteklemiyor).
+  `slooin.expo.app` uzerinde bu ekranda hala semt gorunur - yani
+  degisiklik tarayicidan DOGRULANAMAZ, telefonda bakilmali.
+- **Android'de konum izni istiyor** (Expo belgesi). Izin yoksa cagri
+  hata veriyor, biz onu yutup `null` donuyoruz; semt gorunmeye devam
+  ediyor, ekran patlamiyor.
+- Cozulen adres SAKLANMIYOR, yalnizca ekranda gosteriliyor.
+- Salt JavaScript degisikligi: yeni native paket yok, OTA ile gider.
+
 **KALAN (kullanicida):**
 1. iOS: TestFlight derlemesi - harita orada ilk kez GORULECEK.
 2. Android: Google Cloud'da Maps SDK for Android anahtari almak
