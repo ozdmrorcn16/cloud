@@ -40,35 +40,36 @@ const cevreOturana = () =>
 
 describe('CheckInHaritasiEkrani', () => {
   /**
-   * Kullanicinin karari (2026-08-31): "konumun üzerine basınca gelen
-   * sayfada varsa tam adresi, yoksa ilçe il bilgisi... tutarlı olmalı."
+   * Kullanicinin SON karari (2026-08-31): "Mahalle adres bilgisi
+   * aktarimini durdur ve sil, sadece konumlarin ilce ve il bilgisini
+   * gosterecegiz TAM DOGRULUK ADINA."
    *
-   * Adres CIHAZDAN COZULMUYOR. Onceki surum Apple/Google'in
-   * reverseGeocode'unu kullaniyordu ve YANLIS mahalle uretiyordu: bu
-   * mekan icin "Ertugrul" diyordu, dogrusu Alaaddinbey. Ustelik liste
-   * ekrani bizim verimizden "Alaaddinbey" gosterdigi icin iki ekran
-   * birbirini tutmuyordu - kullanicinin istedigi tutarlilik bu.
+   * Adres de mahalle de gosterilmiyor - kayitta dolu olsa bile. Once
+   * cihazdan adres cozuluyordu (Apple/Google), o YANLIS mahalle
+   * uretiyordu; sonra mekanin kendi adresi kullanildi, o da kaynakta
+   * kirliydi ("Bursa Erik mah." gibi alanlari karisik girilmis
+   * kayitlar). Ilce ve il ise poligon testiyle atandigi icin kesin.
    */
-  it('mekanin KENDI adresi varsa onu gosterir', async () => {
+  it('adres ve mahalle dolu OLSA BILE yalnizca ILCE + IL gosterir', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue({
       ...MEKAN,
+      mahalle: 'Ertuğrul',
       adres: 'Alaaddinbey Mah. 613. Sk No:9',
     })
 
     await render(<CheckInHaritasiEkrani />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Alaaddinbey Mah. 613. Sk No:9')).toBeTruthy()
-    })
+    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
+    expect(screen.queryByText('Alaaddinbey Mah. 613. Sk No:9')).toBeNull()
     await cevreOturana()
   })
 
-  it('adresi yoksa ILCE ve IL gosterir', async () => {
-    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+  it('ilcesi yoksa yalnizca il gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, semt: null })
 
     await render(<CheckInHaritasiEkrani />)
 
-    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Bursa')).toBeTruthy())
     await cevreOturana()
   })
 })

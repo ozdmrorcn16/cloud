@@ -94,18 +94,16 @@ export default function CheckInHaritasiEkrani() {
   }
 
   /**
-   * Kullanicinin karari (2026-08-31): "konumun üzerine basınca gelen
-   * sayfada varsa tam adresi, yoksa ilçe il bilgisi... tutarlı olmalı."
+   * YALNIZCA ilce ve il. Kullanicinin karari (2026-08-31): "Mahalle
+   * adres bilgisi aktarimini durdur ve sil, sadece konumlarin ilce ve
+   * il bilgisini gosterecegiz TAM DOGRULUK ADINA."
    *
-   * CIHAZDAN ADRES COZUMU KALDIRILDI. Apple/Google'in reverseGeocode'u
-   * YANLIS mahalle uretiyordu (bu mekanda "Ertugrul", dogrusu
-   * Alaaddinbey) ve liste ekrani bizim verimizi gosterdigi icin iki
-   * ekran birbirini tutmuyordu. Artik ikisi de ayni kaynaktan okuyor.
+   * Bu ekranda once CIHAZDAN adres cozuluyordu (Apple/Google) ve YANLIS
+   * mahalle uretiyordu; sonra mekanin KENDI adresi kullanildi, o da
+   * kaynakta kirli cikti. Ilce ve il poligon testiyle atandigi icin
+   * kesin. Liste ekrani da ayni ibareyi gosteriyor - tutarlilik burada.
    */
-  const adresSatiri =
-    mekan?.adres?.trim() ||
-    [mekan?.semt, mekan?.il].filter(Boolean).join(', ') ||
-    null
+  const adresSatiri = [mekan?.semt, mekan?.il].filter(Boolean).join(', ') || null
 
   return (
     <View style={stiller.kok}>

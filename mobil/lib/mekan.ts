@@ -6,15 +6,8 @@ export type Mekan = {
   id: string
   ad: string
   tur: string
-  /** Semt / mahalle. Kaynakta %97 dolu; yine de null olabilir. */
+  /** ILCE. Mekanin koordinati hangi ilce poligonunun icindeyse o. */
   semt: string | null
-  /**
-   * Mahalle. `semt` ILCE tutar (Nilufer), mahalle onun altinda bir
-   * kademedir (Ertugrul) ve ekranda varsa O gosterilir. Kaynak: OSM
-   * yerlesim noktalari; Turkiye'de mahalle SINIRI bulunmadigi icin
-   * "ayni ilcedeki en yakin mahalle merkezi" yontemiyle atandi.
-   */
-  mahalle: string | null
   /**
    * Il. Mahallesi olmayan kayitlarda ekran "ilce, il" gosteriyor
    * (kullanicinin karari 2026-08-31: "adresi olmayana ilçe il
@@ -39,7 +32,6 @@ type MekanSatiri = {
   ad: string
   tur: string
   semt: string | null
-  mahalle?: string | null
   il?: string | null
   kaynak?: string | null
   adres: string | null
@@ -53,7 +45,6 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     ad: satir.ad,
     tur: satir.tur,
     semt: satir.semt ?? null,
-    mahalle: satir.mahalle ?? null,
     il: satir.il ?? null,
     // Eski RPC'ler kaynak dondurmuyorsa dis kaynak varsayilir: tur
     // gosterilmez. Guvenli taraf bu.
@@ -257,7 +248,7 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, mahalle, il, kaynak, adres, osm_id, konum')
+    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum')
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))

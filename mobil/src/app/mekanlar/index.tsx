@@ -309,17 +309,21 @@ export default function KesfetEkrani() {
   }
 
   /**
-   * Satirdaki konum ibaresi. Kullanicinin karari (2026-08-31):
-   * "adresi olana adresi, adresi olmayana ilçe il yazılacak."
+   * Satirdaki konum ibaresi: YALNIZCA ilce ve il.
    *
-   * Mahalle YALNIZCA mekanin kendi adres kaydindan geliyor (turetilmis
-   * degil), bu yuzden kayitlarin cogunda bos. Bos oldugunda ilce ve il
-   * birlikte yaziliyor - tek basina "Nilufer" nerede oldugunu yeterince
-   * anlatmiyor. Mahalle varsa ilce/il EKLENMIYOR: "Ertugrul, Nilufer,
-   * Bursa" satiri boguyor.
+   * Kullanicinin karari (2026-08-31): "Mahalle adres bilgisi aktarimini
+   * durdur ve sil, sadece konumlarin ilce ve il bilgisini gosterecegiz
+   * TAM DOGRULUK ADINA."
+   *
+   * Mahalle uc ayri yoldan denendi ve ucu de yanlis sonuc verdi:
+   * (1) OSM yerlesim noktalarindan "en yakin merkez" - komsu mahalleyi
+   * seciyordu; (2) mekanin kendi adresinden turetip komsuluga yayma -
+   * kullanici turetilmis veri istemedi; (3) yalnizca kendi adresi -
+   * kaynagin kendisi kirli cikti ("Bursa Erik mah." gibi alanlari
+   * karisik girilmis kayitlar). Ilce ve il ise POLIGON testiyle
+   * atandigi icin kesin: nokta hangi sinirin icindeyse o.
    */
   function konumYazisi(m: MekanYogunlukIle): string {
-    if (m.mahalle) return m.mahalle
     return [m.semt, m.il].filter(Boolean).join(', ')
   }
 

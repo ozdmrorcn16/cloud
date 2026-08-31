@@ -72,10 +72,16 @@ describe('MekanAramaEkrani', () => {
     )
   })
 
-  // Kullanicinin istegi (2026-08-31): "Mahalle bilgileri yanlis daha
-  // hassas ve dogru olmali." `semt` ILCE tutuyor (Nilufer), mahalle bir
-  // kademe daha hassas (Ertugrul) ve varsa o gosteriliyor.
-  it('mahalle varsa MAHALLE, yoksa ILCE + IL gosterir', async () => {
+  /**
+   * Kullanicinin SON karari (2026-08-31): "Mahalle adres bilgisi
+   * aktarimini durdur ve sil, sadece konumlarin ilce ve il bilgisini
+   * gosterecegiz TAM DOGRULUK ADINA."
+   *
+   * Yani mahalle ve adres ekranda HIC gorunmuyor - kayitta dolu olsa
+   * bile. Ilce ve il poligon testiyle atandigi icin kesin; mahalle ise
+   * kaynakta kirliydi (bkz. "Hadim erikli subesi" vakasi).
+   */
+  it('mahalle dolu OLSA BILE yalnizca ILCE + IL gosterir', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2106, lng: 28.9213 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -109,12 +115,9 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
 
     await waitFor(() => expect(screen.getByText('Alba')).toBeTruthy())
-    // Mahallesi olanda YALNIZCA mahalle: "Ertugrul, Nilufer, Bursa" fazla
-    // uzun ve satiri bogar.
-    expect(screen.getByText('Ertuğrul · 240 m')).toBeTruthy()
-    // Mahallesi olmayanda ilce VE il (kullanicinin karari 2026-08-31:
-    // "adresi olmayana ilçe il yazılacak").
-    expect(screen.getByText('Nilüfer, Bursa · 240 m')).toBeTruthy()
+    // Iki satir da AYNI: mahalle yok sayiliyor.
+    expect(screen.getAllByText('Nilüfer, Bursa · 240 m').length).toBe(2)
+    expect(screen.queryByText('Ertuğrul · 240 m')).toBeNull()
   })
 
   it('bir mekana basinca check-in ekranina yonlendirir', async () => {
