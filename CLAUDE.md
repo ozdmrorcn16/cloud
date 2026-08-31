@@ -156,6 +156,116 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
 - Gizlilik metni madde 5 ve `docs/kvkk-uyum-listesi.md` 3. madde:
   harita saglayicisina giden veri yazildi.
 
+### KESFET LISTESI: SUZGEC SUNUCUYA TASINDI, 200 M - 2026-08-31
+
+Kullanicinin bildirdigi hata: "yakinimdaki konumlar kismi da yanlis ya
+da eksik ... en yakin 500 mt icerisindeki konumlar yakindan uzaga
+siralanmali" (sonra 200 m'ye indirildi).
+
+**KOK NEDEN - suzgec yanlis katmandaydi.** Sunucu en yakin 50 kaydi TUR
+AYRIMI YAPMADAN donduruyor, istemci (`kesfetIcinSuz`) sonra sosyal
+turlere suzuyordu. Kullanicinin bolgesinde olculdu:
+
+    500 m icindeki sosyal mekan ........ 111
+    sunucudan gelen 50 kaydin sosyali ..   3
+    50 kaydin bittigi mesafe ........... 222 m
+
+Yani dolu bir cevrede liste neredeyse bos gorunuyordu. **Siralamada
+sorun YOKTU** (83 -> 102 -> 114 m); sorun kapsamaydi.
+
+Cozum: `yakin_mekanlar_yogunluk`a `p_turler` ve `p_limit` eklendi
+(migrasyon 20260831120000). Tur listesi ISTEMCIDEN gidiyor - `SOSYAL_TURLER`
+tek kaynakta kaliyor. `kesfetIcinSuz` SILINDI.
+
+**DAVRANIS (kullanicinin netlestirmesiyle):**
+- LISTE: 200 m yaricap, sosyal turler, en yakin 100. Sabitler
+  `KESFET_YARICAP_METRE` / `KESFET_LIMIT`.
+- ARAMA: sinir YOK - ne mesafe ne tur. "Mesafe siniri yok sadece mekan
+  arama kismi icin gecerli." Kullanici baska sehirdeki mekani arayabilir.
+- Cevrede hic sosyal mekan yoksa ekran SINIRSIZ ikinci istek atiyor.
+
+200 m'nin bedeli olculdu: kullanicinin bolgesinde 200 m'de 3 sosyal
+mekan var, 500 m'de 111 (Kadikoy'de 1.456 / 5.363). Dar gelirse
+300-350 m orta yol.
+
+### MAHALLE VERISI - 2026-08-31
+
+Kullanicinin istegi: "Mahalle bilgileri yanlis daha hassas ve dogru
+olmali." Iki sorun vardi: (1) `semt` alani mahalle degil ILCE tutuyordu,
+(2) kirlilik - bozuk karakterli 'Ni̇lüfer', yanlis ilce 'Osmangazi', cop
+degerler 'Burda' / 'Nilüfer, Bursa'. Bunlar zenginlestirmenin
+DOKUNMADIGI kayitlardi (ham locality dolu oldugu icin "dolu olana guven"
+denmisti).
+
+**TURKIYE'DE OSM'DE MAHALLE SINIRI YOK** - olculdu, admin_level=10
+poligon sayisi SIFIR. Var olan sinirlar il (81), ilce (969), belde
+(1.627). Mahalleler yalnizca NOKTA: neighbourhood 11.785, suburb 10.852,
+village 37.565, hamlet 7.582, quarter 679 (toplam 69.391).
+
+Yontem: her mekana AYNI ILCEDEKI en yakin mahalle merkezi
+(`araclar/osm-mahalle-ata.py`). Ilce kisiti sart - onsuz sinirdaki mekan
+komsu ilcenin mahallesini aliyor. 3 km'den uzak mahalle atanmiyor.
+Kapsama: mekanlarin %99,1'inin 2 km icinde mahalle noktasi var, ortanca
+uzaklik 360 m. **SINIRI: sinir poligonu olmadigi icin mahalle
+sinirindaki mekan komsu mahalleyi alabilir.**
+
+Sonuc: 5.778.097 mahalle, 5.895.360 kayitta ilce (969 poligona
+nokta-icinde testiyle - ilce artik CIKARIM DEGIL). Yeni sutun
+`mekanlar.mahalle`; `semt` ILCE tutmaya devam ediyor. Ekran: mahalle
+varsa mahalle, yoksa ilce.
+
+Araclar: `osm-mahalle-cikar.py` (OSM'den nokta+poligon),
+`osm-mahalle-ata.py` (atama), `mahalle-yukle.py` (hazirlik tablosuna).
+`araclar/turkiye-osm.pbf` (614 MB) ve `osmconf.ini` gitignored.
+
+**ATIF DUZELTILDI:** kesfet ekraninin altinda hala "Overture Maps
+Foundation" yaziyordu (Overture 2026-08-30'da silinmisti). Dogrusu:
+Foursquare + OpenStreetMap. OSM'in lisansi (ODbL) atfi HUKUKEN sart.
+
+### GOOGLE MAPS VERISI: CEKILEMEZ (2026-08-31, arastirildi)
+
+Kullanicinin sorusu: "Google mapsden sadece konum verilerini kendimize
+cekme imkanimiz varmi". Cevap HAYIR, sebebi hukuki:
+
+- Places API icerigini onceden cekmek, onbellege almak, saklamak YASAK
+  (Google Places API politika sayfasindan dogrulandi). Ad, adres ve
+  KOORDINAT dahil - "sadece konum alalim" da kapsam disi.
+- Tek istisna `place_id`: suresiz saklanabilir ama tek basina ise
+  yaramaz, koordinat icin her seferinde yeniden sorgu gerekir.
+- Places verisi gosterilirken Google logosu ve tercihen GOOGLE HARITASI
+  sarti var; biz iOS'ta Apple Haritalar kullaniyoruz - celisiyor.
+- Maliyet: 6 milyon mekan on binlerce dolar, ustelik saklanamadigi icin
+  tekrar tekrar odenir.
+
+Mesru kullanim yalnizca "saklamadan canli sorgu" olurdu; mevcut 55 ms'lik
+ucretsiz aramamizi ag gecikmesi + faturaya cevirmek anlamsiz.
+Elimizdeki Foursquare Apache 2.0 (serbest), OSM ODbL (atifla serbest).
+
+### ORTAM TUZAKLARI - 2026-08-31 (uc tanesi de yasandi)
+
+1. **PostgREST SEMA ONBELLEGI.** `mekanlar`a upsert
+   `there is no unique or exclusion constraint matching the ON CONFLICT`
+   ile reddedildi. Indeks ASLINDA vardi ama KISMIYDI; ayrica PostgREST
+   sonradan kurulan indeksi gormuyordu. Iki ders: kismi tekil indeks
+   `on_conflict` ile ESLESMEZ, ve indeks/sema degisikliginden sonra
+   `notify pgrst, 'reload schema'` calistirilmali.
+
+2. **pg_cron'da `statement_timeout` FONKSIYONA YAZILMAZ.** Fonksiyon
+   uzerindeki `set statement_timeout = '5min'` ISE YARAMIYOR: cron isi
+   `select fonksiyon()` diye cagiriyor ve DISTAKI ifadenin siniri (bu
+   projede 2 dakika) once isliyor. Butun turlar tam 00:02:00'da
+   "canceling statement due to statement timeout" ile GERI ALINDI - yani
+   saatlerce bosa dondu. Dogrusu cron KOMUTUNUN ICINE yazmak:
+   `cron.schedule(..., $$set statement_timeout = '9min'; select f()$$)`.
+
+3. **`mekanlar` uzerinde toplu UPDATE COK YAVAS: ~20.000 satir/dakika.**
+   Tablo 3 GB, indeksler 1,4 GB (GIN 251 MB + GIST 452 MB dahil); Medium
+   compute'ta bellege sigmiyor, her guncelleme diske iniyor. Olculdu:
+   dilim boyutunu buyutmek de paralel kol eklemek de hizi DEGISTIRMIYOR,
+   darbogaz disk IOPS. 5,9 milyon satir ~4,5 saat. Kullanici
+   2026-08-31'de "beklesin, ucretsiz" dedi (compute buyutme reddedildi).
+   Bir dahaki toplu veri isinde bunu bastan hesaba kat.
+
 ### KONUM EKRANINDA TAM ADRES - 2026-08-31
 
 Kullanicinin istegi: "Ben bu sayfada konumun tam adresi gorunsun
