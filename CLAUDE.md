@@ -191,11 +191,29 @@ sunucu tarafi cron tek guvenilir yol.
    hesap bitti (`fsq-tr-semtli.parquet`, 4.973.436 satir), uc paralel
    upsert ile mekanlara islendi (FSQ_TABLO=mekanlar; kismi tekil indeks
    tam tekile cevrildi - PostgREST on_conflict kismi indeksle
-   eslesemiyor). SONUC: semt dolu 4.725.767, adres dolu 2.343.697 /
-   5.980.485. Il adi semt kalmis kayitlar ve "Osmangazi / Bursa"
+   eslesemiyor). Il adi semt kalmis kayitlar ve "Osmangazi / Bursa"
    gibi bolulu biçimler SQL ile temizlendi (ikisi de 0).
-2. `kategori-eslemesi.py`, `tur-duzeltmeleri*.py`, `mekan-yukle-overture.py`
-   artik TARIHSEL (Overture yok). Silinmedi; README'de isaretlenmeli.
+
+   **EK DUZELTME (ayni gece, ikinci oturum):** yukleyicideki `_semt()`
+   fonksiyonundaki "locality == region ise semt sayma" kurali
+   KALDIRILDI. Kural ham FSQ verisinde il adini elemek icin konmustu,
+   ama Foursquare bir kisim kayitta `region` alanina IL yerine ILCE
+   yaziyor ("Aliaga/Aliaga", "Cukurova/cukurova"); zenginlestirme o
+   kayitlara Overture'dan DOGRU ilceyi koydugu icin kural tam da dogru
+   veriyi siliyordu - olculdu, **273.607 kayit bosalmisti**. Il
+   adlarini zaten ILLER listesi eledigi icin kuralin kaldirilmasi
+   koruma kaybi degil. Etkilenen satirlar ayri bir parquet'e cikarilip
+   yeniden yuklendi.
+
+   **SON DURUM: semt dolu 4.868.071 (%81,4), adres dolu 2.343.697,
+   toplam 5.980.482.** (Adres sayisi 2.127.122 + zenginlestirmenin
+   buldugu 216.575 ile TAM eslesiyor - yani atlanan aralik yok.)
+2. ~~`kategori-eslemesi.py`, `tur-duzeltmeleri*.py`,
+   `mekan-yukle-overture.py` README'de isaretlenmeli~~ YAPILDI
+   (2026-08-31): `araclar/README.md` Foursquare tek kaynak gercegine
+   gore yeniden yazildi; Overture donemi betikleri "TARIHSEL,
+   calistirilmaz" basligi altinda. `overture-tr.parquet` diskte
+   KALMALI - `fsq-semt-doldur.py`nin tek girdisi o.
 3. `gers_id` sutunu ve `mekanlar_gers_id_benzersiz` kisiti bos duruyor;
    ileride dusurulebilir.
 4. Foursquare'de dahili kopyalar var (Bursa yeme-icmede 251 cift, 40 m

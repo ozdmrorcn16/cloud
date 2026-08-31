@@ -65,8 +65,14 @@ def _semt(locality: str | None, region: str | None) -> str | None:
     if not locality:
         return None
     l = locality.strip()
-    if not l or (region and l.casefold() == region.strip().casefold()):
+    if not l:
         return None
+    # NOT: burada bir zamanlar "locality == region ise semt sayma" kurali
+    # vardi; 2026-08-31'de KALDIRILDI. Il adlarini asagidaki ILLER listesi
+    # zaten eliyor, dolayisiyla kural yalnizca Foursquare'in `region`
+    # alanina IL yerine ILCE yazdigi kayitlarda devreye giriyor ve orada
+    # DOGRU ilceyi siliyordu (or. Aliaga/Aliaga, Cukurova/cukurova).
+    # Olculdu: ilce/adres zenginlestirmesinde 273.607 kaydi bosaltiyordu.
     if l.casefold() in ILLER:
         return None
     return l if l != l.upper() and l != l.lower() else l.title()

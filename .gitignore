@@ -40,3 +40,9 @@ mobil/araclar/_db-nabiz.mjs
 araclar/fsq-aktarim-*.log
 mobil/araclar/fsq-yukleme-*.log
 araclar/fsq-tr-sadece-semt.parquet
+
+# Butun mekan verisi parquet'leri ve arac loglari (2026-08-31).
+# Tek tek ad yazmak yeni dosyalarda unutuluyordu: fsq-tr-semtli.parquet
+# (220 MB) ve fsq-tr-duzeltme.parquet bu yuzden takip disi kalmamisti.
+araclar/*.parquet
+araclar/*.log
