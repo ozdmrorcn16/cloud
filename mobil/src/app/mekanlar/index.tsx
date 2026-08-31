@@ -108,7 +108,11 @@ export default function KesfetEkrani() {
   const [ilkYuklemeBitti, setIlkYuklemeBitti] = useState(false)
   const istekSirasi = useRef(0)
 
-  async function yukle(metin = arama) {
+  /**
+   * `aktifSekme` PARAMETRE, cunku `sekmeSec` hemen ardindan yukluyor ve
+   * o an `sekme` state'i henuz eski degerinde olur.
+   */
+  async function yukle(metin = arama, aktifSekme: 'kesfet' | 'ara' = sekme) {
     // Yaris korumasi: hizli yazarken istekler sirayla degil paralel
     // doner. Sira numarasi olmadan eski ve yavas bir istek, yeni
     // sonucun uzerine yaziyor ve liste yanlis kaliyordu.
@@ -119,7 +123,7 @@ export default function KesfetEkrani() {
       const konum = cihazKonumu ?? (await cihazKonumunuAl())
       setCihazKonumu(konum)
       /**
-       * ARAMA BOSKEN: 500 m yaricap, sosyal turler ve limit SUNUCUYA
+       * ARAMA BOSKEN: yaricap, tur suzgeci ve limit SUNUCUYA
        * gonderiliyor (kullanicinin istegi 2026-08-31).
        *
        * Daraltma once istemcide yapiliyordu ve liste dolu bir cevrede
@@ -132,15 +136,24 @@ export default function KesfetEkrani() {
        * kullanici baska sehirdeki bir mekani da arayabilir.
        */
       const aramaVarMi = (metin ?? '').trim().length > 0
+      /**
+       * TUR SUZGECI YALNIZCA KESFET SEKMESINDE (kullanicinin istegi
+       * 2026-08-31: "Butun turleri mekan ara sonuclar kisminda goster").
+       * Iki sekme iki ayri soruyu cevapliyor: Kesfet "su an nereye gidip
+       * birileriyle karsilasabilirim" (sosyal turler), Mekan ara ise
+       * "yakinimda ne var" - orada eczane, banka, oto tamirci de
+       * gorunmeli. Mesafe siniri ikisinde de duruyor.
+       */
+      const turSuzgeci = aktifSekme === 'kesfet' && !aramaVarMi
       let sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
         aramaVarMi ? null : KESFET_YARICAP_METRE,
         metin || undefined,
-        aramaVarMi ? null : [...SOSYAL_TURLER],
+        turSuzgeci ? [...SOSYAL_TURLER] : null,
         aramaVarMi ? null : KESFET_LIMIT
       )
-      // Kucuk yerlesimde 500 m icinde hic sosyal mekan olmayabilir.
+      // Kucuk yerlesimde yaricap icinde hic mekan olmayabilir.
       // Bos ekran gostermek yerine sinirlari kaldirip tekrar soruyoruz -
       // eski istemci suzgecindeki "hic sosyal yoksa eldekini goster"
       // davranisinin sunucu tarafindaki karsiligi.
@@ -227,6 +240,10 @@ export default function KesfetEkrani() {
   function sekmeSec(yeni: 'kesfet' | 'ara') {
     setSekme(yeni)
     setArama('')
+    // Listeyi HEMEN yeni sekmeye gore tazele: iki sekme farkli tur
+    // suzgeci kullaniyor. `arama` zaten bossa metin degisikligine bagli
+    // etki tetiklenmez, o yuzden burada acikca cagriliyor.
+    yukle('', yeni)
   }
 
   function aramaDegisti(metin: string) {

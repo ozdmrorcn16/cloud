@@ -298,7 +298,34 @@ describe('MekanAramaEkrani', () => {
     expect(screen.queryByText('5 km')).toBeNull()
   })
 
-  // Liste 500 m ile sinirli ama ARAMA degil: kullanici baska sehirdeki
+  // Kullanicinin istegi (2026-08-31): "Butun turleri mekan ara sonuclar
+  // kisminda goster." Kesfet sekmesi sosyal turlere dariliyor ("su an
+  // nereye gidip birileriyle karsilasabilirim"), ama Mekan ara sekmesi
+  // farkli bir soruyu cevapliyor: "yakinimda ne var". Orada eczane,
+  // banka, oto tamirci de gorunmeli.
+  it('Mekan ara sekmesinde tur suzgeci GONDERMEZ, mesafe siniri kalir', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
+
+    await fireEvent.press(screen.getByText('Mekan ara'))
+
+    await waitFor(() => {
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+        41.015,
+        28.979,
+        KESFET_YARICAP_METRE,
+        undefined,
+        null,
+        KESFET_LIMIT
+      )
+    })
+  })
+
+  // Liste 200 m ile sinirli ama ARAMA degil: kullanici baska sehirdeki
   // bir mekani da arayabilmeli. Arama varken tur suzgeci de kalkiyor,
   // yoksa "eczane" araninca sonuc cikmazdi.
   it('aramada mesafe siniri ve tur suzgeci GONDERMEZ', async () => {
