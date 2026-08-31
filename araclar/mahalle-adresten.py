@@ -106,9 +106,26 @@ def main() -> None:
     print('ili bulunan:', con.execute('SELECT count(*) FROM il').fetchone()[0],
           f'({time.time() - t0:.0f} sn)', flush=True)
 
+    # KIRLI GIRISLERI ELE: adresi girenin alanlari karistirdigi kayitlar.
+    # Ornek (gercek, 2013'te girilmis): ad "Hadim erikli subesi",
+    # adres "Bursa Erik mah.", locality alaninda IL ("Bursa"), region
+    # alaninda MAHALLE ("Erikli mah") yaziyor. Kalip dogru calisip
+    # "Bursa Erik" uretiyor - ama bu bir mahalle adi degil.
+    # Kural: mahalle adi kaydin KENDI ILIYLE basliyorsa ya da ona
+    # esitse mahalle bosaltilir, ekran ilce + il gosterir. Olculdu:
+    # 2.139 kayit (%0,31). Daha genis bir kural ("icinde il adi gecen")
+    # DENENDI ve BIRAKILDI - "Merkez" (8.573), "Sakarya", "Yenibosna
+    # Merkez" gibi GERCEK mahalle adlarini eliyordu.
     con.execute(f"""
       COPY (
-        SELECT h.pid AS fsq_place_id, m.mahalle, c.ilce, l.il
+        SELECT h.pid AS fsq_place_id,
+               CASE
+                 WHEN m.mahalle IS NULL OR l.il IS NULL THEN m.mahalle
+                 WHEN lower(m.mahalle) LIKE lower(l.il) || ' %' THEN NULL
+                 WHEN lower(m.mahalle) = lower(l.il) THEN NULL
+                 ELSE m.mahalle
+               END AS mahalle,
+               c.ilce, l.il
         FROM ham h
         LEFT JOIN mahalle m ON m.pid = h.pid
         LEFT JOIN ilce c ON c.pid = h.pid
