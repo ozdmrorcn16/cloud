@@ -222,6 +222,45 @@ Araclar: `osm-mahalle-cikar.py` (OSM'den nokta+poligon),
 Foundation" yaziyordu (Overture 2026-08-30'da silinmisti). Dogrusu:
 Foursquare + OpenStreetMap. OSM'in lisansi (ODbL) atfi HUKUKEN sart.
 
+### >>> YARIM IS: MAHALLE AKTARIMI DURAKLATILDI (2026-08-31) <<<
+
+**Durum: 1.440.000 / 5.895.360 satir islendi (%24,4). Cron DURDURULDU.**
+
+Sebep: aktarim uygulamayi yavaslatiyordu. Olculdu - kesfet sorgusu
+normalde 137 ms, aktarim koserken **1.817 ms**. Ayni diski paylasiyorlar.
+Kullanicinin karari: "duraklat, sonra devam et" (test edebilmek icin).
+
+**DEVAM ETTIRME (kullanici "devam" deyince, tercihen gece):**
+
+```sql
+select cron.schedule('mahalle-aktarim', '* * * * *',
+  $$set statement_timeout = '9min'; select public.mahalle_aktarim_adimi(0)$$);
+select cron.schedule('mahalle-aktarim-2', '* * * * *',
+  $$set statement_timeout = '9min'; select public.mahalle_aktarim_adimi(1)$$);
+```
+
+Kaldigi yerden devam eder: `mahalle_hazirlik.islendi` isaretli, hicbir
+sey bastan yapilmaz. Bitince fonksiyon iki cron isini de KENDI kapatir.
+Tahmini kalan sure ~2 saat (37.500 satir/dk).
+
+**DURDURMA:**
+```sql
+select cron.unschedule('mahalle-aktarim');
+select cron.unschedule('mahalle-aktarim-2');
+-- Baslamis turlar devam eder; hemen durmasi gerekiyorsa:
+select pg_cancel_backend(pid) from pg_stat_activity
+where query ilike '%mahalle_aktarim%' and state='active' and pid<>pg_backend_pid();
+```
+
+**ILERLEME OLCUMU** - `count(*)` tam tarama yaptigi icin zaman asimina
+dusuyor; kismi indeksi kullanan su sorgu hizli:
+```sql
+select count(*) from mahalle_hazirlik where not islendi;
+```
+
+Is bitince `mahalle_hazirlik` tablosu DUSURULEBILIR (tek seferlik).
+Kaynak parquet `araclar/fsq-tr-mahalle-son.parquet` diskte duruyor.
+
 ### GOOGLE MAPS VERISI: CEKILEMEZ (2026-08-31, arastirildi)
 
 Kullanicinin sorusu: "Google mapsden sadece konum verilerini kendimize
