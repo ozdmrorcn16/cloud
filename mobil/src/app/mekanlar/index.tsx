@@ -585,7 +585,12 @@ export default function KesfetEkrani() {
       )}
 
       <Text style={stiller.bolumBasligi}>
-        {sekme === 'kesfet' ? 'Yakınında' : 'Sonuçlar'}
+        {/* Kullanicinin istegi (2026-08-31): "Mekan ara kisminda Sonuclar
+            yaziyor, bunu Yakininda olarak degistir."
+            Arama BOSKEN liste gercekten yakindakiler (200 m). Bir sey
+            ARANINCA mesafe siniri kalkiyor ve sonuc baska sehirden de
+            gelebiliyor - orada "Yakininda" yaniltici olurdu. */}
+        {sekme === 'kesfet' || arama.trim().length === 0 ? 'Yakınında' : 'Sonuçlar'}
       </Text>
       {sakinler.length === 0 ? (
         <Text style={stiller.bosDurum}>Bu filtreyle yakında mekan yok.</Text>

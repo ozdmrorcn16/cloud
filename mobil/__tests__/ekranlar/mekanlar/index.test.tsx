@@ -394,4 +394,29 @@ describe('MekanAramaEkrani', () => {
     await fireEvent.press(screen.getByText('Mekan ara'))
     expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
   })
+  // Kullanicinin istegi (2026-08-31): "Mekan ara kisminda Sonuclar
+  // yaziyor, bunu Yakininda olarak degistir."
+  //
+  // Arama BOSKEN liste gercekten yakindakileri gosteriyor (200 m), o
+  // yuzden baslik "Yakininda". Bir sey ARANDIGINDA mesafe siniri
+  // kalkiyor ve sonuc baska sehirden de gelebiliyor - orada "Yakininda"
+  // yaniltici olurdu, "Sonuclar" kaliyor.
+  it('Mekan ara sekmesinde arama bosken baslik "Yakininda"', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', semt: 'Kadıköy', il: 'İstanbul',
+        adres: null, osmId: 1, konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Sahil Kafe'))
+
+    await fireEvent.press(screen.getByText('Mekan ara'))
+
+    await waitFor(() => expect(screen.getByText('Yakınında')).toBeTruthy())
+    expect(screen.queryByText('Sonuçlar')).toBeNull()
+  })
+
 })
