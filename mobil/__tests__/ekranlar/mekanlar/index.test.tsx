@@ -72,6 +72,45 @@ describe('MekanAramaEkrani', () => {
     )
   })
 
+  // Kullanicinin istegi (2026-08-31): "Mahalle bilgileri yanlis daha
+  // hassas ve dogru olmali." `semt` ILCE tutuyor (Nilufer), mahalle bir
+  // kademe daha hassas (Ertugrul) ve varsa o gosteriliyor.
+  it('satirda ilce yerine MAHALLE gosterir, mahalle yoksa ilceye duser', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2106, lng: 28.9213 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1',
+        ad: 'Alba',
+        tur: 'Bisikletçi',
+        semt: 'Nilüfer',
+        mahalle: 'Ertuğrul',
+        kaynak: 'foursquare',
+        adres: null,
+        osmId: null,
+        konum: { lat: 40.2106, lng: 28.9213 },
+        kisiSayisi: 0,
+      },
+      {
+        id: 'mekan-2',
+        ad: 'Mahallesiz Yer',
+        tur: 'Kafe',
+        semt: 'Nilüfer',
+        mahalle: null,
+        kaynak: 'foursquare',
+        adres: null,
+        osmId: null,
+        konum: { lat: 40.211, lng: 28.922 },
+        kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Alba')).toBeTruthy())
+    expect(screen.getByText('Ertuğrul · 240 m')).toBeTruthy()
+    expect(screen.getByText('Nilüfer · 240 m')).toBeTruthy()
+  })
+
   it('bir mekana basinca check-in ekranina yonlendirir', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([

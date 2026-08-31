@@ -36,6 +36,8 @@ describe('yakinMekanlariGetir', () => {
         // Kaynakta semt %96.5 dolu ama null olabilir; sunucu alani hic
         // gondermezse de tip null'a dusuyor.
         semt: null,
+        // Mahalle de ayni sekilde: sunucu gondermezse null.
+        mahalle: null,
         // Sunucu 'kaynak' gondermezse dis kaynak varsayiliyor; boylece
         // tur GOSTERILMIYOR. Guvenli taraf bu: bilinmeyen kaynagin tur
         // verisine guvenilmez (karar 2026-08-24).
@@ -50,6 +52,41 @@ describe('yakinMekanlariGetir', () => {
   it('hata donerse firlatir', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: { message: 'sunucu hatasi' } })
     await expect(yakinMekanlariGetir(41.015, 28.979)).rejects.toThrow('sunucu hatasi')
+  })
+
+  it('mahalleyi cozer; sunucu gondermezse null kalir', async () => {
+    // Mahalle `semt`in yerine gecmiyor, ONUN ALTINDA bir kademe:
+    // semt ILCE tutuyor (Nilufer), mahalle daha hassas (Ertugrul).
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          id: 'mekan-1',
+          ad: 'Alba',
+          tur: 'Bisikletçi',
+          semt: 'Nilüfer',
+          mahalle: 'Ertuğrul',
+          adres: null,
+          osm_id: null,
+          konum: 'POINT(28.9213 40.2106)',
+        },
+        {
+          id: 'mekan-2',
+          ad: 'Eski Kayit',
+          tur: 'Kafe',
+          semt: 'Kadıköy',
+          adres: null,
+          osm_id: null,
+          konum: 'POINT(29.02 40.99)',
+        },
+      ],
+      error: null,
+    })
+
+    const sonuc = await yakinMekanlariGetir(40.2106, 28.9213)
+
+    expect(sonuc[0].mahalle).toBe('Ertuğrul')
+    expect(sonuc[0].semt).toBe('Nilüfer')
+    expect(sonuc[1].mahalle).toBeNull()
   })
 })
 

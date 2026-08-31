@@ -287,7 +287,10 @@ export default function KesfetEkrani() {
   // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
   function altSatir(m: MekanYogunlukIle): string {
     const parcalar = turuGosterilir(m) ? [m.tur] : []
-    parcalar.push(m.semt ?? '', uzaklik(m))
+    // MAHALLE varsa ilcenin yerine o: `semt` ilce tutuyor (Nilufer),
+    // mahalle bir kademe daha hassas (Ertugrul). Kullanicinin istegi
+    // 2026-08-31.
+    parcalar.push(m.mahalle ?? m.semt ?? '', uzaklik(m))
     return parcalar.filter(Boolean).join(' · ')
   }
 
@@ -394,7 +397,7 @@ export default function KesfetEkrani() {
               </Text>
               {kartMekani.listedeki && (
                 <Text style={stiller.buradaAlt} numberOfLines={1}>
-                  {[kartMekani.listedeki.semt ?? '', uzaklik(kartMekani.listedeki)]
+                  {[kartMekani.listedeki.mahalle ?? kartMekani.listedeki.semt ?? '', uzaklik(kartMekani.listedeki)]
                     .filter(Boolean)
                     .join(' · ')}
                 </Text>

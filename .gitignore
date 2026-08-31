@@ -46,3 +46,7 @@ araclar/fsq-tr-sadece-semt.parquet
 # (220 MB) ve fsq-tr-duzeltme.parquet bu yuzden takip disi kalmamisti.
 araclar/*.parquet
 araclar/*.log
+
+# OSM Turkiye kesiti (614 MB) ve GDAL yapilandirmasi
+araclar/*.pbf
+araclar/osmconf.ini

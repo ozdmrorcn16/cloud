@@ -9,6 +9,13 @@ export type Mekan = {
   /** Semt / mahalle. Kaynakta %97 dolu; yine de null olabilir. */
   semt: string | null
   /**
+   * Mahalle. `semt` ILCE tutar (Nilufer), mahalle onun altinda bir
+   * kademedir (Ertugrul) ve ekranda varsa O gosterilir. Kaynak: OSM
+   * yerlesim noktalari; Turkiye'de mahalle SINIRI bulunmadigi icin
+   * "ayni ilcedeki en yakin mahalle merkezi" yontemiyle atandi.
+   */
+  mahalle: string | null
+  /**
    * 'kullanici' ya da 'overture'. Tur YALNIZCA 'kullanici' kayitlarinda
    * gosterilir (karar 2026-08-24): dis kaynagin tur verisi guvenilmez,
    * yanlis tur gostermektense hic gostermemek tercih edildi. Bkz.
@@ -25,6 +32,7 @@ type MekanSatiri = {
   ad: string
   tur: string
   semt: string | null
+  mahalle?: string | null
   kaynak?: string | null
   adres: string | null
   osm_id: number | null
@@ -37,6 +45,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     ad: satir.ad,
     tur: satir.tur,
     semt: satir.semt ?? null,
+    mahalle: satir.mahalle ?? null,
     // Eski RPC'ler kaynak dondurmuyorsa dis kaynak varsayilir: tur
     // gosterilmez. Guvenli taraf bu.
     kaynak: satir.kaynak ?? 'overture',
@@ -232,7 +241,7 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, kaynak, adres, osm_id, konum')
+    .select('id, ad, tur, semt, mahalle, kaynak, adres, osm_id, konum')
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
