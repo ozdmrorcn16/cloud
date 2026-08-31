@@ -14,8 +14,13 @@
 alter table public.mekanlar
   add column if not exists fsq_place_id text;
 
+-- 2026-08-31: kismi tekil indeks TAM tekile cevrildi. PostgREST'in
+-- on_conflict=fsq_place_id upsert'i kismi indeksle eslesemiyor ("no
+-- unique or exclusion constraint matching") ve ilce/adres guncellemesi
+-- bu upsert ile yapiliyor. Postgres tam tekil indekste birden fazla
+-- NULL'a izin verdigi icin kismilige gerek yok.
 create unique index if not exists mekanlar_fsq_place_id_benzersiz
-  on public.mekanlar (fsq_place_id) where fsq_place_id is not null;
+  on public.mekanlar (fsq_place_id);
 
 comment on column public.mekanlar.fsq_place_id is
   'Foursquare OS Places kimligi. Dolu ise kayit Foursquare''dan geldi ya da Foursquare ile eslestirildi (2026-08-30).';
