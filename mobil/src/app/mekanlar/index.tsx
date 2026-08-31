@@ -548,9 +548,22 @@ export default function KesfetEkrani() {
               <CheckInIkonu />
             </Pressable>
             <View style={stiller.satirOrta}>
-              <Text style={stiller.satirAd} numberOfLines={1}>
-                {item.ad}
-              </Text>
+              {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin karari
+                  2026-08-31): turuncu ve dokununca KONUM ekranini
+                  aciyor. Uygulamanin geri kalaninda da turuncu mekan
+                  adi "konum etiketi" demek - akistaki ve profildeki
+                  kartlar da oyle. Satirin geri kalani ve soldaki igne
+                  check-in'e goturmeye devam ediyor. */}
+              <Pressable
+                onPress={() => router.push(`/harita/${item.id}` as never)}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.ad} konumunu gör`}
+                hitSlop={6}
+              >
+                <Text style={stiller.satirAd} numberOfLines={1}>
+                  {item.ad}
+                </Text>
+              </Pressable>
               <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
             </View>
             <Text style={stiller.sakinYazi}>Sakin</Text>
@@ -848,7 +861,9 @@ const stiller = StyleSheet.create({
   },
   satirGorsel: { width: 58, height: 58, borderRadius: 18 },
   satirOrta: { flex: 1, gap: 3 },
-  satirAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  // Turuncu ve basilabilir: bu bir konum etiketi (kullanicinin
+  // karari 2026-08-31).
+  satirAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
   satirAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
   sakinYazi: { fontFamily: yazi.govde, fontSize: olcek.minik, color: renk.metinSoluk },
   bosDurum: {

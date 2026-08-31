@@ -74,9 +74,27 @@ describe('MekanAramaEkrani', () => {
     // Not: en yakin mekani ayrica gosteren kart 2026-08-31'de
     // kaldirildi, artik butun mekanlar listede.
     await waitFor(() => screen.getByText('Moda Parkı'))
-    await fireEvent.press(screen.getByText('Moda Parkı'))
+    // Mekan ADI artik konum ekranini aciyor (2026-08-31); check-in'e
+    // giden yol satirin kendisi ve soldaki igne.
+    await fireEvent.press(screen.getByLabelText('Moda Parkı için check-in yap'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-2')
+  })
+
+  it('mekan adina basinca KONUM ekranini acar', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-2', ad: 'Moda Parkı', tur: 'park', adres: null, osmId: 2,
+        konum: { lat: 41.016, lng: 28.98 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Moda Parkı'))
+    await fireEvent.press(screen.getByText('Moda Parkı'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-2')
   })
 
   it('konum izni verilmezse hata gosterir', async () => {
