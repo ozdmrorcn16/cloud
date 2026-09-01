@@ -181,14 +181,15 @@ const stiller = StyleSheet.create({
     flex: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.xl,
-    // Logo ustten DAHA ASAGIDA baslasin ve altinda genis bir bosluk
-    // olsun (kullanicinin istegi 2026-09-01: "logo biraz daha tek
-    // basina gibi dursun"). Isaret boylece basligin uzantisi gibi
-    // degil, kendi basina duran bir marka ogesi olarak okunuyor.
-    paddingTop: bosluk.xxl * 2 + bosluk.l,
+    // LOGO YUKARIDA, YAZILAR ASAGIDA (kullanicinin verdigi referans
+    // duzeni, 2026-09-01). Isaret ekranin tepesine yakin duruyor;
+    // arasindaki genis bosluk onu formdan ayiriyor ve tek basina
+    // duran bir marka ogesi olarak okutuyor. Form da ekranin ortasina
+    // iniyor, yani basparmagin dogal olarak durdugu yere.
+    paddingTop: bosluk.xxl + bosluk.s,
     paddingBottom: bosluk.xl,
   },
-  marka: { alignSelf: 'center', marginBottom: bosluk.xxl + bosluk.l },
+  marka: { alignSelf: 'center', marginBottom: bosluk.xxl * 4 },
 
   baslik: {
     fontFamily: yazi.ekranBasligi,
