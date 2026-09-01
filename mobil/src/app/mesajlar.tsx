@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
-import { konusmalarimiGetir, konusmayiGizle, type Konusma } from '../../lib/sohbet'
+import {
+  konusmalarimiGetir,
+  konusmayiGizle,
+  mesajIsteklerimiGetir,
+  type Konusma,
+} from '../../lib/sohbet'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
@@ -10,15 +15,29 @@ export default function MesajlarEkrani() {
   const router = useRouter()
   const { t } = useDil()
   const [konusmalar, setKonusmalar] = useState<Konusma[]>([])
+  const [istekSayisi, setIstekSayisi] = useState(0)
   const [hata, setHata] = useState<string | null>(null)
 
+  // Iki istek PARALEL gidiyor: rozet, konusma listesinin donmesini
+  // beklemesin. allSettled kullaniliyor cunku ikisi ayni agirlikta
+  // degil - istek sayisi cekilemezse rozet cizilmez ve ekran calismaya
+  // devam eder; mesaj kutusunu ikincil bir bilgi yuzunden hata
+  // ekranina cevirmek orantisiz olur.
   async function konusmalariYukle() {
-    try {
-      setKonusmalar(await konusmalarimiGetir())
+    const [gelenKonusmalar, gelenIstekler] = await Promise.allSettled([
+      konusmalarimiGetir(),
+      mesajIsteklerimiGetir(),
+    ])
+
+    if (gelenKonusmalar.status === 'fulfilled') {
+      setKonusmalar(gelenKonusmalar.value)
       setHata(null)
-    } catch (e) {
+    } else {
+      const e = gelenKonusmalar.reason
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
+
+    setIstekSayisi(gelenIstekler.status === 'fulfilled' ? gelenIstekler.value.length : 0)
   }
 
   // useEffect yalnizca ilk acilista bir kez cekiyordu: kullanici bir
@@ -46,7 +65,30 @@ export default function MesajlarEkrani() {
   return (
     <View style={stiller.kok}>
       <View style={stiller.icerikAlani}>
-        <Text style={stiller.baslik}>{t('mesajlar.baslik')}</Text>
+        {/* ISTEKLER GIRISI - baslik satirinin SAG UCUNDA (kullanicinin
+            karari 2026-09-01: "Istekler yazisi Mesajlar yazisinin
+            karsisinda sag ustte olsun"). Satir SABIT: bekleyen istek
+            olmasa da duruyor, sayfa acildiginda bos durum metni
+            gorunuyor. Yazi notr gri, dikkati sayi rozeti cekiyor. */}
+        <View style={stiller.baslikSatiri}>
+          <Text style={stiller.baslik}>{t('mesajlar.baslik')}</Text>
+          <Pressable
+            style={stiller.istekGirisi}
+            onPress={() => router.push('/mesaj-istekleri')}
+            accessibilityRole="button"
+            hitSlop={8}
+          >
+            <Text style={stiller.istekGirisiYazi}>{t('mesajlar.istekler')}</Text>
+            {istekSayisi > 0 && (
+              <View style={stiller.istekRozeti}>
+                <Text testID="istek-sayisi" style={stiller.istekRozetiYazi}>
+                  {istekSayisi}
+                </Text>
+              </View>
+            )}
+            <Text style={stiller.istekGirisiOk}>›</Text>
+          </Pressable>
+        </View>
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -54,20 +96,6 @@ export default function MesajlarEkrani() {
           data={konusmalar}
           keyExtractor={(k) => k.konusmaId}
           contentContainerStyle={stiller.liste}
-          ListHeaderComponent={
-            /* ISTEKLER GIRISI - SABIT (kullanicinin karari 2026-09-01:
-               "Istekler yazisi sabit, basinca yeni sayfa geliyor").
-               Istek olmasa da duruyor; sayfa acildiginda bos durum
-               metni gorunuyor. */
-            <Pressable
-              style={stiller.istekGirisi}
-              onPress={() => router.push('/mesaj-istekleri')}
-              accessibilityRole="button"
-            >
-              <Text style={stiller.istekGirisiYazi}>{t('mesajlar.istekler')}</Text>
-              <Text style={stiller.istekGirisiOk}>›</Text>
-            </Pressable>
-          }
           renderItem={({ item }) => {
             // Karsi taraf hesabini silmisse uyelik satiri yok; konusma
             // listede kalir ama kime ait oldugu artik bilinmiyor (spec
@@ -131,21 +159,36 @@ export default function MesajlarEkrani() {
 
 const stiller = StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
-  istekGirisi: {
+  baslikSatiri: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-    marginBottom: bosluk.s,
+    marginBottom: bosluk.m,
   },
+  istekGirisi: { flexDirection: 'row', alignItems: 'center', gap: bosluk.xs },
+  // Notr gri: baslikla yarismiyor. Dikkati ceken sey yazi degil, yaninda
+  // beliren turuncu sayi - yani "bakilacak bir sey oldugunda" one cikiyor.
   istekGirisiYazi: {
-    fontFamily: yazi.govdeKalin,
+    fontFamily: yazi.govdeOrta,
     fontSize: olcek.govde,
-    color: renk.metin,
+    color: renk.metinIkincil,
   },
   istekGirisiOk: { fontFamily: yazi.govde, fontSize: olcek.altBaslik, color: renk.metinSoluk },
+  istekRozeti: {
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    borderRadius: yuvarlak.hap,
+    backgroundColor: renk.turuncu,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  istekRozetiYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    lineHeight: 16,
+    color: '#FFFFFF',
+  },
   icerikAlani: {
     flex: 1,
     paddingHorizontal: bosluk.xl,
@@ -157,7 +200,6 @@ const stiller = StyleSheet.create({
     fontSize: olcek.baslik,
     color: renk.metin,
     letterSpacing: -0.4,
-    marginBottom: bosluk.m,
   },
 
   hata: {

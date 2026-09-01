@@ -1,0 +1,169 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Istekler yerlesimi - dort secenek</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --turuncu: #FE7813;
+    --turuncu-zemin: #FFF3E8;
+    --metin: #17130F;
+    --metin-ikincil: #6E6660;
+    --metin-soluk: #A39B93;
+    --zemin: #FFFFFF;
+    --cizgi: #EFEAE5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #EDE9E4;
+    padding: 32px;
+  }
+  .izgara {
+    display: grid;
+    grid-template-columns: repeat(2, 390px);
+    gap: 40px 48px;
+    justify-content: center;
+  }
+  .kutu { display: flex; flex-direction: column; gap: 10px; }
+  .etiket {
+    font-size: 13px;
+    font-weight: 600;
+    color: #55504B;
+    letter-spacing: 0.3px;
+  }
+  .etiket b { color: var(--turuncu); }
+  .telefon {
+    width: 390px;
+    height: 300px;
+    background: var(--zemin);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(23,19,15,.10);
+    padding: 44px 24px 0;
+  }
+
+  /* --- baslik satiri: dort secenegin farki burada --- */
+  .baslik-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--metin);
+    letter-spacing: -0.4px;
+    line-height: 1.1;
+  }
+
+  /* A - duz turuncu metin */
+  .a-istekler {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--turuncu);
+  }
+
+  /* B - turuncu metin + sayi rozeti */
+  .b-istekler {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 15px; font-weight: 600; color: var(--turuncu);
+  }
+  .b-rozet {
+    min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 999px; background: var(--turuncu);
+    color: #fff; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* C - notr metin + ok */
+  .c-istekler {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 15px; font-weight: 500; color: var(--metin-ikincil);
+  }
+  .c-ok { font-size: 19px; color: var(--metin-soluk); line-height: 1; }
+
+  /* D - hap buton */
+  .d-istekler {
+    padding: 7px 14px; border-radius: 999px;
+    background: var(--turuncu-zemin);
+    font-size: 13px; font-weight: 600; color: var(--turuncu);
+  }
+
+  /* --- ortak: altindaki konusma listesi (baglam) --- */
+  .satir {
+    display: flex; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--cizgi);
+  }
+  .satir-icerik { flex: 1; }
+  .ad { font-size: 15px; font-weight: 500; color: var(--metin); }
+  .ad.okunmamis { font-weight: 600; }
+  .son { font-size: 13px; color: var(--metin-soluk); margin-top: 2px; }
+  .son.okunmamis { color: var(--metin-ikincil); }
+  .liste-rozet {
+    min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 999px; background: var(--turuncu);
+    color: #fff; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: 8px;
+  }
+  .gizle { font-size: 13px; font-weight: 500; color: var(--metin-soluk); margin-left: 12px; }
+  .ust { display: flex; align-items: center; }
+</style>
+
+<div class="izgara">
+
+  <div class="kutu">
+    <div class="etiket">A &mdash; düz turuncu metin <b>(önerim)</b></div>
+    <div class="telefon">
+      <div class="baslik-satiri">
+        <h1>Mesajlar</h1>
+        <span class="a-istekler">İstekler</span>
+      </div>
+      <div class="satir"><div class="satir-icerik"><div class="ust"><span class="ad okunmamis">Deniz</span><span class="liste-rozet">2</span></div><div class="son okunmamis">Yarın oradayım</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Ece</span><div class="son">Görüşürüz</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Mert</span><div class="son">Teşekkürler</div></div><span class="gizle">Gizle</span></div>
+    </div>
+  </div>
+
+  <div class="kutu">
+    <div class="etiket">B &mdash; turuncu metin + bekleyen sayısı</div>
+    <div class="telefon">
+      <div class="baslik-satiri">
+        <h1>Mesajlar</h1>
+        <span class="b-istekler">İstekler<span class="b-rozet">3</span></span>
+      </div>
+      <div class="satir"><div class="satir-icerik"><div class="ust"><span class="ad okunmamis">Deniz</span><span class="liste-rozet">2</span></div><div class="son okunmamis">Yarın oradayım</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Ece</span><div class="son">Görüşürüz</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Mert</span><div class="son">Teşekkürler</div></div><span class="gizle">Gizle</span></div>
+    </div>
+  </div>
+
+  <div class="kutu">
+    <div class="etiket">C &mdash; nötr metin + ok</div>
+    <div class="telefon">
+      <div class="baslik-satiri">
+        <h1>Mesajlar</h1>
+        <span class="c-istekler">İstekler<span class="c-ok">›</span></span>
+      </div>
+      <div class="satir"><div class="satir-icerik"><div class="ust"><span class="ad okunmamis">Deniz</span><span class="liste-rozet">2</span></div><div class="son okunmamis">Yarın oradayım</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Ece</span><div class="son">Görüşürüz</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Mert</span><div class="son">Teşekkürler</div></div><span class="gizle">Gizle</span></div>
+    </div>
+  </div>
+
+  <div class="kutu">
+    <div class="etiket">D &mdash; hap biçiminde buton</div>
+    <div class="telefon">
+      <div class="baslik-satiri">
+        <h1>Mesajlar</h1>
+        <span class="d-istekler">İstekler</span>
+      </div>
+      <div class="satir"><div class="satir-icerik"><div class="ust"><span class="ad okunmamis">Deniz</span><span class="liste-rozet">2</span></div><div class="son okunmamis">Yarın oradayım</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Ece</span><div class="son">Görüşürüz</div></div><span class="gizle">Gizle</span></div>
+      <div class="satir"><div class="satir-icerik"><span class="ad">Mert</span><div class="son">Teşekkürler</div></div><span class="gizle">Gizle</span></div>
+    </div>
+  </div>
+
+</div>

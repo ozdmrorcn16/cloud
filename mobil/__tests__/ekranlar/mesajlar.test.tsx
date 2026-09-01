@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import MesajlarEkrani from '../../src/app/mesajlar'
 import { konusmalarimiGetir, konusmayiGizle, mesajIsteklerimiGetir } from '../../lib/sohbet'
-import type { Konusma } from '../../lib/sohbet'
+import type { Konusma, MesajIstegi } from '../../lib/sohbet'
 
 jest.mock('../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
@@ -36,6 +36,18 @@ function konusma(ustune: Partial<Konusma> = {}): Konusma {
     sonMesajZamani: '2026-08-20T10:00:00Z',
     okunmamis: 0,
     yazilabilirMi: true,
+    ...ustune,
+  }
+}
+
+function istek(ustune: Partial<MesajIstegi> = {}): MesajIstegi {
+  return {
+    gonderenId: 'y1',
+    kullaniciAdi: 'yabanci',
+    ad: 'Yabanci Kisi',
+    konusmaId: 'ky1',
+    sonMesaj: 'Merhaba',
+    sonMesajZamani: '2026-09-01T10:00:00Z',
     ...ustune,
   }
 }
@@ -178,5 +190,69 @@ describe('MesajlarEkrani - istekler girisi', () => {
     await fireEvent.press(screen.getByText('İstekler'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/mesaj-istekleri')
+  })
+
+  /**
+   * Kullanicinin secimi (2026-09-01, gorsel secenek C): "Istekler"
+   * basligin KARSISINDA, sag ustte durur ve yaninda BEKLEYEN SAYISI
+   * gorunur. Sayi, ekranin asil sorusunu ("bakmam gereken bir sey var
+   * mi") sayfayi acmadan cevapliyor.
+   */
+  it('bekleyen istek sayisini rozet olarak gosterir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
+      istek(),
+      istek({ gonderenId: 'y2', konusmaId: 'ky2' }),
+    ])
+
+    await render(<MesajlarEkrani />)
+
+    expect(await screen.findByTestId('istek-sayisi')).toHaveTextContent('2')
+  })
+
+  it('bekleyen istek yoksa rozet HIC render edilmez', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MesajlarEkrani />)
+    await waitFor(() => screen.getByText('İstekler'))
+
+    // Sifir yazan bir rozet "bos" degil "sifir tane" diye okunur;
+    // dogrusu hic cizmemek.
+    expect(screen.queryByTestId('istek-sayisi')).toBeNull()
+  })
+
+  /**
+   * Istek sayisi ekran her odaklandiginda tazelenir. Kullanici istegi
+   * kabul edip geri dondugunde eski sayi kalirsa rozet yalan soyler.
+   */
+  it('ekran yeniden odaklanınca istek sayisini tazeler', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([istek()])
+
+    await render(<MesajlarEkrani />)
+    expect(await screen.findByTestId('istek-sayisi')).toHaveTextContent('1')
+
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
+    await act(async () => {
+      mockOdakGeriCagirmalari.forEach((g) => g())
+    })
+
+    await waitFor(() => expect(screen.queryByTestId('istek-sayisi')).toBeNull())
+  })
+
+  /**
+   * Istekler cekilemezse EKRAN CALISMAYA DEVAM ETMELI: konusmalar
+   * gorunur, yalnizca rozet cizilmez. Sayi ikincil bir bilgi; onun
+   * yuzunden mesaj kutusunu hata ekranina cevirmek orantisiz olur.
+   */
+  it('istek sayisi cekilemezse konusmalar yine listelenir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockRejectedValue(new Error('ag hatasi'))
+
+    await render(<MesajlarEkrani />)
+
+    expect(await screen.findByText('Orcun Ozdemir')).toBeTruthy()
+    expect(screen.queryByTestId('istek-sayisi')).toBeNull()
   })
 })
