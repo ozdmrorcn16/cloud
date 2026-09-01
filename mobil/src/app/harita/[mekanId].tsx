@@ -46,6 +46,52 @@ function haritaSecenekleri(): ('apple' | 'google')[] {
   return Platform.OS === 'ios' ? ['apple', 'google'] : ['google']
 }
 
+/**
+ * Uygulamanin KURULU olup olmadigini sormak icin kullanilan semalar.
+ *
+ * iOS'ta `canOpenURL` yalnizca Info.plist'teki
+ * LSApplicationQueriesSchemes listesinde BEYAN EDILEN semalari
+ * sorabiliyor (app.json > ios.infoPlist). Beyan edilmezse cagri hata
+ * vermeden HER ZAMAN false doner - yani beyan olmadan butun secenekler
+ * gizlenirdi. Bu beyan NATIVE bir ayar: OTA ile gitmez, yeni derleme
+ * ister.
+ */
+const SEMA: Record<'apple' | 'google', string> = {
+  apple: 'maps://',
+  google: 'comgooglemaps://',
+}
+
+/**
+ * Yalnizca CIHAZDA KURULU olan haritalari dondurur (kullanicinin istegi
+ * 2026-09-01: kurulu olmayan harita listede gorunmesin).
+ *
+ * `canOpenURL` bir nedenle patlarsa (web, izin, beklenmeyen durum) o
+ * secenek ELENMIYOR, listede kaliyor: yol tarifi bulunmaz bir uygulama
+ * icin gosterilse bile en fazla tarayicida acilir, ama yanlislikla
+ * hepsini eleyip kullaniciyi yolsuz birakmak daha kotu olurdu.
+ */
+async function kuruluHaritalar(): Promise<('apple' | 'google')[]> {
+  const adaylar = haritaSecenekleri()
+  const sonuclar = await Promise.all(
+    adaylar.map((secim) => Linking.canOpenURL(SEMA[secim]).catch(() => true))
+  )
+  const kurulular = adaylar.filter((_, i) => sonuclar[i])
+
+  // HICBIRI cikmadiysa suzgeci UYGULAMIYORUZ, hepsini donduruyoruz.
+  //
+  // Sebep somut: Info.plist beyani NATIVE bir ayar ve OTA ile gitmiyor.
+  // Bu kod beyansiz bir derlemeye OTA ile inerse canOpenURL her sema
+  // icin false doner; suzgeci korumasiz uygulasaydik butun harita
+  // secenekleri kaybolur ve yol tarifi hep tarayicida acilirdi - yani
+  // calisan bir ozelligi bozmus olurduk.
+  //
+  // "Gercekten hicbiri kurulu degil" durumu da ayni yola duesuyor ve bu
+  // zararsiz: iOS'ta Apple Haritalar neredeyse her zaman kurulu oldugu
+  // icin bu pratikte "beyan yok" demek, ve kullanici yine bir secenek
+  // secip hedefe ulasiyor (kurulu degilse tarayici aciliyor).
+  return kurulular.length > 0 ? kurulular : adaylar
+}
+
 /** Yol tarifi adresleri. Ikisi de HEDEFI verir, yani yol tarifi acilir. */
 function yolTarifiAdresi(secim: 'apple' | 'google', mekan: Mekan) {
   const { lat, lng } = mekan.konum
@@ -114,8 +160,17 @@ export default function CheckInHaritasiEkrani() {
    * ActionSheetIOS React Native cekirdeginde; native tarafta yeni bir
    * sey gerekmiyor, yani bu degisiklik OTA ile gidebiliyor.
    */
-  function haritayaDokunuldu() {
-    const secenekler = haritaSecenekleri()
+  async function haritayaDokunuldu() {
+    const secenekler = await kuruluHaritalar()
+
+    // Hicbir harita uygulamasi yoksa yol tarifi TARAYICIDA aciliyor.
+    // Kullanici yine hedefe ulasiyor; pencere acip bos liste gostermek
+    // ya da hicbir sey yapmamak ikisi de daha kotu olurdu.
+    if (secenekler.length === 0) {
+      ac('google')
+      return
+    }
+
     if (secenekler.length === 1) {
       ac(secenekler[0])
       return

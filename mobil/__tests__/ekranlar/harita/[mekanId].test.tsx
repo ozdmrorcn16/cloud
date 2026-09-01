@@ -170,3 +170,85 @@ describe('CheckInHaritasiEkrani - yol tarifi secimi (iOS)', () => {
     await cevreOturana()
   })
 })
+
+/**
+ * KURULU OLMAYAN HARITA GORUNMEZ (kullanicinin istegi 2026-09-01).
+ *
+ * `Linking.canOpenURL` ile soruluyor. iOS'ta bu cagrinin calismasi icin
+ * sorgulanacak semalarin Info.plist'te BEYAN EDILMESI sart
+ * (LSApplicationQueriesSchemes, app.json icinde); beyan yoksa cagri
+ * sessizce her zaman false doner ve butun secenekler gizlenirdi.
+ *
+ * Hicbiri kurulu degilse pencere hic acilmiyor ve yol tarifi TARAYICIDA
+ * aciliyor - kullanici yine hedefe ulasiyor, sadece uygulama yerine web.
+ */
+describe('CheckInHaritasiEkrani - yalnizca kurulu haritalar', () => {
+  function kurulu(semalar: string[]) {
+    jest
+      .spyOn(Linking, 'canOpenURL')
+      .mockImplementation((url: string) =>
+        Promise.resolve(semalar.some((s) => url.startsWith(s)))
+      )
+  }
+
+  it('Google Haritalar kurulu DEGILSE listede gorunmez', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    kurulu(['maps://'])
+    const ac = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    // Tek secenek kaldi: pencere hic acilmadan Apple Haritalar aciliyor.
+    await waitFor(() =>
+      expect(ac).toHaveBeenCalledWith(expect.stringContaining('maps.apple.com'))
+    )
+    await cevreOturana()
+  })
+
+  it('ikisi de kuruluysa ikisi birden listelenir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    kurulu(['maps://', 'comgooglemaps://'])
+    const sheet = jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation(() => {})
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    await waitFor(() => expect(sheet).toHaveBeenCalledTimes(1))
+    expect(sheet.mock.calls[0][0].options).toEqual([
+      'Apple Haritalar',
+      'Google Haritalar',
+      'Vazgeç',
+    ])
+    await cevreOturana()
+  })
+
+  /**
+   * HICBIRI cikmazsa suzgec UYGULANMIYOR - hepsi listeleniyor.
+   *
+   * Sebep: Info.plist beyani NATIVE ve OTA ile gitmiyor. Bu kod beyansiz
+   * bir derlemeye inerse canOpenURL her sema icin false doner; suzgeci
+   * korumasiz uygulasaydik butun harita secenekleri kaybolur ve calisan
+   * bir ozelligi bozmus olurduk. Bu test o korumayi kilitliyor.
+   */
+  it('hicbiri kurulu GORUNMUYORSA suzgec uygulanmaz, hepsi listelenir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    kurulu([])
+    const sheet = jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation(() => {})
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    await waitFor(() => expect(sheet).toHaveBeenCalledTimes(1))
+    expect(sheet.mock.calls[0][0].options).toEqual([
+      'Apple Haritalar',
+      'Google Haritalar',
+      'Vazgeç',
+    ])
+    await cevreOturana()
+  })
+})
