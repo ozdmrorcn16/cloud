@@ -301,7 +301,12 @@ export default function KesfetEkrani() {
   const liste = kartMekani ? suzulmus.filter((m) => m.id !== kartMekani.id) : suzulmus
 
   const canlilar = liste.filter((m) => m.kisiSayisi > 0)
-  const sakinler = liste.filter((m) => m.kisiSayisi === 0)
+  // Kesfet'te canlilar ayri bir yatay seritte one cikiyor, bu yuzden
+  // alttaki liste yalnizca sakinleri gosteriyor - ayni mekan iki kez
+  // cizilmesin. "Mekan ara"da oyle bir serit YOK; orada liste her seyi
+  // tasimali, yoksa aranan kalabalik mekan hic gorunmuyor (bu kusur
+  // 2026-09-01'de bulundu ve testle kilitlendi).
+  const sakinler = sekme === 'ara' ? liste : liste.filter((m) => m.kisiSayisi === 0)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
@@ -310,8 +315,22 @@ export default function KesfetEkrani() {
   // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
   function altSatir(m: MekanYogunlukIle): string {
     const parcalar = turuGosterilir(m) ? [m.tur] : []
-    parcalar.push(konumYazisi(m), uzaklik(m))
+    parcalar.push(konumYazisi(m), uzaklik(m), yogunlukYazisi(m))
     return parcalar.filter(Boolean).join(' · ')
+  }
+
+  /**
+   * Yogunluk artik SAGDAKI AYRI SUTUNDA degil, alt satirda mesafenin
+   * yaninda (kullanicinin sectigi tasarim, 2026-09-01): sag taraf
+   * check-in dugmesine ayrildi.
+   *
+   * Kalabalik da burada gosteriliyor, cunku "Mekan ara" listesi artik
+   * canli mekanlari da tasiyor - eskiden yalnizca kisiSayisi === 0
+   * olanlar listeleniyordu ve canlilar seridi Kesfet'e ozel oldugu icin
+   * aranan kalabalik bir mekan sonuclarda HIC gorunmuyordu.
+   */
+  function yogunlukYazisi(m: MekanYogunlukIle): string {
+    return m.kisiSayisi > 0 ? `${m.kisiSayisi} kişi` : t('kesfet.sakin')
   }
 
   /**
@@ -607,18 +626,12 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/check-in/${item.id}`)}
           >
-            {/* Satirin kendisi mekan detayini aciyor; bu igne DOGRUDAN
-                check-in'e goturuyor. Iki hedef ayni satirda oldugu
-                icin igne ayri bir dugme. */}
-            <Pressable
-              onPress={() => router.push(`/check-in/${item.id}`)}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.ad} için check-in yap`}
-              hitSlop={10}
-              style={stiller.satirCheckIn}
-            >
+            {/* Igne DEKORATIF: sagda ayni isi yapan, etiketli bir
+                check-in dugmesi var. Ikisi de dugme olsaydi ekran
+                okuyucu ayni satirda iki kez "check-in yap" derdi. */}
+            <View style={stiller.satirCheckIn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <CheckInIkonu />
-            </Pressable>
+            </View>
             <View style={stiller.satirOrta}>
               {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin karari
                   2026-08-31): turuncu ve dokununca KONUM ekranini
@@ -638,7 +651,22 @@ export default function KesfetEkrani() {
               </Pressable>
               <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
             </View>
-            <Text style={stiller.sakinYazi}>Sakin</Text>
+            {/* SAG TARAF EYLEME AYRILDI (kullanicinin sectigi tasarim A,
+                2026-09-01). Dugme check-in EKRANINI aciyor, dogrudan
+                check-in YAPMIYOR - kullanicinin karari: not ve fotograf
+                adimi atlanmasin. */}
+            <Pressable
+              testID={`satir-checkin-${item.id}`}
+              style={stiller.satirCheckInDugmesi}
+              onPress={() => router.push(`/check-in/${item.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.ad} için check-in yap`}
+              hitSlop={6}
+            >
+              <Text style={stiller.satirCheckInYazi} numberOfLines={1}>
+                {t('kesfet.satirCheckIn')}
+              </Text>
+            </Pressable>
           </Pressable>
         ))
       )}
@@ -937,12 +965,28 @@ const stiller = StyleSheet.create({
     borderBottomColor: renk.cizgi,
   },
   satirGorsel: { width: 58, height: 58, borderRadius: 18 },
-  satirOrta: { flex: 1, gap: 3 },
+  satirOrta: {
+    minWidth: 0, flex: 1, gap: 3 },
   // Turuncu ve basilabilir: bu bir konum etiketi (kullanicinin
   // karari 2026-08-31).
   satirAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
   satirAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
-  sakinYazi: { fontFamily: yazi.govde, fontSize: olcek.minik, color: renk.metinSoluk },
+  satirCheckInDugmesi: {
+    // flexShrink SART: satir flexDirection 'row' ve ortadaki bilgi
+    // bloku flex:1 ile alani kapiyor. `flex: 0` daralmayi ENGELLEMIYOR -
+    // dugme eziliyor ve "Check-in" metni harf harf alt alta sariyordu
+    // (gozle dogrulamada yakalandi, testler yesildi).
+    flexShrink: 0,
+    paddingVertical: bosluk.s,
+    paddingHorizontal: bosluk.l,
+    borderRadius: yuvarlak.hap,
+    backgroundColor: renk.turuncu,
+  },
+  satirCheckInYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#FFFFFF',
+  },
   bosDurum: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,

@@ -117,7 +117,9 @@ describe('MekanAramaEkrani', () => {
 
     await waitFor(() => expect(screen.getByText('Alba')).toBeTruthy())
     // Iki satir da AYNI: mahalle yok sayiliyor.
-    expect(screen.getAllByText('Nilüfer, Bursa · 240 m').length).toBe(2)
+    // Alt satirda artik yogunluk da var (tasarim A, 2026-09-01):
+    // "ilce, il · mesafe · Sakin".
+    expect(screen.getAllByText('Nilüfer, Bursa · 240 m · Sakin').length).toBe(2)
     expect(screen.queryByText('Ertuğrul · 240 m')).toBeNull()
   })
 
@@ -527,4 +529,70 @@ describe('MekanAramaEkrani', () => {
     expect(adlar).toEqual(['Zeytin Kafe', 'Ada Park', 'Bahar Bar'])
   })
 
+  /**
+   * LISTEDE CHECK-IN BUTONU (kullanicinin karari 2026-09-01, gorsel
+   * secenek A): her satirin saginda dolu turuncu hap bir "Check-in"
+   * dugmesi var ve check-in EKRANINI aciyor (dogrudan check-in
+   * YAPMIYOR - kullanicinin secimi).
+   *
+   * Yogunluk ("Sakin" / "4 kisi") sagdaki ayri sutundan alt satira,
+   * mesafenin yanina tasindi; sag taraf tamamen eyleme ayrildi.
+   */
+  it('her satirda check-in dugmesi var ve check-in ekranini aciyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    const dugme = await screen.findByTestId('satir-checkin-mekan-1')
+
+    await fireEvent.press(dugme)
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
+  })
+
+  it('yogunluk SAG SUTUNDA degil, alt satirda mesafenin yaninda', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        semt: 'Nilüfer', il: 'Bursa',
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+
+    expect(await screen.findByText('Nilüfer, Bursa · 240 m · Sakin')).toBeTruthy()
+  })
+
+  /**
+   * KUSUR DUZELTMESI (bu is sirasinda bulundu): "Mekan ara" sekmesinde
+   * KALABALIK mekanlar hic gorunmuyordu. Canlilar yatay serit olarak
+   * yalnizca Kesfet sekmesinde ciziliyor, "Yakininda" listesi ise
+   * kisiSayisi === 0 suzuyordu; ikisi birlesince aranan kalabalik bir
+   * mekan sonuclarda HIC cikmiyordu.
+   *
+   * Yogunluk alt satira tasindigi icin artik tek listede hem sakin hem
+   * kalabalik gosterilebiliyor.
+   */
+  it('Mekan ara listesinde KALABALIK mekan da gorunuyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 4,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+
+    expect(await screen.findByText('Sahil Kafe')).toBeTruthy()
+    expect(screen.getByText('240 m · 4 kişi')).toBeTruthy()
+    expect(screen.getByTestId('satir-checkin-mekan-1')).toBeTruthy()
+  })
 })

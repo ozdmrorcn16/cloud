@@ -341,6 +341,9 @@ export default {
   },
 
   kesfet: {
+    // Listedeki satir dugmesi: dar alanda duruyor, kisa olmali.
+    satirCheckIn: 'Check-in',
+    sakin: 'Sakin',
     sekmeAra: 'Mekan ara',
     sekmeKesfet: 'Keşfet',
   },

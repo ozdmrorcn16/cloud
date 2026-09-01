@@ -1,0 +1,221 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Listede check-in butonu - dort secenek</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --turuncu: #FE7813;
+    --turuncu-koyu: #E06509;
+    --turuncu-zemin: #FFF3E8;
+    --metin: #17130F;
+    --metin-ikincil: #6E6660;
+    --metin-soluk: #A39B93;
+    --zemin: #FFFFFF;
+    --cizgi: #EFEAE5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #EDE9E4;
+    padding: 32px;
+  }
+  .izgara {
+    display: grid;
+    grid-template-columns: repeat(2, 390px);
+    gap: 40px 48px;
+    justify-content: center;
+  }
+  .kutu { display: flex; flex-direction: column; gap: 10px; }
+  .etiket { font-size: 13px; font-weight: 600; color: #55504B; }
+  .etiket b { color: var(--turuncu); }
+  .not { font-size: 12px; color: #7A736D; line-height: 1.45; max-width: 390px; }
+  .telefon {
+    width: 390px;
+    background: var(--zemin);
+    border-radius: 20px;
+    box-shadow: 0 6px 24px rgba(23,19,15,.10);
+    padding: 20px 0 8px;
+    overflow: hidden;
+  }
+  h2 {
+    font-size: 26px; font-weight: 700; color: var(--metin);
+    letter-spacing: -0.4px; padding: 0 24px; margin-bottom: 8px;
+  }
+
+  .satir {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--cizgi);
+  }
+  .igne { color: var(--turuncu); font-size: 17px; line-height: 1; flex: none; }
+  .bilgi { flex: 1; min-width: 0; }
+  .ad {
+    font-size: 15px; font-weight: 600; color: var(--turuncu);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .alt { font-size: 13px; color: var(--metin-ikincil); margin-top: 2px; }
+  .yogunluk-sag { font-size: 13px; color: var(--metin-soluk); flex: none; }
+
+  /* A - dolu turuncu hap */
+  .a-dugme {
+    flex: none; padding: 8px 16px; border-radius: 999px;
+    background: var(--turuncu); color: #fff;
+    font-size: 13px; font-weight: 600;
+  }
+  /* B - kenarlikli hap */
+  .b-dugme {
+    flex: none; padding: 7px 15px; border-radius: 999px;
+    border: 1.5px solid var(--turuncu); color: var(--turuncu);
+    font-size: 13px; font-weight: 600;
+  }
+  /* C - dairesel ikon */
+  .c-dugme {
+    flex: none; width: 38px; height: 38px; border-radius: 999px;
+    background: var(--turuncu); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  /* D - duz metin */
+  .d-dugme { flex: none; font-size: 14px; font-weight: 600; color: var(--turuncu); }
+
+  .canli { color: var(--turuncu); font-weight: 600; }
+</style>
+
+<div class="izgara">
+
+  <!-- A -->
+  <div class="kutu">
+    <div class="etiket">A &mdash; dolu turuncu hap <b>(önerim)</b></div>
+    <div class="telefon">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Hadim erikli subesi</div>
+          <div class="alt">Nilüfer, Bursa · 430 m · Sakin</div>
+        </div>
+        <span class="a-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Gentaş Aspendos Evleri</div>
+          <div class="alt">Nilüfer, Bursa · 520 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="a-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Her Hangi Bi Yer</div>
+          <div class="alt">Nilüfer, Bursa · 530 m · Sakin</div>
+        </div>
+        <span class="a-dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">Yoğunluk alt satıra taşındı, sağ taraf tamamen eyleme ayrıldı.</div>
+  </div>
+
+  <!-- B -->
+  <div class="kutu">
+    <div class="etiket">B &mdash; kenarlıklı hap, yoğunluk sağda kalır</div>
+    <div class="telefon">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Hadim erikli subesi</div>
+          <div class="alt">Nilüfer, Bursa · 430 m</div>
+        </div>
+        <span class="yogunluk-sag">Sakin</span>
+        <span class="b-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Gentaş Aspendos Evleri</div>
+          <div class="alt">Nilüfer, Bursa · 520 m</div>
+        </div>
+        <span class="yogunluk-sag canli">4 kişi</span>
+        <span class="b-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Her Hangi Bi Yer</div>
+          <div class="alt">Nilüfer, Bursa · 530 m</div>
+        </div>
+        <span class="yogunluk-sag">Sakin</span>
+        <span class="b-dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">Mevcut düzen korunur, buton eklenir. Uzun mekan adlarında sağ taraf sıkışabilir.</div>
+  </div>
+
+  <!-- C -->
+  <div class="kutu">
+    <div class="etiket">C &mdash; dairesel ikon düğme</div>
+    <div class="telefon">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Hadim erikli subesi</div>
+          <div class="alt">Nilüfer, Bursa · 430 m · Sakin</div>
+        </div>
+        <span class="c-dugme">✚</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Gentaş Aspendos Evleri</div>
+          <div class="alt">Nilüfer, Bursa · 520 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="c-dugme">✚</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Her Hangi Bi Yer</div>
+          <div class="alt">Nilüfer, Bursa · 530 m · Sakin</div>
+        </div>
+        <span class="c-dugme">✚</span>
+      </div>
+    </div>
+    <div class="not">En az yer kaplar, uzun adlara en çok alan bırakır. Ne yaptığı yazıyla söylenmiyor.</div>
+  </div>
+
+  <!-- D -->
+  <div class="kutu">
+    <div class="etiket">D &mdash; düz turuncu metin</div>
+    <div class="telefon">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Hadim erikli subesi</div>
+          <div class="alt">Nilüfer, Bursa · 430 m · Sakin</div>
+        </div>
+        <span class="d-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Gentaş Aspendos Evleri</div>
+          <div class="alt">Nilüfer, Bursa · 520 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="d-dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <span class="igne">◉</span>
+        <div class="bilgi">
+          <div class="ad">Her Hangi Bi Yer</div>
+          <div class="alt">Nilüfer, Bursa · 530 m · Sakin</div>
+        </div>
+        <span class="d-dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">En sessizi. Ama mekan adı da turuncu olduğu için iki turuncu yan yana geliyor.</div>
+  </div>
+
+</div>
