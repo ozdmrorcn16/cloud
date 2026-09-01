@@ -142,20 +142,8 @@ export default {
 
   baglar: {
     baslik: 'Arkadaşlar',
-    gelenIstekler: 'Gelen istekler',
-    gelenIstekAciklama:
-      "Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.",
-    bosGelenTakip: 'Bekleyen arkadaşlık isteği yok',
-    sohbetIstekleri: 'Sohbet istekleri',
-    bosGelenSohbet: 'Bekleyen sohbet isteği yok',
-    gidenIstekler: 'Giden istekler',
-    geriCek: 'Geri çek',
-    bosGiden: 'Bekleyen gönderilmiş istek yok',
-    arkadaslarim: 'Arkadaşlarım',
     arkadasliktanCikar: 'Arkadaşlıktan çıkar',
     bosArkadas: 'Henüz arkadaşın yok',
-    kabul: 'Kabul et',
-    reddet: 'Reddet',
     engelle: 'Engelle',
   },
   mesajlar: {

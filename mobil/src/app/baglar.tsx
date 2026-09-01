@@ -1,45 +1,38 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, Pressable, ScrollView, StyleSheet } from 'react-native'
-import {
-  gelenIstekleriGetir,
-  gidenIstekleriGetir,
-  takipcilerimiGetir,
-} from '../../lib/bag-listeleri'
-import {
-  takipIsteginiYanitla,
-  sohbetIsteginiYanitla,
-  takibiBirak,
-  sohbetIsteginiGeriCek,
-} from '../../lib/bag'
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
+import { takipcilerimiGetir } from '../../lib/bag-listeleri'
+import { takibiBirak } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
-import { useDil } from '../../lib/dil'
 import type { BagKisi } from '../../lib/bag'
+import { useDil } from '../../lib/dil'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 import { UstCubuk } from '../tasarim/UstCubuk'
 
+/**
+ * ARKADASLAR - tek isi olan bir ekran: arkadas listesi.
+ *
+ * Kullanicinin karari (2026-09-01): "Bu sayfadaki butun alt basliklari
+ * kaldir. Henuz arkadasi yoksa 'Henuz arkadasin yok' yazisi, varsa
+ * arkadas listesi burada gorunecek."
+ *
+ * Ekranda ONCEDEN dort bolum vardi (gelen istekler, sohbet istekleri,
+ * giden istekler, arkadaslarim) ve her biri kendi basligiyla ust uste
+ * diziliyordu. Uc bolum kaldirildi; ucunun de karsiligi baska ekranda
+ * duruyor:
+ *   - gelen arkadaslik istekleri -> Bildirimler sekmesi
+ *   - gelen sohbet istekleri     -> kisinin profili (Kabul et / Reddet)
+ *   - giden isteklerin geri cekilmesi -> kisinin profili (Istegi geri cek)
+ */
 export default function BaglarEkrani() {
   const { t } = useDil()
-  const [gelenTakip, setGelenTakip] = useState<BagKisi[]>([])
-  const [gelenSohbet, setGelenSohbet] = useState<BagKisi[]>([])
-  const [gidenTakip, setGidenTakip] = useState<BagKisi[]>([])
-  const [gidenSohbet, setGidenSohbet] = useState<BagKisi[]>([])
-  const [takipciler, setTakipciler] = useState<BagKisi[]>([])
+  const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
 
   async function verileriYukle() {
     try {
-      const [gelen, giden, takipcilerVerisi] = await Promise.all([
-        gelenIstekleriGetir(),
-        gidenIstekleriGetir(),
-        takipcilerimiGetir(),
-      ])
-      setGelenTakip(gelen.takip)
-      setGelenSohbet(gelen.sohbet)
-      setGidenTakip(giden.takip)
-      setGidenSohbet(giden.sohbet)
-      setTakipciler(takipcilerVerisi)
+      setArkadaslar(await takipcilerimiGetir())
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -52,56 +45,13 @@ export default function BaglarEkrani() {
     verileriYukle()
   }, [])
 
-  async function takipIstegineYanitVer(kullaniciId: string, kabul: boolean) {
-    try {
-      await takipIsteginiYanitla(kullaniciId, kabul)
-      setGelenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      if (kabul) {
-        const kisi = gelenTakip.find((k) => k.id === kullaniciId)
-        if (kisi) setTakipciler((onceki) => [...onceki, kisi])
-      }
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function sohbetIstegineYanitVer(kullaniciId: string, kabul: boolean) {
-    try {
-      await sohbetIsteginiYanitla(kullaniciId, kabul)
-      setGelenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  // Takip artik karsilikli yazildigi icin bagi koparmanin tek yolu bu:
-  // takibiBirak sunucu tarafinda iki yonu birden siliyor.
-  async function bagiKoparEt(kullaniciId: string) {
+  // Iyimser guncelleme YOK: satir yalnizca sunucu onayladiktan sonra
+  // listeden kalkiyor. Basarisiz bir islem, kisi cikarilmis gibi yalan
+  // soylememeli.
+  async function arkadasliktanCikar(kullaniciId: string) {
     try {
       await takibiBirak(kullaniciId)
-      setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function gidenTakipIsteginiGeriCekEt(kullaniciId: string) {
-    try {
-      await takibiBirak(kullaniciId)
-      setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function gidenSohbetIsteginiGeriCekEt(kullaniciId: string) {
-    try {
-      await sohbetIsteginiGeriCek(kullaniciId)
-      setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
+      setArkadaslar((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -111,181 +61,73 @@ export default function BaglarEkrani() {
   async function kullaniciyiEngelle(kullaniciId: string) {
     try {
       await engelle(kullaniciId)
-      setGelenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setGelenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
-      setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
+      setArkadaslar((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
-  if (yukleniyor) {
-    return (
-      <View style={stiller.kapsayici}>
-        <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>
-      </View>
-    )
-  }
-
   return (
-    // Bes FlatList ve alti baslik tek bir View'da flex:1 icinde ustuste
-    // duruyordu; kapsayici kaydirilamadigi icin son bolumler ("Takipcilerim",
-    // "Takip ettiklerim") telefonda kirpilip erisilemez oluyordu (final
-    // inceleme Madde 4). En az riskli duzeltme: butun icerigi tek bir
-    // ScrollView'a al, ic FlatList'lerin hepsine scrollEnabled={false} ver.
-    // Boylece dis kaydirma tek elden yonetiliyor, ic listeler kendi
-    // icinde kaydirmaya calismiyor. (Takip karsilikli olunca "Takip
-    // ettiklerim" listesi kaldirildi, simdi dort FlatList var.)
     <View style={stiller.kok}>
       <UstCubuk baslik={t('baglar.baslik')} geriEtiketi={t('ortak.geri')} />
-      <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
+
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-      <Text style={stiller.bolumBaslik}>{t('baglar.gelenIstekler')}</Text>
-      <Text style={stiller.aciklama}>{t('baglar.gelenIstekAciklama')}</Text>
       <FlatList
-        scrollEnabled={false}
-        data={gelenTakip}
+        data={arkadaslar}
         keyExtractor={(k) => k.id}
+        contentContainerStyle={stiller.icerik}
         renderItem={({ item }) => (
           <View style={stiller.satir}>
+            {/* numberOfLines SART: uzun bir kullanici adi ("kullanici_9a9a742c")
+                iki satira sariyor, satir yukseliyor ve butonlar sikisiyordu.
+                Kirpilan ad "..." ile bitiyor, satir tek satir kaliyor. */}
             <View style={stiller.kisiBilgisi}>
-              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
-              <Text style={stiller.ad}>{item.ad}</Text>
+              <Text style={stiller.kullaniciAdi} numberOfLines={1}>
+                {item.kullaniciAdi}
+              </Text>
+              <Text style={stiller.ad} numberOfLines={1}>
+                {item.ad}
+              </Text>
             </View>
             <View style={stiller.butonlar}>
-              <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(item.id, true)}>
-                <Text style={stiller.kucukButonYazi}>{t('baglar.kabul')}</Text>
-              </Pressable>
-              <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(item.id, false)}>
-                <Text style={stiller.kucukButonYazi}>{t('baglar.reddet')}</Text>
-              </Pressable>
-              <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
-                <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGelenTakip')}</Text>}
-      />
-
-      <Text style={stiller.altBaslik}>{t('baglar.sohbetIstekleri')}</Text>
-      <FlatList
-        scrollEnabled={false}
-        data={gelenSohbet}
-        keyExtractor={(k) => k.id}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <View style={stiller.kisiBilgisi}>
-              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
-              <Text style={stiller.ad}>{item.ad}</Text>
-            </View>
-            <View style={stiller.butonlar}>
-              <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(item.id, true)}>
-                <Text style={stiller.kucukButonYazi}>{t('baglar.kabul')}</Text>
-              </Pressable>
-              <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(item.id, false)}>
-                <Text style={stiller.kucukButonYazi}>{t('baglar.reddet')}</Text>
-              </Pressable>
-              <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
-                <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGelenSohbet')}</Text>}
-      />
-
-      <Text style={stiller.bolumBaslik}>{t('baglar.gidenIstekler')}</Text>
-      <FlatList
-        scrollEnabled={false}
-        data={[
-          ...gidenTakip.map((k) => ({ ...k, tur: 'takip' as const })),
-          ...gidenSohbet.map((k) => ({ ...k, tur: 'sohbet' as const })),
-        ]}
-        keyExtractor={(item) => `${item.id}-${item.tur}`}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <View style={stiller.kisiBilgisi}>
-              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
-              <Text style={stiller.ad}>{item.ad}</Text>
-            </View>
-            <Pressable
-              style={stiller.kucukButon}
-              onPress={() =>
-                item.tur === 'takip'
-                  ? gidenTakipIsteginiGeriCekEt(item.id)
-                  : gidenSohbetIsteginiGeriCekEt(item.id)
-              }
-            >
-              <Text style={stiller.kucukButonYazi}>{t('baglar.geriCek')}</Text>
-            </Pressable>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGiden')}</Text>}
-      />
-
-      <Text style={stiller.bolumBaslik}>{t('baglar.arkadaslarim')}</Text>
-      <FlatList
-        scrollEnabled={false}
-        data={takipciler}
-        keyExtractor={(k) => k.id}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <View style={stiller.kisiBilgisi}>
-              <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
-              <Text style={stiller.ad}>{item.ad}</Text>
-            </View>
-            <View style={stiller.butonlar}>
-              <Pressable style={stiller.kucukButon} onPress={() => bagiKoparEt(item.id)}>
+              <Pressable
+                style={stiller.kucukButon}
+                onPress={() => arkadasliktanCikar(item.id)}
+                accessibilityRole="button"
+              >
                 <Text style={stiller.kucukButonYazi}>{t('baglar.arkadasliktanCikar')}</Text>
               </Pressable>
-              <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
+              <Pressable
+                style={stiller.kucukTehlikeliButon}
+                onPress={() => kullaniciyiEngelle(item.id)}
+                accessibilityRole="button"
+              >
                 <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
               </Pressable>
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosArkadas')}</Text>}
+        // Ilk cekim bitmeden "arkadasin yok" yazmak yanlis olur; o an
+        // bilinen tek sey listenin henuz gelmedigi.
+        ListEmptyComponent={
+          yukleniyor ? (
+            <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>
+          ) : (
+            <Text style={stiller.bosDurum}>{t('baglar.bosArkadas')}</Text>
+          )
+        }
       />
-      </ScrollView>
     </View>
   )
 }
 
 const stiller = StyleSheet.create({
-  kapsayici: { flex: 1, padding: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
   kok: { flex: 1, backgroundColor: renk.zemin },
-  kaydirici: { flex: 1 },
   icerik: {
     paddingHorizontal: bosluk.xl,
     paddingBottom: ALT_GEZINME_PAYI,
-  },
-
-  bolumBaslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.metin,
-    letterSpacing: -0.3,
-    marginTop: bosluk.xl,
-    marginBottom: bosluk.xs,
-  },
-  altBaslik: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: bosluk.l,
-    marginBottom: bosluk.xs,
-  },
-  aciklama: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-    marginBottom: bosluk.s,
   },
 
   satir: {
@@ -297,7 +139,7 @@ const stiller = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
-  kisiBilgisi: { flexShrink: 1 },
+  kisiBilgisi: { flex: 1 },
   kullaniciAdi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
@@ -307,54 +149,50 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    marginTop: 1,
+    marginTop: 2,
   },
 
-  butonlar: { flexDirection: 'row', gap: bosluk.s },
+  butonlar: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   kucukButon: {
+    paddingVertical: bosluk.s,
+    paddingHorizontal: bosluk.m,
+    borderRadius: yuvarlak.hap,
     borderWidth: 1,
     borderColor: renk.cizgi,
-    backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 7,
-    paddingHorizontal: bosluk.m,
   },
   kucukButonYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.minik,
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
     color: renk.metin,
   },
   kucukTehlikeliButon: {
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 7,
+    paddingVertical: bosluk.s,
     paddingHorizontal: bosluk.m,
+    borderRadius: yuvarlak.hap,
   },
   kucukTehlikeliButonYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.minik,
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
     color: '#C0392B',
   },
 
-  bosDurum: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    paddingVertical: bosluk.s,
-  },
   durum: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+    paddingTop: bosluk.xl,
+  },
+  bosDurum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
     color: renk.metinIkincil,
-    marginTop: bosluk.xl,
-    textAlign: 'center',
+    paddingTop: bosluk.xl,
   },
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: '#C0392B',
-    marginBottom: bosluk.m,
+    paddingHorizontal: bosluk.xl,
+    paddingTop: bosluk.m,
   },
 })
