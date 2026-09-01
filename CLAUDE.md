@@ -1863,6 +1863,49 @@ eklenecek bir ozellik degil. Sonuclari:
 - Taciz, takip ve sahte hesap senaryolari icin engelleme/sikayet akisi ilk
   surumde olmali.
 
+- 2026-09-01 — **claude-mem YENIDEN ACILDI ve sorunsuz calisiyor**
+  (kullanicinin istegi). Asagidaki 2026-08-19 tarihli kapatma karari
+  boylece gecersiz; o notu tarihsel kayit olarak oku.
+
+  **Kok neden buydu: BUN KURULU DEGILDI.** claude-mem'in calisma
+  zamani `worker` ve Bun gerektiriyor;
+  `~/.claude-mem/last-install-error.json` icinde 2026-08-12 tarihli
+  `bun-missing-after-install` / ABORT kaydi duruyordu. Worker hic
+  baslayamadigi icin `UserPromptSubmit` hook'u her seferinde
+  basarisiz oluyor ve KULLANICININ MESAJINI BLOKE EDIYORDU. Yani
+  sorun eklentinin kendisinde degil, eksik bir calisma zamanindaydi.
+
+  Bugun iki sey degismisti: (1) Bun winget ile kurulmus ve PATH'te
+  (`bun --version` -> 1.3.14), (2) eklenti 13.18.0'a guncellenmis.
+
+  **Iki sey OLCULEREK dogrulandi, varsayilmadi:**
+  - Worker KAPALIYKEN `UserPromptSubmit` hook'u calistirildi:
+    cikis kodu **0**, cikti `{}`. Yani yeni surum worker'a
+    ulasamayinca artik bloke ETMIYOR - eski arizanin tekrarlamasi
+    icin gereken kosul ortadan kalkmis.
+  - Worker acikken ayni hook uc kez kosuldu: cikis 0, sure
+    1.3-1.5 sn. `~/.claude-mem/state/hook-failures.json` ->
+    `consecutiveFailures: 0`.
+
+  **PORT DEGISTI: 37700 DEGIL 37777.** Eski notlardaki 37700
+  gecersiz. Saglik ucu: `curl http://127.0.0.1:37777/health` ->
+  `{"status":"ok",...}`.
+
+  Veri kaybi yok: `~/.claude-mem/claude-mem.db` icinde **820 gozlem**,
+  **171 oturum ozeti**, `pragma integrity_check` = ok.
+
+  SessionStart hook'u artik eklentinin KENDI `hooks.json` dosyasindan
+  geliyor (worker'i o baslatiyor), yani 2026-08-09'da yazilan
+  `eklentileri-kur.sh` benzeri bir takla gerekmiyor.
+
+  **Gizlilik notu:** claude-mem ham oturum icerigini
+  `~/.claude-mem` altinda, DEPO DISINDA tutuyor. Depo public oldugu
+  icin o veritabani buraya KOPYALANMAZ - 2026-08-19'da alinan bu
+  karar aynen gecerli.
+
+  **DIKKAT:** eklenti ancak BIR SONRAKI oturumda devreye girer.
+  Kontrol yolu `claude plugin list` (settings.json'a bakmak yetmez).
+
 - 2026-08-19 — **claude-mem kapatildi; oturumlar arasi hafiza tamamen
   depodaki dosyalara birakildi.** Eklentinin `UserPromptSubmit` hook'u her
   mesajda 37700 portundaki worker'a ulasmaya calisiyor ve ulasamayinca
@@ -1903,7 +1946,11 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
 - `security-guidance@claude-code-plugins` — her duzenlemeyi guvenlik acigi
   kaliplarina karsi tarayan hook tabanli eklenti (komut enjeksiyonu, sizmis
   anahtar, vb.). Slash komutu yok, arka planda calisir.
-- `claude-mem@thedotmack` — **KAPATILDI (2026-08-19).** Oturumlar arasi
+- `claude-mem@thedotmack` — **2026-09-01'de YENIDEN ACILDI ve
+  calisiyor** (surum 13.18.0, proje kapsaminda). Asagidaki
+  "KAPATILDI" notu tarihsel kayittir; kok neden ve cozum icin
+  "claude-mem yeniden acildi" bolumune bak. Eski hali:
+  **KAPATILDI (2026-08-19).** Oturumlar arasi
   hafiza eklentisiydi; `~/.claude-mem` altinda SQLite + chroma tutuyor ve
   37700 portunda bir worker calistiriyordu. `UserPromptSubmit` hook'u
   worker'a ulasamadiginda **mesaji bloke ettigi** icin kapatildi — asagidaki
