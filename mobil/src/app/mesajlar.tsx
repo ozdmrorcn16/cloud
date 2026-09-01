@@ -1,13 +1,7 @@
 import { useCallback, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
-import {
-  konusmalarimiGetir,
-  konusmayiGizle,
-  mesajIsteklerimiGetir,
-  type Konusma,
-  type MesajIstegi,
-} from '../../lib/sohbet'
+import { konusmalarimiGetir, konusmayiGizle, type Konusma } from '../../lib/sohbet'
 import { useDil } from '../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
@@ -16,24 +10,11 @@ export default function MesajlarEkrani() {
   const router = useRouter()
   const { t } = useDil()
   const [konusmalar, setKonusmalar] = useState<Konusma[]>([])
-  /**
-   * MESAJ ISTEKLERI: arkadasin olmayan kisilerden gelen ilk mesajlar
-   * (kullanicinin karari 2026-09-01). Bunlar `konusmalarim` listesine
-   * DUSMUYOR - sunucu onlari ayiriyor - ve burada, listenin USTUNDE
-   * ayri bir bolumde duruyorlar.
-   */
-  const [istekler, setIstekler] = useState<MesajIstegi[]>([])
   const [hata, setHata] = useState<string | null>(null)
 
   async function konusmalariYukle() {
     try {
-      // Ikisi PARALEL cekiliyor: biri digerini beklemesin.
-      const [gelenKonusmalar, gelenIstekler] = await Promise.all([
-        konusmalarimiGetir(),
-        mesajIsteklerimiGetir(),
-      ])
-      setKonusmalar(gelenKonusmalar)
-      setIstekler(gelenIstekler)
+      setKonusmalar(await konusmalarimiGetir())
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -74,33 +55,18 @@ export default function MesajlarEkrani() {
           keyExtractor={(k) => k.konusmaId}
           contentContainerStyle={stiller.liste}
           ListHeaderComponent={
-            istekler.length === 0 ? null : (
-              <View style={stiller.istekBolumu}>
-                <Text style={stiller.bolumBasligi}>{t('mesajlar.istekler')}</Text>
-                {istekler.map((istek) => (
-                  <Pressable
-                    key={istek.gonderenId}
-                    style={stiller.istekSatiri}
-                    onPress={() => router.push(`/sohbet/${istek.gonderenId}`)}
-                    accessibilityRole="button"
-                  >
-                    <View style={stiller.ustSatir}>
-                      <Text style={stiller.ad} numberOfLines={1}>
-                        {istek.ad ?? t('mesajlar.silinmisKullanici')}
-                      </Text>
-                      <View style={stiller.istekRozeti}>
-                        <Text style={stiller.istekRozetiYazi}>
-                          {t('mesajlar.istekRozeti')}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={stiller.sonMesaj} numberOfLines={1}>
-                      {istek.sonMesaj ?? ''}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )
+            /* ISTEKLER GIRISI - SABIT (kullanicinin karari 2026-09-01:
+               "Istekler yazisi sabit, basinca yeni sayfa geliyor").
+               Istek olmasa da duruyor; sayfa acildiginda bos durum
+               metni gorunuyor. */
+            <Pressable
+              style={stiller.istekGirisi}
+              onPress={() => router.push('/mesaj-istekleri')}
+              accessibilityRole="button"
+            >
+              <Text style={stiller.istekGirisiYazi}>{t('mesajlar.istekler')}</Text>
+              <Text style={stiller.istekGirisiOk}>›</Text>
+            </Pressable>
           }
           renderItem={({ item }) => {
             // Karsi taraf hesabini silmisse uyelik satiri yok; konusma
@@ -165,31 +131,21 @@ export default function MesajlarEkrani() {
 
 const stiller = StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
-  istekBolumu: { marginBottom: bosluk.l },
-  bolumBasligi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-    marginBottom: bosluk.s,
-  },
-  istekSatiri: {
+  istekGirisi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: bosluk.m,
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
+    marginBottom: bosluk.s,
   },
-  istekRozeti: {
-    backgroundColor: renk.turuncuZemin,
-    paddingHorizontal: bosluk.s,
-    paddingVertical: 2,
-    borderRadius: yuvarlak.hap,
-  },
-  istekRozetiYazi: {
+  istekGirisiYazi: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.minik,
-    color: renk.turuncu,
+    fontSize: olcek.govde,
+    color: renk.metin,
   },
+  istekGirisiOk: { fontFamily: yazi.govde, fontSize: olcek.altBaslik, color: renk.metinSoluk },
   icerikAlani: {
     flex: 1,
     paddingHorizontal: bosluk.xl,

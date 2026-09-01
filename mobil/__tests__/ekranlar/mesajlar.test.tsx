@@ -153,65 +153,30 @@ describe('MesajlarEkrani', () => {
 })
 
 /**
- * MESAJ ISTEKLERI (kullanicinin karari 2026-09-01): "Mesajlar kismina
- * uste istekler kismi ekle; arkadasin olmayan kisilerden gelen mesaj
- * istekleri burada gorunecek."
+ * MESAJ ISTEKLERI (kullanicinin karari 2026-09-01, netlestirme):
+ * "Istekler yazisi SABIT; basinca yeni sayfa geliyor, orada istekler
+ * varsa gorunuyor, yoksa sayfa bos duruyor."
  *
- * Istekler listenin USTUNDE ayri bir bolumde duruyor; normal konusmalar
- * asagida kaliyor. Istege basinca sohbet aciliyor - okumak kabul etmez.
+ * Yani bu ekranda istek LISTESI yok - yalnizca her zaman duran bir
+ * giris satiri var.
  */
-describe('MesajlarEkrani - istekler bolumu', () => {
-  it('bana gelen istekleri USTTE ayri bolumde gosterir', async () => {
-    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
-      konusma({ konusmaId: 'k1', kisiId: 'kisi-9', ad: 'Bağlı Kişi' }),
-    ])
-    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
-      {
-        gonderenId: 'kisi-1',
-        kullaniciAdi: 'deniz',
-        ad: 'Deniz',
-        konusmaId: 'konusma-1',
-        sonMesaj: 'Merhaba',
-        sonMesajZamani: '2026-09-01T10:00:00Z',
-      },
-    ])
+describe('MesajlarEkrani - istekler girisi', () => {
+  it('Istekler satiri istek OLMASA BILE gorunur', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
 
     render(<MesajlarEkrani />)
 
-    await waitFor(() => expect(screen.getByText('Deniz')).toBeTruthy())
-    expect(screen.getByText('İstekler')).toBeTruthy()
-    // Bagli kisinin konusmasi da listede, ama ayri.
-    expect(screen.getByText('Bağlı Kişi')).toBeTruthy()
+    await waitFor(() => expect(screen.getByText('İstekler')).toBeTruthy())
   })
 
-  it('istek yoksa Istekler bolumu HIC gorunmez', async () => {
+  it('Istekler satirina basinca istekler sayfasini acar', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
-    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
 
     render(<MesajlarEkrani />)
+    await waitFor(() => screen.getByText('İstekler'))
 
-    await waitFor(() => expect(screen.getByText('Henüz bir konuşman yok')).toBeTruthy())
-    expect(screen.queryByText('İstekler')).toBeNull()
-  })
+    await fireEvent.press(screen.getByText('İstekler'))
 
-  it('istege basinca o kisinin sohbetini acar', async () => {
-    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
-    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
-      {
-        gonderenId: 'kisi-1',
-        kullaniciAdi: 'deniz',
-        ad: 'Deniz',
-        konusmaId: 'konusma-1',
-        sonMesaj: 'Merhaba',
-        sonMesajZamani: '2026-09-01T10:00:00Z',
-      },
-    ])
-
-    render(<MesajlarEkrani />)
-    await waitFor(() => screen.getByText('Deniz'))
-
-    await fireEvent.press(screen.getByText('Deniz'))
-
-    expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kisi-1')
+    expect(mockRouterPush).toHaveBeenCalledWith('/mesaj-istekleri')
   })
 })

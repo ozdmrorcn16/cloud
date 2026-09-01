@@ -150,6 +150,16 @@ export default {
     istekler: 'İstekler',
     istekRozeti: 'İstek',
   },
+  mesajIstekleri: {
+    baslik: 'İstekler',
+    aciklama:
+      'Bağın olmayan kişilerden gelen mesajlar burada bekler. Cevap yazarsan sohbet Mesajlar’a taşınır.',
+    bosBaslik: 'Bekleyen istek yok',
+    bosAciklama: 'Bağın olmayan biri sana yazarsa mesajı burada görürsün.',
+    kabul: 'Kabul et',
+    reddet: 'Reddet',
+    geri: 'Mesajlar',
+  },
 
   anaSayfa: {
     aramaYerTutucu: 'Ara',
