@@ -75,4 +75,19 @@ describe('CheckInHaritasiEkrani', () => {
     await waitFor(() => expect(screen.getByText('Bursa')).toBeTruthy())
     await cevreOturana()
   })
+
+  /**
+   * Kullanicinin duzeltmesi (2026-09-01): dugme ZATEN yol tarifi
+   * aciyordu (Apple'da `daddr`, Google'da `dir/?api=1`) ama metin
+   * "Harita uygulamasinda ac" diyordu - ne yaptigini soylemiyordu.
+   */
+  it('dugme "Yol tarifi al" diyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    expect(await screen.findByText('Yol tarifi al')).toBeTruthy()
+    expect(screen.queryByText('Harita uygulamasında aç')).toBeNull()
+    await cevreOturana()
+  })
 })

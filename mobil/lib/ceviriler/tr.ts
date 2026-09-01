@@ -351,7 +351,10 @@ export default {
   checkInHaritasi: {
     geri: 'Geri',
     haritaAcikla: 'Haritaya dokunarak yol tarifi al',
-    haritadaAc: 'Harita uygulamasında aç',
+    // Dugme ZATEN yol tarifi aciyordu (Apple'da daddr, Google'da
+    // dir/?api=1); metin ne yaptigini soylemiyordu. Kullanicinin
+    // duzeltmesi 2026-09-01.
+    haritadaAc: 'Yol tarifi al',
     secimBaslik: 'Hangi haritayla açalım?',
     appleHaritalar: 'Apple Haritalar',
     googleHaritalar: 'Google Haritalar',
