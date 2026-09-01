@@ -90,10 +90,14 @@ export default function KesfetEkrani() {
   const [arama, setArama] = useState('')
   /**
    * Haritanin altindaki iki sekme (kullanicinin karari 2026-08-31).
-   * 'kesfet' yakindaki mekanlari, 'ara' arama kutusunu gosteriyor.
-   * Varsayilan 'kesfet': ekranin asil isi "su an nerede insan var".
+   *
+   * VARSAYILAN 'ara' (kullanicinin istegi 2026-09-01: "Checkin sayfasi
+   * acildiginda ilk mekan ara butonu uzerinden baslasin, kesfet
+   * degil"). Iki sekme iki ayri soruyu cevapliyor: 'ara' "yakinimda ne
+   * var" (tur suzgeci YOK), 'kesfet' "su an nereye gidip birileriyle
+   * karsilasabilirim" (sosyal turlere daraliyor).
    */
-  const [sekme, setSekme] = useState<'kesfet' | 'ara'>('kesfet')
+  const [sekme, setSekme] = useState<'kesfet' | 'ara'>('ara')
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip

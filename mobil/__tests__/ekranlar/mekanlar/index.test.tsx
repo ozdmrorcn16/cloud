@@ -58,16 +58,17 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sahil Kafe')).toBeTruthy()
     })
-    // Kullanicinin istegi (2026-08-31): "en yakin 500 mt icerisindeki
-    // konumlar yakindan uzaga siralanmali". Yaricap ve TUR SUZGECI artik
-    // sunucuya gonderiliyor - daraltma istemcide yapilinca sunucudan
-    // gelen 50 kaydin yalnizca 3'u sosyal cikiyor, liste bosaliyordu.
+    // Ekran "Mekan ara" sekmesiyle ACILIYOR (kullanicinin istegi
+    // 2026-09-01: "Checkin sayfasi acildiginda ilk mekan ara butonu
+    // uzerinden baslasin, kesfet degil"). O sekmede TUR SUZGECI YOK -
+    // "yakinimda ne var" sorusu eczaneyi de bakkali da kapsiyor.
+    // Yaricap ve limit yine gonderiliyor.
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
       41.015,
       28.979,
       KESFET_YARICAP_METRE,
       undefined,
-      [...SOSYAL_TURLER],
+      null,
       KESFET_LIMIT
     )
   })
@@ -209,6 +210,11 @@ describe('MekanAramaEkrani', () => {
     ])
 
     await render(<MekanAramaEkrani />)
+    // "8 kisi burada" seridi KESFET sekmesinde: o sekme "su an nerede
+    // insan var" sorusunu cevapliyor. Varsayilan sekme 2026-09-01'de
+    // "Mekan ara" oldugu icin once oraya geciliyor.
+    await waitFor(() => screen.getByText('Keşfet'))
+    await fireEvent.press(screen.getByText('Keşfet'))
 
     await waitFor(() => {
       expect(screen.getByText('8 kişi burada')).toBeTruthy()
@@ -376,7 +382,9 @@ describe('MekanAramaEkrani', () => {
     expect(screen.queryByText('Check-in yap')).toBeNull()
   })
 
-  it('varsayilan sekme Keşfet: arama kutusu gorunmuyor, liste gorunuyor', async () => {
+  // Kullanicinin istegi (2026-09-01): "Checkin sayfasi acildiginda ilk
+  // mekan ara butonu uzerinden baslasin, kesfet degil."
+  it('varsayilan sekme Mekan ara: arama kutusu ACIK geliyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -388,11 +396,13 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
-    expect(screen.queryByPlaceholderText('Mekan ara')).toBeNull()
+    // Arama kutusu ILK ACILISTA gorunur olmali.
+    expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
     expect(screen.getByText('Yakınında')).toBeTruthy()
 
-    await fireEvent.press(screen.getByText('Mekan ara'))
-    expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
+    // Kesfet'e gecilince arama kutusu kapaniyor.
+    await fireEvent.press(screen.getByText('Keşfet'))
+    expect(screen.queryByPlaceholderText('Mekan ara')).toBeNull()
   })
   // Kullanicinin istegi (2026-08-31): "Mekan ara kisminda Sonuclar
   // yaziyor, bunu Yakininda olarak degistir."
@@ -417,6 +427,31 @@ describe('MekanAramaEkrani', () => {
 
     await waitFor(() => expect(screen.getByText('Yakınında')).toBeTruthy())
     expect(screen.queryByText('Sonuçlar')).toBeNull()
+  })
+
+  // Kesfet sekmesi sosyal turlere daralmaya DEVAM ediyor: "su an nereye
+  // gidip birileriyle karsilasabilirim" sorusu farkli. Varsayilan sekme
+  // degisti diye bu davranis kaybolmamali.
+  it('Kesfet sekmesine gecince tur suzgeci GONDERILIR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
+
+    await fireEvent.press(screen.getByText('Keşfet'))
+
+    await waitFor(() => {
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+        41.015,
+        28.979,
+        KESFET_YARICAP_METRE,
+        undefined,
+        [...SOSYAL_TURLER],
+        KESFET_LIMIT
+      )
+    })
   })
 
 })
