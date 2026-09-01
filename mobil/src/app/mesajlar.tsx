@@ -143,11 +143,10 @@ export default function MesajlarEkrani() {
             )
           }}
           ListEmptyComponent={
-            // Bos ekran yon veriyor: neden bos oldugunu ve nasil
-            // dolacagini soyluyor.
+            // Yalnizca baslik (kullanicinin karari 2026-09-01): altindaki
+            // "kimlerle mesajlasabilirsin" cumlesi kaldirildi.
             <View style={stiller.bosAlan}>
               <Text style={stiller.bosBaslik}>{t('mesajlar.bosBaslik')}</Text>
-              <Text style={stiller.bosAciklama}>{t('mesajlar.bosAciklama')}</Text>
             </View>
           }
         />
@@ -263,14 +262,5 @@ const stiller = StyleSheet.create({
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
-  },
-  bosAciklama: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-    textAlign: 'center',
-    marginTop: bosluk.s,
-    maxWidth: 300,
   },
 })

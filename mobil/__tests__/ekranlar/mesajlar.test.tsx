@@ -128,6 +128,20 @@ describe('MesajlarEkrani', () => {
     expect(await screen.findByText('Henüz bir konuşman yok')).toBeTruthy()
   })
 
+  /**
+   * Kullanicinin karari (2026-09-01): bos durumun altindaki
+   * bilgilendirme cumlesi KALDIRILDI. Baslik tek basina yeterli;
+   * kimlerle mesajlasilabilecegini anlatan cumle ekrani dolduruyordu.
+   */
+  it('bos durumda aciklama cumlesi GOSTERILMEZ', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MesajlarEkrani />)
+
+    await screen.findByText('Henüz bir konuşman yok')
+    expect(screen.queryByText(/mesajlaşabilirsin/)).toBeNull()
+  })
+
   it('silinmis karsi taraf icin "Silinmiş kullanıcı" gosterir', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
       konusma({

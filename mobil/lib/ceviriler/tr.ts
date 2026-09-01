@@ -143,8 +143,6 @@ export default {
   mesajlar: {
     baslik: 'Mesajlar',
     bosBaslik: 'Henüz bir konuşman yok',
-    bosAciklama:
-      'Arkadaş olduğun ya da sohbet isteğin kabul edilen kişilerle mesajlaşabilirsin.',
     silinmisKullanici: 'Silinmiş kullanıcı',
     gizle: 'Gizle',
     istekler: 'İstekler',
