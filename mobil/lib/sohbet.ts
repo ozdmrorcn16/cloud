@@ -101,6 +101,54 @@ export async function konusmayiGizle(konusmaId: string): Promise<void> {
   await rpcCagir('konusmayi_gizle', { p_konusma_id: konusmaId })
 }
 
+/**
+ * MESAJ ISTEGI: arkadasin olmayan birinden gelen ilk mesaj.
+ *
+ * Kullanicinin karari (2026-09-01): boyle bir mesaj Mesajlar kutusuna
+ * DUSMEZ, ayri bir "Istekler" bolumunde bekler. Okumak kabul etmez -
+ * kabul ya cevap yazmakla ya da Kabul dugmesiyle olur. Gonderen, kabul
+ * edilene kadar IKINCI bir mesaj yazamaz (taciz yuzeyini daraltiyor).
+ */
+export type MesajIstegi = {
+  gonderenId: string
+  kullaniciAdi: string | null
+  ad: string | null
+  konusmaId: string | null
+  sonMesaj: string | null
+  sonMesajZamani: string | null
+}
+
+type MesajIstegiSatiri = {
+  gonderen_id: string
+  kullanici_adi: string | null
+  ad: string | null
+  konusma_id: string | null
+  son_mesaj: string | null
+  son_mesaj_zamani: string | null
+}
+
+export async function mesajIsteklerimiGetir(): Promise<MesajIstegi[]> {
+  const { data, error } = await supabase.rpc('mesaj_isteklerim', {})
+  if (error) throw new Error(hataMetni(error))
+  return (data as MesajIstegiSatiri[]).map((satir) => ({
+    gonderenId: satir.gonderen_id,
+    kullaniciAdi: satir.kullanici_adi,
+    ad: satir.ad,
+    konusmaId: satir.konusma_id,
+    sonMesaj: satir.son_mesaj,
+    sonMesajZamani: satir.son_mesaj_zamani,
+  }))
+}
+
+export async function mesajIsteginiKabulEt(gonderenId: string): Promise<void> {
+  await rpcCagir('mesaj_istegini_kabul_et', { p_gonderen_id: gonderenId })
+}
+
+/** Istegi siler ve konusmayi YALNIZCA benim kutumdan kaldirir. */
+export async function mesajIsteginiReddet(gonderenId: string): Promise<void> {
+  await rpcCagir('mesaj_istegini_reddet', { p_gonderen_id: gonderenId })
+}
+
 export function mesajlaraAbonelOl(
   konusmaId: string,
   geldi: (m: Mesaj) => void

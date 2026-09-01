@@ -1,0 +1,24 @@
+-- MESAJ ISTEKLERI. Canliya MCP ile uygulandi; bu dosya kaydidir.
+-- Tam govde icin migrasyon adi: mesaj_istekleri (2026-09-01).
+--
+-- Kullanicinin karari: "Mesajlar kismina uste istekler kismi ekle;
+-- arkadasin olmayan kisilerden gelen mesaj istekleri burada gorunecek.
+-- Mesaji okuyabilir ama onaylamadigi surece isteklerde kalmaya devam
+-- edecek. Cevap yazarsa kendi mesajlar bolumune sohbet gelicek.
+-- Reddederse silinecek."
+--
+-- Bugune kadar yabanci HIC mesaj gonderemiyordu. Kapi KONTROLLU acildi:
+--   * Karsilikli bag / kabul edilmis istek -> sinirsiz yazar.
+--   * Hicbiri yok, bekleyen istek de yok   -> TEK mesaj (istek olusur).
+--   * Kendi bekleyen istegi varsa          -> ikinci mesaj YOK.
+--   * Bekleyen istegin ALICISI cevap yazarsa -> istek KABUL olur.
+--
+-- Tek mesaj siniri kullanicinin karari (Instagram/X modeli): taciz
+-- yuzeyini daraltiyor. Red satiri SILER; ayni kisi tekrar yazabilir -
+-- bu da kullanicinin karari, israrci icin koruma ENGELLEMEDIR. Gunluk
+-- 50 istek tavani (bag.istek_on_kontrol) yeni istek yolunda zorlanir;
+-- o kontrol atlanirsa engelledigin kisi sana yazabilir.
+--
+-- Degisen/eklenen: mesaj_gonder, konusmalarim (bekleyen istekler
+-- listeden ayrilir), mesaj_isteklerim, mesaj_istegini_kabul_et,
+-- mesaj_istegini_reddet.

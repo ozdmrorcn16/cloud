@@ -6,6 +6,9 @@ import {
   konusmayiOkunduIsaretle,
   konusmayiGizle,
   mesajlaraAbonelOl,
+  mesajIsteklerimiGetir,
+  mesajIsteginiKabulEt,
+  mesajIsteginiReddet,
 } from './sohbet'
 
 jest.mock('./supabase', () => ({
@@ -205,5 +208,64 @@ describe('mesajlaraAbonelOl', () => {
 
     abonelikCiktikSonra()
     expect(supabase.removeChannel).toHaveBeenCalledWith(kanalNesnesi)
+  })
+})
+
+/**
+ * MESAJ ISTEKLERI (kullanicinin karari 2026-09-01): arkadasin olmayan
+ * kisilerden gelen mesajlar Mesajlar kutusuna DUSMEZ, ayri bir Istekler
+ * bolumunde bekler. Okumak kabul etmez; kabul ya cevap yazmakla ya da
+ * Kabul dugmesiyle olur. Red istegi siler.
+ */
+describe('mesaj istekleri', () => {
+  it('bana gelen istekleri getirir ve alanlari cozer', async () => {
+    mockRpc.mockResolvedValue({
+      data: [
+        {
+          gonderen_id: 'kisi-1',
+          kullanici_adi: 'deniz',
+          ad: 'Deniz',
+          konusma_id: 'konusma-1',
+          son_mesaj: 'Merhaba, seni parkta gördüm',
+          son_mesaj_zamani: '2026-09-01T10:00:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const sonuc = await mesajIsteklerimiGetir()
+
+    expect(mockRpc).toHaveBeenCalledWith('mesaj_isteklerim', {})
+    expect(sonuc).toEqual([
+      {
+        gonderenId: 'kisi-1',
+        kullaniciAdi: 'deniz',
+        ad: 'Deniz',
+        konusmaId: 'konusma-1',
+        sonMesaj: 'Merhaba, seni parkta gördüm',
+        sonMesajZamani: '2026-09-01T10:00:00Z',
+      },
+    ])
+  })
+
+  it('istegi kabul eder', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null })
+    await mesajIsteginiKabulEt('kisi-1')
+    expect(mockRpc).toHaveBeenCalledWith('mesaj_istegini_kabul_et', {
+      p_gonderen_id: 'kisi-1',
+    })
+  })
+
+  it('istegi reddeder', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null })
+    await mesajIsteginiReddet('kisi-1')
+    expect(mockRpc).toHaveBeenCalledWith('mesaj_istegini_reddet', {
+      p_gonderen_id: 'kisi-1',
+    })
+  })
+
+  it('sunucu hatasini Turkce metne cevirip firlatir', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'Bu istek bulunamadi' } })
+    await expect(mesajIsteginiReddet('kisi-1')).rejects.toThrow('Bu istek bulunamadi')
   })
 })

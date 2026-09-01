@@ -6,6 +6,9 @@ import {
   mesajGonder,
   konusmayiOkunduIsaretle,
   mesajlaraAbonelOl,
+  mesajIsteklerimiGetir,
+  mesajIsteginiKabulEt,
+  mesajIsteginiReddet,
 } from '../../../lib/sohbet'
 import type { Konusma, Mesaj } from '../../../lib/sohbet'
 
@@ -16,6 +19,9 @@ jest.mock('../../../lib/sohbet', () => ({
   konusmayiOkunduIsaretle: jest.fn(),
   konusmayiGizle: jest.fn(),
   mesajlaraAbonelOl: jest.fn(),
+  mesajIsteklerimiGetir: jest.fn(),
+  mesajIsteginiKabulEt: jest.fn(),
+  mesajIsteginiReddet: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -359,5 +365,61 @@ describe('SohbetEkrani', () => {
     await unmount()
 
     expect(bosAbonelikIptali).toHaveBeenCalled()
+  })
+})
+
+/**
+ * MESAJ ISTEGI EKRANI (kullanicinin karari 2026-09-01).
+ *
+ * Bekleyen bir istegin konusmasi `konusmalarim` listesinde YOK - sunucu
+ * onu ayiriyor. Ekran bu durumda istekler listesinden bulup mesajlari
+ * yine de gostermeli: kullanici "mesaji okuyabilir ama onaylamadigi
+ * surece isteklerde kalir".
+ */
+describe('SohbetEkrani - mesaj istegi', () => {
+  beforeEach(() => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
+      {
+        gonderenId: 'kullanici-2',
+        kullaniciAdi: 'deniz',
+        ad: 'Deniz',
+        konusmaId: 'konusma-9',
+        sonMesaj: 'Merhaba',
+        sonMesajZamani: '2026-09-01T10:00:00Z',
+      },
+    ])
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      { id: 'm1', gonderenId: 'kullanici-2', metin: 'Merhaba', olusturuldu: '2026-09-01T10:00:00Z' },
+    ])
+    ;(mesajlaraAbonelOl as jest.Mock).mockReturnValue(() => {})
+  })
+
+  it('istek konusmasinin mesajlarini gosterir ve Kabul/Reddet sunar', async () => {
+    render(<SohbetEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Merhaba')).toBeTruthy())
+    expect(screen.getByText('Kabul et')).toBeTruthy()
+    expect(screen.getByText('Reddet')).toBeTruthy()
+  })
+
+  it('Kabul et istegi onaylar', async () => {
+    ;(mesajIsteginiKabulEt as jest.Mock).mockResolvedValue(undefined)
+    render(<SohbetEkrani />)
+    await waitFor(() => screen.getByText('Kabul et'))
+
+    await fireEvent.press(screen.getByText('Kabul et'))
+
+    await waitFor(() => expect(mesajIsteginiKabulEt).toHaveBeenCalledWith('kullanici-2'))
+  })
+
+  it('Reddet istegi siler', async () => {
+    ;(mesajIsteginiReddet as jest.Mock).mockResolvedValue(undefined)
+    render(<SohbetEkrani />)
+    await waitFor(() => screen.getByText('Reddet'))
+
+    await fireEvent.press(screen.getByText('Reddet'))
+
+    await waitFor(() => expect(mesajIsteginiReddet).toHaveBeenCalledWith('kullanici-2'))
   })
 })

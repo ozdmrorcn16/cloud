@@ -147,6 +147,8 @@ export default {
       'Karşılıklı bağ kurduğun ya da sohbet isteğin kabul edilen kişilerle mesajlaşabilirsin.',
     silinmisKullanici: 'Silinmiş kullanıcı',
     gizle: 'Gizle',
+    istekler: 'İstekler',
+    istekRozeti: 'İstek',
   },
 
   anaSayfa: {

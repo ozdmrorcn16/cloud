@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import {
+  mesajIsteklerimiGetir,
+  mesajIsteginiKabulEt,
+  mesajIsteginiReddet,
   konusmalarimiGetir,
   mesajlariGetir,
   mesajGonder,
@@ -44,6 +47,12 @@ export default function SohbetEkrani() {
   const [metin, setMetin] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
+  /**
+   * Bu kisi bana BEKLEYEN bir mesaj istegi gonderdiyse true. O zaman
+   * konusma `konusmalarim` listesinde YOKTUR (sunucu ayiriyor) ve
+   * mesajlar istekler listesindeki konusma id'sinden yukleniyor.
+   */
+  const [istekMi, setIstekMi] = useState(false)
   const yerelSayac = useRef(0)
 
   useEffect(() => {
@@ -62,6 +71,23 @@ export default function SohbetEkrani() {
           if (iptalEdildi) return
           setMesajlar(gecmis)
           await konusmayiOkunduIsaretle(bulunan.konusmaId)
+          return
+        }
+
+        // Konusma listede yoksa BEKLEYEN BIR ISTEK olabilir: sunucu
+        // onlari `konusmalarim`dan ayiriyor. Kullanici mesaji okumali -
+        // okumak kabul etmiyor, kabul ayri bir eylem.
+        const istekler = await mesajIsteklerimiGetir()
+        if (iptalEdildi) return
+        const istek = istekler.find((i) => i.gonderenId === kullaniciId) ?? null
+        if (istek) {
+          setIstekMi(true)
+          if (istek.konusmaId) {
+            setKonusmaId(istek.konusmaId)
+            const gecmis = await mesajlariGetir(istek.konusmaId)
+            if (iptalEdildi) return
+            setMesajlar(gecmis)
+          }
         }
       } catch (e) {
         if (!iptalEdildi) setHata(hataMesaji(e))
@@ -118,7 +144,29 @@ export default function SohbetEkrani() {
     })
   }, [konusmaId, kullaniciId])
 
-  const yazilabilirMi = konusmaSatiri ? konusmaSatiri.yazilabilirMi : true
+  // Istek ekraninda da yazilabilir: CEVAP YAZMAK kabul anlamina geliyor
+  // (kullanicinin karari) ve sunucudaki mesaj_gonder bunu kendisi
+  // isliyor - istegi 'kabul'e cekip mesaji yaziyor.
+  const yazilabilirMi = istekMi ? true : konusmaSatiri ? konusmaSatiri.yazilabilirMi : true
+
+  async function istegiKabulEt() {
+    try {
+      await mesajIsteginiKabulEt(kullaniciId as string)
+      setIstekMi(false)
+      setHata(null)
+    } catch (e) {
+      setHata(hataMesaji(e))
+    }
+  }
+
+  async function istegiReddet() {
+    try {
+      await mesajIsteginiReddet(kullaniciId as string)
+      router.push('/mesajlar')
+    } catch (e) {
+      setHata(hataMesaji(e))
+    }
+  }
   const gonderilecekMetin = metin.trim()
   const gonderMumkun = gonderilecekMetin.length > 0 && !gonderiliyor
 
@@ -181,6 +229,24 @@ export default function SohbetEkrani() {
         </Pressable>
       </View>
 
+      {/* MESAJ ISTEGI SERIDI: onaylanmadikca istek listesinde kaliyor.
+          Cevap yazmak da kabul sayiliyor, o yuzden yazma alani acik. */}
+      {istekMi && (
+        <View style={stiller.istekSeridi}>
+          <Text style={stiller.istekSeridiYazi}>
+            Bu bir mesaj isteği. Cevap yazarsan sohbet Mesajlar'a taşınır.
+          </Text>
+          <View style={stiller.istekButonlari}>
+            <Pressable onPress={istegiKabulEt} accessibilityRole="button">
+              <Text style={stiller.kabulButonu}>Kabul et</Text>
+            </Pressable>
+            <Pressable onPress={istegiReddet} accessibilityRole="button">
+              <Text style={stiller.reddetButonu}>Reddet</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <FlatList
@@ -236,6 +302,28 @@ export default function SohbetEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  istekSeridi: {
+    backgroundColor: renk.turuncuZemin,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: bosluk.m,
+    gap: bosluk.s,
+  },
+  istekSeridiYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metin,
+  },
+  istekButonlari: { flexDirection: 'row', gap: bosluk.xl },
+  kabulButonu: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.turuncu,
+  },
+  reddetButonu: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
   // Alt gezinme cubugu artik her ekranda: yazma alani onun altinda
   // kalmasin.
   kapsayici: {

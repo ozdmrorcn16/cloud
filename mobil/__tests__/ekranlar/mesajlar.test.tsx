@@ -1,11 +1,12 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import MesajlarEkrani from '../../src/app/mesajlar'
-import { konusmalarimiGetir, konusmayiGizle } from '../../lib/sohbet'
+import { konusmalarimiGetir, konusmayiGizle, mesajIsteklerimiGetir } from '../../lib/sohbet'
 import type { Konusma } from '../../lib/sohbet'
 
 jest.mock('../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
   konusmayiGizle: jest.fn(),
+  mesajIsteklerimiGetir: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -42,6 +43,11 @@ function konusma(ustune: Partial<Konusma> = {}): Konusma {
 beforeEach(() => {
   jest.clearAllMocks()
   mockOdakGeriCagirmalari = new Set<() => void>()
+  // Ekran artik konusmalarla BIRLIKTE mesaj isteklerini de cekiyor
+  // (Promise.all). Varsayilan bos: istegi olan testler kendi degerini
+  // ayrica veriyor. Bu olmadan cagri undefined donuyor ve ekran hata
+  // durumuna dusuyor.
+  ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
 })
 
 describe('MesajlarEkrani', () => {
@@ -143,5 +149,69 @@ describe('MesajlarEkrani', () => {
     })
 
     await waitFor(() => expect(konusmalarimiGetir).toHaveBeenCalledTimes(2))
+  })
+})
+
+/**
+ * MESAJ ISTEKLERI (kullanicinin karari 2026-09-01): "Mesajlar kismina
+ * uste istekler kismi ekle; arkadasin olmayan kisilerden gelen mesaj
+ * istekleri burada gorunecek."
+ *
+ * Istekler listenin USTUNDE ayri bir bolumde duruyor; normal konusmalar
+ * asagida kaliyor. Istege basinca sohbet aciliyor - okumak kabul etmez.
+ */
+describe('MesajlarEkrani - istekler bolumu', () => {
+  it('bana gelen istekleri USTTE ayri bolumde gosterir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
+      konusma({ konusmaId: 'k1', kisiId: 'kisi-9', ad: 'Bağlı Kişi' }),
+    ])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
+      {
+        gonderenId: 'kisi-1',
+        kullaniciAdi: 'deniz',
+        ad: 'Deniz',
+        konusmaId: 'konusma-1',
+        sonMesaj: 'Merhaba',
+        sonMesajZamani: '2026-09-01T10:00:00Z',
+      },
+    ])
+
+    render(<MesajlarEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Deniz')).toBeTruthy())
+    expect(screen.getByText('İstekler')).toBeTruthy()
+    // Bagli kisinin konusmasi da listede, ama ayri.
+    expect(screen.getByText('Bağlı Kişi')).toBeTruthy()
+  })
+
+  it('istek yoksa Istekler bolumu HIC gorunmez', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
+
+    render(<MesajlarEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Henüz bir konuşman yok')).toBeTruthy())
+    expect(screen.queryByText('İstekler')).toBeNull()
+  })
+
+  it('istege basinca o kisinin sohbetini acar', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([
+      {
+        gonderenId: 'kisi-1',
+        kullaniciAdi: 'deniz',
+        ad: 'Deniz',
+        konusmaId: 'konusma-1',
+        sonMesaj: 'Merhaba',
+        sonMesajZamani: '2026-09-01T10:00:00Z',
+      },
+    ])
+
+    render(<MesajlarEkrani />)
+    await waitFor(() => screen.getByText('Deniz'))
+
+    await fireEvent.press(screen.getByText('Deniz'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kisi-1')
   })
 })
