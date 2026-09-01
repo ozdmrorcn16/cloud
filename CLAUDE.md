@@ -131,6 +131,76 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KIMLIK TELEFONDAN E-POSTAYA TASINDI - 2026-09-01/02
+
+Kullanicinin karari. **Sebep hukuki degil pratik: SMS gonderemiyoruz.**
+Turkiye'de A2P SMS icin operatorler gonderici basligi kaydi istiyor ve
+bunun icin VERGI MUKELLEFIYETI sart (NetGSM/IletiMerkezi: vergi levhasi,
+imza sirkuleri, KEP uzerinden basvuru). Kullanicinin sirketi yok.
+Twilio da ayni duvara carpiyor - Turkiye icin Letter of Authorization ve
+sirket belgesi istiyor. Firebase Phone Auth sirket istemiyor ama gunde
+yalnizca 10 SMS ucretsiz, yayina yetmez.
+
+**ARASTIRILDI VE ELENDI, tekrar denenmesin:** Twilio (sirket sart),
+yerel saglayicilar (vergi levhasi sart), Firebase (10/gun).
+
+Onceki durum olculmustu: veritabanindaki 6 hesabin HEPSI test numarasi,
+gercek numarayla HIC kayit olmamis - yani SMS yolu zaten hic
+calismiyordu.
+
+**DEGISEN EKRANLAR:**
+
+| Ekran | Yeni hali |
+|---|---|
+| kayit | E-posta kutusu, `signInWithOtp({ email })` |
+| dogrula | `verifyOtp({ email, token, type: 'email' })`, resend `type: 'signup'` |
+| giris | `signInWithPassword({ email, password })` |
+| profil-olustur | Onay kutusu KALDIRILDI (asagida) |
+| hesap-sil (Edge Function) | Parola dogrulamasi E-POSTA VE TELEFON, bu sirayla |
+
+`auth.users.phone` alani DURUYOR ve telefonla acilmis eski hesaplar
+calismaya devam ediyor - hesap-sil ikisini de destekliyor. Ileride
+sahis firmasi acilirsa SMS'e donmek bir ayar degisikligi.
+
+**YENI PARCALAR:** `lib/eposta.ts` (bicim + normallestirme; desen
+kasitli olarak DAR ve ASCII'ye kapali - Turkce harf iceren adres
+reddediliyor, cunku dogrulama postasi hic ulasmaz), `lib/eposta-kayit.ts`,
+`public.eposta_kayitli_mi` RPC (telefon surumunun birebir kardesi, AYNI
+iki katmanli hiz siniri ve ayni gunluk/ozet tablolari).
+
+**ONAY KUTUSU KALDIRILDI, KAYIT KALDI.** Kabul artik kayit ekranindaki
+"Devam"a basmakla veriliyor; altta "Devam ederek Kullanim kosullarimizi
+kabul ettigini ve Gizlilik Politikamizi okudugunu onayliyorsun" yaziyor.
+`kayitMetadatasi({ kabul: true })` hala `aydinlatma_onayi` ve
+`konum_rizasi` tasiyor, yani kvkk_onaylari tablosundaki ISPAT KAYDI
+yerinde. Ortuk onay burada savunulabilir: konumun hukuki dayanagi
+sozlesmenin ifasi, check-in olmadan uygulama zaten calismiyor.
+
+**SAGLAYICI DUGMELERI (Apple / Google) EKRANDA VAR ama SUPABASE'DE ACIK
+DEGIL.** Basilinca "Bu giris yontemi su an kullanilamiyor" hatasi
+veriliyor. Acmak icin: Supabase panelinde saglayici ayari + Google
+Cloud'da OAuth istemcisi + Apple Developer'da Sign in with Apple. Ikisi
+de NATIVE yapilandirma, yeni derleme ister. iOS'ta Apple ZORUNLU: App
+Store, baska bir sosyal giris varsa "Apple ile giris"i de sart kosuyor.
+Android'de Apple GOSTERILMIYOR (orada zorunlu degil).
+
+**KALAN IKI ADIM - bunlar olmadan akis calismaz:**
+
+1. **E-POSTA SABLONU 6 HANELI KODA CEVRILMELI.** Supabase varsayilan
+   olarak MAGIC LINK gonderiyor (`{{ .ConfirmationURL }}`); bizim
+   dogrulama ekranimiz 6 haneli kod bekliyor. Sablonda `{{ .Token }}`
+   kullanilmali. Supabase Dashboard > Authentication > Email Templates
+   ("Magic Link" ve "Confirm signup"). MCP ile YAPILAMIYOR - Management
+   API token gerekiyor, elimizde yok.
+2. **SMTP.** Supabase'in yerlesik e-posta servisi saatte yalnizca birkac
+   mail gonderiyor; kendi testin icin yeter, gercek kullanicilar icin
+   yetmez. Alan adi alinip Resend SMTP olarak baglanmali (ucretsiz
+   katman ayda 3.000 mail).
+
+**ACIK BORC:** kayit ekranindaki metin "Kullanim kosullari"na atif
+yapiyor ama boyle bir belgemiz YOK - yalnizca gizlilik metni var. O
+belge magaza oncesi yazilmali.
+
 ### ARAMA KULLANICININ ILIYLE SINIRLI - 2026-09-01
 
 Kullanicinin kurali: **"Km siniri yok ama kullanicinin bulundugu konum
