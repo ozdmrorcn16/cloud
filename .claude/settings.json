@@ -29,6 +29,25 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "C:/Users/orcns/projects/cloud/.claude/hooks/claude-mem-nobetci.ps1"
+            ],
+            "timeout": 60,
+            "statusMessage": "claude-mem nobetcisi"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

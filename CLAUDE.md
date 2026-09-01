@@ -1936,7 +1936,11 @@ eklenecek bir ozellik degil. Sonuclari:
   **DIKKAT:** eklenti ancak BIR SONRAKI oturumda devreye girer.
   Kontrol yolu `claude plugin list` (settings.json'a bakmak yetmez).
 
-  **BULUNAN TEK KIRILGANLIK - OKSUZ CHROMA SURECI.** Worker acilirken
+  **BULUNAN KIRILGANLIK VE COZUMU - OKSUZ CHROMA SURECI.**
+  Asagidaki sorun ARTIK KENDILIGINDEN duzeliyor: oturum basinda
+  calisan `.claude/hooks/claude-mem-nobetci.ps1` bunu temizliyor
+  (bkz. bu bolumun sonu). Sorunun kendisi:
+ Worker acilirken
   once dosyalari onbellege aliyor, sonra chroma'yi baslatiyor, EN SON
   portu aciyor. Onceki kosumdan kalan bir chroma (uv onbelleginden
   calisan `python.exe`) hayattaysa yeni worker o adimda TAKILIYOR ve
@@ -1959,7 +1963,45 @@ eklenecek bir ozellik degil. Sonuclari:
 
   **Calistigini dogrulama yolu:** `~/.claude-mem/claude-mem.db` icindeki
   `user_prompts` sayisi her mesajda birer artmali. 2026-09-01'de
-  olculdu: 99 -> 100.
+  olculdu: 99 -> 100 -> ... -> 107.
+
+  ### NOBETCI: `.claude/hooks/claude-mem-nobetci.ps1`
+
+  Oturum basinda (SessionStart) calisan bir hook. Uc adim:
+  1. Port 37777 saglikliysa HICBIR SEY yapmaz.
+  2. Degilse claude-mem'e ait ESKI surecleri temizler: 60 saniyeden
+     once baslamis `bun` surecleri ve komut satirinda `uv`/`archive`
+     gecen `python.exe` (chroma) surecleri. 60 saniye siniri, o an
+     ACILMAKTA olan bir worker'i oldurmemek icin. Chroma'yi komut
+     satirindan ayirt etmek onemli: kullanicinin kendi python
+     islerine dokunmamak gerekiyor.
+  3. Worker'i ISITIR - ilk mesaji beklemeden acar.
+
+  **Neden isitma sart:** eklentinin kendi SessionStart hook'u da
+  worker'i aciyor ama HOOK SIRASI GARANTI DEGIL. Eklentininki once
+  calisip oksuz surece takilirsa worker ilk mesaja kadar kapali kalir
+  ve O MESAJ KAYDEDILMEZ. Olculdu: soguk acilisin hemen ardindan
+  gelen ilk hook'ta `user_prompts` artmadi (100 -> 100), sonrakiler
+  arttI.
+
+  **Isitma ESZAMANLI ve STDIN ile yapiliyor.** `Start-Process` ile
+  arka planda denendi ve SESSIZCE basarisiz oldu: hook girdisini
+  STDIN'den okuyor, `Start-Process`'te stdin olmadigi icin surec hemen
+  cikiyor ve hicbir sey baslamiyordu. Belirtisi aldatici - komut
+  basariyla dondu, hic surec kalmadi.
+
+  **Hook HER ZAMAN 0 doner.** claude-mem 2026-08-19'da tam olarak
+  "hook basarisiz olunca kullanicinin mesajini bloke etme" yuzunden
+  kapatilmisti; onu onlemek icin yazilan bir hook'un ayni hataya
+  dusmesi kabul edilemez. Hatalar yutulmuyor, ekrana yaziliyor.
+
+  **Uc senaryo da olculdu (2026-09-01):**
+
+  | Durum | Sonuc |
+  |---|---|
+  | Worker saglikli | "dokunulmadi", cikis 0, 2 sn |
+  | Worker olu, oksuz chroma YOK | worker acildi, cikis 0, 6.5 sn |
+  | Worker olu, 60 sn'den eski 2 oksuz chroma | 2 surec temizlendi, worker acildi, cikis 0, 12.3 sn |
 
 - 2026-08-19 — **claude-mem kapatildi; oturumlar arasi hafiza tamamen
   depodaki dosyalara birakildi.** Eklentinin `UserPromptSubmit` hook'u her
