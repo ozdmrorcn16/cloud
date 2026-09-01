@@ -75,7 +75,6 @@ export default function ProfilOlusturEkrani() {
   const [sifre, setSifre] = useState('')
   const [sifreTekrar, setSifreTekrar] = useState('')
   const [sifreGorunur, setSifreGorunur] = useState(false)
-  const [kabul, setKabul] = useState(false)
 
   const [alanHatalari, setAlanHatalari] = useState<Record<string, string | null>>({})
   const [hata, setHata] = useState<string | null>(null)
@@ -185,8 +184,6 @@ export default function ProfilOlusturEkrani() {
       hatalar.sifre = t('profilOlustur.hataSifreUyusmuyor')
     }
 
-    // Onay son kapi: isaretlenmeden hicbir sey yazilmiyor.
-    if (!kabul) hatalar.onay = t('profilOlustur.hataOnay')
 
     setAlanHatalari(hatalar)
     if (Object.values(hatalar).some(Boolean)) return
@@ -204,7 +201,9 @@ export default function ProfilOlusturEkrani() {
       // Sifre ve onay metadatasi tek cagrida.
       const { error: kimlikHatasi } = await supabase.auth.updateUser({
         password: sifre,
-        data: kayitMetadatasi({ kabul }, dil),
+        // Onay kayit ekranindaki "Devam" ile verildi; kayit buraya,
+        // metadata uzerinden gecirilerek kvkk_onaylari'na yaziliyor.
+        data: kayitMetadatasi({ kabul: true }, dil),
       })
       if (kimlikHatasi) {
         setHata(hataMetni(kimlikHatasi))
@@ -438,62 +437,23 @@ export default function ProfilOlusturEkrani() {
           <Text style={stiller.ipucu}>{tekrarUyari}</Text>
         ) : null}
 
-        {/* TEK onay kutusu (karar 2026-08-24): onaylar bolunmuyor.
-            Isaretlendiginde veritabanina hem aydinlatma hem konum
-            rizasi yaziliyor. */}
-        <Pressable
-          style={stiller.onaySatiri}
-          onPress={() => {
-            setKabul(!kabul)
-            alanHatasiniTemizle('onay')
-          }}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: kabul }}
-          accessibilityLabel={t('profilOlustur.onayEtiket')}
-        >
-          <View
-            style={[
-              stiller.kutu,
-              kabul && stiller.kutuIsaretli,
-              Boolean(alanHatalari.onay) && stiller.kutuHatali,
-            ]}
-          >
-            {kabul && (
-              <Svg width={14} height={14} viewBox="0 0 24 24">
-                <Path
-                  d="M5 12.5l4.5 4.5L19 7.5"
-                  stroke="#FFFFFF"
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              </Svg>
-            )}
-          </View>
-          <Text style={stiller.onayYazi}>
-            {t('profilOlustur.onayMetni')}{' '}
-            <Text
-              style={stiller.baglanti}
-              onPress={() => router.push('/gizlilik')}
-              accessibilityRole="link"
-            >
-              {t('profilOlustur.metniOku')}
-            </Text>
-          </Text>
-        </Pressable>
-        <Text style={[stiller.onayNotu, Boolean(alanHatalari.onay) && stiller.ipucuHatali]}>
-          {alanHatalari.onay ?? t('profilOlustur.onayNotu')}
-        </Text>
+        {/* ONAY KUTUSU KALDIRILDI (kullanicinin karari 2026-09-01).
+            Kabul artik KAYIT ekranindaki "Devam"a basmakla veriliyor;
+            orada "Devam ederek Kullanim kosullarimizi kabul ettigini ve
+            Gizlilik Politikamizi okudugunu onayliyorsun" yaziyor.
+
+            ISPAT KAYDI KAYBOLMADI: asagidaki metadata hala
+            `aydinlatma_onayi` ve `konum_rizasi` tasiyor, yani
+            kvkk_onaylari tablosundaki kayit yerinde. Degisen tek sey
+            onayin ALINDIGI YER - kutu degil, akisa devam etmek. */}
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         <Pressable
-          style={[stiller.birincil, !kabul && stiller.birincilPasif]}
+          style={stiller.birincil}
           onPress={tamamla}
           disabled={gonderiliyor}
           accessibilityRole="button"
-          accessibilityState={{ disabled: !kabul }}
         >
           <Text style={stiller.birincilYazi}>
             {gonderiliyor ? t('profilOlustur.gonderiliyor') : t('profilOlustur.gonder')}

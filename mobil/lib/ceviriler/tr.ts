@@ -72,7 +72,12 @@ export default {
     hataTelefon: 'Geçerli bir telefon numarası gir.',
     hataZatenKayitli:
       'Bu numarada zaten bir hesap var. Şifrenle giriş yapabilirsin.',
-    aydinlatma: 'Devam ederek gizlilik metnini kabul etmiş olmazsın; onayı bir sonraki adımda vereceksin.',
+    // ONAY ARTIK BURADA (kullanicinin karari 2026-09-01): profil
+    // olusturma ekranindaki onay kutusu kaldirildi, kabul "Devam"a
+    // basmakla veriliyor. Kayit KAYDI korunuyor - kvkk_onaylari
+    // tablosuna yine yaziliyor, yalnizca kaynagi degisti.
+    aydinlatma:
+      'Devam ederek Kullanım koşullarımızı kabul ettiğini ve Gizlilik Politikamızı okuduğunu onaylıyorsun.',
   },
 
   profilOlustur: {
@@ -120,13 +125,6 @@ export default {
     hataSifreKisa: 'Şifre en az {{adet}} karakter olmalı.',
     hataSifreUyusmuyor: 'Şifreler aynı değil. İkisini de kontrol et.',
 
-    onayEtiket: 'Sözleşmeleri kabul ediyorum',
-    onayMetni:
-      'Kullanım koşullarını ve gizlilik metnini okudum, kabul ediyorum; kişisel verilerimin ve konum bilgimin orada anlatıldığı şekilde işlenmesine açık rıza veriyorum.',
-    metniOku: 'Metni oku',
-    onayNotu:
-      'Onay vermeden hesap oluşturulmaz. Konumun yalnızca check-in yaptığın süre boyunca kullanılır ve kimseyle sürekli paylaşılmaz.',
-    hataOnay: 'Devam etmek için sözleşmeleri onaylaman gerekiyor.',
 
     gonder: 'Hesabı oluştur',
     gonderiliyor: 'Oluşturuluyor…',

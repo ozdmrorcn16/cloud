@@ -33,7 +33,7 @@ async function dogumTarihiniSec() {
   await fireEvent.press(screen.getByText('Tamam'))
 }
 
-/** Onay kutusu disindaki butun alanlari gecerli degerlerle doldurur. */
+/** Butun alanlari gecerli degerlerle doldurur (onay kutusu artik yok). */
 async function formuDoldur() {
   await fireEvent.changeText(screen.getByPlaceholderText('Adın ve soyadın'), 'Orçun Özdemir')
   await dogumTarihiniSec()
@@ -58,22 +58,36 @@ describe('ProfilOlusturEkrani', () => {
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(true)
   })
 
-  it('sozlesme onaylanmadan hesap olusturmaz', async () => {
+  /**
+   * ONAY KUTUSU KALDIRILDI (kullanicinin karari 2026-09-01): kabul
+   * kayit ekranindaki "Devam"a basmakla veriliyor, bu ekranda ayrica
+   * sorulmuyor.
+   *
+   * KAYIT KAYBOLMUYOR: metadata yine `aydinlatma_onayi` ve
+   * `konum_rizasi` tasiyor, yani kvkk_onaylari tablosundaki ispat
+   * kaydi yerinde duruyor. Bu test tam olarak onu kilitliyor - kutu
+   * gitti ama kayit gitmedi.
+   */
+  it('onay kutusu YOK ama onay kaydi metadatada duruyor', async () => {
     await render(<ProfilOlusturEkrani />)
+
+    expect(screen.queryByLabelText('Sözleşmeleri kabul ediyorum')).toBeNull()
+
     await formuDoldur()
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
-    expect(
-      await screen.findByText('Devam etmek için sözleşmeleri onaylaman gerekiyor.')
-    ).toBeTruthy()
-    expect(supabase.auth.updateUser).not.toHaveBeenCalled()
-    expect(supabase.from).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(supabase.auth.updateUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ aydinlatma_onayi: true, konum_rizasi: true }),
+        })
+      )
+    )
   })
 
   it('onay isaretlenince sifreyi, onayi ve profili yazip ana ekrana gecer', async () => {
     await render(<ProfilOlusturEkrani />)
     await formuDoldur()
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     await waitFor(() => {
@@ -94,7 +108,6 @@ describe('ProfilOlusturEkrani', () => {
   it('secilen dogum tarihini ISO bicimiyle kaydeder', async () => {
     await render(<ProfilOlusturEkrani />)
     await formuDoldur()
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     await waitFor(() => expect(mockInsert).toHaveBeenCalled())
@@ -112,7 +125,6 @@ describe('ProfilOlusturEkrani', () => {
       screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
       'sifre1234'
     )
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(await screen.findByText('Doğum tarihini seç.')).toBeTruthy()
@@ -126,7 +138,6 @@ describe('ProfilOlusturEkrani', () => {
       screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
       'baskasifre'
     )
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(
@@ -140,7 +151,6 @@ describe('ProfilOlusturEkrani', () => {
     await formuDoldur()
     await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'kisa')
     await fireEvent.changeText(screen.getByPlaceholderText('Aynı şifreyi bir kez daha'), 'kisa')
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(await screen.findByText('Şifre en az 8 karakter olmalı.')).toBeTruthy()
@@ -151,7 +161,6 @@ describe('ProfilOlusturEkrani', () => {
     await render(<ProfilOlusturEkrani />)
     await formuDoldur()
     await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'or')
-    await fireEvent.press(screen.getByLabelText('Sözleşmeleri kabul ediyorum'))
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(await screen.findByText(/3-20 karakter/)).toBeTruthy()
