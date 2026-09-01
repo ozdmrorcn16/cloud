@@ -12,12 +12,14 @@ import {
   sohbetIsteginiGeriCek,
 } from '../../lib/bag'
 import { engelle } from '../../lib/engelleme'
+import { useDil } from '../../lib/dil'
 import type { BagKisi } from '../../lib/bag'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
 import { UstCubuk } from '../tasarim/UstCubuk'
 
 export default function BaglarEkrani() {
+  const { t } = useDil()
   const [gelenTakip, setGelenTakip] = useState<BagKisi[]>([])
   const [gelenSohbet, setGelenSohbet] = useState<BagKisi[]>([])
   const [gidenTakip, setGidenTakip] = useState<BagKisi[]>([])
@@ -40,7 +42,7 @@ export default function BaglarEkrani() {
       setTakipciler(takipcilerVerisi)
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       setYukleniyor(false)
     }
@@ -60,7 +62,7 @@ export default function BaglarEkrani() {
       }
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -70,7 +72,7 @@ export default function BaglarEkrani() {
       setGelenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -82,7 +84,7 @@ export default function BaglarEkrani() {
       setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -92,7 +94,7 @@ export default function BaglarEkrani() {
       setGidenTakip((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -102,7 +104,7 @@ export default function BaglarEkrani() {
       setGidenSohbet((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -116,14 +118,14 @@ export default function BaglarEkrani() {
       setTakipciler((onceki) => onceki.filter((k) => k.id !== kullaniciId))
       setHata(null)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
   if (yukleniyor) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.durum}>Yükleniyor...</Text>
+        <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>
       </View>
     )
   }
@@ -138,12 +140,12 @@ export default function BaglarEkrani() {
     // icinde kaydirmaya calismiyor. (Takip karsilikli olunca "Takip
     // ettiklerim" listesi kaldirildi, simdi dort FlatList var.)
     <View style={stiller.kok}>
-      <UstCubuk baslik="Arkadaşlar" geriEtiketi="Geri" />
+      <UstCubuk baslik={t('baglar.baslik')} geriEtiketi={t('ortak.geri')} />
       <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-      <Text style={stiller.bolumBaslik}>Gelen istekler</Text>
-      <Text style={stiller.aciklama}>Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.</Text>
+      <Text style={stiller.bolumBaslik}>{t('baglar.gelenIstekler')}</Text>
+      <Text style={stiller.aciklama}>{t('baglar.gelenIstekAciklama')}</Text>
       <FlatList
         scrollEnabled={false}
         data={gelenTakip}
@@ -156,21 +158,21 @@ export default function BaglarEkrani() {
             </View>
             <View style={stiller.butonlar}>
               <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(item.id, true)}>
-                <Text style={stiller.kucukButonYazi}>Kabul et</Text>
+                <Text style={stiller.kucukButonYazi}>{t('baglar.kabul')}</Text>
               </Pressable>
               <Pressable style={stiller.kucukButon} onPress={() => takipIstegineYanitVer(item.id, false)}>
-                <Text style={stiller.kucukButonYazi}>Reddet</Text>
+                <Text style={stiller.kucukButonYazi}>{t('baglar.reddet')}</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
-                <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>
+                <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
               </Pressable>
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen takip isteği yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGelenTakip')}</Text>}
       />
 
-      <Text style={stiller.altBaslik}>Sohbet istekleri</Text>
+      <Text style={stiller.altBaslik}>{t('baglar.sohbetIstekleri')}</Text>
       <FlatList
         scrollEnabled={false}
         data={gelenSohbet}
@@ -183,21 +185,21 @@ export default function BaglarEkrani() {
             </View>
             <View style={stiller.butonlar}>
               <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(item.id, true)}>
-                <Text style={stiller.kucukButonYazi}>Kabul et</Text>
+                <Text style={stiller.kucukButonYazi}>{t('baglar.kabul')}</Text>
               </Pressable>
               <Pressable style={stiller.kucukButon} onPress={() => sohbetIstegineYanitVer(item.id, false)}>
-                <Text style={stiller.kucukButonYazi}>Reddet</Text>
+                <Text style={stiller.kucukButonYazi}>{t('baglar.reddet')}</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
-                <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>
+                <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
               </Pressable>
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen sohbet isteği yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGelenSohbet')}</Text>}
       />
 
-      <Text style={stiller.bolumBaslik}>Giden istekler</Text>
+      <Text style={stiller.bolumBaslik}>{t('baglar.gidenIstekler')}</Text>
       <FlatList
         scrollEnabled={false}
         data={[
@@ -219,14 +221,14 @@ export default function BaglarEkrani() {
                   : gidenSohbetIsteginiGeriCekEt(item.id)
               }
             >
-              <Text style={stiller.kucukButonYazi}>Geri çek</Text>
+              <Text style={stiller.kucukButonYazi}>{t('baglar.geriCek')}</Text>
             </Pressable>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Bekleyen gönderilmiş istek yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosGiden')}</Text>}
       />
 
-      <Text style={stiller.bolumBaslik}>Takipçilerim</Text>
+      <Text style={stiller.bolumBaslik}>{t('baglar.arkadaslarim')}</Text>
       <FlatList
         scrollEnabled={false}
         data={takipciler}
@@ -239,15 +241,15 @@ export default function BaglarEkrani() {
             </View>
             <View style={stiller.butonlar}>
               <Pressable style={stiller.kucukButon} onPress={() => bagiKoparEt(item.id)}>
-                <Text style={stiller.kucukButonYazi}>Arkadaşlıktan çıkar</Text>
+                <Text style={stiller.kucukButonYazi}>{t('baglar.arkadasliktanCikar')}</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
-                <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>
+                <Text style={stiller.kucukTehlikeliButonYazi}>{t('baglar.engelle')}</Text>
               </Pressable>
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={stiller.bosDurum}>Henüz takipçin yok</Text>}
+        ListEmptyComponent={<Text style={stiller.bosDurum}>{t('baglar.bosArkadas')}</Text>}
       />
       </ScrollView>
     </View>
