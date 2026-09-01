@@ -454,4 +454,33 @@ describe('MekanAramaEkrani', () => {
     })
   })
 
+  /**
+   * Kullanicinin karari (2026-09-01): "Yakininda listesinde bulunan
+   * konumun 500 m mesafe icindeki yerleri goster, en yakindan en uzaga.
+   * Resimde farkediyorsan daha uzak mesafelerde gosteriliyor."
+   *
+   * O ekran goruntusunde 200 m siniri varken 420-530 m mekanlar
+   * listeleniyordu: yaricap icinde sonuc cikmayinca ekran SINIRSIZ
+   * ikinci bir istek atiyordu. O kacis yolu KALDIRILDI - sinir artik
+   * kesin. Cevrede hicbir sey yoksa liste bos kalir ve bos durum
+   * metni gorunur.
+   */
+  it('yaricap disina TASMIYOR: sonuc bos donse bile ikinci istek atilmiyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+
+    // TEK cagri: sinirsiz yedek istek YOK.
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(1)
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+      41.015, 28.979, KESFET_YARICAP_METRE, undefined, null, KESFET_LIMIT
+    )
+  })
+
+  it('kesfet listesi yaricapi 500 m', () => {
+    expect(KESFET_YARICAP_METRE).toBe(500)
+  })
+
 })

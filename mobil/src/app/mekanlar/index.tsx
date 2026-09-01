@@ -149,7 +149,7 @@ export default function KesfetEkrani() {
        * gorunmeli. Mesafe siniri ikisinde de duruyor.
        */
       const turSuzgeci = aktifSekme === 'kesfet' && !aramaVarMi
-      let sonuc = await yakinMekanlariYogunlukIleGetir(
+      const sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
         aramaVarMi ? null : KESFET_YARICAP_METRE,
@@ -157,13 +157,15 @@ export default function KesfetEkrani() {
         turSuzgeci ? [...SOSYAL_TURLER] : null,
         aramaVarMi ? null : KESFET_LIMIT
       )
-      // Kucuk yerlesimde yaricap icinde hic mekan olmayabilir.
-      // Bos ekran gostermek yerine sinirlari kaldirip tekrar soruyoruz -
-      // eski istemci suzgecindeki "hic sosyal yoksa eldekini goster"
-      // davranisinin sunucu tarafindaki karsiligi.
-      if (!aramaVarMi && sonuc.length === 0) {
-        sonuc = await yakinMekanlariYogunlukIleGetir(konum.lat, konum.lng, null, undefined)
-      }
+      /**
+       * SINIRSIZ YEDEK ISTEK YOK (kullanicinin karari 2026-09-01).
+       * Eskiden yaricap icinde sonuc cikmazsa sinirlar kaldirilip
+       * tekrar soruluyordu; bu, listede 500 m'yi asan mekanlar
+       * gosterilmesine yol aciyordu - kullanici ekran goruntusuyle
+       * yakaladi (200 m sinirli listede 420-530 m kayitlar). Sinir
+       * artik kesin; cevrede mekan yoksa liste bos kalir ve bos durum
+       * metni gorunur.
+       */
       if (sira !== istekSirasi.current) return
       setMekanlar(sonuc)
     } catch (e) {
