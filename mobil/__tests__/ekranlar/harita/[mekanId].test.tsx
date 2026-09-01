@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react-native'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react-native'
+import { ActionSheetIOS, Linking } from 'react-native'
 import CheckInHaritasiEkrani from '../../../src/app/harita/[mekanId]'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
 
@@ -88,6 +89,84 @@ describe('CheckInHaritasiEkrani', () => {
 
     expect(await screen.findByText('Yol tarifi al')).toBeTruthy()
     expect(screen.queryByText('Harita uygulamasında aç')).toBeNull()
+    await cevreOturana()
+  })
+})
+
+/**
+ * YOL TARIFI SECIMI - PLATFORMA GORE (kullanicinin karari 2026-09-01).
+ *
+ * iOS'ta sistemin KENDI ActionSheet'i aciliyor: kullanicinin telefonun
+ * her yerinde gordugu pencerenin aynisi, yazi tipi ve renkleri sistemden
+ * geliyor. Kendi Modal'imiz iOS'a yabanci duruyordu.
+ *
+ * Android'de Apple Haritalar zaten yok, yani secenek TEK; orada pencere
+ * hic acilmiyor, dogrudan Google Haritalar aciliyor (bu davranis
+ * onceden de vardi). Web'de kendi Modal'imiz kaliyor.
+ *
+ * jest-expo iOS ontanimli kosuyor, yani asagidaki testler iOS yolunu
+ * olcuyor.
+ */
+describe('CheckInHaritasiEkrani - yol tarifi secimi (iOS)', () => {
+  it('"Yol tarifi al" iOS ActionSheet aciyor, kendi modalimizi DEGIL', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    const sheet = jest.spyOn(ActionSheetIOS, 'showActionSheetWithOptions').mockImplementation(() => {})
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    expect(sheet).toHaveBeenCalledTimes(1)
+    const [ayarlar] = sheet.mock.calls[0]
+    expect(ayarlar.options).toEqual(['Apple Haritalar', 'Google Haritalar', 'Vazgeç'])
+    expect(ayarlar.cancelButtonIndex).toBe(2)
+    // Kendi pencere basligimiz cizilmemeli.
+    expect(screen.queryByText('Hangi haritayla açalım?')).toBeNull()
+    await cevreOturana()
+  })
+
+  it('Apple secilince Apple Haritalar yol tarifi acilir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    const ac = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
+    jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation((_ayarlar, geriCagir) => geriCagir(0))
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    expect(ac).toHaveBeenCalledWith(
+      expect.stringContaining('maps.apple.com/?daddr=40.2106,28.9213')
+    )
+    await cevreOturana()
+  })
+
+  it('Google secilince Google Haritalar yol tarifi acilir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    const ac = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
+    jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation((_ayarlar, geriCagir) => geriCagir(1))
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    expect(ac).toHaveBeenCalledWith(
+      expect.stringContaining('google.com/maps/dir/?api=1&destination=40.2106,28.9213')
+    )
+    await cevreOturana()
+  })
+
+  it('Vazgec secilince hicbir sey acilmaz', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    const ac = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
+    jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation((_ayarlar, geriCagir) => geriCagir(2))
+
+    await render(<CheckInHaritasiEkrani />)
+    await fireEvent.press(await screen.findByText('Yol tarifi al'))
+
+    expect(ac).not.toHaveBeenCalled()
     await cevreOturana()
   })
 })

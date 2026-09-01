@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import { View, Text, Pressable, Linking, Modal, Platform, StyleSheet } from 'react-native'
+import {
+  View,
+  Text,
+  Pressable,
+  Linking,
+  Modal,
+  Platform,
+  ActionSheetIOS,
+  StyleSheet,
+} from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir, type Mekan } from '../../../lib/mekan'
 import { hataMetni } from '../../../lib/hata-metni'
@@ -83,14 +92,49 @@ export default function CheckInHaritasiEkrani() {
     Linking.openURL(yolTarifiAdresi(secim, mekan))
   }
 
+  function secenekEtiketi(secim: 'apple' | 'google'): string {
+    return secim === 'apple'
+      ? t('checkInHaritasi.appleHaritalar')
+      : t('checkInHaritasi.googleHaritalar')
+  }
+
   /**
-   * Tek secenek varsa (iOS disi) soru sormanin anlami yok; dogrudan
-   * aciliyor. Bos yere bir adim eklemek kullaniciyi yavaslatir.
+   * Secim penceresi PLATFORMA GORE (kullanicinin karari 2026-09-01):
+   *
+   *   iOS      -> sistemin KENDI ActionSheet'i. Kullanicinin telefonun
+   *               her yerinde gordugu pencerenin aynisi; yazi tipi,
+   *               renk ve duzen sistemden geliyor. Kendi Modal'imiz
+   *               orada yabanci duruyordu. Marka rengimiz bu pencerede
+   *               gorunmez - dogrusu da bu, pencere bize ait degil.
+   *   Android  -> Apple Haritalar zaten yok, yani secenek TEK; pencere
+   *               hic acilmiyor, dogrudan Google Haritalar aciliyor.
+   *               Bos yere bir adim eklemek kullaniciyi yavaslatir.
+   *   web      -> yerel karsiligi yok, kendi Modal'imiz kaliyor.
+   *
+   * ActionSheetIOS React Native cekirdeginde; native tarafta yeni bir
+   * sey gerekmiyor, yani bu degisiklik OTA ile gidebiliyor.
    */
   function haritayaDokunuldu() {
     const secenekler = haritaSecenekleri()
-    if (secenekler.length === 1) ac(secenekler[0])
-    else setSecimAcik(true)
+    if (secenekler.length === 1) {
+      ac(secenekler[0])
+      return
+    }
+
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...secenekler.map(secenekEtiketi), t('checkInHaritasi.vazgec')],
+          cancelButtonIndex: secenekler.length,
+        },
+        (secilen) => {
+          if (secilen < secenekler.length) ac(secenekler[secilen])
+        }
+      )
+      return
+    }
+
+    setSecimAcik(true)
   }
 
   /**
@@ -171,11 +215,7 @@ export default function CheckInHaritasiEkrani() {
                 onPress={() => ac(secenek)}
                 accessibilityRole="button"
               >
-                <Text style={stiller.secenekYazi}>
-                  {secenek === 'apple'
-                    ? t('checkInHaritasi.appleHaritalar')
-                    : t('checkInHaritasi.googleHaritalar')}
-                </Text>
+                <Text style={stiller.secenekYazi}>{secenekEtiketi(secenek)}</Text>
               </Pressable>
             ))}
 
