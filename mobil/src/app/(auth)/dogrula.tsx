@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import { supabase } from '../../../lib/supabase'
-import { okunurBicim, eFormatinaCevir } from '../../../lib/telefon'
+import { epostaGecerliMi } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { hataMetni } from '../../../lib/hata-metni'
@@ -34,7 +34,7 @@ const HANE = 6
 export default function DogrulaEkrani() {
   const router = useRouter()
   const { t } = useDil()
-  const { telefon } = useLocalSearchParams<{ telefon: string }>()
+  const { eposta } = useLocalSearchParams<{ eposta: string }>()
   const [kod, setKod] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [bilgi, setBilgi] = useState<string | null>(null)
@@ -50,18 +50,18 @@ export default function DogrulaEkrani() {
     return () => clearTimeout(zamanlayici)
   }, [kalanSaniye])
 
-  // Adres cubugundan gelen numara DOGRULANIYOR. `/dogrula?telefon=...`
+  // Adres cubugundan gelen ADRES DOGRULANIYOR. `/dogrula?eposta=...`
   // elle acilabilen bir adres; bicimi tutmayan bir deger geldiginde
   // ekrani cizmek yerine kayit adimina geri gonderiyoruz.
   useEffect(() => {
-    if (!telefon || !eFormatinaCevir(telefon)) {
+    if (!eposta || !epostaGecerliMi(eposta)) {
       router.replace('/kayit')
       return
     }
     // Geri sayim EKRAN DURUMUNDA degil CIHAZDA tutuluyor: sayfa
     // yenilenince sifirlanip "Tekrar gonder"i hemen acmasin.
     let gecerli = true
-    gonderimDurumu(telefon).then(({ kalanSaniye: kalan, kalanHak }) => {
+    gonderimDurumu(eposta).then(({ kalanSaniye: kalan, kalanHak }) => {
       if (!gecerli) return
       setKalanSaniye(kalan)
       setHakKalmadi(kalanHak <= 0)
@@ -69,7 +69,7 @@ export default function DogrulaEkrani() {
     return () => {
       gecerli = false
     }
-  }, [telefon])
+  }, [eposta])
 
   async function dogrula(girilen: string = kod) {
     if (girilen.length < HANE) {
@@ -80,9 +80,9 @@ export default function DogrulaEkrani() {
     setBilgi(null)
     setGonderiliyor(true)
     const { data, error } = await supabase.auth.verifyOtp({
-      phone: telefon,
+      email: eposta,
       token: girilen,
-      type: 'sms',
+      type: 'email',
     })
 
     if (error) {
@@ -144,7 +144,7 @@ export default function DogrulaEkrani() {
     // Hak, istek ATILMADAN once yeniden okunuyor: ekran uzun sure acik
     // kalmis olabilir ya da ayni numara baska bir sekmede kod istemis
     // olabilir.
-    const { kalanSaniye: kalan, kalanHak } = await gonderimDurumu(telefon)
+    const { kalanSaniye: kalan, kalanHak } = await gonderimDurumu(eposta)
     if (kalan > 0) {
       setKalanSaniye(kalan)
       return
@@ -155,12 +155,12 @@ export default function DogrulaEkrani() {
       return
     }
 
-    const { error } = await supabase.auth.resend({ type: 'sms', phone: telefon })
+    const { error } = await supabase.auth.resend({ type: 'signup', email: eposta })
     if (error) {
       setHata(hataMetni(error))
       return
     }
-    await gonderimKaydet(telefon)
+    await gonderimKaydet(eposta)
     setBilgi(t('dogrula.tekrarGonderildi'))
     setKalanSaniye(BEKLEME_SANIYE)
     setHakKalmadi(kalanHak - 1 <= 0)
@@ -193,7 +193,7 @@ export default function DogrulaEkrani() {
         <>
           <Text style={stiller.baslik}>{t('dogrula.zatenKayitliBaslik')}</Text>
           <Text style={stiller.aciklama}>
-            {t('dogrula.zatenKayitliAciklama', { telefon: okunurBicim(telefon ?? '') })}
+            {t('dogrula.zatenKayitliAciklama', { eposta: eposta ?? '' })}
           </Text>
           <Pressable
             style={stiller.birincil}
@@ -213,7 +213,7 @@ export default function DogrulaEkrani() {
       ) : (
       <>
       <Text style={stiller.baslik}>{t('dogrula.baslik')}</Text>
-      <Text style={stiller.aciklama}>{t('dogrula.aciklama', { telefon: okunurBicim(telefon ?? '') })}</Text>
+      <Text style={stiller.aciklama}>{t('dogrula.aciklama', { eposta: eposta ?? '' })}</Text>
 
       {/* Kutulara dokunmak alttaki tek girdiyi odakliyor. */}
       <Pressable
@@ -245,7 +245,7 @@ export default function DogrulaEkrani() {
         maxLength={HANE}
         autoFocus
         textContentType="oneTimeCode"
-        autoComplete="sms-otp"
+        autoComplete="one-time-code"
         placeholder={t('dogrula.kodEtiketi')}
       />
 
@@ -265,6 +265,7 @@ export default function DogrulaEkrani() {
 
       <View style={stiller.tekrarAlani}>
         <Text style={stiller.tekrarSoru}>{t('dogrula.kodGelmedi')}</Text>
+        <Text style={stiller.spamNotu}>{t('dogrula.spamNotu')}</Text>
         {hakKalmadi ? (
           <Text style={stiller.tekrarBekle}>{t('dogrula.hakKalmadi')}</Text>
         ) : kalanSaniye > 0 ? (
@@ -284,6 +285,15 @@ export default function DogrulaEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  // Dogrulama postalari siklikla spam klasorune duesuyor; kullanici
+  // kodu hic gormeden vazgecmesin diye burada soyluyoruz.
+  spamNotu: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
+    textAlign: 'center',
+    marginTop: 2,
+  },
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,

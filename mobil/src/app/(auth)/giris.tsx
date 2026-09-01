@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
-import { eFormatinaCevir } from '../../../lib/telefon'
+import { epostaGecerliMi, epostaNormallestir } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
@@ -19,7 +19,7 @@ import { hataMetni } from '../../../lib/hata-metni'
  *
  * DUZEN (Instagram'dan alinan iskelet, Slooin kimligiyle):
  *   - Ust bosluk, ortada marka isareti
- *   - Iki alan: telefon ve sifre
+ *   - Iki alan: e-posta ve sifre
  *   - Dolu birincil buton (turuncu)
  *   - Esnek bosluk
  *   - Altta CERCEVELI ikincil eylem: yeni hesap olustur
@@ -33,13 +33,13 @@ import { hataMetni } from '../../../lib/hata-metni'
 export default function GirisEkrani() {
   const router = useRouter()
   const { t } = useDil()
-  const [telefon, setTelefon] = useState('')
+  const [eposta, setEposta] = useState('')
   const [sifre, setSifre] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
-  const [odaklanan, setOdaklanan] = useState<'telefon' | 'sifre' | null>(null)
+  const [odaklanan, setOdaklanan] = useState<'eposta' | 'sifre' | null>(null)
 
-  const hazir = telefon.trim().length > 0 && sifre.length > 0
+  const hazir = eposta.trim().length > 0 && sifre.length > 0
 
   async function girisYap() {
     setHata(null)
@@ -47,15 +47,15 @@ export default function GirisEkrani() {
       setHata(t('giris.hataBos'))
       return
     }
-    const eFormatli = eFormatinaCevir(telefon)
-    if (!eFormatli) {
-      setHata(t('giris.hataTelefon'))
+    const adres = epostaGecerliMi(eposta) ? epostaNormallestir(eposta) : null
+    if (!adres) {
+      setHata(t('giris.hataEposta'))
       return
     }
 
     setGonderiliyor(true)
     const { error } = await supabase.auth.signInWithPassword({
-      phone: eFormatli,
+      email: adres,
       password: sifre,
     })
     setGonderiliyor(false)
@@ -78,14 +78,17 @@ export default function GirisEkrani() {
 
       <View style={stiller.form}>
         <TextInput
-          style={[stiller.girdi, odaklanan === 'telefon' && stiller.girdiOdakli]}
-          placeholder={t('giris.telefonYerTutucu')}
+          style={[stiller.girdi, odaklanan === 'eposta' && stiller.girdiOdakli]}
+          placeholder={t('giris.epostaYerTutucu')}
           placeholderTextColor={renk.metinSoluk}
-          keyboardType="phone-pad"
-          autoComplete="tel"
-          value={telefon}
-          onChangeText={setTelefon}
-          onFocus={() => setOdaklanan('telefon')}
+          keyboardType="email-address"
+          autoCorrect={false}
+          autoComplete="email"
+          textContentType="emailAddress"
+          autoCapitalize="none"
+          value={eposta}
+          onChangeText={setEposta}
+          onFocus={() => setOdaklanan('eposta')}
           onBlur={() => setOdaklanan(null)}
         />
         <TextInput

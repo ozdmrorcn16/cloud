@@ -20,7 +20,7 @@ const mockRouterReplace = jest.fn()
 const mockRouterBack = jest.fn()
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockRouterReplace, back: mockRouterBack }),
-  useLocalSearchParams: () => ({ telefon: '+905551234567' }),
+  useLocalSearchParams: () => ({ eposta: 'ornek@eposta.com' }),
 }))
 
 const KOD_ETIKETI = 'Doğrulama kodu'
@@ -39,9 +39,9 @@ describe('DogrulaEkrani', () => {
 
     await waitFor(() => {
       expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
-        phone: '+905551234567',
+        email: 'ornek@eposta.com',
         token: '123456',
-        type: 'sms',
+        type: 'email',
       })
     })
     expect(mockRouterReplace).toHaveBeenCalledWith('/profil-olustur')
@@ -97,7 +97,7 @@ describe('DogrulaEkrani', () => {
   })
 })
 
-describe('DogrulaEkrani - numara zaten kayitliysa', () => {
+describe('DogrulaEkrani - adres zaten kayitliysa', () => {
   const OTURUM = { data: { session: { user: { id: 'kullanici-1' } } }, error: null }
 
   beforeEach(() => {
@@ -111,7 +111,7 @@ describe('DogrulaEkrani - numara zaten kayitliysa', () => {
     await render(<DogrulaEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText(KOD_ETIKETI), '123456')
 
-    expect(await screen.findByText('Bu numarada zaten bir hesap var')).toBeTruthy()
+    expect(await screen.findByText('Bu adreste zaten bir hesap var')).toBeTruthy()
     expect(supabase.auth.signOut).toHaveBeenCalled()
     // Kayit akisi burada bitiyor: profil olusturmaya GECILMIYOR.
     expect(mockRouterReplace).not.toHaveBeenCalledWith('/profil-olustur')

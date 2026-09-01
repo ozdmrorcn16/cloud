@@ -335,23 +335,27 @@ export default {
   },
 
   dogrula: {
+    // DOGRULAMA ARTIK E-POSTA ILE (kullanicinin karari 2026-09-01).
     geri: 'Geri',
-    baslik: 'Telefonunu doğrula',
-    aciklama: '{{telefon}} numarasına 6 haneli bir kod gönderdik.',
+    baslik: 'E-postanı doğrula',
+    aciklama: '{{eposta}} adresine 6 haneli bir kod gönderdik.',
     kodEtiketi: 'Doğrulama kodu',
     gonder: 'Doğrula',
     gonderiliyor: 'Doğrulanıyor…',
     kodGelmedi: 'Kod gelmedi mi?',
+    // Spam klasoru gercek bir sorun: dogrulama postalari siklikla
+    // oraya duesuyor ve kullanici kodu hic gormeden vazgeciyor.
+    spamNotu: 'Gelen kutunda yoksa spam klasörüne de bak.',
     tekrarGonder: 'Tekrar gönder',
     tekrarBekle: '{{saniye}} sn sonra tekrar gönderebilirsin',
     tekrarGonderildi: 'Yeni kod gönderildi.',
-    hakKalmadi: 'Bu numara için çok fazla kod istendi. Bir saat sonra tekrar deneyebilirsin.',
+    hakKalmadi: 'Bu adres için çok fazla kod istendi. Bir saat sonra tekrar deneyebilirsin.',
     hataEksik: 'Kodu eksiksiz gir.',
-    zatenKayitliBaslik: 'Bu numarada zaten bir hesap var',
+    zatenKayitliBaslik: 'Bu adreste zaten bir hesap var',
     zatenKayitliAciklama:
-      '{{telefon}} numarasıyla daha önce hesap oluşturulmuş. Şifrenle giriş yapabilirsin.',
+      '{{eposta}} adresiyle daha önce hesap oluşturulmuş. Şifrenle giriş yapabilirsin.',
     girisYap: 'Giriş yap',
-    baskaNumara: 'Başka bir numarayla devam et',
+    baskaNumara: 'Başka bir adresle devam et',
   },
 
   kesfet: {
@@ -376,12 +380,13 @@ export default {
   },
 
   giris: {
-    telefonYerTutucu: 'Telefon numarası',
+    // GIRIS ARTIK E-POSTA ILE (kullanicinin karari 2026-09-01).
+    epostaYerTutucu: 'E-posta adresi',
     sifreYerTutucu: 'Şifre',
     gonder: 'Giriş yap',
     gonderiliyor: 'Giriş yapılıyor…',
     kayitOl: 'Yeni hesap oluştur',
-    hataTelefon: 'Geçerli bir telefon numarası gir.',
-    hataBos: 'Telefon numaranı ve şifreni gir.',
+    hataEposta: 'Geçerli bir e-posta adresi gir.',
+    hataBos: 'E-posta adresini ve şifreni gir.',
   },
 } as const

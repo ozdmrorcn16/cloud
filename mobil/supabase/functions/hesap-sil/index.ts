@@ -122,12 +122,18 @@ Deno.serve(async (istek: Request) => {
 
   // 1) Cagiran kim? Jeton service-role istemcisiyle dogrulaniyor. Govdeden
   // gelen bir kimlige ASLA guvenilmiyor - silinecek hesap yalnizca JWT'den
-  // cikan kimlik. Telefon da buradan cikar (2)'de parola dogrulamasi icin
-  // gerekli - govdeden gelen bir telefona da guvenilmiyor.
+  // cikan kimlik. KIMLIK BILGISI de buradan cikar; (2)'de parola
+  // dogrulamasi icin gerekli - govdeden gelen bir adrese guvenilmiyor.
+  //
+  // E-POSTA VE TELEFON, BU SIRAYLA: kayit 2026-09-01'de e-postaya
+  // tasindi, ama telefonla acilmis ESKI hesaplar hala var ve onlar da
+  // hesabini silebilmeli. Ikisi de yoksa parola dogrulamasi hic
+  // denenmiyor.
   const jeton = yetkiBasligi.replace(/^Bearer\s+/i, '')
   const { data: kullaniciVerisi, error: kullaniciHata } =
     await yonetici.auth.getUser(jeton)
   const kimlik = kullaniciVerisi?.user?.id
+  const eposta = kullaniciVerisi?.user?.email
   const telefon = kullaniciVerisi?.user?.phone
   if (kullaniciHata || !kimlik) {
     return yanit({ hata: 'Kimlik dogrulamasi gecersiz' }, 401)
@@ -146,24 +152,23 @@ Deno.serve(async (istek: Request) => {
     return yanit({ hata: 'Parola gerekli' }, 400)
   }
 
-  if (!telefon) {
-    // Savunmaci: bu projede butun hesaplar telefon + parola ile
-    // kimliklendirilir, ama JWT'den telefon cikmazsa parola dogrulamasi
-    // hic denenmemeli.
+  if (!eposta && !telefon) {
+    // Savunmaci: hesap e-posta ya da telefonla kimliklendirilmis
+    // olmali. JWT'den ikisi de cikmazsa parola dogrulamasi hic
+    // denenmemeli.
     return yanit({ hata: 'Bu hesap parola ile dogrulanamiyor' }, 400)
   }
 
-  // Ayri, ANON anahtarli bir istemci: cagiranin kendi telefonu ve
+  // Ayri, ANON anahtarli bir istemci: cagiranin KENDI kimlik bilgisi ve
   // govdeden gelen parolayla signInWithPassword denenir. Basarili olursa
   // parola dogrudur. persistSession/autoRefreshToken kapali - bu
   // istemcinin tek isi bir defalik dogrulama, oturum tutmuyor.
   const dogrulamaIstemcisi = createClient(url, anonAnahtari, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
-  const { error: parolaHatasi } = await dogrulamaIstemcisi.auth.signInWithPassword({
-    phone: telefon,
-    password: parola,
-  })
+  const { error: parolaHatasi } = await dogrulamaIstemcisi.auth.signInWithPassword(
+    eposta ? { email: eposta, password: parola } : { phone: telefon!, password: parola }
+  )
   if (parolaHatasi) {
     // Parola da govde de loglanmiyor; kod ve durum kodu (sir tasimayan
     // metadata) tanidamayi kolaylastirmak icin loglaniyor.
