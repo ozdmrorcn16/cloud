@@ -156,7 +156,28 @@ Secilen yol A: `react-native-maps` 1.27.2 - iOS'ta Apple Haritalar
 - Gizlilik metni madde 5 ve `docs/kvkk-uyum-listesi.md` 3. madde:
   harita saglayicisina giden veri yazildi.
 
-### KESFET LISTESI: SUZGEC SUNUCUYA TASINDI, 200 M - 2026-08-31
+### SABIT KURAL: SIRALAMA HER ZAMAN EN YAKINDAN UZAGA
+
+Kullanicinin karari (2026-09-01): **"Siralama her zaman en yakindan
+uzaga, bu kural sabit."**
+
+Siralamayi SUNUCU yapiyor: `yakin_mekanlar_yogunluk` icinde iki ayri
+KNN siralamasi var (`konum <-> ST_MakePoint(...)`), biri alt sorguda
+biri disarida. Istemci siraya DOKUNMUYOR - ekran kodunda hicbir
+`.sort()` yok, `kesfetListesi = mekanlar`.
+
+Kural `__tests__/ekranlar/mekanlar/index.test.tsx` icindeki
+"SABIT KURAL: liste sunucudan gelen yakinlik sirasini korur" testiyle
+kilitli. Biri listeyi ada, ture ya da kisi sayisina gore siralamaya
+kalkarsa o test kirilir.
+
+**Test yazarken tuzak:** ekran listeyi CANLI ve SAKIN diye ikiye
+ayiriyor; canlilar seridi (kisiSayisi > 0) yalnizca Kesfet sekmesinde
+ciziliyor. "Yakininda" listesinde siralamayi olcmek icin mock'taki
+butun mekanlarin `kisiSayisi` degeri 0 olmali - yoksa kayitlar listede
+hic gorunmez ve test yaniltici sekilde "bulunamadi" der.
+
+### KESFET LISTESI: SUZGEC SUNUCUYA TASINDI - 2026-08-31
 
 Kullanicinin bildirdigi hata: "yakinimdaki konumlar kismi da yanlis ya
 da eksik ... en yakin 500 mt icerisindeki konumlar yakindan uzaga
@@ -178,8 +199,17 @@ Cozum: `yakin_mekanlar_yogunluk`a `p_turler` ve `p_limit` eklendi
 tek kaynakta kaliyor. `kesfetIcinSuz` SILINDI.
 
 **DAVRANIS (kullanicinin netlestirmesiyle):**
-- LISTE: 200 m yaricap, sosyal turler, en yakin 100. Sabitler
-  `KESFET_YARICAP_METRE` / `KESFET_LIMIT`.
+- LISTE: **500 m** yaricap, en yakin 100. Sabitler
+  `KESFET_YARICAP_METRE` / `KESFET_LIMIT`. Yaricap once 500'du,
+  2026-08-31'de 200'e indirildi, 2026-09-01'de yine 500 oldu.
+- **SINIR KESIN.** Yaricap icinde sonuc cikmazsa ekran ESKIDEN sinirsiz
+  ikinci bir istek atiyordu; bu, 200 m sinirli listede 420-530 m
+  mekanlar gorunmesine yol aciyordu (kullanici ekran goruntusuyle
+  yakaladi). O kacis yolu KALDIRILDI - cevrede mekan yoksa liste bos
+  kalir.
+- TUR SUZGECI yalnizca Kesfet sekmesinde; "Mekan ara" sekmesinde butun
+  turler gorunuyor (kullanicinin istegi 2026-08-31).
+- Ekran "Mekan ara" sekmesiyle ACILIYOR (2026-09-01).
 - ARAMA: sinir YOK - ne mesafe ne tur. "Mesafe siniri yok sadece mekan
   arama kismi icin gecerli." Kullanici baska sehirdeki mekani arayabilir.
 - Cevrede hic sosyal mekan yoksa ekran SINIRSIZ ikinci istek atiyor.

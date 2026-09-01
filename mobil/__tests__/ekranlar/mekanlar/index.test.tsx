@@ -483,4 +483,48 @@ describe('MekanAramaEkrani', () => {
     expect(KESFET_YARICAP_METRE).toBe(500)
   })
 
+
+  /**
+   * SABIT KURAL (kullanicinin karari 2026-09-01): "Siralama her zaman
+   * en yakindan uzaga, bu kural sabit."
+   *
+   * Siralamayi SUNUCU yapiyor (KNN, `konum <-> nokta`) ve istemci ona
+   * DOKUNMUYOR - ekranda hicbir `.sort()` yok. Bu test o zinciri
+   * kilitliyor: biri ileride listeyi ada, ture ya da kisi sayisina gore
+   * siralamaya kalkarsa burasi kirilir.
+   */
+  it('SABIT KURAL: liste sunucudan gelen yakinlik sirasini korur', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    // Sunucu en yakindan uzaga gonderiyor. Adlar ALFABETIK DEGIL: liste
+    // ada gore siralanirsa sira bozulur ve test kirilir.
+    //
+    // Hepsinin kisiSayisi 0: ekran listeyi CANLI ve SAKIN diye ikiye
+    // ayiriyor, canlilar seridi yalnizca Kesfet sekmesinde ciziliyor.
+    // Siralamayi "Yakininda" listesinde olcmek icin hepsi sakin olmali.
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Zeytin Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+      {
+        id: 'mekan-2', ad: 'Ada Park', tur: 'park', adres: null, osmId: 2,
+        konum: { lat: 41.0155, lng: 28.9795 }, kisiSayisi: 0,
+      },
+      {
+        id: 'mekan-3', ad: 'Bahar Bar', tur: 'bar', adres: null, osmId: 3,
+        konum: { lat: 41.016, lng: 28.98 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => screen.getByText('Zeytin Kafe'))
+
+    // getAllByText RENDER SIRASINA gore donuyor; sunucunun verdigi sira
+    // korunmus olmali.
+    const adlar = screen
+      .getAllByText(/^(Zeytin Kafe|Ada Park|Bahar Bar)$/)
+      .map((d) => d.props.children)
+    expect(adlar).toEqual(['Zeytin Kafe', 'Ada Park', 'Bahar Bar'])
+  })
+
 })
