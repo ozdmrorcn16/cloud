@@ -479,8 +479,8 @@ describe('MekanAramaEkrani', () => {
     )
   })
 
-  it('kesfet listesi yaricapi 500 m', () => {
-    expect(KESFET_YARICAP_METRE).toBe(500)
+  it('kesfet listesi yaricapi 1 km', () => {
+    expect(KESFET_YARICAP_METRE).toBe(1000)
   })
 
 

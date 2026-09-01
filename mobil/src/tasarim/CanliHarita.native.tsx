@@ -150,7 +150,17 @@ export function CanliHarita({
         toolbarEnabled={false}
         customMapStyle={Platform.OS === 'android' ? GOOGLE_HARITA_STILI : undefined}
       >
-        {igneler.map((mekan) => {
+        {/* SAKIN MEKANLAR CIZILMIYOR (kullanicinin istegi 2026-09-01:
+            "Harita uzerinde bu gri noktalari kaldir, mekan konumlarini
+            gosteren turuncu ikon kalsin").
+
+            Gri noktalar haritayi dolduruyor ama hicbir sey anlatmiyordu:
+            cevrede mekan OLDUGUNU soyluyorlardi, oysa uygulamanin sorusu
+            "su an nerede INSAN var". Kalabalik mekanin turuncu sayili
+            ignesi ve merkez ignesi KALIYOR. */}
+        {igneler
+          .filter((mekan) => mekan.kisiSayisi > 0)
+          .map((mekan) => {
           const canli = mekan.kisiSayisi > 0
           return (
             <Marker

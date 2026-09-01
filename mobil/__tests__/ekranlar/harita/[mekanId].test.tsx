@@ -25,8 +25,11 @@ const MEKAN = {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // Komsu KALABALIK: 2026-09-01'den beri haritada yalnizca kalabalik
+  // mekanlarin ignesi ciziliyor, sakinler cizilmiyor. Asagidaki
+  // `cevreOturana` beklemesi ikinci ignenin cikmasina dayaniyor.
   ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
-    { id: 'mekan-2', ad: 'Komşu', konum: { lat: 40.211, lng: 28.922 }, kisiSayisi: 0 },
+    { id: 'mekan-2', ad: 'Komşu', konum: { lat: 40.211, lng: 28.922 }, kisiSayisi: 3 },
   ])
 })
 

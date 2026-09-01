@@ -29,12 +29,13 @@ describe('CanliHarita (native)', () => {
     expect(screen.getByLabelText('Buradasın')).toBeTruthy()
   })
 
-  it('kalabalik mekanin ignesinde kisi sayisi yazar', async () => {
+  it('kalabalik mekanin ignesinde kisi sayisi yazar, sakin mekan cizilmez', async () => {
     await render(<CanliHarita merkez={MERKEZ} mekanlar={[mekan(1, 7), mekan(2)]} />)
 
     expect(screen.getByText('7')).toBeTruthy()
     expect(screen.getByLabelText('Mekan 1, 7 kişi burada')).toBeTruthy()
-    expect(screen.getByLabelText('Mekan 2')).toBeTruthy()
+    // Mekan 2 SAKIN: 2026-09-01'den beri haritada gri nokta cizilmiyor.
+    expect(screen.queryByLabelText('Mekan 2')).toBeNull()
   })
 
   it('igneye basinca mekan kimligiyle onMekanSec cagrilir', async () => {
@@ -46,16 +47,34 @@ describe('CanliHarita (native)', () => {
     expect(onMekanSec).toHaveBeenCalledWith('mekan-3')
   })
 
-  it('en fazla 12 igne cizer, kalabaliklar once gelir', async () => {
+  /**
+   * SAKIN MEKANLAR HARITADA CIZILMIYOR (kullanicinin istegi 2026-09-01:
+   * "Harita uzerinde bu gri noktalari kaldir, mekan konumlarini
+   * gosteren turuncu ikon kalsin").
+   *
+   * Gri noktalar haritayi dolduruyordu ve hicbir sey anlatmiyordu -
+   * cevrede mekan OLDUGUNU soyluyorlardi ama uygulamanin sorusu "su an
+   * nerede INSAN var". Kalabalik mekanlarin turuncu sayili ignesi
+   * KALIYOR; merkez ignesi de kaliyor.
+   */
+  it('yalnizca KALABALIK mekanlari cizer, sakinleri cizmez', async () => {
     const cok = Array.from({ length: 20 }, (_, i) => mekan(i + 1))
-    // 20. mekan en uzak ama en kalabalik: listede olmali.
+    // 20. mekan en uzak ama tek kalabalik olan.
     cok[19] = { ...cok[19], kisiSayisi: 5 }
 
     await render(<CanliHarita merkez={MERKEZ} mekanlar={cok} />)
 
     expect(screen.getByLabelText('Mekan 20, 5 kişi burada')).toBeTruthy()
-    // 12 mekan ignesi + 1 merkez ignesi.
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(13)
+    // 1 kalabalik mekan ignesi + 1 merkez ignesi. Sakin 19 mekan YOK.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(2)
+  })
+
+  it('hic kalabalik mekan yoksa yalnizca merkez ignesi kalir', async () => {
+    const sakinler = Array.from({ length: 8 }, (_, i) => mekan(i + 1))
+
+    await render(<CanliHarita merkez={MERKEZ} mekanlar={sakinler} />)
+
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1)
   })
 
   it('konumu olmayan mekani cizmez', async () => {
