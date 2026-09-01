@@ -47,6 +47,22 @@ export default {
   },
 
   kayit: {
+    // KAYIT ARTIK E-POSTA ILE (kullanicinin karari 2026-09-01).
+    // Telefon anahtarlari silinmedi: giris ekrani ve eski akis
+    // gecis bitene kadar onlari kullanmaya devam ediyor.
+    baslik: 'E-postanı kullanarak başla',
+    epostaEtiket: 'E-posta adresi',
+    epostaYerTutucu: 'ornek@eposta.com',
+    devam: 'Devam',
+    veya: 'veya',
+    appleIle: 'Apple ile devam et',
+    googleIle: 'Google ile devam et',
+    hataEposta: 'Geçerli bir e-posta adresi gir.',
+    hataEpostaKayitli:
+      'Bu e-posta adresiyle zaten bir hesap var. Şifrenle giriş yapabilirsin.',
+    hataSaglayiciKapali:
+      'Bu giriş yöntemi şu an kullanılamıyor. E-posta adresinle devam edebilirsin.',
+
     telefonEtiket: 'Telefon numarası',
     telefonYerTutucu: '05XX XXX XX XX',
     gonder: 'Kodu gönder',

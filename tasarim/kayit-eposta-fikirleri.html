@@ -1,0 +1,130 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Kayıt ekranı - e-posta ile, platforma göre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --turuncu: #FE7813;
+    --metin: #17130F;
+    --metin-ikincil: #6E6660;
+    --metin-soluk: #A39B93;
+    --zemin: #FFFFFF;
+    --cizgi: #EFEAE5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #EDE9E4; padding: 34px;
+  }
+  .izgara {
+    display: grid; grid-template-columns: repeat(2, 360px);
+    gap: 16px 46px; justify-content: center;
+  }
+  .etiket { font-size: 15px; font-weight: 700; color: #2E2A26; }
+  .etiket span { font-weight: 500; color: #6E6660; font-size: 13px; }
+  .not { font-size: 12px; color: #7A736D; line-height: 1.55; }
+  .not b { color: #2E2A26; }
+
+  .telefon {
+    width: 360px; height: 620px; background: var(--zemin);
+    border-radius: 22px; box-shadow: 0 6px 24px rgba(23,19,15,.10);
+    padding: 46px 26px 20px; display: flex; flex-direction: column;
+  }
+  .marka {
+    font-size: 26px; font-weight: 700; letter-spacing: -.6px;
+    color: var(--metin); margin-bottom: 34px;
+  }
+  .marka i { color: var(--turuncu); font-style: normal; }
+  h2 {
+    font-size: 23px; font-weight: 700; letter-spacing: -.4px;
+    color: var(--metin); margin-bottom: 20px; line-height: 1.25;
+  }
+  .alan-etiket {
+    font-size: 13px; font-weight: 600; color: var(--metin-ikincil);
+    margin-bottom: 6px;
+  }
+  .girdi {
+    border: 1px solid var(--cizgi); border-radius: 14px;
+    padding: 15px; font-size: 15px; color: var(--metin-soluk);
+  }
+  .birincil {
+    margin-top: 14px; background: var(--turuncu); color: #fff;
+    border-radius: 999px; padding: 16px; text-align: center;
+    font-size: 15px; font-weight: 700;
+    box-shadow: 0 6px 16px rgba(254,120,19,.30);
+  }
+  .ayrac {
+    display: flex; align-items: center; gap: 12px;
+    margin: 22px 0 16px; color: var(--metin-soluk); font-size: 13px;
+  }
+  .ayrac::before, .ayrac::after {
+    content: ''; flex: 1; height: 1px; background: var(--cizgi);
+  }
+  .sosyal {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 1px solid var(--cizgi); border-radius: 999px;
+    padding: 14px; font-size: 15px; font-weight: 600; color: var(--metin);
+    margin-bottom: 10px;
+  }
+  .g { color: #4285F4; font-weight: 700; font-size: 16px; }
+  .bosluk { flex: 1; }
+  .altnot {
+    font-size: 11px; color: var(--metin-soluk);
+    text-align: center; line-height: 1.55;
+  }
+  .altnot u { text-decoration: underline; }
+  .girislink {
+    text-align: center; font-size: 14px; color: var(--metin-ikincil);
+    margin-top: 16px;
+  }
+  .girislink b { color: var(--metin); font-weight: 700; }
+</style>
+
+<div class="izgara">
+
+  <div class="etiket">iPhone <span>· Apple + Google</span></div>
+  <div class="etiket">Android <span>· yalnızca Google</span></div>
+
+  <!-- iPhone -->
+  <div class="telefon">
+    <div class="marka">sloo<i>i</i>n</div>
+    <h2>E-postanı kullanarak başla</h2>
+    <div class="alan-etiket">E-posta adresi</div>
+    <div class="girdi">ornek@eposta.com</div>
+    <div class="birincil">Devam</div>
+    <div class="ayrac">veya</div>
+    <div class="sosyal"><span></span> Apple ile devam et</div>
+    <div class="sosyal"><span class="g">G</span> Google ile devam et</div>
+    <div class="girislink">Zaten hesabın var mı? <b>Giriş yap</b></div>
+    <div class="bosluk"></div>
+    <div class="altnot">Devam ederek <u>Gizlilik metnini</u> okuduğunu onaylıyorsun; açık onayı bir sonraki adımda vereceksin.</div>
+  </div>
+
+  <!-- Android -->
+  <div class="telefon">
+    <div class="marka">sloo<i>i</i>n</div>
+    <h2>E-postanı kullanarak başla</h2>
+    <div class="alan-etiket">E-posta adresi</div>
+    <div class="girdi">ornek@eposta.com</div>
+    <div class="birincil">Devam</div>
+    <div class="ayrac">veya</div>
+    <div class="sosyal"><span class="g">G</span> Google ile devam et</div>
+    <div class="girislink">Zaten hesabın var mı? <b>Giriş yap</b></div>
+    <div class="bosluk"></div>
+    <div class="altnot">Devam ederek <u>Gizlilik metnini</u> okuduğunu onaylıyorsun; açık onayı bir sonraki adımda vereceksin.</div>
+  </div>
+
+  <div class="not">
+    <b>Apple iOS'ta zorunlu:</b> App Store, başka bir sosyal giriş
+    sunuluyorsa &ldquo;Apple ile giriş&rdquo;in de bulunmasını şart
+    koşuyor. Yani iPhone'da Google'ı gösteriyorsak Apple'ı da
+    göstermek zorundayız &mdash; bu bir tercih değil, kural.
+  </div>
+  <div class="not">
+    Android'de Apple ile girişi göstermiyoruz: orada zorunlu değil ve
+    kimse beklemiyor. Aynı kişi iki cihazda <b>aynı e-postayla</b>
+    giriyorsa aynı hesaba düşer; farklı yöntem seçerse (bir cihazda
+    Apple, diğerinde Google) e-posta aynıysa yine aynı hesap olur.
+  </div>
+
+</div>

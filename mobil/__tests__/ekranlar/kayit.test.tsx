@@ -1,10 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import KayitEkrani from '../../src/app/(auth)/kayit'
 import { supabase } from '../../lib/supabase'
+import { epostaKayitliMi } from '../../lib/eposta-kayit'
 
 jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { signInWithOtp: jest.fn() }, rpc: jest.fn() },
+  supabase: { auth: { signInWithOtp: jest.fn(), signInWithOAuth: jest.fn() }, rpc: jest.fn() },
 }))
+jest.mock('../../lib/eposta-kayit', () => ({ epostaKayitliMi: jest.fn() }))
+jest.mock('../../lib/kod-gonderim', () => ({ gonderimKaydet: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 const mockRouterReplace = jest.fn()
@@ -12,115 +15,166 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
 }))
 
-const TELEFON = 'Telefon numarası'
+const KUTU = 'ornek@eposta.com'
 
 beforeEach(() => {
   jest.clearAllMocks()
   ;(supabase.auth.signInWithOtp as jest.Mock).mockResolvedValue({ data: {}, error: null })
-  // Varsayilan: numara kayitli DEGIL, yani kayit akisi devam ediyor.
-  ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: false, error: null })
+  ;(epostaKayitliMi as jest.Mock).mockResolvedValue(false)
 })
 
+/**
+ * KAYIT ARTIK E-POSTA ILE (kullanicinin karari 2026-09-01).
+ *
+ * Sebep pratikti: Turkiye'de A2P SMS icin operatorler vergi
+ * mukellefiyeti ve KEP uzerinden belge istiyor; kullanicinin sirketi
+ * yok. E-posta ucretsiz ve sirket gerektirmiyor.
+ *
+ * Duzen kullanicinin verdigi referansa gore: ustte ORTALANMIS marka
+ * ISARETI (kelime markasi degil), altinda baslik, e-posta kutusu,
+ * turuncu "Devam", ayrac ve saglayici dugmeleri.
+ */
 describe('KayitEkrani', () => {
-  it('YALNIZCA telefon soruyor - sifre alani yok', async () => {
+  it('ustte ortalanmis marka ISARETI var', async () => {
+    await render(<KayitEkrani />)
+    expect(screen.getByTestId('marka-isareti')).toBeTruthy()
+  })
+
+  it('e-posta soruyor - telefon ve sifre alani yok', async () => {
     await render(<KayitEkrani />)
 
-    expect(screen.getByPlaceholderText('05XX XXX XX XX')).toBeTruthy()
-    // Kayit ucе bolundu: sifre bir sonraki adimda aliniyor.
+    expect(screen.getByText('E-postanı kullanarak başla')).toBeTruthy()
+    expect(screen.getByPlaceholderText(KUTU)).toBeTruthy()
+    expect(screen.queryByPlaceholderText('05XX XXX XX XX')).toBeNull()
     expect(screen.queryByPlaceholderText('En az 8 karakter')).toBeNull()
   })
 
-  it('numarayi e.164 bicimine cevirip kod gonderir ve dogrulamaya gecer', async () => {
+  /**
+   * Adres KUCUK HARFE cevrilerek gonderiliyor: Supabase oyle sakliyor,
+   * istemci farkli gonderirse "kayitli mi" kontrolu yanlis cevap verir.
+   */
+  it('adresi kucuk harfe cevirip gonderir ve dogrulamaya gecer', async () => {
     await render(<KayitEkrani />)
 
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '05551234567')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
+    await fireEvent.changeText(screen.getByPlaceholderText(KUTU), '  Ornek@Eposta.COM ')
+    await fireEvent.press(screen.getByText('Devam'))
 
     await waitFor(() =>
-      expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({ phone: '+905551234567' })
+      expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({ email: 'ornek@eposta.com' })
     )
-    expect(mockRouterPush).toHaveBeenCalledWith('/dogrula?telefon=%2B905551234567')
+    expect(mockRouterPush).toHaveBeenCalledWith('/dogrula?eposta=ornek%40eposta.com')
   })
 
-  it('gecersiz numarada sunucuya hic gitmez', async () => {
+  it('bicimi bozuk adres sunucuya HIC gitmez', async () => {
     await render(<KayitEkrani />)
 
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '123')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
+    await fireEvent.changeText(screen.getByPlaceholderText(KUTU), 'ornek')
+    await fireEvent.press(screen.getByText('Devam'))
 
-    expect(await screen.findByText('Geçerli bir telefon numarası gir.')).toBeTruthy()
+    expect(await screen.findByText('Geçerli bir e-posta adresi gir.')).toBeTruthy()
     expect(supabase.auth.signInWithOtp).not.toHaveBeenCalled()
   })
 
   it('sunucu hatasini gosterir ve dogrulamaya gecmez', async () => {
     ;(supabase.auth.signInWithOtp as jest.Mock).mockResolvedValue({
-      data: {},
-      error: { message: 'SMS gonderilemedi' },
+      data: null,
+      error: { message: 'Network request failed' },
     })
 
     await render(<KayitEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '05551234567')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
+    await fireEvent.changeText(screen.getByPlaceholderText(KUTU), 'ornek@eposta.com')
+    await fireEvent.press(screen.getByText('Devam'))
 
-    expect(await screen.findByText('SMS gonderilemedi')).toBeTruthy()
-    expect(mockRouterPush).not.toHaveBeenCalled()
+    await waitFor(() => expect(mockRouterPush).not.toHaveBeenCalled())
   })
 
-  it('numara zaten kayitliysa SMS HIC gonderilmez', async () => {
-    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: true, error: null })
+  /**
+   * Bosa is yaptirilmiyor (kullanicinin ilkesi): adres zaten
+   * kayitliysa dogrulama postasi HIC gonderilmiyor, hata ilk ekranda
+   * veriliyor.
+   */
+  it('adres zaten kayitliysa posta HIC gonderilmez', async () => {
+    ;(epostaKayitliMi as jest.Mock).mockResolvedValue(true)
 
     await render(<KayitEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '05551234567')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
+    await fireEvent.changeText(screen.getByPlaceholderText(KUTU), 'ornek@eposta.com')
+    await fireEvent.press(screen.getByText('Devam'))
 
     expect(
-      await screen.findByText('Bu numarada zaten bir hesap var. Şifrenle giriş yapabilirsin.')
+      await screen.findByText(
+        'Bu e-posta adresiyle zaten bir hesap var. Şifrenle giriş yapabilirsin.'
+      )
     ).toBeTruthy()
-    // Asil kazanc bu: bosuna SMS gitmiyor.
     expect(supabase.auth.signInWithOtp).not.toHaveBeenCalled()
-    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
-  it('kontrol cevap veremezse eski akisa duesuyor - kod yine gonderiliyor', async () => {
-    // Sunucudaki saatlik tavan asildiginda ya da ag koptugunda boyle
-    // oluyor. Mesru kullanici ekranda kilitlenmemeli; "zaten kayitli"
-    // kontrolu dogrulama ekranindaki son kapida yapiliyor.
-    ;(supabase.rpc as jest.Mock).mockResolvedValue({
-      data: null,
-      error: { message: 'Cok fazla deneme yapildi' },
+  /**
+   * Kontrol CEVAP VEREMEZSE akis durmuyor: posta yine gonderiliyor ve
+   * "zaten kayitli" kontrolu dogrulama ekranindaki son kapida
+   * yapiliyor. Bu bir HIZLI YOL, zorunlu adim degil.
+   */
+  it('kontrol cevap veremezse eski akisa duesuyor - posta yine gonderilir', async () => {
+    ;(epostaKayitliMi as jest.Mock).mockRejectedValue(new Error('ag hatasi'))
+
+    await render(<KayitEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText(KUTU), 'ornek@eposta.com')
+    await fireEvent.press(screen.getByText('Devam'))
+
+    await waitFor(() =>
+      expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({ email: 'ornek@eposta.com' })
+    )
+  })
+
+  /**
+   * iOS'ta Apple ZORUNLU: App Store, baska bir sosyal giris
+   * sunuluyorsa "Apple ile giris"in de bulunmasini sart kosuyor.
+   * jest-expo iOS ontanimli kostugu icin bu test o yolu olcuyor.
+   */
+  it('iOS: hem Apple hem Google dugmesi var', async () => {
+    await render(<KayitEkrani />)
+
+    expect(screen.getByText('Apple ile devam et')).toBeTruthy()
+    expect(screen.getByText('Google ile devam et')).toBeTruthy()
+  })
+
+  it('Apple dugmesi OAuth akisini baslatir', async () => {
+    ;(supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({ error: null })
+
+    await render(<KayitEkrani />)
+    await fireEvent.press(screen.getByText('Apple ile devam et'))
+
+    await waitFor(() =>
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'apple' })
+      )
+    )
+  })
+
+  /**
+   * Saglayici Supabase panelinde acik degilse cagri hata donuyor.
+   * Kullanici ne oldugunu anlamali ve CALISAN yola yonlendirilmeli -
+   * kapali bir kapiya bakip beklememeli.
+   */
+  it('saglayici kapaliysa anlasilir hata gosterir', async () => {
+    ;(supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({
+      error: { message: 'Unsupported provider: provider is not enabled' },
     })
 
     await render(<KayitEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '05551234567')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
+    await fireEvent.press(screen.getByText('Google ile devam et'))
 
-    await waitFor(() =>
-      expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({ phone: '+905551234567' })
-    )
-    expect(mockRouterPush).toHaveBeenCalledWith('/dogrula?telefon=%2B905551234567')
-  })
-
-  it('kontrol E.164 bicimindeki numarayla cagriliyor', async () => {
-    await render(<KayitEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('05XX XXX XX XX'), '05551234567')
-    await fireEvent.press(screen.getByText('Kodu gönder'))
-
-    await waitFor(() =>
-      expect(supabase.rpc).toHaveBeenCalledWith('telefon_kayitli_mi', {
-        p_telefon: '+905551234567',
-        // Hiz sinirinin dar katmani icin cihaz kimligi de gidiyor.
-        p_cihaz: expect.anything(),
-      })
-    )
+    expect(
+      await screen.findByText(
+        'Bu giriş yöntemi şu an kullanılamıyor. E-posta adresinle devam edebilirsin.'
+      )
+    ).toBeTruthy()
   })
 
   it('giris baglantisi giris ekranina goturur', async () => {
     await render(<KayitEkrani />)
+
     await fireEvent.press(screen.getByText('Giriş yap'))
-    expect(mockRouterReplace).toHaveBeenCalledWith('/giris')
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/giris')
   })
 })
-
-// TELEFON etiketi ekranda da var; testte yalnizca yer tutucu
-// kullaniliyor cunku etiket ve yer tutucu ayni anda gorunuyor.
-void TELEFON

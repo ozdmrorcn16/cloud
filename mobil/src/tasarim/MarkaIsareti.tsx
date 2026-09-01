@@ -37,6 +37,7 @@ export function MarkaIsareti({
       resizeMode="contain"
       accessibilityRole="image"
       accessibilityLabel="Slooin"
+      testID="marka-isareti"
     />
   )
 }
