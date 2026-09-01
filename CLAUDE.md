@@ -131,6 +131,48 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### MESAJ ISTEKLERI EKLENDI - 2026-09-01 (canli dogrulandi, OTA'da)
+
+Kullanicinin istegi: "Mesajlar kismina uste istekler kismi ekle bu
+kisimda arkadasin olmayan kisilerden gelen mesaj istekleri gorunecek."
+Ardindan duzeltti: "Istekler yazisi SABIT, basinca YENI SAYFA geliyor;
+orda istekler varsa gorunuyor, yoksa sayfa bos duruyor."
+
+Yani `mesajlar.tsx` icinde "İstekler ›" satiri HER ZAMAN gorunur
+(sayi rozeti yok, kosullu gizleme yok) ve `/mesaj-istekleri` sayfasini
+aciyor. Liste ekraninda bolum basligi olarak DEGIL.
+
+**Sunucu kurali `mesaj_gonder` icinde, uc dalli:**
+
+| Durum | Sonuc |
+|---|---|
+| Karsilikli bag var (`bag.yazabilir_mi`) | sinirsiz yazar |
+| Bana BEKLEYEN istegi olan kisiye yaziyorum | istek KABUL olur, konusma Mesajlar'a gecer |
+| Yabanciya ilk kez yaziyorum | TEK mesaj gecer, `sohbet_istekleri`ne 'beklemede' satiri yazilir |
+| Yabanciya ikinci kez yaziyorum | REDDEDILIR |
+
+Yani bir yabanci sana en fazla BIR mesaj yazabilir; ikincisi icin
+senin cevap vermen (= kabul) gerekir. Bu, tacizin en ucuz yolunu
+kapatiyor - onay beklemeden mesaj yagdirmak mumkun degil.
+
+`konusmalarim` bekleyen istegi olan konusmalari DISLIYOR; onlar
+yalnizca `mesaj_isteklerim`de gorunuyor. Reddetme
+(`mesaj_istegini_reddet`) istek satirini siler ve konusmayi YALNIZCA
+alan tarafta gizler - gonderen tarafta gecmis durur, cunku silmek
+karsi tarafin verisini de goturur.
+
+Gunluk tavan: `bag.istek_on_kontrol` uzerinden gunde 50 istek
+(takip + sohbet + mesaj istekleri ortak sayilir).
+
+**CANLI DOGRULANDI** - `araclar/mesaj-istegi-canli-test.py`, iki
+gercek test hesabiyla 9 dogrulama, hepsi gecti. Jest testleri
+Supabase'i mock'ladigi icin bu ayri betik yazildi; ayni sinif hata
+daha once yasanmisti (66 test yesilken ekran canlida hic
+calismiyordu). Betik baslangicta iki hesap arasini temizliyor ve
+sonunda olusturduklarini siliyor, guvenle yeniden kosulur:
+
+    python araclar/mesaj-istegi-canli-test.py     # mobil/.env yuklu kabuk
+
 ### GERCEK HARITA (iOS + Android) EKLENDI - 2026-08-30
 
 Kullanicinin karari: kesfet ve check-in harita ekranindaki radar
