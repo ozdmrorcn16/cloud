@@ -33,11 +33,17 @@ export type { HaritaMekani } from './CanliHarita'
 const EN_FAZLA_IGNE = 12
 
 /** Cerceve yaricapi bundan kucuk olmasin - her sey bir noktaya toplanmasin. */
-const EN_AZ_GOSTERIM_METRE = 200
+const EN_AZ_GOSTERIM_METRE = 100
 
 /**
  * Cerceve yaricapi bundan BUYUK olmasin (kullanicinin istegi
  * 2026-08-30: "harita cok uzaktan, biraz daha adrese yakin baslasin").
+ *
+ * 2026-09-01'de 200 -> 100 m: "haritada daha yakin goster, konumumu
+ * gosteren yere daha yakin baslasin". Bu YALNIZCA HARITA CERCEVESI
+ * icindir - kullanici ayrica netlestirdi. Listenin yaricapi 200 m'de
+ * KALIYOR; olculdu, 100 m'ye indirilseydi kullanicinin bolgesinde
+ * listede 34 yerine 1 mekan kalirdi.
  *
  * Oncesinde cerceve EN UZAK igneye gore aciliyordu; liste 10 km oteye
  * kadar mekan tasiyabildigi icin harita bazen sehir olceginde
@@ -46,7 +52,7 @@ const EN_AZ_GOSTERIM_METRE = 200
  * icinde. Daha uzaktakiler kadraj disinda kaliyor; kullanici isterse
  * uzaklastirabiliyor.
  */
-const EN_FAZLA_GOSTERIM_METRE = 200
+const EN_FAZLA_GOSTERIM_METRE = 100
 
 const KAYDIRMA_SURESI_MS = 350
 
