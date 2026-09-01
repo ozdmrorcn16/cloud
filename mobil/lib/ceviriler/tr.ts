@@ -144,7 +144,7 @@ export default {
     baslik: 'Mesajlar',
     bosBaslik: 'Henüz bir konuşman yok',
     bosAciklama:
-      'Karşılıklı bağ kurduğun ya da sohbet isteğin kabul edilen kişilerle mesajlaşabilirsin.',
+      'Arkadaş olduğun ya da sohbet isteğin kabul edilen kişilerle mesajlaşabilirsin.',
     silinmisKullanici: 'Silinmiş kullanıcı',
     gizle: 'Gizle',
     istekler: 'İstekler',
@@ -167,7 +167,7 @@ export default {
     suAnBurada: 'şu an burada',
     bosBaslik: 'Akışın henüz boş',
     bosAciklama:
-      'Bir yere check-in yap ya da birileriyle bağ kur; onların check-inleri burada görünür.',
+      'Bir yere check-in yap ya da birileriyle arkadaş ol; onların check-inleri burada görünür.',
     kesfet: 'Mekanları keşfet',
     azOnce: 'az önce',
     dakika: '{{sayi}} dakika önce',
@@ -182,7 +182,7 @@ export default {
     aniSayisi: '{{sayi}} anı',
     takipEt: 'Takip et',
     istegiGeriCek: 'İsteği geri çek',
-    bagiKopar: 'Bağı kopar',
+    bagiKopar: 'Arkadaşlıktan çıkar',
     sohbetIste: 'Sohbet iste',
     sohbetAcik: 'Sohbet açık',
     mesajGonder: 'Mesaj gönder',

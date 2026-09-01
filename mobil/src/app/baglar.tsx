@@ -138,7 +138,7 @@ export default function BaglarEkrani() {
     // icinde kaydirmaya calismiyor. (Takip karsilikli olunca "Takip
     // ettiklerim" listesi kaldirildi, simdi dort FlatList var.)
     <View style={stiller.kok}>
-      <UstCubuk baslik="Bağlar" geriEtiketi="Geri" />
+      <UstCubuk baslik="Arkadaşlar" geriEtiketi="Geri" />
       <ScrollView testID="baglar-kaydirici" style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -239,7 +239,7 @@ export default function BaglarEkrani() {
             </View>
             <View style={stiller.butonlar}>
               <Pressable style={stiller.kucukButon} onPress={() => bagiKoparEt(item.id)}>
-                <Text style={stiller.kucukButonYazi}>Bağı kopar</Text>
+                <Text style={stiller.kucukButonYazi}>Arkadaşlıktan çıkar</Text>
               </Pressable>
               <Pressable style={stiller.kucukTehlikeliButon} onPress={() => kullaniciyiEngelle(item.id)}>
                 <Text style={stiller.kucukTehlikeliButonYazi}>Engelle</Text>

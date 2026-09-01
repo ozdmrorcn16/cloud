@@ -81,7 +81,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Bağı kopar'))
+    await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
   })
 
@@ -93,7 +93,7 @@ describe('BaglarEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<BaglarEkrani />)
-    await fireEvent.press(await screen.findByText('Bağı kopar'))
+    await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('ayse')).toBeTruthy()

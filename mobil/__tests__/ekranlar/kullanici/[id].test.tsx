@@ -258,7 +258,7 @@ describe('KullaniciProfiliEkrani', () => {
   it('takip ediyorken birakma butonunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
-    expect(await screen.findByText('Bağı kopar')).toBeTruthy()
+    expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
   })
 
   it('sunucu hatasini gosterir', async () => {
@@ -277,11 +277,11 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Bağı kopar'))
+    await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Takip et')).toBeTruthy()
-    expect(screen.queryByText('Bağı kopar')).toBeNull()
+    expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
   })
 
   it('sohbet iste butonuna basinca dogru id ile cagirir ve geri cek butonu gosterir', async () => {
@@ -302,7 +302,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
 
     expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
-    expect(await screen.findByText('Bağı kopar')).toBeTruthy()
+    expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
   })
 
   it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
@@ -487,10 +487,10 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Bağı kopar'))
+    await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Bağı kopar')).toBeTruthy()
+    expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
     expect(screen.queryByText('Takip et')).toBeNull()
   })
 

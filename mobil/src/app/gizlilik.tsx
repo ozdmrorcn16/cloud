@@ -29,7 +29,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
       'Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.',
       'Konumun - üç farklı şekilde: mekan ararken ve mekan eklerken cihaz konumun sunucuya gönderilir ama saklanmaz; check-in aktifken koordinatın saklanır, check-in anıya dönüşünce (en fazla ~30 dakika sonra, ya da hemen "ayrıldım" dediğinde) koordinat silinir ve geriye yalnızca hangi mekanda olduğun kalır (tam ayrıntı aşağıda, 3. maddede).',
       'Gönderdiğin ve aldığın mesajların içeriği.',
-      'Bağ bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde bulunduğun, kimi engellediğin.',
+      'Arkadaşlık bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde bulunduğun, kimi engellediğin.',
       'Bildirim göndermemiz için cihazının bildirim jetonu.',
       'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.',
     ],
@@ -79,7 +79,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
       'Check-in koordinatın (3. maddede anlatıldığı gibi) check-in anıya dönüştüğünde otomatik olarak silinir - en fazla ~30 dakika sonra.',
       'Anılarının (check-in geçmişinin geri kalanı), mesajlarının ve şikayetlerin bugün tam bir otomatik silme işlemi yoktur - süresiz saklanırlar. "Gerekli olduğu süre kadar saklama" ilkesinin tam karşılığı henüz tamamlanmadı.',
       'Planlanan (henüz uygulanmadı): moderasyon erişim kayıtlarının 2 yıl, karara bağlanmış şikayetlerin karardan 1 yıl sonra silinmesi - bu, moderasyon paneliyle birlikte gelecek ve bugün için geçerli değildir.',
-      'Hesabını silersen: profilin, anıların, bağların ve konuşma listen kalıcı olarak silinir. Gönderdiğin mesajlar silinmez ama gönderen kimliğin koparılır. Senin açtığın şikayetlerde kimlik bağı kopar; hakkında açılan şikayetlerde ise kimlik bağı KOPMAZ, hedef kimliği moderasyon kaydında kalır. Profil ve check-in fotoğrafların depolama alanından silinir.',
+      'Hesabını silersen: profilin, anıların, arkadaşların ve konuşma listen kalıcı olarak silinir. Gönderdiğin mesajlar silinmez ama gönderen kimliğin koparılır. Senin açtığın şikayetlerde kimlik bağı kopar; hakkında açılan şikayetlerde ise kimlik bağı KOPMAZ, hedef kimliği moderasyon kaydında kalır. Profil ve check-in fotoğrafların depolama alanından silinir.',
     ],
   },
   {
