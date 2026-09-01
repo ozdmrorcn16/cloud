@@ -1906,6 +1906,31 @@ eklenecek bir ozellik degil. Sonuclari:
   **DIKKAT:** eklenti ancak BIR SONRAKI oturumda devreye girer.
   Kontrol yolu `claude plugin list` (settings.json'a bakmak yetmez).
 
+  **BULUNAN TEK KIRILGANLIK - OKSUZ CHROMA SURECI.** Worker acilirken
+  once dosyalari onbellege aliyor, sonra chroma'yi baslatiyor, EN SON
+  portu aciyor. Onceki kosumdan kalan bir chroma (uv onbelleginden
+  calisan `python.exe`) hayattaysa yeni worker o adimda TAKILIYOR ve
+  port hic acilmiyor. Gunlukte belirtisi net:
+
+      Worker not running - lazy-spawning
+      Worker port did not open after lazy-spawn within the cold-boot wait (~15s)
+
+  Bu, Claude Code zorla kapatildiginda (cokme, gorev yoneticisinden
+  sonlandirma) olusabilir. Sonucu SESSIZDIR: hook yine 0 donuyor, yani
+  hicbir sey bloke olmuyor, ama hafiza kayit tutmayi birakiyor.
+
+  **Kurtarma (olculdu, 3.9 sn'de acildi):**
+
+  ```bash
+  powershell -NoProfile -Command "Get-Process bun -EA SilentlyContinue | Stop-Process -Force; Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { \$_.CommandLine -like '*uv*archive*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }"
+  # sonra bir mesaj yaz ya da oturumu yeniden ac; worker kendiliginden kalkar
+  curl -s http://127.0.0.1:37777/health    # {"status":"ok",...} bekleniyor
+  ```
+
+  **Calistigini dogrulama yolu:** `~/.claude-mem/claude-mem.db` icindeki
+  `user_prompts` sayisi her mesajda birer artmali. 2026-09-01'de
+  olculdu: 99 -> 100.
+
 - 2026-08-19 — **claude-mem kapatildi; oturumlar arasi hafiza tamamen
   depodaki dosyalara birakildi.** Eklentinin `UserPromptSubmit` hook'u her
   mesajda 37700 portundaki worker'a ulasmaya calisiyor ve ulasamayinca
