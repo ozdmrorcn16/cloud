@@ -52,18 +52,6 @@ function PusulaIkonu({ renk: cizgi }: { renk: string }) {
   )
 }
 
-function CheckInIkonu() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path
-        d="M12 2.6a7.2 7.2 0 0 0-7.2 7.2c0 5.4 7.2 11.6 7.2 11.6s7.2-6.2 7.2-11.6A7.2 7.2 0 0 0 12 2.6z"
-        fill={renk.turuncu}
-      />
-      <Circle cx={12} cy={9.7} r={2.7} fill="#FFFFFF" />
-    </Svg>
-  )
-}
-
 /*
  * YARICAP SECIMI YOK (kullanicinin karari 2026-08-28).
  *
@@ -626,12 +614,6 @@ export default function KesfetEkrani() {
             style={stiller.satir}
             onPress={() => router.push(`/check-in/${item.id}`)}
           >
-            {/* Igne DEKORATIF: sagda ayni isi yapan, etiketli bir
-                check-in dugmesi var. Ikisi de dugme olsaydi ekran
-                okuyucu ayni satirda iki kez "check-in yap" derdi. */}
-            <View style={stiller.satirCheckIn} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <CheckInIkonu />
-            </View>
             <View style={stiller.satirOrta}>
               {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin karari
                   2026-08-31): turuncu ve dokununca KONUM ekranini
@@ -693,7 +675,6 @@ const KART_YUKSEKLIK = 316
 const stiller = StyleSheet.create({
   // Ikon satirin SOL BASINDA (kullanicinin istegi 2026-08-26);
   // pay da ona gore sagda.
-  satirCheckIn: { paddingRight: 12, paddingVertical: 4 },
 
   canliSerit: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   buradaNokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: renk.turuncu },
@@ -969,8 +950,17 @@ const stiller = StyleSheet.create({
     minWidth: 0, flex: 1, gap: 3 },
   // Turuncu ve basilabilir: bu bir konum etiketi (kullanicinin
   // karari 2026-08-31).
-  satirAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
-  satirAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
+  // BOYUTLAR kullanicinin sectigi kademe (2026-09-01, gorsel secenek C):
+  // ad 19, alt satir 15. Bu ekranda goz IKI bilgiyi tariyor - hangi
+  // mekan ve ne kadar uzakta - bu yuzden ikisi birden buyutuldu.
+  // Ikisi de temada zaten tanimli jetonlar; yeni punto uretilmedi.
+  satirAd: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.altBaslik,
+    letterSpacing: -0.2,
+    color: renk.turuncu,
+  },
+  satirAlt: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
   satirCheckInDugmesi: {
     // flexShrink SART: satir flexDirection 'row' ve ortadaki bilgi
     // bloku flex:1 ile alani kapiyor. `flex: 0` daralmayi ENGELLEMIYOR -

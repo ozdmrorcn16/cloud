@@ -1,0 +1,201 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Liste satırı - iğne kalktı, tipografi kademeleri</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --turuncu: #FE7813;
+    --metin: #17130F;
+    --metin-ikincil: #6E6660;
+    --metin-soluk: #A39B93;
+    --zemin: #FFFFFF;
+    --cizgi: #EFEAE5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #EDE9E4;
+    padding: 32px;
+  }
+  .izgara {
+    display: grid;
+    grid-template-columns: repeat(2, 390px);
+    gap: 36px 48px;
+    justify-content: center;
+  }
+  .kutu { display: flex; flex-direction: column; gap: 10px; }
+  .etiket { font-size: 13px; font-weight: 600; color: #55504B; }
+  .etiket b { color: var(--turuncu); }
+  .etiket span { font-weight: 400; color: #7A736D; }
+  .not { font-size: 12px; color: #7A736D; line-height: 1.45; }
+  .telefon {
+    width: 390px;
+    background: var(--zemin);
+    border-radius: 20px;
+    box-shadow: 0 6px 24px rgba(23,19,15,.10);
+    padding: 18px 0 6px;
+    overflow: hidden;
+  }
+  h2 {
+    font-size: 26px; font-weight: 700; color: var(--metin);
+    letter-spacing: -0.4px; padding: 0 24px; margin-bottom: 6px;
+  }
+
+  .satir {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--cizgi);
+  }
+  .bilgi { flex: 1; min-width: 0; }
+  .ad {
+    font-weight: 600; color: var(--turuncu);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+  }
+  .alt { color: var(--metin-ikincil); margin-top: 3px; }
+  .dugme {
+    flex: none; padding: 8px 16px; border-radius: 999px;
+    background: var(--turuncu); color: #fff;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+  }
+  .canli { color: var(--turuncu); font-weight: 600; }
+
+  /* --- kademeler --- */
+  .a .ad  { font-size: 15px; }
+  .a .alt { font-size: 13px; }
+
+  .b .ad  { font-size: 19px; }
+  .b .alt { font-size: 13px; }
+
+  .c .ad  { font-size: 19px; }
+  .c .alt { font-size: 15px; }
+
+  .d .ad  { font-size: 19px; }
+  .d .alt { font-size: 15px; }
+  .d .satir { padding: 20px 24px; }
+  .d .alt { margin-top: 5px; }
+</style>
+
+<div class="izgara">
+
+  <!-- A -->
+  <div class="kutu">
+    <div class="etiket">A &mdash; sadece iğne kalktı <span>· ad 15 / alt 13 (bugünkü boyutlar)</span></div>
+    <div class="telefon a">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Nilüfer Tüvtürk Araç Muayene İstasyonu</div>
+          <div class="alt">Nilüfer, Bursa · 80 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Arvento Bursa Servis</div>
+          <div class="alt">Nilüfer, Bursa · 100 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Hozee</div>
+          <div class="alt">Nilüfer, Bursa · 110 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">Karşılaştırma için referans: yalnızca iğne kalktı, yazılar başa geldi.</div>
+  </div>
+
+  <!-- B -->
+  <div class="kutu">
+    <div class="etiket">B &mdash; ad büyüdü <span>· ad 19 / alt 13</span></div>
+    <div class="telefon b">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Nilüfer Tüvtürk Araç Muayene İstasyonu</div>
+          <div class="alt">Nilüfer, Bursa · 80 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Arvento Bursa Servis</div>
+          <div class="alt">Nilüfer, Bursa · 100 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Hozee</div>
+          <div class="alt">Nilüfer, Bursa · 110 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">Mekan adı öne çıkar, ikincil bilgi sessiz kalır. Aradaki fark en belirgin olanı.</div>
+  </div>
+
+  <!-- C -->
+  <div class="kutu">
+    <div class="etiket">C &mdash; ikisi de büyüdü <b>(önerim)</b> <span>· ad 19 / alt 15</span></div>
+    <div class="telefon c">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Nilüfer Tüvtürk Araç Muayene İstasyonu</div>
+          <div class="alt">Nilüfer, Bursa · 80 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Arvento Bursa Servis</div>
+          <div class="alt">Nilüfer, Bursa · 100 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Hozee</div>
+          <div class="alt">Nilüfer, Bursa · 110 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">İlçe ve mesafe de rahat okunur. Ekranda gözle taranan iki bilgi de büyümüş olur.</div>
+  </div>
+
+  <!-- D -->
+  <div class="kutu">
+    <div class="etiket">D &mdash; C + ferah satır <span>· ad 19 / alt 15, satır boşluğu artmış</span></div>
+    <div class="telefon d">
+      <h2>Yakınında</h2>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Nilüfer Tüvtürk Araç Muayene İstasyonu</div>
+          <div class="alt">Nilüfer, Bursa · 80 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Arvento Bursa Servis</div>
+          <div class="alt">Nilüfer, Bursa · 100 m · <span class="canli">4 kişi</span></div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+      <div class="satir">
+        <div class="bilgi">
+          <div class="ad">Hozee</div>
+          <div class="alt">Nilüfer, Bursa · 110 m · Sakin</div>
+        </div>
+        <span class="dugme">Check-in</span>
+      </div>
+    </div>
+    <div class="not">En ferahı. Bedeli: ekrana sığan mekan sayısı azalır, daha çok kaydırmak gerekir.</div>
+  </div>
+
+</div>
