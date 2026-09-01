@@ -131,6 +131,63 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ARAMA KULLANICININ ILIYLE SINIRLI - 2026-09-01
+
+Kullanicinin kurali: **"Km siniri yok ama kullanicinin bulundugu konum
+Bursa'daysa arattigi kelimeye gore sadece Bursa'daki konumlari gorecek;
+o an hangi sehirdeyse o sehrin konumlarini."**
+
+Bu, 2026-08-28'deki "arama tamamen sinirsiz, baska sehir de aranabilir"
+kuralinin YERINI ALIYOR. Asagidaki eski bolumlerde o ifade hala geciyor;
+gecerli olan budur.
+
+**Kullanicinin ili NOKTA-ICINDE-POLIGON testiyle bulunuyor**
+(`public.iller`, 81 il, migrasyon 20260901140000). "En yakin mekanin
+ilini al" bilerek YAPILMADI: o bir tahmin olurdu ve il sinirina yakin
+yerlerde yanilirdi. Yukleyici `araclar/il-yukle.py`; kaynak OSM idari
+sinirlari (ODbL), ~100 m toleransla basitlestirilmis.
+
+Dogrulandi: Bursa/Nilufer -> "Bursa", Kadikoy -> "İstanbul",
+Kizilay -> "Ankara", Ege Denizi -> null.
+
+**KURALIN SINIRLARI:**
+- Yalnizca ARAMAYA uygulanir. `p_arama` null oldugunda ("Yakininda"
+  listesi) hicbir sey degismedi; orada zaten 1 km yaricap var ve il
+  sinirini oraya koymak, il sinirinda oturan birinin 300 m otesindeki
+  mekani gormesini engellerdi.
+- Il bulunamazsa (denizde, sinirda, yurt disinda) arama SINIRSIZ kalir -
+  eski davranis. Aksi halde ekran sebebi gorunmeden bombos kalirdi.
+
+**PERFORMANS TUZAGI - yasandi ve olculdu.** Il suzgeci eklenince "kafe"
+aramasi **2.646 ms**'ye cikti ve PostgREST'in 8 sn sinirinda zaman
+asimina duestu. Plan sunu gosterdi: trgm indeksi 18.580 satir buluyor,
+bunlarin **16.911'i HEAP'ten okunup** il suzgeciyle eleniyordu (17.658
+blok).
+
+Iki cozum denendi:
+1. `mekanlar(il)` btree indeksi - **YETMEDI.** Planlayici onu secmedi
+   (trgm satir tahmini 594 iken gercek 18.580, istatistik sapmasi); plan
+   hic degismedi. Olculen "hizlanma" (2.646 -> 206 ms) yalnizca
+   ONBELLEGIN ISINMASINDAN geliyordu - okunan blok sayisi ayniydi.
+   **Ders: EXPLAIN ciktisinda sureye degil BLOK SAYISINA bak; sure
+   onbellek durumuna gore yaniltir.**
+2. `btree_gin` + bilesik GIN: `gin (il, tr_kucuk(ad) gin_trgm_ops)` -
+   **COZDU.** Eleme artik indekste yapiliyor, heap bloklari
+   **17.658 -> 780**. Sure 126 ms (soguk okumayla).
+
+Bilesik GIN'de sutunlar bagimsiz anahtar oldugu icin `il` kosulu
+olmadan da (sinirsiz arama yolu) trgm tarafi kullanilabiliyor.
+
+Indeks oluşturma 5,98M satirda ~2 dakika surdu; MCP baglantisi zaman
+asimina duestu ama sunucudaki islem devam etti - `pg_stat_activity`
+ile takip edilip bitmesi beklendi.
+
+**ISTEMCI KODU DEGISMEDI**: RPC imzasi ayni, suzgec tamamen sunucuda.
+Yani bu degisiklik OTA gerektirmiyor, telefondaki uygulamada aninda
+gecerli.
+
+Canli dogrulama: `araclar/il-sinirli-arama-test.py`, 7 dogrulama.
+
 ### ISTEK GERI ALINAMAZ, ENGELLEME KONUSMAYI SILER - 2026-09-01
 
 Kullanicinin kurali: **"Gonderdigi mesaj istegini geri cekme diye bir
