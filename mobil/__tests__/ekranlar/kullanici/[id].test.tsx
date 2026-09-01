@@ -11,7 +11,6 @@ import {
   takibiBirak,
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
-  sohbetIsteginiGeriCek,
 } from '../../../lib/bag'
 
 jest.mock('../../../lib/profil', () => ({ baskasininProfiliniGetir: jest.fn() }))
@@ -33,7 +32,6 @@ jest.mock('../../../lib/bag', () => ({
   takipciyiCikar: jest.fn(),
   sohbetIstegiGonder: jest.fn(),
   sohbetIsteginiYanitla: jest.fn(),
-  sohbetIsteginiGeriCek: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -284,7 +282,7 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
   })
 
-  it('sohbet iste butonuna basinca dogru id ile cagirir ve geri cek butonu gosterir', async () => {
+  it('sohbet iste butonuna basinca dogru id ile cagirir ve istek gonderildi etiketi gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
     ;(sohbetIstegiGonder as jest.Mock).mockResolvedValue(undefined)
 
@@ -292,16 +290,32 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Sohbet iste'))
 
     await waitFor(() => expect(sohbetIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
+    expect(await screen.findByText('İstek gönderildi')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
-  it('sohbet beklemedeyken geri cek butonu gosterir', async () => {
+  /**
+   * Kullanicinin kurali (2026-09-01): "Gonderdigi mesaj istegini geri
+   * cekme diye bir islem yok. Mesaj bir kere gonderildikten sonra geri
+   * alinamaz."
+   *
+   * Sebep yalnizca politika degil, olculmus bir HATA: geri cekme
+   * istegi geri almiyordu, ONAYLIYORDU. Yalnizca istek satirini
+   * siliyor, konusmayi birakiyordu; konusmalarim() bir konusmayi
+   * "istek" saymak icin bekleyen istek satirina baktigi icin konusma
+   * alicinin MESAJLAR kutusuna dusuyordu.
+   *
+   * Yerine bilgi veren bir durum etiketi kondu. Vazgecmenin tek yolu
+   * engellemek (ve istenirse engeli kaldirmak); o yol konusmayi
+   * mesajlariyla birlikte siliyor.
+   */
+  it('sohbet beklemedeyken GERI CEK butonu YOK, yerine durum etiketi var', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'beklemede' })
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
+    expect(await screen.findByText('İstek gönderildi')).toBeTruthy()
+    expect(screen.queryByText('İsteği geri çek')).toBeNull()
     expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
   })
 
@@ -314,29 +328,6 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Takip et')).toBeTruthy()
-  })
-
-  it('sohbet beklemedeyken geri cek basinca sohbetIsteginiGeriCek cagirir ve sohbet iste gosterir', async () => {
-    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'beklemede' })
-    ;(sohbetIsteginiGeriCek as jest.Mock).mockResolvedValue(undefined)
-
-    await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('İsteği geri çek'))
-
-    await waitFor(() => expect(sohbetIsteginiGeriCek).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Sohbet iste')).toBeTruthy()
-  })
-
-  it('sohbet istegini geri cekme basarisiz olursa hata gosterir ve durumu degistirmez', async () => {
-    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'beklemede' })
-    ;(sohbetIsteginiGeriCek as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
-
-    await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('İsteği geri çek'))
-
-    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('İsteği geri çek')).toBeTruthy()
-    expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
   it('gelen takip istegi icin kabul et ve reddet butonlarini ve aciklamayi gosterir', async () => {

@@ -12,8 +12,8 @@
 // (2) NEDEN VAR - guvenlik: payload'daki id'ler tek basina hicbir sey
 // kanitlamiyor. Sir sizarsa (net kilidi platform yuzunden zorlanamiyor,
 // bkz. migrations/README-net-kilidi.md) payload'a guvenen bir fonksiyon
-// "X seni takip etmek istiyor" gibi HIC OLMAMIS bir olayi kurbanin kilit
-// ekranina dusurebilirdi - belirli birini adiyla taklit eden taciz ya da
+// "X sana arkadaslik istegi gonderdi" gibi HIC OLMAMIS bir olayi kurbanin
+// kilit ekranina dusurebilirdi - belirli birini adiyla taklit eden taciz ya da
 // oltalama. Kaynak satiri dogrulaninca saldirganin yapabilecegi en fazla
 // sey, gercekten olmus cok yeni bir olayi yinelemek (zararsiz tekrar).
 //
@@ -111,7 +111,7 @@ function esitSir(a: string, b: string): boolean {
  * Olayin gercekten olup olmadigini veritabanina sorar.
  *
  * Payload'a guvenmek bir kimlik taklidi acigidir: sir bilen biri, olmamis
- * bir takip istegini ya da baskasindan gelmis gibi gorunen bir mesaji
+ * bir arkadaslik istegini ya da baskasindan gelmis gibi gorunen bir mesaji
  * kurbanin kilit ekranina dusurebilir. Burada her olay icin KAYNAK SATIR
  * araniyor; bulunamazsa is yapilmiyor.
  *

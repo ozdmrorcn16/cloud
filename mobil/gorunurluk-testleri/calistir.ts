@@ -1341,37 +1341,75 @@ async function main() {
     await konusmaTemizleVeDogrula(konusmaId as string)
   })
 
-  await senaryo('36 - Bagsiz kisi yazamaz', async () => {
-    // On kosul: takip yok, sohbet istegi yok (35 kendi bagini kaldirdi).
+  await senaryo('36 - Bagsiz kisi TEK mesaj yazar, ikincisi reddedilir', async () => {
+    // MESAJ ISTEKLERI ozelligi (2026-09-01) bu senaryonun eski halini
+    // gecersiz kildi. Eskiden "bagsiz kisi HIC yazamaz" diye
+    // dogrulaniyordu; artik bir yabanci sana TAM BIR mesaj yazabiliyor
+    // ve o mesaj Mesajlar'a degil ISTEKLER'e duesuyor. Ikinci mesaj
+    // icin senin cevap vermen (= kabul) gerekiyor - onay beklemeden
+    // mesaj yagdirmanin yolu boylece kapali.
     const takipKontrol = await ikiYonTakipSatirlari(a, aId, bId)
     esitMi(takipKontrol, [], 'on kosul: takip bagi yok')
 
     const sohbetKontrol = await ikiYonSohbetSatirlari(a, aId, bId)
     esitMi(sohbetKontrol, [], 'on kosul: sohbet bagi yok')
 
-    const { data, error } = await a.rpc('mesaj_gonder', {
+    const { data: ilkKonusma, error: ilkHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
-      p_metin: 'senaryo 36 - bagsiz mesaj denemesi',
+      p_metin: 'senaryo 36 - yabancidan tek mesaj',
     })
-    esitMi(data ?? null, null, 'bagsiz gonderim basarisiz oldugu icin konusma id donmuyor')
-    esitMi(error !== null, true, "bagsiz A, B'ye mesaj gonderemez")
-    esitMi(
-      error?.message?.includes('mesaj gonderemezsin') ?? false,
-      true,
-      'hata mesaji "mesaj gonderemezsin" iceriyor'
-    )
-    bagsizHataMetni = error?.message ?? null
+    esitMi(ilkHata, null, "bagsiz A, B'ye TEK mesaj yazabiliyor")
+    esitMi(typeof ilkKonusma === 'string', true, 'ilk mesaj gercek bir konusma id donduruyor')
 
-    // error MUTLAKA destructure edilip firlatiliyor: aksi halde
-    // konusmalarim tamamen kirilsa `data` null gelir, `(liste ?? [])`
-    // bos diziye duser ve asagidaki negatif iddia vakumda gecerdi.
-    const { data: liste, error: listeHata } = await a.rpc('konusmalarim')
-    if (listeHata) throw new Error(`konusmalarim hatasi: ${listeHata.message}`)
+    const istekSatirlari = await ikiYonSohbetSatirlari(a, aId, bId)
     esitMi(
-      ((liste ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId),
-      false,
-      'basarisiz gonderim hicbir konusma satiri olusturmadi'
+      istekSatirlari.length,
+      1,
+      'ilk mesaj bir sohbet istegi satiri acti (yalnizca bir tane)'
     )
+
+    // Alicinin tarafi: konusma MESAJLAR'da degil, ISTEKLER'de.
+    const { data: bKutusu, error: bKutuHata } = await b.rpc('konusmalarim')
+    if (bKutuHata) throw new Error(`konusmalarim hatasi: ${bKutuHata.message}`)
+    esitMi(
+      ((bKutusu ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === aId),
+      false,
+      "istek, B'nin Mesajlar listesinde GORUNMUYOR"
+    )
+
+    const { data: bIstekleri, error: bIstekHata } = await b.rpc('mesaj_isteklerim')
+    if (bIstekHata) throw new Error(`mesaj_isteklerim hatasi: ${bIstekHata.message}`)
+    esitMi(
+      ((bIstekleri ?? []) as { gonderen_id: string }[]).some((i) => i.gonderen_id === aId),
+      true,
+      "istek, B'nin Istekler kutusunda GORUNUYOR"
+    )
+
+    // IKINCI mesaj: kapali kapi.
+    const { data: ikinciData, error: ikinciHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 36 - ikinci mesaj denemesi',
+    })
+    esitMi(ikinciData ?? null, null, 'reddedilen ikinci gonderim konusma id dondurmuyor')
+    esitMi(ikinciHata !== null, true, 'yabanci IKINCI mesaji gonderemez')
+    esitMi(
+      ikinciHata?.message?.includes('mesaj gonderemezsin') ?? false,
+      true,
+      'ikinci mesajin hatasi "mesaj gonderemezsin" iceriyor'
+    )
+    bagsizHataMetni = ikinciHata?.message ?? null
+
+    await konusmaTemizleVeDogrula(ilkKonusma as string)
+    const yonetici = yoneticiIstemcisi()
+    if (yonetici) {
+      await yonetici
+        .from('sohbet_istekleri')
+        .delete()
+        .eq('gonderen_id', aId)
+        .eq('alan_id', bId)
+      const kalan = await ikiYonSohbetSatirlari(a, aId, bId)
+      esitMi(kalan, [], 'temizlik: acilan istek satiri kaldirildi')
+    }
   })
 
   await senaryo('37 - Engelli yazamaz, hata AYNI', async () => {
@@ -1476,10 +1514,22 @@ async function main() {
       true,
       "BAGLI olmasina ragmen engellenen B, A'ya mesaj gonderemez (engelleme dali)"
     )
+    // SESSIZLIK ILKESI, mesaj istekleri sonrasi guncellenmis hali:
+    // engellenen kisiye artik 36'daki "ikinci mesaj" hatasi DEGIL,
+    // "bu kullanici bulunamadi" donuyor - yani hesap silinmis gibi
+    // gorunuyor. Ortu hala calisiyor cunku engellenmis olmakla
+    // silinmis bir hesaba yazmak ayirt edilemiyor; degisen tek sey
+    // hangi kapinin taklit edildigi. Olculdu: iki YONDE de ayni
+    // metin geliyor, yani engelleyen taraf da ayni cevabi aliyor.
     esitMi(
-      error?.message ?? null,
-      bagsizHataMetni,
-      "hata mesaji, senaryo 36'daki bagsizlik hatasiyla BIREBIR ayni (sessizlik ilkesi)"
+      error?.message?.includes('bulunamadi') ?? false,
+      true,
+      'engelleme hatasi "bulunamadi" diyor: engellendigini soylemiyor (sessizlik ilkesi)'
+    )
+    esitMi(
+      error?.message === bagsizHataMetni,
+      false,
+      'engelleme hatasi, "ikinci mesaj" hatasindan AYRI bir metin (ikisi ayni kapi degil)'
     )
 
     const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
@@ -1543,16 +1593,30 @@ async function main() {
     const { error: engelHata } = await a.rpc('engelle', { p_kullanici_id: bId })
     esitMi(engelHata, null, "A, B'yi engelleyebiliyor")
 
+    // KULLANICININ KARARI (2026-09-01): engelleme konusmayi GIZLEMEZ,
+    // SILER - mesajlariyla birlikte ve IKI TARAFTA da. Onceki davranis
+    // yalnizca gizlemekti ve olculdugunde su hataya yol aciyordu:
+    // engelleyip engeli kaldirmak konusmayi alicinin MESAJLAR kutusuna
+    // dusuruyordu. Artik istek satiri ile konusma birlikte gidiyor.
     const { data: sonrasi, error: sonrasiHata } = await b
       .from('mesajlar')
       .select('gonderen_id')
       .eq('konusma_id', konusmaId)
     if (sonrasiHata) throw new Error(`mesaj sorgu hatasi (sonrasi): ${sonrasiHata.message}`)
-    esitMi(
-      (sonrasi ?? []).map((m) => m.gonderen_id),
-      [bId],
-      "B, A'nin mesajlarini artik goremiyor, ama kendi mesaji hala goruluyor"
-    )
+    esitMi((sonrasi ?? []).length, 0, 'engelleme sonrasi konusmada HIC mesaj kalmadi (silindi)')
+
+    const yoneticiKontrol = yoneticiIstemcisi()
+    if (yoneticiKontrol) {
+      const { data: konusmaKalan } = await yoneticiKontrol
+        .from('konusmalar')
+        .select('id')
+        .eq('id', konusmaId)
+      esitMi(
+        (konusmaKalan ?? []).length,
+        0,
+        'konusma satirinin kendisi de silindi (yonetici istemcisiyle dogrulandi)'
+      )
+    }
 
     const { error: kaldirHata } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
     esitMi(kaldirHata, null, 'temizlik: engel kaldirilabiliyor (bu, takip bagini geri getirmez)')
@@ -1630,19 +1694,49 @@ async function main() {
     if (sonrasiHata) throw new Error(`mesajlari_getir hatasi (sonrasi): ${sonrasiHata.message}`)
     esitMi((sonrasi ?? []).length, 1, 'bag koptuktan sonra bile gecmis okunabiliyor (salt-okunur)')
 
+    // MESAJ ISTEKLERI SONRASI DEGISEN DAVRANIS: bag kopan kisi artik
+    // YABANCI kurallarina tabi, yani bir kez daha yazabiliyor ve o
+    // mesaj karsi tarafin ISTEKLER kutusuna duesuyor. Ekranda bunun
+    // karsiligi yok: konusmalarim satirinda yazilabilir_mi = false
+    // oldugu icin istemci yazma kutusunu kapali tutuyor, yani kullanici
+    // bu konusmadan yazamiyor. Sunucu ile ekran arasindaki bu fark
+    // bilerek kayda geciriliyor - sunucu yabanciya bir mesaj hakki
+    // taniyor, ekran o hakki bu konusma uzerinden sunmuyor.
     const { data: yeniData, error: yeniHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
       p_metin: 'senaryo 39 - bag koptuktan sonra',
     })
-    esitMi(yeniData ?? null, null, 'reddedilen gonderim konusma id dondurmuyor')
-    esitMi(yeniHata !== null, true, 'bag koptuktan sonra yeni mesaj gonderme reddediliyor')
+    esitMi(yeniHata, null, 'bag koptuktan sonra sunucu TEK mesaja (istek olarak) izin veriyor')
     esitMi(
-      yeniHata?.message ?? null,
+      yeniData,
+      konusmaId,
+      'yeni mesaj YENI bir konusma acmiyor, ayni konusmaya yaziliyor'
+    )
+
+    const { data: ikinciDeneme, error: ikinciHata } = await a.rpc('mesaj_gonder', {
+      p_kullanici_id: bId,
+      p_metin: 'senaryo 39 - ikinci deneme',
+    })
+    esitMi(ikinciDeneme ?? null, null, 'ikinci deneme konusma id dondurmuyor')
+    esitMi(
+      ikinciHata?.message ?? null,
       bagsizHataMetni,
-      "red mesaji senaryo 36'daki bagsizlik hatasiyla ayni"
+      "ikinci mesajin reddi, senaryo 36'daki metinle AYNI (tek mesaj kurali)"
     )
 
     await konusmaTemizleVeDogrula(konusmaId as string)
+
+    // 40'in on kosulu: bu senaryoda acilan istek satiri temizleniyor.
+    const yonetici39 = yoneticiIstemcisi()
+    if (yonetici39) {
+      await yonetici39
+        .from('sohbet_istekleri')
+        .delete()
+        .eq('gonderen_id', aId)
+        .eq('alan_id', bId)
+      const kalan39 = await ikiYonSohbetSatirlari(a, aId, bId)
+      esitMi(kalan39, [], "temizlik: 39'da acilan istek satiri kaldirildi")
+    }
   })
 
   await senaryo('40 - Iki yol ayni konusmaya cikar', async () => {
@@ -2585,12 +2679,19 @@ async function main() {
       esitMi(getirHata, null, '56: mesajlari_getir hata firlatmiyor')
       esitMi((mesajlar ?? []).length >= 1, true, '56: gecmis okunabiliyor')
 
-      // Yeni mesaj YAZILAMAMALI.
+      // Yeni mesaj: EKRANDA yazilamaz (yukarida yazilabilir_mi = false
+      // dogrulandi), ama sunucu tarafinda bu taklit kurulumda mesaj
+      // ISTEK olarak geciyor. Sebep taklidin siniri: gercek bir silmede
+      // C'nin PROFIL satiri da giderdi ve istek on kontrolu "Bu
+      // kullanici bulunamadi" derdi; burada C hala var, yalnizca
+      // uyeligi kaldirildi. Yani bu iddia sunucunun yabanciya taniidigi
+      // tek mesaj hakkini olcuyor, salt-okunurlugu degil - salt-okunurluk
+      // yukaridaki yazilabilir_mi kontrolunde.
       const { error: yeniHata } = await a.rpc('mesaj_gonder', {
         p_kullanici_id: cId,
         p_metin: 'silme sonrasi mesaj',
       })
-      esitMi(yeniHata !== null, true, '56: silinmis uyeye mesaj gonderilemiyor')
+      esitMi(yeniHata, null, '56: sunucu yabanci kuralina gore tek mesaja izin veriyor')
     } finally {
       await yonetici.from('konusmalar').delete().eq('id', konusmaId)
     }

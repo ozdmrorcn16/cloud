@@ -149,11 +149,26 @@ Deno.test('ozBildirimMi: karsilikli takipteki ayna gecisi susuyor', () => {
 // ---------------------------------------------------------------------
 
 Deno.test('bildirimGovdesi: bes kalip', () => {
-  assertEquals(bildirimGovdesi('mesaj', 'Deniz'), 'Deniz sana mesaj gonderdi')
-  assertEquals(bildirimGovdesi('takip_istegi', 'Deniz'), 'Deniz seni takip etmek istiyor')
-  assertEquals(bildirimGovdesi('takip_kabul', 'Deniz'), 'Deniz takip istegini kabul etti')
-  assertEquals(bildirimGovdesi('sohbet_istegi', 'Deniz'), 'Deniz sana sohbet istegi gonderdi')
-  assertEquals(bildirimGovdesi('sohbet_kabul', 'Deniz'), 'Deniz sohbet istegini kabul etti')
+  // Metinler KULLANICIYA GORUNUYOR: duzgun Turkce yazilirlar (karar 74)
+  // ve iliski "bag/takip" degil ARKADASLIK diye anilir (kullanicinin
+  // karari 2026-09-01). Kilit ekraninda "takip istegi" yaziyordu.
+  assertEquals(bildirimGovdesi('mesaj', 'Deniz'), 'Deniz sana mesaj gönderdi')
+  assertEquals(
+    bildirimGovdesi('takip_istegi', 'Deniz'),
+    'Deniz sana arkadaşlık isteği gönderdi'
+  )
+  assertEquals(
+    bildirimGovdesi('takip_kabul', 'Deniz'),
+    'Deniz arkadaşlık isteğini kabul etti'
+  )
+  assertEquals(
+    bildirimGovdesi('sohbet_istegi', 'Deniz'),
+    'Deniz sana sohbet isteği gönderdi'
+  )
+  assertEquals(
+    bildirimGovdesi('sohbet_kabul', 'Deniz'),
+    'Deniz sohbet isteğini kabul etti'
+  )
 })
 
 Deno.test('bildirimGovdesi: hicbir metin mesaj icerigi tasimiyor (karar 48)', () => {
@@ -161,5 +176,5 @@ Deno.test('bildirimGovdesi: hicbir metin mesaj icerigi tasimiyor (karar 48)', ()
   // yalnizca ad ve sabit ifade olmali.
   const govde = bildirimGovdesi('mesaj', 'Deniz')
   assertEquals(govde.includes('Deniz'), true)
-  assertEquals(govde, 'Deniz sana mesaj gonderdi')
+  assertEquals(govde, 'Deniz sana mesaj gönderdi')
 })

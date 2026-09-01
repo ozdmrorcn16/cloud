@@ -188,6 +188,7 @@ export default {
     istegiGeriCek: 'İsteği geri çek',
     bagiKopar: 'Arkadaşlıktan çıkar',
     sohbetIste: 'Sohbet iste',
+    istekGonderildi: 'İstek gönderildi',
     sohbetAcik: 'Sohbet açık',
     mesajGonder: 'Mesaj gönder',
     gelenIstekAciklama:
@@ -198,7 +199,8 @@ export default {
     aniYok: 'Henüz bir anısı yok',
     sikayetEt: 'Şikayet et',
     engelle: 'Engelle',
-    engelleOnayi: 'Engellersen birbirinizi hiçbir yerde göremezsiniz.',
+    engelleOnayi:
+      'Engellersen birbirinizi hiçbir yerde göremezsiniz ve aranızdaki bütün mesajlar kalıcı olarak silinir. Bu işlem geri alınamaz.',
     engelleEvet: 'Evet, engelle',
     vazgec: 'Vazgeç',
     geri: 'Geri',

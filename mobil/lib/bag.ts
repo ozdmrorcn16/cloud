@@ -41,9 +41,6 @@ export async function sohbetIsteginiYanitla(kullaniciId: string, kabul: boolean)
   await rpcCagir('sohbet_istegini_yanitla', { p_kullanici_id: kullaniciId, p_kabul: kabul })
 }
 
-export async function sohbetIsteginiGeriCek(kullaniciId: string): Promise<void> {
-  await rpcCagir('sohbet_istegini_geri_cek', { p_kullanici_id: kullaniciId })
-}
 
 function durumOku(satir: { durum: BagDurumu } | null): BagDurumu {
   return (satir?.durum ?? 'yok') as BagDurumu

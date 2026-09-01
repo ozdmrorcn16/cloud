@@ -79,6 +79,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
       'Check-in koordinatın (3. maddede anlatıldığı gibi) check-in anıya dönüştüğünde otomatik olarak silinir - en fazla ~30 dakika sonra.',
       'Anılarının (check-in geçmişinin geri kalanı), mesajlarının ve şikayetlerin bugün tam bir otomatik silme işlemi yoktur - süresiz saklanırlar. "Gerekli olduğu süre kadar saklama" ilkesinin tam karşılığı henüz tamamlanmadı.',
       'Planlanan (henüz uygulanmadı): moderasyon erişim kayıtlarının 2 yıl, karara bağlanmış şikayetlerin karardan 1 yıl sonra silinmesi - bu, moderasyon paneliyle birlikte gelecek ve bugün için geçerli değildir.',
+      'Bir kullanıcıyı engellersen: aranızdaki bütün birebir mesajlar ve konuşma, bekleyen istekler ve arkadaşlık bağı kalıcı olarak silinir. Silme her iki tarafta da geçerlidir ve geri alınamaz; engeli kaldırman silinen mesajları geri getirmez.',
       'Hesabını silersen: profilin, anıların, arkadaşların ve konuşma listen kalıcı olarak silinir. Gönderdiğin mesajlar silinmez ama gönderen kimliğin koparılır. Senin açtığın şikayetlerde kimlik bağı kopar; hakkında açılan şikayetlerde ise kimlik bağı KOPMAZ, hedef kimliği moderasyon kaydında kalır. Profil ve check-in fotoğrafların depolama alanından silinir.',
     ],
   },

@@ -5,7 +5,6 @@ import {
   takibiBirak,
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
-  sohbetIsteginiGeriCek,
   bagDurumunuGetir,
 } from './bag'
 
@@ -308,20 +307,5 @@ describe('bagDurumunuGetir', () => {
       ['gonderen_id', 'kisi-1'],
       ['alan_id', 'ben'],
     ])
-  })
-})
-
-describe('sohbetIsteginiGeriCek', () => {
-  it('RPC-yi dogru ad ve parametreyle cagirir', async () => {
-    mockRpc.mockResolvedValue({ error: null })
-    await sohbetIsteginiGeriCek('kisi-1')
-    expect(mockRpc).toHaveBeenCalledWith('sohbet_istegini_geri_cek', { p_kullanici_id: 'kisi-1' })
-  })
-
-  it('sunucu hatasini oldugu gibi firlatir', async () => {
-    mockRpc.mockResolvedValue({ error: { message: 'Geri cekilecek istek bulunamadi' } })
-    await expect(sohbetIsteginiGeriCek('kisi-1')).rejects.toThrow(
-      'Geri çekilecek istek bulunamadı.'
-    )
   })
 })

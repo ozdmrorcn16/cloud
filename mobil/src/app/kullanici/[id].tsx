@@ -16,7 +16,6 @@ import {
   takibiBirak,
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
-  sohbetIsteginiGeriCek,
 } from '../../../lib/bag'
 
 function GeriIkonu() {
@@ -150,15 +149,6 @@ export default function KullaniciProfiliEkrani() {
     }
   }
 
-  async function sohbetIsteginiGeriCekEt() {
-    try {
-      await sohbetIsteginiGeriCek(id)
-      setBagDurum((onceki) => (onceki ? { ...onceki, sohbet: 'yok' } : onceki))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
 
   async function takipIstegineYanitVer(kabul: boolean) {
     try {
@@ -352,10 +342,17 @@ export default function KullaniciProfiliEkrani() {
                 <Text style={stiller.ikincilYazi}>{t('kullanici.sohbetIste')}</Text>
               </Pressable>
             )}
+          {/* GERI CEKME YOK (kullanicinin kurali 2026-09-01): gonderilen
+              sohbet/mesaj istegi geri alinamaz. Yerine yalnizca bilgi
+              veren bir etiket duruyor.
+
+              Sebep politika kadar OLCULMUS bir hataydi: geri cekme
+              istegi geri almiyor, ONAYLIYORDU - istek satirini silip
+              konusmayi birakiyordu ve konusma alicinin Mesajlar
+              kutusuna dusuyordu. Vazgecmenin tek yolu engellemek; o
+              yol konusmayi mesajlariyla birlikte siliyor. */}
           {bagDurum?.sohbet === 'beklemede' && bagDurum?.gelenSohbet !== 'kabul' && (
-            <Pressable onPress={sohbetIsteginiGeriCekEt} accessibilityRole="button" hitSlop={8}>
-              <Text style={stiller.ikincilYazi}>{t('kullanici.istegiGeriCek')}</Text>
-            </Pressable>
+            <Text style={stiller.durumEtiketi}>{t('kullanici.istekGonderildi')}</Text>
           )}
           {(bagDurum?.sohbet === 'kabul' || bagDurum?.gelenSohbet === 'kabul') && (
             <Text style={stiller.durumEtiketi}>{t('kullanici.sohbetAcik')}</Text>

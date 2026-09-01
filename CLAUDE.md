@@ -131,6 +131,97 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ISTEK GERI ALINAMAZ, ENGELLEME KONUSMAYI SILER - 2026-09-01
+
+Kullanicinin kurali: **"Gonderdigi mesaj istegini geri cekme diye bir
+islem yok. Mesaj bir kere gonderildikten sonra geri alinamaz. Ancak
+mesaj gonderdigi kisiyi engelleyip geri acarsa mesajlari ve istegi
+kaybolur."**
+
+Bu kural konmadan once mevcut davranis OLCULDU ve **iki gercek hata**
+cikti - ikisi de kuralin tersi yonde calisiyordu:
+
+1. **"Istegi geri cek" istegi geri ALMIYOR, ONAYLIYORDU.** Yalnizca
+   `sohbet_istekleri` satirini siliyor, konusmayi birakiyordu.
+   `konusmalarim` bir konusmayi "istek" saymak icin BEKLEYEN istek
+   satiri aradigi icin, satir silinince konusma normal sayiliyor ve
+   alicinin MESAJLAR kutusuna dusuyordu. Olculen:
+       once : B'nin Istekler'inde VAR,  Mesajlar'inda yok
+       sonra: B'nin Istekler'inde yok,  Mesajlar'inda VAR
+2. **Engelleyip acmak da ayni sonucu veriyordu** - engelleme istek
+   satirini siliyor ama konusmaya dokunmuyordu.
+
+**Kok neden tek: istek satiri ile konusma AYRISABILIYORDU.** Cozum de
+kok nedeni kapatiyor (migrasyon 20260901130000):
+- `sohbet_istegini_geri_cek` **DUSURULDU** (istemciden gizlemek yetmez;
+  RPC acik kalsa dogrudan cagrilarak kural atlatilirdi).
+- `engelle` artik ikimizin de uye oldugu birebir konusmalari SILIYOR;
+  mesajlar CASCADE ile gidiyor. Kullanicinin karari: silme kabul
+  edilmis konusmalari da kapsar ("tum konusmalara yay").
+
+Boylece "istek satiri yok ama konusma var" durumu hic olusmuyor ve
+`konusmalarim` suzgeci degistirilmeden dogru calisiyor. Suzgeci yazma
+hakkina baglamak DENENMEDI cunku "bag koparsa gecmis silinmez, konusma
+salt-okunur olur" karari (Faz 3b) bozulurdu.
+
+Profil ekraninda "Istegi geri cek" yerine **"Istek gonderildi"** durum
+etiketi var. TAKIP istegi geri cekme DURUYOR (mesaj icermiyor).
+
+Engelleme onay metni ve gizlilik metni guncellendi: silme iki tarafta
+da gecerli ve geri alinamaz.
+
+**Guvenlik olcumu:** engellenen de engelleyen de yazamiyor, ikisi de
+"Bu kullanici bulunamadi" aliyor - yani engelleme, hesabin silinmis
+olmasindan ayirt edilemiyor (sessizlik ilkesi korunuyor).
+
+### GORUNURLUK TESTLERI: mesaj istekleri sonrasi 5 senaryo guncellendi
+
+**DERS: mesaj istekleri ozelligi gonderilirken `test:gorunurluk`
+kosulmamisti.** 11 dogrulama kirik durumdaydi ve bu ancak bir sonraki
+kosumda fark edildi. Sunucu davranisini degistiren her iste bu paket de
+kosulmali - jest Supabase'i mock'ladigi icin bu sinif degisikligi
+goremiyor.
+
+Guncellenen senaryolar ve YENI gercek:
+- **36** "Bagsiz kisi yazamaz" -> **"Bagsiz kisi TEK mesaj yazar,
+  ikincisi reddedilir"**. Yabanci artik tam bir mesaj yazabiliyor;
+  mesaj Mesajlar'a degil Istekler'e duesuyor.
+- **37** engelleme hatasi artik 36'daki metinle AYNI DEGIL: engelli
+  "Bu kullanici bulunamadi" aliyor. Ortu hala calisiyor (engelli mi
+  silinmis mi ayirt edilemiyor), degisen sey hangi kapinin taklit
+  edildigi.
+- **38** engelleme konusmayi GIZLEMIYOR, SILIYOR.
+- **39** bag kopan kisi yabanci kuralina tabi: bir mesaj daha
+  yazabiliyor. Ekranda karsiligi yok - `yazilabilir_mi` false oldugu
+  icin istemci yazma kutusunu kapali tutuyor. Sunucu ile ekran
+  arasindaki bu fark bilerek kayda gecirildi.
+- **56** ayni sebeple: taklit kurulumda C'nin profili durdugu icin
+  sunucu tek mesaja izin veriyor; salt-okunurluk `yazilabilir_mi`
+  kontrolunde olculuyor.
+
+`sema-dogrula.ts` icindeki eski "kimliksiz geri cek reddediliyor"
+kontrolu, **"fonksiyon artik YOK (PGRST202)"** kontrolune cevrildi -
+kural boylece sunucuda kilitli.
+
+### PUSH BILDIRIM METINLERI: arkadaslik dili + duzgun Turkce
+
+Kullanicinin bildirdigi hata: kilit ekraninda "orcun takip istegini
+kabul etti" yaziyordu. Iki sorun birdendi - "takip" dili ve ASCII
+yazim. Bes metnin hepsi duzeltildi (`supabase/functions/bildirim-gonder/saf.ts`):
+
+    Deniz sana mesaj gönderdi
+    Deniz sana arkadaşlık isteği gönderdi
+    Deniz arkadaşlık isteğini kabul etti
+    Deniz sana sohbet isteği gönderdi
+    Deniz sohbet isteğini kabul etti
+
+**Edge Function DEPLOY edildi (surum 3).** Bu metinler SUNUCUDA, yani
+OTA ile gitmiyor - `eas update` bunlari guncellemez. Deploy MCP
+uzerinden yapildi cunku `supabase` CLI'da access token yok (interaktif
+giris gerekiyor). **`verify_jwt` KAPALI olmali** - cagriyi pg_net
+yapiyor ve elinde kullanici JWT'si yok; yetkilendirme sir dogrulamasina
+dayaniyor.
+
 ### MESAJ ISTEKLERI EKLENDI - 2026-09-01 (canli dogrulandi, OTA'da)
 
 Kullanicinin istegi: "Mesajlar kismina uste istekler kismi ekle bu

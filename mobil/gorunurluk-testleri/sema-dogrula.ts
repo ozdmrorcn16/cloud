@@ -345,16 +345,22 @@ async function main() {
     'sikayet_gonder(null) dostane mesaj donduruyor'
   )
 
-  console.log('\n--- Faz 3a takip isleri Gorev 1: sohbet_istegini_geri_cek ---')
-  // Kimliksiz istemci: revoke from public, anon fonksiyona hic erisim
-  // vermiyor, cagri gorunun icine bile girmeden PostgREST/PostgreSQL
-  // yetki katmaninda reddediliyor (gercekte gozlemlendi: 42501,
-  // "permission denied for function sohbet_istegini_geri_cek").
+  console.log('\n--- Istek geri alinamaz: sohbet_istegini_geri_cek DUSURULDU ---')
+  // Kullanicinin kurali (2026-09-01): gonderilen mesaj/sohbet istegi
+  // geri alinamaz. Islev istemciden gizlenmekle kalmadi, RPC'nin
+  // KENDISI dusuruldu - acik kalsaydi dogrudan cagrilarak kural
+  // atlatilabilirdi. Bu kontrol onu kilitliyor: fonksiyon geri
+  // eklenirse burasi kirilir. PostgREST var olmayan fonksiyona
+  // PGRST202 donuyor.
   const anon = anonIstemciOlustur()
-  const { error: anonGeriCekHatasi } = await anon.rpc('sohbet_istegini_geri_cek', {
+  const { error: geriCekHatasi } = await a.rpc('sohbet_istegini_geri_cek', {
     p_kullanici_id: bId,
   })
-  esitMi(anonGeriCekHatasi?.code, '42501', 'kimliksiz sohbet_istegini_geri_cek cagrisi reddediliyor')
+  esitMi(
+    geriCekHatasi?.code,
+    'PGRST202',
+    'sohbet_istegini_geri_cek artik YOK (istek geri alinamaz)'
+  )
 
   console.log('\n--- Faz 3a takip isleri Gorev 1: sikayet_gonder dogrulama ---')
   // Gercekte gozlemlendi: her ikisi de P0001 (dostane raise exception),

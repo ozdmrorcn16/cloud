@@ -161,14 +161,14 @@ export const VARSAYILAN_AD = 'Biri'
 export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
   switch (olay) {
     case 'mesaj':
-      return `${ad} sana mesaj gonderdi`
+      return `${ad} sana mesaj gönderdi`
     case 'takip_istegi':
-      return `${ad} seni takip etmek istiyor`
+      return `${ad} sana arkadaşlık isteği gönderdi`
     case 'takip_kabul':
-      return `${ad} takip istegini kabul etti`
+      return `${ad} arkadaşlık isteğini kabul etti`
     case 'sohbet_istegi':
-      return `${ad} sana sohbet istegi gonderdi`
+      return `${ad} sana sohbet isteği gönderdi`
     case 'sohbet_kabul':
-      return `${ad} sohbet istegini kabul etti`
+      return `${ad} sohbet isteğini kabul etti`
   }
 }
