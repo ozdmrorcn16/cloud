@@ -3,11 +3,16 @@ import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
-import { checkIniSil } from '../../lib/checkin'
+import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
+import { etiketiKaldir } from '../../lib/etiket'
 
 jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
-jest.mock('../../lib/checkin', () => ({ checkIniSil: jest.fn() }))
+jest.mock('../../lib/checkin', () => ({
+  checkIniSil: jest.fn(),
+  checkInNotunuGuncelle: jest.fn(),
+}))
+jest.mock('../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
@@ -189,7 +194,7 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    expect(screen.queryByLabelText('Sil')).toBeNull()
+    expect(screen.queryByLabelText('Paylaşım seçenekleri')).toBeNull()
   })
 
   it('kendi check-in\'inde silme ONAY ISTIYOR, tek dokunusla silmiyor', async () => {
@@ -198,9 +203,10 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByLabelText('Sil'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
 
-    // Onay satiri acildi; silme HENUZ yapilmadi.
+    // Onay penceresi acildi; silme HENUZ yapilmadi.
     expect(screen.getByText('Bu check-in kalıcı olarak silinsin mi?')).toBeTruthy()
     expect(checkIniSil).not.toHaveBeenCalled()
   })
@@ -212,8 +218,9 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByLabelText('Sil'))
-    await fireEvent.press(screen.getByText('Sil'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     expect(checkIniSil).toHaveBeenCalledWith('checkin-1')
     // Satir tek yerde duruyor; akistan kalkmasi profilden de
@@ -227,10 +234,134 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByLabelText('Sil'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
     await fireEvent.press(screen.getByText('Vazgeç'))
 
     expect(checkIniSil).not.toHaveBeenCalled()
     expect(screen.getByText('Sahil Kafe')).toBeTruthy()
+  })
+
+  // ---------------------------------------------------------------- //
+  // DUZENLEME (kullanicinin istegi 2026-09-02)
+  // ---------------------------------------------------------------- //
+
+  it('BASKASININ paylasiminda secenek menusu YOK', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: false })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    expect(screen.queryByLabelText('Paylaşım seçenekleri')).toBeNull()
+  })
+
+  it('menudeki Duzenle notu MEVCUT haliyle aciyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+
+    expect(screen.getByText('Paylaşımı düzenle')).toBeTruthy()
+    // Alan BOS acilmiyor: mevcut not iceride.
+    expect(screen.getByTestId('duzenle-not').props.value).toBe('guzel bir aksam')
+  })
+
+  it('MEKAN VE ZAMANIN degismedigini ekranda soyluyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+
+    expect(screen.getByText('Mekan ve zaman değişmez')).toBeTruthy()
+  })
+
+  it('notu degistirip kaydedince sunucuya yaziyor ve kartta gorunuyor', async () => {
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(checkInNotunuGuncelle).toHaveBeenCalledWith('checkin-1', 'yeni not')
+    expect(await screen.findByText('yeni not')).toBeTruthy()
+  })
+
+  it('notu bosaltip kaydetmek notu SILER', async () => {
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.changeText(screen.getByTestId('duzenle-not'), '')
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(checkInNotunuGuncelle).toHaveBeenCalledWith('checkin-1', '')
+    expect(screen.queryByText('guzel bir aksam')).toBeNull()
+  })
+
+  it('vazgecince notu DEGISTIRMIYOR', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yazdim ama vazgectim')
+    await fireEvent.press(screen.getByText('Vazgeç'))
+
+    expect(checkInNotunuGuncelle).not.toHaveBeenCalled()
+    expect(screen.getByText('guzel bir aksam')).toBeTruthy()
+  })
+
+  it('etiketi kaldirinca sunucuya yaziyor ve karttan dusuyor', async () => {
+    ;(etiketiKaldir as jest.Mock).mockResolvedValue(undefined)
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ benimMi: true, etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz' }] }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    expect(screen.getByText('Deniz')).toBeTruthy()
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Deniz etiketini kaldır'))
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(etiketiKaldir).toHaveBeenCalledWith('checkin-1', 'kisi-9')
+    expect(screen.queryByText('Deniz')).toBeNull()
+  })
+
+  it('sunucu reddedince hata gosteriyor ve kart ESKI halinde kaliyor', async () => {
+    ;(checkInNotunuGuncelle as jest.Mock).mockRejectedValue(
+      new Error('Bu paylaşım bulunamadı.')
+    )
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(await screen.findByText('Bu paylaşım bulunamadı.')).toBeTruthy()
+    expect(screen.getByText('guzel bir aksam')).toBeTruthy()
   })
 })

@@ -3327,6 +3327,84 @@ async function main() {
     esitMi(sahipSilmeHatasi, null, 'check-in sahibi de etiketi kaldirabiliyor')
   })
 
+  await senaryo('65 - Notu yalnizca sahibi degistirir, mekan ve zaman kilitli', async () => {
+    // Kart tarafi jest ile test edildi ama jest Supabase'i mock'luyor;
+    // RPC'nin GERCEKTEN sahiplik ariyor olmasi ancak burada olculur.
+    const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    t.checkInler.push({ istemci: a, id: aCi })
+
+    const { error: yazHata } = await a.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: 'ilk not',
+    })
+    esitMi(yazHata, null, 'sahibi notu yazabiliyor')
+
+    const { data: yazildi } = await a
+      .from('check_inler')
+      .select('not_metni, mekan_id, olusturma_zamani')
+      .eq('id', aCi)
+    const ilk = ((yazildi ?? []) as { not_metni: string | null; mekan_id: string; olusturma_zamani: string }[])[0]
+    esitMi(ilk?.not_metni, 'ilk not', 'not veritabanina yazildi')
+
+    // BOS METIN NOTU SILIYOR - "notu sil" ayri bir islem degil.
+    const { error: bosHata } = await a.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: '   ',
+    })
+    esitMi(bosHata, null, 'bos not kabul ediliyor')
+    const { data: bosalti } = await a
+      .from('check_inler')
+      .select('not_metni')
+      .eq('id', aCi)
+    esitMi(
+      ((bosalti ?? []) as { not_metni: string | null }[])[0]?.not_metni,
+      null,
+      'yalnizca bosluktan olusan not NULL yaziliyor (bos dize degil)'
+    )
+
+    // MEKAN VE ZAMAN DEGISMEDI: RPC'nin dokunmadigi alanlar.
+    const { data: sonrasi } = await a
+      .from('check_inler')
+      .select('mekan_id, olusturma_zamani')
+      .eq('id', aCi)
+    const son = ((sonrasi ?? []) as { mekan_id: string; olusturma_zamani: string }[])[0]
+    esitMi(son?.mekan_id, ilk?.mekan_id, 'mekan degismedi')
+    esitMi(son?.olusturma_zamani, ilk?.olusturma_zamani, 'olusturma zamani degismedi')
+
+    // BASKASI YAZAMAZ. Hata "yetkin yok" degil "bulunamadi" - satirin
+    // varligi da sizmiyor.
+    const { error: baskasiHata } = await b.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: 'ben yazdim',
+    })
+    esitMi(baskasiHata?.message, 'Bu paylasim bulunamadi', 'baskasi notu degistiremiyor')
+
+    const { data: dokunulmadi } = await a
+      .from('check_inler')
+      .select('not_metni')
+      .eq('id', aCi)
+    esitMi(
+      ((dokunulmadi ?? []) as { not_metni: string | null }[])[0]?.not_metni,
+      null,
+      'reddedilen cagri satiri gercekten degistirmedi'
+    )
+
+    // check_inler uzerinde DOGRUDAN update hala kapali: RPC yeni bir
+    // kapi acti ama eski kapiyi acmadi.
+    const { error: dogrudanHata } = await a
+      .from('check_inler')
+      .update({ not_metni: 'dogrudan' })
+      .eq('id', aCi)
+    esitMi(dogrudanHata?.code, '42501', 'dogrudan update hala reddediliyor')
+
+    const anonim = anonIstemciOlustur()
+    const { error: anonHata } = await anonim.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: 'kimliksiz',
+    })
+    esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }

@@ -168,6 +168,24 @@ export async function checkIniSil(checkInId: string): Promise<void> {
   if (error) throw new Error(hataMetni(error))
 }
 
+/**
+ * Paylasimin notunu degistirir; bos metin notu SILER.
+ *
+ * Neden RPC: `check_inler` uzerinde dogrudan update `authenticated`
+ * rolunden geri alinmis durumda (mekan_id yazilabilseydi kisi kendi
+ * satirini baska bir mekana tasiyabilirdi). Sunucu yalnizca notu
+ * aciyor; mekan ve zaman degismiyor.
+ *
+ * Migrasyon: 20260902170000.
+ */
+export async function checkInNotunuGuncelle(checkInId: string, not: string): Promise<void> {
+  const { error } = await supabase.rpc('check_in_notunu_guncelle', {
+    p_check_in_id: checkInId,
+    p_not: not,
+  })
+  if (error) throw new Error(hataMetni(error))
+}
+
 export type AktifCheckIn = CheckIn & { mekanAdi: string }
 
 /**

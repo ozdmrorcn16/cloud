@@ -34,6 +34,7 @@ const VERITABANI: Record<string, string> = {
   'Bu kisiye su an mesaj gonderemezsin': 'Bu kişiye şu an mesaj gönderemezsin.',
   'Bu kullanici adi alinmis': 'Bu kullanıcı adı alınmış, başka bir tane dene.',
   'Bu kullanici bulunamadi': 'Bu kullanıcı bulunamadı.',
+  'Bu paylasim bulunamadi': 'Bu paylaşım bulunamadı.',
   'Bu mesaji sikayet edemezsin': 'Bu mesajı şikayet edemezsin.',
   'Bugunluk istek sinirina ulastin': 'Bugünlük istek sınırına ulaştın.',
   'Check-in bulunamadi': 'Check-in bulunamadı.',

@@ -217,6 +217,19 @@ export default {
     silAciklama:
       'Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz.',
     silAriza: 'Check-in silinemedi.',
+    // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): baslikta tek
+    // ikon var, silme de duzenleme de onun icinde.
+    secenekler: 'Paylaşım seçenekleri',
+    duzenle: 'Düzenle',
+    duzenleBaslik: 'Paylaşımı düzenle',
+    notEtiketi: 'Not',
+    notYerTutucu: 'Bir not ekle',
+    etiketlenenler: 'Etiketlenenler',
+    // Mekan ve zamanin neden kapali oldugu ekranda YAZIYOR; kullanici
+    // eksik bir ozellik sanmasin.
+    kilitliAlanlar: 'Mekan ve zaman değişmez',
+    etiketiKaldirEtiketi: '{{ad}} etiketini kaldır',
+    duzenleAriza: 'Paylaşım güncellenemedi.',
   },
 
   kullanici: {

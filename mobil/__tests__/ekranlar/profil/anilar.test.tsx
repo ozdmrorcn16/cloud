@@ -79,10 +79,13 @@ describe('AnilarEkrani', () => {
     await render(<AnilarEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
-    await fireEvent.press(screen.getByLabelText('Sil'))
+    // Silme artik UC NOKTA MENUSUNUN icinde (kullanicinin karari
+    // 2026-09-02): once menu, sonra onay penceresi. Iki adim da yerinde.
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
     expect(checkIniSil).not.toHaveBeenCalled()
 
-    await fireEvent.press(screen.getByText('Sil'))
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
     await waitFor(() => {
       expect(checkIniSil).toHaveBeenCalledWith('checkin-3')
     })
@@ -99,5 +102,15 @@ describe('AnilarEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Sunucuya ulasilamadi')).toBeTruthy()
     })
+  })
+
+  it('menuden Duzenle notu mevcut haliyle aciyor', async () => {
+    await render(<AnilarEkrani />)
+    await waitFor(() => screen.getByText('Sahil Kafe'))
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+
+    expect(screen.getByText('Paylaşımı düzenle')).toBeTruthy()
   })
 })

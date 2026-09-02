@@ -1,12 +1,14 @@
+import { useState } from 'react'
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
-import Svg, { Path } from 'react-native-svg'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 import { OnayPenceresi } from './OnayPenceresi'
+import { PaylasimMenusu, UcNoktaIkonu } from './PaylasimMenusu'
+import { PaylasimDuzenle } from './PaylasimDuzenle'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 
@@ -34,22 +36,6 @@ import type { EtkilesimOzeti } from '../../lib/etkilesim'
  * hedefi kaliyor.
  */
 
-/** Silme dugmesinin ikonu. */
-function CopIkonu() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
-      <Path
-        d="M5 7h14M10 7V5.5h4V7M6.5 7l.8 12h9.4l.8-12"
-        stroke={renk.metinSoluk}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  )
-}
-
 export function CheckInKarti({
   oge,
   zamanYazisi,
@@ -60,6 +46,8 @@ export function CheckInKarti({
   silOnayiAcik = false,
   onSilOnayi,
   onSil,
+  onNotKaydet,
+  onEtiketKaldir,
 }: {
   oge: AkisOgesi
   /** "7 saat önce" gibi gorece zaman; kart bicimlendirmeyi ustlenmiyor. */
@@ -77,15 +65,30 @@ export function CheckInKarti({
   onYorum?: (id: string) => void
   onPaylas?: (id: string) => void
   silOnayiAcik?: boolean
-  /** Verilmezse silme dugmesi hic cizilmez. */
+  /** Verilmezse menude "Sil" satiri cizilmez. */
   onSilOnayi?: (id: string) => void
   onSil?: (id: string) => void
+  /**
+   * Verilmezse menude "Düzenle" satiri cizilmez - profil gecmisi gibi
+   * salt okunur yerlerde kart sade kaliyor.
+   */
+  onNotKaydet?: (id: string, yeniNot: string) => Promise<void> | void
+  onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
 }) {
   const router = useRouter()
   const { t } = useDil()
 
+  // Menu ve duzenleme penceresi KARTIN KENDI durumu; silme onayi ise
+  // ekrandan geliyor (o desen degismedi, uc cagiran ekran da onu
+  // kullaniyor). Modal zaten ekranda tek basina durdugu icin "ayni anda
+  // yalnizca bir kart acik olsun" kaygisi burada yok.
+  const [menuAcik, setMenuAcik] = useState(false)
+  const [duzenleAcik, setDuzenleAcik] = useState(false)
+
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
-  const silinebilir = oge.benimMi && Boolean(onSilOnayi)
+  // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
+  // de bunun icinde. Onceden baslikta dogrudan cop kutusu vardi.
+  const menuVar = oge.benimMi && Boolean(onSilOnayi || onNotKaydet)
   // Bas harf ADDAN (kullanicinin karari 2026-08-28): `kullaniciAdi`
   // alani check_inler'de denormalize duran ADI tasiyor (karar #18).
   const basHarf = (oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')
@@ -168,15 +171,15 @@ export function CheckInKarti({
           <Text style={stiller.tamZaman}>{tamZaman(oge.olusturmaZamani)}</Text>
         </View>
 
-        {silinebilir && (
+        {menuVar && (
           <Pressable
-            onPress={() => onSilOnayi?.(oge.id)}
+            onPress={() => setMenuAcik(true)}
             accessibilityRole="button"
-            accessibilityLabel={t('ortak.sil')}
+            accessibilityLabel={t('anaSayfa.secenekler')}
             hitSlop={10}
             style={stiller.silDugmesi}
           >
-            <CopIkonu />
+            <UcNoktaIkonu />
           </Pressable>
         )}
 
@@ -196,16 +199,14 @@ export function CheckInKarti({
       {/* NOT ONCE, FOTOGRAF ALTINDA (kullanicinin istegi 2026-08-30). */}
       {oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>}
 
-      {oge.fotografUrl && (
-        <Image
-          testID="akis-fotografi"
-          source={{ uri: oge.fotografUrl }}
-          style={stiller.fotograf}
-          resizeMode="cover"
-        />
-      )}
+      {/* EYLEM SATIRI FOTOGRAFIN USTUNDE (kullanicinin karari
+          2026-09-02, "A" duzeni). Onceden fotografin ALTINDAYDI; harita
+          ekran goruntusu gibi uzun bir gorselde kart ekrani tasiyor ve
+          begeni satiri hic gorunmuyordu - kullanici bunu ekran
+          goruntusuyle bildirdi. Notun hemen altinda durunca fotograf ne
+          kadar uzun olursa olsun eylemler ekranda kaliyor.
 
-      {/* EYLEM SATIRI (kullanicinin istegi 2026-09-02). Sayilar yalnizca
+          Sayilar yalnizca
           sifirdan buyukse yaziliyor: "0" gostermek bos bir paylasimi
           daha da bos gosteriyor. Ikonlar notr, yalnizca BEGENILMIS kalp
           turuncu - Slooin'de turuncu "eylem ya da su an oluyor" demek,
@@ -248,11 +249,55 @@ export function CheckInKarti({
         </View>
       )}
 
+      {oge.fotografUrl && (
+        <Image
+          testID="akis-fotografi"
+          source={{ uri: oge.fotografUrl }}
+          style={stiller.fotograf}
+          resizeMode="cover"
+        />
+      )}
+
       {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
           Onay ekranin ORTASINDA aciliyor (kullanicinin istegi
           2026-09-02). Onceden kartin icinde aciliyordu; uzun bir kartta
           onay satiri ekranin disinda kalabiliyor ve kullanici "sil"e
           bastigini sanip hicbir sey olmadigini goruyordu. */}
+      <PaylasimMenusu
+        acikMi={menuAcik}
+        onDuzenle={
+          onNotKaydet
+            ? () => {
+                setMenuAcik(false)
+                setDuzenleAcik(true)
+              }
+            : undefined
+        }
+        onSil={
+          onSilOnayi
+            ? () => {
+                setMenuAcik(false)
+                onSilOnayi(oge.id)
+              }
+            : undefined
+        }
+        onKapat={() => setMenuAcik(false)}
+      />
+
+      {/* Pencere ACILDIGINDA mount ediliyor: taslak metin ve kaldirilan
+          etiketler onun ic durumu, bir onceki acilistan kalmamali. */}
+      {duzenleAcik && onNotKaydet && (
+        <PaylasimDuzenle
+          acikMi
+          baslikAltMetni={`${oge.mekanAdi} · ${tamZaman(oge.olusturmaZamani)}`}
+          not={oge.notMetni ?? ''}
+          etiketler={oge.etiketler}
+          onNotKaydet={(yeniNot) => onNotKaydet(oge.id, yeniNot)}
+          onEtiketKaldir={(kullaniciId) => onEtiketKaldir?.(oge.id, kullaniciId)}
+          onKapat={() => setDuzenleAcik(false)}
+        />
+      )}
+
       <OnayPenceresi
         acikMi={silOnayiAcik}
         baslik={t('anaSayfa.silOnay')}

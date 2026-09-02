@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-09-02 — [2026-09-02-82180322.md](oturumlar/2026-09-02-82180322.md) — update installed
+- 2026-09-02 — [2026-09-02-7087efe7.md](oturumlar/2026-09-02-7087efe7.md) — kaldığımız yerden devam edelim
 - 2026-09-02 — [2026-09-02-62e92057.md](oturumlar/2026-09-02-62e92057.md) — kaldığımız yerden devam edelim
 - 2026-09-02 — [2026-09-02-11f3a4eb.md](oturumlar/2026-09-02-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
 - 2026-09-01 — [2026-09-01-62e92057.md](oturumlar/2026-09-01-62e92057.md) — kaldığımız yerden devam edelim
@@ -1047,3 +1048,22 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     Ders: bir tablodan yetki geri alindiktan sonra politika eklemek
     YETMEZ, yetki de geri verilmelidir; politika sessizce olu kalir.
     Kapanis: jest 59/536, test:sema 147, test:gorunurluk sifir hata.
+
+82. **AKIS KARTI: EYLEM SATIRI FOTOGRAFIN USTUNE, UC NOKTA MENUSU VE
+    PAYLASIM DUZENLEME** (2026-09-02). Kullanici begeni/yorum/paylas
+    ikonlarinin yukari tasinmasini ve bir duzenleme butonu eklenmesini
+    istedi. Uc yerlesim secenegi once GORSEL olarak sunuldu; kullanici
+    "a olsun duzenle ucnokta olsun silmeyide ucnoktanin icine ekle"
+    dedi. Olculen kok neden ikonlarin yeri degildi: fotograf geldigi en
+    boy oraniyla ciziliyor, uzun bir gorselde kart ekrani tasiyor ve
+    eylem satiri hic gorunmuyordu; kirpma secenegi onerildi ama
+    kullanici A duzenini secti (eylemler fotografin ustunde). Baslikta
+    cop kutusu kalkti, yerine uc nokta menusu geldi (Duzenle / Sil);
+    silme yine iki adimli. Duzenleme penceresinde not degistirilir ya da
+    bosaltilip silinir, etiketler carpiyla kaldirilir. MEKAN VE ZAMAN
+    DEGISMEZ ve bu ekranda yaziyor - check-in bir konum iddiasi, ustelik
+    etiketlenen kisi o konuma bakarak onay vermisti. Yeni RPC
+    `check_in_notunu_guncelle` (migrasyon 20260902170000): `check_inler`
+    uzerindeki dogrudan update yasagi KORUNDU, yalnizca not yazan dar
+    bir kapi acildi. Etiket kaldirma icin yeni bir sey gerekmedi.
+    Kapanis: jest 59/545, canli senaryo 65 ile 10 dogrulama.

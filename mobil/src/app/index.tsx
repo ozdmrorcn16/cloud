@@ -3,7 +3,8 @@ import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'r
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
-import { checkIniSil } from '../../lib/checkin'
+import { etiketiKaldir } from '../../lib/etiket'
+import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
 import {
   etkilesimOzetleriniGetir,
@@ -195,6 +196,32 @@ export default function AnaSayfa() {
     }
   }
 
+  /**
+   * DUZENLEME (kullanicinin istegi 2026-09-02).
+   *
+   * Hata BURADA yakalanmiyor: pencere kendi hatasini gostersin diye
+   * yukari birakiliyor. Boylece basarisiz kayitta pencere acik kaliyor
+   * ve kullanici yazdigi metni kaybetmiyor.
+   */
+  async function notuKaydet(id: string, yeniNot: string) {
+    await checkInNotunuGuncelle(id, yeniNot)
+    const temiz = yeniNot.trim()
+    setOgeler((mevcut) =>
+      mevcut.map((o) => (o.id === id ? { ...o, notMetni: temiz === '' ? null : temiz } : o))
+    )
+  }
+
+  async function etiketiSil(id: string, kullaniciId: string) {
+    await etiketiKaldir(id, kullaniciId)
+    setOgeler((mevcut) =>
+      mevcut.map((o) =>
+        o.id === id
+          ? { ...o, etiketler: o.etiketler.filter((e) => e.kullaniciId !== kullaniciId) }
+          : o
+      )
+    )
+  }
+
   async function yenile() {
     setYenileniyor(true)
     await yukle()
@@ -263,6 +290,8 @@ export default function AnaSayfa() {
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
             onSil={sil}
+            onNotKaydet={notuKaydet}
+            onEtiketKaldir={etiketiSil}
           />
         )}
         ListEmptyComponent={

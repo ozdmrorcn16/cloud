@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, FlatList, StyleSheet } from 'react-native'
 import { supabase } from '../../../lib/supabase'
-import { kullanicininAnilariniGetir, checkIniSil, type AniGorunumu } from '../../../lib/checkin'
+import { kullanicininAnilariniGetir, checkIniSil, checkInNotunuGuncelle, type AniGorunumu } from '../../../lib/checkin'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { anidanAkisOgesi } from '../../../lib/akis'
@@ -9,6 +9,7 @@ import { kendiProfilimiGetir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { etiketiKaldir } from '../../../lib/etiket'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
 import { UstCubuk } from '../../tasarim/UstCubuk'
@@ -59,6 +60,29 @@ export default function AnilarEkrani() {
     anilariYukle()
   }, [])
 
+  // Hata pencereye birakiliyor (bkz. ana sayfadaki ayni desen):
+  // kayit basarisizsa pencere acik kalsin, metin kaybolmasin.
+  async function notuKaydet(checkInId: string, yeniNot: string) {
+    await checkInNotunuGuncelle(checkInId, yeniNot)
+    const temiz = yeniNot.trim()
+    setAnilar((mevcut) =>
+      mevcut.map((a) =>
+        a.id === checkInId ? { ...a, notMetni: temiz === '' ? null : temiz } : a
+      )
+    )
+  }
+
+  async function etiketiSil(checkInId: string, kullaniciId: string) {
+    await etiketiKaldir(checkInId, kullaniciId)
+    setAnilar((mevcut) =>
+      mevcut.map((a) =>
+        a.id === checkInId
+          ? { ...a, etiketler: (a.etiketler ?? []).filter((e) => e.kullaniciId !== kullaniciId) }
+          : a
+      )
+    )
+  }
+
   async function sil(checkInId: string) {
     try {
       await checkIniSil(checkInId)
@@ -84,6 +108,8 @@ export default function AnilarEkrani() {
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
             onSil={sil}
+            onNotKaydet={notuKaydet}
+            onEtiketKaldir={etiketiSil}
           />
         )}
         ListEmptyComponent={<Text style={stiller.durum}>Henüz bir anın yok</Text>}

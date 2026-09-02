@@ -446,6 +446,67 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### KART: EYLEM SATIRI YUKARI, UC NOKTA MENUSU, DUZENLEME - 2026-09-02
+
+Kullanicinin istegi: "begeni yorum paylasma ikonlarini yukari tasi
+paylasimin altinda olmasi ... birde duzenlemeyle alakali bir buton
+eklemeliyiz icerigi yaptigi paylasimi duzenleyebilecek yaptigi etiketi
+kaldirabilir yazdigi notu silebilir degistirebilir".
+
+Once uc yerlesim secenegi GORSEL olarak sunuldu (Artifact); kullanici
+**A duzenini** ve **uc nokta menusunu** secti: "a olsun duzenle
+ucnokta olsun silmeyide ucnoktanin silmenin icine ekle".
+
+**SORUNUN KOKU IKONLARIN YERI DEGILDI.** Ekran goruntusuyle olculdu:
+fotograf geldigi en boy oraniyla ciziliyor ve harita ekran goruntusu
+gibi uzun bir gorselde kart ekrani tasiyor; eylem satiri fotografin
+ALTINDA oldugu icin hic gorunmuyordu. Fotografsiz kartta ikonlar zaten
+hemen alttaydi. Kullaniciya kirpma secenegi (B) onerildi ama A secildi -
+karar kullanicinin.
+
+**A DUZENI:** baslik -> not -> EYLEM SATIRI -> fotograf. Boylece
+fotograf ne kadar uzun olursa olsun begeni/yorum/paylas ekranda kaliyor.
+
+**UC NOKTA MENUSU** (`src/tasarim/PaylasimMenusu.tsx`): baslikta artik
+cop kutusu YOK, tek bir uc nokta var. Icinde Duzenle ve Sil. Silme yine
+iki adimli - menuden sonra `OnayPenceresi` aciliyor.
+
+**DUZENLEME PENCERESI** (`src/tasarim/PaylasimDuzenle.tsx`): not
+degistirilir ya da BOSALTILIP silinir, etiketler cip'lerdeki carpiyla
+kaldirilir. "Notu sil" ayri bir dugme DEGIL - alani bosaltip kaydetmek
+notu siliyor, sunucu bos metni NULL'a ceviriyor.
+
+**MEKAN VE ZAMAN DEGISMEZ ve bu ekranda YAZIYOR.** Gerekce: check-in
+"su saatte suradaydim" iddiasidir; notu ve etiketi kisinin kendi
+icerigi ama mekani sonradan degistirmek kaydi uydurma haline getirir.
+Ustelik ETIKETLENEN KISI de o konuma bakarak onay vermisti - mekan
+degisseydi verdigi onay baska bir seyin onayina donusurdu.
+
+**YENI RPC: `check_in_notunu_guncelle`** (migrasyon 20260902170000).
+Neden RPC: `check_inler` uzerinde dogrudan update `authenticated`
+rolunden geri alinmis durumda ve o kural KORUNDU - `mekan_id`
+yazilabilseydi kisi kendi satirini baska bir mekana tasiyip mekan
+kapisini taklit edebilirdi. RPC yalnizca `not_metni` yaziyor, sahiplik
+ariyor ve moderasyon karariyla gizlenmis satiri disliyor. Hata metni
+"yetkin yok" degil "Bu paylasim bulunamadi" - satirin varligi sizmiyor.
+
+Etiket kaldirma icin YENI BIR SEY GEREKMEDI: silme politikasi zaten
+check-in'in sahibine de etiketlenen kisiye de izin veriyor.
+
+Kart uc ekranda ortak: ana sayfa ve Anilarim'da menu VAR, profil
+onizlemesinde YOK (orada silme/duzenleme baglanmadi, kart salt okunur).
+
+Dogrulama: jest 59 paket / 545 test; canli senaryo 65 (10 dogrulama)
+sahiplik, bos notun NULL'a donmesi, mekan ve zamanin degismemesi,
+dogrudan update'in HALA reddedilmesi ve kimliksiz cagriyi olcuyor.
+Ekran goruntuleri: `tasarim/yeni-akis.png`, `yeni-menu.png`,
+`yeni-duzenle.png` (oncesi: `mevcut-akis.png`).
+
+**ACIK BORC: notun uzunluk siniri YOK** - ne `check_in_yap`ta ne bu
+RPC'de. Bilerek simetrik birakildi (biri sinirli olsaydi uzun notlu
+eski bir paylasim duzenlenemez hale gelirdi); magaza oncesi ikisine
+birden konmali.
+
 ### ETIKET ONAYI HIC CALISMIYORMUS - 2026-09-02
 
 Plan 2'den kalan "gorunurluk paketinde etiket onayi senaryosu yok"

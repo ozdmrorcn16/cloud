@@ -252,6 +252,12 @@ Bu iki senaryo yazilir yazilmaz gercek bir kusur buldu: onay/reddetme
 politikasi eklenmis ama tablo yetkisi geri verilmemisti. Duzeltme
 migrasyonu 20260902160000.
 
+65: **Paylasim notunu duzenleme.** `check_in_notunu_guncelle`
+sahiplik ariyor mu, bos not NULL'a mi donuyor, mekan ve zaman
+degismiyor mu, `check_inler` uzerindeki DOGRUDAN update hala reddediliyor
+mu. Son madde onemli: yeni RPC bir kapi acti, eski kapinin kapali
+kaldigini ayrica olcuyoruz.
+
 ### Faz 3b'de neyin degistigi
 
 **Takip artik karsilikli** (karar 42, `docs/superpowers/specs/2026-08-20-faz3b-birebir-sohbet-design.md`).

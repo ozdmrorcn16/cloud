@@ -68,6 +68,7 @@ export function OnayPenceresi({
           <View style={stiller.ayirac} />
           <Pressable
             style={stiller.dugme}
+            testID="onay-eylemi"
             onPress={onOnay}
             accessibilityRole="button"
           >
