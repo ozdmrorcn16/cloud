@@ -198,6 +198,32 @@ Android'de Apple GOSTERILMIYOR (orada zorunlu degil).
    sablonda sanildi. Dogrulama ekranindaki "Tekrar gonder" bu durumu
    zaten cozuyor.
 
+   **SABLONLAR MANAGEMENT API ILE DUZELTILDI (2026-09-02).** Ilk elle
+   duzenlemede iki kusur kalmisti: (a) sablonun basinda Supabase'in
+   varsayilan Ingilizce metni duruyordu ve "asagidaki baglantiyi takip
+   et" diyordu - ama baglanti silinmisti, yani kullanici olmayan bir
+   seyi ariyordu; (b) metnin yarisi Ingilizce oldugu icin Gmail maili
+   Ingilizce sanip Turkceye ceviriyor ve kullanicinin yazdigi
+   "dogrulama" kelimesini "destek" yapiyordu. Ayrica MAGIC LINK sablonu
+   hic duzenlenmemisti - kod yalnizca Confirm signup'tan geliyordu.
+
+   Su an ikisi de ayni ve sadece sunu iceriyor:
+
+       <h2>Slooin dogrulama kodun</h2>
+       <p>Kodun: <strong>{{ .Token }}</strong></p>
+       <p>Kod bir saat gecerli. ...</p>
+
+   Konu satiri ikisinde de "Slooin dogrulama kodun".
+
+   **NASIL DUZELTILDI:** `PATCH /v1/projects/<ref>/config/auth` (alanlar
+   `mailer_templates_confirmation_content`,
+   `mailer_templates_magic_link_content`, `mailer_subjects_*`). Bu bir
+   Supabase ACCESS TOKEN gerektiriyor (`sbp_...`), MCP ile yapilamiyor.
+   Token `mobil/.env` icinde `SUPABASE_ACCESS_TOKEN` olarak durmali -
+   **SOHBETE YAPISTIRILMAMALI**: bir kez yapistirildi ve iptal edilmek
+   zorunda kalindi (ayni sinif sizinti hf_ jetonunda da yasanmisti).
+   Oturum kaydi betigine `sbp_` maskesi eklendi.
+
    **TESHIS YERI: `auth_logs`.** MCP `query_logs` ile okunuyor ve posta
    gerceklen gidiyor mu, hangi sablon kullanildi, dogrulama neden
    reddedildi - hepsi orada. Sablonun KENDISI okunamiyor (panel ayari,
