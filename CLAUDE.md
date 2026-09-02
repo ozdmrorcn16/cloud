@@ -386,6 +386,101 @@ giris gerekiyor). **`verify_jwt` KAPALI olmali** - cagriyi pg_net
 yapiyor ve elinde kullanici JWT'si yok; yetkilendirme sir dogrulamasina
 dayaniyor.
 
+### ACIK BORCLAR - 2026-09-02 itibariyla (yeni oturum buradan baksin)
+
+Kod tarafinda yarim kalan is YOK. Asagidakiler ya kullanicinin panel
+islerine ya da native derlemeye bagli.
+
+**1. NATIVE DERLEME BEKLIYOR.** Su degisiklikler OTA ILE GITMEZ, yeni
+bir iOS derlemesi gerekiyor: Apple ile giris, Google ile giris
+(`@react-native-google-signin`), `LSApplicationQueriesSchemes` (yol
+tarifinde kurulu olmayan harita uygulamasini gizleme). Bunlar kodda
+DURUYOR ama telefondaki mevcut derlemede calismaz.
+
+    npx eas-cli build --platform ios --profile production
+    npx eas-cli submit --platform ios --latest
+
+**2. APPLE / GOOGLE GIRISI SUPABASE'DE ACIK DEGIL.** Dugmeler ekranda;
+basilinca "Bu giris yontemi su an kullanilamiyor" diyor. Adim adim
+rehber: `docs/sosyal-giris-kurulumu.md`. Kullanicinin yapmasi gereken
+panel isleri (Google Cloud OAuth istemcileri, Apple Services ID +
+.p8, Supabase saglayici ayarlari). iOS'ta Apple ZORUNLU: baska bir
+sosyal giris varsa App Store "Apple ile giris"i de sart kosuyor.
+
+**3. SMTP.** Supabase'in yerlesik e-posta servisi saatte yalnizca
+birkac mail gonderiyor - kendi testine yeter, gercek kullaniciya
+yetmez. Alan adi alinip Resend SMTP olarak baglanmali (ucretsiz
+katman ayda 3.000 mail).
+
+**4. "Kullanim kosullari" belgesi YOK** ama kayit ekranindaki metin ona
+atif yapiyor. Elimizde yalnizca gizlilik metni var. Magaza oncesi
+yazilmali.
+
+**5. Google Maps Android anahtari yok** - Android'de harita zemini gri
+kalir. Ayrinti "KALAN (kullanicida)" bolumunde.
+
+**6. `test:gorunurluk` icinde ETIKET ONAYI senaryosu yok**
+(`docs/plan2-takip-isleri.md`).
+
+**7. Panelde 1 bekleyen sikayet var ve GERCEK DEGIL:** 2026-08-23
+tarihli, Plan 2 dogrulamasindan kalma bir MESAJ sikayeti. Gercek
+kullanici sikayeti sanip islem yapma. Silinmedi cunku sikayet
+verisine dokunmak geri alinamaz ve karar kullanicinin.
+
+### DEVIR NOTU - 2026-09-02 (oturum sonu, her sey push edilmis)
+
+Calisma dali `claude/plan2-moderasyon-paneli`, son commit `7dfdc7a`.
+Kod tarafinda kaydedilmemis hicbir sey yok.
+
+**YAYIN DURUMU - ikisi de yapildi ve OLCULEREK dogrulandi:**
+
+| Hedef | Komut | Durum |
+|---|---|---|
+| Web (slooin.expo.app) | `npm run yayinla` | Canlida (paket `entry-70926d73...`) |
+| Telefon / TestFlight | `eas update --channel production` | Yayinda, `channel:view` dogruladi |
+
+Dogrulama yontemi: yayindaki paket icinde `onay-penceresi` testID'si
+arandi. **Turkce metinle arama YAPMA** - kucultulmus pakette aksanli
+harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
+gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
+da sinif adi ara.
+
+### SILME ONAYI EKRANIN ORTASINDA - 2026-09-02
+
+Kullanicinin istegi: "Gonderiyi silmeye basinca ekrana boyle sil
+vazgec butonlari ciksin kisa bir bilgilendirme mesajida olabilir."
+Referans olarak Instagram'in gonderi silme penceresini gosterdi.
+
+Onceki tasarim onayi kartin ICINDE aciyordu; uzun bir kartta onay
+satiri ekranin disinda kalabiliyor ve kullanici cop ikonuna bastigini
+sanip hicbir sey olmadigini goruyordu.
+
+Yeni ortak bilesen: `src/tasarim/OnayPenceresi.tsx`.
+
+**`Alert.alert` KULLANILMADI, kendi Modal'imiz - tekrar onerme.**
+Uygulama web'de de calisiyor (slooin.expo.app) ve React Native Web'de
+`Alert` SESSIZCE hicbir sey yapmiyor; silme orada tamamen kirilirdi.
+Kendi penceremiz uc platformda ayni gorunuyor ve test edilebiliyor
+(7 test, TDD ile once kirmizi).
+
+Check-in silmenin gectigi IKI yer de ayni pencereye gecirildi: akis /
+anilar kartlari (`CheckInKarti`) ve check-in ekranindaki aktif kart
+(`mekanlar/index.tsx`). Yeni bir yikici islem eklerken de bu bilesen
+kullanilmali - iki yer farkli davranmasin.
+
+Bilgilendirme metni ne kaybedildigini ONCEDEN yaziyor ve
+Instagram'inkinden bilerek farkli: bizde 30 gunluk geri yukleme YOK.
+Metin `anaSayfa.silAciklama` anahtarinda.
+
+**YANLIS TESHIS, kayda geciyor:** ekran goruntusunde alt gezinme
+cubugu karartmanin USTUNDE kalmis gibi gorunuyordu. Olculdu ve
+teshis CURUDU - RN Web modal portali `zIndex 9999` ile en ustte ve
+cubugun koordinatindaki eleman karartmanin kendisi, yani cubuk
+tiklanamiyordu. Sorun islevsel degil gorseldi: beyaz cubuk %40
+karartma altinda fazla parlak kaliyordu. Karartma %55'e cikarildi.
+**Ders: "ustte gorunuyor" ile "ustte" ayni sey degil;
+`elementFromPoint` ile olc.**
+
 ### MODERASYON PANELI ARTIK YORUM SIKAYETLERINI GORUYOR - 2026-09-02
 
 Begeni/yorum sistemi eklenince yorum sikayetleri `sikayetler` tablosuna

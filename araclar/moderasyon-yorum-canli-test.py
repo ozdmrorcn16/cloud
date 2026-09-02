@@ -68,7 +68,10 @@ for _u in y.auth.admin.list_users():
 
 # --- Gecici moderator: yeni hesap + TOTP (ilk faktor AAL1'de kaydedilebilir) ---
 eposta = 'gecici-mod-' + str(int(time.time())) + '@slooin.test'
-parola = 'gecici-1234-test'
+# Parola SABIT DEGIL: betik depoda ve gecici hesap yonetici rolunde.
+# Kosum yarim kalip hesap ortada kalirsa, parolasi kimsenin
+# bilmedigi bir deger olsun.
+parola = 'gecici-' + base64.b32encode(os.urandom(15)).decode().lower()
 mod = y.auth.admin.create_user(
     {'email': eposta, 'password': parola, 'email_confirm': True}).user
 y.table('moderatorler').insert({'kullanici_id': mod.id, 'rol': 'yonetici'}).execute()
