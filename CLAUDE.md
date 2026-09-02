@@ -1405,6 +1405,28 @@ kullanici "simdilik tunelle devam" dedi).
 
 #### Test hesaplari
 
+**E-POSTA + SIFRE (2026-09-02'den beri gecerli olan):**
+
+    test0@slooin.test  / test1234   (kullanici adi: byorcun)
+    test1@slooin.test  / test1234
+    test2@slooin.test  / test1234
+
+Ucunun de profili var, yani giris yapinca dogrudan uygulamaya
+giriyorlar. `.test` uzantisi IANA tarafindan rezerve - hicbir zaman
+gercek birine ait olamaz, yani yanlislikla kimseye posta gitmez.
+Uctan uca dogrulandi: ucu de gercekten giris yapiyor.
+
+**BUNLAR SONRADAN EKLENDI.** Kayit/giris e-postaya tasininca telefonla
+acilmis test hesaplari GIRIS EKRANINDAN ULASILAMAZ hale gelmisti -
+e-postalari yoktu ve ekran artik e-posta istiyor. Adresler
+`araclar/test-hesap-eposta.py` ile eklendi (idempotent, guvenle
+yeniden kosulur).
+
+Ayni hesaplarin TELEFONLARI da duruyor (05550000000/1/2, SMS kodu
+123456). Telefon yolu istemcide artik kullanilmiyor ama auth kaydinda
+yerinde; ileride SMS'e donulurse calisir.
+
+
 `05550000000`, `05550000001`, `05550000002`: sifre `test1234`, SMS kodu
 `123456`, UCUNUN DE PROFILI VAR - kayit akisini denemek icin uygun
 degiller, dogrulamadan sonra "bu numarada zaten hesap var" ekranina
