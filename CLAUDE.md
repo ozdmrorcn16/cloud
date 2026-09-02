@@ -186,12 +186,23 @@ Android'de Apple GOSTERILMIYOR (orada zorunlu degil).
 
 **KALAN IKI ADIM - bunlar olmadan akis calismaz:**
 
-1. **E-POSTA SABLONU 6 HANELI KODA CEVRILMELI.** Supabase varsayilan
-   olarak MAGIC LINK gonderiyor (`{{ .ConfirmationURL }}`); bizim
-   dogrulama ekranimiz 6 haneli kod bekliyor. Sablonda `{{ .Token }}`
-   kullanilmali. Supabase Dashboard > Authentication > Email Templates
-   ("Magic Link" ve "Confirm signup"). MCP ile YAPILAMIYOR - Management
-   API token gerekiyor, elimizde yok.
+1. ~~E-posta sablonu~~ **TAMAMLANDI ve UCTAN UCA DOGRULANDI**
+   (2026-09-02). Kullanici Supabase panelinden "Magic Link" sablonuna
+   `{{ .Token }}` ekledi. Olculen zincir: `signInWithOtp({ email })` ->
+   posta gidiyor (auth_logs: `mail.send`, `mail_type: magic_link`) ->
+   mailde 6 haneli kod var -> `verifyOtp({ email, token, type: 'email' })`
+   OTURUM ACIYOR.
+
+   **KODUN OMRU 1 SAAT.** Bir kez yanlis teshise yol acti: gonderilen
+   kod iki saat sonra denendi ve `otp_expired` (403) dondu; sorun
+   sablonda sanildi. Dogrulama ekranindaki "Tekrar gonder" bu durumu
+   zaten cozuyor.
+
+   **TESHIS YERI: `auth_logs`.** MCP `query_logs` ile okunuyor ve posta
+   gerceklen gidiyor mu, hangi sablon kullanildi, dogrulama neden
+   reddedildi - hepsi orada. Sablonun KENDISI okunamiyor (panel ayari,
+   veritabaninda degil, Management API token'i yok), bu yuzden dogrulama
+   ancak GERCEK bir gonderimle yapilabiliyor.
 2. **SMTP.** Supabase'in yerlesik e-posta servisi saatte yalnizca birkac
    mail gonderiyor; kendi testin icin yeter, gercek kullanicilar icin
    yetmez. Alan adi alinip Resend SMTP olarak baglanmali (ucretsiz
