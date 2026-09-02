@@ -3,6 +3,7 @@ import AnilarEkrani from '../../../src/app/profil/anilar'
 import { kullanicininAnilariniGetir, checkIniSil } from '../../../lib/checkin'
 
 jest.mock('../../../lib/checkin', () => ({
+  ...jest.requireActual('../../../lib/checkin'),
   kullanicininAnilariniGetir: jest.fn(),
   checkIniSil: jest.fn(),
 }))

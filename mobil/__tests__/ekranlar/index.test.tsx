@@ -8,7 +8,12 @@ import { etiketiKaldir } from '../../lib/etiket'
 
 jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
+// requireActual: mock yalnizca AG CAGRILARINI degistiriyor, modulun
+// sabitleri (NOT_EN_FAZLA) gercek kalsin. Bunlar mock'lanmis olsaydi
+// `undefined` donerler ve `slice(0, undefined)` hicbir sey kirpmadan
+// sessizce gecerdi - test bunu yakaladi.
 jest.mock('../../lib/checkin', () => ({
+  ...jest.requireActual('../../lib/checkin'),
   checkIniSil: jest.fn(),
   checkInNotunuGuncelle: jest.fn(),
 }))
@@ -363,5 +368,22 @@ describe('AnaSayfa', () => {
 
     expect(await screen.findByText('Bu paylaşım bulunamadı.')).toBeTruthy()
     expect(screen.getByText('guzel bir aksam')).toBeTruthy()
+  })
+
+  it('not SINIRI asilmiyor: uzun metin 500 karakterde kirpiliyor', async () => {
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'a'.repeat(600))
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    // Sunucuda da kisit var; buradaki kirpma kullaniciyi sinira
+    // carptirmadan durduruyor.
+    expect(checkInNotunuGuncelle).toHaveBeenCalledWith('checkin-1', 'a'.repeat(500))
   })
 })

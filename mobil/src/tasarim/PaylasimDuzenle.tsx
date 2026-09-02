@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import Svg, { Path, Rect } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
+import { NOT_EN_FAZLA } from '../../lib/checkin'
 import type { Etiket } from '../../lib/etiket'
 import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
 
@@ -116,12 +117,23 @@ export function PaylasimDuzenle({
           </Text>
           <Text style={stiller.altMetin}>{baslikAltMetni}</Text>
 
-          <Text style={stiller.alanEtiketi}>{t('anaSayfa.notEtiketi')}</Text>
+          <View style={stiller.alanBasligi}>
+            <Text style={stiller.alanEtiketi}>{t('anaSayfa.notEtiketi')}</Text>
+            {/* Sayac yalnizca sinira YAKLASINCA cikiyor: her zaman
+                gorunen bir sayac, kisa bir notta gereksiz bir uyari
+                gibi duruyor. */}
+            {taslak.length > NOT_EN_FAZLA - 50 && (
+              <Text style={stiller.sayac}>
+                {taslak.length}/{NOT_EN_FAZLA}
+              </Text>
+            )}
+          </View>
           <TextInput
             testID="duzenle-not"
             style={stiller.metinAlani}
             value={taslak}
-            onChangeText={setTaslak}
+            onChangeText={(d) => setTaslak(d.slice(0, NOT_EN_FAZLA))}
+            maxLength={NOT_EN_FAZLA}
             placeholder={t('anaSayfa.notYerTutucu')}
             placeholderTextColor={renk.metinSoluk}
             multiline
@@ -210,6 +222,17 @@ const stiller = StyleSheet.create({
     color: renk.metinIkincil,
     marginTop: 2,
     marginBottom: bosluk.l,
+  },
+  alanBasligi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sayac: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
+    marginBottom: bosluk.xs,
   },
   alanEtiketi: {
     fontFamily: yazi.govdeKalin,

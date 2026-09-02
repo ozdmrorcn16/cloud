@@ -1067,3 +1067,18 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     uzerindeki dogrudan update yasagi KORUNDU, yalnizca not yazan dar
     bir kapi acildi. Etiket kaldirma icin yeni bir sey gerekmedi.
     Kapanis: jest 59/545, canli senaryo 65 ile 10 dogrulama.
+
+83. **NOT UZUNLUK SINIRI 500; "acik borc" kabul edilmedi** (2026-09-02).
+    Kart duzenleme isi gonderilirken notun uzunluk siniri olmadigi acik
+    borc olarak yazilmisti. Kullanicinin cevabi: **"Konmalıysa koy
+    sonraya iş bırakma."** Sinir ayni oturumda konuldu: 500 karakter -
+    `yorumlar` tablosundaki mevcut tavanla ayni. Uc katman: sutun
+    kisiti, iki RPC'de acik kontrol, istemcide kirpma (migrasyon
+    20260902180000). Ayni migrasyonda `check_in_yap` notu
+    normallestirmeye basladi; onceden yalnizca bosluktan olusan not
+    oldugu gibi yaziliyordu ve iki yazma yolu ayni girdiye farkli cevap
+    veriyordu. Yazilan test gercek bir tuzak buldu: ekran testi
+    `lib/checkin`i mock'ladigi icin `NOT_EN_FAZLA` undefined oluyor ve
+    `slice(0, undefined)` sessizce hicbir sey kirpmiyordu; mock artik
+    `requireActual` ile sabitleri koruyor. Kapanis: jest 59/548, canli
+    senaryo 65 13 dogrulama.

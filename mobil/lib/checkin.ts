@@ -169,6 +169,17 @@ export async function checkIniSil(checkInId: string): Promise<void> {
 }
 
 /**
+ * Check-in notunun en fazla karakter sayisi.
+ *
+ * 500, `YORUM_EN_FAZLA` ile AYNI deger (lib/etkilesim.ts): ayni
+ * uygulamada iki serbest metin alaninin iki farkli siniri olmasi icin
+ * sebep yok. Sunucuda uc katmanda zorlaniyor - sutun kisiti, iki RPC'de
+ * acik kontrol; buradaki kirpma yalnizca kullaniciyi sinira carptirmadan
+ * durdurmak icin (migrasyon 20260902180000).
+ */
+export const NOT_EN_FAZLA = 500
+
+/**
  * Paylasimin notunu degistirir; bos metin notu SILER.
  *
  * Neden RPC: `check_inler` uzerinde dogrudan update `authenticated`

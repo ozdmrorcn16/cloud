@@ -502,10 +502,35 @@ dogrudan update'in HALA reddedilmesi ve kimliksiz cagriyi olcuyor.
 Ekran goruntuleri: `tasarim/yeni-akis.png`, `yeni-menu.png`,
 `yeni-duzenle.png` (oncesi: `mevcut-akis.png`).
 
-**ACIK BORC: notun uzunluk siniri YOK** - ne `check_in_yap`ta ne bu
-RPC'de. Bilerek simetrik birakildi (biri sinirli olsaydi uzun notlu
-eski bir paylasim duzenlenemez hale gelirdi); magaza oncesi ikisine
-birden konmali.
+**NOT SINIRI: 500 KARAKTER, ayni gun konuldu.** Ilk gonderimde
+"sinir yok, magaza oncesi konmali" diye acik borc yazilmisti; kullanici
+kabul etmedi: **"Konmalıysa koy sonraya iş bırakma."** 500 sayisi keyfi
+degil - `yorumlar` tablosunda zaten ayni tavan var, ayni uygulamada iki
+serbest metin alaninin iki farkli siniri olmasi icin sebep yok.
+
+Sinir UC KATMANDA (migrasyon 20260902180000):
+1. `check_inler_not_uzunlugu` sutun kisiti - ileride yazilacak yeni bir
+   RPC bile atlayamaz.
+2. `check_in_yap` ve `check_in_notunu_guncelle` icinde acik kontrol -
+   kullanici dostane Turkce mesaj goruyor, ham 23514 degil.
+3. Istemcide `NOT_EN_FAZLA` ile kirpma (yorum kutusundaki desenin
+   aynisi); duzenleme penceresinde sinira 50 karakter kala sayac cikiyor.
+
+Ayni migrasyonda `check_in_yap` notu artik NORMALLESTIRIYOR
+(`nullif(btrim(...))`). Onceden yalnizca bosluktan olusan bir not oldugu
+gibi yaziliyor ve kart onu "notu var" sayip bos satir ciziyordu;
+duzenleme yolu bastan beri normallestirdigi icin iki yol ayni girdiye
+farkli cevap veriyordu.
+
+**BURADA BULUNAN TEST TUZAGI - kayda geciyor:** ekran testi
+`lib/checkin`i mock'luyordu ve mock sabitleri tasimadigi icin
+`NOT_EN_FAZLA` **undefined** oluyordu; `d.slice(0, undefined)` hicbir sey
+kirpmadan SESSIZCE geciyor. Yani kirpma testte hic calismiyordu ve bunu
+ancak "600 karakter yazdim, 500 bekliyorum" diyen test yakaladi. Cozum:
+mock artik `...jest.requireActual('../../lib/checkin')` ile baslıyor -
+yalnizca ag cagrilari degistiriliyor, sabitler gercek kaliyor.
+**Kural: bir modulu mock'larken o modulun SABITLERINI de tasi; eksik
+sabit hata vermiyor, sessizce undefined donuyor.**
 
 ### ETIKET ONAYI HIC CALISMIYORMUS - 2026-09-02
 

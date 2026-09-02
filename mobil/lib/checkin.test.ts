@@ -1,4 +1,5 @@
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil } from './checkin'
+import { YORUM_EN_FAZLA } from './etkilesim'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil, NOT_EN_FAZLA } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -255,5 +256,15 @@ describe('checkIniSil', () => {
     expect(supabase.from).toHaveBeenCalledWith('check_inler')
     expect(del).toHaveBeenCalled()
     expect(eq).toHaveBeenCalledWith('id', 'checkin-3')
+  })
+})
+
+describe('NOT_EN_FAZLA', () => {
+  it('yorum siniriyla AYNI: iki serbest metin alani ayni tavani kullanir', () => {
+    expect(NOT_EN_FAZLA).toBe(YORUM_EN_FAZLA)
+  })
+
+  it('500 karakter', () => {
+    expect(NOT_EN_FAZLA).toBe(500)
   })
 })

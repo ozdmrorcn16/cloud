@@ -35,6 +35,7 @@ const VERITABANI: Record<string, string> = {
   'Bu kullanici adi alinmis': 'Bu kullanıcı adı alınmış, başka bir tane dene.',
   'Bu kullanici bulunamadi': 'Bu kullanıcı bulunamadı.',
   'Bu paylasim bulunamadi': 'Bu paylaşım bulunamadı.',
+  'Not en fazla 500 karakter olabilir': 'Not en fazla 500 karakter olabilir.',
   'Bu mesaji sikayet edemezsin': 'Bu mesajı şikayet edemezsin.',
   'Bugunluk istek sinirina ulastin': 'Bugünlük istek sınırına ulaştın.',
   'Check-in bulunamadi': 'Check-in bulunamadı.',

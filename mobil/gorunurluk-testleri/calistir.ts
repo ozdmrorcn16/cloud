@@ -3397,6 +3397,34 @@ async function main() {
       .eq('id', aCi)
     esitMi(dogrudanHata?.code, '42501', 'dogrudan update hala reddediliyor')
 
+    // UZUNLUK SINIRI (migrasyon 20260902180000): istemci zaten kirpiyor,
+    // ama kirpma atlatilabilir - baglayici olan sunucu.
+    const { error: uzunHata } = await a.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: 'a'.repeat(501),
+    })
+    esitMi(uzunHata?.message, 'Not en fazla 500 karakter olabilir', '501 karakter reddediliyor')
+
+    const { error: tamHata } = await a.rpc('check_in_notunu_guncelle', {
+      p_check_in_id: aCi,
+      p_not: 'a'.repeat(500),
+    })
+    esitMi(tamHata, null, 'tam 500 karakter kabul ediliyor (sinir kapsayici)')
+
+    // Ayni sinir OLUSTURMA yolunda da var; iki yol ayni girdiye ayni
+    // cevabi vermeli.
+    const { error: yaparkenHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
+      p_lat: MEKAN_1.lat,
+      p_lng: MEKAN_1.lng,
+      p_not_metni: 'a'.repeat(501),
+    })
+    esitMi(
+      yaparkenHata?.message,
+      'Not en fazla 500 karakter olabilir',
+      'check_in_yap da uzun notu reddediyor'
+    )
+
     const anonim = anonIstemciOlustur()
     const { error: anonHata } = await anonim.rpc('check_in_notunu_guncelle', {
       p_check_in_id: aCi,

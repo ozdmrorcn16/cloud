@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
-import { checkInYap, type Bulunurluk } from '../../../lib/checkin'
+import { checkInYap, type Bulunurluk, NOT_EN_FAZLA } from '../../../lib/checkin'
 import { etiketleriKaydet } from '../../../lib/etiket'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import type { BagKisi } from '../../../lib/bag'
@@ -188,7 +188,10 @@ export default function CheckInEkrani() {
         style={[stiller.girdi, stiller.cokSatirli]}
         placeholder="Bir not ekle (opsiyonel)"
         value={notMetni}
-        onChangeText={setNotMetni}
+        // Sinir sunucuda da var; burada kirpmak kullaniciyi sinira
+        // carptirmadan durduruyor (yorum kutusundaki desenin aynisi).
+        onChangeText={(d) => setNotMetni(d.slice(0, NOT_EN_FAZLA))}
+        maxLength={NOT_EN_FAZLA}
         multiline
       />
       {/* ARKADAS ETIKETLEME. Liste bosken bolum hic cizilmiyor:
