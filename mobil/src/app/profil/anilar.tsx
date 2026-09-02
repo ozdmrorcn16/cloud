@@ -96,7 +96,10 @@ const stiller = StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
-    paddingHorizontal: bosluk.l,
+    // Yatay dolgu YOK: check-in kartlari 2026-09-02'den beri tam
+    // genislikte (kullanicinin istegi) ve kendi ic dolgusunu tasiyor.
+    // Burada da dolgu olsaydi ayni kart ana sayfada kenara ulasip
+    // burada ulasmazdi - ayni bilesen iki ekranda farkli gorunurdu.
     paddingBottom: ALT_GEZINME_PAYI,
   },
   hata: {

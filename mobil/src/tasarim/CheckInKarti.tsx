@@ -5,7 +5,7 @@ import Svg, { Path } from 'react-native-svg'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
+import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -218,11 +218,15 @@ const AVATAR_CAPI = 40
 
 const stiller = StyleSheet.create({
   kart: {
+    // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik
+    // ekranin tam genisliginde: yuvarlak kose ve golge kalkti, cunku
+    // ikisi de kartin kenarini gorunur kiliyordu. Kartlari birbirinden
+    // ayiran tek sey alttaki ince cizgi - Instagram akisindaki desen.
     backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.kart,
-    padding: bosluk.m,
-    marginBottom: bosluk.m,
-    ...golge.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
   },
   kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
 

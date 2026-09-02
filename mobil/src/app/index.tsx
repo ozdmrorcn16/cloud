@@ -321,7 +321,10 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.xl,
   },
 
-  liste: { paddingHorizontal: bosluk.l, paddingBottom: ALT_GEZINME_PAYI },
+  // Kartlar TAM GENISLIK (kullanicinin istegi 2026-09-02): yatay dolgu
+  // burada degil, kartin kendi icinde - yoksa kartin zemini kenara
+  // ulasmiyor ve yine bir sinir gorunuyordu.
+  liste: { paddingBottom: ALT_GEZINME_PAYI },
 
   kart: {
     backgroundColor: renk.yuzey,
