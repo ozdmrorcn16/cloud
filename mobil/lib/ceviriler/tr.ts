@@ -239,6 +239,9 @@ export default {
     bolumHesap: 'Hesabın',
     profiliDuzenle: 'Profilini düzenle',
     kullaniciAdi: 'Kullanıcı adı',
+    profilGizli: 'Profilim gizli',
+    profilGizliAciklama:
+      'Açıkken anıların ve check-in’lerin yalnızca arkadaşlarına görünür. Adın, kullanıcı adın ve fotoğrafın herkese açık kalır; böylece seni bulup arkadaşlık isteği gönderebilirler.',
     gizlilikMetni: 'Gizlilik metni',
 
     bolumGorunurluk: 'Seni kimler görebilir?',

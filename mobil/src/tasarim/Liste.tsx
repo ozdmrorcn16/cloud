@@ -28,6 +28,7 @@ export function Bolum({ baslik, children }: { baslik?: string; children: ReactNo
 export function Satir({
   ikon,
   etiket,
+  aciklama,
   deger,
   sagBilesen,
   sonuncu = false,
@@ -37,6 +38,12 @@ export function Satir({
 }: {
   ikon?: ReactNode
   etiket: string
+  /**
+   * Etiketin altinda duran aciklama. Gizlilik ayarlarinda SART:
+   * "Profilim gizli" tek basina neyin gizlenecegini soylemiyor -
+   * kullanici anahtari cevirmeden once ne olacagini bilmeli.
+   */
+  aciklama?: string
   deger?: string
   /** Anahtar gibi yerinde duran bir denetim. Verilirse ok cizilmez. */
   sagBilesen?: ReactNode
@@ -54,9 +61,15 @@ export function Satir({
   const govde = (
     <View style={[stiller.satir, !sonuncu && stiller.satirCizgili]}>
       {ikon && <View style={stiller.ikon}>{ikon}</View>}
-      <Text style={[stiller.etiket, tehlikeli && stiller.etiketTehlikeli]} numberOfLines={1}>
-        {etiket}
-      </Text>
+      <View style={stiller.metinAlani}>
+        <Text
+          style={[stiller.etiket, tehlikeli && stiller.etiketTehlikeli]}
+          numberOfLines={1}
+        >
+          {etiket}
+        </Text>
+        {aciklama && <Text style={stiller.aciklama}>{aciklama}</Text>}
+      </View>
       {deger && (
         <Text style={stiller.deger} numberOfLines={1}>
           {deger}
@@ -134,6 +147,9 @@ function Ok() {
 }
 
 const stiller = StyleSheet.create({
+  // Etiket ve aciklama tek sutun; aciklama varsa satir yukseliyor.
+  metinAlani: { flex: 1 },
+
   bolum: { marginTop: bosluk.xl },
   bolumBasligi: {
     fontFamily: yazi.govdeKalin,

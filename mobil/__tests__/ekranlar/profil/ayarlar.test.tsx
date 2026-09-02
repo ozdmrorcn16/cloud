@@ -3,6 +3,7 @@ import AyarlarEkrani from '../../../src/app/profil/ayarlar'
 import {
   varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
+  profilGizliGetir,
   aramadaGorunsunAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
@@ -13,6 +14,8 @@ import { supabase } from '../../../lib/supabase'
 jest.mock('../../../lib/ayarlar', () => ({
   varsayilanBulunurluguGetir: jest.fn(),
   aramadaGorunsunGetir: jest.fn(),
+  profilGizliGetir: jest.fn(),
+  profilGizliAyarla: jest.fn(),
   aramadaGorunsunAyarla: jest.fn(),
   kullaniciAdiDurumunuGetir: jest.fn(),
 }))
@@ -39,6 +42,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
   ;(aramadaGorunsunGetir as jest.Mock).mockResolvedValue(true)
+  ;(profilGizliGetir as jest.Mock).mockResolvedValue(false)
   ;(aramadaGorunsunAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
     kullaniciAdi: 'orcun',
@@ -169,5 +173,19 @@ describe('AyarlarEkrani', () => {
     fireEvent.press(await screen.findByText('Çıkış yap'))
 
     await waitFor(() => expect(sira).toEqual(['jeton', 'cikis']))
+  })
+
+  /**
+   * PROFIL GIZLILIGI (kullanicinin istegi 2026-09-02). Aciklama satiri
+   * SART: "Profilim gizli" tek basina neyin gizlenecegini soylemiyor -
+   * kullanici anahtari cevirmeden once ne olacagini bilmeli.
+   */
+  it('profil gizliligi anahtari ve aciklamasi gorunur', async () => {
+    await render(<AyarlarEkrani />)
+
+    expect(await screen.findByText('Profilim gizli')).toBeTruthy()
+    expect(
+      screen.getByText(/anıların ve check-in.lerin yalnızca arkadaşlarına görünür/)
+    ).toBeTruthy()
   })
 })

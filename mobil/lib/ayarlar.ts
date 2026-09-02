@@ -49,6 +49,36 @@ export async function aramadaGorunsunAyarla(deger: boolean): Promise<void> {
   if (error) throw new Error(hataMetni(error))
 }
 
+/**
+ * PROFIL GIZLILIGI (kullanicinin istegi 2026-09-02).
+ *
+ * Acikken paylasimlar - anilar ve check-in'ler, GECMIS DAHIL - yalnizca
+ * arkadaslara gorunur. Ad, kullanici adi ve fotograf herkese acik kalir:
+ * kisi seni bulup arkadaslik istegi gonderebilsin diye.
+ *
+ * `aramada_gorunsun` AYRI bir ayar: o aramada cikip cikmayacagini
+ * belirliyor, bu ise paylasimlarin kime gorunecegini.
+ */
+export async function profilGizliGetir(): Promise<boolean> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('profil_gizli')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  return data?.profil_gizli ?? false
+}
+
+export async function profilGizliAyarla(deger: boolean): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase
+    .from('profiller')
+    .update({ profil_gizli: deger })
+    .eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}
+
 const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000
 
 export async function kullaniciAdiDurumunuGetir(): Promise<{

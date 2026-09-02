@@ -5,6 +5,8 @@ import {
   varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
+  profilGizliGetir,
+  profilGizliAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import type { Bulunurluk } from '../../../lib/checkin'
@@ -46,6 +48,7 @@ export default function AyarlarEkrani() {
   const { t } = useDil()
   const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
+  const [profilGizli, setProfilGizli] = useState(false)
   const [kullaniciAdi, setKullaniciAdi] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
@@ -60,6 +63,7 @@ export default function AyarlarEkrani() {
     try {
       setVarsayilanBulunurluk(await varsayilanBulunurluguGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
+      setProfilGizli(await profilGizliGetir())
       setKullaniciAdi((await kullaniciAdiDurumunuGetir()).kullaniciAdi)
       setHata(null)
     } catch (e) {
@@ -74,6 +78,24 @@ export default function AyarlarEkrani() {
       ayarlariYukle()
     }, [])
   )
+
+  /**
+   * Iyimser guncelleme, HATADA GERI ALINIYOR: anahtar once yeni haline
+   * geciyor (dokunusa aninda cevap), sunucu reddederse eski degerine
+   * donuyor. Aksi halde ekran "gizli" gorunurken paylasimlar aslinda
+   * herkese acik kalirdi - gizlilik ayarinda bu kabul edilemez.
+   */
+  async function profilGizliDegisti(deger: boolean) {
+    const oncekiDeger = profilGizli
+    setProfilGizli(deger)
+    try {
+      await profilGizliAyarla(deger)
+      setHata(null)
+    } catch (e) {
+      setProfilGizli(oncekiDeger)
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
 
   async function aramadaGorunsunDegisti(deger: boolean) {
     const oncekiDeger = aramadaGorunsun
@@ -145,6 +167,24 @@ export default function AyarlarEkrani() {
               artik menuden erisilmiyor; ani gorunurlugu, check-in
               yapilirken secilen bulunurlugun aniya donusmesiyle
               belirleniyor. */}
+          {/* PROFIL GIZLILIGI (kullanicinin istegi 2026-09-02). Aramada
+              gorunmenin USTUNDE duruyor: once "paylasimlarimi kim
+              gorsun", sonra "beni aramada bulabilsinler mi". */}
+          <Satir
+            ikon={<AramaIkonu />}
+            etiket={t('ayarlar.profilGizli')}
+            aciklama={t('ayarlar.profilGizliAciklama')}
+            sagBilesen={
+              <Switch
+                accessibilityLabel={t('ayarlar.profilGizli')}
+                value={profilGizli}
+                onValueChange={profilGizliDegisti}
+                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
+                thumbColor={renk.yuzey}
+                {...({ activeThumbColor: renk.yuzey } as object)}
+              />
+            }
+          />
           <Satir
             ikon={<AramaIkonu />}
             etiket={t('ayarlar.aramadaGorun')}
