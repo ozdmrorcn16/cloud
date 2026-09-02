@@ -19,14 +19,16 @@ jest.mock('../../lib/kod-gonderim', () => ({ gonderimKaydet: jest.fn() }))
 const mockRouterPush = jest.fn()
 const mockRouterReplace = jest.fn()
 const mockRouterBack = jest.fn()
+let mockGeriGidilebilir = true
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace, back: mockRouterBack }),
+  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace, back: mockRouterBack, canGoBack: () => mockGeriGidilebilir }),
 }))
 
 const KUTU = 'ornek@eposta.com'
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockGeriGidilebilir = true
   ;(supabase.auth.signInWithOtp as jest.Mock).mockResolvedValue({ data: {}, error: null })
   ;(epostaKayitliMi as jest.Mock).mockResolvedValue(false)
 })
@@ -211,5 +213,21 @@ describe('KayitEkrani', () => {
     await fireEvent.press(screen.getByLabelText('Geri'))
 
     expect(mockRouterBack).toHaveBeenCalled()
+  })
+
+  /**
+   * `router.back()` TEK BASINA YETMIYOR: karsilama ekrani bu ekrana
+   * `replace` ile geciyor, yani gecmiste geri donulecek sayfa KALMIYOR
+   * ve back() sessizce hicbir sey yapmiyor. Kullanicinin bildirdigi
+   * kusur buydu - dugme vardi ama islevi yoktu.
+   */
+  it('gecmis yoksa karsilamaya doner', async () => {
+    mockGeriGidilebilir = false
+
+    await render(<KayitEkrani />)
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).not.toHaveBeenCalled()
+    expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
   })
 })

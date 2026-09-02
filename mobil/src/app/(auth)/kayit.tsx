@@ -107,6 +107,20 @@ export default function KayitEkrani() {
     }
   }
 
+  /**
+   * GERI DONME.
+   *
+   * `router.back()` TEK BASINA YETMIYOR: karsilama ekrani bu ekrana
+   * `replace` ile geciyor, yani gecmiste geri donulecek bir sayfa
+   * KALMIYOR ve back() sessizce hicbir sey yapmiyor (kullanicinin
+   * bildirdigi kusur, 2026-09-02). Gecmis yoksa dogrudan karsilamaya
+   * donuyoruz.
+   */
+  function geriDon() {
+    if (router.canGoBack()) router.back()
+    else router.replace('/karsilama')
+  }
+
   return (
     <KlavyeKapatan style={stiller.sayfa}>
       {/* GERI DONME (kullanicinin istegi 2026-09-02). Karsilama
@@ -115,7 +129,7 @@ export default function KayitEkrani() {
           ustteki marka isareti ORTADA kalmali, geri oku onu itmemeli. */}
       <Pressable
         style={stiller.geri}
-        onPress={() => router.back()}
+        onPress={geriDon}
         accessibilityRole="button"
         accessibilityLabel={t('ortak.geri')}
         hitSlop={12}

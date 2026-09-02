@@ -8,11 +8,20 @@ jest.mock('../../lib/supabase', () => ({
 
 const mockRouterReplace = jest.fn()
 const mockRouterBack = jest.fn()
+let mockGeriGidilebilir = true
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockRouterReplace, back: mockRouterBack }),
+  useRouter: () => ({ replace: mockRouterReplace, back: mockRouterBack, canGoBack: () => mockGeriGidilebilir }),
 }))
 
 describe('GirisEkrani', () => {
+  // Mock'lar test ARASINDA sifirlanmali: aksi halde bir onceki testin
+  // `back()` cagrisi sonrakinde de sayiliyor ve "cagrilmadi" iddiasi
+  // sahte basarisiz oluyor (bu bir kez yasandi).
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGeriGidilebilir = true
+  })
+
   it('dogru bilgilerle signInWithPassword cagirir ve yonlendirir', async () => {
     ;(supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({ data: {}, error: null })
     await render(<GirisEkrani />)
@@ -53,5 +62,21 @@ describe('GirisEkrani', () => {
     await fireEvent.press(screen.getByLabelText('Geri'))
 
     expect(mockRouterBack).toHaveBeenCalled()
+  })
+
+  /**
+   * `router.back()` TEK BASINA YETMIYOR: karsilama ekrani bu ekrana
+   * `replace` ile geciyor, yani gecmiste geri donulecek sayfa KALMIYOR
+   * ve back() sessizce hicbir sey yapmiyor. Kullanicinin bildirdigi
+   * kusur buydu - dugme vardi ama islevi yoktu.
+   */
+  it('gecmis yoksa karsilamaya doner', async () => {
+    mockGeriGidilebilir = false
+
+    await render(<GirisEkrani />)
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).not.toHaveBeenCalled()
+    expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
   })
 })
