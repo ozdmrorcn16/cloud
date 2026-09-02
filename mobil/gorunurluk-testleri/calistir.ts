@@ -3076,6 +3076,257 @@ async function main() {
     esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
   })
 
+  // ---------------------------------------------------------------- //
+  // ETIKET ONAYI (migrasyonlar 20260826200000 ve 20260829090000)
+  //
+  // Etiketlenmek, kisinin KIMLIGININ BIR KONUMA BAGLANMASI demek; yani
+  // etiket, etiketlenen kisi hakkinda konum verisi uretiyor. Kurallarin
+  // hepsi politikalarda: bagli olmayan etiketlenemez, satir 'bekliyor'
+  // olarak girer ve ONAYLANANA KADAR ucuncu kisiye gorunmez, karari
+  // yalnizca etiketlenen kisi verir.
+  //
+  // Bu iki senaryo Plan 2'den kalan acik borctu
+  // (bkz. docs/plan2-takip-isleri.md).
+  // ---------------------------------------------------------------- //
+
+  await senaryo('63 - Etiket onay bekler, onaylanana kadar ucuncu kisi goremez', async () => {
+    // On kosul 1: A ile B karsilikli bagli olmali - etiketlemenin sarti.
+    // Senaryo 61 bu bagi kurup birakiyor, ama ona SESSIZCE guvenilmiyor:
+    // bag yoksa burada kuruluyor, boylece senaryo tek basina da kosar.
+    let bag = await ikiYonTakipSatirlari(a, aId, bId)
+    if (bag.length !== 2) {
+      await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+      await b.rpc('takip_istegini_yanitla', { p_kullanici_id: aId, p_kabul: true })
+      t.takipler.push({ istemci: a, hedefId: bId })
+      bag = await ikiYonTakipSatirlari(a, aId, bId)
+    }
+    esitMi(bag.length, 2, 'on kosul: A ile B karsilikli bagli')
+
+    // On kosul 2: C, A'nin check-in'ini GERCEKTEN gorebiliyor olmali.
+    // Bu satir olmadan asagidaki "C bekleyen etiketi goremez"
+    // dogrulamasi vakumda gecerdi - C zaten hicbir seyi goremiyor
+    // olabilirdi.
+    const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    t.checkInler.push({ istemci: a, id: aCi })
+    const cCi = await checkInYap(c, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    t.checkInler.push({ istemci: c, id: cCi })
+    esitMi(
+      (await canliSakinIdleri(c, mekan1)).includes(aId),
+      true,
+      'on kosul: C, ayni mekanda A nin check-in ini goruyor'
+    )
+
+    // Etiketleyen kendi etiketini onaylanmis yazamaz: durum kilidi
+    // insert politikasinda. Bu once deneniyor cunku birincil anahtar
+    // (check_in_id, kullanici_id) ayni cifti ikinci kez kabul etmiyor.
+    const { error: hazirOnayHatasi } = await a.from('check_in_etiketleri').insert({
+      check_in_id: aCi,
+      kullanici_id: bId,
+      durum: 'onaylandi',
+    })
+    esitMi(
+      hazirOnayHatasi !== null,
+      true,
+      'etiketleyen, etiketi dogrudan onaylanmis olarak yazamaz'
+    )
+
+    // Bagsiz kisi etiketlenemez: C ile A arasinda bag yok.
+    const { error: bagsizHata } = await a.from('check_in_etiketleri').insert({
+      check_in_id: aCi,
+      kullanici_id: cId,
+    })
+    esitMi(bagsizHata !== null, true, 'bagli olmayan kisi etiketlenemez')
+
+    // Kendini etiketleme de kapali (kullanici_id <> auth.uid()).
+    const { error: kendiHata } = await a.from('check_in_etiketleri').insert({
+      check_in_id: aCi,
+      kullanici_id: aId,
+    })
+    esitMi(kendiHata !== null, true, 'kisi kendini etiketleyemez')
+
+    // Asil yol: A, bagli oldugu B'yi etiketliyor.
+    const { error: etiketHata } = await a
+      .from('check_in_etiketleri')
+      .insert({ check_in_id: aCi, kullanici_id: bId })
+    esitMi(etiketHata, null, 'A, bagli oldugu B yi etiketleyebiliyor')
+
+    const { data: aGorunum } = await a
+      .from('check_in_etiketleri')
+      .select('durum')
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(
+      ((aGorunum ?? []) as { durum: string }[]).map((r) => r.durum),
+      ['bekliyor'],
+      'yeni etiket bekliyor durumunda giriyor'
+    )
+
+    // GIZLILIGIN CEKIRDEGI: bekleyen etiket ucuncu kisiye gorunmuyor.
+    const { data: cGorunum } = await c
+      .from('check_in_etiketleri')
+      .select('kullanici_id')
+      .eq('check_in_id', aCi)
+    esitMi(cGorunum ?? [], [], 'C, check-in i gorse bile BEKLEYEN etiketi goremiyor')
+
+    // Etiketlenen kisi ise gorur - karar verebilmesi icin sart.
+    const { data: bekleyenler } = await b.rpc('bekleyen_etiketlerim')
+    type BekleyenSatir = {
+      check_in_id: string
+      mekan_adi: string
+      etiketleyen_id: string
+      etiketleyen_ad: string
+    }
+    const bekleyen = ((bekleyenler ?? []) as BekleyenSatir[]).find((s) => s.check_in_id === aCi)
+    esitMi(bekleyen !== undefined, true, 'B, bekleyen etiketi bildirim listesinde goruyor')
+    esitMi(bekleyen?.etiketleyen_id, aId, 'listede etiketleyenin kimligi dogru')
+    esitMi(
+      typeof bekleyen?.etiketleyen_ad === 'string' && bekleyen.etiketleyen_ad.length > 0,
+      true,
+      'listede etiketleyenin ADI da donuyor (profiller politikasi duz join e izin vermiyor)'
+    )
+    esitMi(bekleyen?.mekan_adi, MEKAN_1.ad, 'listede mekan adi donuyor')
+
+    // Etiketleyen kendi gonderdigi istegi kendi listesinde gormez.
+    const { data: aBekleyenler } = await a.rpc('bekleyen_etiketlerim')
+    esitMi(
+      ((aBekleyenler ?? []) as { check_in_id: string }[]).some((s) => s.check_in_id === aCi),
+      false,
+      'etiketleyen, gonderdigi istegi kendi bekleyenler listesinde gormez'
+    )
+
+    // Karari YALNIZCA etiketlenen verir: check-in'in sahibi olsa bile A
+    // onaylayamaz. Politika satiri hic eslemedigi icin hata donmez,
+    // GUNCELLENEN SATIR SAYISI sifir olur - iddia bu yuzden donen
+    // satirlar uzerinden kuruluyor.
+    const { data: aOnayi } = await a
+      .from('check_in_etiketleri')
+      .update({ durum: 'onaylandi' })
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+      .select()
+    esitMi(aOnayi ?? [], [], 'check-in sahibi kendi etiketini onaylayamaz')
+
+    // B onayliyor.
+    const { error: onayHata } = await b
+      .from('check_in_etiketleri')
+      .update({ durum: 'onaylandi' })
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(onayHata, null, 'etiketlenen kisi etiketi onaylayabiliyor')
+
+    const { data: onaySonrasi } = await b
+      .from('check_in_etiketleri')
+      .select('durum')
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(
+      ((onaySonrasi ?? []) as { durum: string }[]).map((r) => r.durum),
+      ['onaylandi'],
+      'onay veritabaninda gerceklesti'
+    )
+
+    // Onaydan sonra ucuncu kisi goruyor.
+    const { data: cOnaySonrasi } = await c
+      .from('check_in_etiketleri')
+      .select('kullanici_id')
+      .eq('check_in_id', aCi)
+    esitMi(
+      ((cOnaySonrasi ?? []) as { kullanici_id: string }[]).map((r) => r.kullanici_id),
+      [bId],
+      'onaylanan etiketi ucuncu kisi de goruyor'
+    )
+
+    // Karar verilince istek listeden dusuyor.
+    const { data: sonrakiBekleyenler } = await b.rpc('bekleyen_etiketlerim')
+    esitMi(
+      ((sonrakiBekleyenler ?? []) as { check_in_id: string }[]).some((s) => s.check_in_id === aCi),
+      false,
+      'onaylanan etiket bekleyenler listesinden dusuyor'
+    )
+
+    // Etiketlenen kisi fikrini degistirip etiketi kaldirabiliyor.
+    const { error: kaldirHata } = await b
+      .from('check_in_etiketleri')
+      .delete()
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(kaldirHata, null, 'etiketlenen kisi kendi etiketini kaldirabiliyor')
+    const { data: kaldirmaSonrasi } = await a
+      .from('check_in_etiketleri')
+      .select('kullanici_id')
+      .eq('check_in_id', aCi)
+    esitMi(kaldirmaSonrasi ?? [], [], 'etiket gercekten silindi')
+
+    const anonim = anonIstemciOlustur()
+    const { error: anonHata } = await anonim.rpc('bekleyen_etiketlerim')
+    esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
+  })
+
+  await senaryo('64 - Reddedilen etiket duruyor ve tekrar etiketlemeyi engelliyor', async () => {
+    // Yeni bir check-in: check_in_yap oncekini kendiliginden kapatiyor.
+    const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
+    t.checkInler.push({ istemci: a, id: aCi })
+
+    const { error: etiketHata } = await a
+      .from('check_in_etiketleri')
+      .insert({ check_in_id: aCi, kullanici_id: bId })
+    esitMi(etiketHata, null, 'on kosul: A, B yi etiketleyebiliyor')
+
+    const { error: redHata } = await b
+      .from('check_in_etiketleri')
+      .update({ durum: 'reddedildi' })
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(redHata, null, 'etiketlenen kisi etiketi reddedebiliyor')
+
+    // SATIR SILINMIYOR - birincil anahtar oldugu icin duran satir ayni
+    // etiketin tekrar gonderilmesini de engelliyor. Israrli birinin
+    // ayni etiketi tekrar tekrar yollamasi boyle kapatiliyor.
+    const { data: kalan } = await b
+      .from('check_in_etiketleri')
+      .select('durum')
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(
+      ((kalan ?? []) as { durum: string }[]).map((r) => r.durum),
+      ['reddedildi'],
+      'reddedilen satir siliniyor degil, duruyor'
+    )
+
+    const { error: tekrarHata } = await a
+      .from('check_in_etiketleri')
+      .insert({ check_in_id: aCi, kullanici_id: bId })
+    esitMi(tekrarHata !== null, true, 'ayni etiket tekrar gonderilemiyor')
+
+    // Reddedilen etiket ucuncu kisiye gorunmuyor - onaylanmayan hicbir
+    // satir disari cikmiyor.
+    const { data: cGorunum } = await c
+      .from('check_in_etiketleri')
+      .select('kullanici_id')
+      .eq('check_in_id', aCi)
+    esitMi(cGorunum ?? [], [], 'reddedilen etiketi ucuncu kisi goremiyor')
+
+    // Karar verilmis bir etiket yeniden bekleyene cevrilemiyor: update
+    // politikasinin using kolu yalnizca bekleyen satiri aciyor.
+    const { data: geriAlma } = await b
+      .from('check_in_etiketleri')
+      .update({ durum: 'bekliyor' })
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+      .select()
+    esitMi(geriAlma ?? [], [], 'karar verilmis etiket yeniden bekleyene cevrilemiyor')
+
+    // Temizlik: satiri check-in sahibi kaldiriyor. Check-in zaten
+    // temizlik listesinde ve etiket cascade ile gidecek; bu adim ayrica
+    // silme politikasinin SAHIP kolunu olcuyor.
+    const { error: sahipSilmeHatasi } = await a
+      .from('check_in_etiketleri')
+      .delete()
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(sahipSilmeHatasi, null, 'check-in sahibi de etiketi kaldirabiliyor')
+  })
+
   await temizle(t)
   sonucuBildirVeCik()
 }

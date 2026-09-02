@@ -230,6 +230,28 @@ konusma silme yetkisi" bolumunde anlatilan yonetici istemcisidir -
 sirasiyla RPC'lerle konusan A/B istemcilerinin bu tabloda hicbir yazma
 yetkisi yok (insert/update/delete `authenticated`den geri alindi).
 
+45-62: Plan 1 (hesap durumu ve kullanici haklari) ve Plan 2
+(moderasyon paneli) senaryolari. Askiya alma her yazma kapisinda ve her
+gorunurluk yolunda, dondurma ve otomatik geri acilma, moderator RPC
+kapisi, moderasyon gizlemesi, check-in fotografi, engellenenler listesi.
+
+63-64: **Etiket onayi.** Etiketlenmek, kisinin kimliginin bir konuma
+baglanmasi demek; kurallarin hepsi politikalarda.
+
+- **63 — Etiket onay bekler.** Bagli olmayan ve kisinin kendisi
+  etiketlenemez; satir `bekliyor` olarak girer ve onaylanana kadar
+  ucuncu kisiye gorunmez; karari YALNIZCA etiketlenen verir (check-in'in
+  sahibi kendi etiketini onaylayamaz). C'nin check-in'i gercekten
+  gordugu ONCE dogrulaniyor, yoksa "goremiyor" iddiasi vakumda gecerdi.
+- **64 — Reddedilen etiket duruyor.** Red satiri silinmiyor; birincil
+  anahtar oldugu icin ayni etiketin tekrar gonderilmesini engelliyor.
+  Karar verilmis bir etiket yeniden `bekliyor` yapilamiyor.
+
+Bu iki senaryo yazilir yazilmaz gercek bir kusur buldu: onay/reddetme
+`42501 permission denied` ile HIC calismiyordu, cunku tabloya update
+politikasi eklenmis ama tablo yetkisi geri verilmemisti. Duzeltme
+migrasyonu 20260902160000.
+
 ### Faz 3b'de neyin degistigi
 
 **Takip artik karsilikli** (karar 42, `docs/superpowers/specs/2026-08-20-faz3b-birebir-sohbet-design.md`).

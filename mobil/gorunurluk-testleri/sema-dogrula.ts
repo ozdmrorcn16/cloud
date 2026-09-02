@@ -302,6 +302,44 @@ async function main() {
     'check_inler.mekan_id dogrudan guncellenemiyor (mekan kapisi taklit edilemiyor)'
   )
 
+
+  console.log('\n--- Etiket: yalnizca `durum` sutunu guncellenebilir ---')
+  // Onay yetkisi TABLO GENELINDE degil, yalnizca `durum` sutununda
+  // veriliyor (migrasyon 20260902160000). Sebep politikadaki bosluk:
+  // "etiketlenen kisi karar verir" politikasinin `with check` kolu
+  // `check_in_id` hakkinda hicbir sey soylemiyor, yani tablo geneli
+  // yetkide etiketlenen kisi bekleyen satirini bir baskasinin
+  // check-in'ine tasiyabilir - kendini davet edilmedigi bir konuma
+  // etiketleyebilirdi.
+  //
+  // Yetki kontrolu satir eslesmesinden ONCE calistigi icin bu prob
+  // tabloda hic satir olmasa bile anlamli: 42501 tablo/sutun
+  // yetkisinden gelir, politikadan degil.
+  const { error: etiketTasimaHatasi } = await a
+    .from('check_in_etiketleri')
+    .update({ check_in_id: '00000000-0000-0000-0000-000000000000' })
+    .eq('kullanici_id', aId)
+  esitMi(
+    etiketTasimaHatasi?.code,
+    '42501',
+    'check_in_etiketleri.check_in_id guncellenemiyor (etiket baska check-in e tasinamaz)'
+  )
+
+  // Kardes iddia: `durum` sutunu GERCEKTEN acik. Bu olmadan yukaridaki
+  // 42501 "tablonun tamami kapali" halinde de gecerdi - yani onay
+  // yolunun kirik oldugu 2026-09-02 oncesi durumda da yesil olurdu.
+  // Eslesen satir yok, o yuzden sonuc bos bir guncelleme; olculen sey
+  // YETKININ VARLIGI.
+  const { error: etiketDurumHatasi } = await a
+    .from('check_in_etiketleri')
+    .update({ durum: 'onaylandi' })
+    .eq('kullanici_id', aId)
+    .eq('check_in_id', '00000000-0000-0000-0000-000000000000')
+  esitMi(
+    etiketDurumHatasi,
+    null,
+    'check_in_etiketleri.durum guncellenebiliyor (onay yolu acik)'
+  )
   console.log('\n--- Sertlestirme: NULL parametre korumasi ---')
   // `x not in (...)` x NULL oldugunda NULL doner (true degil), yani
   // korumasiz bir `if` sessizce atlanirdi ve deger sutunun `not null`

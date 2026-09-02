@@ -42,7 +42,9 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-02 — [2026-09-02-82180322.md](oturumlar/2026-09-02-82180322.md) — update installed
 - 2026-09-02 — [2026-09-02-62e92057.md](oturumlar/2026-09-02-62e92057.md) — kaldığımız yerden devam edelim
+- 2026-09-02 — [2026-09-02-11f3a4eb.md](oturumlar/2026-09-02-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
 - 2026-09-01 — [2026-09-01-62e92057.md](oturumlar/2026-09-01-62e92057.md) — kaldığımız yerden devam edelim
 - 2026-09-01 — [2026-09-01-11f3a4eb.md](oturumlar/2026-09-01-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
 - 2026-08-31 — [2026-08-31-62e92057.md](oturumlar/2026-08-31-62e92057.md) — kaldığımız yerden devam edelim
@@ -1025,3 +1027,23 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     donmek uygulamayi da yavaslatir. "Kendi sunucumuz" sorusuna cevap:
     mumkun ama isletme yuku bize kalir; magaza oncesi yonetilen kalmasi,
     fatura 100 $/ay'i gecince yeniden bakilmasi onerildi.
+
+81. **ETIKET ONAYI HIC CALISMIYORMUS; TEST BORCU KAPATILIRKEN BULUNDU**
+    (2026-09-02). Plan 2'den kalan "gorunurluk paketinde etiket onayi
+    senaryosu yok" borcu kapatildi (senaryo 63-64, 28 dogrulama). Senaryo
+    yazilir yazilmaz gercek bir kusur cikti: etiketi onaylamak ya da
+    reddetmek `42501 permission denied for table check_in_etiketleri` ile
+    HIC calismiyordu. Kok neden iki migrasyonun arasinda kalmisti -
+    tabloyu kuran 20260826200000 update yetkisini geri almis, onay
+    modelini getiren 20260829090000 UPDATE politikasini eklemis ama
+    yetkiyi geri vermemisti; yetki yoksa politika hic degerlendirilmiyor.
+    Sonucu: her etiket sonsuza kadar 'bekliyor' kaliyordu ve etiketler
+    hicbir yerde gorunmuyordu, yani ozellik gonderildigi gunden beri
+    kapaliydi. Veri kaybi yok (tablo bostu). Duzeltme migrasyonu
+    20260902160000: yetki TABLO GENELINDE degil yalnizca `durum`
+    sutununda verildi, cunku politikanin `with check` kolu `check_in_id`
+    hakkinda hicbir sey soylemiyor - tablo geneli yetkide etiketlenen
+    kisi bekleyen satirini baskasinin check-in'ine tasiyabilirdi.
+    Ders: bir tablodan yetki geri alindiktan sonra politika eklemek
+    YETMEZ, yetki de geri verilmelidir; politika sessizce olu kalir.
+    Kapanis: jest 59/536, test:sema 147, test:gorunurluk sifir hata.

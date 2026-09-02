@@ -419,8 +419,9 @@ yazilmali.
 **5. Google Maps Android anahtari yok** - Android'de harita zemini gri
 kalir. Ayrinti "KALAN (kullanicida)" bolumunde.
 
-**6. `test:gorunurluk` icinde ETIKET ONAYI senaryosu yok**
-(`docs/plan2-takip-isleri.md`).
+**6. ~~`test:gorunurluk` icinde ETIKET ONAYI senaryosu yok~~ KAPANDI**
+(2026-09-02) - ve senaryo yazilir yazilmaz gercek bir kusur buldu;
+bkz. asagidaki "ETIKET ONAYI HIC CALISMIYORMUS" bolumu.
 
 **7. Panelde 1 bekleyen sikayet var ve GERCEK DEGIL:** 2026-08-23
 tarihli, Plan 2 dogrulamasindan kalma bir MESAJ sikayeti. Gercek
@@ -444,6 +445,44 @@ arandi. **Turkce metinle arama YAPMA** - kucultulmus pakette aksanli
 harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
+
+### ETIKET ONAYI HIC CALISMIYORMUS - 2026-09-02
+
+Plan 2'den kalan "gorunurluk paketinde etiket onayi senaryosu yok"
+borcu kapatilirken ortaya cikti: **etiketi onaylamak ya da reddetmek
+sunucuda mumkun degildi.** Etiketlenen kisi onayla dedigi anda
+`42501 permission denied for table check_in_etiketleri` donuyordu.
+
+**Kok neden iki migrasyonun arasinda kalmis.** Tabloyu kuran
+20260826200000 "guncelleme yok, etiket ya vardir ya yoktur" gerekcesiyle
+`revoke update ... from authenticated` yazmisti. Uc gun sonra onay
+modelini getiren 20260829090000 "etiketlenen kisi karar verir" UPDATE
+POLITIKASINI ekledi ama tablo duzeyindeki yetkiyi GERI VERMEDI.
+**Yetki yoksa politika hic degerlendirilmiyor** - politika yazildigi
+gunden beri olu koddu.
+
+Sonucu: her etiket sonsuza kadar `bekliyor` kaliyordu ve
+`etiketleriGetir` yalnizca `onaylandi` satirlari okudugu icin etiketler
+HICBIR YERDE gorunmuyordu. Yani ozellik gonderildigi gunden beri
+kapaliydi. Veri kaybi yok - duzeltme aninda tablo bostu (canlida
+olculdu), gercek kullanici henuz kimseyi etiketlememis.
+
+Duzeltme migrasyonu 20260902160000: `grant update (durum) on
+public.check_in_etiketleri to authenticated`. **Yetki TABLO GENELINDE
+DEGIL, yalnizca `durum` sutununda** - politikanin `with check` kolu
+`kullanici_id` ve `durum` diyor ama `check_in_id` HAKKINDA HICBIR SEY
+soylemiyor; tablo geneli yetkide etiketlenen kisi bekleyen satirini
+baskasinin check-in'ine tasiyip kendini davet edilmedigi bir konuma
+etiketleyebilirdi.
+
+**Kural olarak alinmali: bir tablodan yetki geri alindiktan sonra o
+tabloya politika eklemek YETMEZ; tablo (ya da sutun) yetkisi de geri
+verilmeli.** Politika sessizce olu kalir, hicbir yerde uyari cikmaz.
+
+Yeni senaryolar 63 ve 64 (`gorunurluk-testleri/calistir.ts`, 28
+dogrulama) ve sema paketinde iki kardes iddia: `check_in_id`
+guncellenemiyor (42501), `durum` guncellenebiliyor. Ikinci iddia sart -
+onsuz, "tablonun tamami kapali" hali de yesil gecerdi.
 
 ### SILME ONAYI EKRANIN ORTASINDA - 2026-09-02
 

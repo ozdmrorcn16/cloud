@@ -3,28 +3,16 @@
 Plan: `docs/superpowers/plans/2026-08-23-plan2-moderasyon-paneli.md`
 Spec: `docs/superpowers/specs/2026-08-22-moderasyon-paneli-design.md`
 
-## BLOKE - once bu yapilmali
+## KAPANDI - TOTP MFA acildi
 
-### 1. Supabase'de TOTP MFA acilmali
+Bu bolumde "Supabase'de TOTP MFA acilmali" diye duran blokaj artik
+GECERSIZ. 2026-09-02'de olculdu: `mfa.enroll` calisiyor, AAL2
+aliniyor ve moderator RPC'leri gecici bir moderator hesabiyla ucdan
+uca kosuldu (`araclar/moderasyon-yorum-canli-test.py`, 13 dogrulama).
 
-Panel giris yaptirmiyor. `supabase.auth.mfa.enroll({ factorType: 'totp' })`
-cagrisi su hatayi donuyor:
-
-```
-MFA enroll is disabled for TOTP
-```
-
-Bu bir **proje ayaridir**, migrasyonla yapilamaz ve Supabase MCP
-uzerinden de degistirilemez (MCP'de auth yapilandirma araci yok).
-
-Yapilmasi gereken: Supabase Dashboard -> Authentication ->
-Multi-Factor Authentication -> TOTP (Authenticator app) etkinlestirilir.
-
-Bu acilana kadar **panelin pozitif yonu dogrulanamaz**: yani "dogru
-kimlik kapiyi aciyor mu" sorusu acikta. Negatif yon (yanlis kimlik
-giremiyor) tam olarak dogrulandi - hem `test:gorunurluk` senaryo 59'da
-13 RPC icin, hem de gercek bir moderator hesabiyla `aal1` oturumda
-(moderatorler satiri VAR ama TOTP yok -> `Yetkisiz`).
+Negatif yon (yanlis kimlik giremiyor) zaten dogrulanmisti: hem
+`test:gorunurluk` senaryo 59'da 13 RPC icin, hem de gercek bir
+moderator hesabiyla `aal1` oturumda.
 
 ## Yapildi ama elle gozle dogrulanmadi
 
@@ -58,6 +46,26 @@ Dogrulama sirasinda su hesap olusturuldu ve `moderatorler` tablosuna
 Kullanici kendi moderator hesabini kurunca bu test hesabi silinmeli
 ya da parolasi degistirilmelidir. Parola bu belgede duruyor, yani
 **gercek moderator hesabi olarak kullanilmamalidir**.
+
+## KAPANDI - etiket onayi artik test altinda
+
+Gorunurluk paketinde etiket onayi senaryosu yoktu; bu borc 2026-09-02'de
+kapandi. Iki yeni senaryo eklendi (`gorunurluk-testleri/calistir.ts`):
+
+- **63** - etiket 'bekliyor' olarak giriyor, onaylanana kadar ucuncu
+  kisiye gorunmuyor, karari yalnizca etiketlenen veriyor.
+- **64** - reddedilen satir siliniyor degil duruyor ve ayni etiketin
+  tekrar gonderilmesini engelliyor.
+
+**Senaryolar yazilir yazilmaz GERCEK BIR KUSUR buldu: onay/reddetme
+HIC CALISMIYORDU.** `check_in_etiketleri` uzerindeki update yetkisi
+tabloyu kuran migrasyonda geri alinmisti; onay modelini getiren
+migrasyon UPDATE POLITIKASINI ekledi ama yetkiyi geri vermedi. Yetki
+olmadan politika hic degerlendirilmiyor - politika yazildigi gunden
+beri olu koddu ve her etiket sonsuza kadar 'bekliyor' kaliyordu.
+Duzeltme: migrasyon 20260902160000, `grant update (durum)`. Sutun
+duzeyinde, cunku politikanin `with check` kolu `check_in_id` hakkinda
+hicbir sey soylemiyor. Sema paketine iki kardes iddia eklendi.
 
 ## Ertelenen is: cok dillilik (i18n)
 
