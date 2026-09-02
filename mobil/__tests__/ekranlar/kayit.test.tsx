@@ -2,11 +2,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react-nativ
 import KayitEkrani from '../../src/app/(auth)/kayit'
 import { supabase } from '../../lib/supabase'
 import { epostaKayitliMi } from '../../lib/eposta-kayit'
+import { saglayiciylaGirisYap, SaglayiciHazirDegil, Vazgecildi } from '../../lib/sosyal-giris'
 
 jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { signInWithOtp: jest.fn(), signInWithOAuth: jest.fn() }, rpc: jest.fn() },
+  supabase: { auth: { signInWithOtp: jest.fn() }, rpc: jest.fn() },
 }))
 jest.mock('../../lib/eposta-kayit', () => ({ epostaKayitliMi: jest.fn() }))
+// Saglayici akisi GERCEGIYLE kullaniliyor (saglayicilar, hata
+// siniflari); yalnizca disariya cikan cagri mock'lu.
+jest.mock('../../lib/sosyal-giris', () => ({
+  ...jest.requireActual('../../lib/sosyal-giris'),
+  saglayiciylaGirisYap: jest.fn(),
+}))
 jest.mock('../../lib/kod-gonderim', () => ({ gonderimKaydet: jest.fn() }))
 
 const mockRouterPush = jest.fn()
@@ -137,17 +144,33 @@ describe('KayitEkrani', () => {
     expect(screen.getByText('Google ile devam et')).toBeTruthy()
   })
 
-  it('Apple dugmesi OAuth akisini baslatir', async () => {
-    ;(supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({ error: null })
+  it('Apple dugmesi native Apple girisini baslatir ve basarida yonlendirir', async () => {
+    ;(saglayiciylaGirisYap as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KayitEkrani />)
     await fireEvent.press(screen.getByText('Apple ile devam et'))
 
-    await waitFor(() =>
-      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith(
-        expect.objectContaining({ provider: 'apple' })
+    await waitFor(() => expect(saglayiciylaGirisYap).toHaveBeenCalledWith('apple'))
+    expect(mockRouterReplace).toHaveBeenCalledWith('/')
+  })
+
+  /**
+   * VAZGECMEK HATA DEGIL: kullanici Apple'in sistem ekranini
+   * kapattiginda ekranda kirmizi bir satir gormemeli.
+   */
+  it('kullanici vazgecerse hata GOSTERILMEZ', async () => {
+    ;(saglayiciylaGirisYap as jest.Mock).mockRejectedValue(new Vazgecildi())
+
+    await render(<KayitEkrani />)
+    await fireEvent.press(screen.getByText('Apple ile devam et'))
+
+    await waitFor(() => expect(saglayiciylaGirisYap).toHaveBeenCalled())
+    expect(
+      screen.queryByText(
+        'Bu giriş yöntemi şu an kullanılamıyor. E-posta adresinle devam edebilirsin.'
       )
-    )
+    ).toBeNull()
+    expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 
   /**
@@ -155,10 +178,8 @@ describe('KayitEkrani', () => {
    * Kullanici ne oldugunu anlamali ve CALISAN yola yonlendirilmeli -
    * kapali bir kapiya bakip beklememeli.
    */
-  it('saglayici kapaliysa anlasilir hata gosterir', async () => {
-    ;(supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({
-      error: { message: 'Unsupported provider: provider is not enabled' },
-    })
+  it('saglayici yapilandirilmamissa anlasilir hata gosterir', async () => {
+    ;(saglayiciylaGirisYap as jest.Mock).mockRejectedValue(new SaglayiciHazirDegil('google'))
 
     await render(<KayitEkrani />)
     await fireEvent.press(screen.getByText('Google ile devam et'))

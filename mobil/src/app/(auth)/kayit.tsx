@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, TextInput, Pressable, Platform, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { epostaGecerliMi, epostaNormallestir } from '../../../lib/eposta'
@@ -10,6 +10,13 @@ import { AppleIkonu, GoogleIkonu } from '../../tasarim/sosyal-ikonlar'
 import { hataMetni } from '../../../lib/hata-metni'
 import { gonderimKaydet } from '../../../lib/kod-gonderim'
 import { epostaKayitliMi } from '../../../lib/eposta-kayit'
+import {
+  saglayicilar,
+  saglayiciylaGirisYap,
+  SaglayiciHazirDegil,
+  Vazgecildi,
+  type Saglayici,
+} from '../../../lib/sosyal-giris'
 
 /**
  * KAYDIN ILK ADIMI: yalnizca e-posta adresi.
@@ -35,18 +42,6 @@ import { epostaKayitliMi } from '../../../lib/eposta-kayit'
  * kayitli" kontrolu dogrulama ekranindaki son kapida yapilir. Yani bu
  * bir HIZLI YOL, zorunlu bir adim degil.
  */
-
-/**
- * Hangi saglayici dugmeleri gosterilecek.
- *
- * iOS'ta Apple ZORUNLU: App Store, baska bir sosyal giris sunuluyorsa
- * "Apple ile giris"in de bulunmasini sart kosuyor - bu bir tercih
- * degil, kural. Android'de Apple gosterilmiyor: orada zorunlu degil ve
- * kimse beklemiyor (kullanicinin karari 2026-09-01).
- */
-function saglayicilar(): ('apple' | 'google')[] {
-  return Platform.OS === 'ios' ? ['apple', 'google'] : ['google']
-}
 
 export default function KayitEkrani() {
   const router = useRouter()
@@ -89,14 +84,24 @@ export default function KayitEkrani() {
     router.push(`/dogrula?eposta=${encodeURIComponent(adres)}`)
   }
 
-  async function saglayiciyla(saglayici: 'apple' | 'google') {
+  async function saglayiciyla(saglayici: Saglayici) {
     setHata(null)
-    const { error } = await supabase.auth.signInWithOAuth({ provider: saglayici })
-    if (error) {
-      // Saglayici Supabase panelinde acik degilse buraya duesuluyor.
-      // Kullaniciyi CALISAN yola yonlendiriyoruz; kapali bir kapiya
-      // bakip beklemesin.
-      setHata(t('kayit.hataSaglayiciKapali'))
+    try {
+      await saglayiciylaGirisYap(saglayici)
+      // Basarili giristen sonra kok yonlendirme kontrolu devrali:
+      // profili olmayani profil olusturmaya, olani uygulamaya goturur.
+      router.replace('/')
+    } catch (e) {
+      // VAZGECMEK HATA DEGIL: kullanici sistem ekranini kapattiysa
+      // ekranda kirmizi bir satir gormemeli.
+      if (e instanceof Vazgecildi) return
+      if (e instanceof SaglayiciHazirDegil) {
+        // Saglayici henuz yapilandirilmamis. Kullaniciyi CALISAN yola
+        // yonlendiriyoruz; kapali bir kapiya bakip beklemesin.
+        setHata(t('kayit.hataSaglayiciKapali'))
+        return
+      }
+      setHata(hataMetni(e))
     }
   }
 
