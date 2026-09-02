@@ -179,6 +179,26 @@ export default {
     geri: 'Mesajlar',
   },
 
+  etkilesim: {
+    begen: 'Beğen',
+    begeniyiKaldir: 'Beğeniyi kaldır',
+    yorumlar: 'Yorumlar',
+    yorumYaz: 'Yorum yaz…',
+    gonder: 'Gönder',
+    paylas: 'Paylaş',
+    yorumSil: 'Yorumu sil',
+    yorumSilOnay: 'Bu yorum silinsin mi?',
+    yorumSikayet: 'Şikâyet et',
+    // Sikayet edilen yorum ANINDA gizleniyor (kullanicinin karari); bu
+    // metin ne olacagini onceden soyluyor, sonradan degil.
+    yorumSikayetOnay:
+      'Bu yorum şikâyet edilsin mi? Şikâyet edilen yorum hemen gizlenir ve moderasyon ekibi inceler.',
+    yorumSikayetEdildi: 'Şikâyetin alındı, yorum gizlendi.',
+    bosYorumBaslik: 'Henüz yorum yok',
+    bosYorumAciklama: 'İlk yorumu sen yazabilirsin.',
+    silinmisKullanici: 'Silinmiş kullanıcı',
+  },
+
   anaSayfa: {
     aramaYerTutucu: 'Ara',
     baslik: 'slooin',

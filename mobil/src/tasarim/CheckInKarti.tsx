@@ -6,6 +6,8 @@ import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
+import type { EtkilesimOzeti } from '../../lib/etkilesim'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -50,6 +52,10 @@ function CopIkonu() {
 export function CheckInKarti({
   oge,
   zamanYazisi,
+  ozet,
+  onBegen,
+  onYorum,
+  onPaylas,
   silOnayiAcik = false,
   onSilOnayi,
   onSil,
@@ -57,6 +63,18 @@ export function CheckInKarti({
   oge: AkisOgesi
   /** "7 saat önce" gibi gorece zaman; kart bicimlendirmeyi ustlenmiyor. */
   zamanYazisi: string
+  /**
+   * Begeni ve yorum sayilari. Kart bunu KENDI CEKMIYOR: akista otuz
+   * kart otuz ayri sorgu demek olurdu. Ekran hepsini tek cagrida alip
+   * buraya veriyor (etiketlerdeki desenin aynisi).
+   *
+   * Verilmezse eylem satiri hic cizilmiyor - profil gecmisi gibi
+   * etkilesimin anlamsiz oldugu yerlerde kart sade kaliyor.
+   */
+  ozet?: EtkilesimOzeti
+  onBegen?: (id: string) => void
+  onYorum?: (id: string) => void
+  onPaylas?: (id: string) => void
   silOnayiAcik?: boolean
   /** Verilmezse silme dugmesi hic cizilmez. */
   onSilOnayi?: (id: string) => void
@@ -186,6 +204,49 @@ export function CheckInKarti({
         />
       )}
 
+      {/* EYLEM SATIRI (kullanicinin istegi 2026-09-02). Sayilar yalnizca
+          sifirdan buyukse yaziliyor: "0" gostermek bos bir paylasimi
+          daha da bos gosteriyor. Ikonlar notr, yalnizca BEGENILMIS kalp
+          turuncu - Slooin'de turuncu "eylem ya da su an oluyor" demek,
+          uc ikonu birden turuncu yapmak o anlami tuketirdi. */}
+      {ozet && (
+        <View style={stiller.eylemler}>
+          <Pressable
+            style={stiller.eylem}
+            onPress={() => onBegen?.(oge.id)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              ozet.begendim ? t('etkilesim.begeniyiKaldir') : t('etkilesim.begen')
+            }
+            hitSlop={8}
+          >
+            <KalpIkonu dolu={ozet.begendim} />
+            {ozet.begeni > 0 && <Text style={stiller.sayac}>{ozet.begeni}</Text>}
+          </Pressable>
+
+          <Pressable
+            style={stiller.eylem}
+            onPress={() => onYorum?.(oge.id)}
+            accessibilityRole="button"
+            accessibilityLabel={t('etkilesim.yorumlar')}
+            hitSlop={8}
+          >
+            <YorumIkonu />
+            {ozet.yorum > 0 && <Text style={stiller.sayac}>{ozet.yorum}</Text>}
+          </Pressable>
+
+          <Pressable
+            style={stiller.eylem}
+            onPress={() => onPaylas?.(oge.id)}
+            accessibilityRole="button"
+            accessibilityLabel={t('etkilesim.paylas')}
+            hitSlop={8}
+          >
+            <PaylasIkonu />
+          </Pressable>
+        </View>
+      )}
+
       {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla. Onay satiri
           kartin icinde aciliyor - ayri bir ekran ya da sistem uyarisi
           akisi kesiyordu. */}
@@ -217,6 +278,18 @@ export function CheckInKarti({
 const AVATAR_CAPI = 40
 
 const stiller = StyleSheet.create({
+  eylemler: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.xl,
+    marginTop: bosluk.m,
+  },
+  eylem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  sayac: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
   kart: {
     // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik
     // ekranin tam genisliginde: yuvarlak kose ve golge kalkti, cunku

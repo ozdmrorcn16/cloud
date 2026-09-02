@@ -5,6 +5,13 @@ import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
 import { checkIniSil } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
+import {
+  etkilesimOzetleriniGetir,
+  begen,
+  begeniyiKaldir,
+  paylas,
+  type EtkilesimOzeti,
+} from '../../lib/etkilesim'
 import { KisiSatiri, type KisiSatirVerisi } from '../tasarim/KisiSatiri'
 import { kisiAra } from '../../lib/kisi-ara'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
@@ -16,6 +23,7 @@ import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 /** Arama kutusunun basindaki buyutec. */
 function BuyutecIkonu() {
+
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
       <Circle
@@ -72,6 +80,7 @@ export default function AnaSayfa() {
   const [yenileniyor, setYenileniyor] = useState(false)
   // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
+  const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
 
   // KISI ARAMA (kullanicinin istegi 2026-08-28): markanin hemen
   // altinda bir arama sutunu; kullanici adi ya da isim yazilinca
@@ -121,7 +130,13 @@ export default function AnaSayfa() {
 
   async function yukle() {
     try {
-      setOgeler(await akisiGetir())
+      const gelen = await akisiGetir()
+      setOgeler(gelen)
+      // Begeni/yorum sayilari TEK cagrida: kart basina sorgu atmak otuz
+      // gidis-donus demekti. Okunamazsa akis yine ciziliyor, yalnizca
+      // eylem satiri gorunmuyor - sayilar yuzunden akisi kaybetmek
+      // yanlis olur (etiketlerdeki desenin aynisi).
+      setOzetler(await etkilesimOzetleriniGetir(gelen.map((o) => o.id)).catch(() => ({})))
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -137,6 +152,35 @@ export default function AnaSayfa() {
       yukle()
     }, [])
   )
+
+  /**
+   * Iyimser guncelleme: kalp aninda doluyor, sunucu reddederse geri
+   * aliniyor. Begeni cok siklikla basilan bir dugme; her dokunusta
+   * sunucuyu beklemek dokunusu agir hissettiriyor.
+   */
+  async function begeniDegistir(id: string) {
+    const onceki = ozetler[id]
+    if (!onceki) return
+
+    const yeni = {
+      ...onceki,
+      begendim: !onceki.begendim,
+      begeni: onceki.begeni + (onceki.begendim ? -1 : 1),
+    }
+    setOzetler((o) => ({ ...o, [id]: yeni }))
+    try {
+      if (onceki.begendim) await begeniyiKaldir(id)
+      else await begen(id)
+    } catch {
+      setOzetler((o) => ({ ...o, [id]: onceki }))
+    }
+  }
+
+  async function paylasimiPaylas(id: string) {
+    const oge = ogeler.find((o) => o.id === id)
+    if (!oge) return
+    await paylas(oge.mekanAdi, oge.kullaniciAdi ?? '').catch(() => {})
+  }
 
   async function sil(id: string) {
     try {
@@ -212,6 +256,10 @@ export default function AnaSayfa() {
           <CheckInKarti
             oge={item}
             zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
+            ozet={ozetler[item.id]}
+            onBegen={begeniDegistir}
+            onYorum={(id) => router.push(`/yorumlar/${id}` as never)}
+            onPaylas={paylasimiPaylas}
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
             onSil={sil}
