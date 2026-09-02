@@ -314,9 +314,16 @@ const stiller = StyleSheet.create({
     marginTop: bosluk.m,
   },
   fotograf: {
-    width: '100%',
+    // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
+    // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif
+    // yatay margin, kartin kendi dolgusunu iptal ediyor - metin
+    // padding'li kaliyor, yalnizca gorsel kenara ulasiyor.
+    //
+    // Kose yuvarlamasi da kalkti: kenara yapisan bir gorselde yuvarlak
+    // kose, altindaki beyazi ucgen parcalar halinde gosteriyor.
+    width: undefined,
+    marginHorizontal: -bosluk.l,
     aspectRatio: 4 / 5,
-    borderRadius: yuvarlak.kart - 4,
     marginTop: bosluk.m,
     backgroundColor: renk.cizgi,
   },

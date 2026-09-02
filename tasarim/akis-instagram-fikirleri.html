@@ -1,0 +1,150 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Akış kartı - Instagram deseni</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --turuncu: #FE7813;
+    --metin: #17130F;
+    --metin-ikincil: #6E6660;
+    --metin-soluk: #A39B93;
+    --zemin: #FFFFFF;
+    --cizgi: #EFEAE5;
+    --harita: #D9D6D1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #EDE9E4; padding: 32px;
+  }
+  .izgara {
+    display: grid; grid-template-columns: repeat(3, 340px);
+    gap: 14px 34px; justify-content: center;
+  }
+  .etiket { font-size: 14px; font-weight: 700; color: #2E2A26; }
+  .etiket b { color: var(--turuncu); }
+  .not { font-size: 12px; color: #7A736D; line-height: 1.5; }
+
+  .telefon {
+    width: 340px; background: var(--zemin);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 6px 24px rgba(23,19,15,.10);
+    padding-top: 14px;
+  }
+  .marka {
+    text-align: center; font-size: 20px; font-weight: 700;
+    letter-spacing: -.5px; margin-bottom: 12px;
+  }
+  .marka i { color: var(--turuncu); font-style: normal; }
+
+  .kart { border-bottom: 1px solid var(--cizgi); padding-bottom: 12px; }
+  .ust { display: flex; align-items: center; gap: 10px; padding: 10px 16px; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg,#c9a88a,#8a6f57);
+  }
+  .kim { flex: 1; min-width: 0; }
+  .adsatir { font-size: 14px; font-weight: 600; color: var(--metin); }
+  .adsatir span { color: var(--turuncu); }
+  .zaman { font-size: 12px; color: var(--metin-soluk); margin-top: 1px; }
+  .sil { color: var(--metin-soluk); font-size: 15px; }
+
+  .harita { background: var(--harita); position: relative; height: 190px; }
+  .pin {
+    position: absolute; left: 50%; top: 46%;
+    transform: translate(-50%,-50%) rotate(-45deg);
+    width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
+    background: #C85A16;
+  }
+  .yol {
+    position: absolute; background: #cfccc6;
+  }
+
+  /* A - bugunku */
+  .a .harita { margin: 0 16px; border-radius: 12px; height: 180px; }
+
+  /* B - Instagram: tam genislik */
+  .b .harita { margin: 0; border-radius: 0; }
+
+  /* C - B + alt bilgi satiri */
+  .c .harita { margin: 0; border-radius: 0; }
+  .c .altbilgi { padding: 10px 16px 0; }
+  .c .mekan { font-size: 14px; font-weight: 600; color: var(--turuncu); }
+  .c .altzaman { font-size: 12px; color: var(--metin-soluk); margin-top: 2px; }
+  .c .ust .adsatir span { display: none; }
+</style>
+
+<div class="izgara">
+
+  <div class="etiket">A &mdash; bugünkü</div>
+  <div class="etiket">B &mdash; Instagram deseni <b>(önerim)</b></div>
+  <div class="etiket">C &mdash; B + mekan adı altta</div>
+
+  <!-- A -->
+  <div class="telefon a">
+    <div class="marka">sloo<i>i</i>n</div>
+    <div class="kart">
+      <div class="ust">
+        <div class="avatar"></div>
+        <div class="kim">
+          <div class="adsatir">byorcun &ndash; <span>Hadim erikli subesi</span></div>
+          <div class="zaman">01.09.2026 23:27</div>
+        </div>
+        <div class="sil">🗑</div>
+      </div>
+      <div class="harita"><div class="pin"></div></div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="telefon b">
+    <div class="marka">sloo<i>i</i>n</div>
+    <div class="kart">
+      <div class="ust">
+        <div class="avatar"></div>
+        <div class="kim">
+          <div class="adsatir">byorcun &ndash; <span>Hadim erikli subesi</span></div>
+          <div class="zaman">01.09.2026 23:27</div>
+        </div>
+        <div class="sil">🗑</div>
+      </div>
+      <div class="harita"><div class="pin"></div></div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="telefon c">
+    <div class="marka">sloo<i>i</i>n</div>
+    <div class="kart">
+      <div class="ust">
+        <div class="avatar"></div>
+        <div class="kim">
+          <div class="adsatir">byorcun</div>
+        </div>
+        <div class="sil">🗑</div>
+      </div>
+      <div class="harita"><div class="pin"></div></div>
+      <div class="altbilgi">
+        <div class="mekan">Hadim erikli subesi</div>
+        <div class="altzaman">Nilüfer, Bursa · 14 saat önce</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="not">
+    Harita kartın içinde, kenarlardan 16 px boşluklu ve köşeleri
+    yuvarlak. Yan sınır kalktı ama harita hâlâ &ldquo;kutu içinde&rdquo;
+    duruyor.
+  </div>
+  <div class="not">
+    Harita kenara yapışıyor, köşe yuvarlaması yok &mdash; Instagram'da
+    fotoğrafın durduğu gibi. Metin padding'li kalıyor, yani okunurluk
+    bozulmuyor. Ekranda daha çok harita görünüyor.
+  </div>
+  <div class="not">
+    Instagram'a en yakını: üstte yalnızca kim, altta mekan ve zaman.
+    Mekan adı haritanın altına indiği için başlık satırı sadeleşiyor,
+    uzun mekan adları da iki satıra sarmıyor.
+  </div>
+
+</div>
