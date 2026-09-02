@@ -7,8 +7,9 @@ jest.mock('../../lib/supabase', () => ({
 }))
 
 const mockRouterReplace = jest.fn()
+const mockRouterBack = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockRouterReplace }),
+  useRouter: () => ({ replace: mockRouterReplace, back: mockRouterBack }),
 }))
 
 describe('GirisEkrani', () => {
@@ -39,5 +40,18 @@ describe('GirisEkrani', () => {
     await waitFor(() => {
       expect(screen.getByText('Telefon numarası ya da şifre hatalı.')).toBeTruthy()
     })
+  })
+
+  /**
+   * GERI DONME (kullanicinin istegi 2026-09-02): karsilama ekranindan
+   * buraya gelen kisi fikrini degistirebilmeli; tek cikis yolu
+   * uygulamayi kapatmak olmamali.
+   */
+  it('geri dugmesi onceki ekrana doner', async () => {
+    await render(<GirisEkrani />)
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).toHaveBeenCalled()
   })
 })

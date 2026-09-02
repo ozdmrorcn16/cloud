@@ -7,6 +7,8 @@ import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 import { hataMetni } from '../../../lib/hata-metni'
+import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
+import Svg, { Path } from 'react-native-svg'
 
 /**
  * GIRIS - uygulamanin ilk sayfasi.
@@ -68,7 +70,30 @@ export default function GirisEkrani() {
   }
 
   return (
-    <View style={stiller.sayfa}>
+    <KlavyeKapatan style={stiller.sayfa}>
+      {/* GERI DONME (kullanicinin istegi 2026-09-02). Karsilama
+          ekranindan buraya gelen kisi fikrini degistirebilmeli; tek
+          cikis yolu uygulamayi kapatmak olmamali. Mutlak konumlu:
+          ustteki marka isareti ORTADA kalmali, geri oku onu itmemeli. */}
+      <Pressable
+        style={stiller.geri}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel={t('ortak.geri')}
+        hitSlop={12}
+      >
+        <Svg width={24} height={24} viewBox="0 0 24 24">
+          <Path
+            d="M15 5l-7 7 7 7"
+            stroke={renk.metin}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </Svg>
+      </Pressable>
+
       <View style={stiller.ust}>
         {/* Kelime markasi: marka adini da gosteriyor. Isaret yerine
             burada yazi kullaniliyor - uygulamayi ilk acan kisi adi
@@ -134,11 +159,17 @@ export default function GirisEkrani() {
         <Text style={stiller.ikincilYazi}>{t('giris.kayitOl')}</Text>
       </Pressable>
 
-    </View>
+    </KlavyeKapatan>
   )
 }
 
 const stiller = StyleSheet.create({
+  geri: {
+    position: 'absolute',
+    left: bosluk.l,
+    top: bosluk.xxl + bosluk.s,
+    zIndex: 1,
+  },
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,

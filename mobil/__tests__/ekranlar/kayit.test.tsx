@@ -18,8 +18,9 @@ jest.mock('../../lib/kod-gonderim', () => ({ gonderimKaydet: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 const mockRouterReplace = jest.fn()
+const mockRouterBack = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
+  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace, back: mockRouterBack }),
 }))
 
 const KUTU = 'ornek@eposta.com'
@@ -197,5 +198,18 @@ describe('KayitEkrani', () => {
     await fireEvent.press(screen.getByText('Giriş yap'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/giris')
+  })
+
+  /**
+   * GERI DONME (kullanicinin istegi 2026-09-02): karsilama ekranindan
+   * buraya gelen kisi fikrini degistirebilmeli; tek cikis yolu
+   * uygulamayi kapatmak olmamali.
+   */
+  it('geri dugmesi onceki ekrana doner', async () => {
+    await render(<KayitEkrani />)
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).toHaveBeenCalled()
   })
 })

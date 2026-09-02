@@ -17,6 +17,8 @@ import {
   Vazgecildi,
   type Saglayici,
 } from '../../../lib/sosyal-giris'
+import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
+import Svg, { Path } from 'react-native-svg'
 
 /**
  * KAYDIN ILK ADIMI: yalnizca e-posta adresi.
@@ -106,7 +108,30 @@ export default function KayitEkrani() {
   }
 
   return (
-    <View style={stiller.sayfa}>
+    <KlavyeKapatan style={stiller.sayfa}>
+      {/* GERI DONME (kullanicinin istegi 2026-09-02). Karsilama
+          ekranindan buraya gelen kisi fikrini degistirebilmeli; tek
+          cikis yolu uygulamayi kapatmak olmamali. Mutlak konumlu:
+          ustteki marka isareti ORTADA kalmali, geri oku onu itmemeli. */}
+      <Pressable
+        style={stiller.geri}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel={t('ortak.geri')}
+        hitSlop={12}
+      >
+        <Svg width={24} height={24} viewBox="0 0 24 24">
+          <Path
+            d="M15 5l-7 7 7 7"
+            stroke={renk.metin}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </Svg>
+      </Pressable>
+
       {/* Marka ISARETI, ortada ve ustte (kullanicinin verdigi referans
           duzeni). Kelime markasi burada kullanilmiyor: ekranin kendi
           basligi zaten metin, ikisi ust uste yigilinca ust taraf
@@ -177,11 +202,17 @@ export default function KayitEkrani() {
 
       <View style={stiller.bosluk} />
       <Text style={stiller.aydinlatma}>{t('kayit.aydinlatma')}</Text>
-    </View>
+    </KlavyeKapatan>
   )
 }
 
 const stiller = StyleSheet.create({
+  geri: {
+    position: 'absolute',
+    left: bosluk.l,
+    top: bosluk.xxl + bosluk.s,
+    zIndex: 1,
+  },
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,
