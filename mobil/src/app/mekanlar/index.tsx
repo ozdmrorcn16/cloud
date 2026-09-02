@@ -28,6 +28,7 @@ import {
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 
@@ -483,24 +484,19 @@ export default function KesfetEkrani() {
                 </Pressable>
               </View>
 
-              {/* SILME GERI ALINAMAZ; ayrilmaktan farki burada yaziyor:
-                  ayrilma check-in'i aniya cevirir, silme satiri
-                  tamamen kaldirir. */}
-              {silOnayi && (
-                <View style={stiller.silOnayAlani}>
-                  <Text style={stiller.silOnaySoru}>
-                    Bu check-in kalıcı olarak silinsin mi? Anılarında da kalmaz.
-                  </Text>
-                  <View style={stiller.silOnayDugmeleri}>
-                    <Pressable onPress={() => setSilOnayi(false)} accessibilityRole="button">
-                      <Text style={stiller.vazgecYazi}>Vazgeç</Text>
-                    </Pressable>
-                    <Pressable onPress={canliyiSil} accessibilityRole="button">
-                      <Text style={stiller.silYazi}>Sil</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              )}
+              {/* SILME GERI ALINAMAZ; ayrilmaktan farki aciklamada
+                  yaziyor: ayrilma check-in'i aniya cevirir, silme
+                  satiri tamamen kaldirir. Onay ekranin ortasinda
+                  (kullanicinin istegi 2026-09-02), akistaki kartla
+                  ayni pencere. */}
+              <OnayPenceresi
+                acikMi={silOnayi}
+                baslik="Bu check-in kalıcı olarak silinsin mi?"
+                aciklama="Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz."
+                eylemEtiketi="Sil"
+                onOnay={canliyiSil}
+                onVazgec={() => setSilOnayi(false)}
+              />
             </>
           ) : (
             <Pressable
@@ -698,18 +694,6 @@ const stiller = StyleSheet.create({
     color: renk.metin,
   },
   silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#C0392B' },
-  silOnayAlani: { gap: bosluk.s },
-  silOnaySoru: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  silOnayDugmeleri: { flexDirection: 'row', gap: 20 },
-  vazgecYazi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
-    color: renk.metinIkincil,
-  },
 
   buradaKart: {
     backgroundColor: renk.yuzey,

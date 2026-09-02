@@ -212,6 +212,10 @@ export default {
     saat: '{{sayi}} saat önce',
     gun: '{{sayi}} gün önce',
     silOnay: 'Bu check-in kalıcı olarak silinsin mi?',
+    // Onay penceresinin kisa bilgilendirmesi: geri alinamayan
+    // islemde ne kaybedildigi ONCEDEN yaziyor.
+    silAciklama:
+      'Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz.',
     silAriza: 'Check-in silinemedi.',
   },
 

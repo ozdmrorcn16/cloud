@@ -6,6 +6,7 @@ import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { OnayPenceresi } from './OnayPenceresi'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 
@@ -247,30 +248,19 @@ export function CheckInKarti({
         </View>
       )}
 
-      {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla. Onay satiri
-          kartin icinde aciliyor - ayri bir ekran ya da sistem uyarisi
-          akisi kesiyordu. */}
-      {silOnayiAcik && (
-        <View style={stiller.silOnayAlani}>
-          <Text style={stiller.silOnaySoru}>{t('anaSayfa.silOnay')}</Text>
-          <View style={stiller.silOnayDugmeleri}>
-            <Pressable
-              onPress={() => onSilOnayi?.(oge.id)}
-              accessibilityRole="button"
-              hitSlop={8}
-            >
-              <Text style={stiller.vazgecYazi}>{t('ortak.vazgec')}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => onSil?.(oge.id)}
-              accessibilityRole="button"
-              hitSlop={8}
-            >
-              <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
+      {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
+          Onay ekranin ORTASINDA aciliyor (kullanicinin istegi
+          2026-09-02). Onceden kartin icinde aciliyordu; uzun bir kartta
+          onay satiri ekranin disinda kalabiliyor ve kullanici "sil"e
+          bastigini sanip hicbir sey olmadigini goruyordu. */}
+      <OnayPenceresi
+        acikMi={silOnayiAcik}
+        baslik={t('anaSayfa.silOnay')}
+        aciklama={t('anaSayfa.silAciklama')}
+        eylemEtiketi={t('ortak.sil')}
+        onOnay={() => onSil?.(oge.id)}
+        onVazgec={() => onSilOnayi?.(oge.id)}
+      />
     </Pressable>
   )
 }
@@ -340,23 +330,6 @@ const stiller = StyleSheet.create({
   etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
 
   silDugmesi: { padding: 4, marginRight: 2 },
-  silOnayAlani: { marginTop: bosluk.m, gap: bosluk.s },
-  silOnaySoru: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  silOnayDugmeleri: { flexDirection: 'row', gap: 20 },
-  vazgecYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  silYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: '#C0392B',
-  },
 
   zaman: {
     fontFamily: yazi.govde,
