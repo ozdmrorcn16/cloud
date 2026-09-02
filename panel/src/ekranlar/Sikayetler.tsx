@@ -57,6 +57,7 @@ export function Sikayetler() {
           <option value="kullanici">Kullanıcı</option>
           <option value="check_in">Check-in</option>
           <option value="mesaj">Mesaj</option>
+          <option value="yorum">Yorum</option>
         </select>
 
         <select value={sirala} onChange={(e) => setSirala(e.target.value)}>

@@ -59,6 +59,7 @@ export function DenetimIzi() {
           <option value="">Tüm hedefler</option>
           <option value="kullanici">Kullanıcı</option>
           <option value="check_in">Check-in</option>
+          <option value="yorum">Yorum</option>
           <option value="sikayet">Şikayet</option>
           <option value="konusma">Konuşma</option>
         </select>

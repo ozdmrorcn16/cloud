@@ -3,9 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { Hata, Yukleniyor, hataMetni, zaman } from '../ortak/Durum'
 import { GerekceSor } from '../ortak/GerekceSor'
-import type { CheckInOzeti, Mesaj, Profil, SikayetDetayi as Detay, SikayetDurumu } from '../tipler'
+import type { YorumOzeti, CheckInOzeti, Mesaj, Profil, SikayetDetayi as Detay, SikayetDurumu } from '../tipler'
 
-type AcikKutu = 'askiya_al' | 'yasakla' | 'gizle' | null
+type AcikKutu = 'askiya_al' | 'yasakla' | 'gizle' | 'yorum_gizle' | 'yorum_ac' | null
 
 export function SikayetDetayi() {
   const { id } = useParams<{ id: string }>()
@@ -90,8 +90,8 @@ export function SikayetDetayi() {
   const hedefKullaniciId: string | null =
     s.hedef_tur === 'kullanici'
       ? s.hedef_id
-      : s.hedef_tur === 'check_in'
-        ? ((detay.hedef as { kullanici_id?: string } | null)?.kullanici_id ?? null)
+      : s.hedef_tur === 'check_in' || s.hedef_tur === 'yorum'
+        ? ((detay.hedef as { kullanici_id?: string | null } | null)?.kullanici_id ?? null)
         : ((detay.hedef as Mesaj | null)?.gonderen_id ?? null)
 
   return (
@@ -150,6 +150,36 @@ export function SikayetDetayi() {
         </>
       )}
 
+      {s.hedef_tur === 'yorum' && detay.hedef && (
+        <>
+          <blockquote className="mesaj">{(detay.hedef as YorumOzeti).metin}</blockquote>
+          {/* BAGLAM: yorumun hangi paylasima yazildigi olmadan "bu taciz
+              mi" sorusu cevaplanamaz. */}
+          <dl className="ozet">
+            <dt>Yazıldığı paylaşım</dt>
+            <dd>
+              {(detay.hedef as YorumOzeti).mekan_adi}
+              {(detay.hedef as YorumOzeti).paylasim_notu
+                ? ` — ${(detay.hedef as YorumOzeti).paylasim_notu}`
+                : ''}
+            </dd>
+            <dt>Zaman</dt><dd>{zaman((detay.hedef as YorumOzeti).olusturuldu)}</dd>
+            {/* IKI AYRI GIZLILIK: "sikayet uzerine gecici" ile
+                "moderator karari" ayni sey degil. Karar verilmezse
+                gecici olan sonsuza kadar surer - bu ayrimi gormek
+                moderatorun isi. */}
+            <dt>Şikâyet üzerine gizli</dt>
+            <dd>{(detay.hedef as YorumOzeti).sikayet_gizli ? 'Evet (geçici)' : 'Hayır'}</dd>
+            <dt>Moderasyon kararıyla gizli</dt>
+            <dd>{(detay.hedef as YorumOzeti).moderasyon_gizli ? 'Evet' : 'Hayır'}</dd>
+          </dl>
+          <p className="ipucu">
+            Kararı «Reddedildi» yaparsan yorum geri gelir; «İşlem yapıldı»
+            yaparsan kalıcı olarak gizlenir.
+          </p>
+        </>
+      )}
+
       <h3>Karar</h3>
       <div className="karar-formu">
         <select value={yeniDurum} onChange={(e) => setYeniDurum(e.target.value as SikayetDurumu)}>
@@ -178,6 +208,13 @@ export function SikayetDetayi() {
         )}
         {s.hedef_tur === 'check_in' && (
           <button onClick={() => setKutu('gizle')}>İçeriği gizle</button>
+        )}
+        {s.hedef_tur === 'yorum' && detay.hedef && (
+          (detay.hedef as YorumOzeti).moderasyon_gizli ? (
+            <button onClick={() => setKutu('yorum_ac')}>Gizlemeyi kaldır</button>
+          ) : (
+            <button onClick={() => setKutu('yorum_gizle')}>Yorumu gizle</button>
+          )
         )}
       </div>
 
@@ -235,6 +272,37 @@ export function SikayetDetayi() {
           onSonuc={(gerekce) =>
             aksiyon('moderasyon_icerigi_gizle', {
               p_check_in_id: s.hedef_id,
+              p_gerekce: gerekce,
+            })
+          }
+        />
+      )}
+
+      {kutu === 'yorum_gizle' && (
+        <GerekceSor
+          baslik="Yorumu gizle"
+          aciklama="Gizlenen yorum yazanı dahil kimseye görünmez. Geri alınabilir."
+          eylemEtiketi="Gizle"
+          onayGerekli
+          onIptal={() => setKutu(null)}
+          onSonuc={(gerekce) =>
+            aksiyon('moderasyon_yorumu_gizle', {
+              p_yorum_id: s.hedef_id,
+              p_gerekce: gerekce,
+            })
+          }
+        />
+      )}
+
+      {kutu === 'yorum_ac' && (
+        <GerekceSor
+          baslik="Yorumun gizlemesini kaldır"
+          aciklama="Yorum yeniden görünür olur. Şikâyet üzerine konan geçici gizlilik de kalkar."
+          eylemEtiketi="Gizlemeyi kaldır"
+          onIptal={() => setKutu(null)}
+          onSonuc={(gerekce) =>
+            aksiyon('moderasyon_yorum_gizlemeyi_kaldir', {
+              p_yorum_id: s.hedef_id,
               p_gerekce: gerekce,
             })
           }

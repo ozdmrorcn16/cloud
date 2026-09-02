@@ -42,6 +42,13 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-02 — [2026-09-02-62e92057.md](oturumlar/2026-09-02-62e92057.md) — kaldığımız yerden devam edelim
+- 2026-09-01 — [2026-09-01-62e92057.md](oturumlar/2026-09-01-62e92057.md) — kaldığımız yerden devam edelim
+- 2026-09-01 — [2026-09-01-11f3a4eb.md](oturumlar/2026-09-01-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
+- 2026-08-31 — [2026-08-31-62e92057.md](oturumlar/2026-08-31-62e92057.md) — kaldığımız yerden devam edelim
+- 2026-08-31 — [2026-08-31-5128d252.md](oturumlar/2026-08-31-5128d252.md) — claude --model fable
+- 2026-08-31 — [2026-08-31-11f3a4eb.md](oturumlar/2026-08-31-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …
+- 2026-08-30 — [2026-08-30-62e92057.md](oturumlar/2026-08-30-62e92057.md) — kaldığımız yerden devam edelim
 - 2026-08-30 — [2026-08-30-5de6e87c.md](oturumlar/2026-08-30-5de6e87c.md) — eklentiler aktif mi
 - 2026-08-30 — [2026-08-30-5128d252.md](oturumlar/2026-08-30-5128d252.md) — claude --model fable
 - 2026-08-30 — [2026-08-30-11f3a4eb.md](oturumlar/2026-08-30-11f3a4eb.md) — <local-command-stdout>Set model to `Opus 5 (1M context) (default)` and saved as …

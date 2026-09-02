@@ -386,6 +386,69 @@ giris gerekiyor). **`verify_jwt` KAPALI olmali** - cagriyi pg_net
 yapiyor ve elinde kullanici JWT'si yok; yetkilendirme sir dogrulamasina
 dayaniyor.
 
+### MODERASYON PANELI ARTIK YORUM SIKAYETLERINI GORUYOR - 2026-09-02
+
+Begeni/yorum sistemi eklenince yorum sikayetleri `sikayetler` tablosuna
+dusmeye basladi ama panel `'yorum'` turunu tanimiyordu: sikayetler
+birikiyor, kimse bakamiyordu. Kapatildi.
+
+**En kritik parca gecici gizliligin COZULMESI.** Sikayet edilen yorum
+aninda gizleniyor (`yorumlar.sikayet_gizli`). Karar verilmezse yorum
+SONSUZA KADAR gizli kalirdi - yani tek bir sikayet, moderator hic
+bakmasa bile kalici sansur olurdu. `moderasyon_sikayeti_karara_bagla`
+artik o bayragi coeuyor:
+
+| Karar | Sonuc |
+|---|---|
+| `reddedildi` | `sikayet_gizli = false` -> yorum GERI GELIR |
+| `islem_yapildi` | `sikayet_gizli = false`, `moderasyon_gizli = true` -> kalici |
+| diger | gecici gizlilik surer (henuz karar yok) |
+
+Yeni RPC'ler: `moderasyon_yorumu_gizle`, `moderasyon_yorum_gizlemeyi_kaldir`
+(ikincisi IKI bayragi da kaldiriyor). `moderasyon_sikayet_detayi` yorum
+dalinda yorumun metniyle birlikte BAGLAMI da donduruyor (hangi
+paylasima yazildigi + mekan adi) - moderator "bu yorum bu baglamda
+taciz mi" sorusunu baglam olmadan cevaplayamaz.
+
+Panelde: sikayet ve denetim izi suzgeclerine "Yorum" secenegi, detayda
+yorum blogu ve iki ayri gizlilik gosterimi ("Sikayet uzerine gizli
+(gecici)" ile "Moderasyon karariyla gizli" ayri satirlar), ve
+gizle / gizlemeyi kaldir dugmeleri.
+
+**CANLI DOGRULANDI - ve dogrulama GERCEK BIR KUSUR buldu.**
+`moderasyon_kayitlari.hedef_tur` kontrol kisiti yalnizca
+kullanici / check_in / sikayet / konusma kabul ediyordu; iki yeni RPC
+iz'e `'yorum'` yazdigi icin **her cagrida patliyorlardi**. Iz
+ekleme-only oldugundan kisit ihlali islemin tamamini geri aliyordu -
+gizleme yarim kalmiyor, HIC olmuyordu. Migrasyon 20260902150000
+duzeltti.
+
+**Kural olarak alinmali: yeni bir moderasyon eylemi eklerken denetim
+izinin `hedef_tur` kisiti da genisletilmeli. Iz yazilamazsa eylemin
+kendisi olmuyor.**
+
+Betik: `araclar/moderasyon-yorum-canli-test.py`, 13 dogrulama, hepsi
+gecti. Jest Supabase'i mock'ladigi icin bu sinif hata ancak canli
+kosumla yakalaniyor.
+
+    python araclar/moderasyon-yorum-canli-test.py    # mobil/.env yuklu kabuk
+
+**Betik GECICI BIR MODERATOR HESABI aciyor.** Moderator RPC'leri AAL2
+(ikinci faktor) zorluyor; betik yeni bir hesap acip TOTP kaydediyor
+(ilk faktor AAL1'de kaydedilebiliyor), isi bitince yetkiyi kaldirip
+hesabi siliyor. **Supabase auth admin silme bu projede sik sik zaman
+asimina dusuyor** - bu yuzden betik once `moderatorler` satirini
+siliyor (kritik olan o; hesap kalsa bile moderator degil), sonra hesabi
+silmeyi deniyor. Artik kalirsa `auth.users where email like
+'gecici-mod-%'` ile temizlenir. Betik baslangicta da bu artiklari
+tariyor.
+
+**TOTP MFA ARTIK ACIK.** Plan 2 kapanisindaki "TOTP MFA kapali, panele
+giris yapilamiyor" blokaji GECERSIZ - enroll calisiyor ve AAL2
+aliniyor, canli olcuIdu. Test moderator hesabinda (`+905550000009` /
+`moderator@slooin.app`) DOGRULANMIS bir TOTP faktoru duruyor; sirri
+kullanicida, ajanda degil.
+
 ### MESAJ ISTEKLERI EKLENDI - 2026-09-01 (canli dogrulandi, OTA'da)
 
 Kullanicinin istegi: "Mesajlar kismina uste istekler kismi ekle bu

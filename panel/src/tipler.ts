@@ -2,7 +2,8 @@
 // eslesir; bir imza degisirse burasi da degismeli.
 
 export type SikayetDurumu = 'yeni' | 'incelendi' | 'islem_yapildi' | 'reddedildi'
-export type HedefTuru = 'kullanici' | 'check_in' | 'mesaj'
+// 'yorum' 2026-09-02'de eklendi (begeni/yorum ozelligiyle birlikte).
+export type HedefTuru = 'kullanici' | 'check_in' | 'mesaj' | 'yorum'
 
 export type SikayetSatiri = {
   id: string
@@ -48,6 +49,28 @@ export type CheckInOzeti = {
   moderasyon_gizli: boolean
 }
 
+/**
+ * Sikayet edilen yorum ve YAZILDIGI PAYLASIM.
+ *
+ * Baglam olmadan "bu yorum taciz mi" sorusu cevaplanamaz; bu yuzden
+ * sunucu yorumun metniyle birlikte paylasimin notunu ve mekani da
+ * donduruyor.
+ */
+export type YorumOzeti = {
+  id: string
+  check_in_id: string
+  kullanici_id: string | null
+  metin: string
+  olusturuldu: string
+  /** Sikayet uzerine ANINDA konan gecici gizlilik. */
+  sikayet_gizli: boolean
+  /** Moderatorun kalici karari. */
+  moderasyon_gizli: boolean
+  paylasim_sahibi: string | null
+  paylasim_notu: string | null
+  mekan_adi: string
+}
+
 export type Mesaj = {
   id: string
   konusma_id: string
@@ -71,7 +94,7 @@ export type SikayetDetayi = {
     moderator_notu: string | null
   }
   sikayet_eden: Profil | null
-  hedef: Profil | CheckInOzeti | Mesaj | null
+  hedef: Profil | CheckInOzeti | Mesaj | YorumOzeti | null
 }
 
 export type KullaniciOzeti = {
