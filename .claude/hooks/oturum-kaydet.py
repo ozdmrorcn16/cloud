@@ -40,6 +40,10 @@ SIR_KALIPLARI = [
     re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
     re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
     re.compile(r"hf_[A-Za-z0-9]{30,}"),                  # Hugging Face token
+    # Supabase kisisel erisim jetonu (Management API). 2026-09-02'de
+    # bir tanesi sohbete yapistirildi ve iptal ettirildi; ayni sinif
+    # sizinti hf_ jetonunda da yasanmisti.
+    re.compile(r"sbp_[A-Za-z0-9]{20,}"),                 # Supabase access token
     # Supabase'in yeni bicim anahtarlari. `sb_secret_` GERCEK bir sir:
     # RLS'i asar ve butun veriye erisir. 2026-08-20'de bir tanesi
     # konusmaya yapistirildi ve buradaki kalip listesinde karsiligi
