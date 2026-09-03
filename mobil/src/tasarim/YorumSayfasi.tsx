@@ -21,7 +21,8 @@ import {
 } from '../../lib/etkilesim'
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
-import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
+import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
 import { SecimPenceresi, UcNoktaIkonu, CopIkonu, BayrakIkonu, type Secim } from './SecimPenceresi'
 
@@ -69,6 +70,8 @@ export function YorumSayfasi({
   /** Karttaki yorum sayaci guncellensin diye. */
   onSayiDegisti?: (sayi: number) => void
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
 
@@ -362,7 +365,7 @@ export function YorumSayfasi({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, justifyContent: 'flex-end' },
   karartma: {
     position: 'absolute',
@@ -407,7 +410,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     paddingHorizontal: bosluk.l,
     paddingTop: bosluk.s,
   },

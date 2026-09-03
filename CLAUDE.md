@@ -446,6 +446,75 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### KOYU MOD - 2026-09-03
+
+Kullanicinin istegi: "telefonların koyu moduna ya da açık moduna göre
+uyarlı olsun". Sebep bir onceki soruydu: ekran karanlik gorunuyordu.
+**O sikayetin sebebi uygulama DEGILDI** - kullanicinin gonderdigi ekran
+goruntusundeki pikseller olculdu, zemin %57 oraninda tam beyazdi
+(`255,255,255`); gri gorunen sey kullanicinin kendi yukledigi harita
+fotografiydi. Fark cihazin ekran ayarindaydi (True Tone, Beyaz Noktayi
+Azalt, dusuk guc modu). **Ders: "renk yanlis gorunuyor" sikayetinde
+once ekran goruntusunun PIKSELINE bak; ekran goruntusu panelin renk
+islemesinden ONCE alinir, yani uygulamanin gercek ciktisidir.**
+
+Koyu mod yine de yapildi cunku kullanici acikca istedi.
+
+**BOYUT:** 48 dosya, 606 jeton kullanimi, 46 stil blogu.
+
+**YONTEM - jetonlar calisma aninda:** `StyleSheet.create` blogu modul
+yuklenirken BIR KEZ hesaplaniyordu; renk calisma aninda degisecekse o
+bloklar da calisma aninda uretilmeli. Her ekran artik
+`const stiller = useStiller(stilleriYap)` diyor ve `stilleriYap` paleti
+parametre aliyor (`src/tasarim/tema-baglami.tsx`). `useMemo` sart:
+StyleSheet her render'da yeniden uretilirse liste satirlari bosuna
+yeniden ciziliyor.
+
+**GECISIN KONTROL LISTESI DERLEYICIYDI.** Once `renk` export'u modul
+duzeyinden KALDIRILDI; tsc 633 hatayla jetonu hala modul duzeyinde
+okuyan her satiri listeledi. Gecis tahmine degil derleyiciye dayandi.
+Bitince o export kalici olarak silindi - dursaydi yeni bir ekran
+yanlislikla acik paleti sabitleyebilir ve hata ancak koyu modda
+gorunurdu.
+
+**KOYU PALET SICAK:** saf gri degil kahverengiye kacan bir siyah
+(`zemin #121110`, `yuzey #1C1917`). Sebep marka: turuncu vurgu soguk
+grinin uzerinde titriyor. Vurgunun kendisi DEGISMIYOR; basili hal koyu
+modda ACILIYOR (`#FFA45C`), cunku koyu zeminde daha koyu bir turuncu
+"basildi" degil "pasif" okunuyor.
+
+**GOMULU RENKLERDEN YALNIZCA GEREKENLER JETONA GECTI.** 52 tane
+`color: '#FFFFFF'` var ve cogu TURUNCU DOLGUNUN uzerindeki yazi - orada
+beyaz iki modda da dogru. Jetona gecenler: yikici kirmizi (30 dosya,
+koyu modda `#FF6B5A`'ya aciliyor cunku `#C0392B` koyu zeminde 3,4:1),
+profil bandinin gecisi, alt gezinme cubugunun yari saydam zemini, arama
+kutusu.
+
+**IKI GERCEK KUSUR GORSEL DOGRULAMADA BULUNDU** - testler goremezdi:
+1. `ayar-ikonlari.tsx` ve `etkilesim-ikonlari.tsx` gecise girmemisti
+   (icinde `StyleSheet` yok), yani butun ayar ikonlari koyu modda
+   gorunmez oldu. Bu dosyalarda ikonlar `export const X = () => govde(...)`
+   seklinde; kanca eklemek icin ok fonksiyonlari govdeye cevrildi.
+2. Profil fotografindaki `+` rozeti: zemini `renk.metin`di ama uzerindeki
+   isaret sabit beyazdi - koyu modda acik rozetin uzerinde beyaz arti
+   kaldi. Isaret `renk.zemin`e baglandi (rozetin karsiti).
+
+**MARKA YAZISI ICIN AYRI VARLIK:** kelime markasi KOYU HARFLI bir PNG,
+koyu zeminde kayboluyordu. `araclar/marka-yazisi-koyu-uret.py` acik
+harfli surumu uretiyor ve TURUNCU NOKTAYI koruyor (o nokta markanin
+konum ignesi). Kaynak gorsel degisirse betik yeniden kosulmali.
+
+**NATIVE DERLEME GEREKMIYOR:** `app.json`da `userInterfaceStyle` zaten
+`"automatic"`ti, yani `useColorScheme()` cihaz ayarini okuyor. Degisiklik
+tamamen JavaScript, OTA ile gidiyor.
+
+Dogrulama: jest 60 paket / 577 test, tsc bes taban hatasi, akis / profil
+/ ayarlar / mesajlar / kesfet ekranlari IKI MODDA da ekran goruntusuyle
+karsilastirildi (`tasarim/*-light.png`, `*-dark.png`).
+
+Ayrica koyu moddan BAGIMSIZ bir kusur duzeltildi: ayarlardaki "Profilim
+gizli" satiri buyutec ikonu kullaniyordu, goz ikonuna cevrildi.
+
 ### PROFIL SADELESTI: BANT BUTONLARI KALKTI, @ GITTI - 2026-09-03
 
 Kullanicinin istegi: "Profili duzenle ve paylasi kaldir, profil

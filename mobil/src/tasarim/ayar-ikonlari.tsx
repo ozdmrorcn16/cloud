@@ -1,5 +1,5 @@
 import Svg, { Path, Circle, Line, Rect } from 'react-native-svg'
-import { renk } from './tema'
+import { useRenk } from './tema-baglami'
 
 /**
  * Ayar satirlarinin ikonlari.
@@ -20,8 +20,9 @@ function govde(children: React.ReactNode) {
   )
 }
 
-export const KisiIkonu = () =>
-  govde(
+export const KisiIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Circle cx={12} cy={8} r={3.6} stroke={renk.metin} strokeWidth={K} fill="none" />
       <Path
@@ -33,9 +34,11 @@ export const KisiIkonu = () =>
       />
     </>
   )
+}
 
-export const BelgeIkonu = () =>
-  govde(
+export const BelgeIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Path
         d="M6 3.5h8l4 4v13H6z"
@@ -47,17 +50,21 @@ export const BelgeIkonu = () =>
       <Path d="M9 12h6M9 16h6" stroke={renk.metin} strokeWidth={K} strokeLinecap="round" />
     </>
   )
+}
 
-export const EngelIkonu = () =>
-  govde(
+export const EngelIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Circle cx={12} cy={12} r={8} stroke={renk.metin} strokeWidth={K} fill="none" />
       <Line x1={6.5} y1={6.5} x2={17.5} y2={17.5} stroke={renk.metin} strokeWidth={K} />
     </>
   )
+}
 
-export const KonumIkonu = () =>
-  govde(
+export const KonumIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Path
         d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"
@@ -68,9 +75,11 @@ export const KonumIkonu = () =>
       <Circle cx={12} cy={10} r={2.6} stroke={renk.metin} strokeWidth={K} fill="none" />
     </>
   )
+}
 
-export const GozIkonu = () =>
-  govde(
+export const GozIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Path
         d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"
@@ -81,17 +90,21 @@ export const GozIkonu = () =>
       <Circle cx={12} cy={12} r={2.8} stroke={renk.metin} strokeWidth={K} fill="none" />
     </>
   )
+}
 
-export const AramaIkonu = () =>
-  govde(
+export const AramaIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Circle cx={11} cy={11} r={6.2} stroke={renk.metin} strokeWidth={K} fill="none" />
       <Path d="M15.6 15.6L20 20" stroke={renk.metin} strokeWidth={K} strokeLinecap="round" />
     </>
   )
+}
 
-export const DurdurIkonu = () =>
-  govde(
+export const DurdurIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Rect
         x={4}
@@ -106,9 +119,11 @@ export const DurdurIkonu = () =>
       <Path d="M10 9v6M14 9v6" stroke={renk.metin} strokeWidth={K} strokeLinecap="round" />
     </>
   )
+}
 
-export const CopIkonu = () =>
-  govde(
+export const CopIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Path
         d="M5 7h14M9 7V4.5h6V7M7 7l1 13h8l1-13"
@@ -120,9 +135,11 @@ export const CopIkonu = () =>
       />
     </>
   )
+}
 
-export const CikisIkonu = () =>
-  govde(
+export const CikisIkonu = () => {
+  const renk = useRenk()
+  return govde(
     <>
       <Path
         d="M14 4.5H6v15h8"
@@ -142,3 +159,4 @@ export const CikisIkonu = () =>
       />
     </>
   )
+}

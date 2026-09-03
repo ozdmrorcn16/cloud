@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useOturum } from '../../lib/oturum'
 import { supabase } from '../../lib/supabase'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { hataMetni } from '../../lib/hata-metni'
 
 // Bu ekran YALNIZCA moderasyon kararlari icindir. Dondurulmus hesap
 // buraya hic dusmez: giris sirasinda otomatik geri acilir (karar 66).
 export default function HesapDurumuEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { hesapDurumu, hesapDurumunuYenile } = useOturum()
   const [cikisHatasi, setCikisHatasi] = useState<string | null>(null)
 
@@ -50,7 +52,7 @@ export default function HesapDurumuEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
@@ -80,7 +82,7 @@ const stiller = StyleSheet.create({
   hataMetni: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
   buton: {
     backgroundColor: renk.turuncu,

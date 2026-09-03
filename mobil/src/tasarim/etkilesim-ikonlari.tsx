@@ -1,5 +1,5 @@
 import Svg, { Path } from 'react-native-svg'
-import { renk } from './tema'
+import { useRenk } from './tema-baglami'
 
 /**
  * Akis kartindaki uc eylem: begeni, yorum, paylasma.
@@ -10,6 +10,7 @@ import { renk } from './tema'
  */
 
 export function KalpIkonu({ dolu = false, boyut = 22 }: { dolu?: boolean; boyut?: number }) {
+  const renk = useRenk()
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path
@@ -24,6 +25,7 @@ export function KalpIkonu({ dolu = false, boyut = 22 }: { dolu?: boolean; boyut?
 }
 
 export function YorumIkonu({ boyut = 22 }: { boyut?: number }) {
+  const renk = useRenk()
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path
@@ -38,6 +40,7 @@ export function YorumIkonu({ boyut = 22 }: { boyut?: number }) {
 }
 
 export function PaylasIkonu({ boyut = 22 }: { boyut?: number }) {
+  const renk = useRenk()
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path

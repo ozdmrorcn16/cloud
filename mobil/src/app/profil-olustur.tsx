@@ -13,7 +13,8 @@ import {
   kullaniciAdiMusaitMi,
 } from '../../lib/kullanici-adi'
 import { TarihSecici, type Tarih } from '../tasarim/TarihSecici'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { hataMetni } from '../../lib/hata-metni'
 
 /** Kullanici adi musaitlik sorgusunun bekletme suresi. */
@@ -21,9 +22,6 @@ const BEKLETME_MS = 300
 
 /** Sifrenin en az uzunlugu. */
 const EN_AZ_SIFRE = 8
-
-/** Hata metinlerinin rengi - kimlik paletinde bir hata tonu yok. */
-const HATA_RENGI = '#C0392B'
 
 /** Yas siniri; tarih tekerlegi bundan daha yeni bir yil gostermiyor. */
 const EN_AZ_YAS = 18
@@ -63,6 +61,8 @@ type AdDurumu =
  * harfin sonucu kalabiliyor.
  */
 export default function ProfilOlusturEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t, dil } = useDil()
   const { profilKontrolunuYenile } = useOturum()
@@ -477,7 +477,7 @@ export default function ProfilOlusturEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,
@@ -521,7 +521,7 @@ const stiller = StyleSheet.create({
     color: renk.metin,
   },
   girdiOdakli: { borderColor: renk.turuncu },
-  girdiHatali: { borderColor: HATA_RENGI },
+  girdiHatali: { borderColor: renk.yikici },
 
   // Tarih satiri bir girdi gibi duruyor ama basilinca tekerlek aciliyor.
   secimSatiri: {
@@ -560,12 +560,12 @@ const stiller = StyleSheet.create({
     color: renk.metinIkincil,
     marginTop: bosluk.s,
   },
-  ipucuHatali: { color: HATA_RENGI, fontFamily: yazi.govdeOrta },
+  ipucuHatali: { color: renk.yikici, fontFamily: yazi.govdeOrta },
 
   alanHatasi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: HATA_RENGI,
+    color: renk.yikici,
     marginTop: bosluk.s,
   },
 
@@ -586,7 +586,7 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   kutuIsaretli: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
-  kutuHatali: { borderColor: HATA_RENGI },
+  kutuHatali: { borderColor: renk.yikici },
   onayYazi: {
     flex: 1,
     fontFamily: yazi.govde,
@@ -606,7 +606,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: HATA_RENGI,
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
 

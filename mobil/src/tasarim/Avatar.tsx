@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
-import { renk, yazi, olcek, yuvarlak } from './tema'
+import { yazi, olcek, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * YUVARLAK PROFIL FOTOGRAFI.
@@ -24,6 +25,7 @@ export function Avatar({
   cap?: number
   testID?: string
 }) {
+  const stiller = useStiller(stilleriYap)
   const boyut = { width: cap, height: cap, borderRadius: yuvarlak.hap }
 
   if (fotografUrl) {
@@ -47,7 +49,7 @@ export function Avatar({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   fotografYok: {
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',

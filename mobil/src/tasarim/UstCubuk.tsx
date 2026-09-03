@@ -1,7 +1,8 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
-import { renk, yazi, olcek, bosluk } from './tema'
+import { yazi, olcek, bosluk, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Detay ekranlarinin ust cubugu: geri oku + baslik.
@@ -16,6 +17,8 @@ import { renk, yazi, olcek, bosluk } from './tema'
  * birakmak geri okunu sikistiriyor.
  */
 export function UstCubuk({ baslik, geriEtiketi }: { baslik: string; geriEtiketi: string }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
 
   return (
@@ -44,7 +47,7 @@ export function UstCubuk({ baslik, geriEtiketi }: { baslik: string; geriEtiketi:
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   cubuk: {
     flexDirection: 'row',
     alignItems: 'center',

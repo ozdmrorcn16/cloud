@@ -4,7 +4,8 @@ import { router } from 'expo-router'
 import { hesabiSil } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { hataMetni } from '../../../lib/hata-metni'
 
@@ -19,6 +20,7 @@ import { hataMetni } from '../../../lib/hata-metni'
 // bir kapi: `hesap-sil` Edge Function'i parolayi SUNUCUDA
 // (`signInWithPassword`) dogruluyor, istemci bu adimi atlayamaz.
 export default function HesabiSilEkrani() {
+  const stiller = useStiller(stilleriYap)
   const [parola, setParola] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [calisiyor, setCalisiyor] = useState(false)
@@ -84,7 +86,7 @@ export default function HesabiSilEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
@@ -130,7 +132,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
   ikincilButon: { paddingVertical: bosluk.m, alignItems: 'center' },
   ikincilButonMetni: {
@@ -140,7 +142,7 @@ const stiller = StyleSheet.create({
   },
   // Silme geri alinamaz: uygulamadaki tek kirmizi zemin burada, bilerek.
   tehlikeButonu: {
-    backgroundColor: '#C0392B',
+    backgroundColor: renk.yikici,
     borderRadius: yuvarlak.hap,
     paddingVertical: 15,
     alignItems: 'center',

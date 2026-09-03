@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useDil } from '../../lib/dil'
-import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
+import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Geri alinamayan islemler icin ortak onay penceresi.
@@ -35,6 +36,7 @@ export function OnayPenceresi({
   onOnay: () => void
   onVazgec: () => void
 }) {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
 
   if (!acikMi) return null
@@ -91,7 +93,7 @@ export function OnayPenceresi({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   zemin: {
     flex: 1,
     // Karartma %40'ta yeterince geri itmiyordu: alt gezinme cubugu
@@ -129,7 +131,7 @@ const stiller = StyleSheet.create({
   // 44 pt asgari dokunma hedefi.
   dugme: { paddingVertical: bosluk.l, alignItems: 'center', justifyContent: 'center' },
   dugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
-  yikici: { color: '#C0392B' },
+  yikici: { color: renk.yikici },
   birincil: { color: renk.turuncu },
   vazgec: { color: renk.metinIkincil },
 })

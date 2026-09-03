@@ -2,7 +2,8 @@ import type { ReactNode } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
-import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
+import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * UC NOKTA MENUSU - ortak.
@@ -20,10 +21,9 @@ import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
  * aciyor - menuden secmek isi yapmiyor, yalnizca soruyor.
  */
 
-const YIKICI = '#C0392B'
-
 /** Baslik satirindaki uc nokta. */
 export function UcNoktaIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
       <Circle cx={5} cy={12} r={1.7} fill={renk.metinSoluk} />
@@ -34,6 +34,7 @@ export function UcNoktaIkonu() {
 }
 
 export function KalemIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={19} height={19} viewBox="0 0 24 24">
       <Path
@@ -49,11 +50,12 @@ export function KalemIkonu() {
 }
 
 export function CopIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={19} height={19} viewBox="0 0 24 24">
       <Path
         d="M5 7h14M10 7V5.5h4V7M6.5 7l.8 12h9.4l.8-12"
-        stroke={YIKICI}
+        stroke={renk.yikici}
         strokeWidth={1.8}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -64,11 +66,12 @@ export function CopIkonu() {
 }
 
 export function BayrakIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={19} height={19} viewBox="0 0 24 24">
       <Path
         d="M6 21V4M6 4h11l-2 3.5L17 11H6"
-        stroke={YIKICI}
+        stroke={renk.yikici}
         strokeWidth={1.8}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -96,6 +99,7 @@ export function SecimPenceresi({
   secimler: Secim[]
   onKapat: () => void
 }) {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
 
   if (!acikMi) return null
@@ -134,7 +138,7 @@ export function SecimPenceresi({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   zemin: {
     flex: 1,
     backgroundColor: 'rgba(23, 19, 15, 0.55)',
@@ -158,7 +162,7 @@ const stiller = StyleSheet.create({
     paddingHorizontal: bosluk.xl,
   },
   yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
-  yikici: { color: YIKICI },
+  yikici: { color: renk.yikici },
   vazgec: { color: renk.metinIkincil },
   ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: renk.cizgi },
 })

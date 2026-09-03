@@ -12,12 +12,14 @@ import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
 
 export default function CheckInEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [notMetni, setNotMetni] = useState('')
@@ -252,7 +254,7 @@ export default function CheckInEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   etiketAlani: { marginBottom: 16, gap: 8 },
   etiketBaslik: {
     fontFamily: yazi.govdeOrta,
@@ -315,7 +317,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   cokSatirli: { minHeight: 90, textAlignVertical: 'top' },

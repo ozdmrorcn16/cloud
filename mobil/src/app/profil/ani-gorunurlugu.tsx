@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native'
 import { aniGorunurlugunuAyarla } from '../../../lib/ayarlar'
 import type { AniGorunurlugu } from '../../../lib/checkin'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, SecenekSatiri } from '../../tasarim/Liste'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -17,6 +18,7 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
  * secim yalnizca bu ekran acik kaldigi surece isaretli kalir.
  */
 export default function AniGorunurluguEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [secim, setSecim] = useState<AniGorunurlugu | null>(null)
   const [hata, setHata] = useState<string | null>(null)
@@ -63,7 +65,7 @@ export default function AniGorunurluguEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: { paddingHorizontal: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
   aciklama: {
@@ -75,7 +77,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
 })

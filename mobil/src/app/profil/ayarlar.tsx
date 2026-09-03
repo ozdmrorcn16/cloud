@@ -14,7 +14,8 @@ import { hesabiDondur } from '../../../lib/hesap'
 import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
 import { KalemIkonu } from '../../tasarim/SecimPenceresi'
@@ -46,6 +47,8 @@ import {
  * satirinin icinde durmamali (klavye acilinca liste kayiyor).
  */
 export default function AyarlarEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
@@ -177,7 +180,7 @@ export default function AyarlarEkrani() {
               gorunmenin USTUNDE duruyor: once "paylasimlarimi kim
               gorsun", sonra "beni aramada bulabilsinler mi". */}
           <Satir
-            ikon={<AramaIkonu />}
+            ikon={<GozIkonu />}
             etiket={t('ayarlar.profilGizli')}
             aciklama={t('ayarlar.profilGizliAciklama')}
             sagBilesen={
@@ -272,7 +275,7 @@ export default function AyarlarEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,
@@ -281,7 +284,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
 
@@ -301,7 +304,7 @@ const stiller = StyleSheet.create({
   onayEvet: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
   onayVazgec: {
     fontFamily: yazi.govdeOrta,

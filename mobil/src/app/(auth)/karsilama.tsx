@@ -2,7 +2,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path, Circle, G } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { SicaklikZemin } from '../../tasarim/SicaklikZemin'
 import { CheckInSahnesi } from '../../tasarim/CheckInSahnesi'
 import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
@@ -85,6 +86,8 @@ const IKON_DUZELTME = {
 } as const
 
 function OzellikIkonu({ ad }: { ad: 'konum' | 'kisiler' | 'sohbet' | 'yogunluk' }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const R = renk.turuncu
   const { sol, merkez, olcek } = IKON_DUZELTME[ad]
   // Once olcekleniyor, sonra kaydiriliyor - bu yuzden kaydirma
@@ -152,6 +155,7 @@ const OZELLIKLER = [
 ] as const
 
 export default function KarsilamaEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   function devamEt(hedef: 'kayit' | 'giris') {
@@ -230,7 +234,7 @@ export default function KarsilamaEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: {
     flex: 1,
     // Karsilama, beyaz zemin kuralinin TEK istisnasi.

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
-import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Ayar listesi bilesenleri.
@@ -17,6 +18,7 @@ import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
  */
 
 export function Bolum({ baslik, children }: { baslik?: string; children: ReactNode }) {
+  const stiller = useStiller(stilleriYap)
   return (
     <View style={stiller.bolum}>
       {baslik && <Text style={stiller.bolumBasligi}>{baslik}</Text>}
@@ -58,6 +60,7 @@ export function Satir({
   tehlikeli?: boolean
   onPress?: () => void
 }) {
+  const stiller = useStiller(stilleriYap)
   const govde = (
     <View style={[stiller.satir, !sonuncu && stiller.satirCizgili]}>
       {ikon && <View style={stiller.ikon}>{ikon}</View>}
@@ -101,6 +104,8 @@ export function SecenekSatiri({
   sonuncu?: boolean
   onPress: () => void
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   return (
     <Pressable
       onPress={onPress}
@@ -132,6 +137,7 @@ export function SecenekSatiri({
 }
 
 function Ok() {
+  const renk = useRenk()
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
       <Path
@@ -146,7 +152,7 @@ function Ok() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Etiket ve aciklama tek sutun; aciklama varsa satir yukseliyor.
   metinAlani: { flex: 1 },
 
@@ -182,7 +188,7 @@ const stiller = StyleSheet.create({
     color: renk.metin,
   },
   etiketSecili: { fontFamily: yazi.govdeKalin },
-  etiketTehlikeli: { color: '#C0392B' },
+  etiketTehlikeli: { color: renk.yikici },
   deger: {
     flexShrink: 1,
     fontFamily: yazi.govde,

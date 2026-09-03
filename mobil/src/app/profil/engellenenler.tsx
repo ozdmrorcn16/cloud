@@ -8,10 +8,12 @@ import {
   type EngelliKisi,
 } from '../../../lib/engelleme'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
 function GeriIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24">
       <Path
@@ -39,6 +41,7 @@ function GeriIkonu() {
  * bag_kisileri engellenmisleri bilerek eliyor.
  */
 export default function EngellenenlerEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [kisiler, setKisiler] = useState<EngelliKisi[]>([])
@@ -129,7 +132,7 @@ export default function EngellenenlerEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
 
   ustCubuk: {
@@ -152,7 +155,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
 

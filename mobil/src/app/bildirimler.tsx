@@ -10,7 +10,8 @@ import {
 } from '../../lib/etiket'
 import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { Avatar } from '../tasarim/Avatar'
 
@@ -43,6 +44,7 @@ import { Avatar } from '../tasarim/Avatar'
  * fotografi olmayan ya da okunamayan kisi bas harfe dusuyor.
  */
 export default function BildirimlerEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [takipIstekleri, setTakipIstekleri] = useState<BagKisi[]>([])
@@ -203,6 +205,7 @@ function BildirimSatiri({
   onOlumlu: () => void
   onOlumsuz: () => void
 }) {
+  const stiller = useStiller(stilleriYap)
   return (
     <View style={stiller.satir} testID={`bildirim-${kullaniciId}`}>
       <Pressable onPress={onProfil} accessibilityRole="button" accessibilityLabel={gosterilenAd}>
@@ -241,7 +244,7 @@ function BildirimSatiri({
 
 const AVATAR_CAPI = 48
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,
@@ -258,7 +261,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   durum: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },

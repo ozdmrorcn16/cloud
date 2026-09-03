@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native'
 import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
-import { renk } from './tema'
+import { type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Acilis ekraninin arka plani: bir SICAKLIK HARITASI.
@@ -92,6 +93,7 @@ function NefesLekesi({
   boyut: number
   opaklik: number
 }) {
+  const renk = useRenk()
   return (
     <Animated.View
       style={{
@@ -118,6 +120,7 @@ function NefesLekesi({
 
 /** Duragan hal: "hareketi azalt" aciksa ve olcum alinmadan once cizilir. */
 function DuraganZemin() {
+  const renk = useRenk()
   return (
     <Svg
       width="100%"
@@ -148,6 +151,8 @@ function DuraganZemin() {
 }
 
 export function SicaklikZemin() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const [hareketVar, setHareketVar] = useState(false)
   const [olcu, setOlcu] = useState({ en: 0, boy: 0 })
   const olcekler = useRef(LEKELER.map(() => new Animated.Value(0))).current
@@ -234,6 +239,6 @@ export function SicaklikZemin() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
 })

@@ -13,7 +13,8 @@ import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
-import { renk } from '../tasarim/tema'
+import { type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 
 /**
  * Dil tercihi cihazdan okunana kadar ekran cizilmiyor. Yazi tipleriyle
@@ -82,6 +83,7 @@ function hedefRota(
 }
 
 function YonlendirmeKontrolu() {
+  const stiller = useStiller(stilleriYap)
   const { oturum, profilVarMi, hesapDurumu, yukleniyor } = useOturum()
   const segments = useSegments()
   const router = useRouter()
@@ -165,7 +167,7 @@ function YonlendirmeKontrolu() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: { flex: 1 },
 })

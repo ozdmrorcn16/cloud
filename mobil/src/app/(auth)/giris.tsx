@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { epostaGecerliMi, epostaNormallestir } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 import { hataMetni } from '../../../lib/hata-metni'
 import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
@@ -33,6 +34,8 @@ import Svg, { Path } from 'react-native-svg'
  * (turuncu yalnizca eylem ve canlilik icin).
  */
 export default function GirisEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [eposta, setEposta] = useState('')
@@ -177,7 +180,7 @@ export default function GirisEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   geri: {
     position: 'absolute',
     left: bosluk.l,
@@ -211,7 +214,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     paddingHorizontal: bosluk.xs,
   },
 

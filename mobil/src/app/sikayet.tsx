@@ -3,10 +3,12 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { sikayetGonder, SIKAYET_SEBEPLERI, type SikayetHedefTuru } from '../../lib/sikayet'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { UstCubuk } from '../tasarim/UstCubuk'
 
 export default function SikayetEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { hedefTur, hedefId } = useLocalSearchParams<{
     hedefTur: SikayetHedefTuru
@@ -91,7 +93,7 @@ export default function SikayetEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
@@ -152,7 +154,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
 

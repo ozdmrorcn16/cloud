@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native'
 import Svg, { Circle, Defs, Path, RadialGradient, Stop } from 'react-native-svg'
-import { renk } from './tema'
+import { type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Karsilama ekranindaki CHECK-IN SAHNESI.
@@ -46,6 +47,7 @@ const ISIMA_CAPI = 260
 
 /** Disari dogru acilip sonen tek bir nabiz halkasi. */
 function NabizHalkasi({ gecikme }: { gecikme: number }) {
+  const stiller = useStiller(stilleriYap)
   const ilerleme = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -78,6 +80,8 @@ function NabizHalkasi({ gecikme }: { gecikme: number }) {
 }
 
 export function CheckInSahnesi() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const [hareketVar, setHareketVar] = useState(false)
 
   useEffect(() => {
@@ -132,7 +136,7 @@ export function CheckInSahnesi() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   sahne: { height: YUKSEKLIK, width: '100%', overflow: 'visible' },
 
   isimaAlani: {

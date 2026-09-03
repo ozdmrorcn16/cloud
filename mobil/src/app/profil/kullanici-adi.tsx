@@ -8,7 +8,8 @@ import {
 } from '../../../lib/kullanici-adi'
 import { kullaniciAdiDurumunuGetir } from '../../../lib/ayarlar'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
@@ -27,6 +28,8 @@ function tarihiBicimlendir(tarih: Date): string {
  * kontrol sunucuda (kullanici_adi_degistir RPC'si).
  */
 export default function KullaniciAdiEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [yeniAd, setYeniAd] = useState('')
   const [sonuc, setSonuc] = useState<string | null>(null)
@@ -111,7 +114,7 @@ export default function KullaniciAdiEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: { paddingHorizontal: bosluk.xl, paddingTop: bosluk.s, paddingBottom: ALT_GEZINME_PAYI },
 

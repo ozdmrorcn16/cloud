@@ -7,7 +7,8 @@ import { engelle } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir, type AniGorunumu } from '../../../lib/checkin'
 import { profilFotograflariUrl, checkInFotografiUrl } from '../../../lib/fotograf-url'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   bagDurumunuGetir,
@@ -19,6 +20,7 @@ import {
 } from '../../../lib/bag'
 
 function GeriIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24">
       <Path
@@ -60,6 +62,7 @@ type AniSatiri = AniGorunumu & { fotografUrl: string | null }
  * henuz yok, yani geri almanin ekranda karsiligi da yok.
  */
 export default function KullaniciProfiliEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -436,7 +439,7 @@ export default function KullaniciProfiliEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
 
   ustCubuk: {
@@ -495,7 +498,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
   durum: {
@@ -636,6 +639,6 @@ const stiller = StyleSheet.create({
   tehlikeliYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
 })

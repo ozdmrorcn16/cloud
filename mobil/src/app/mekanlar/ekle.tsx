@@ -3,7 +3,8 @@ import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-na
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
@@ -24,6 +25,7 @@ const EKLENEBILIR_TURLER = [
 ] as const
 
 export default function MekanEkleEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [ad, setAd] = useState('')
@@ -123,7 +125,7 @@ export default function MekanEkleEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
@@ -163,7 +165,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   turBaslik: {

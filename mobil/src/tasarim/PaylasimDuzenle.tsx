@@ -4,7 +4,8 @@ import Svg, { Path, Rect } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
 import { NOT_EN_FAZLA } from '../../lib/checkin'
 import type { Etiket } from '../../lib/etiket'
-import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
+import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * PAYLASIMI DUZENLEME PENCERESI.
@@ -31,6 +32,7 @@ import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
  * metni yeniden yazmak zorunda kalmiyor.
  */
 function KilitIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={15} height={15} viewBox="0 0 24 24">
       <Path
@@ -73,6 +75,8 @@ export function PaylasimDuzenle({
   onEtiketKaldir: (kullaniciId: string) => Promise<void> | void
   onKapat: () => void
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [taslak, setTaslak] = useState(not)
   const [kalanlar, setKalanlar] = useState(etiketler)
@@ -195,7 +199,7 @@ export function PaylasimDuzenle({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   zemin: {
     flex: 1,
     backgroundColor: 'rgba(23, 19, 15, 0.55)',
@@ -284,7 +288,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
   eylemler: { flexDirection: 'row', gap: bosluk.m, marginTop: bosluk.l },

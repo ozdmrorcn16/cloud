@@ -1,6 +1,7 @@
 import { View, StyleSheet, type ViewStyle } from 'react-native'
 import { MekanIkonu } from './MekanIkonu'
-import { renk } from './tema'
+import { type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Mekan kapagi: beyaz zemin + turuncu tur ikonu.
@@ -30,6 +31,8 @@ export function MekanGorseli({
   style?: ViewStyle | ViewStyle[]
   children?: React.ReactNode
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   return (
     <View style={[stiller.kapsayici, style]}>
       <View style={stiller.ikonAlani} pointerEvents="none">
@@ -40,7 +43,7 @@ export function MekanGorseli({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     overflow: 'hidden',
     position: 'relative',

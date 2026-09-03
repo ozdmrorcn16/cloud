@@ -11,7 +11,8 @@ import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { etiketiKaldir } from '../../../lib/etiket'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
-import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
 /**
@@ -27,6 +28,7 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
  * da harita uygulamasina cikilabiliyor.
  */
 export default function AnilarEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   const [kullaniciId, setKullaniciId] = useState('')
@@ -118,7 +120,7 @@ export default function AnilarEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
@@ -131,7 +133,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.s,
   },
   durum: {

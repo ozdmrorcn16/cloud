@@ -15,7 +15,8 @@ import {
 } from '../../../lib/sohbet'
 import { useOturum } from '../../../lib/oturum'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 
 const KAPALI_KAPI_NOTU = 'Bu kişiye şu an mesaj gönderemezsin.'
 
@@ -32,6 +33,7 @@ function hataMesaji(e: unknown): string {
 }
 
 export default function SohbetEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { oturum } = useOturum()
   const benimKimligim = oturum?.user.id ?? null
@@ -301,7 +303,7 @@ export default function SohbetEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   istekSeridi: {
     backgroundColor: renk.turuncuZemin,
     paddingHorizontal: bosluk.l,
@@ -411,7 +413,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   durum: {

@@ -10,7 +10,8 @@ import {
 import { useDil } from '../../lib/dil'
 import { UstCubuk } from '../tasarim/UstCubuk'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk } from '../tasarim/tema'
+import { yazi, olcek, bosluk, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 
 /**
  * MESAJ ISTEKLERI - ayri sayfa.
@@ -26,6 +27,7 @@ import { renk, yazi, olcek, bosluk } from '../tasarim/tema'
  * (kullanicinin karari - israrci biri icin koruma engellemedir).
  */
 export default function MesajIstekleriEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [istekler, setIstekler] = useState<MesajIstegi[]>([])
@@ -126,7 +128,7 @@ export default function MesajIstekleriEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: { flex: 1, paddingHorizontal: bosluk.xl },
   liste: { paddingBottom: ALT_GEZINME_PAYI },
@@ -151,7 +153,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   bosAlan: { paddingTop: bosluk.xxl, gap: bosluk.s },

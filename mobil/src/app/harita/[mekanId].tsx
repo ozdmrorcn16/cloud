@@ -16,7 +16,8 @@ import { useDil } from '../../../lib/dil'
 import { CanliHarita, type HaritaMekani } from '../../tasarim/CanliHarita'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 
 /**
  * BIR CHECK-IN'IN KONUMU.
@@ -102,6 +103,7 @@ function yolTarifiAdresi(secim: 'apple' | 'google', mekan: Mekan) {
 }
 
 export default function CheckInHaritasiEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [mekan, setMekan] = useState<Mekan | null>(null)
@@ -288,7 +290,7 @@ export default function CheckInHaritasiEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,
@@ -298,7 +300,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
   haritaCercevesi: {
     borderRadius: yuvarlak.kart,

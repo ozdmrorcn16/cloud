@@ -5,12 +5,15 @@ import { kisiAra, type KisiSonucu } from '../../lib/kisi-ara'
 import { KisiSatiri } from '../tasarim/KisiSatiri'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { useDil } from '../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 type SatirVerisi = KisiSonucu & { fotografUrl: string | null }
 
 export default function KisilerEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [metin, setMetin] = useState('')
@@ -99,7 +102,7 @@ export default function KisilerEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     flex: 1,

@@ -1,6 +1,7 @@
 import { ScrollView, Text, View, StyleSheet } from 'react-native'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { UstCubuk } from '../tasarim/UstCubuk'
 
 // Kaynak metin: docs/gizlilik-metni.md. Icerik uzak bir kaynaktan
@@ -95,6 +96,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
 ]
 
 export default function GizlilikEkrani() {
+  const stiller = useStiller(stilleriYap)
   return (
     <ScrollView style={stiller.kaydirici} contentContainerStyle={stiller.icerik}>
       <UstCubuk baslik="Gizlilik metni" geriEtiketi="Geri" />
@@ -112,7 +114,7 @@ export default function GizlilikEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kaydirici: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,

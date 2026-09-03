@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image } from 'expo-image'
-import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * KISI ARAMA SONUCU SATIRI.
@@ -30,6 +31,7 @@ export function KisiSatiri({
   kisi: KisiSatirVerisi
   onSec: (kisi: KisiSatirVerisi) => void
 }) {
+  const stiller = useStiller(stilleriYap)
   return (
     <Pressable
       style={stiller.satir}
@@ -67,7 +69,7 @@ export function KisiSatiri({
 
 const CAP = 44
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   satir: {
     flexDirection: 'row',
     alignItems: 'center',

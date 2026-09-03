@@ -27,7 +27,8 @@ import {
   KESFET_LIMIT,
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { CanliHarita } from '../../tasarim/CanliHarita'
@@ -73,6 +74,8 @@ function mesafeYazisi(metre: number): string {
 }
 
 export default function KesfetEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
@@ -668,7 +671,7 @@ export default function KesfetEkrani() {
 const KART_GENISLIK = 256
 const KART_YUKSEKLIK = 316
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Ikon satirin SOL BASINDA (kullanicinin istegi 2026-08-26);
   // pay da ona gore sagda.
 
@@ -693,7 +696,7 @@ const stiller = StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metin,
   },
-  silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#C0392B' },
+  silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.yikici },
 
   buradaKart: {
     backgroundColor: renk.yuzey,

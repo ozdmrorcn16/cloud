@@ -3,7 +3,8 @@ import { Platform, View, Text, StyleSheet } from 'react-native'
 import MapView, { Marker, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
-import { renk, yazi, olcek, yuvarlak } from './tema'
+import { yazi, olcek, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 import type { HaritaMekani } from './CanliHarita'
 
 export type { HaritaMekani } from './CanliHarita'
@@ -88,6 +89,8 @@ export function CanliHarita({
   yukseklik?: number
   onMekanSec?: (mekanId: string) => void
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const haritaRef = useRef<MapView>(null)
 
   /**
@@ -205,7 +208,7 @@ export function CanliHarita({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: {
     backgroundColor: renk.yuzey,
     borderRadius: yuvarlak.buyuk,

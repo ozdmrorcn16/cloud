@@ -1162,3 +1162,20 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     `expo-blur` ister, o da native paket oldugu icin yeni derleme
     gerektirir - serit tamamen kalkinca gerek de kalmadi. Kapanis: jest
     60/577.
+
+90. **KOYU MOD EKLENDI** (2026-09-03). Kullanici "ekran karanlik
+    gorunuyor, sorun ne" diye sordu; gonderdigi ekran goruntusunun
+    pikselleri olculdu ve uygulamanin zemini %57 oraninda TAM BEYAZ
+    cikti - gri gorunen sey kendi yukledigi harita fotografiydi, fark
+    cihazin ekran ayarindaydi. Ardindan kullanici "telefonların koyu
+    moduna ya da açık moduna göre uyarlı olsun" dedi ve koyu mod
+    yapildi: 48 dosya, 606 jeton, 46 stil blogu. Yontem: stil bloklari
+    artik paleti parametre alan fonksiyonlar, ekranlar `useStiller` ile
+    aliyor. Gecisin kontrol listesi DERLEYICIYDI - `renk` export'u
+    kaldirilinca tsc 633 satiri tek tek listeledi, bitince export
+    kalici olarak silindi. Gorsel dogrulamada testlerin goremeyecegi iki
+    kusur bulundu: ayar ve etkilesim ikonlari gecise girmemisti (icinde
+    StyleSheet yok), ve profil fotografindaki + rozeti koyu modda
+    gorunmez oluyordu. Kelime markasi icin acik harfli ayri bir varlik
+    uretildi. Native derleme gerekmedi: userInterfaceStyle zaten
+    "automatic". Kapanis: jest 60/577.

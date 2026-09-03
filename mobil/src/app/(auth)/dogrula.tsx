@@ -5,7 +5,8 @@ import Svg, { Path } from 'react-native-svg'
 import { supabase } from '../../../lib/supabase'
 import { epostaGecerliMi } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { hataMetni } from '../../../lib/hata-metni'
 import {
   BEKLEME_SANIYE,
@@ -32,6 +33,8 @@ const HANE = 6
  * gorunur bir yolu olmali.
  */
 export default function DogrulaEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const { eposta } = useLocalSearchParams<{ eposta: string }>()
@@ -284,7 +287,7 @@ export default function DogrulaEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Dogrulama postalari siklikla spam klasorune duesuyor; kullanici
   // kodu hic gormeden vazgecmesin diye burada soyluyoruz.
   spamNotu: {
@@ -342,7 +345,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
   bilgi: {

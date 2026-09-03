@@ -10,7 +10,8 @@ import {
   type NativeScrollEvent,
 } from 'react-native'
 import { useDil } from '../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Kaydirmali tarih secici (gun / ay / yil).
@@ -61,6 +62,7 @@ function Sutun({
   esnek: number
   etiket: string
 }) {
+  const stiller = useStiller(stilleriYap)
   const ref = useRef<ScrollView>(null)
   const zamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [aktif, setAktif] = useState(() => Math.max(0, ogeler.findIndex((o) => o.deger === secili)))
@@ -139,6 +141,7 @@ export function TarihSecici({
   onKapat: () => void
   onSec: (tarih: Tarih) => void
 }) {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [gun, setGun] = useState(baslangic.gun)
   const [ay, setAy] = useState(baslangic.ay)
@@ -216,7 +219,7 @@ export function TarihSecici({
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   perde: { flex: 1, backgroundColor: renk.kapakKarartma },
   tabaka: {
     backgroundColor: renk.yuzey,

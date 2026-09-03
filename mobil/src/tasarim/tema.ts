@@ -11,7 +11,7 @@
  * icin turuncu kullanmak kimligi tuketir.
  */
 
-export const renk = {
+export const acikRenk = {
   /**
    * Ana vurgu. Eylem ve canlilik.
    *
@@ -56,11 +56,101 @@ export const renk = {
   /** Ayirici cizgi ve kenarlik. */
   cizgi: '#EFEAE5',
 
+  /**
+   * YIKICI EYLEM (sil, sikayet et, engelle).
+   *
+   * Koyu modda ACILIYOR: acik moddaki #C0392B, koyu zeminde 3,4:1'e
+   * duesuyor ve okunmuyor. Kirmizinin anlami ayni, tonu zemine gore
+   * degisiyor.
+   */
+  yikici: '#C0392B',
+
+  /**
+   * Profil kimlik bandinin gecisi (ust -> orta -> `zemin`).
+   *
+   * Jeton olmasi sart: gecis acik modda seftaliden beyaza gidiyor;
+   * koyu modda ayni degerler kalsaydi koyu bir uygulamanin tepesinde
+   * parlak bir bant dururdu.
+   */
+  bandUst: '#FFE6D2',
+  bandOrta: '#FFF3E9',
+
+  /**
+   * Yuzer cubugun zemini: yari saydam, altindaki icerik hafifce
+   * suzuluyor. Alt gezinme cubugu haritanin uzerinde durdugu icin
+   * dolu bir renk oraya agir geliyordu.
+   */
+  yuzerZemin: 'rgba(255, 255, 255, 0.86)',
+
   /** Fotograf uzerindeki yazinin okunmasi icin karartma. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',
   /** Cam (blur) rozet zemini - fotograf uzerinde. */
   camRozet: 'rgba(255, 255, 255, 0.22)',
 } as const
+
+/** Iki paletin de uymak zorunda oldugu sekil. */
+export type Renk = { [A in keyof typeof acikRenk]: string }
+
+/**
+ * NOT: eskiden `renk` diye TEK bir palet vardi ve ekranlar onu modul
+ * duzeyinde okuyordu. Koyu mod gelince kaldirildi - duruyor olsaydi
+ * yeni bir ekran yanlislikla ACIK paleti sabitleyebilirdi ve hata
+ * ancak koyu modda gorunurdu. Palet artik `useRenk()` ile aliniyor.
+ */
+
+/**
+ * KOYU PALET (kullanicinin istegi 2026-09-03).
+ *
+ * Notr tonlar SICAK: saf gri degil, kahverengiye kacan bir siyah.
+ * Sebep markanin kendisi - turuncu vurgu soguk grinin uzerinde
+ * titriyor, sicak siyahin uzerinde oturuyor.
+ *
+ * Her jetonun ROLU aynen korunuyor; degisen yalnizca degeri. Boylece
+ * ekran kodu hangi modda oldugunu HIC bilmiyor, yalnizca "zemin",
+ * "yuzey", "cizgi" diyor.
+ */
+export const koyuRenk: Renk = {
+  /**
+   * Vurgu KOYU MODDA DA AYNI: marka rengi degismiyor, cunku dolgu
+   * olarak kullanildigi yerlerde (buton, rozet, check-in dugmesi)
+   * koyu zeminde zaten parliyor.
+   */
+  turuncu: '#FE7813',
+  /**
+   * Basili hal koyu modda ACILIYOR, koyulasmiyor: koyu zeminde daha
+   * koyu bir turuncu "basildi" degil "pasif" gibi okunuyor.
+   */
+  turuncuKoyu: '#FFA45C',
+  /** Yumusak zemin: turuncunun sicak, cok koyu hali. */
+  turuncuZemin: '#3A2412',
+
+  metin: '#F4F0EB',
+  metinIkincil: '#B0A79E',
+  metinSoluk: '#7C736A',
+
+  /** Sayfa zemini: saf siyah DEGIL - saf siyahta beyaz metin titriyor. */
+  zemin: '#121110',
+  karsilamaZemini: '#171512',
+  /**
+   * Kart ve yuzer yuzeyler zeminden BIR TIK ACIK. Acik modda ikisi de
+   * beyazdi ve ayrimi golge tasiyordu; koyu modda golge gorunmuyor,
+   * bu yuzden ayrimi ton tasiyor.
+   */
+  yuzey: '#1C1917',
+  cizgi: '#2E2823',
+
+  yikici: '#FF6B5A',
+
+  bandUst: '#3A2412',
+  bandOrta: '#221A15',
+
+  yuzerZemin: 'rgba(28, 25, 23, 0.88)',
+
+  /** Fotograf karartmasi ayni: fotograf iki modda da ayni fotograf. */
+  kapakKarartma: 'rgba(23, 19, 15, 0.45)',
+  camRozet: 'rgba(255, 255, 255, 0.16)',
+}
+
 
 export const yazi = {
   /**

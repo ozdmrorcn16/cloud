@@ -6,7 +6,8 @@ import { engelle } from '../../lib/engelleme'
 import type { BagKisi } from '../../lib/bag'
 import { useDil } from '../../lib/dil'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-import { renk, yazi, olcek, bosluk, yuvarlak } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { UstCubuk } from '../tasarim/UstCubuk'
 
 /**
@@ -25,6 +26,7 @@ import { UstCubuk } from '../tasarim/UstCubuk'
  *   - giden isteklerin geri cekilmesi -> kisinin profili (Istegi geri cek)
  */
 export default function BaglarEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [hata, setHata] = useState<string | null>(null)
@@ -123,7 +125,7 @@ export default function BaglarEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.xl,
@@ -173,7 +175,7 @@ const stiller = StyleSheet.create({
   kucukTehlikeliButonYazi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
 
   durum: {
@@ -191,7 +193,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     paddingHorizontal: bosluk.xl,
     paddingTop: bosluk.m,
   },

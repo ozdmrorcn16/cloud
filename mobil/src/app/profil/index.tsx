@@ -19,7 +19,8 @@ import { useDil } from '../../../lib/dil'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
@@ -54,6 +55,7 @@ function tarihiBicimlendir(zaman: string): string {
  * disler birbirine giriyor.
  */
 function AyarlarIkonu() {
+  const renk = useRenk()
   const R = renk.metin
   return (
     <Svg width={26} height={26} viewBox="0 0 24 24">
@@ -112,6 +114,7 @@ const MADALYALAR = [
 ] as const
 
 function SiraRozeti({ sira }: { sira: number }) {
+  const stiller = useStiller(stilleriYap)
   const madalya = MADALYALAR[sira - 1]
   if (!madalya) {
     return <Text style={stiller.yerSiraDuz}>{sira}</Text>
@@ -171,14 +174,16 @@ function SiraRozeti({ sira }: { sira: number }) {
  * turuncusu aynen duruyor. Bandin ICINDEKI metin renkleri degismek
  * ZORUNDAYDI: beyaz yazi acik bir gecisin uzerinde okunmuyor.
  */
-const BAND_GECISI = ['#FFE6D2', '#FFF3E9', '#FFFFFF'] as const
+const bandGecisi = (renk: Renk) => [renk.bandUst, renk.bandOrta, renk.zemin] as const
 
 export default function ProfilEkrani() {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   // Ust pay BURADA veriliyor, kok duzende degil: icerik saatin
   // altindaki yari saydam ortunun ALTINA giriyor ki renk oradan da
   // suzulsun (bkz. _layout.tsx, `ustSerit`).
+  const renk = useRenk()
   const guvenliAlan = useSafeAreaInsets()
   const [profil, setProfil] = useState<KendiProfil | null>(null)
   const [fotografUrl, setFotografUrl] = useState<string | null>(null)
@@ -332,7 +337,7 @@ export default function ProfilEkrani() {
             sokmayi gerektiriyordu. */}
         <LinearGradient
           testID="profil-bandi"
-          colors={BAND_GECISI}
+          colors={bandGecisi(renk)}
           style={stiller.tepeGecisi}
           pointerEvents="none"
         />
@@ -655,12 +660,12 @@ export default function ProfilEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   canliSil: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
   silOnayAlani: {
     marginTop: 8,
@@ -682,7 +687,7 @@ const stiller = StyleSheet.create({
   silYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
 
   kok: { flex: 1, backgroundColor: renk.zemin },
@@ -733,7 +738,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginBottom: bosluk.m,
   },
   durum: {
@@ -811,7 +816,7 @@ const stiller = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.6)',
   },
-  buyukDugmeTehlike: { backgroundColor: '#C0392B', borderColor: '#C0392B' },
+  buyukDugmeTehlike: { backgroundColor: renk.yikici, borderColor: renk.yikici },
   buyukDugmeYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
@@ -835,7 +840,10 @@ const stiller = StyleSheet.create({
   fotografDurumu: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
-    color: '#FFFFFF',
+    // Rozetin zemini `renk.metin`; uzerindeki isaret onun KARSITI
+    // olmali. Sabit beyaz birakilsaydi koyu modda acik rozetin
+    // uzerinde beyaz bir arti kalirdi - gorunmez.
+    color: renk.zemin,
   },
   // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
   avatar: {
@@ -848,7 +856,7 @@ const stiller = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   avatarYok: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: renk.yuzey,
     alignItems: 'center',
     justifyContent: 'center',
   },

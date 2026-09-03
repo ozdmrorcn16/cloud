@@ -6,7 +6,8 @@ import { useSafeAreaInsets, initialWindowMetrics } from 'react-native-safe-area-
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { bekleyenEtiketleriGetir } from '../../lib/etiket'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * Yuzer alt gezinme cubugu.
@@ -42,10 +43,10 @@ type Sekme = {
   yol: string
   /** Bu sekme hangi yollarda aktif sayilir. */
   onEk: string
-  ikon: (aktif: boolean) => React.ReactNode
+  ikon: (renk: Renk, aktif: boolean) => React.ReactNode
 }
 
-function ikonRengi(aktif: boolean) {
+function ikonRengi(renk: Renk, aktif: boolean) {
   return aktif ? renk.turuncu : renk.metinIkincil
 }
 
@@ -55,11 +56,11 @@ const SEKMELER: Sekme[] = [
     ad: 'Ana sayfa',
     yol: '/',
     onEk: '/',
-    ikon: (aktif) => (
+    ikon: (renk, aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">
         <Path
           d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-5.5H9V20H5a1 1 0 0 1-1-1z"
-          stroke={ikonRengi(aktif)}
+          stroke={ikonRengi(renk, aktif)}
           strokeWidth={1.8}
           fill={aktif ? renk.turuncuZemin : 'none'}
           strokeLinejoin="round"
@@ -75,18 +76,18 @@ const SEKMELER: Sekme[] = [
     ad: 'Bildirimler',
     yol: '/bildirimler',
     onEk: '/bildirimler',
-    ikon: (aktif) => (
+    ikon: (renk, aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">
         <Path
           d="M12 3.5a5.5 5.5 0 0 0-5.5 5.5v3.2L5 15.5h14l-1.5-3.3V9A5.5 5.5 0 0 0 12 3.5z"
-          stroke={ikonRengi(aktif)}
+          stroke={ikonRengi(renk, aktif)}
           strokeWidth={1.8}
           fill={aktif ? renk.turuncuZemin : 'none'}
           strokeLinejoin="round"
         />
         <Path
           d="M10 18.2a2.2 2.2 0 0 0 4 0"
-          stroke={ikonRengi(aktif)}
+          stroke={ikonRengi(renk, aktif)}
           strokeWidth={1.8}
           fill="none"
           strokeLinecap="round"
@@ -98,11 +99,11 @@ const SEKMELER: Sekme[] = [
     ad: 'Mesajlar',
     yol: '/mesajlar',
     onEk: '/mesajlar',
-    ikon: (aktif) => (
+    ikon: (renk, aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">
         <Path
           d="M4 5.5h16v10H9.5L5.5 19v-3.5H4z"
-          stroke={ikonRengi(aktif)}
+          stroke={ikonRengi(renk, aktif)}
           strokeWidth={1.8}
           fill={aktif ? renk.turuncuZemin : 'none'}
           strokeLinejoin="round"
@@ -114,12 +115,12 @@ const SEKMELER: Sekme[] = [
     ad: 'Profil',
     yol: '/profil',
     onEk: '/profil',
-    ikon: (aktif) => (
+    ikon: (renk, aktif) => (
       <Svg width={24} height={24} viewBox="0 0 24 24">
-        <Circle cx={12} cy={8} r={3.6} stroke={ikonRengi(aktif)} strokeWidth={1.8} fill="none" />
+        <Circle cx={12} cy={8} r={3.6} stroke={ikonRengi(renk, aktif)} strokeWidth={1.8} fill="none" />
         <Path
           d="M5 19.5c0-3.4 3.1-5.5 7-5.5s7 2.1 7 5.5"
-          stroke={ikonRengi(aktif)}
+          stroke={ikonRengi(renk, aktif)}
           strokeWidth={1.8}
           fill="none"
           strokeLinecap="round"
@@ -139,6 +140,8 @@ const SEKMELER: Sekme[] = [
  * "turuncu yalnizca eylem ve canlilik icin").
  */
 function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => void }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   return (
     <Pressable
       style={stiller.merkez}
@@ -164,6 +167,8 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
 }
 
 export function AltGezinme() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const yol = usePathname()
   // Cubuk ana ekran gostergesinin (iPhone'daki alt cizgi) USTUNDE
@@ -246,7 +251,7 @@ export function AltGezinme() {
               accessibilityLabel={s.ad}
             >
               <View>
-                {s.ikon(aktif)}
+                {s.ikon(renk, aktif)}
                 {rozet > 0 && (
                   <View style={stiller.rozet}>
                     <Text style={stiller.rozetYazi}>{rozet > 9 ? '9+' : rozet}</Text>
@@ -276,7 +281,7 @@ export function AltGezinme() {
  */
 export const ALT_GEZINME_PAYI = 104 + (initialWindowMetrics?.insets.bottom ?? 0)
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
     position: 'absolute',
     left: 0,
@@ -289,7 +294,7 @@ const stiller = StyleSheet.create({
     // Yari saydam (kullanicinin istegi 2026-08-30, Instagram ornek):
     // altindan akan icerik hafifce gorunur. Gercek buzlu cam (blur)
     // native modul ister ve yeni derleme gerektirir; simdilik saydamlik.
-    backgroundColor: 'rgba(255, 255, 255, 0.86)',
+    backgroundColor: renk.yuzerZemin,
     borderRadius: yuvarlak.buyuk,
     borderWidth: 1,
     borderColor: renk.cizgi,

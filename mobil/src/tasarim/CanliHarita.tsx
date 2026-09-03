@@ -10,7 +10,8 @@ import {
 } from 'react-native'
 import Svg, { Circle, Path, G, Line } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
-import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
  * CANLI HARITA - "su an neredesin ve cevrende ne var".
@@ -90,6 +91,7 @@ function metreyeCevir(
 
 /** Disari dogru buyuyup sonen tek bir nabiz halkasi. */
 function NabizHalkasi({ gecikme, hareketVar }: { gecikme: number; hareketVar: boolean }) {
+  const stiller = useStiller(stilleriYap)
   const ilerleme = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -138,6 +140,8 @@ export function CanliHarita({
   yukseklik?: number
   onMekanSec?: (mekanId: string) => void
 }) {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const [olcu, setOlcu] = useState({ en: 0, boy: yukseklik })
   const [hareketVar, setHareketVar] = useState(false)
 
@@ -297,7 +301,7 @@ export function CanliHarita({
 
 const HALKA = 220
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: {
     backgroundColor: renk.yuzey,
     borderRadius: yuvarlak.buyuk,

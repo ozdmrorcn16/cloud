@@ -6,7 +6,8 @@ import {
 } from '../../../lib/ayarlar'
 import type { Bulunurluk } from '../../../lib/checkin'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, SecenekSatiri } from '../../tasarim/Liste'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -19,6 +20,7 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
  * kayitlar ve Bulunurluk tipi degismedi.
  */
 export default function CheckInGorunurluguEkrani() {
+  const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const [secim, setSecim] = useState<Bulunurluk | null>(null)
   const [hata, setHata] = useState<string | null>(null)
@@ -74,7 +76,7 @@ export default function CheckInGorunurluguEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: { paddingHorizontal: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
   aciklama: {
@@ -86,7 +88,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.m,
   },
 })

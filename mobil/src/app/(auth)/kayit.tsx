@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
 import { epostaGecerliMi, epostaNormallestir } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
+import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { MarkaIsareti } from '../../tasarim/MarkaIsareti'
 import { AppleIkonu, GoogleIkonu } from '../../tasarim/sosyal-ikonlar'
 import { hataMetni } from '../../../lib/hata-metni'
@@ -46,6 +47,8 @@ import Svg, { Path } from 'react-native-svg'
  */
 
 export default function KayitEkrani() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [eposta, setEposta] = useState('')
@@ -220,7 +223,7 @@ export default function KayitEkrani() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   geri: {
     position: 'absolute',
     left: bosluk.l,
@@ -270,7 +273,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     marginTop: bosluk.s,
   },
 

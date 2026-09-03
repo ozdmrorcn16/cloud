@@ -5,7 +5,8 @@ import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
-import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
 import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPenceresi'
 import { YorumSayfasi } from './YorumSayfasi'
@@ -83,6 +84,7 @@ export function CheckInKarti({
   onNotKaydet?: (id: string, yeniNot: string) => Promise<void> | void
   onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
 }) {
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
 
@@ -387,7 +389,7 @@ export function CheckInKarti({
 
 const AVATAR_CAPI = 40
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemler: {
     flexDirection: 'row',
     alignItems: 'center',

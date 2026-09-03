@@ -18,12 +18,14 @@ import { kisiAra } from '../../lib/kisi-ara'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
-import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../tasarim/tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
+import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 /** Arama kutusunun basindaki buyutec. */
 function BuyutecIkonu() {
+  const renk = useRenk()
 
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
@@ -46,6 +48,7 @@ function BuyutecIkonu() {
 }
 
 function KonumIkonu() {
+  const renk = useRenk()
   return (
     <Svg width={13} height={13} viewBox="0 0 24 24">
       <Path
@@ -73,6 +76,8 @@ function KonumIkonu() {
  * gereksizdi; yerini icerik aldi.
  */
 export default function AnaSayfa() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
   const [ogeler, setOgeler] = useState<AkisOgesi[]>([])
@@ -324,7 +329,7 @@ export default function AnaSayfa() {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) => StyleSheet.create({
   satir: {
     flex: 1,
     fontFamily: yazi.govde,
@@ -355,7 +360,7 @@ const stiller = StyleSheet.create({
   silYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
   },
 
   kok: { flex: 1, backgroundColor: renk.zemin },
@@ -371,7 +376,9 @@ const stiller = StyleSheet.create({
     marginBottom: bosluk.m,
     // Kenarlik yok, dolgu var. Ton gun ayraclariyla ayni (#F6F1EB):
     // beyaz sayfada kendini belli ediyor ama dikkat cekmiyor.
-    backgroundColor: '#F6F1EB',
+    // Jetona gecti: koyu modda kremsi bir kutu beyaz bir delik gibi
+    // duruyordu.
+    backgroundColor: renk.turuncuZemin,
     borderRadius: yuvarlak.kart,
     paddingHorizontal: bosluk.m,
     paddingVertical: 11,
@@ -393,7 +400,7 @@ const stiller = StyleSheet.create({
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: '#C0392B',
+    color: renk.yikici,
     paddingHorizontal: bosluk.xl,
     marginBottom: bosluk.s,
   },

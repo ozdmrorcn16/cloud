@@ -1,4 +1,4 @@
-import { Image, type ImageStyle, type StyleProp } from 'react-native'
+import { Image, type ImageStyle, type StyleProp, useColorScheme } from 'react-native'
 
 /**
  * Slooin KELIME MARKASI - "slooin" yazisi.
@@ -28,13 +28,22 @@ export function MarkaYazisi({
   genislik?: number
   style?: StyleProp<ImageStyle>
 }) {
+  const koyuMu = useColorScheme() === 'dark'
   // Oran sabit: kaynak gorselden olculdu (1200x348). Gorsel degisirse
   // bu sabit de degismeli, yoksa yazi ezilir. Uretim:
   // `python araclar/kelime-markasi-uret.py` orani ekrana basiyor.
   const yukseklik = Math.round((genislik * 348) / 1200)
   return (
     <Image
-      source={require('../../assets/images/marka-yazisi.png')}
+      // KOYU MODDA ACIK HARFLI SURUM (kullanicinin istegi 2026-09-03).
+      // Kaynak PNG koyu harfli; koyu zeminde neredeyse gorunmuyordu.
+      // Acik surum `araclar/marka-yazisi-koyu-uret.py` ile uretiliyor
+      // ve TURUNCU NOKTAYI koruyor - o nokta markanin konum ignesi.
+      source={
+        koyuMu
+          ? require('../../assets/images/marka-yazisi-koyu.png')
+          : require('../../assets/images/marka-yazisi.png')
+      }
       style={[{ width: genislik, height: yukseklik }, style]}
       resizeMode="contain"
       accessibilityRole="image"
