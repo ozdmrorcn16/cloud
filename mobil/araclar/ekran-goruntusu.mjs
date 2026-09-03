@@ -48,6 +48,17 @@ try {
   // Cihaz dili taklidi: uygulamanin cihaz dilini gercekten okuyup
   // okumadigini dogrulamak icin. SLOOIN_TEST_DIL=en-US verilince
   // tarayici Ingilizce bir cihaz gibi davraniyor.
+  // Koyu/acik mod (2026-09-03, koyu mod geldikten sonra eklendi):
+  // SLOOIN_TEST_SEMA=dark ya da light. Verilmezse tarayicinin kendi
+  // ayari gecerli - o da makinenin ayarina bagli oldugu icin
+  // KARSILASTIRMA YAPARKEN mutlaka verilmeli.
+  const testSema = process.env.SLOOIN_TEST_SEMA
+  if (testSema) {
+    await sayfa.emulateMediaFeatures([
+      { name: 'prefers-color-scheme', value: testSema },
+    ])
+  }
+
   const testDil = process.env.SLOOIN_TEST_DIL
   if (testDil) {
     await sayfa.setExtraHTTPHeaders({ 'Accept-Language': testDil })

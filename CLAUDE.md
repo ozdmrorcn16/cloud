@@ -446,6 +446,55 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### KARSILAMA EKRANI: OZELLIK LISTESI YERINE SICAK NOKTA - 2026-09-04
+
+Kullanicinin istegi: karsilama ekrani check-in, tanisma ve populer
+yerler algisini VERSIN. Uc tur gorsel sunuldu (once dort icerik yonu,
+sonra alti gorsel dil, sonra dort kompozisyon); kullanici sonuncudan
+**"1 - sicak nokta"** yi secti.
+
+**ONCEKI HAL BIR OZELLIK LISTESIYDI:** dort ikon, dort baslik
+("Check-in Yap", "Yakininda kimler var gor", "Sohbet Et", "Populer
+yerleri kesfet"). Ne yaptigimizi ANLATIYORDU ama gostermiyordu. Ayrica
+marka iki kez duruyordu - isaret ve kelime markasi ust uste.
+
+**YENI EKRAN UC VAADI CIZIMLE TASIYOR** (`src/tasarim/KarsilamaSahnesi.tsx`):
+
+| Oge | Vaat |
+|---|---|
+| Turuncu igne | check-in yapilmis bir yer |
+| Avatar kumesi | orada olan insanlar (tanisma) |
+| Lekelerin koyulugu | hangisi daha canli (populer yerler) |
+
+Altinda tek soru ("Şu an nerede insan var?") ve tek satirlik cevap.
+Dort baslik ve `OzellikIkonu` bloklari SILINDI; `adim1..4Baslik`
+anahtarlari yerine `soru` ve `cevap` geldi. `SicaklikZemin`,
+`CheckInSahnesi` ve `MarkaIsareti` bu ekrandan cikti (MarkaIsareti
+kayit ekraninda kullanilmaya devam ediyor).
+
+**UYDURMA VERI KURALI KORUNDU** - mekan adi yok, "yakininda su kadar
+kisi var" iddiasi yok. Kumedeki "+4" bir veri degil kompozisyonun
+parcasi; karsilama ekranindaki ornek check-in kartlari 2026-08-27'de
+tam bu yuzden kaldirilmisti ve o karar duruyor. Avatarlar HARFLI
+daireler: gercek yuz koymak hem uydurma olurdu hem de uygulamanin
+"haritada yuz yok, yalnizca sayi" kuraliyla celisirdi.
+
+**IKI YERLESIM KUSURU EKRAN GORUNTUSUYLE BULUNDU:** ikinci avatar
+kumesi ekran kenarindan kirpiliyordu (sahne kenardan kenara oldugu
+icin), ve ust uste binme SABIT -10 oldugu icin 24 px'lik kucuk
+dairelerde harfin uzerini kapatiyordu. Ikisi de duzeltildi; binme artik
+capa orantili.
+
+**ARACA MOD ANAHTARI EKLENDI:** `araclar/ekran-goruntusu.mjs` artik
+`SLOOIN_TEST_SEMA=dark|light` okuyor. Koyu mod geldikten sonra sart
+oldu - verilmezse tarayici MAKINENIN ayarini kullaniyor ve karsilastirma
+yaniltici cikiyor (bu bir kez yasandi: acik mod sanilan goruntu koyu
+cikti).
+
+Dogrulama: jest 60 paket / 578 test, tsc bes taban hatasi, ekran iki
+modda da goruntulendi (`tasarim/karsilama-yeni-light.png`,
+`karsilama-yeni-dark.png`).
+
 ### KOYU MOD - 2026-09-03
 
 Kullanicinin istegi: "telefonların koyu moduna ya da açık moduna göre

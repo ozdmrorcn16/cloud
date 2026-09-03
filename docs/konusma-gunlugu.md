@@ -1179,3 +1179,17 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     gorunmez oluyordu. Kelime markasi icin acik harfli ayri bir varlik
     uretildi. Native derleme gerekmedi: userInterfaceStyle zaten
     "automatic". Kapanis: jest 60/577.
+
+91. **KARSILAMA EKRANI YENIDEN TASARLANDI: "SICAK NOKTA"**
+    (2026-09-04). Kullanici karsilama ekraninin check-in, tanisma ve
+    populer yerler algisini vermesini istedi. Uc tur gorsel sunuldu -
+    once dort icerik yonu, sonra alti gorsel dil (desen/renk/model),
+    sonra uc vaadi cizimle tasiyan dort kompozisyon - ve sonuncudan
+    "1 (sicak nokta)" secildi. Onceki ekran bir OZELLIK LISTESIYDI:
+    dort ikon, dort baslik. Yeni ekranda igne check-in'i, avatar kumesi
+    tanismayi, lekelerin koyulugu populerligi tasiyor; altta tek soru
+    ve tek cevap. Uydurma veri kurali korundu (mekan adi ve "yakininda
+    su kadar kisi" iddiasi yok, avatarlar harfli daireler). Iki
+    yerlesim kusuru ekran goruntusuyle bulunup duzeltildi. Ekran
+    goruntusu aracina SLOOIN_TEST_SEMA anahtari eklendi - koyu mod
+    geldikten sonra sart oldu. Kapanis: jest 60/578.

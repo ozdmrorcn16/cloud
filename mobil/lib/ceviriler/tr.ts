@@ -31,16 +31,12 @@ export default {
     dilEtiket: 'Dil',
 
 
-    // Acilistaki ornek check-in kartlari. GERCEK VERI DEGIL: kullanici
-    // henuz giris yapmamis ve kimin nerede oldugu giris oncesi
-    // gosterilemez. Mekan adlari da bilerek jenerik.
-    // Dort ozellik, YALNIZCA BASLIK. Basliklarin altindaki aciklama
-    // satirlari kullanicinin karariyla kaldirildi (2026-08-26): baslik
-    // zaten ne oldugunu soyluyordu, aciklama ayni seyi tekrar ediyordu.
-    adim1Baslik: 'Check-in Yap',
-    adim2Baslik: 'Yakınında kimler var gör',
-    adim3Baslik: 'Sohbet Et',
-    adim4Baslik: 'Popüler yerleri keşfet',
+    // DORT OZELLIK BASLIGI KALDIRILDI (kullanicinin secimi
+    // 2026-09-03): ekran uc vaadi YAZMAK yerine GOSTERIYOR. Yerine tek
+    // soru ve tek satirlik cevap geldi; vaatlerin kendisi cizimde
+    // (bkz. `KarsilamaSahnesi`).
+    soru: 'Şu an nerede insan var?',
+    cevap: 'Check-in yap, tam o anda orada olanlarla tanış.',
 
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
