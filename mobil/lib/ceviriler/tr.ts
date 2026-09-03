@@ -35,8 +35,13 @@ export default {
     // 2026-09-03): ekran uc vaadi YAZMAK yerine GOSTERIYOR. Yerine tek
     // soru ve tek satirlik cevap geldi; vaatlerin kendisi cizimde
     // (bkz. `KarsilamaSahnesi`).
-    soru: 'Şu an nerede insan var?',
-    cevap: 'Check-in yap, tam o anda orada olanlarla tanış.',
+    // Dort tanitim basligi GERI GELDI (kullanicinin istegi
+    // 2026-09-04). Sahne vaatleri hissettiriyor, bu satirlar adiyla
+    // soyluyor.
+    adim1Baslik: 'Check-in Yap',
+    adim2Baslik: 'Yakınında kimler var gör',
+    adim3Baslik: 'Sohbet Et',
+    adim4Baslik: 'Popüler yerleri keşfet',
 
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',

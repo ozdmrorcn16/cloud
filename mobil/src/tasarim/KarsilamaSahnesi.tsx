@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet } from 'react-native'
-import Svg, { Circle, G, Path, Rect } from 'react-native-svg'
+import { useEffect, useRef, useState } from 'react'
+import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native'
+import Svg, { G, Path, Rect } from 'react-native-svg'
 import { bosluk, yazi, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 
@@ -7,29 +8,92 @@ import { useRenk, useStiller } from './tema-baglami'
  * KARSILAMA SAHNESI - "sicak nokta".
  *
  * Kullanicinin secimi (2026-09-03): dort kompozisyon gorsel olarak
- * sunuldu, "1" secildi. Amac uc vaadi ANLATMAK degil HISSETTIRMEK;
- * onceki ekran uc seyi yaziyordu, bu gorsel onlari gosteriyor:
+ * sunuldu, "1" secildi. Amac uc vaadi ANLATMAK degil HISSETTIRMEK:
  *
  *   igne          -> check-in yapilmis bir yer
  *   avatar kumesi -> orada olan insanlar (tanisma)
- *   lekeler       -> hangisi daha canli (populer yerler)
+ *   halkalar      -> hangisi daha canli (populer yerler)
+ *
+ * UC NOKTA VAR (kullanicinin istegi 2026-09-04): once yalnizca
+ * merkezde igne vardi, diger iki leke bostu. Artik ucunde de igne ve
+ * birkac kisi var - "baska yerlerde de hareket var" fikri boylece
+ * gorunuyor.
+ *
+ * NABIZ (ayni istek): halkalar yavasca buyuyup soluyor. Uc nokta AYNI
+ * ANDA degil, sirayla atiyor - ayni anda atsalardi ekran tek bir sey
+ * gibi yanip sonerdi; gecikmeli olunca "burada da, surada da hareket
+ * var" okunuyor.
+ *
+ * HAREKETI AZALT ayari aciksa nabiz HIC BASLAMIYOR (uygulamanin
+ * erisilebilirlik tabani): halkalar duruyor, kompozisyon aynen kaliyor.
+ *
+ * LEKELER ARTIK SVG DEGIL: SVG dairelerini `Animated` ile olceklemek
+ * native surucuyu kullanamiyor. Halkalar yuvarlatilmis `Animated.View`;
+ * yalnizca yollar SVG kaldi.
  *
  * UYDURMA VERI YOK. Mekan adi da, "yakininda su kadar kisi var" gibi
  * bir iddia da gecmiyor - bu bir cizim, bir veri yuzeyi degil.
  * Karsilama ekranindaki ornek check-in kartlari 2026-08-27'de tam bu
- * yuzden kaldirilmisti; o karar duruyor. Kumedeki "+4" bir mekan
- * iddiasi degil, kompozisyonun parcasi.
+ * yuzden kaldirilmisti; o karar duruyor.
  *
  * YUZ YOK: avatarlar harfli daireler. Uygulamanin kendi kurali da bu -
  * haritada ve yogunluk sayacinda kimlik degil SAYI gosteriliyor.
  */
 
-/** Kumedeki daire renkleri; paletten bagimsiz, cizimin kendi renkleri. */
-const KUME = [
-  { harf: 'D', renk: '#7B8CFF' },
-  { harf: 'E', renk: '#E0562A' },
-  { harf: 'M', renk: '#0E9488' },
-] as const
+type Kisi = { harf: string; arka: string }
+
+type Nokta = {
+  /** Sahnenin yuzdesi olarak konum. */
+  x: `${number}%`
+  y: `${number}%`
+  /** En dis halkanin capi. */
+  cap: number
+  /** Igne dugmesinin capi. */
+  igne: number
+  /** Avatar capi. */
+  avatar: number
+  /** Nabzin baslama gecikmesi (ms). */
+  gecikme: number
+  kisiler: Kisi[]
+  /** Kumenin sonundaki "+n" balonu; yoksa hic cizilmiyor. */
+  fazla?: string
+}
+
+const NOKTALAR: Nokta[] = [
+  {
+    x: '50%',
+    y: '36%',
+    cap: 190,
+    igne: 44,
+    avatar: 30,
+    gecikme: 0,
+    kisiler: [
+      { harf: 'D', arka: '#7B8CFF' },
+      { harf: 'E', arka: '#E0562A' },
+      { harf: 'M', arka: '#0E9488' },
+    ],
+    fazla: '+4',
+  },
+  {
+    x: '20%',
+    y: '76%',
+    cap: 120,
+    igne: 32,
+    avatar: 24,
+    gecikme: 900,
+    kisiler: [{ harf: 'S', arka: '#C084FC' }],
+    fazla: '+1',
+  },
+  {
+    x: '80%',
+    y: '18%',
+    cap: 96,
+    igne: 28,
+    avatar: 22,
+    gecikme: 1800,
+    kisiler: [{ harf: 'B', arka: '#0E9488' }],
+  },
+]
 
 function Avatar({
   harf,
@@ -56,7 +120,7 @@ function Avatar({
         borderColor: renk.karsilamaZemini,
         alignItems: 'center',
         justifyContent: 'center',
-        // Ust uste binme CAPA ORANTILI: sabit -10, 24 px'lik kucuk
+        // Ust uste binme CAPA ORANTILI: sabit bir deger kucuk
         // dairelerde harfin uzerini kapatiyordu.
         marginLeft: -Math.round(cap / 4),
       }}
@@ -74,15 +138,141 @@ function Avatar({
   )
 }
 
-export function KarsilamaSahnesi() {
+/** Nabiz atan halkalar; hareket kapaliysa sabit duruyorlar. */
+function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; hareket: boolean }) {
+  const renk = useRenk()
+  const nabiz = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (!hareket) return
+    const dongu = Animated.loop(
+      Animated.sequence([
+        Animated.delay(gecikme),
+        Animated.timing(nabiz, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(nabiz, {
+          toValue: 0,
+          duration: 1400,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    )
+    dongu.start()
+    return () => dongu.stop()
+  }, [hareket, gecikme, nabiz])
+
+  const olcek = nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] })
+  const solma = nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 0.65] })
+
+  const katmanlar = [
+    { oran: 1, opaklik: 0.13 },
+    { oran: 0.65, opaklik: 0.16 },
+    { oran: 0.36, opaklik: 0.2 },
+  ]
+
+  return (
+    <>
+      {katmanlar.map(({ oran, opaklik }) => {
+        const boyut = cap * oran
+        return (
+          <Animated.View
+            key={oran}
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              // Halkalar ignenin merkezine oturuyor.
+              top: -boyut / 2 + 22,
+              width: boyut,
+              height: boyut,
+              borderRadius: boyut / 2,
+              backgroundColor: renk.turuncu,
+              opacity: Animated.multiply(solma, opaklik),
+              transform: [{ scale: olcek }],
+            }}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+function NoktaGorunumu({ nokta, hareket }: { nokta: Nokta; hareket: boolean }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
 
   return (
+    <View style={[stiller.nokta, { left: nokta.x, top: nokta.y }]}>
+      <Halkalar cap={nokta.cap} gecikme={nokta.gecikme} hareket={hareket} />
+
+      <View
+        style={[
+          stiller.igne,
+          { width: nokta.igne, height: nokta.igne, borderRadius: nokta.igne / 2 },
+        ]}
+      >
+        <Svg width={nokta.igne * 0.5} height={nokta.igne * 0.5} viewBox="0 0 24 24">
+          <Path
+            d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"
+            stroke="#FFFFFF"
+            strokeWidth={2.2}
+            fill="none"
+          />
+          <Path
+            d="M12 12.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z"
+            stroke="#FFFFFF"
+            strokeWidth={2.2}
+            fill="none"
+          />
+        </Svg>
+      </View>
+      <View style={[stiller.kuyruk, { borderTopColor: renk.turuncu }]} />
+
+      <View style={[stiller.kume, { paddingLeft: Math.round(nokta.avatar / 4) }]}>
+        {nokta.kisiler.map(({ harf, arka }) => (
+          <Avatar key={harf} harf={harf} arka={arka} cap={nokta.avatar} />
+        ))}
+        {nokta.fazla && (
+          <Avatar
+            harf={nokta.fazla}
+            arka={renk.turuncuZemin}
+            cap={nokta.avatar}
+            yaziRengi={renk.turuncuKoyu}
+          />
+        )}
+      </View>
+    </View>
+  )
+}
+
+export function KarsilamaSahnesi() {
+  const renk = useRenk()
+  const stiller = useStiller(stilleriYap)
+
+  // Hareketi azalt aciksa nabiz hic baslamiyor.
+  const [hareket, setHareket] = useState(true)
+  useEffect(() => {
+    let gecerli = true
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((azalt) => {
+        if (gecerli) setHareket(!azalt)
+      })
+      .catch(() => {
+        // Ayar okunamazsa hareket acik kalir; her platformda bu cagri
+        // desteklenmiyor.
+      })
+    return () => {
+      gecerli = false
+    }
+  }, [])
+
+  return (
     <View style={stiller.kok}>
-      {/* Zemin: yollar ve yogunluk lekeleri. Lekelerin koyulugu
-          "burasi daha canli" demenin en kisa yolu; ayni teknik
-          SicaklikZemin'de de kullaniliyor. */}
+      {/* Zemin yalnizca yollar: lekeler artik animasyonlu gorunumler. */}
       <Svg style={StyleSheet.absoluteFill} viewBox="0 0 300 330" preserveAspectRatio="xMidYMid slice">
         <Rect width={300} height={330} fill={renk.karsilamaZemini} />
         <G stroke={renk.cizgi} strokeWidth={7} fill="none">
@@ -91,44 +281,11 @@ export function KarsilamaSahnesi() {
           <Path d="M215 -10 L200 168 L255 340" />
           <Path d="M-10 226 L140 252 L310 214" />
         </G>
-        <G>
-          <Circle cx={150} cy={132} r={92} fill={renk.turuncu} fillOpacity={0.13} />
-          <Circle cx={150} cy={132} r={60} fill={renk.turuncu} fillOpacity={0.16} />
-          <Circle cx={150} cy={132} r={33} fill={renk.turuncu} fillOpacity={0.2} />
-          <Circle cx={62} cy={252} r={50} fill={renk.turuncu} fillOpacity={0.1} />
-          <Circle cx={62} cy={252} r={25} fill={renk.turuncu} fillOpacity={0.13} />
-          <Circle cx={240} cy={62} r={38} fill={renk.turuncu} fillOpacity={0.08} />
-        </G>
       </Svg>
 
-      {/* En sicak lekenin uzerinde: igne + o yerde olan insanlar. */}
-      <View style={stiller.merkez}>
-        <View style={stiller.igne}>
-          <Svg width={22} height={22} viewBox="0 0 24 24">
-            <Path
-              d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"
-              stroke="#FFFFFF"
-              strokeWidth={2.2}
-              fill="none"
-            />
-            <Circle cx={12} cy={10} r={2.6} stroke="#FFFFFF" strokeWidth={2.2} fill="none" />
-          </Svg>
-        </View>
-        <View style={stiller.kuyruk} />
-
-        <View style={stiller.kume}>
-          {KUME.map(({ harf, renk: arka }) => (
-            <Avatar key={harf} harf={harf} arka={arka} cap={30} />
-          ))}
-          <Avatar harf="+4" arka={renk.turuncuZemin} cap={30} yaziRengi={renk.turuncuKoyu} />
-        </View>
-      </View>
-
-      {/* Ikinci, daha sonuk kume: baska bir yerde de birileri var. */}
-      <View style={stiller.ikinciKume}>
-        <Avatar harf="S" arka="#C084FC" cap={24} />
-        <Avatar harf="+1" arka={renk.turuncuZemin} cap={24} yaziRengi={renk.turuncuKoyu} />
-      </View>
+      {NOKTALAR.map((nokta) => (
+        <NoktaGorunumu key={nokta.x + nokta.y} nokta={nokta} hareket={hareket} />
+      ))}
     </View>
   )
 }
@@ -137,17 +294,15 @@ const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     kok: { flex: 1, overflow: 'hidden' },
 
-    merkez: {
+    // Nokta kendi merkezine gore konumlaniyor: halkalar da igne de
+    // ayni eksende.
+    nokta: {
       position: 'absolute',
-      left: 0,
-      right: 0,
-      top: '22%',
       alignItems: 'center',
+      transform: [{ translateX: -70 }, { translateY: -30 }],
+      width: 140,
     },
     igne: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
       backgroundColor: renk.turuncu,
       alignItems: 'center',
       justifyContent: 'center',
@@ -161,20 +316,7 @@ const stilleriYap = (renk: Renk) =>
       borderTopWidth: 8,
       borderLeftColor: 'transparent',
       borderRightColor: 'transparent',
-      borderTopColor: renk.turuncu,
       marginTop: -2,
     },
-    // paddingLeft ilk dairenin negatif payini geri aliyor.
-    kume: { flexDirection: 'row', marginTop: bosluk.m, paddingLeft: 8 },
-
-    ikinciKume: {
-      position: 'absolute',
-      // Sahne kenardan kenara oldugu icin bu kume ekran kenarina cok
-      // yaklasip kirpiliyordu; sayfa payi kadar iceri alindi.
-      left: bosluk.xl,
-      bottom: '18%',
-      flexDirection: 'row',
-      paddingLeft: 6,
-      opacity: 0.9,
-    },
+    kume: { flexDirection: 'row', marginTop: bosluk.s },
   })
