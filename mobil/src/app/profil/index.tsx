@@ -16,6 +16,7 @@ import {
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
+import { LinearGradient } from 'expo-linear-gradient'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
@@ -150,6 +151,25 @@ function SiraRozeti({ sira }: { sira: number }) {
     </View>
   )
 }
+
+/**
+ * KIMLIK BANDININ ZEMINI (kullanicinin secimi 2026-09-03, secenek "B").
+ *
+ * Onceden dolu, tam doygunlukta turuncu bir bloktu ve ekranin ucte
+ * birini kapliyordu. Kullanici dort yumusatma secenegini gorup
+ * "yumusak gecis"i secti: ustte seftali, asagi inerken beyaza karisiyor.
+ * Boylece bandin NEREDE BITTIGI gorunmuyor, ekran tek parca duruyor.
+ *
+ * Uc durak var, iki degil: iki durakli bir gecis ortada gozle secilen
+ * bir bant birakiyordu.
+ *
+ * KAPSAM (kullanicinin kurali): "sadece profil resminin arkasindaki
+ * renk icin, geri kalan her sey ayni kalsin". Bandin DISINDA hicbir sey
+ * degismedi - ust cubuk, sekmeler, ani satirlari ve mekan adinin marka
+ * turuncusu aynen duruyor. Bandin ICINDEKI metin renkleri degismek
+ * ZORUNDAYDI: beyaz yazi acik bir gecisin uzerinde okunmuyor.
+ */
+const BAND_GECISI = ['#FFE6D2', '#FFF3E9', '#FFFFFF'] as const
 
 export default function ProfilEkrani() {
   const router = useRouter()
@@ -341,7 +361,11 @@ export default function ProfilEkrani() {
                 yalnizca + rozeti fotograf secer; fotografin kendisine
                 basinca buyuk gorunum acilir, orada "Kaldir" var.
                 Fotograf yokken bas harfe basmak bir sey yapmiyor. */}
-            <View style={stiller.kimlik}>
+            <LinearGradient
+              testID="profil-bandi"
+              colors={BAND_GECISI}
+              style={stiller.kimlik}
+            >
               <View style={stiller.avatarBasilir}>
                 {fotografUrl ? (
                   <Pressable
@@ -450,7 +474,7 @@ export default function ProfilEkrani() {
                 </Pressable>
               </View>
 
-            </View>
+            </LinearGradient>
 
             {/* SEKMELER: ayni veriye iki bakis (kullanicinin secimi
                 2026-08-29). Anilar zaman sirasi, Yerler ise en cok
@@ -692,17 +716,18 @@ const stiller = StyleSheet.create({
    * `icerik` uzerinde duruyor, blok onu geri aliyor ve kendi payini
    * koyuyor. Boylece renk kenardan kenara gidiyor.
    *
-   * NOT - kimlik kurali gerilimi: "turuncu yalnizca eylem ve canlilik
-   * icindir" kurali duruyor ve bu blok dekoratif bir turuncu. Kullanici
-   * bilerek istedi; blogun icindeki hicbir sey turuncu DEGIL, yani
-   * ekranin geri kalaninda turuncunun anlami korunuyor.
+   * KIMLIK KURALI GERILIMI COZULDU (2026-09-03): blok eskiden dolu
+   * turuncuydu ve "turuncu yalnizca eylem ve canlilik icindir" kuraliyla
+   * celisiyordu. Artik zemin seftaliden beyaza yumusak bir gecis; tam
+   * doygun turuncu bandin icinde yalnizca "Profili duzenle" butonunda
+   * kaldi - yani yeniden EYLEM oldu.
    */
   kimlik: {
     alignItems: 'center',
     // Band KUCULDU (kullanicinin istegi 2026-08-29): ogeler arasi
     // bosluk 16 -> 12, ust pay 24 -> 16, alt pay 16 -> 12.
     gap: bosluk.m,
-    backgroundColor: renk.turuncu,
+    // Zemin YOK: gradyan `BAND_GECISI` ile LinearGradient'ten geliyor.
     marginHorizontal: -bosluk.xl,
     paddingHorizontal: bosluk.xl,
     paddingTop: bosluk.l,
@@ -767,7 +792,9 @@ const stiller = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: renk.metin,
     borderWidth: 2.5,
-    borderColor: renk.turuncu,
+    // Kenarlik bandin turuncusuna gore ayarliydi; band acilinca beyaza
+    // gecti - avatarin halkasiyla ayni.
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -782,7 +809,7 @@ const stiller = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    // Turuncu zeminde fotografi ayiran beyaz halka.
+    // Zeminden fotografi ayiran beyaz halka.
     borderWidth: 4,
     borderColor: '#FFFFFF',
   },
@@ -800,7 +827,8 @@ const stiller = StyleSheet.create({
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
 
   // Bandin icindeki dugmeler: dolu olan birincil (Profili duzenle),
-  // hayalet olan ikincil (Paylas). Ikisi de turuncu zemin uzerinde.
+  // hayalet olan ikincil (Paylas). Band acildigi icin dolu dugme artik
+  // BEYAZ degil TURUNCU - ekrandaki tek tam doygun turuncu o.
   bandDugmeleri: { flexDirection: 'row', gap: bosluk.s, alignSelf: 'stretch' },
   bandDugme: {
     flex: 1,
@@ -808,11 +836,11 @@ const stiller = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.55)',
+    borderColor: '#E7D3C0',
   },
-  bandDugmeDolu: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  bandDugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#FFFFFF' },
-  bandDugmeYaziDolu: { color: renk.turuncuKoyu },
+  bandDugmeDolu: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
+  bandDugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#8A6B4F' },
+  bandDugmeYaziDolu: { color: '#FFFFFF' },
 
   // Sekmeler: alt cizgi secili olani gosteriyor.
   sekmeler: {
@@ -875,32 +903,33 @@ const stiller = StyleSheet.create({
     overflow: 'hidden',
   },
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
-  // Turuncu zeminde: ayirici ve ikincil metinler beyazin soluk hali.
-  sayiAyirici: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.35)' },
+  // Acik zeminde beyaz ayirici gorunmuyordu; seftalinin koyu tonu.
+  sayiAyirici: { width: 1, height: 28, backgroundColor: '#F0DCC9' },
   sayi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
-    color: '#FFFFFF',
+    color: renk.metin,
     letterSpacing: -0.4,
   },
   sayiEtiket: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
-    color: 'rgba(255,255,255,0.85)',
+    color: renk.metinIkincil,
     marginTop: 2,
   },
 
+  // Band artik ACIK: beyaz yazi okunmaz, metinler koyu tona gecti.
   ad: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
-    color: '#FFFFFF',
+    color: renk.metin,
     textAlign: 'center',
   },
   biyografi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 20,
-    color: 'rgba(255,255,255,0.85)',
+    color: renk.metinIkincil,
     textAlign: 'center',
     marginTop: 2,
   },

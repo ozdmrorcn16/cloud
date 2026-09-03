@@ -1100,3 +1100,17 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     FlatList flex almadigi icin yazma alani ortada asili kaliyordu).
     Kapanis: jest 60/565, tsc bes taban hatasi, test:gorunurluk sifir
     hata.
+
+85. **PROFIL KIMLIK BANDI YUMUSATILDI** (2026-09-03). Kullanici profil
+    ekraninin goruntusunu gonderip "daha yumusak bir ton" istedi. Dort
+    secenek gorsel olarak sunuldu; **"B" - yumusak gecis** secildi ve
+    kapsam kullanici tarafindan daraltildi: "sadece profil resminin
+    arkasindaki renk icin, geri kalan her sey ayni kalsin". Band zemini
+    dolu `#FE7813` yerine uc duraklı bir gradyan
+    (`#FFE6D2` -> `#FFF3E9` -> beyaz). Bandin icindeki metinler koyu tona
+    gecmek ZORUNDAYDI (beyaz yazi acik gecis uzerinde okunmuyor); disinda
+    hicbir sey degismedi ve bu bir testle kilitlendi. Kodda duran
+    "dekoratif turuncu, kimlik kuraliyla celisiyor" notu boylece cozuldu:
+    ekrandaki tek tam doygun turuncu artik "Profili duzenle" butonu.
+    `expo-linear-gradient` zaten bagimlilikta oldugu icin OTA ile
+    gidebiliyor. Kapanis: jest 60/568, tsc bes taban hatasi.

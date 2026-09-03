@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { processColor } from 'react-native'
 import ProfilEkrani from '../../../src/app/profil/index'
 import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
@@ -51,6 +52,13 @@ function ani(ustune: Record<string, unknown> = {}) {
     ...ustune,
   }
 }
+// RN stil prop'u nesne ya da (ic ice) dizi olabilir; renk iddialari icin
+// tek bir nesneye indiriyoruz.
+function duzYazi(oge: { props: { style?: unknown } }): Record<string, unknown> {
+  const parcalar = [oge.props.style].flat(Infinity).filter(Boolean)
+  return Object.assign({}, ...(parcalar as Record<string, unknown>[]))
+}
+
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -250,5 +258,41 @@ describe('ProfilEkrani', () => {
       expect(screen.queryByText('Fotoğrafın kaldırılsın mı?')).toBeNull()
       expect(profilFotografiniKaldir).not.toHaveBeenCalled()
     })
+  })
+
+  // ---------------------------------------------------------------- //
+  // KIMLIK BANDI: YUMUSAK GECIS (kullanicinin secimi 2026-09-03, "B")
+  // ---------------------------------------------------------------- //
+
+  it('band dolu turuncu degil, seftaliden beyaza gecis', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    const band = screen.getByTestId('profil-bandi')
+    // Gradyan renkleri prop olarak veriliyor; ilki seftali, sonuncusu
+    // BEYAZ - bandin nerede bittigi gorunmesin diye. Bilesen renkleri
+    // sayiya cevirdigi icin iki taraf da ayni donusumden geciriliyor.
+    const renkler = band.props.colors as (string | number)[]
+    expect(renkler[0]).toBe(processColor('#FFE6D2'))
+    expect(renkler[renkler.length - 1]).toBe(processColor('#FFFFFF'))
+  })
+
+  it('band icindeki yazilar KOYU: acik gecis uzerinde beyaz okunmaz', async () => {
+    await render(<ProfilEkrani />)
+    const ad = await screen.findByText('Orcun Ozdemir')
+
+    expect(duzYazi(ad).color).toBe('#17130F')
+    // Sayilar da ayni: beyaz kalsaydi bandin altinda kaybolurlardi.
+    expect(duzYazi(screen.getAllByText('0')[0]).color).toBe('#17130F')
+  })
+
+  it('bandin DISINDA hicbir sey degismedi: mekan adi hala marka turuncusu', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
+    await render(<ProfilEkrani />)
+
+    // Kullanicinin kurali: "sadece profil resminin arkasindaki renk
+    // icin, geri kalan her sey ayni kalsin".
+    const mekan = await screen.findByText('Sahil Kafe')
+    expect(duzYazi(mekan).color).toBe('#FE7813')
   })
 })

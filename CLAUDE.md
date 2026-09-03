@@ -446,6 +446,43 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### PROFIL BANDI: DOLU TURUNCU -> YUMUSAK GECIS - 2026-09-03
+
+Kullanicinin istegi ekran goruntusuyle geldi: profil ekranindaki kimlik
+bandi tam doygunlukta turuncuydu ve ekranin ucte birini kapliyordu.
+Dort yumusatma secenegi gorsel olarak sunuldu (krem bant, yumusak gecis,
+soluk turuncu, bantsiz); kullanici **"B" - yumusak gecis** i secti.
+
+Zemin artik `expo-linear-gradient` ile ustte seftali `#FFE6D2`, ortada
+`#FFF3E9`, altta beyaz. Uc durak var, iki degil: iki durakli bir gecis
+ortada gozle secilen bir bant birakiyordu. Bandin NEREDE BITTIGI artik
+gorunmuyor.
+
+**KAPSAM KULLANICININ KURALI:** "sadece profil resminin arkasindaki renk
+icin, geri kalan her sey ayni kalsin". Bandin DISINDA hicbir sey
+degismedi - ust cubuk, sekmeler, ani satirlari ve oradaki mekan adinin
+marka turuncusu aynen duruyor. Bu bir testle KILITLENDI: "bandin DISINDA
+hicbir sey degismedi: mekan adi hala marka turuncusu".
+
+**Bandin ICINDEKI metin renkleri degismek ZORUNDAYDI** - beyaz yazi acik
+bir gecisin uzerinde okunmuyor. Ad ve sayilar `renk.metin`, ikincil
+metinler `renk.metinIkincil`, ayirici `#F0DCC9`, hayalet dugme kenarligi
+`#E7D3C0`. Dolu dugme ("Profili duzenle") artik BEYAZ degil TURUNCU.
+
+**Kimlik kurali gerilimi COZULDU.** Kodda "bu blok dekoratif bir turuncu
+ve 'turuncu yalnizca eylem ve canlilik icindir' kuraliyla celisiyor" diye
+bir not duruyordu. Artik ekrandaki tek tam doygun turuncu "Profili
+duzenle" butonu - yani turuncu yeniden EYLEM.
+
+**OTA ile gidebiliyor:** `expo-linear-gradient` zaten bagimliliklarda
+(`~57.0.1`), yani yeni bir native paket eklenmedi.
+
+**Test tuzagi:** `LinearGradient` renk dizisini SAYIYA ceviriyor
+(`processColor`), yani `props.colors[0]` bir dize degil. Iddia iki tarafi
+da ayni donusumden gecirerek yazildi.
+
+Ekran goruntusu: `tasarim/yeni-profil-bandi.png`.
+
 ### YORUMLAR ALTTAN ACILAN SAYFAYA TASINDI - 2026-09-03
 
 Kullanicinin istegi (Instagram'in yorum sayfasinin ekran goruntusuyle):
