@@ -1,10 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
 import { etiketiKaldir } from '../../lib/etiket'
+import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
 
 jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
@@ -18,6 +19,18 @@ jest.mock('../../lib/checkin', () => ({
   checkInNotunuGuncelle: jest.fn(),
 }))
 jest.mock('../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
+// requireActual: sabitler (YORUM_EN_FAZLA) gercek kalsin.
+jest.mock('../../lib/etkilesim', () => ({
+  ...jest.requireActual('../../lib/etkilesim'),
+  etkilesimOzetleriniGetir: jest.fn(),
+  begen: jest.fn(),
+  begeniyiKaldir: jest.fn(),
+  paylas: jest.fn(),
+  yorumlariGetir: jest.fn(),
+  yorumEkle: jest.fn(),
+  yorumSil: jest.fn(),
+  yorumuSikayetEt: jest.fn(),
+}))
 
 const mockRouterPush = jest.fn()
 jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
@@ -56,6 +69,10 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(akisiGetir as jest.Mock).mockResolvedValue([])
   ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+  ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({
+    'checkin-1': { begeni: 2, yorum: 1, begendim: false },
+  })
+  ;(yorumlariGetir as jest.Mock).mockResolvedValue([])
 })
 
 describe('AnaSayfa', () => {
@@ -385,5 +402,35 @@ describe('AnaSayfa', () => {
     // Sunucuda da kisit var; buradaki kirpma kullaniciyi sinira
     // carptirmadan durduruyor.
     expect(checkInNotunuGuncelle).toHaveBeenCalledWith('checkin-1', 'a'.repeat(500))
+  })
+
+  // ---------------------------------------------------------------- //
+  // YORUMLAR ALTTAN ACILIYOR (kullanicinin karari 2026-09-03)
+  // ---------------------------------------------------------------- //
+
+  it('yorum ikonu ALT SAYFAYI aciyor, yeni sayfaya GITMIYOR', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(await screen.findByLabelText('Yorumlar'))
+
+    expect(await screen.findByTestId('yorum-sayfasi')).toBeTruthy()
+    // Eski davranis `/yorumlar/<id>` sayfasina gidiyordu; o sayfa
+    // kaldirildi, gezinme de kalkmali.
+    expect(mockRouterPush).not.toHaveBeenCalledWith(
+      expect.stringContaining('/yorumlar')
+    )
+  })
+
+  it('alt sayfa o paylasimin yorumlarini yukluyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(await screen.findByLabelText('Yorumlar'))
+
+    await waitFor(() => expect(yorumlariGetir).toHaveBeenCalledWith('checkin-1'))
   })
 })

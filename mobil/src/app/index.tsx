@@ -285,7 +285,13 @@ export default function AnaSayfa() {
             zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
             ozet={ozetler[item.id]}
             onBegen={begeniDegistir}
-            onYorum={(id) => router.push(`/yorumlar/${id}` as never)}
+            // Yorumlar artik KARTIN ICINDE alttan aciliyor; ekranin
+            // tek isi sayaci tazelemek.
+            onYorumSayisi={(id, sayi) =>
+              setOzetler((mevcut) =>
+                mevcut[id] ? { ...mevcut, [id]: { ...mevcut[id], yorum: sayi } } : mevcut
+              )
+            }
             onPaylas={paylasimiPaylas}
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}

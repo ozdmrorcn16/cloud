@@ -446,6 +446,57 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### YORUMLAR ALTTAN ACILAN SAYFAYA TASINDI - 2026-09-03
+
+Kullanicinin istegi (Instagram'in yorum sayfasinin ekran goruntusuyle):
+"Yorum yazma ikonuna basinca boyle bir yorum yazma yazilan yorumlari
+gorme yeri gelsin". Iki secenek gorsel olarak sunuldu (yarim yukseklik /
+neredeyse tam yukseklik); kullanici **"A"yi** - yarim yuksekligi -
+secti.
+
+**ONCEKI HAL AYRI BIR SAYFAYDI** (`/yorumlar/<id>`) ve uc sorunu vardi,
+ucu de gercek ekran goruntusunde olculdu: paylasim gozden kayboluyordu
+(hangi paylasima yazdigin belli degildi), ALT GEZINME CUBUGU altta
+duruyordu (cikmanin iki ayri yolu gorunuyordu) ve akisa donmek bir
+sayfa gecisi gerektiriyordu. **Sayfa SILINDI**, yerine
+`src/tasarim/YorumSayfasi.tsx` geldi.
+
+Kart artik yorum ikonuna basildiginda kendi icinde alt sayfayi aciyor;
+`onYorum` prop'u yalnizca ekrani haberdar ediyor. Yeni prop
+`onYorumSayisi` ile sayac tazeleniyor - alt sayfada yorum eklenip
+silindikce karttaki sayi guncelleniyor.
+
+**REFERANSTAN ALINMAYANLAR** (uydurulmadi, cunku karsiligi yok):
+Yanitla (ic ice yanit yok, yorumlar tek seviyeli), yorum begenme
+(begeni paylasima ait, yoruma degil), "Senin icin" siralamasi (bizde
+kronolojik). **Emoji seridi ALINDI** ama tepki DEGIL: dokununca yazma
+kutusuna emoji ekliyor, yanlislikla gonderilen bir tepki geri
+alinamazdi.
+
+**UC NOKTA MENUSU ORTAKLASTI.** `PaylasimMenusu` yerini genel
+`src/tasarim/SecimPenceresi.tsx` aldi: gosterilecek secimler disaridan
+geliyor. Kart Duzenle/Sil veriyor, yorum satiri Sil ya da Şikâyet et.
+Hangisinin cikacagini SUNUCU soyluyor (`silebilirMi`), istemci tahmin
+etmiyor.
+
+**IKI YERLESIM KUSURU OLCULEREK BULUNDU** - ikisi de ekran
+goruntusuyle, tahminle degil:
+1. Sayfa `maxHeight` ile tanimliydi ve icerige gore buzuluyordu; bos
+   durumda ekranin altinda kucucuk bir serit gibi duruyordu. `height`
+   ile sabitlendi.
+2. `FlatList`e `flex: 1` verilmemisti; liste icerigi kadar yer kapliyor,
+   emoji seridi ve yazma alani sayfanin ortasinda asili kaliyor, altta
+   bos beyaz bir alan olusuyordu.
+
+Dogrulama: jest 60 paket / 565 test (YorumSayfasi icin 15 yeni test,
+akista 2 tumlesme testi). Ekran goruntusu `tasarim/yeni-yorumlar.png`,
+oncesi `tasarim/mevcut-yorumlar.png`.
+
+**Gorsel dogrulamada TUZAK:** gercek check-in'lerde yorum olmadigi icin
+liste bos gorunuyordu; dogrulamak icin veritabanina iki gecici yorum
+eklenip goruntu alindi ve **yorumlar hemen silindi**. Bos bir ekrana
+bakip "calisiyor" demek olcum degildir.
+
 ### KART: EYLEM SATIRI YUKARI, UC NOKTA MENUSU, DUZENLEME - 2026-09-02
 
 Kullanicinin istegi: "begeni yorum paylasma ikonlarini yukari tasi

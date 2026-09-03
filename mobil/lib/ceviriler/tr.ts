@@ -20,6 +20,7 @@ export default {
     sil: 'Sil',
     vazgec: 'Vazgeç',
     geri: 'Geri',
+    kapat: 'Kapat',
   },
 
   karsilama: {
@@ -183,6 +184,7 @@ export default {
     begen: 'Beğen',
     begeniyiKaldir: 'Beğeniyi kaldır',
     yorumlar: 'Yorumlar',
+    yorumSayisi: '{{sayi}} yorum',
     yorumYaz: 'Yorum yaz…',
     gonder: 'Gönder',
     paylas: 'Paylaş',

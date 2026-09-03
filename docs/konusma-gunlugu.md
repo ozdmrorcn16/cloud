@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-03 — [2026-09-03-7087efe7.md](oturumlar/2026-09-03-7087efe7.md) — kaldığımız yerden devam edelim
 - 2026-09-02 — [2026-09-02-82180322.md](oturumlar/2026-09-02-82180322.md) — update installed
 - 2026-09-02 — [2026-09-02-7087efe7.md](oturumlar/2026-09-02-7087efe7.md) — kaldığımız yerden devam edelim
 - 2026-09-02 — [2026-09-02-62e92057.md](oturumlar/2026-09-02-62e92057.md) — kaldığımız yerden devam edelim
@@ -1082,3 +1083,20 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     `slice(0, undefined)` sessizce hicbir sey kirpmiyordu; mock artik
     `requireActual` ile sabitleri koruyor. Kapanis: jest 59/548, canli
     senaryo 65 13 dogrulama.
+
+84. **YORUMLAR ALTTAN ACILAN SAYFAYA TASINDI** (2026-09-03). Kullanici
+    Instagram'in yorum sayfasini gosterip "yorum ikonuna basinca boyle
+    bir yer gelsin" dedi; iki yukseklik secenegi gorsel olarak sunuldu
+    ve **"A" (yarim yukseklik)** secildi. Onceki ayri sayfa
+    (`/yorumlar/<id>`) SILINDI - gercek ekran goruntusuyle olculen uc
+    sorunu vardi: paylasim gozden kayboluyor, alt gezinme cubugu altta
+    duruyor, akisa donus sayfa gecisi gerektiriyordu. Yerine
+    `src/tasarim/YorumSayfasi.tsx`. Referanstaki "Yanitla", yorum
+    begenme ve "Senin icin" siralamasi ALINMADI (karsiligi yok,
+    uydurulmadi); emoji seridi alindi ama tepki degil, yazma kutusuna
+    metin ekliyor. Uc nokta menusu ortaklastirildi: `PaylasimMenusu`
+    yerine genel `SecimPenceresi`. Iki yerlesim kusuru ekran
+    goruntusuyle bulundu ve duzeltildi (sayfa icerige gore buzuluyordu;
+    FlatList flex almadigi icin yazma alani ortada asili kaliyordu).
+    Kapanis: jest 60/565, tsc bes taban hatasi, test:gorunurluk sifir
+    hata.

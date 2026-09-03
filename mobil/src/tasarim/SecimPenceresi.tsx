@@ -1,24 +1,23 @@
+import type { ReactNode } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
 import { bosluk, olcek, renk, yazi, yuvarlak } from './tema'
 
 /**
- * KENDI PAYLASIMININ SECENEK MENUSU.
+ * UC NOKTA MENUSU - ortak.
  *
- * Kullanicinin karari (2026-09-02): "duzenle ucnokta olsun silmeyide uc
- * noktanin icine ekle". Yani baslik satirinda TEK ikon var (uc nokta) ve
- * hem duzenleme hem silme onun icinden geciyor.
+ * Kullanicinin karari (2026-09-02): kendi paylasiminin islemleri
+ * baslikta tek bir uc nokta ikonunun icinde toplaniyor. Ayni desen
+ * yorumlarda da kullaniliyor (Sil / Şikâyet et), bu yuzden bilesen
+ * paylasima ozel degil: gosterilecek secimler disaridan geliyor.
  *
- * Onceki hal baslikta yalnizca cop kutusuydu. Iki kazanci var: baslik
- * satiri kalabaliklasmadan yeni bir islem eklenebiliyor, ve SILME BIR
- * ADIM GERIYE gidiyor - geri alinamayan bir islem icin dogrusu bu.
- * Silme yine de tek dokunusla olmuyor: menuden sonra onay penceresi
- * aciliyor.
+ * `Alert.alert` DEGIL, kendi Modal'imiz. Sebep: uygulama web'de de
+ * calisiyor (slooin.expo.app) ve React Native Web'de Alert sessizce
+ * hicbir sey yapmiyor (bkz. OnayPenceresi'ndeki ayni gerekce).
  *
- * `Alert.alert` DEGIL, kendi Modal'imiz - React Native Web'de Alert
- * sessizce hicbir sey yapmiyor ve uygulama web'de de calisiyor
- * (bkz. OnayPenceresi'ndeki ayni gerekce).
+ * Yikici secim (Sil, Şikâyet et) kirmizi ve genelde ONAY PENCERESI
+ * aciyor - menuden secmek isi yapmiyor, yalnizca soruyor.
  */
 
 const YIKICI = '#C0392B'
@@ -34,7 +33,7 @@ export function UcNoktaIkonu() {
   )
 }
 
-function KalemIkonu() {
+export function KalemIkonu() {
   return (
     <Svg width={19} height={19} viewBox="0 0 24 24">
       <Path
@@ -49,7 +48,7 @@ function KalemIkonu() {
   )
 }
 
-function CopIkonu() {
+export function CopIkonu() {
   return (
     <Svg width={19} height={19} viewBox="0 0 24 24">
       <Path
@@ -64,17 +63,37 @@ function CopIkonu() {
   )
 }
 
-export function PaylasimMenusu({
+export function BayrakIkonu() {
+  return (
+    <Svg width={19} height={19} viewBox="0 0 24 24">
+      <Path
+        d="M6 21V4M6 4h11l-2 3.5L17 11H6"
+        stroke={YIKICI}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  )
+}
+
+export type Secim = {
+  etiket: string
+  testID?: string
+  ikon?: ReactNode
+  /** Kirmizi gosterilir. */
+  yikici?: boolean
+  onSec: () => void
+}
+
+export function SecimPenceresi({
   acikMi,
-  onDuzenle,
-  onSil,
+  secimler,
   onKapat,
 }: {
   acikMi: boolean
-  /** Verilmezse "Düzenle" satiri hic cizilmez. */
-  onDuzenle?: () => void
-  /** Verilmezse "Sil" satiri hic cizilmez. */
-  onSil?: () => void
+  secimler: Secim[]
   onKapat: () => void
 }) {
   const { t } = useDil()
@@ -83,38 +102,27 @@ export function PaylasimMenusu({
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onKapat}>
-      <Pressable style={stiller.zemin} testID="menu-zemini" onPress={onKapat}>
+      <Pressable style={stiller.zemin} testID="secim-zemini" onPress={onKapat}>
         <Pressable
           style={stiller.pencere}
-          testID="paylasim-menusu"
+          testID="secim-penceresi"
           onPress={() => {}}
           accessibilityViewIsModal
         >
-          {onDuzenle && (
-            <Pressable
-              style={stiller.satir}
-              testID="menu-duzenle"
-              onPress={onDuzenle}
-              accessibilityRole="button"
-            >
-              <KalemIkonu />
-              <Text style={stiller.yazi}>{t('anaSayfa.duzenle')}</Text>
-            </Pressable>
-          )}
-
-          {onDuzenle && onSil && <View style={stiller.ayirac} />}
-
-          {onSil && (
-            <Pressable
-              style={stiller.satir}
-              testID="menu-sil"
-              onPress={onSil}
-              accessibilityRole="button"
-            >
-              <CopIkonu />
-              <Text style={[stiller.yazi, stiller.yikici]}>{t('ortak.sil')}</Text>
-            </Pressable>
-          )}
+          {secimler.map((secim, sira) => (
+            <View key={secim.testID ?? secim.etiket}>
+              {sira > 0 && <View style={stiller.ayirac} />}
+              <Pressable
+                style={stiller.satir}
+                testID={secim.testID}
+                onPress={secim.onSec}
+                accessibilityRole="button"
+              >
+                {secim.ikon}
+                <Text style={[stiller.yazi, secim.yikici && stiller.yikici]}>{secim.etiket}</Text>
+              </Pressable>
+            </View>
+          ))}
 
           <View style={stiller.ayirac} />
           <Pressable style={stiller.satir} onPress={onKapat} accessibilityRole="button">

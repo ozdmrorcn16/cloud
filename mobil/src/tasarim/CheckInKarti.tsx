@@ -7,7 +7,8 @@ import { useDil } from '../../lib/dil'
 import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
 import { renk, yazi, olcek, bosluk, yuvarlak } from './tema'
 import { OnayPenceresi } from './OnayPenceresi'
-import { PaylasimMenusu, UcNoktaIkonu } from './PaylasimMenusu'
+import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPenceresi'
+import { YorumSayfasi } from './YorumSayfasi'
 import { PaylasimDuzenle } from './PaylasimDuzenle'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
@@ -42,6 +43,7 @@ export function CheckInKarti({
   ozet,
   onBegen,
   onYorum,
+  onYorumSayisi,
   onPaylas,
   silOnayiAcik = false,
   onSilOnayi,
@@ -62,7 +64,13 @@ export function CheckInKarti({
    */
   ozet?: EtkilesimOzeti
   onBegen?: (id: string) => void
+  /**
+   * Yorum ikonuna basildiginda ALT SAYFA aciliyor; bu geri cagri
+   * yalnizca ekranin haberdar olmasi icin (istege bagli).
+   */
   onYorum?: (id: string) => void
+  /** Alt sayfada yorum eklenip silindikce karttaki sayaci tazeler. */
+  onYorumSayisi?: (id: string, sayi: number) => void
   onPaylas?: (id: string) => void
   silOnayiAcik?: boolean
   /** Verilmezse menude "Sil" satiri cizilmez. */
@@ -84,6 +92,9 @@ export function CheckInKarti({
   // yalnizca bir kart acik olsun" kaygisi burada yok.
   const [menuAcik, setMenuAcik] = useState(false)
   const [duzenleAcik, setDuzenleAcik] = useState(false)
+  // YORUMLAR ARTIK ALTTAN ACILIYOR (kullanicinin karari 2026-09-03,
+  // secenek "A"). Onceden `/yorumlar/<id>` sayfasina gidiliyordu.
+  const [yorumlarAcik, setYorumlarAcik] = useState(false)
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
@@ -228,7 +239,10 @@ export function CheckInKarti({
 
           <Pressable
             style={stiller.eylem}
-            onPress={() => onYorum?.(oge.id)}
+            onPress={() => {
+              setYorumlarAcik(true)
+              onYorum?.(oge.id)
+            }}
             accessibilityRole="button"
             accessibilityLabel={t('etkilesim.yorumlar')}
             hitSlop={8}
@@ -263,25 +277,45 @@ export function CheckInKarti({
           2026-09-02). Onceden kartin icinde aciliyordu; uzun bir kartta
           onay satiri ekranin disinda kalabiliyor ve kullanici "sil"e
           bastigini sanip hicbir sey olmadigini goruyordu. */}
-      <PaylasimMenusu
+      <SecimPenceresi
         acikMi={menuAcik}
-        onDuzenle={
-          onNotKaydet
-            ? () => {
-                setMenuAcik(false)
-                setDuzenleAcik(true)
-              }
-            : undefined
-        }
-        onSil={
-          onSilOnayi
-            ? () => {
-                setMenuAcik(false)
-                onSilOnayi(oge.id)
-              }
-            : undefined
-        }
+        secimler={[
+          ...(onNotKaydet
+            ? [
+                {
+                  etiket: t('anaSayfa.duzenle'),
+                  testID: 'menu-duzenle',
+                  ikon: <KalemIkonu />,
+                  onSec: () => {
+                    setMenuAcik(false)
+                    setDuzenleAcik(true)
+                  },
+                },
+              ]
+            : []),
+          ...(onSilOnayi
+            ? [
+                {
+                  etiket: t('ortak.sil'),
+                  testID: 'menu-sil',
+                  ikon: <CopIkonu />,
+                  yikici: true,
+                  onSec: () => {
+                    setMenuAcik(false)
+                    onSilOnayi(oge.id)
+                  },
+                },
+              ]
+            : []),
+        ]}
         onKapat={() => setMenuAcik(false)}
+      />
+
+      <YorumSayfasi
+        acikMi={yorumlarAcik}
+        checkInId={oge.id}
+        onKapat={() => setYorumlarAcik(false)}
+        onSayiDegisti={(sayi) => onYorumSayisi?.(oge.id, sayi)}
       />
 
       {/* Pencere ACILDIGINDA mount ediliyor: taslak metin ve kaldirilan
