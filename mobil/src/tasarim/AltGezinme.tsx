@@ -314,10 +314,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     backgroundColor: renk.turuncu,
     alignItems: 'center',
     justifyContent: 'center',
-    // Cubukla arasinda ince bir zemin halkasi: dugme cubugun uzerine
-    // tasidiginda kenari kayboluyordu.
-    borderWidth: 4,
-    borderColor: renk.zemin,
+    // HALKA YOK (kullanicinin istegi 2026-09-03): dugme TAM DOLU
+    // turuncu. Eskiden 4 px'lik bir zemin halkasi vardi; acik modda
+    // beyaz oldugu icin gorunmuyordu ama koyu modda zemin koyulasinca
+    // turuncunun etrafinda siyah bir hale olarak ortaya cikti.
+    // Halkanin isi dugmeyi cubuktan ayirmakti; o isi golge zaten
+    // yapiyor.
     ...golge.yuzer,
   },
   merkezDaireAktif: { backgroundColor: renk.turuncuKoyu },
