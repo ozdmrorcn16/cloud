@@ -353,7 +353,7 @@ function duzStil(oge: { props: { style?: unknown } }): Record<string, unknown> {
   return Object.assign({}, ...(parcalar as Record<string, unknown>[]))
 }
 
-describe('Ust guvenli alan seridi', () => {
+describe('Ust guvenli alan', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useOturum as jest.Mock).mockReturnValue({
@@ -364,23 +364,12 @@ describe('Ust guvenli alan seridi', () => {
     })
   })
 
-  it('PROFIL ekraninda da BEYAZ', async () => {
-    // Kullanicinin karari 2026-09-03: "saatin gorundugu kisim beyaz
-    // olsun". Bir ara profil gecisinin ilk rengiyle boyanmisti.
+  it('SERIT YOK: icerik dogrudan saatin altindan geciyor', async () => {
+    // Kullanicinin istegi 2026-09-03, referans Instagram'in ust kismi.
+    // Once dolu beyaz serit vardi (sert cizgi), sonra yari saydam ortu
+    // denendi; ikisi de kaldirildi.
     mockSegments = ['profil']
     const ekran = await render(<KokLayout />)
-    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
-  })
-
-  it('BASKA ekranlarda beyaz kaliyor', async () => {
-    mockSegments = ['mesajlar']
-    const ekran = await render(<KokLayout />)
-    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
-  })
-
-  it('PROFIL ALT ekranlarinda beyaz kaliyor (ayarlar, duzenle...)', async () => {
-    mockSegments = ['profil', 'ayarlar']
-    const ekran = await render(<KokLayout />)
-    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
+    expect(ekran.queryByTestId('ust-serit')).toBeNull()
   })
 })

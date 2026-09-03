@@ -1150,3 +1150,15 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     satiri, paylasim metni) cunku yarim birakmak tutarsizlik uretirdi;
     uygulamanin geri kalani zaten @'siz gosteriyordu. Kapanis: jest
     60/579, tsc bes taban hatasi.
+
+89. **UST GUVENLI ALANDA SERIT KALMADI** (2026-09-03). Kullanici "ust
+    sinir cizgisini kaldir, saatin gorundugu ust sinir seffaf buzlu gibi
+    olsun" dedi; once yari saydam bir ortu yapildi, ardindan
+    **Instagram'in ust kismini** ornek gosterdi - orada serit hic yok,
+    icerik dogrudan saatin altindan geciyor. Ortu de kaldirildi. Kok
+    duzendeki ust pay artik yalnizca profil DISINDAKI ekranlara
+    veriliyor; profil kendi payini useSafeAreaInsets ile koyuyor ve
+    gecis saatin ardina kadar uzaniyor. Not: gercek buzlu cam
+    `expo-blur` ister, o da native paket oldugu icin yeni derleme
+    gerektirir - serit tamamen kalkinca gerek de kalmadi. Kapanis: jest
+    60/577.

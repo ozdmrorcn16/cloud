@@ -139,15 +139,23 @@ function YonlendirmeKontrolu() {
   // icerik ekranin en altina kadar, gezinme cubugunun ALTINDAN akar;
   // ekranlar cubuk icin ALT_GEZINME_PAYI birakiyor, o pay alt inset'i
   // de iceriyor. Cubuk kendi konumunu insets'ten aliyor.
-  // UST GUVENLI ALAN SERIDI - HER EKRANDA BEYAZ (kullanicinin karari
-  // 2026-09-03). Bir ara profil ekraninda gecisin ilk rengiyle
-  // (seftali) boyanmisti; kullanici "saatin gorundugu kisim beyaz
-  // olsun" dedi ve geri alindi. Serit ayri bir View olarak KALDI:
-  // kuralin nerede zorlandigi gorunsun ve testle kilitlenebilsin.
+  // UST GUVENLI ALAN: SERIT YOK (kullanicinin istegi 2026-09-03,
+  // referans Instagram'in ust kismi). Once dolu beyaz bir seritti ve
+  // altindaki renkle arasinda SERT BIR CIZGI birakiyordu; sonra yari
+  // saydam bir ortu denendi. Kullanici Instagram'i ornek gosterdi:
+  // orada serit HIC YOK, icerik dogrudan saatin altindan geciyor.
+  //
+  // Profil ekraninda ust pay VERILMIYOR - gecis saatin ardina kadar
+  // uzaniyor ve hicbir sinir gorunmuyor. Diger ekranlar ust payi
+  // aliyor; orada saatin arkasi sayfa zemini (beyaz) oluyor, yine
+  // cizgi yok cunku iki taraf da beyaz.
+  //
+  // Saat okunur kaliyor: seftali acik bir ton, sistem saati koyu.
+  const profilKoku = segments[0] === 'profil' && !segments[1]
+
   return (
     <View style={stiller.kok}>
-      <View testID="ust-serit" style={{ height: insets.top, backgroundColor: renk.zemin }} />
-      <View style={stiller.icerik}>
+      <View style={[stiller.icerik, !profilKoku && { paddingTop: insets.top }]}>
         {/* Gidilecek baska bir ekran varsa mevcut ekran HIC cizilmez -
             yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
         {yukleniyor || hedef ? null : <Slot />}

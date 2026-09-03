@@ -494,13 +494,24 @@ Iki parcasi var, cunku o serit iki ayri agacta:
   kosullu dallarda oldugu icin tek bir JSX agacinda toplanamiyorlar.
   `pointerEvents="none"` sart: aksi halde altindaki ayarlar dugmesi
   tiklanamaz (bir testle kilitli).
-- Durum cubugunun ardindaki serit EKRANIN DEGIL KOK DUZENIN icinde
-  (`_layout.tsx`, `paddingTop: insets.top`). Orasi ayri bir `ust-serit`
-  View'ine cikarildi. **BIR ARA profil ekraninda seftali boyanmisti;
-  kullanici GERI ALDIRDI** ("saatin gorundugu kisim beyaz olsun"), yani
-  serit HER EKRANDA BEYAZ. View kaldi ki kural gorunur ve testle kilitli
-  olsun. Sonuc: gecis ust cubugun ardindan geciyor ama saat seridine
-  girmiyor - kullanicinin istedigi tam olarak bu.
+- Durum cubugunun ardindaki serit UC KEZ DEGISTI, sonucu su:
+  **SERIT YOK.** Sirasiyla (1) profil ekraninda seftali boyandi,
+  kullanici geri aldirdi ("saatin gorundugu kisim beyaz olsun"),
+  (2) her ekranda beyaz yapildi ama altindaki renkle arasinda SERT BIR
+  CIZGI kaldi, (3) yari saydam ortu denendi, (4) kullanici **Instagram'in
+  ust kismini** ornek gosterdi: orada serit HIC YOK, icerik dogrudan
+  saatin altindan geciyor. Son hal bu.
+
+  Uygulamasi: kok duzendeki `paddingTop: insets.top` artik YALNIZCA
+  profil DISINDAKI ekranlara veriliyor; profil kendi ust payini
+  `useSafeAreaInsets` ile kendisi koyuyor, boylece gecis saatin ardina
+  kadar uzaniyor. Diger ekranlarda saatin arkasi sayfa zemini (beyaz),
+  yine cizgi yok cunku iki taraf da beyaz.
+
+  **GERCEK BUZLU CAM `expo-blur` ISTIYOR ve o NATIVE bir paket** -
+  eklemek yeni bir derleme gerektirir, OTA ile gitmez. Simdilik
+  gerekmedi (serit tamamen kalkinca bulaniklastirilacak bir sey de
+  kalmadi), ama ileride istenirse maliyeti budur.
 
 **2. Akistaki fotografa basinca HARITA aciliyordu, artik BUYUK GORUNUM.**
 Kullanicinin bildirdigi hata: "gorselin uzerine basinca checkinin

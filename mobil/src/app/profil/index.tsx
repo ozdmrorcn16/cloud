@@ -16,6 +16,7 @@ import {
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
@@ -175,6 +176,10 @@ const BAND_GECISI = ['#FFE6D2', '#FFF3E9', '#FFFFFF'] as const
 export default function ProfilEkrani() {
   const router = useRouter()
   const { t } = useDil()
+  // Ust pay BURADA veriliyor, kok duzende degil: icerik saatin
+  // altindaki yari saydam ortunun ALTINA giriyor ki renk oradan da
+  // suzulsun (bkz. _layout.tsx, `ustSerit`).
+  const guvenliAlan = useSafeAreaInsets()
   const [profil, setProfil] = useState<KendiProfil | null>(null)
   const [fotografUrl, setFotografUrl] = useState<string | null>(null)
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
@@ -310,8 +315,9 @@ export default function ProfilEkrani() {
   return (
     <View style={stiller.kok}>
       <ScrollView
+        testID="profil-kaydirma"
         style={stiller.sayfa}
-        contentContainerStyle={stiller.icerik}
+        contentContainerStyle={[stiller.icerik, { paddingTop: guvenliAlan.top + bosluk.l }]}
         showsVerticalScrollIndicator={false}
       >
         {/* GECIS EN TEPEDEN BASLAR (kullanicinin secimi 2026-09-03,
@@ -695,10 +701,13 @@ const stiller = StyleSheet.create({
   // son duragi beyaz oldugu icin nerede bittigi gorunmuyor.
   tepeGecisi: {
     position: 'absolute',
-    top: -bosluk.l,
+    // Icerigin ust payi calisma aninda veriliyor (guvenli alan + 16),
+    // bu yuzden gecis ORANTISIZ derecede yukari cekiliyor: fazlasi
+    // kirpiliyor, eksigi beyaz serit birakiyordu.
+    top: -160,
     left: -bosluk.xl,
     right: -bosluk.xl,
-    height: 360,
+    height: 520,
   },
 
   ustIkonlar: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
