@@ -79,7 +79,7 @@ export default function KullaniciAdiEkrani() {
 
       <View style={stiller.icerik}>
         <Text style={stiller.etiket}>{t('kullaniciAdiEkrani.mevcut')}</Text>
-        <Text style={stiller.mevcut}>@{durum?.kullaniciAdi ?? ''}</Text>
+        <Text style={stiller.mevcut}>{durum?.kullaniciAdi ?? ''}</Text>
 
         <TextInput
           style={[stiller.girdi, odakli && stiller.girdiOdakli]}

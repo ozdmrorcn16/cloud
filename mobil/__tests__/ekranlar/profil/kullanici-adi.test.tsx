@@ -25,7 +25,7 @@ beforeEach(() => {
 describe('KullaniciAdiEkrani', () => {
   it('mevcut kullanici adini gosterir', async () => {
     await render(<KullaniciAdiEkrani />)
-    expect(await screen.findByText('@orcun')).toBeTruthy()
+    expect(await screen.findByText('orcun')).toBeTruthy()
   })
 
   it('kullanici adini degistirir', async () => {

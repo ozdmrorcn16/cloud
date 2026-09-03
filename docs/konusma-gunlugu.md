@@ -1135,3 +1135,18 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     `ust-serit` View'i KALDI (silinmedi) ki kural gorunur olsun ve
     testle kilitlensin. Gecis ust cubugun ardindan gecmeye devam ediyor,
     yalnizca saat seridine girmiyor.
+
+88. **PROFIL SADELESTI: BANT BUTONLARI KALKTI, @ ISARETI GITTI**
+    (2026-09-03). Kullanici banttaki "Profili duzenle" ve "Paylas"
+    butonlarinin kaldirilmasini, paylasmanin ayarlar ikonunun yanina bir
+    ikon olarak gecmesini istedi; uc yerlesim sunuldu, "A" (ayarlarin
+    solunda) secildi. Ayrica kullanici adindan @ kaldirildi ve yeri icin
+    dort secenek sunulup yine "A" (ust cubukta kalsin) secildi. Is
+    baslamadan bir bagimlilik bulundu ve kullaniciya soylendi:
+    ayarlardaki "Profilini duzenle" satiri 2026-08-30'da tam da bant
+    dugmesi yuzunden kaldirilmisti, yani dugme kalkinca duzenleme ekrani
+    erisilemez kalacakti - satir geri kondu. @ bes yerden birden kalkti
+    (profil basligi, baskasinin profili, ayarlar degeri, duzenleme
+    satiri, paylasim metni) cunku yarim birakmak tutarsizlik uretirdi;
+    uygulamanin geri kalani zaten @'siz gosteriyordu. Kapanis: jest
+    60/579, tsc bes taban hatasi.

@@ -277,7 +277,7 @@ export default {
     geri: 'Geri',
 
     bolumHesap: 'Hesabın',
-    profiliDuzenle: 'Profilini düzenle',
+    profiliDuzenle: 'Profili düzenle',
     kullaniciAdi: 'Kullanıcı adı',
     profilGizli: 'Profilim gizli',
     profilGizliAciklama:

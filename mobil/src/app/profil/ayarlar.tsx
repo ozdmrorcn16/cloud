@@ -17,6 +17,7 @@ import { useDil } from '../../../lib/dil'
 import { renk, yazi, olcek, bosluk } from '../../tasarim/tema'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
+import { KalemIkonu } from '../../tasarim/SecimPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   KisiIkonu,
@@ -137,14 +138,19 @@ export default function AyarlarEkrani() {
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         <Bolum baslik={t('ayarlar.bolumHesap')}>
-          {/* "Profilini duzenle" satiri KALDIRILDI (kullanicinin karari
-              2026-08-30): ayni islem artik profil bandindaki dugmede,
-              tek dokunus uzakta. Ayarlar'da ikinci bir kapi tutmak
-              gereksizdi. Ekranin kendisi (`/profil/duzenle`) duruyor. */}
+          {/* "Profili duzenle" satiri GERI GELDI (2026-09-03).
+              2026-08-30'da kaldirilmisti cunku ayni islem profil
+              bandindaki dugmedeydi; o dugme kullanicinin istegiyle
+              kalkinca burasi duzenleme ekranina giden TEK kapi oldu. */}
+          <Satir
+            ikon={<KalemIkonu />}
+            etiket={t('ayarlar.profiliDuzenle')}
+            onPress={() => router.push('/profil/duzenle')}
+          />
           <Satir
             ikon={<KisiIkonu />}
             etiket={t('ayarlar.kullaniciAdi')}
-            deger={kullaniciAdi ? `@${kullaniciAdi}` : undefined}
+            deger={kullaniciAdi ?? undefined}
             onPress={() => router.push('/profil/kullanici-adi')}
           />
           <Satir

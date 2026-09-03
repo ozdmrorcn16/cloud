@@ -17,6 +17,7 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { renk, yazi, olcek, bosluk, yuvarlak, golge } from '../../tasarim/tema'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
@@ -259,7 +260,7 @@ export default function ProfilEkrani() {
       // Baglanti giris istiyor; paylasilan sey bir davet, herkese acik
       // bir sayfa degil. Metin bunu ima ediyor.
       await Share.share({
-        message: `Slooin'de beni bul: @${profil.kullaniciAdi}\nhttps://slooin.expo.app/kullanici/${profil.id}`,
+        message: `Slooin'de beni bul: ${profil.kullaniciAdi}\nhttps://slooin.expo.app/kullanici/${profil.id}`,
       })
     } catch {
       // Web'de paylasim penceresi olmayabilir; akisi kilitlemiyoruz.
@@ -338,16 +339,35 @@ export default function ProfilEkrani() {
                 "sus kaliyor" denmisti); yeni istek onun yerine geciyor.
                 Uygulamanin geri kalani zaten @ ile gosteriyor:
                 baskasinin profili, ayarlar, profil duzenleme. */}
-            {profil ? `@${profil.kullaniciAdi}` : ''}
+            {/* @ ISARETI KALKTI (kullanicinin karari 2026-09-03).
+                Uygulamanin geri kalani zaten @'siz gosteriyordu:
+                akis kartlari, arama, mesajlar. Bu degisiklik profili
+                onlarla ayni dile getirdi. */}
+            {profil ? profil.kullaniciAdi : ''}
           </Text>
-          <Pressable
-            onPress={() => router.push('/profil/ayarlar')}
-            accessibilityRole="button"
-            accessibilityLabel={t('profil.ayarlar')}
-            hitSlop={12}
-          >
-            <AyarlarIkonu />
-          </Pressable>
+          {/* PAYLAS IKONU AYARLARIN SOLUNDA (kullanicinin secimi
+              2026-09-03): banttaki "Paylaş" butonunun yerini aldi. Ikon
+              akis kartlarindakiyle AYNI (kagit ucak) - uygulamada tek
+              bir paylas dili olsun diye; iOS'un kendi paylas ikonu daha
+              taniidk ama iki farkli ikon olurdu. */}
+          <View style={stiller.ustIkonlar}>
+            <Pressable
+              onPress={profiliPaylas}
+              accessibilityRole="button"
+              accessibilityLabel={t('profil.paylas')}
+              hitSlop={12}
+            >
+              <PaylasIkonu />
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/profil/ayarlar')}
+              accessibilityRole="button"
+              accessibilityLabel={t('profil.ayarlar')}
+              hitSlop={12}
+            >
+              <AyarlarIkonu />
+            </Pressable>
+          </View>
         </View>
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -465,27 +485,6 @@ export default function ProfilEkrani() {
                 </Pressable>
               </View>
 
-              {/* Profili duzenle ARTIK BURADA (kullanicinin secimi
-                  2026-08-29). Onceden Ayarlar'in icine gomuluydu; en
-                  cok kullanilan islem iki dokunus uzaktaydi. */}
-              <View style={stiller.bandDugmeleri}>
-                <Pressable
-                  style={[stiller.bandDugme, stiller.bandDugmeDolu]}
-                  onPress={() => router.push('/profil/duzenle')}
-                  accessibilityRole="button"
-                >
-                  <Text style={[stiller.bandDugmeYazi, stiller.bandDugmeYaziDolu]}>
-                    {t('profil.duzenle')}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={stiller.bandDugme}
-                  onPress={profiliPaylas}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.bandDugmeYazi}>{t('profil.paylas')}</Text>
-                </Pressable>
-              </View>
 
             </View>
 
@@ -701,6 +700,8 @@ const stiller = StyleSheet.create({
     right: -bosluk.xl,
     height: 360,
   },
+
+  ustIkonlar: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
 
   ustCubuk: {
     flexDirection: 'row',

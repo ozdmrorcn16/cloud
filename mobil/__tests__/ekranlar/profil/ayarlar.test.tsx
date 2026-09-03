@@ -56,7 +56,7 @@ beforeEach(() => {
 describe('AyarlarEkrani', () => {
   it('kullanici adini satirin degeri olarak gosterir', async () => {
     await render(<AyarlarEkrani />)
-    expect(await screen.findByText('@orcun')).toBeTruthy()
+    expect(await screen.findByText('orcun')).toBeTruthy()
   })
 
   it('check-in gorunurlugunun mevcut degerini satirda gosterir', async () => {
@@ -187,5 +187,16 @@ describe('AyarlarEkrani', () => {
     expect(
       screen.getByText(/anıların ve check-in.lerin yalnızca arkadaşlarına görünür/)
     ).toBeTruthy()
+  })
+
+  it('Profili duzenle satiri GERI GELDI ve duzenleme ekranini aciyor', async () => {
+    // 2026-08-30'da kaldirilmisti cunku ayni islem profil bandindaki
+    // butondaydi. 2026-09-03'te o buton kalkinca satir geri kondu:
+    // aksi halde /profil/duzenle ekranina hicbir yerden gidilemezdi.
+    await render(<AyarlarEkrani />)
+
+    await fireEvent.press(await screen.findByText('Profili düzenle'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
   })
 })

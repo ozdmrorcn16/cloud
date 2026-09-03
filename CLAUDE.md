@@ -446,6 +446,38 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### PROFIL SADELESTI: BANT BUTONLARI KALKTI, @ GITTI - 2026-09-03
+
+Kullanicinin istegi: "Profili duzenle ve paylasi kaldir, profil
+duzenleme ayarlardan yapiliyor zaten; ayarlar ikonunun yani sira bir
+yerlere profili paylasma icin bir ikon buton koy". Uc yerlesim gorsel
+olarak sunuldu, **"A" - paylas ikonu ayarlarin SOLUNDA** secildi.
+Ardindan "@ isaretini kaldiralim" ve kullanici adinin yeri icin dort
+secenek sunuldu; yine **"A" - ust cubukta kalsin** secildi.
+
+**BULUNAN BAGIMLILIK - is baslamadan once soylendi:** ayarlardaki
+"Profilini duzenle" satiri 2026-08-30'da KALDIRILMISTI ve gerekcesi tam
+olarak "ayni islem artik profil bandindaki dugmede" idi. Banttaki
+dugmeyi kaldirmak, `/profil/duzenle` ekranini ERISILEMEZ birakacakti.
+Satir Hesap bolumunun basina geri kondu; bir testle kilitli.
+
+**@ ISARETI BES YERDEN BIRDEN KALKTI** (kullanicinin istegi profildi
+ama yarim birakmak tutarsizlik uretirdi): profil basligi, baskasinin
+profili, ayarlardaki deger, profil duzenleme satiri ve PAYLASIM METNI
+("Slooin'de beni bul: byorcun"). Uygulamanin geri kalani zaten @'siz
+gosteriyordu - akis kartlari, arama, mesajlar. Yani degisiklik profili
+diger ekranlarla ayni dile getirdi.
+
+Paylas ikonu akis kartlarindakiyle AYNI (kagit ucak): uygulamada tek bir
+paylas dili olsun diye. iOS'un kendi paylas ikonu daha tanidik ama iki
+farkli ikon olurdu.
+
+Bant kisaldigi icin akista iki ani birden gorunuyor.
+
+Dogrulama: jest 60 paket / 579 test. Dort ESKI test eski davranisi
+dogruluyordu, guncellendi; banttaki dugmenin testi kaldirildi ve ayni
+iddia ayarlar testine tasindi. Ekran goruntusu `tasarim/profil-sade.png`.
+
 ### GECIS TEPEYE UZATILDI + AKIS FOTOGRAFI DUZELDI - 2026-09-03
 
 Iki is birlikte gonderildi.

@@ -85,7 +85,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
-      expect(screen.getByText('@orcun')).toBeTruthy()
+      // @ kalkti (kullanicinin karari 2026-09-03).
+      expect(screen.getByText('orcun')).toBeTruthy()
     })
   })
 

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import { processColor } from 'react-native'
+import { processColor, Share } from 'react-native'
 import ProfilEkrani from '../../../src/app/profil/index'
 import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
@@ -81,7 +81,7 @@ describe('ProfilEkrani', () => {
 
     // Baslikta @ isareti VAR (kullanicinin istegi 2026-08-30). Bir gun
     // once kaldirilmisti; yeni istek onun yerine gecti.
-    expect(await screen.findByText('@orcun')).toBeTruthy()
+    expect(await screen.findByText('orcun')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
     expect(screen.getByText('İzmir')).toBeTruthy()
   })
@@ -123,11 +123,9 @@ describe('ProfilEkrani', () => {
     expect(screen.getByText('Kent Meydanı')).toBeTruthy()
   })
 
-  it('Profili duzenle dugmesi duzenleme ekranina goturur', async () => {
-    await render(<ProfilEkrani />)
-    await fireEvent.press(await screen.findByText('Profili düzenle'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
-  })
+  // 'Profili duzenle dugmesi duzenleme ekranina goturur' testi
+  // KALDIRILDI (2026-09-03): dugme bandan cikti. Ayni iddia artik
+  // ayarlar testinde - 'Profili duzenle satiri GERI GELDI'.
 
   it('canli check-in ANILAR LISTESINDE rozetiyle gorunur, ayri serit YOK', async () => {
     // Kullanicinin karari 2026-08-29: profildeki "Şu an buradasın"
@@ -321,5 +319,39 @@ describe('ProfilEkrani', () => {
     // dugmesi tiklanamazdi; pointerEvents="none" bunu engelliyor.
     fireEvent.press(screen.getByLabelText('Ayarlar'))
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/ayarlar')
+  })
+
+  // ---------------------------------------------------------------- //
+  // BANT SADELESTI, PAYLASMA IKONA GECTI (kullanicinin secimi 2026-09-03)
+  // ---------------------------------------------------------------- //
+
+  it('bantta Profili duzenle / Paylas BUTONLARI YOK', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    // Ikisi de kalkti: duzenleme ayarlara dondu, paylasma ust cubukta
+    // ikon oldu.
+    expect(screen.queryByText('Profili düzenle')).toBeNull()
+    expect(screen.queryByText('Paylaş')).toBeNull()
+  })
+
+  it('ust cubuktaki paylas ikonu profili paylasiyor', async () => {
+    const paylas = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never)
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    await fireEvent.press(screen.getByLabelText('Paylaş'))
+
+    expect(paylas).toHaveBeenCalled()
+    paylas.mockRestore()
+  })
+
+  it('kullanici adinda @ ISARETI YOK', async () => {
+    await render(<ProfilEkrani />)
+
+    // Kullanicinin karari 2026-09-03. Uygulamanin geri kalani (akis
+    // kartlari, arama) zaten @'siz gosteriyordu.
+    expect(await screen.findByText('orcun')).toBeTruthy()
+    expect(screen.queryByText('@orcun')).toBeNull()
   })
 })

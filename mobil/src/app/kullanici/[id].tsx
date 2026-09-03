@@ -192,7 +192,8 @@ export default function KullaniciProfiliEkrani() {
         <GeriIkonu />
       </Pressable>
       <Text style={stiller.ustBaslik} numberOfLines={1}>
-        {profil ? `@${profil.kullaniciAdi}` : ''}
+        {/* @ yok (2026-09-03): iki profil ekrani ayni dili konusuyor. */}
+        {profil ? profil.kullaniciAdi : ''}
       </Text>
     </View>
   )
