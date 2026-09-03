@@ -19,10 +19,10 @@ import { useRenk, useStiller } from './tema-baglami'
  * birkac kisi var - "baska yerlerde de hareket var" fikri boylece
  * gorunuyor.
  *
- * NABIZ (ayni istek): halkalar yavasca buyuyup soluyor. Uc nokta AYNI
- * ANDA degil, sirayla atiyor - ayni anda atsalardi ekran tek bir sey
- * gibi yanip sonerdi; gecikmeli olunca "burada da, surada da hareket
- * var" okunuyor.
+ * NABIZ (ayni istek): halkalar ignenin dibinden dogup disari yayiliyor
+ * ve yolda soluyor - radar sinyali gibi. Uc nokta AYNI ANDA degil,
+ * sirayla atiyor; ayni anda atsalardi ekran tek bir sey gibi yanip
+ * sonerdi.
  *
  * HAREKETI AZALT ayari aciksa nabiz HIC BASLAMIYOR (uygulamanin
  * erisilebilirlik tabani): halkalar duruyor, kompozisyon aynen kaliyor.
@@ -138,66 +138,114 @@ function Avatar({
   )
 }
 
-/** Nabiz atan halkalar; hareket kapaliysa sabit duruyorlar. */
+/**
+ * Yayilan sinyal halkalari - radar nabzi.
+ *
+ * Kullanicinin istegi (2026-09-04): "azdan coga artan sinyal gibi
+ * olsun". Onceki hal uc halkayi BIRLIKTE buyutup soluyordu, yani
+ * bir nefes gibiydi; simdi her halka ignenin dibinden dogup disari
+ * dogru buyuyor ve yolda soluyor - bir yerden sinyal YAYILIYOR
+ * izlenimi.
+ *
+ * Uc halka ayni turun ucte biri kadar gecikmeyle basliyor, boylece
+ * hep biri dogarken bir digeri sonuyor: dalga kesintisiz.
+ *
+ * Dongude gecikme YOK; ilk gecikme setTimeout ile bir kez veriliyor.
+ * Gecikme dongunun ICINE konsaydi her turdan sonra tekrarlanir ve
+ * halkalar arasinda olu bir bosluk olusurdu.
+ */
+const TUR_SURESI = 2800
+
 function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; hareket: boolean }) {
   const renk = useRenk()
-  const nabiz = useRef(new Animated.Value(0)).current
+  // Uc halkanin ilerlemesi; her biri 0 -> 1 arasinda kendi turunu
+  // dondurur.
+  const ilerleme = useRef([0, 1, 2].map(() => new Animated.Value(0))).current
 
   useEffect(() => {
     if (!hareket) return
-    const dongu = Animated.loop(
-      Animated.sequence([
-        Animated.delay(gecikme),
-        Animated.timing(nabiz, {
+    const zamanlayicilar: ReturnType<typeof setTimeout>[] = []
+    const dongular = ilerleme.map((deger, sira) => {
+      const dongu = Animated.loop(
+        Animated.timing(deger, {
           toValue: 1,
-          duration: 1800,
-          easing: Easing.out(Easing.ease),
+          duration: TUR_SURESI,
+          // Disa dogru hizli acilip yavaslayarak sonuyor.
+          easing: Easing.out(Easing.quad),
           useNativeDriver: true,
-        }),
-        Animated.timing(nabiz, {
-          toValue: 0,
-          duration: 1400,
-          easing: Easing.in(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    )
-    dongu.start()
-    return () => dongu.stop()
-  }, [hareket, gecikme, nabiz])
+        })
+      )
+      zamanlayicilar.push(setTimeout(() => dongu.start(), gecikme + (sira * TUR_SURESI) / 3))
+      return dongu
+    })
+    return () => {
+      zamanlayicilar.forEach(clearTimeout)
+      dongular.forEach((d) => d.stop())
+      ilerleme.forEach((d) => d.setValue(0))
+    }
+  }, [hareket, gecikme, ilerleme])
 
-  const olcek = nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] })
-  const solma = nabiz.interpolate({ inputRange: [0, 1], outputRange: [1, 0.65] })
-
-  const katmanlar = [
-    { oran: 1, opaklik: 0.13 },
-    { oran: 0.65, opaklik: 0.16 },
-    { oran: 0.36, opaklik: 0.2 },
+  // HAREKET KAPALIYSA sabit ic ice halkalar; kompozisyon aynen kaliyor.
+  const duragan = [
+    { oran: 1, opaklik: 0.1 },
+    { oran: 0.65, opaklik: 0.13 },
+    { oran: 0.36, opaklik: 0.17 },
   ]
 
   return (
     <>
-      {katmanlar.map(({ oran, opaklik }) => {
-        const boyut = cap * oran
-        return (
-          <Animated.View
-            key={oran}
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              // Halkalar ignenin merkezine oturuyor.
-              top: -boyut / 2 + 22,
-              width: boyut,
-              height: boyut,
-              borderRadius: boyut / 2,
-              backgroundColor: renk.turuncu,
-              opacity: Animated.multiply(solma, opaklik),
-              transform: [{ scale: olcek }],
-            }}
-          />
-        )
-      })}
+      {/* Ignenin dibindeki sabit sicaklik: sinyal sondugu anda nokta
+          bombos kalmasin. */}
+      <Halka cap={cap * 0.34} opaklik={0.16} renk={renk.turuncu} />
+
+      {hareket
+        ? ilerleme.map((deger, sira) => (
+            <Halka
+              key={sira}
+              cap={cap}
+              renk={renk.turuncu}
+              olcek={deger.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] })}
+              opaklik={deger.interpolate({
+                // Dogarken hizli beliriyor, yolun tamaminda soluyor.
+                inputRange: [0, 0.12, 1],
+                outputRange: [0, 0.22, 0],
+              })}
+            />
+          ))
+        : duragan.map(({ oran, opaklik }) => (
+            <Halka key={oran} cap={cap * oran} opaklik={opaklik} renk={renk.turuncu} />
+          ))}
     </>
+  )
+}
+
+/** Tek bir halka; ignenin merkezine oturur. */
+function Halka({
+  cap,
+  renk,
+  opaklik,
+  olcek,
+}: {
+  cap: number
+  renk: string
+  opaklik: number | Animated.AnimatedInterpolation<number>
+  olcek?: Animated.AnimatedInterpolation<number>
+}) {
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        // Igne dugmesinin merkeziyle ayni eksen.
+        top: -cap / 2 + 22,
+        width: cap,
+        height: cap,
+        borderRadius: cap / 2,
+        backgroundColor: renk,
+        opacity: opaklik,
+        transform: olcek ? [{ scale: olcek }] : [],
+      }}
+    />
   )
 }
 
