@@ -313,6 +313,23 @@ export default function ProfilEkrani() {
         contentContainerStyle={stiller.icerik}
         showsVerticalScrollIndicator={false}
       >
+        {/* GECIS EN TEPEDEN BASLAR (kullanicinin secimi 2026-09-03,
+            "A"): ust cubugun ve icerigin ust payinin ARDINDAN gecip
+            ekranin tepesine kadar uzaniyor, boylece rengin gorunur bir
+            baslangic kenari kalmiyor. Durum cubugunun ardindaki serit
+            bu agacin disinda kaliyor; onu kok duzen ayni renkle boyuyor
+            (bkz. _layout.tsx, `ust-serit`).
+
+            Sarmalayici DEGIL, arkada duran mutlak bir zemin: sarmalamak
+            ust cubugu ve kimlik blogunu ayni kosullu dalin icine
+            sokmayi gerektiriyordu. */}
+        <LinearGradient
+          testID="profil-bandi"
+          colors={BAND_GECISI}
+          style={stiller.tepeGecisi}
+          pointerEvents="none"
+        />
+
         <View style={stiller.ustCubuk}>
           <Text style={stiller.kullaniciAdi} numberOfLines={1}>
             {/* @ ISARETI VAR (kullanicinin istegi 2026-08-30:
@@ -361,11 +378,7 @@ export default function ProfilEkrani() {
                 yalnizca + rozeti fotograf secer; fotografin kendisine
                 basinca buyuk gorunum acilir, orada "Kaldir" var.
                 Fotograf yokken bas harfe basmak bir sey yapmiyor. */}
-            <LinearGradient
-              testID="profil-bandi"
-              colors={BAND_GECISI}
-              style={stiller.kimlik}
-            >
+            <View style={stiller.kimlik}>
               <View style={stiller.avatarBasilir}>
                 {fotografUrl ? (
                   <Pressable
@@ -474,7 +487,7 @@ export default function ProfilEkrani() {
                 </Pressable>
               </View>
 
-            </LinearGradient>
+            </View>
 
             {/* SEKMELER: ayni veriye iki bakis (kullanicinin secimi
                 2026-08-29). Anilar zaman sirasi, Yerler ise en cok
@@ -676,6 +689,17 @@ const stiller = StyleSheet.create({
     // gereginden genisti.
     paddingTop: bosluk.l,
     paddingBottom: ALT_GEZINME_PAYI,
+  },
+
+  // Icerigin ust payini ve yan paylarini geri alarak kenardan kenara
+  // ve en tepeye uzaniyor. Yuksekligi kimlik blogunu kapsayacak kadar;
+  // son duragi beyaz oldugu icin nerede bittigi gorunmuyor.
+  tepeGecisi: {
+    position: 'absolute',
+    top: -bosluk.l,
+    left: -bosluk.xl,
+    right: -bosluk.xl,
+    height: 360,
   },
 
   ustCubuk: {

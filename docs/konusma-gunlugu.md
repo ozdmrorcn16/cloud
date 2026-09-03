@@ -1114,3 +1114,16 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     ekrandaki tek tam doygun turuncu artik "Profili duzenle" butonu.
     `expo-linear-gradient` zaten bagimlilikta oldugu icin OTA ile
     gidebiliyor. Kapanis: jest 60/568, tsc bes taban hatasi.
+
+86. **PROFIL GECISI TEPEYE UZATILDI, AKIS FOTOGRAFI DUZELDI**
+    (2026-09-03). Kullanici "rengi yukari kadar devam ettir sonsuz
+    dursun" dedi; uc secenek gorsel olarak sunuldu ve "A" (tepeden
+    baslar) secildi. Gecis artik sarmalayici degil arkada duran mutlak
+    bir zemin - sarmalamak denendi ve JSX'i bozdu, cunku ust cubuk ile
+    kimlik blogu ayri kosullu dallarda. Durum cubugunun ardindaki serit
+    kok duzende oldugu icin orasi ayri bir `ust-serit` View'iyle ayni
+    renge boyandi; yalnizca profilin kendi ekraninda. Ayni gonderimde
+    kullanicinin bildirdigi bir hata da duzeldi: akistaki fotografa
+    basinca check-in'in haritasi aciliyordu (fotograf duz bir Image'di,
+    dokunus kartin kok Pressable'ina cikiyordu); artik siyah zeminli
+    buyuk gorunum aciliyor. Kapanis: jest 60/576, tsc bes taban hatasi.

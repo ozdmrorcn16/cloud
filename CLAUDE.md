@@ -446,6 +446,44 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### GECIS TEPEYE UZATILDI + AKIS FOTOGRAFI DUZELDI - 2026-09-03
+
+Iki is birlikte gonderildi.
+
+**1. Profil gecisi artik ekranin TEPESINDEN basliyor** (kullanicinin
+istegi: "rengi yukari kadar devam ettir sonsuz dursun"; uc secenek
+gorsel olarak sunuldu, "A" secildi). Gecisin yukarida gorunur bir
+baslangic kenari kalmadi.
+
+Iki parcasi var, cunku o serit iki ayri agacta:
+- Ekranda gecis artik SARMALAYICI DEGIL, arkada duran MUTLAK bir zemin
+  (`tepeGecisi`): icerigin ust ve yan paylarini negatif konumla geri
+  aliyor. Sarmalamak denendi ve BOZDU - ust cubuk ile kimlik blogu ayri
+  kosullu dallarda oldugu icin tek bir JSX agacinda toplanamiyorlar.
+  `pointerEvents="none"` sart: aksi halde altindaki ayarlar dugmesi
+  tiklanamaz (bir testle kilitli).
+- Durum cubugunun ardindaki serit EKRANIN DEGIL KOK DUZENIN icinde
+  (`_layout.tsx`, `paddingTop: insets.top`). Orasi artik ayri bir
+  `ust-serit` View'i ve YALNIZCA profilin kendi ekraninda gecisin ilk
+  rengini (`#FFE6D2`) aliyor; profil ALT ekranlarinda (ayarlar, duzenle)
+  beyaz kaliyor. Uc testle kilitli.
+
+**2. Akistaki fotografa basinca HARITA aciliyordu, artik BUYUK GORUNUM.**
+Kullanicinin bildirdigi hata: "gorselin uzerine basinca checkinin
+haritasina gidiyor, sadece gorseli buyuk ekran acmasi gerek". Sebep:
+fotograf duz bir `Image`di ve dokunus kartin kok `Pressable`ina cikiyordu
+(kart haritayi aciyor). Fotograf artik kendi `Pressable`i icinde ve siyah
+zeminli bir `Modal` aciyor. Profildeki buyuk gorunumun ayni deseni ama
+"Kaldir" YOK - akistaki fotograf baskasinin olabilir.
+
+Uc test: fotograf haritaya GITMIYOR, buyuk gorunum kapatilabiliyor,
+kartin geri kalani HALA haritaya gidiyor.
+
+Dogrulama: jest 60 paket / 576 test; ekran goruntuleri
+`tasarim/profil-tepe.png` ve `tasarim/foto-buyuk.png`. Gorsel dogrulama
+yalnizca goze degil OLCUME de dayandi: fotografa basildiktan sonra
+tarayici adresinin DEGISMEDIGI kontrol edildi.
+
 ### PROFIL BANDI: DOLU TURUNCU -> YUMUSAK GECIS - 2026-09-03
 
 Kullanicinin istegi ekran goruntusuyle geldi: profil ekranindaki kimlik

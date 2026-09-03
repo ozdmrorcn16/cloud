@@ -339,3 +339,47 @@ describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
     })
   })
 })
+
+// -------------------------------------------------------------------- //
+// UST GUVENLI ALAN SERIDI (kullanicinin istegi 2026-09-03)
+//
+// "Rengi yukari kadar devam ettir, sonsuz dursun." Durum cubugunun
+// ardindaki serit EKRANIN degil KOK DUZENIN icinde (paddingTop:
+// insets.top), o yuzden profil ekranindaki gecisin ilk rengini buranin
+// boyamasi gerekiyor. Aksi halde renk yukarida bicak gibi kesiliyor.
+// -------------------------------------------------------------------- //
+
+function duzStil(oge: { props: { style?: unknown } }): Record<string, unknown> {
+  const parcalar = [oge.props.style].flat(Infinity).filter(Boolean)
+  return Object.assign({}, ...(parcalar as Record<string, unknown>[]))
+}
+
+describe('Ust guvenli alan seridi', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(useOturum as jest.Mock).mockReturnValue({
+      oturum: { user: { id: 'k1' } },
+      yukleniyor: false,
+      profilVarMi: true,
+      hesapDurumu: null,
+    })
+  })
+
+  it('PROFIL ekraninda seftali', async () => {
+    mockSegments = ['profil']
+    const ekran = await render(<KokLayout />)
+    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFE6D2')
+  })
+
+  it('BASKA ekranlarda beyaz kaliyor', async () => {
+    mockSegments = ['mesajlar']
+    const ekran = await render(<KokLayout />)
+    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
+  })
+
+  it('PROFIL ALT ekranlarinda beyaz kaliyor (ayarlar, duzenle...)', async () => {
+    mockSegments = ['profil', 'ayarlar']
+    const ekran = await render(<KokLayout />)
+    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
+  })
+})

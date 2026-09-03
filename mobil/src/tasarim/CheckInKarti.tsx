@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Image, Modal, Pressable, StyleSheet } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
@@ -95,6 +95,12 @@ export function CheckInKarti({
   // YORUMLAR ARTIK ALTTAN ACILIYOR (kullanicinin karari 2026-09-03,
   // secenek "A"). Onceden `/yorumlar/<id>` sayfasina gidiliyordu.
   const [yorumlarAcik, setYorumlarAcik] = useState(false)
+  // FOTOGRAFA DOKUNMAK BUYUK GORUNUM ACAR (kullanicinin bildirdigi hata
+  // 2026-09-03): "gorselin uzerine basinca checkinin haritasina gidiyor,
+  // sadece gorseli buyuk ekran acmasi gerek". Kartin kendisi haritayi
+  // aciyordu ve fotograf duz bir Image oldugu icin dokunus karta
+  // gidiyordu.
+  const [buyukAcik, setBuyukAcik] = useState(false)
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
@@ -264,13 +270,48 @@ export function CheckInKarti({
       )}
 
       {oge.fotografUrl && (
-        <Image
+        <Pressable
           testID="akis-fotografi"
-          source={{ uri: oge.fotografUrl }}
-          style={stiller.fotograf}
-          resizeMode="cover"
-        />
+          onPress={() => setBuyukAcik(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('anaSayfa.fotografiBuyut')}
+        >
+          <Image
+            source={{ uri: oge.fotografUrl }}
+            style={stiller.fotograf}
+            resizeMode="cover"
+          />
+        </Pressable>
       )}
+
+      {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
+          Kapat. Profildeki buyuk gorunumun ayni deseni - orada ayrica
+          "Kaldir" var, burada yok: bu fotograf baskasinin olabilir. */}
+      <Modal
+        visible={buyukAcik && Boolean(oge.fotografUrl)}
+        transparent={false}
+        animationType="fade"
+        onRequestClose={() => setBuyukAcik(false)}
+      >
+        <View style={stiller.buyukZemin} testID="fotograf-gorunumu">
+          <Pressable
+            style={stiller.buyukKapat}
+            onPress={() => setBuyukAcik(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t('ortak.kapat')}
+            hitSlop={12}
+          >
+            <Text style={stiller.buyukKapatYazi}>×</Text>
+          </Pressable>
+          {oge.fotografUrl && (
+            <Image
+              source={{ uri: oge.fotografUrl }}
+              style={stiller.buyukFotograf}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
 
       {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
           Onay ekranin ORTASINDA aciliyor (kullanicinin istegi
@@ -359,6 +400,11 @@ const stiller = StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
   },
+  buyukZemin: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' },
+  buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, right: bosluk.xl, zIndex: 1 },
+  buyukKapatYazi: { fontFamily: yazi.govde, fontSize: 34, color: '#FFFFFF', lineHeight: 38 },
+  buyukFotograf: { width: '100%', height: '70%' },
+
   kart: {
     // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik
     // ekranin tam genisliginde: yuvarlak kose ve golge kalkti, cunku

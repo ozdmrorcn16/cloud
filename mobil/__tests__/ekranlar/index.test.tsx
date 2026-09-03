@@ -433,4 +433,49 @@ describe('AnaSayfa', () => {
 
     await waitFor(() => expect(yorumlariGetir).toHaveBeenCalledWith('checkin-1'))
   })
+
+  // ---------------------------------------------------------------- //
+  // FOTOGRAFA DOKUNMAK (kullanicinin bildirdigi hata 2026-09-03)
+  // ---------------------------------------------------------------- //
+
+  it('fotografa basinca HARITAYA GITMIYOR, buyuk gorunum aciliyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByTestId('akis-fotografi'))
+
+    expect(await screen.findByTestId('fotograf-gorunumu')).toBeTruthy()
+    // Kartin kendisi haritayi aciyor; fotograf o dokunusu YUTMALI.
+    expect(mockRouterPush).not.toHaveBeenCalled()
+  })
+
+  it('buyuk gorunum kapatilabiliyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(screen.getByTestId('akis-fotografi'))
+    await screen.findByTestId('fotograf-gorunumu')
+
+    await fireEvent.press(screen.getByLabelText('Kapat'))
+
+    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
+  })
+
+  it('KARTIN geri kalanina basinca hala haritaya gidiyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await fireEvent.press(await screen.findByText('guzel bir aksam'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+  })
 })

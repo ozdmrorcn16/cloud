@@ -295,4 +295,31 @@ describe('ProfilEkrani', () => {
     const mekan = await screen.findByText('Sahil Kafe')
     expect(duzYazi(mekan).color).toBe('#FE7813')
   })
+
+  // ---------------------------------------------------------------- //
+  // GECIS TEPEDEN BASLAR (kullanicinin secimi 2026-09-03, "A")
+  // ---------------------------------------------------------------- //
+
+  it('gecis UST CUBUGUN ARDINDAN gecip tepeye uzaniyor', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    // "Rengi yukari kadar devam ettir, sonsuz dursun": gecis artik
+    // sarmalayici degil, arkada duran mutlak bir zemin. Ust cubugun
+    // ARDINDAN gecmesi icin icerigin ust ve yan paylarini geri aliyor.
+    const duz = duzYazi(screen.getByTestId('profil-bandi'))
+    expect(duz.position).toBe('absolute')
+    expect(Number(duz.top)).toBeLessThan(0)
+    expect(Number(duz.left)).toBeLessThan(0)
+  })
+
+  it('gecis dokunuslari YUTMUYOR: altindaki ayarlar ikonu calisiyor', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    // Mutlak zemin ust cubugun USTUNDE ciziliyor olsaydi ayarlar
+    // dugmesi tiklanamazdi; pointerEvents="none" bunu engelliyor.
+    fireEvent.press(screen.getByLabelText('Ayarlar'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/ayarlar')
+  })
 })

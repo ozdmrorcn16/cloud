@@ -139,8 +139,21 @@ function YonlendirmeKontrolu() {
   // icerik ekranin en altina kadar, gezinme cubugunun ALTINDAN akar;
   // ekranlar cubuk icin ALT_GEZINME_PAYI birakiyor, o pay alt inset'i
   // de iceriyor. Cubuk kendi konumunu insets'ten aliyor.
+  // UST GUVENLI ALAN SERIDI (kullanicinin istegi 2026-09-03).
+  // Profil ekraninin kimlik bandi seftaliden beyaza bir gecisle
+  // basliyor; durum cubugunun ardindaki serit EKRANIN degil BURANIN
+  // icinde oldugu icin, renk yukarida bicak gibi kesilmesin diye o
+  // serit de gecisin ilk rengiyle boyaniyor. Yalnizca profilin KENDI
+  // ekraninda: alt ekranlarda (ayarlar, duzenle) beyaz kaliyor.
+  const profilKoku = segments[0] === 'profil' && !segments[1]
+  const ustSeritRengi = profilKoku ? PROFIL_BANDI_TEPESI : renk.zemin
+
   return (
-    <View style={[stiller.kok, { paddingTop: insets.top }]}>
+    <View style={stiller.kok}>
+      <View
+        testID="ust-serit"
+        style={{ height: insets.top, backgroundColor: ustSeritRengi }}
+      />
       <View style={stiller.icerik}>
         {/* Gidilecek baska bir ekran varsa mevcut ekran HIC cizilmez -
             yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
@@ -150,6 +163,9 @@ function YonlendirmeKontrolu() {
     </View>
   )
 }
+
+/** Profil bandindaki gecisin ILK rengi; ust serit onunla ayni olmali. */
+const PROFIL_BANDI_TEPESI = '#FFE6D2'
 
 const stiller = StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },

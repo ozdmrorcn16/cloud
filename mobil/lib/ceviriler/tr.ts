@@ -222,6 +222,7 @@ export default {
     // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): baslikta tek
     // ikon var, silme de duzenleme de onun icinde.
     secenekler: 'Paylaşım seçenekleri',
+    fotografiBuyut: 'Fotoğrafı büyüt',
     duzenle: 'Düzenle',
     duzenleBaslik: 'Paylaşımı düzenle',
     notEtiketi: 'Not',
