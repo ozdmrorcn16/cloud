@@ -1127,3 +1127,11 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     basinca check-in'in haritasi aciliyordu (fotograf duz bir Image'di,
     dokunus kartin kok Pressable'ina cikiyordu); artik siyah zeminli
     buyuk gorunum aciliyor. Kapanis: jest 60/576, tsc bes taban hatasi.
+
+87. **UST GUVENLI ALAN SERIDI BEYAZ KALIYOR** (2026-09-03). Bir onceki
+    adimda profil gecisinin ilk rengi durum cubugunun ardindaki seride
+    de tasinmisti; kullanici telefonda gorup geri aldirdi: "saatin
+    gorundugu kisim beyaz olsun". Serit artik her ekranda beyaz.
+    `ust-serit` View'i KALDI (silinmedi) ki kural gorunur olsun ve
+    testle kilitlensin. Gecis ust cubugun ardindan gecmeye devam ediyor,
+    yalnizca saat seridine girmiyor.

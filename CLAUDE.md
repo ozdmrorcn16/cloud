@@ -463,10 +463,12 @@ Iki parcasi var, cunku o serit iki ayri agacta:
   `pointerEvents="none"` sart: aksi halde altindaki ayarlar dugmesi
   tiklanamaz (bir testle kilitli).
 - Durum cubugunun ardindaki serit EKRANIN DEGIL KOK DUZENIN icinde
-  (`_layout.tsx`, `paddingTop: insets.top`). Orasi artik ayri bir
-  `ust-serit` View'i ve YALNIZCA profilin kendi ekraninda gecisin ilk
-  rengini (`#FFE6D2`) aliyor; profil ALT ekranlarinda (ayarlar, duzenle)
-  beyaz kaliyor. Uc testle kilitli.
+  (`_layout.tsx`, `paddingTop: insets.top`). Orasi ayri bir `ust-serit`
+  View'ine cikarildi. **BIR ARA profil ekraninda seftali boyanmisti;
+  kullanici GERI ALDIRDI** ("saatin gorundugu kisim beyaz olsun"), yani
+  serit HER EKRANDA BEYAZ. View kaldi ki kural gorunur ve testle kilitli
+  olsun. Sonuc: gecis ust cubugun ardindan geciyor ama saat seridine
+  girmiyor - kullanicinin istedigi tam olarak bu.
 
 **2. Akistaki fotografa basinca HARITA aciliyordu, artik BUYUK GORUNUM.**
 Kullanicinin bildirdigi hata: "gorselin uzerine basinca checkinin

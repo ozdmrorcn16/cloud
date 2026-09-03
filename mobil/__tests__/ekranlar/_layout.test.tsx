@@ -343,10 +343,9 @@ describe('YonlendirmeKontrolu (hesapDurumu kolu)', () => {
 // -------------------------------------------------------------------- //
 // UST GUVENLI ALAN SERIDI (kullanicinin istegi 2026-09-03)
 //
-// "Rengi yukari kadar devam ettir, sonsuz dursun." Durum cubugunun
-// ardindaki serit EKRANIN degil KOK DUZENIN icinde (paddingTop:
-// insets.top), o yuzden profil ekranindaki gecisin ilk rengini buranin
-// boyamasi gerekiyor. Aksi halde renk yukarida bicak gibi kesiliyor.
+// Durum cubugunun ardindaki serit EKRANIN degil KOK DUZENIN icinde
+// (paddingTop: insets.top), yani rengini ekranlar degil burasi
+// belirliyor. Kullanicinin karari: HER EKRANDA BEYAZ.
 // -------------------------------------------------------------------- //
 
 function duzStil(oge: { props: { style?: unknown } }): Record<string, unknown> {
@@ -365,10 +364,12 @@ describe('Ust guvenli alan seridi', () => {
     })
   })
 
-  it('PROFIL ekraninda seftali', async () => {
+  it('PROFIL ekraninda da BEYAZ', async () => {
+    // Kullanicinin karari 2026-09-03: "saatin gorundugu kisim beyaz
+    // olsun". Bir ara profil gecisinin ilk rengiyle boyanmisti.
     mockSegments = ['profil']
     const ekran = await render(<KokLayout />)
-    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFE6D2')
+    expect(duzStil(await ekran.findByTestId('ust-serit')).backgroundColor).toBe('#FFFFFF')
   })
 
   it('BASKA ekranlarda beyaz kaliyor', async () => {
