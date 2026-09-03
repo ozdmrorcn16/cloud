@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { processColor, Share } from 'react-native'
+import { acikRenk, koyuRenk } from '../../../src/tasarim/tema'
 import ProfilEkrani from '../../../src/app/profil/index'
 import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
@@ -353,5 +354,13 @@ describe('ProfilEkrani', () => {
     // kartlari, arama) zaten @'siz gosteriyordu.
     expect(await screen.findByText('orcun')).toBeTruthy()
     expect(screen.queryByText('@orcun')).toBeNull()
+  })
+
+  it('fotograf rozeti KOYU MODDA TURUNCU, acik modda koyu', async () => {
+    // Kullanicinin istegi 2026-09-03: koyu modda "+" turuncuya donsun.
+    // Palet karsilastirmasi: ekran testinde sema degistirilemedigi icin
+    // iddia jetonun kendisine.
+    expect(acikRenk.rozetZemin).toBe('#17130F')
+    expect(koyuRenk.rozetZemin).toBe('#FE7813')
   })
 })

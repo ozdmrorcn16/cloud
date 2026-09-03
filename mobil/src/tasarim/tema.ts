@@ -76,6 +76,17 @@ export const acikRenk = {
   bandOrta: '#FFF3E9',
 
   /**
+   * Profil fotografindaki "+" rozetinin zemini.
+   *
+   * Acik modda KOYU: beyaz fotograf halkasinin uzerinde ancak koyu bir
+   * daire secilir. Koyu modda TURUNCU (kullanicinin istegi
+   * 2026-09-03): koyu zeminde koyu bir rozet kayboluyor, acik gri bir
+   * rozet de fotografla ayni tonda kaliyordu. Turuncu ayrica kurala
+   * uyuyor - rozet bir EYLEM (fotograf degistir).
+   */
+  rozetZemin: '#17130F',
+
+  /**
    * Yuzer cubugun zemini: yari saydam, altindaki icerik hafifce
    * suzuluyor. Alt gezinme cubugu haritanin uzerinde durdugu icin
    * dolu bir renk oraya agir geliyordu.
@@ -143,6 +154,8 @@ export const koyuRenk: Renk = {
 
   bandUst: '#3A2412',
   bandOrta: '#221A15',
+
+  rozetZemin: '#FE7813',
 
   yuzerZemin: 'rgba(28, 25, 23, 0.88)',
 

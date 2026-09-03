@@ -829,7 +829,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: renk.metin,
+    backgroundColor: renk.rozetZemin,
     borderWidth: 2.5,
     // Kenarlik bandin turuncusuna gore ayarliydi; band acilinca beyaza
     // gecti - avatarin halkasiyla ayni.
@@ -840,10 +840,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   fotografDurumu: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
-    // Rozetin zemini `renk.metin`; uzerindeki isaret onun KARSITI
-    // olmali. Sabit beyaz birakilsaydi koyu modda acik rozetin
-    // uzerinde beyaz bir arti kalirdi - gorunmez.
-    color: renk.zemin,
+    // Beyaz IKI MODDA DA dogru: acik modda koyu rozetin, koyu modda
+    // turuncu rozetin uzerinde duruyor.
+    color: '#FFFFFF',
   },
   // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
   avatar: {
