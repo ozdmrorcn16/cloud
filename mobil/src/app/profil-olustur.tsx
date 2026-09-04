@@ -76,6 +76,12 @@ export default function ProfilOlusturEkrani() {
   const [sifreTekrar, setSifreTekrar] = useState('')
   const [sifreGorunur, setSifreGorunur] = useState(false)
 
+  // UC ADIM (kullanicinin secimi 2026-09-04). Onceden bes alan tek
+  // ekranda duruyordu; her adimda tek is olunca "doldurulacak cok sey
+  // var" hissi kayboluyor ve 18 yas engeli ILK adimda cikiyor - yani
+  // 18'inden kucuk biri bosuna kullanici adi secip sifre dusunmuyor.
+  const [adim, setAdim] = useState<1 | 2 | 3>(1)
+
   const [alanHatalari, setAlanHatalari] = useState<Record<string, string | null>>({})
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
@@ -103,6 +109,12 @@ export default function ProfilOlusturEkrani() {
    * yeni bir kod geliyor ve akis yine bu ekranda devam ediyor.
    */
   async function geriDon() {
+    // Adimlar arasindayken geri, bir onceki adima doner - girilenler
+    // durur. Yalnizca ILK adimda ekrandan cikiyor.
+    if (adim > 1) {
+      setAdim((adim - 1) as 1 | 2 | 3)
+      return
+    }
     await supabase.auth.signOut()
     router.replace('/karsilama')
   }
@@ -159,34 +171,72 @@ export default function ProfilOlusturEkrani() {
     return `${tarih.yil}-${iki(tarih.ay)}-${iki(tarih.gun)}`
   }
 
-  async function tamamla() {
-    setHata(null)
+  /** O adimin alanlarini dogrular; bos nesne donerse adim gecerli. */
+  function adiminHatalari(hangi: 1 | 2 | 3): Record<string, string | null> {
     const hatalar: Record<string, string | null> = {}
 
-    if (ad.trim().length === 0) hatalar.ad = t('profilOlustur.adHata')
-
-    if (!dogum) {
-      hatalar.dogum = t('profilOlustur.dogumHataGecersiz')
-    } else if (onSekizAltindaMi(new Date(isoTarih(dogum)))) {
-      hatalar.dogum = t('profilOlustur.dogumHataYas')
+    if (hangi === 1) {
+      if (ad.trim().length === 0) hatalar.ad = t('profilOlustur.adHata')
+      if (!dogum) {
+        hatalar.dogum = t('profilOlustur.dogumHataGecersiz')
+      } else if (onSekizAltindaMi(new Date(isoTarih(dogum)))) {
+        hatalar.dogum = t('profilOlustur.dogumHataYas')
+      }
     }
 
-    const kullaniciAdiNormal = kullaniciAdiniNormallestir(kullaniciAdi)
-    if (!kullaniciAdiGecerliMi(kullaniciAdiNormal)) {
-      hatalar.kullaniciAdi = t('profilOlustur.kullaniciAdiIpucu')
-    } else if (adDurumu.hal === 'alinmis') {
-      hatalar.kullaniciAdi = t('profilOlustur.kullaniciAdiAlinmis')
+    if (hangi === 2) {
+      const normal = kullaniciAdiniNormallestir(kullaniciAdi)
+      if (!kullaniciAdiGecerliMi(normal)) {
+        hatalar.kullaniciAdi = t('profilOlustur.kullaniciAdiIpucu')
+      } else if (adDurumu.hal === 'alinmis') {
+        hatalar.kullaniciAdi = t('profilOlustur.kullaniciAdiAlinmis')
+      }
     }
 
-    if (sifre.length < EN_AZ_SIFRE) {
-      hatalar.sifre = t('profilOlustur.hataSifreKisa', { adet: EN_AZ_SIFRE })
-    } else if (sifre !== sifreTekrar) {
-      hatalar.sifre = t('profilOlustur.hataSifreUyusmuyor')
+    if (hangi === 3) {
+      if (sifre.length < EN_AZ_SIFRE) {
+        hatalar.sifre = t('profilOlustur.hataSifreKisa', { adet: EN_AZ_SIFRE })
+      } else if (sifre !== sifreTekrar) {
+        hatalar.sifre = t('profilOlustur.hataSifreUyusmuyor')
+      }
     }
 
+    return hatalar
+  }
 
+  /**
+   * Dugmenin dolu mu soluk mu duracagini belirler.
+   *
+   * Soluk dugme yine BASILABILIR: basildiginda eksigin ne oldugunu
+   * soyluyor. Tamamen devre disi birakmak, kullaniciyi "neden
+   * calismiyor" sorusuyla bas basa birakirdi.
+   */
+  const adimTamam = Object.keys(adiminHatalari(adim)).length === 0
+
+  function ileri() {
+    const hatalar = adiminHatalari(adim)
     setAlanHatalari(hatalar)
     if (Object.values(hatalar).some(Boolean)) return
+    setHata(null)
+    setAdim((adim + 1) as 1 | 2 | 3)
+  }
+
+  async function tamamla() {
+    setHata(null)
+    const kullaniciAdiNormal = kullaniciAdiniNormallestir(kullaniciAdi)
+
+    // Son adimda YALNIZCA sifreyi degil UC ADIMI birden dogruluyoruz:
+    // kullanici geri gidip bir alani bozmus olabilir. Hata varsa o
+    // alanin bulundugu adima geri donuluyor, yoksa kullanici gorunmeyen
+    // bir hata yuzunden takilip kalirdi.
+    const hatalar = { ...adiminHatalari(1), ...adiminHatalari(2), ...adiminHatalari(3) }
+
+    setAlanHatalari(hatalar)
+    if (Object.values(hatalar).some(Boolean)) {
+      if (hatalar.ad || hatalar.dogum) setAdim(1)
+      else if (hatalar.kullaniciAdi) setAdim(2)
+      return
+    }
 
     setGonderiliyor(true)
     try {
@@ -270,195 +320,235 @@ export default function ProfilOlusturEkrani() {
           </Svg>
         </Pressable>
 
-        <Text style={stiller.baslik}>{t('profilOlustur.baslik')}</Text>
-        {/* Ad ve soyad TEK kutuda. Basliklar KALDIRILDI (kullanicinin
-            karari 2026-08-26): etiketi alanin kendi yer tutucusu
-            tasiyor, ayrica baslik yazmak ayni seyi iki kez soyluyordu. */}
-        <TextInput
-          style={[
-            stiller.girdi,
-            odakli === 'ad' && stiller.girdiOdakli,
-            Boolean(alanHatalari.ad) && stiller.girdiHatali,
-          ]}
-          placeholder={t('profilOlustur.adYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
-          autoComplete="name"
-          value={ad}
-          onChangeText={(yeni) => {
-            setAd(yeni)
-            alanHatasiniTemizle('ad')
-          }}
-          onFocus={() => setOdakli('ad')}
-          onBlur={() => setOdakli(null)}
-        />
-        {alanHatalari.ad ? <Text style={stiller.alanHatasi}>{alanHatalari.ad}</Text> : null}
-
-        {/* Dogum tarihi: yazilmiyor, tekerlekten seciliyor. */}
-        <Pressable
-          style={[stiller.girdi, stiller.secimSatiri, Boolean(alanHatalari.dogum) && stiller.girdiHatali]}
-          onPress={() => {
-            setSeciciAcik(true)
-            alanHatasiniTemizle('dogum')
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={t('profilOlustur.dogumEtiket')}
-        >
-          <Text style={dogum ? stiller.secimYazi : stiller.secimYerTutucu}>
-            {dogum
-              ? `${dogum.gun} ${t(`profilOlustur.aylar.${dogum.ay}`)} ${dogum.yil}`
-              : t('profilOlustur.dogumSec')}
-          </Text>
-          <Svg width={20} height={20} viewBox="0 0 24 24">
-            <Path
-              d="M6 9l6 6 6-6"
-              stroke={renk.metinSoluk}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </Svg>
-        </Pressable>
-        {/* Ipucu metni KALDIRILDI; yalnizca hata durumunda satir
-            aciliyor. */}
-        {alanHatalari.dogum ? (
-          <Text style={[stiller.ipucu, stiller.ipucuHatali]}>{alanHatalari.dogum}</Text>
-        ) : null}
-
-        {/* Kullanici adi */}
-        <View
-          style={[
-            stiller.girdi,
-            stiller.onekliGirdi,
-            odakli === 'kullaniciAdi' && stiller.girdiOdakli,
-            kullaniciAdiHatali && stiller.girdiHatali,
-          ]}
-        >
-          <Text style={stiller.onek}>@</Text>
-          <TextInput
-            style={stiller.onekliYazi}
-            placeholder={t('profilOlustur.kullaniciAdiYerTutucu')}
-            placeholderTextColor={renk.metinSoluk}
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={kullaniciAdi}
-            onChangeText={kullaniciAdiDegisti}
-            onFocus={() => setOdakli('kullaniciAdi')}
-            onBlur={() => setOdakli(null)}
-          />
-          {adDurumu.hal === 'musait' && (
-            <Svg width={18} height={18} viewBox="0 0 24 24">
-              <Path
-                d="M5 12.5l4.5 4.5L19 7.5"
-                stroke={renk.metin}
-                strokeWidth={2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </Svg>
-          )}
+        {/* ILERLEME: uc parca, nerede olundugunu tek bakista soyluyor.
+            Adim sayaci ayrica YAZIYLA da veriliyor - ekran okuyucu
+            renkli bir cizgiyi okuyamaz. */}
+        <View style={stiller.ilerleme}>
+          {[1, 2, 3].map((no) => (
+            <View key={no} style={[stiller.ilerlemeParca, no <= adim && stiller.ilerlemeDolu]} />
+          ))}
         </View>
-        {/* Musaitlik sonucuna AYRILMIS yer: satir her durumda duruyor,
-            sonuc gelince ekran ziplayarak buyumuyor. */}
-        <Text style={[stiller.ipucu, kullaniciAdiHatali && stiller.ipucuHatali]}>
-          {alanHatalari.kullaniciAdi
-            ? alanHatalari.kullaniciAdi
-            : adDurumu.hal === 'kontrol'
-              ? t('profilOlustur.kullaniciAdiKontrol')
-              : adDurumu.hal === 'musait'
-                ? t('profilOlustur.kullaniciAdiMusait')
-                : adDurumu.hal === 'alinmis'
-                  ? t('profilOlustur.kullaniciAdiAlinmis')
-                  : t('profilOlustur.kullaniciAdiIpucu')}
+        <Text style={stiller.adimSayaci}>
+          {t('profilOlustur.adimSayaci', { simdiki: adim, toplam: 3 })}
         </Text>
 
-        {/* Sifre */}
-        <Text style={stiller.etiket}>{t('profilOlustur.sifreEtiket')}</Text>
-        <View
-          style={[
-            stiller.girdi,
-            stiller.onekliGirdi,
-            odakli === 'sifre' && stiller.girdiOdakli,
-            Boolean(alanHatalari.sifre) && stiller.girdiHatali,
-          ]}
-        >
-          <TextInput
-            style={stiller.onekliYazi}
-            placeholder={t('profilOlustur.sifreYerTutucu', { adet: EN_AZ_SIFRE })}
-            placeholderTextColor={renk.metinSoluk}
-            secureTextEntry={!sifreGorunur}
-            autoCapitalize="none"
-            value={sifre}
-            onChangeText={(yeni) => {
-              setSifre(yeni)
-              alanHatasiniTemizle('sifre')
-            }}
-            onFocus={() => setOdakli('sifre')}
-            onBlur={() => setOdakli(null)}
-          />
-          <Pressable
-            onPress={() => setSifreGorunur(!sifreGorunur)}
-            accessibilityRole="button"
-            accessibilityLabel={
-              sifreGorunur ? t('profilOlustur.sifreGizle') : t('profilOlustur.sifreGoster')
-            }
-            hitSlop={10}
-          >
-            <Text style={stiller.gosterYazi}>
-              {sifreGorunur ? t('profilOlustur.sifreGizle') : t('profilOlustur.sifreGoster')}
-            </Text>
-          </Pressable>
-        </View>
+        <Text style={stiller.baslik}>{t(`profilOlustur.adim${adim}Baslik`)}</Text>
+        <Text style={stiller.altYazi}>{t(`profilOlustur.adim${adim}Aciklama`)}</Text>
 
-        {/* Sifre dogrulama */}
-        <Text style={stiller.etiket}>{t('profilOlustur.tekrarEtiket')}</Text>
-        <TextInput
-          style={[
-            stiller.girdi,
-            odakli === 'tekrar' && stiller.girdiOdakli,
-            Boolean(alanHatalari.sifre) && stiller.girdiHatali,
-          ]}
-          placeholder={t('profilOlustur.tekrarYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
-          secureTextEntry={!sifreGorunur}
-          autoCapitalize="none"
-          value={sifreTekrar}
-          onChangeText={(yeni) => {
-            setSifreTekrar(yeni)
-            alanHatasiniTemizle('sifre')
-          }}
-          onFocus={() => setOdakli('tekrar')}
-          onBlur={() => setOdakli(null)}
-        />
-        {alanHatalari.sifre ? (
-          <Text style={stiller.alanHatasi}>{alanHatalari.sifre}</Text>
-        ) : tekrarUyari ? (
-          <Text style={stiller.ipucu}>{tekrarUyari}</Text>
-        ) : null}
+        {adim === 1 && (
+          <>
+            {/* ETIKETLER GERI GELDI (kullanicinin secimi 2026-09-04).
+                2026-08-26'da "etiketi alanin kendi yer tutucusu tasiyor"
+                diye kaldirilmislardi; ama yer tutucu ilk harfte siliniyor
+                ve kullanici hangi kutunun ne oldugunu hatirlamak zorunda
+                kaliyordu. Ustelik sifre alanlarinda etiket zaten VARDI,
+                yani ayni formda iki farkli kural isliyordu. */}
+            <Text style={stiller.etiketIlk}>{t('profilOlustur.adEtiket')}</Text>
+            <TextInput
+              style={[
+                stiller.girdi,
+                odakli === 'ad' && stiller.girdiOdakli,
+                Boolean(alanHatalari.ad) && stiller.girdiHatali,
+              ]}
+              placeholder={t('profilOlustur.adOrnek')}
+              placeholderTextColor={renk.metinSoluk}
+              autoComplete="name"
+              value={ad}
+              onChangeText={(yeniAd) => {
+                setAd(yeniAd)
+                alanHatasiniTemizle('ad')
+              }}
+              onFocus={() => setOdakli('ad')}
+              onBlur={() => setOdakli(null)}
+            />
+            {alanHatalari.ad ? <Text style={stiller.alanHatasi}>{alanHatalari.ad}</Text> : null}
+
+            {/* Dogum tarihi: yazilmiyor, tekerlekten seciliyor. */}
+            <Text style={stiller.etiket}>{t('profilOlustur.dogumEtiket')}</Text>
+            <Pressable
+              style={[
+                stiller.girdi,
+                stiller.secimSatiri,
+                Boolean(alanHatalari.dogum) && stiller.girdiHatali,
+              ]}
+              onPress={() => {
+                setSeciciAcik(true)
+                alanHatasiniTemizle('dogum')
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('profilOlustur.dogumEtiket')}
+            >
+              <Text style={dogum ? stiller.secimYazi : stiller.secimYerTutucu}>
+                {dogum
+                  ? `${dogum.gun} ${t(`profilOlustur.aylar.${dogum.ay}`)} ${dogum.yil}`
+                  : t('profilOlustur.dogumSec')}
+              </Text>
+              <Svg width={20} height={20} viewBox="0 0 24 24">
+                <Path
+                  d="M6 9l6 6 6-6"
+                  stroke={renk.metinSoluk}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </Svg>
+            </Pressable>
+            {/* YAS KURALI ARTIK ONCEDEN SOYLENIYOR. Onceden yalnizca
+                hata metninde vardi: 18'inden kucuk biri butun formu
+                doldurup en sonda ogreniyordu. */}
+            <Text style={[stiller.ipucu, Boolean(alanHatalari.dogum) && stiller.ipucuHatali]}>
+              {alanHatalari.dogum ?? t('profilOlustur.yasNotu')}
+            </Text>
+          </>
+        )}
+
+        {adim === 2 && (
+          <>
+            <Text style={stiller.etiketIlk}>{t('profilOlustur.kullaniciAdiEtiket')}</Text>
+            <View
+              style={[
+                stiller.girdi,
+                stiller.onekliGirdi,
+                odakli === 'kullaniciAdi' && stiller.girdiOdakli,
+                kullaniciAdiHatali && stiller.girdiHatali,
+              ]}
+            >
+              <Text style={stiller.onek}>@</Text>
+              <TextInput
+                style={stiller.onekliYazi}
+                placeholder={t('profilOlustur.kullaniciAdiYerTutucu')}
+                placeholderTextColor={renk.metinSoluk}
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={kullaniciAdi}
+                onChangeText={kullaniciAdiDegisti}
+                onFocus={() => setOdakli('kullaniciAdi')}
+                onBlur={() => setOdakli(null)}
+              />
+              {adDurumu.hal === 'musait' && (
+                <Svg width={18} height={18} viewBox="0 0 24 24">
+                  <Path
+                    d="M5 12.5l4.5 4.5L19 7.5"
+                    stroke={renk.metin}
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </Svg>
+              )}
+            </View>
+            {/* Musaitlik sonucuna AYRILMIS yer: satir her durumda
+                duruyor, sonuc gelince ekran ziplayarak buyumuyor. */}
+            <Text style={[stiller.ipucu, kullaniciAdiHatali && stiller.ipucuHatali]}>
+              {alanHatalari.kullaniciAdi
+                ? alanHatalari.kullaniciAdi
+                : adDurumu.hal === 'kontrol'
+                  ? t('profilOlustur.kullaniciAdiKontrol')
+                  : adDurumu.hal === 'musait'
+                    ? t('profilOlustur.kullaniciAdiMusait')
+                    : adDurumu.hal === 'alinmis'
+                      ? t('profilOlustur.kullaniciAdiAlinmis')
+                      : t('profilOlustur.kullaniciAdiIpucu')}
+            </Text>
+          </>
+        )}
+
+        {adim === 3 && (
+          <>
+            <Text style={stiller.etiketIlk}>{t('profilOlustur.sifreEtiket')}</Text>
+            <View
+              style={[
+                stiller.girdi,
+                stiller.onekliGirdi,
+                odakli === 'sifre' && stiller.girdiOdakli,
+                Boolean(alanHatalari.sifre) && stiller.girdiHatali,
+              ]}
+            >
+              <TextInput
+                style={stiller.onekliYazi}
+                placeholder={t('profilOlustur.sifreYerTutucu', { adet: EN_AZ_SIFRE })}
+                placeholderTextColor={renk.metinSoluk}
+                secureTextEntry={!sifreGorunur}
+                autoCapitalize="none"
+                value={sifre}
+                onChangeText={(yeniSifre) => {
+                  setSifre(yeniSifre)
+                  alanHatasiniTemizle('sifre')
+                }}
+                onFocus={() => setOdakli('sifre')}
+                onBlur={() => setOdakli(null)}
+              />
+              <Pressable
+                onPress={() => setSifreGorunur(!sifreGorunur)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  sifreGorunur ? t('profilOlustur.sifreGizle') : t('profilOlustur.sifreGoster')
+                }
+                hitSlop={10}
+              >
+                <Text style={stiller.gosterYazi}>
+                  {sifreGorunur ? t('profilOlustur.sifreGizle') : t('profilOlustur.sifreGoster')}
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text style={stiller.etiket}>{t('profilOlustur.tekrarEtiket')}</Text>
+            <TextInput
+              style={[
+                stiller.girdi,
+                odakli === 'tekrar' && stiller.girdiOdakli,
+                Boolean(alanHatalari.sifre) && stiller.girdiHatali,
+              ]}
+              placeholder={t('profilOlustur.tekrarYerTutucu')}
+              placeholderTextColor={renk.metinSoluk}
+              secureTextEntry={!sifreGorunur}
+              autoCapitalize="none"
+              value={sifreTekrar}
+              onChangeText={(yeniTekrar) => {
+                setSifreTekrar(yeniTekrar)
+                alanHatasiniTemizle('sifre')
+              }}
+              onFocus={() => setOdakli('tekrar')}
+              onBlur={() => setOdakli(null)}
+            />
+            {alanHatalari.sifre ? (
+              <Text style={stiller.alanHatasi}>{alanHatalari.sifre}</Text>
+            ) : tekrarUyari ? (
+              <Text style={stiller.ipucu}>{tekrarUyari}</Text>
+            ) : null}
+          </>
+        )}
 
         {/* ONAY KUTUSU KALDIRILDI (kullanicinin karari 2026-09-01).
-            Kabul artik KAYIT ekranindaki "Devam"a basmakla veriliyor;
-            orada "Devam ederek Kullanim kosullarimizi kabul ettigini ve
-            Gizlilik Politikamizi okudugunu onayliyorsun" yaziyor.
-
-            ISPAT KAYDI KAYBOLMADI: asagidaki metadata hala
-            `aydinlatma_onayi` ve `konum_rizasi` tasiyor, yani
-            kvkk_onaylari tablosundaki kayit yerinde. Degisen tek sey
-            onayin ALINDIGI YER - kutu degil, akisa devam etmek. */}
+            Kabul KAYIT ekranindaki "Devam"a basmakla veriliyor.
+            ISPAT KAYDI KAYBOLMADI: metadata hala `aydinlatma_onayi` ve
+            `konum_rizasi` tasiyor. Son adimda yalnizca HATIRLATMA var -
+            hesap tam olarak burada olusuyor. */}
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-        <Pressable
-          style={stiller.birincil}
-          onPress={tamamla}
-          disabled={gonderiliyor}
-          accessibilityRole="button"
-        >
-          <Text style={stiller.birincilYazi}>
-            {gonderiliyor ? t('profilOlustur.gonderiliyor') : t('profilOlustur.gonder')}
-          </Text>
-        </Pressable>
+        {/* Dugme EN ALTA itiliyor: onceden ortada kaliyordu ve altinda
+            ekranin ucte biri kadar bos alan duruyordu. */}
+        <View style={stiller.altBlok}>
+          <Pressable
+            style={[stiller.birincil, !adimTamam && stiller.birincilPasif]}
+            onPress={adim === 3 ? tamamla : ileri}
+            disabled={gonderiliyor}
+            accessibilityRole="button"
+          >
+            <Text style={stiller.birincilYazi}>
+              {adim < 3
+                ? t('profilOlustur.devam')
+                : gonderiliyor
+                  ? t('profilOlustur.gonderiliyor')
+                  : t('profilOlustur.gonder')}
+            </Text>
+          </Pressable>
+
+          {adim === 3 && <Text style={stiller.onayNotu}>{t('profilOlustur.sozlesmeNotu')}</Text>}
+        </View>
       </ScrollView>
 
       <TarihSecici
@@ -480,10 +570,30 @@ export default function ProfilOlusturEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
+    // `flexGrow` sart: dugmeyi alta iten `altBlok` ancak icerik
+    // yuksekligi ekrani doldurdugunda calisiyor. Onceden dugme
+    // ortada kaliyor ve altinda genis bir bosluk duruyordu.
+    flexGrow: 1,
     paddingHorizontal: bosluk.xl,
     paddingTop: bosluk.xxl + bosluk.l,
-    paddingBottom: bosluk.xxl + bosluk.xl,
+    paddingBottom: bosluk.xxl,
   },
+
+  // Ilerleme cizgisi: uc esit parca, gecilenler dolu.
+  ilerleme: { flexDirection: 'row', gap: bosluk.xs, marginBottom: bosluk.m },
+  ilerlemeParca: { flex: 1, height: 3, borderRadius: 2, backgroundColor: renk.cizgi },
+  ilerlemeDolu: { backgroundColor: renk.turuncu },
+  adimSayaci: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    letterSpacing: 0.8,
+    color: renk.turuncu,
+    textTransform: 'uppercase',
+    marginBottom: bosluk.s,
+  },
+
+  // Dugme ve sozlesme notu en altta.
+  altBlok: { marginTop: 'auto' },
 
   geri: { alignSelf: 'flex-start', marginBottom: bosluk.l },
   baslik: {
@@ -507,6 +617,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
     marginBottom: bosluk.xs,
     marginTop: bosluk.l,
+  },
+  // Adimin ILK etiketi: ustundeki aciklama zaten bosluk biraktigi icin
+  // ust pay verilmiyor.
+  etiketIlk: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginBottom: bosluk.xs,
   },
 
   girdi: {

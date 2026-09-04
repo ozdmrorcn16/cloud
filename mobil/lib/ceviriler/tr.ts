@@ -91,7 +91,9 @@ export default {
     adHata: 'Adını ve soyadını yaz.',
 
     dogumEtiket: 'Doğum tarihin',
-    dogumSec: 'Doğum tarihin',
+    // Etiket zaten "Doğum tarihin" diyor; yer tutucu ayni metni
+    // tekrar etmesin, ne bicimde beklendigini soylesin.
+    dogumSec: 'Gün / Ay / Yıl',
     dogumHataGecersiz: 'Doğum tarihini seç.',
     dogumHataYas: 'Slooin’i kullanmak için 18 yaşını doldurmuş olman gerekiyor.',
     tarihGun: 'Gün',
@@ -129,6 +131,35 @@ export default {
     hataSifreKisa: 'Şifre en az {{adet}} karakter olmalı.',
     hataSifreUyusmuyor: 'Şifreler aynı değil. İkisini de kontrol et.',
 
+
+    // UC ADIM (kullanicinin secimi 2026-09-04): bes alan tek ekranda
+    // degil, uc kisa adimda soruluyor. Her adimin kendi basligi ve tek
+    // cumlelik aciklamasi var.
+    adimSayaci: 'Adım {{simdiki}} / {{toplam}}',
+
+    adim1Baslik: 'Seni tanıyalım',
+    adim1Aciklama: 'Adın profilinde görünür. Doğum tarihin kimseye gösterilmez.',
+    adEtiket: 'Adın ve soyadın',
+    adOrnek: 'Örn. Deniz Yılmaz',
+    // Yas kurali ARTIK ONCEDEN soyleniyor. Onceden yalnizca hata
+    // metninde vardi; 18 yasindan kucuk biri butun formu doldurup en
+    // sonda ogreniyordu.
+    yasNotu: 'Slooin 18 yaş ve üzeri içindir.',
+
+    adim2Baslik: 'Kullanıcı adını seç',
+    adim2Aciklama: 'İnsanlar seni bu adla bulacak. Sonradan 30 günde bir değiştirebilirsin.',
+    kullaniciAdiEtiket: 'Kullanıcı adın',
+
+    adim3Baslik: 'Şifreni belirle',
+    adim3Aciklama: 'Hesabına bu şifreyle gireceksin.',
+    sifreUygun: 'Şifre yeterince uzun.',
+    sifrelerAyni: 'Şifreler eşleşiyor.',
+
+    devam: 'Devam',
+    // Onay kayit ekranindaki "Devam" ile veriliyor; hesap TAM OLARAK
+    // burada olustugu icin hatirlatma son adimda da duruyor.
+    sozlesmeNotu:
+      'Hesabı oluşturarak Kullanım koşullarını kabul ettiğini ve Gizlilik Politikasını okuduğunu onaylıyorsun.',
 
     gonder: 'Hesabı oluştur',
     gonderiliyor: 'Oluşturuluyor…',

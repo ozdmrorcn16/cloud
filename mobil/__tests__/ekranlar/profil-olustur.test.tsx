@@ -33,16 +33,33 @@ async function dogumTarihiniSec() {
   await fireEvent.press(screen.getByText('Tamam'))
 }
 
-/** Butun alanlari gecerli degerlerle doldurur (onay kutusu artik yok). */
-async function formuDoldur() {
-  await fireEvent.changeText(screen.getByPlaceholderText('Adın ve soyadın'), 'Orçun Özdemir')
+/**
+ * EKRAN UC ADIMLI (kullanicinin secimi 2026-09-04): once ad ve dogum
+ * tarihi, sonra kullanici adi, sonra sifre. Yardimcilar akisi adim adim
+ * yuruttugu icin testler "hangi alan hangi adimda" bilgisini tekrar
+ * etmiyor.
+ */
+async function adim1(adDegeri = 'Orçun Özdemir') {
+  await fireEvent.changeText(screen.getByPlaceholderText('Örn. Deniz Yılmaz'), adDegeri)
   await dogumTarihiniSec()
-  await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'Orcun')
-  await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'sifre1234')
-  await fireEvent.changeText(
-    screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
-    'sifre1234'
-  )
+  await fireEvent.press(screen.getByText('Devam'))
+}
+
+async function adim2(kullaniciAdi = 'Orcun') {
+  await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), kullaniciAdi)
+  await fireEvent.press(screen.getByText('Devam'))
+}
+
+async function adim3(sifre = 'sifre1234', tekrar = sifre) {
+  await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), sifre)
+  await fireEvent.changeText(screen.getByPlaceholderText('Aynı şifreyi bir kez daha'), tekrar)
+}
+
+/** Uc adimi da gecerli degerlerle doldurur; son adimda bekletir. */
+async function formuDoldur() {
+  await adim1()
+  await adim2()
+  await adim3()
 }
 
 describe('ProfilOlusturEkrani', () => {
@@ -116,28 +133,22 @@ describe('ProfilOlusturEkrani', () => {
     expect(yazilan.dogum_tarihi).toBe(`${new Date().getFullYear() - 25}-01-01`)
   })
 
-  it('dogum tarihi secilmeden hesap olusturmaz', async () => {
+  it('dogum tarihi secilmeden ILK ADIMDAN gecilemiyor', async () => {
     await render(<ProfilOlusturEkrani />)
-    await fireEvent.changeText(screen.getByPlaceholderText('Adın ve soyadın'), 'Orçun Özdemir')
-    await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
-    await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'sifre1234')
-    await fireEvent.changeText(
-      screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
-      'sifre1234'
-    )
-    await fireEvent.press(screen.getByText('Hesabı oluştur'))
+    await fireEvent.changeText(screen.getByPlaceholderText('Örn. Deniz Yılmaz'), 'Orçun Özdemir')
+    await fireEvent.press(screen.getByText('Devam'))
 
     expect(await screen.findByText('Doğum tarihini seç.')).toBeTruthy()
+    // Ikinci adima gecilmedi: kullanici adi alani hala yok.
+    expect(screen.queryByPlaceholderText('Kullanıcı adı')).toBeNull()
     expect(supabase.from).not.toHaveBeenCalled()
   })
 
   it('sifreler uyusmuyorsa hesap olusturmaz', async () => {
     await render(<ProfilOlusturEkrani />)
-    await formuDoldur()
-    await fireEvent.changeText(
-      screen.getByPlaceholderText('Aynı şifreyi bir kez daha'),
-      'baskasifre'
-    )
+    await adim1()
+    await adim2()
+    await adim3('sifre1234', 'baskasifre')
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(
@@ -148,22 +159,24 @@ describe('ProfilOlusturEkrani', () => {
 
   it('kisa sifreyi reddeder', async () => {
     await render(<ProfilOlusturEkrani />)
-    await formuDoldur()
-    await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), 'kisa')
-    await fireEvent.changeText(screen.getByPlaceholderText('Aynı şifreyi bir kez daha'), 'kisa')
+    await adim1()
+    await adim2()
+    await adim3('kisa')
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(await screen.findByText('Şifre en az 8 karakter olmalı.')).toBeTruthy()
     expect(supabase.from).not.toHaveBeenCalled()
   })
 
-  it('bicime uymayan kullanici adinda kurali gosterir ve kaydetmez', async () => {
+  it('bicime uymayan kullanici adinda IKINCI ADIMDAN gecilemiyor', async () => {
     await render(<ProfilOlusturEkrani />)
-    await formuDoldur()
+    await adim1()
     await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'or')
-    await fireEvent.press(screen.getByText('Hesabı oluştur'))
+    await fireEvent.press(screen.getByText('Devam'))
 
     expect(await screen.findByText(/3-20 karakter/)).toBeTruthy()
+    // Ucuncu adima gecilmedi: sifre alani hala yok.
+    expect(screen.queryByPlaceholderText('En az 8 karakter')).toBeNull()
     expect(supabase.from).not.toHaveBeenCalled()
   })
 
@@ -171,6 +184,7 @@ describe('ProfilOlusturEkrani', () => {
     ;(kullaniciAdiMusaitMi as jest.Mock).mockResolvedValue(false)
 
     await render(<ProfilOlusturEkrani />)
+    await adim1()
     await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
     expect(
@@ -180,12 +194,44 @@ describe('ProfilOlusturEkrani', () => {
 
   it('musait kullanici adinda musait yazisini gosterir', async () => {
     await render(<ProfilOlusturEkrani />)
+    await adim1()
     await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'orcun')
 
     expect(await screen.findByText('Bu kullanıcı adı müsait.')).toBeTruthy()
   })
 
-  it('geri tusu OTURUMU KAPATIP acilis ekranina doner', async () => {
+  it('ILK ADIMDA yalnizca ad ve dogum soruluyor', async () => {
+    // Uc adima bolunmenin asil kazanci: her ekranda tek is var.
+    await render(<ProfilOlusturEkrani />)
+
+    expect(screen.getByPlaceholderText('Örn. Deniz Yılmaz')).toBeTruthy()
+    expect(screen.queryByPlaceholderText('Kullanıcı adı')).toBeNull()
+    expect(screen.queryByPlaceholderText('En az 8 karakter')).toBeNull()
+    expect(screen.getByText('Adım 1 / 3')).toBeTruthy()
+  })
+
+  it('18 YAS KURALI ONCEDEN yaziyor, hata beklemeden', async () => {
+    // Onceden kural yalnizca hata metnindeydi: 18'inden kucuk biri
+    // butun formu doldurup en sonda ogreniyordu.
+    await render(<ProfilOlusturEkrani />)
+
+    expect(screen.getByText('Slooin 18 yaş ve üzeri içindir.')).toBeTruthy()
+  })
+
+  it('adimlar arasinda GERI bir onceki adima doner, oturumu KAPATMAZ', async () => {
+    await render(<ProfilOlusturEkrani />)
+    await adim1()
+    expect(screen.getByText('Adım 2 / 3')).toBeTruthy()
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(screen.getByText('Adım 1 / 3')).toBeTruthy()
+    expect(supabase.auth.signOut).not.toHaveBeenCalled()
+    // Girilen ad kayboldu mu? Kaybolmamali.
+    expect(screen.getByDisplayValue('Orçun Özdemir')).toBeTruthy()
+  })
+
+  it('ILK ADIMDA geri tusu OTURUMU KAPATIP acilis ekranina doner', async () => {
     await render(<ProfilOlusturEkrani />)
 
     await fireEvent.press(screen.getByLabelText('Geri'))
