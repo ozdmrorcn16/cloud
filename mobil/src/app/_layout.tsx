@@ -152,12 +152,25 @@ function YonlendirmeKontrolu() {
   // aliyor; orada saatin arkasi sayfa zemini (beyaz) oluyor, yine
   // cizgi yok cunku iki taraf da beyaz.
   //
+  // KARSILAMA DA AYNI ISTISNADA (kullanicinin istegi 2026-09-04:
+  // "ust sinir cizgisi olmasin"). Ustteki "iki taraf da beyaz"
+  // varsayimi orada TUTMUYOR - karsilama, beyaz zemin kuralinin tek
+  // istisnasi ve zemini krem. Ust payi kok duzen verince saatin
+  // arkasi beyaz, hemen altindaki sayfa krem kaliyor ve ikisinin
+  // arasinda tam da kaldirilmak istenen sert cizgi olusuyordu.
+  // Karsilama kendi ust payini `useSafeAreaInsets` ile koyuyor.
+  //
   // Saat okunur kaliyor: seftali acik bir ton, sistem saati koyu.
   const profilKoku = segments[0] === 'profil' && !segments[1]
+  const karsilamaEkrani = segments[0] === '(auth)' && segments[1] === 'karsilama'
+  const kendiUstPayiniKoyar = profilKoku || karsilamaEkrani
 
   return (
     <View style={stiller.kok}>
-      <View style={[stiller.icerik, !profilKoku && { paddingTop: insets.top }]}>
+      <View
+        testID="kok-icerik"
+        style={[stiller.icerik, !kendiUstPayiniKoyar && { paddingTop: insets.top }]}
+      >
         {/* Gidilecek baska bir ekran varsa mevcut ekran HIC cizilmez -
             yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
         {yukleniyor || hedef ? null : <Slot />}

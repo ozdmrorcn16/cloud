@@ -1,4 +1,5 @@
 import { render, waitFor, act } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
 import type { ReactNode } from 'react'
 import KokLayout from '../../src/app/_layout'
 import { useOturum } from '../../lib/oturum'
@@ -7,6 +8,13 @@ import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 // Ilk acilis ekrani cihazda BIR KEZ gosteriliyor. Varsayilan olarak
 // "gosterildi" kabul ediliyor; ilk acilis senaryosu ayrica test
 // ediliyor.
+jest.mock('react-native-safe-area-context', () => ({
+  // Resmi jest mock'u sifir inset donduruyor; ust payin verilip
+  // verilmedigini ancak sifirdan farkli bir degerle olcebiliyoruz.
+  SafeAreaProvider: ({ children }: { children: ReactNode }) => children,
+  useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
+}))
+
 const mockRouterReplace = jest.fn()
 const mockRouterPush = jest.fn()
 let mockSegments: string[] = []
@@ -371,5 +379,25 @@ describe('Ust guvenli alan', () => {
     mockSegments = ['profil']
     const ekran = await render(<KokLayout />)
     expect(ekran.queryByTestId('ust-serit')).toBeNull()
+  })
+
+  const ustPay = (ekran: Awaited<ReturnType<typeof render>>) =>
+    StyleSheet.flatten(ekran.getByTestId('kok-icerik').props.style)?.paddingTop
+
+  it('KARSILAMA: kok duzen ust pay VERMIYOR - krem zemin saatin ardina uzaniyor', async () => {
+    // Kullanicinin istegi 2026-09-04: "ust sinir cizgisi olmasin".
+    // Karsilama, beyaz zemin kuralinin tek istisnasi; kok duzen ona ust
+    // pay verirse saatin arkasi beyaz, altindaki sayfa krem kaliyor ve
+    // arada sert bir cizgi olusuyor. Ekran kendi payini kendisi koyuyor.
+    mockSegments = ['(auth)', 'karsilama']
+    const ekran = await render(<KokLayout />)
+    expect(ustPay(ekran)).toBeUndefined()
+  })
+
+  it('PROFIL DISINDAKI diger ekranlar ust payi kok duzenden aliyor', async () => {
+    // Karsi kontrol: pay kosulu bir ekrana ozel, herkese kapali degil.
+    mockSegments = ['bazi-ekran']
+    const ekran = await render(<KokLayout />)
+    expect(ustPay(ekran)).toBe(59)
   })
 })

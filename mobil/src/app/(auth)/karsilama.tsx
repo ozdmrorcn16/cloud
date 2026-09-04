@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle, G } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
@@ -152,7 +153,16 @@ const OZELLIKLER = [
   { no: 4, ikon: 'yogunluk' },
 ] as const
 
+/**
+ * Markanin durum cubuguna olan uzakligi. Kok duzen bu ekrana ust pay
+ * VERMIYOR (bkz. `_layout.tsx`), cunku verseydi saatin arkasi beyaz
+ * kalir ve krem sayfayla arasinda sert bir cizgi olusurdu; pay burada,
+ * guvenli alanin uzerine ekleniyor.
+ */
+const UST_PAY = 44
+
 export default function KarsilamaEkrani() {
+  const guvenliAlan = useSafeAreaInsets()
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
@@ -161,7 +171,7 @@ export default function KarsilamaEkrani() {
   }
 
   return (
-    <View style={stiller.sayfa}>
+    <View style={[stiller.sayfa, { paddingTop: guvenliAlan.top + UST_PAY }]}>
       {/* Marka TEK KEZ (kullanicinin secimi 2026-09-03): eskiden ustte
           isaret, altinda kelime markasi vardi - ayni sey iki kez
           soyleniyordu. */}
@@ -222,7 +232,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // Karsilama, beyaz zemin kuralinin TEK istisnasi.
     backgroundColor: renk.karsilamaZemini,
     paddingHorizontal: bosluk.xl,
-    paddingTop: 44,
+    // UST PAY BURADA DEGIL: kok duzen bu ekrana pay vermiyor, ekran
+    // kendi payini `guvenliAlan.top + UST_PAY` ile koyuyor. Boylece
+    // krem zemin saatin ardina kadar uzaniyor ve ust sinir cizgisi
+    // olusmuyor.
     paddingBottom: bosluk.l,
   },
 
