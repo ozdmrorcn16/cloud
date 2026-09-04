@@ -517,6 +517,53 @@ Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
 `alignSelf: 'center'`. Ekran goruntusu
 `tasarim/karsilama-marka-ortali.png`.
 
+### HESAP OLUSTURMA UC ADIMA BOLUNDU - 2026-09-04
+
+Kullanicinin secimi; uc yaklasim gorsel olarak sunuldu (etiketli tek
+form / uc adim / gruplanmis tek ekran), **B - uc adim** secildi.
+Ekran: `src/app/profil-olustur.tsx`.
+
+| Adim | Ne soruluyor |
+|---|---|
+| 1 | Ad soyad + dogum tarihi ("Seni tanıyalım") |
+| 2 | Kullanici adi ("Kullanıcı adını seç") |
+| 3 | Sifre + tekrar ("Şifreni belirle") |
+
+**COZULEN ALTI KUSUR** (hepsi ekranin kodundan olculdu):
+1. Formun yarisi etiketliydi yarisi degil - ad, dogum ve kullanici adi
+   yalnizca yer tutucu tasiyordu, sifre alanlarinda etiket VARDI.
+   2026-08-26'da "etiketi yer tutucu tasiyor" diye kaldirilmislardi;
+   **o karar geri alindi**, cunku yer tutucu ilk harfte siliniyor.
+2. Yazinca baglam kayboluyordu.
+3. **18 YAS KURALI ARTIK ONCEDEN yaziyor.** Onceden yalnizca hata
+   metnindeydi (`dogumHataYas`): 18'inden kucuk biri butun formu
+   doldurup en sonda ogreniyordu.
+4. Dugme alta itildi (`altBlok` + `icerik.flexGrow: 1`); altindaki bos
+   ucte bir kalkti.
+5. Kullanici adi kurallari yalnizca kendi adiminda gorunuyor.
+6. Dugme, adim eksikken SOLUK ama **basilabilir** kaliyor ve basilinca
+   eksigi soyluyor. Tamamen devre disi birakmak kullaniciyi "neden
+   calismiyor" sorusuyla bas basa birakirdi.
+
+**GERI TUSU IKI ISI YAPIYOR:** adim 2-3'te bir onceki adima doner
+(girilenler durur), yalnizca ADIM 1'de oturumu kapatip acilis ekranina
+doner. O cikis sart - profili olmayan acik bir oturum kok yonlendirme
+tarafindan aninda bu ekrana geri gonderiliyor.
+
+**SON ADIMDA UC ADIM BIRDEN DOGRULANIYOR:** kullanici geri gidip bir
+alani bozmus olabilir; hata varsa o alanin bulundugu adima donuluyor.
+Yoksa gorunmeyen bir hata yuzunden takilip kalirdi.
+
+**GORSEL DOGRULAMA ICIN PROFILSIZ HESAP GEREKIYOR** - bu ekran yalnizca
+"oturumu var ama profili yok" durumunda goruluyor ve butun test
+hesaplarinin profili var. `araclar/profilsiz-test-hesabi.py` idempotent
+olarak `profilsiz@slooin.test` hesabini aciyor (sifre
+`TEST_HESAP_SIFRESI`), profil satiri olmadigini dogruluyor. Ekran
+goruntusu: `tasarim/hesap-olustur-adim1.png`.
+
+Testler 10 -> 13 (`__tests__/ekranlar/profil-olustur.test.tsx`).
+Dogrulama: jest 60 paket / 583 test.
+
 **KARSILAMA ZEMINI GERCEK BIR YOL AGI** (kullanicinin istegi
 2026-09-04: "Bunu gercek map goruntusuyle olustursana", ardindan
 "Sokak cadde gibi seyler yazmasin" ve "sadece goruntu olusturcaksin
