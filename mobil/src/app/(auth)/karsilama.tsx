@@ -165,7 +165,7 @@ export default function KarsilamaEkrani() {
       {/* Marka TEK KEZ (kullanicinin secimi 2026-09-03): eskiden ustte
           isaret, altinda kelime markasi vardi - ayni sey iki kez
           soyleniyordu. */}
-      <MarkaYazisi genislik={150} style={stiller.marka} />
+      <MarkaYazisi genislik={132} style={stiller.marka} />
 
       {/* Uc vaat burada: igne (check-in), avatar kumesi (tanisma),
           lekelerin koyulugu (populer yerler). Ekran artik onlari
@@ -226,7 +226,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingBottom: bosluk.l,
   },
 
-  marka: { alignSelf: 'flex-start' },
+  // ORTALI ve 150 -> 132 (kullanicinin secimi 2026-09-04, bes secenek
+  // gorsel olarak sunuldu). Sahnedeki en buyuk sicak nokta zaten ekranin
+  // orta ekseninde duruyor; marka da oraya oturunca ikisi tek bir dikey
+  // omurga oluyor. Sola yasli halde marka o eksenden kacik duruyor ve
+  // sahne sol ustten bastirilmis gorunuyordu.
+  marka: { alignSelf: 'center' },
 
   // Sahne ekranin TAM GENISLIGINE yayiliyor: sayfa yan payini geri
   // aliyor. Lekelerin ve yollarin kenardan tasmasi kadrajin devam
