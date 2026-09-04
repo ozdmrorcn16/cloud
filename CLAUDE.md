@@ -517,6 +517,39 @@ Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
 `alignSelf: 'center'`. Ekran goruntusu
 `tasarim/karsilama-marka-ortali.png`.
 
+### GORUNURLUK SURESI DEGISECEK - 2026-09-04 (KARAR YARIM)
+
+**30 DAKIKA KURALI KALKIYOR.** Kullanicinin karari: "30 dakika kuralini
+kaldir, ona farkli kurallar koyucaz, 30 dakikadan fazla gorunurluk
+olucak." Yani asagidaki "CHECK-IN CANLILIK PENCERESI 30 DAKIKA" bolumu
+ARTIK KALICI DEGIL - o sureyi sabit bir kural gibi okuma.
+
+**NETLESEN KISIM:** sure SABIT OLMAYACAK, **kullanici check-in yaparken
+kendisi secekecek**. Gerekce: konumunun ne kadar saklanacagina kisinin
+kendisi karar veriyor, bu KVKK acisindan en savunulabilir olan.
+
+**NETLESMEYEN KISIM: hangi sureler sunulacak.** Uc set onerildi
+(1/4/8 saat, 2/6 saat + gun sonu, 30 dk/2/6 saat) ama kullanici karari
+vermedi - soru reddedildi, secim ona birakildi. **Bu karar alinmadan
+kod degistirilmemeli.**
+
+**KOD HALA 30 DAKIKA** - hicbir sey degistirilmedi. Degisecek bes yer:
+
+| Yer | Ne yapiyor |
+|---|---|
+| `check_in_yap` RPC | `now() + interval '30 minutes'` (migrasyon 20260829100000) |
+| pg_cron (10 dk'da bir) | Suresi dolani aniya cevirir, KOORDINATI SILER |
+| `yakin_mekanlar_yogunluk` | "Burada kac kisi var" ayni pencereyi kullaniyor |
+| `lib/zaman.ts` | `CANLI_ETIKET_SURESI = 30 * DAKIKA`, uc kademeli etiket |
+| Metinler | `gizlilik.tsx` (uc yerde "~30 dakika"), `check-in/[mekanId].tsx`, `CheckInKarti.tsx` yorumu |
+
+**YAN YUKUMLULUKLER - is yapilirken atlanmamali:** sure uzayinca
+koordinat daha uzun saklanacak, yani gizlilik metnindeki uc ifade ve
+`docs/kvkk-uyum-listesi.md` guncellenmeli. Ayrica sure artik
+istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
+disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
+sinirsiz gorunurluk alinabilir.
+
 ### HESAP OLUSTURMA UC ADIMA BOLUNDU - 2026-09-04
 
 Kullanicinin secimi; uc yaklasim gorsel olarak sunuldu (etiketli tek
