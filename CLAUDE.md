@@ -517,6 +517,34 @@ Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
 `alignSelf: 'center'`. Ekran goruntusu
 `tasarim/karsilama-marka-ortali.png`.
 
+**UST SINIR CIZGISI KALKTI** (kullanicinin istegi 2026-09-04: "ust
+sinir cizgisi olmasin"). Durum cubugunun arkasi beyaz, hemen altindaki
+sayfa krem kaliyor ve arada gorunur bir cizgi olusuyordu. 2026-09-03'te
+konan kural "profil disindaki ekranlar ust payi kok duzenden alir,
+orada saatin arkasi da beyaz oldugu icin cizgi yok" diyordu; bu
+varsayim KARSILAMADA TUTMUYOR cunku karsilama beyaz zemin kuralinin tek
+istisnasi. Karsilama artik profil gibi kendi ust payini koyuyor
+(`guvenliAlan.top + UST_PAY`, UST_PAY = 44) ve `_layout.tsx` ona pay
+vermiyor. **Yeni bir ekranin zemini beyaz DEGILSE ayni istisnaya
+alinmali**, yoksa ayni cizgi geri gelir. Iki testle kilitli
+(`kok-icerik` testID'si): karsilamada pay verilmiyor, baska bir ekranda
+veriliyor. Ikinci test sart - onsuz "kosul herkese kapali" hali de
+yesil gecerdi. NOT: bu fark WEB'DE GORUNMEZ (tarayicida inset sifir),
+yalnizca telefonda olculebilir.
+
+**KARTIN GOVDESI ARTIK HARITAYI ACMIYOR** (kullanicinin bildirdigi hata
+2026-09-04: "Paylasimda bos biryere basinca konumun icine gidiyor,
+sadece konum yazisinin uzerine basinca haritasina gitsin"). Kartin kok
+`Pressable`i butun govdeyi haritaya bagliyordu - not metni, tarih, bos
+alan. Kok artik duz bir `View`; basilabilir olan yalnizca gercek
+hedefler: avatar ve kullanici adi (profil), mekan adi (harita),
+etiketler (profil), uc nokta (menu), begeni/yorum/paylas, fotograf
+(buyuk gorunum). Erisilebilirlik etiketi mekan adina tasindi. **Ayni
+sinif hata 2026-09-03'te fotografta yasanmisti** - o zaman fotograf
+kendi Pressable'ina alinmisti ama kok basilabilirligi durmustu; ders:
+bir kabin tamamini basilabilir yapmak, icindeki her yeni ogeyi de
+sessizce o eyleme baglar.
+
 **TSC TABAN HATASI ARTIK BES DEGIL YEDI.** Hepsi `@types/node`
 yoklugundan ve yalnizca test/arac dosyalarinda (`rota-agaci.test.ts`,
 `gorunurluk-testleri/calistir.ts`); `src/` ve `lib/` altinda SIFIR
