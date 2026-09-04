@@ -506,6 +506,17 @@ altindaki gecikme senkronlugu yine kiriyor ama acilista bosluk
 birakmiyor. Nokta ICINDEKI uc halkanin `TUR_SURESI / 3` gecikmesi
 degismedi; ilk halka hemen dogdugu icin orada bosluk yok.
 
+**MARKA YAZISI ORTALI, 132 px** (kullanicinin secimi 2026-09-04). Bes
+yerlesim secenegi gorsel olarak sunuldu (sola yasli 108/150/196, ortali
+132/200); kullanici 4'u secti. Onceki hal sola yasli 150 px idi.
+Gerekce: sahnedeki en buyuk sicak nokta zaten ekranin orta ekseninde
+duruyor, marka da oraya oturunca ikisi tek bir dikey omurga oluyor
+(marka -> buyuk igne -> "Hesap olustur"). Sola yasli halde marka o
+eksenden kacikti ve sahne sol ustten bastirilmis gorunuyordu.
+Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
+`alignSelf: 'center'`. Ekran goruntusu
+`tasarim/karsilama-marka-ortali.png`.
+
 **TSC TABAN HATASI ARTIK BES DEGIL YEDI.** Hepsi `@types/node`
 yoklugundan ve yalnizca test/arac dosyalarinda (`rota-agaci.test.ts`,
 `gorunurluk-testleri/calistir.ts`); `src/` ve `lib/` altinda SIFIR
