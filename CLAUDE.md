@@ -491,9 +491,26 @@ oldu - verilmezse tarayici MAKINENIN ayarini kullaniyor ve karsilastirma
 yaniltici cikiyor (bu bir kez yasandi: acik mod sanilan goruntu koyu
 cikti).
 
-Dogrulama: jest 60 paket / 578 test, tsc bes taban hatasi, ekran iki
+Dogrulama: jest 60 paket / 578 test, tsc taban hatalari, ekran iki
 modda da goruntulendi (`tasarim/karsilama-yeni-light.png`,
 `karsilama-yeni-dark.png`).
+
+**SINYAL ZAMANLAMASI - kullanicinin iki duzeltmesi (2026-09-04):**
+"sinyaller cok hizli" ve "ekran acildiginda iki kucuk halka sinyalleri
+biraz gec basliyor". Tur suresi **2800 -> 4200 ms**; sicak noktalarin
+baslama gecikmeleri **900/1800 -> 250/500 ms**. Gecikmenin amaci uc
+noktanin ayni anda atmasini onlemek, ama 1,8 saniyelik bir gecikme
+kullanicinin ekrani ilk gordugu anda o noktayi SESSIZ birakiyordu -
+yani orasi sicak nokta degilmis gibi duruyordu. Yarim saniyenin
+altindaki gecikme senkronlugu yine kiriyor ama acilista bosluk
+birakmiyor. Nokta ICINDEKI uc halkanin `TUR_SURESI / 3` gecikmesi
+degismedi; ilk halka hemen dogdugu icin orada bosluk yok.
+
+**TSC TABAN HATASI ARTIK BES DEGIL YEDI.** Hepsi `@types/node`
+yoklugundan ve yalnizca test/arac dosyalarinda (`rota-agaci.test.ts`,
+`gorunurluk-testleri/calistir.ts`); `src/` ve `lib/` altinda SIFIR
+hata. Belgelerde gecen "bes taban hatasi" ifadesi eskidir - olcut
+"uygulama kodunda hata yok" olmali, sabit bir sayi degil.
 
 ### KOYU MOD - 2026-09-03
 
