@@ -36,8 +36,8 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
 - **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
   cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
-  koordinatin saklanir, check-in aniya donusunce (en fazla ~4 saat
-  sonra, ya da hemen "ayrildim" dediginde) koordinat SILINIR ve geriye
+  koordinatin saklanir, check-in aniya donusunce (suresi dolunca ya da
+  hemen "ayrildim" dediginde) koordinat SILINIR ve geriye
   yalnizca hangi mekanda oldugun kalir (tam ayrinti madde 3'te)
 - Gonderdigin ve aldigin mesajlarin icerigi
 - Bag bilgin: kimi takip ettigin, kimlerle sohbet istegi alisverisinde
@@ -73,7 +73,7 @@ karistirmamak onemli:
   `mekan_ekle` fonksiyonu `p_cihaz_lat`/`p_cihaz_lng`yi yalnizca
   `ST_DWithin` kontrolunde kullanir, hicbir sutuna yazmaz.)
 - **Check-in yaptiginda:** check-in **AKTIFKEN** koordinatin saklanir.
-  Ama bu gecici: check-in en fazla **~4 saat** sonra (ya da hemen
+  Ama bu gecici: check-in **suresi dolunca** (ya da hemen
   "ayrildim" dediginde) otomatik olarak **aniya** donusur, ve bu
   donusumde **koordinat SILINIR** (veritabaninda null'a cekilir) -
   geriye yalnizca hangi mekanda oldugun kalir, tam koordinat degil.
@@ -160,8 +160,7 @@ FAZLA** (tek bir kural degil):
 - Takip/sohbet istegi gunluk tavanini hesaplamak icin tutulan kayitlar
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
-  donustugunde otomatik olarak silinir (null'a cekilir) - en fazla ~4
-  saat sonra.
+  donustugunde otomatik olarak silinir (null'a cekilir).
 
 Anilarin (check-in gecmisinin geri kalani - hangi mekanda oldugun,
 notun, fotografin), mesajlarin ve sikayetler icin bugun tam bir

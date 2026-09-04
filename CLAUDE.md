@@ -533,7 +533,24 @@ kendisi karar veriyor, bu KVKK acisindan en savunulabilir olan.
 vermedi - soru reddedildi, secim ona birakildi. **Bu karar alinmadan
 kod degistirilmemeli.**
 
-**KOD HALA 30 DAKIKA** - hicbir sey degistirilmedi. Degisecek bes yer:
+**METINLERDEN IBARE KALDIRILDI (ayni gun, kullanicinin talimati:
+"sadece 30 dakika ibaresi gecerli degil, onu kaldir, sure degisicek").**
+Kullaniciya gorunen her yerde sabit sayi yerine olay yaziyor: "check-in
+suresi dolunca". Degisen dosyalar: `gizlilik.tsx` (uc yer),
+`check-in/[mekanId].tsx`, `docs/gizlilik-metni.md` (uc yer).
+
+Bu sirada BIR TUTARSIZLIK bulundu: `docs/gizlilik-metni.md` hala
+**"~4 saat"** diyordu - 2026-08-29'da 30 dakikaya gecilirken belge
+guncellenmemis, yani uygulama ici metin ile depodaki belge birbirini
+tutmuyordu. Ikisi de ayni ifadeye cekildi.
+
+**ACIK BORC:** gizlilik metninde artik SOMUT SAKLAMA SURESI YOK. KVKK
+saklama suresinin belirtilmesini ister; sure kesinlesince o uc ifadeye
+gercek sure geri konmali. Simdilik yanlis sure yazmaktansa olayi
+anlatmak tercih edildi.
+
+**SURE MEKANIZMASI HALA 30 DAKIKA** - davranista hicbir sey
+degistirilmedi. Degisecek bes yer:
 
 | Yer | Ne yapiyor |
 |---|---|

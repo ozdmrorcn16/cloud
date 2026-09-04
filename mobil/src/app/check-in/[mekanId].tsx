@@ -169,7 +169,7 @@ export default function CheckInEkrani() {
         <Text style={stiller.baslik}>Bu check-in ne paylaşıyor?</Text>
         <Text style={stiller.uyariMetni}>
           Check-in yaptiginda bulundugun mekan ve varsa yazdigin not, seni
-          takip eden arkadaslarina gorunur olur. Check-in 30 dakika sonra ya da
+          takip eden arkadaslarina gorunur olur. Check-in suresi dolunca ya da
           "ayrildim" dedigin anda kendiliginden kapanir. Istersen bu
           check-in'i gizli yaparak sadece kendi profilinde tutabilirsin.
         </Text>
