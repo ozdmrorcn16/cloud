@@ -159,7 +159,10 @@ const OZELLIKLER = [
  * kalir ve krem sayfayla arasinda sert bir cizgi olusurdu; pay burada,
  * guvenli alanin uzerine ekleniyor.
  */
-const UST_PAY = 44
+// 44 -> 18 (kullanicinin istegi 2026-09-04: "Slooin yazisini yine
+// ortada ama daha yukari tasi"). Marka guvenli alanin hemen altina
+// yaklasiyor; hiza ORTALI kaliyor.
+const UST_PAY = 18
 
 export default function KarsilamaEkrani() {
   const guvenliAlan = useSafeAreaInsets()
@@ -171,7 +174,12 @@ export default function KarsilamaEkrani() {
   }
 
   return (
-    <View style={[stiller.sayfa, { paddingTop: guvenliAlan.top + UST_PAY }]}>
+    // Guvenli alana bir TABAN veriliyor: web'de `insets.top` sifir
+    // dondugu icin marka ekranin en tepesine yapisiyordu. Telefonda
+    // taban zaten asiliyor, yani orada bir etkisi yok.
+    <View
+      style={[stiller.sayfa, { paddingTop: Math.max(guvenliAlan.top, 26) + UST_PAY }]}
+    >
       {/* Marka TEK KEZ (kullanicinin secimi 2026-09-03): eskiden ustte
           isaret, altinda kelime markasi vardi - ayni sey iki kez
           soyleniyordu. */}
