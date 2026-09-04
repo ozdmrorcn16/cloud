@@ -468,7 +468,12 @@ describe('AnaSayfa', () => {
     expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
   })
 
-  it('KARTIN geri kalanina basinca hala haritaya gidiyor', async () => {
+  it('KARTIN BOS YERINE basinca HICBIR YERE gitmiyor', async () => {
+    // Kullanicinin bildirdigi hata 2026-09-04: "Paylasimda bos biryere
+    // basinca konumun icine gidiyor, sadece konum yazisinin uzerine
+    // basinca haritasina gitsin". Kartin kok Pressable'i butun govdeyi
+    // haritaya baglamisti; not metnine ya da bos bir yere dokunmak da
+    // sayiliyordu.
     ;(akisiGetir as jest.Mock).mockResolvedValue([
       oge({ fotografUrl: 'https://imzali/foto.jpg' }),
     ])
@@ -476,6 +481,6 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await fireEvent.press(await screen.findByText('guzel bir aksam'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 })

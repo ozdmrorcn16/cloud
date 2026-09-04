@@ -119,12 +119,15 @@ export function CheckInKarti({
   const gosterilenAd = oge.rumuz ?? oge.kullaniciAdi ?? ''
 
   return (
-    <Pressable
-      style={stiller.kart}
-      onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
-      accessibilityRole="button"
-      accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
-    >
+    // KART BIR BUTON DEGIL (kullanicinin bildirdigi hata 2026-09-04):
+    // "Paylasimda bos biryere basinca konumun icine gidiyor, sadece
+    // konum yazisinin uzerine basinca haritasina gitsin". Kok Pressable
+    // butun govdeyi haritaya bagliyordu - not metni, tarih, bos alan,
+    // hepsi. Fotograf ve mekan adi zaten kendi dokunus hedefleriydi;
+    // simdi kartta basilabilir olan YALNIZCA o hedefler: avatar ve
+    // kullanici adi (profil), mekan adi (harita), etiketler (profil),
+    // uc nokta (menu), begeni/yorum/paylas, fotograf (buyuk gorunum).
+    <View style={stiller.kart}>
       <View style={stiller.kartUst}>
         <Pressable
           // `as never`: uretilen rota tipleri profil ana ekranini
@@ -164,6 +167,12 @@ export function CheckInKarti({
               // 2026-08-30). Onceden yeni check-in formunu aciyordu;
               // konum etiketine basan kisi orayi gormek istiyor, oraya
               // check-in yapmak degil.
+              //
+              // 2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
+              // Pressable'i kaldirildigi icin erisilebilirlik etiketi de
+              // buraya tasindi.
+              accessibilityRole="link"
+              accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
               onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
             >
               {oge.mekanAdi}
@@ -383,7 +392,7 @@ export function CheckInKarti({
         onOnay={() => onSil?.(oge.id)}
         onVazgec={() => onSilOnayi?.(oge.id)}
       />
-    </Pressable>
+    </View>
   )
 }
 
