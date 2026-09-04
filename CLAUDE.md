@@ -517,6 +517,34 @@ Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
 `alignSelf: 'center'`. Ekran goruntusu
 `tasarim/karsilama-marka-ortali.png`.
 
+**KARSILAMA ZEMINI GERCEK BIR YOL AGI** (kullanicinin istegi
+2026-09-04: "Bunu gercek map goruntusuyle olustursana", ardindan
+"Sokak cadde gibi seyler yazmasin" ve "sadece goruntu olusturcaksin
+harita gerceki durucak"). Onceki hal elle cizilmis dort cizgiydi.
+Geometri OpenStreetMap'ten (Bursa/Nilufer), 208 yol / 700 nokta / 9 KB;
+uretici `araclar/karsilama-yollari-uret.py` Overpass'ten BIR KEZ cekip
+Douglas-Peucker ile sadelestiriyor, cikti
+`mobil/src/tasarim/karsilama-yollari.ts`.
+
+**HAZIR HARITA BILESENI (react-native-maps) KULLANILMADI - tekrar
+onerme.** Dort sebep: (1) web'de calismiyor, bu ekran tarayicida da
+aciliyor; (2) Android'de Google anahtari yok, zemin gri kalirdi;
+(3) hazir dosemelerde SOKAK ADLARI gomulu geliyor, kullanici tam olarak
+onlari istemedi; (4) her acilista ag istegi demek. Vektor cizim
+dordunu de cozuyor ve harita etkilesimsiz kaliyor.
+
+Uc kalinlik sinifi var (arter 6.5 / toplayici 3.4 / sokak 1.6). Tek
+kalinlikta cizilirse yol agi gercek harita gibi degil tek tip bir ag
+gibi okunuyor - denendi.
+
+**ODbL ATFI SART:** yol agi turetilmis bir eser. Ekranin en altinda
+`karsilama.haritaAtfi` anahtariyla, yedi dilde. Kaldirilirsa lisans
+ihlali olur.
+
+Not: 2026-08-27'de `KrokiZemin` "burasi neresi sorusunu aciyor ve
+cevabi yok" gerekcesiyle silinmisti. Kullaniciya bu hatirlatildi ve
+yine de gercek harita istendi; karar kullanicinin.
+
 **UST SINIR CIZGISI KALKTI** (kullanicinin istegi 2026-09-04: "ust
 sinir cizgisi olmasin"). Durum cubugunun arkasi beyaz, hemen altindaki
 sayfa krem kaliyor ve arada gorunur bir cizgi olusuyordu. 2026-09-03'te
