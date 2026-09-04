@@ -274,7 +274,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // aliyor. Lekelerin ve yollarin kenardan tasmasi kadrajin devam
   // ettigi hissini veriyor.
   // Sahne esnek ama dort satir eklendigi icin daha az yer kapliyor.
-  sahne: { flex: 1, minHeight: 200, marginHorizontal: -bosluk.xl, marginTop: bosluk.s },
+  // MARKA ILE HARITA ARASINDA BOSLUK (kullanicinin netlestirmesi
+  // 2026-09-04): "her sey sabit, yaziyi sadece yukari tasiyacaksin,
+  // haritayla yazinin arasinda bosluk olucak". Yalnizca ust payi
+  // azaltmak YETMIYORDU - o zaman marka da harita da birlikte yukari
+  // kayiyor ve aradaki bosluk hic degismiyor. Bosluk burada aciliyor:
+  // sahne ustten geri cekiliyor, alt kenari yerinde kaliyor.
+  sahne: { flex: 1, minHeight: 200, marginHorizontal: -bosluk.xl, marginTop: 44 },
 
   // Dort tanitim satiri. Ikon sutunu sabit genislikte: ikonlarin
   // genisligi farkli, basliklar ayni noktadan bassin.
