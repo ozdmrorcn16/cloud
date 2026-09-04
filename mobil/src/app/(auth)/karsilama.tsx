@@ -222,6 +222,13 @@ export default function KarsilamaEkrani() {
           <Text style={stiller.ikincilVurgu}>{t('karsilama.girisYap')}</Text>
         </Text>
       </Pressable>
+
+      {/* ODbL ATFI - hukuken sart, tercih degil. Sahnedeki yol agi
+          OpenStreetMap verisinden turetilmis bir eser; ODbL turetilmis
+          eserde kaynagin belirtilmesini istiyor. Kesfet ekraninda ayni
+          atif zaten var. Bilerek en kucuk ve en soluk satir: bilgi
+          dogru yerde dursun ama kompozisyonda sira almasin. */}
+      <Text style={stiller.atif}>{t('karsilama.haritaAtfi')}</Text>
     </View>
   )
 }
@@ -244,6 +251,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // orta ekseninde duruyor; marka da oraya oturunca ikisi tek bir dikey
   // omurga oluyor. Sola yasli halde marka o eksenden kacik duruyor ve
   // sahne sol ustten bastirilmis gorunuyordu.
+  atif: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+    opacity: 0.55,
+    textAlign: 'center',
+    marginTop: bosluk.xs,
+  },
+
   marka: { alignSelf: 'center' },
 
   // Sahne ekranin TAM GENISLIGINE yayiliyor: sayfa yan payini geri

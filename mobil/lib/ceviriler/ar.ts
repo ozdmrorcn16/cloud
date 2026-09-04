@@ -27,6 +27,8 @@ export default {
     hesapOlustur: 'إنشاء حساب',
     hesabinVarMi: 'لديك حساب بالفعل؟',
     girisYap: 'تسجيل الدخول',
+    // Yol agi OpenStreetMap verisinden turetildi; ODbL atfi sart.
+    haritaAtfi: 'بيانات الخريطة © مساهمو OpenStreetMap',
     kucukNot: 'يجب أن يكون عمرك 18 عامًا أو أكثر. لا تتم مشاركة موقعك بشكل دائم.',
     hataOnay: 'يجب الموافقة على الشروط للمتابعة.',
   },

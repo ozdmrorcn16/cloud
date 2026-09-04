@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native'
 import Svg, { G, Path, Rect } from 'react-native-svg'
+import { ANA_YOLLAR, ORTA_YOLLAR, INCE_YOLLAR } from './karsilama-yollari'
 import { bosluk, yazi, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 
@@ -329,13 +330,41 @@ export function KarsilamaSahnesi() {
   return (
     <View style={stiller.kok}>
       {/* Zemin yalnizca yollar: lekeler artik animasyonlu gorunumler. */}
+      {/* ZEMIN GERCEK BIR YOL AGI (kullanicinin istegi 2026-09-04:
+          "Bunu gercek map goruntusuyle olustursana"). Onceden dort elle
+          cizilmis cizgiydi. Geometri OpenStreetMap'ten, Bursa/Nilufer
+          kesiti; `araclar/karsilama-yollari-uret.py` bir kez cikarip
+          `karsilama-yollari.ts` icine yaziyor.
+
+          HAZIR HARITA BILESENI KULLANILMADI, uc sebeple: web'de
+          `react-native-maps` calismiyor ve bu ekran tarayicida da
+          aciliyor; Android'de Google anahtari olmadigi icin zemin gri
+          kalirdi; ve hazir dosemelerde SOKAK ADLARI gomulu geliyor -
+          kullanici tam olarak onlari istemedi ("Sokak cadde gibi seyler
+          yazmasin"). Vektor cizim uculunu de cozuyor, ustelik acilista
+          hicbir ag istegi yapmiyor.
+
+          UC KALINLIK: hepsi ayni kalinlikta olsaydi yol agi tek tip bir
+          ag gibi okunurdu; gercek haritada arter ile sokak ayirt
+          edilir. */}
       <Svg style={StyleSheet.absoluteFill} viewBox="0 0 300 330" preserveAspectRatio="xMidYMid slice">
         <Rect width={300} height={330} fill={renk.karsilamaZemini} />
-        <G stroke={renk.cizgi} strokeWidth={7} fill="none">
-          <Path d="M-10 78 L110 104 L200 60 L310 122" />
-          <Path d="M45 -10 L70 150 L48 340" />
-          <Path d="M215 -10 L200 168 L255 340" />
-          <Path d="M-10 226 L140 252 L310 214" />
+        <G stroke={renk.cizgi} fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <G strokeWidth={1.6} opacity={0.75}>
+            {INCE_YOLLAR.map((d) => (
+              <Path key={d} d={d} />
+            ))}
+          </G>
+          <G strokeWidth={3.4}>
+            {ORTA_YOLLAR.map((d) => (
+              <Path key={d} d={d} />
+            ))}
+          </G>
+          <G strokeWidth={6.5}>
+            {ANA_YOLLAR.map((d) => (
+              <Path key={d} d={d} />
+            ))}
+          </G>
         </G>
       </Svg>
 

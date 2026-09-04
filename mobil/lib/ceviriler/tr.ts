@@ -46,6 +46,8 @@ export default {
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',
+    // Yol agi OpenStreetMap verisinden turetildi; ODbL atfi sart.
+    haritaAtfi: 'Harita verisi © OpenStreetMap katkıcıları',
   },
 
   kayit: {

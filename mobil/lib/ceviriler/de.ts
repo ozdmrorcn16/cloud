@@ -21,6 +21,8 @@ export default {
     hesapOlustur: 'Konto erstellen',
     hesabinVarMi: 'Schon ein Konto?',
     girisYap: 'Anmelden',
+    // Yol agi OpenStreetMap verisinden turetildi; ODbL atfi sart.
+    haritaAtfi: 'Kartendaten © OpenStreetMap-Mitwirkende',
     kucukNot: 'Du musst mindestens 18 sein. Dein Standort wird nie dauerhaft geteilt.',
     hataOnay: 'Bitte akzeptiere die Bedingungen, um fortzufahren.',
   },

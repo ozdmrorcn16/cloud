@@ -21,6 +21,8 @@ export default {
     hesapOlustur: 'Создать аккаунт',
     hesabinVarMi: 'Уже есть аккаунт?',
     girisYap: 'Войти',
+    // Yol agi OpenStreetMap verisinden turetildi; ODbL atfi sart.
+    haritaAtfi: 'Картографические данные © участники OpenStreetMap',
     kucukNot: 'Вам должно быть 18 лет или больше. Геопозиция никогда не передаётся постоянно.',
     hataOnay: 'Примите условия, чтобы продолжить.',
   },
