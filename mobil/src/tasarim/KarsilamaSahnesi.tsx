@@ -52,7 +52,11 @@ type Nokta = {
   igne: number
   /** Avatar capi. */
   avatar: number
-  /** Nabzin baslama gecikmesi (ms). */
+  /**
+   * Sinyalin baslama gecikmesi (ms). KISA tutuluyor: noktalar ayni anda
+   * atmasin diye var, ama uzun olursa ekran acildiginda o nokta bos
+   * duruyor ve sicak nokta olmadigi saniliyor.
+   */
   gecikme: number
   kisiler: Kisi[]
   /** Kumenin sonundaki "+n" balonu; yoksa hic cizilmiyor. */
@@ -80,7 +84,7 @@ const NOKTALAR: Nokta[] = [
     cap: 120,
     igne: 32,
     avatar: 24,
-    gecikme: 900,
+    gecikme: 250,
     kisiler: [{ harf: 'S', arka: '#C084FC' }],
     fazla: '+1',
   },
@@ -90,7 +94,7 @@ const NOKTALAR: Nokta[] = [
     cap: 96,
     igne: 28,
     avatar: 22,
-    gecikme: 1800,
+    gecikme: 500,
     kisiler: [{ harf: 'B', arka: '#0E9488' }],
   },
 ]
@@ -153,8 +157,12 @@ function Avatar({
  * Dongude gecikme YOK; ilk gecikme setTimeout ile bir kez veriliyor.
  * Gecikme dongunun ICINE konsaydi her turdan sonra tekrarlanir ve
  * halkalar arasinda olu bir bosluk olusurdu.
+ *
+ * TUR SURESI 2800 -> 4200 (kullanicinin istegi, 2026-09-04: "sinyaller
+ * cok hizli"). Sinyal aceleci degil sakin bir nabiz olmali; ustelik
+ * bu ekran ilk izlenim ve hizli hareket dikkati metinden caliyor.
  */
-const TUR_SURESI = 2800
+const TUR_SURESI = 4200
 
 function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; hareket: boolean }) {
   const renk = useRenk()
