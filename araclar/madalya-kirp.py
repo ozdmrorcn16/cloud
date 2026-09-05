@@ -197,13 +197,50 @@ def yalniz_madalyayi_birak(im):
 #
 # Kullanici uc temiz gorsel gonderdi; artik onlar kullaniliyor ve
 # hicbir tahmin gerekmiyor.
-AYRI_KAYNAKLAR = {2: 'madalya-2-kaynak.jpg',
+AYRI_KAYNAKLAR = {2: 'madalya-2-kaynak.png',
                   3: 'madalya-3-kaynak.jpg',
                   4: 'madalya-4-kaynak.png'}
 
 TASARIM = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '..', 'tasarim')
 )
+
+
+# Butun madalyalar bu ic yaricapa getiriliyor (piksel).
+#
+# NEDEN YUKSEKLIK DEGIL: once toplam yukseklikten esitleniyordu ve
+# madalyalar farkli buyuklukte cikiyordu - olculdu, ic yaricaplar
+# 39.4 ile 51.1 arasinda degisiyordu. Sebep kompozisyon farki: bir
+# kaynakta defne dallari genis, otekinde dar; ayni yukseklige
+# getirilince genis olanin CEMBERI kucuk kaliyor.
+#
+# Ic yaricap = seklin icine sigan en buyuk dairenin yaricapi. Defne
+# dallari ince oldugu icin oraya sigmiyor, yani bu olcu dogrudan
+# madalya cemberini veriyor.
+HEDEF_IC_YARICAP = 48.0
+
+
+def ic_yaricap(im):
+    """Seklin icine sigan en buyuk dairenin yaricapi."""
+    import numpy as np
+    from scipy import ndimage
+
+    maske = np.array(im.convert('RGBA'))[:, :, 3] > 24
+    if not maske.any():
+        return 0.0
+    return float(ndimage.distance_transform_edt(maske).max())
+
+
+def cembere_gore_olcekle(im):
+    """Madalyayi hedef cember boyutuna getirir."""
+    r = ic_yaricap(im)
+    if r <= 0:
+        return im
+    olcek = HEDEF_IC_YARICAP / r
+    return im.resize(
+        (max(1, round(im.size[0] * olcek)), max(1, round(im.size[1] * olcek))),
+        Image.LANCZOS,
+    )
 
 
 def zaten_saydam(im):
@@ -214,7 +251,7 @@ def zaten_saydam(im):
     return alfa.getextrema()[0] < 24
 
 
-def ayri_kaynak_oku(sira, hedef_yukseklik):
+def ayri_kaynak_oku(sira):
     """Bir madalyayi kendi kaynagindan okur ve olcegini esitler.
 
     Kaynaklarda ustte ve altta komsu madalyalarin parcalari da var;
@@ -255,10 +292,7 @@ def ayri_kaynak_oku(sira, hedef_yukseklik):
     if kutu:
         parca = parca.crop(kutu)
 
-    olcek = hedef_yukseklik / parca.size[1]
-    return parca.resize(
-        (max(1, round(parca.size[0] * olcek)), hedef_yukseklik), Image.LANCZOS
-    )
+    return cembere_gore_olcekle(parca)
 
 
 def main():
@@ -286,6 +320,14 @@ def main():
     # olanlarin CEMBERINI kucultuyordu - defne yer kapladigi icin.
     # Hepsi ayni tuvale ortalaninca oran korunuyor ve cemberler
     # birbirine yakin boyutta kaliyor.
+    # Ayri kaynagi olanlar burada devreye giriyor; ana gorselden
+    # gelenler de ayni cember boyutuna cekiliyor.
+    for sira in range(1, ADET + 1):
+        parcalar[sira - 1] = (
+            ayri_kaynak_oku(sira) if sira in AYRI_KAYNAKLAR
+            else cembere_gore_olcekle(parcalar[sira - 1])
+        ) or parcalar[sira - 1]
+
     tuval_en = max(p.size[0] for p in parcalar)
     tuval_boy = max(p.size[1] for p in parcalar)
 
@@ -298,20 +340,6 @@ def main():
             parca,
         )
         tuvaller.append(tuval)
-
-    # Ayri kaynagi olan siralar degistiriliyor; olcek ana gorseldeki
-    # ayni siranin yuksekligine esitleniyor.
-    for sira in AYRI_KAYNAKLAR:
-        yeni = ayri_kaynak_oku(sira, parcalar[sira - 1].size[1])
-        if yeni is None:
-            continue
-        tuval = Image.new('RGBA', (tuval_en, tuval_boy), (255, 255, 255, 0))
-        tuval.paste(
-            yeni,
-            ((tuval_en - yeni.size[0]) // 2, (tuval_boy - yeni.size[1]) // 2),
-            yeni,
-        )
-        tuvaller[sira - 1] = tuval
 
     for sira, tuval in enumerate(tuvaller, start=1):
         yol = os.path.join(HEDEF, f'madalya-{sira}.png')
