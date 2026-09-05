@@ -5,10 +5,26 @@ gorunmesini saglayamaz misin". Onceden madalyalar SVG ile CIZILIYORDU
 ve referansa yakindi ama ayni degildi; artik referansin kendisi
 kullaniliyor.
 
-Beyaz zemin SAYDAMA cevriliyor ama duz esikle DEGIL: 4. madalya
-krem/beyaz oldugu icin esik onu da yerdi. Bunun yerine gorselin
-KENARINDAN tasma (flood fill) yapiliyor - yalnizca kenara BAGLI beyaz
-bolge siliniyor, madalyanin icindeki acik tonlar duruyor.
+UC TUZAK, ucu de olcerek bulundu:
+
+1. ZEMIN DUZ ESIKLE SILINMEZ. 4. madalya krem/beyaz oldugu icin esik
+   onu da yerdi. Bunun yerine kenardan TASMA (flood fill): yalnizca
+   kenara BAGLI beyaz siliniyor, madalyanin icindeki acik tonlar
+   duruyor.
+
+2. ESIK GOLGEYI DE KAPSAMALI. Referansta madalyanin altinda yumusak bir
+   gri golge var; dar esikte golge saydam olmuyor. Acik zeminde
+   gorunmuyor ama KOYU MODDA madalyanin etrafinda beyazimsi bir hale
+   birakiyor.
+
+3. MADALYALAR ESIT SATIRLARA OTURMUYOR. Gorseli bese bolup kirpmak
+   yanlis: 1. madalyanin kurdelesi kendi satirinin 11 piksel disina
+   tasiyor, 2. madalya ise satir sinirindan 20 piksel SONRA basliyor.
+   Sabit pay vermek de (denendi) bu kez madalyalarin KENDI govdesini
+   kesti - cikan yukseklikler 131/113/118/114/108 gibi tutarsizdi ve
+   kullanici "kesik yerleri var" dedi. Cozum: sinirlar sabit
+   yazilmiyor, her madalyanin gercek dikey blogu doluluk profilinden
+   BULUNUYOR.
 
 Cikti: mobil/assets/images/madalya-1.png ... madalya-5.png
 """
@@ -30,40 +46,41 @@ HEDEF = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '..', 'mobil', 'assets', 'images')
 )
 
-# Referanstaki bes satirin dikey sinirlari ve madalya sutununun yatay
-# araligi.
-#
-# UST PAY: satir sinirinin hemen altindan basliyoruz. Tam sinirdan
-# kirpinca bir ustteki madalyanin KURDELE UCU bu kirpmaya tasiyor ve
-# saydam zeminde artik bir leke birakiyor. "En buyuk parcayi tut"
-# yontemi denendi ve DEFNE DALLARINI da sildi - dal madalyaya
-# degmedigi icin ayri bir bilesen sayiliyor.
-UST_PAY = 15
-SATIRLAR = [
-    (0, 133),
-    (133 + UST_PAY, 266),
-    (266 + UST_PAY, 399),
-    (399 + UST_PAY, 532),
-    (532 + UST_PAY, 666),
-]
-SOL, SAG = 30, 185
+ADET = 5
+# Madalya sutununun yatay araligi; sagda mekan adi basliyor.
+SOL, SAG = 28, 200
+# Bu esigin uzerindeki her kanal "zemin" sayiliyor. Golgeyi de kapsamak
+# icin bilerek gevsek; madalyanin dis cemberi her sirada bundan koyu,
+# en acik olan 4. madalyada bile.
+ZEMIN_ESIGI = 225
+# Bir blogu "madalya" saymak icin en az bu kadar satiri dolu olmali.
+EN_AZ_YUKSEKLIK = 60
 
-# Bu esigin uzerindeki her kanal "zemin" sayiliyor.
-#
-# Esik yalnizca JPEG payi icin degil GOLGE icin de gevsek: referansta
-# madalyanin altinda yumusak bir gri golge var ve dar bir esikte golge
-# saydam olmuyor - acik zeminde gorunmuyor ama KOYU MODDA madalyanin
-# etrafinda beyazimsi bir hale birakiyor.
-#
-# 225 guvenli bir orta yol: golgeyi yiyor ama madalyanin kendisine
-# giremiyor, cunku tasma kenardan basliyor ve her madalyanin DIS
-# CEMBERI koyu - en acik olan 4. madalyada bile. En acik ic detay
-# (gumusun defne dallari, ~180) esigin cok altinda.
-BEYAZ = 225
+
+def zemin_mi(px, x, y):
+    r, g, b = px[x, y][:3]
+    return r >= ZEMIN_ESIGI and g >= ZEMIN_ESIGI and b >= ZEMIN_ESIGI
+
+
+def dikey_bloklar(im):
+    """Madalya sutunundaki dolu satir bloklarini dondurur."""
+    px = im.load()
+    _, boy = im.size
+    bloklar, bas = [], None
+    for y in range(boy):
+        dolu = any(not zemin_mi(px, x, y) for x in range(SOL, SAG))
+        if dolu and bas is None:
+            bas = y
+        elif not dolu and bas is not None:
+            bloklar.append((bas, y - 1))
+            bas = None
+    if bas is not None:
+        bloklar.append((bas, boy - 1))
+    return [b for b in bloklar if b[1] - b[0] >= EN_AZ_YUKSEKLIK]
 
 
 def zemini_sil(im):
-    """Kenara bagli beyaz bolgeyi saydam yapar."""
+    """Kenara bagli zemin bolgesini saydam yapar."""
     im = im.convert('RGBA')
     en, boy = im.size
     px = im.load()
@@ -71,90 +88,110 @@ def zemini_sil(im):
     gorulen = [[False] * boy for _ in range(en)]
     kuyruk = deque()
 
-    def beyaz_mi(x, y):
-        r, g, b, _ = px[x, y]
-        return r >= BEYAZ and g >= BEYAZ and b >= BEYAZ
+    def ekle(x, y):
+        if not gorulen[x][y] and zemin_mi(px, x, y):
+            gorulen[x][y] = True
+            kuyruk.append((x, y))
 
-    # Dort kenardan basla.
     for x in range(en):
-        for y in (0, boy - 1):
-            if beyaz_mi(x, y) and not gorulen[x][y]:
-                gorulen[x][y] = True
-                kuyruk.append((x, y))
+        ekle(x, 0)
+        ekle(x, boy - 1)
     for y in range(boy):
-        for x in (0, en - 1):
-            if beyaz_mi(x, y) and not gorulen[x][y]:
-                gorulen[x][y] = True
-                kuyruk.append((x, y))
+        ekle(0, y)
+        ekle(en - 1, y)
 
     while kuyruk:
         x, y = kuyruk.popleft()
         px[x, y] = (255, 255, 255, 0)
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             nx, ny = x + dx, y + dy
-            if 0 <= nx < en and 0 <= ny < boy and not gorulen[nx][ny] and beyaz_mi(nx, ny):
-                gorulen[nx][ny] = True
-                kuyruk.append((nx, ny))
+            if 0 <= nx < en and 0 <= ny < boy:
+                ekle(nx, ny)
 
     return im
 
 
-def yalniz_en_buyuk_parca(im):
-    """Yalnizca en buyuk opak parcayi birakir.
+def ince_seritleri_sil(im):
+    """Listenin AYIRICI CIZGISINDEN gelen ince seritleri temizler.
 
-    Satir siniri madalyalari tam ayirmiyor: ustteki madalyanin kurdele
-    ucu bir alttaki kirpmaya tasiyor ve saydam zeminde artik bir leke
-    olarak kaliyor. Bagli bilesenlerden en buyugu madalyanin kendisi;
-    gerisi siliniyor.
+    Madalyanin dikey blogu, satirlar arasindaki ince ayirici cizgiyle
+    kesisebiliyor; cizgi zemine bagli olmadigi icin tasma onu silmiyor
+    ve saydam zeminde ince bir sirit olarak kaliyor.
+
+    Olcut BOY: ayirici cizgi 1-3 piksel yuksekliginde ve genis. Defne
+    dallari da ince gorunuyor ama dikeyde cok daha uzunlar, o yuzden
+    bu filtreye takilmiyorlar - "en buyuk parcayi tut" yontemi onlari
+    silmisti, bu silmiyor.
     """
     en, boy = im.size
     px = im.load()
-    etiket = [[0] * boy for _ in range(en)]
-    parcalar = []
+    gorulen = [[False] * boy for _ in range(en)]
 
     for bx in range(en):
         for by in range(boy):
-            if px[bx, by][3] < 24 or etiket[bx][by]:
+            if px[bx, by][3] < 24 or gorulen[bx][by]:
                 continue
-            no = len(parcalar) + 1
-            pikseller = []
-            kuyruk = deque([(bx, by)])
-            etiket[bx][by] = no
+            pikseller, kuyruk = [], deque([(bx, by)])
+            gorulen[bx][by] = True
             while kuyruk:
                 x, y = kuyruk.popleft()
                 pikseller.append((x, y))
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     nx, ny = x + dx, y + dy
                     if (0 <= nx < en and 0 <= ny < boy
-                            and not etiket[nx][ny] and px[nx, ny][3] >= 24):
-                        etiket[nx][ny] = no
+                            and not gorulen[nx][ny] and px[nx, ny][3] >= 24):
+                        gorulen[nx][ny] = True
                         kuyruk.append((nx, ny))
-            parcalar.append(pikseller)
 
-    if not parcalar:
-        return im
-    en_buyuk = max(range(len(parcalar)), key=lambda i: len(parcalar[i])) + 1
-    for x in range(en):
-        for y in range(boy):
-            if etiket[x][y] != en_buyuk:
-                px[x, y] = (255, 255, 255, 0)
+            ys = [y for _, y in pikseller]
+            xs = [x for x, _ in pikseller]
+            yukseklik = max(ys) - min(ys) + 1
+            genislik = max(xs) - min(xs) + 1
+            if yukseklik <= 3 and genislik >= 25:
+                for x, y in pikseller:
+                    px[x, y] = (255, 255, 255, 0)
     return im
-
-
-def kirp(im):
-    """Saydam kenarlari atar - madalya kutuya tam otursun."""
-    kutu = im.getbbox()
-    return im.crop(kutu) if kutu else im
 
 
 def main():
     kaynak = Image.open(KAYNAK).convert('RGB')
-    for sira, (y0, y1) in enumerate(SATIRLAR, start=1):
-        parca = kaynak.crop((SOL, y0, SAG, y1))
-        parca = kirp(zemini_sil(parca))
+    bloklar = dikey_bloklar(kaynak)
+
+    if len(bloklar) != ADET:
+        sys.exit(f'{ADET} madalya bekleniyordu, {len(bloklar)} blok bulundu: '
+                 f'{bloklar}\nGorselin duzeni beklenenden farkli.')
+
+    parcalar = []
+    for y0, y1 in bloklar:
+        # Bir piksel pay: tasmanin baslayabilmesi icin cevrede saydam
+        # bir cerceve kalmali.
+        parca = kaynak.crop((SOL, max(0, y0 - 1), SAG, min(kaynak.size[1], y1 + 2)))
+        parca = ince_seritleri_sil(zemini_sil(parca))
+        kutu = parca.getbbox()
+        parcalar.append(parca.crop(kutu) if kutu else parca)
+
+    # ORTAK TUVAL - hepsi ayni olcekte gorunsun diye.
+    #
+    # Kirpma her madalyayi kendi sinirina oturtuyor ve boyutlar
+    # farkli cikiyor: defneli olanlar 157 px genis, defnesizler 94.
+    # Bunlari ekranda `contain` ile ayni kutuya sigdirmak, GENIS
+    # olanlarin CEMBERINI kucultuyordu - defne yer kapladigi icin.
+    # Hepsi ayni tuvale ortalaninca oran korunuyor ve cemberler
+    # birbirine yakin boyutta kaliyor.
+    tuval_en = max(p.size[0] for p in parcalar)
+    tuval_boy = max(p.size[1] for p in parcalar)
+
+    for sira, parca in enumerate(parcalar, start=1):
+        tuval = Image.new('RGBA', (tuval_en, tuval_boy), (255, 255, 255, 0))
+        tuval.paste(
+            parca,
+            ((tuval_en - parca.size[0]) // 2, (tuval_boy - parca.size[1]) // 2),
+            parca,
+        )
         yol = os.path.join(HEDEF, f'madalya-{sira}.png')
-        parca.save(yol, 'PNG', optimize=True)
-        print(f'madalya-{sira}.png  {parca.size[0]}x{parca.size[1]}  '
+        tuval.save(yol, 'PNG', optimize=True)
+        print(f'madalya-{sira}.png  {tuval_en}x{tuval_boy}  '
+              f'(icerik {parca.size[0]}x{parca.size[1]})  '
               f'{os.path.getsize(yol) / 1024:.1f} KB')
 
 
