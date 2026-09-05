@@ -144,7 +144,7 @@ const EN_FAZLA_YER = 20
 const KART_IKONLARI: Record<string, number | null> = {
   anilar: require('../../../assets/images/profil-ikon-ani.png'),
   fotograflar: require('../../../assets/images/profil-ikon-fotograf.png'),
-  arkadaslar: null,
+  arkadaslar: require('../../../assets/images/profil-ikon-arkadas.png'),
 }
 
 const MADALYA_GORSELLERI = [
