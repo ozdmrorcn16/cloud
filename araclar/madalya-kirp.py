@@ -163,6 +163,70 @@ def yalniz_madalyayi_birak(im):
     return im
 
 
+# 3. MADALYANIN DEFNE DALLARI TURETILIYOR.
+#
+# Kullanicinin istegi (2026-09-05): "1 ve 2 deki bugday gibi bir sey
+# varya 3'e de onu yapabilir misin". Referansta defne yalnizca ilk iki
+# madalyada var; ucuncusu onlarla ayni ailedeymis gibi durmuyordu.
+#
+# Sifirdan cizmek yerine 2. madalyanin dallari aliniyor ve bronza
+# boyaniyor: ayni cizim dilinden geldigi icin form, isik ve doku
+# tutuyor. Hizalama bedava - butun madalyalar ayni tuvale ortalandigi
+# icin cemberlerin merkezi ayni noktada.
+#
+# 4 ve 5'e EKLENMIYOR: ilk uc gercek madalya (altin/gumus/bronz),
+# 4-5 ise "ilk bese girdi" rozeti. Defnenin orada bitmesi bu ayrimi
+# gorunur kiliyor.
+DEFNE_KAYNAGI = 2
+DEFNE_HEDEFI = 3
+# Cemberin disinda kalan seritler; ortadaki her sey madalyanin kendisi.
+DEFNE_SOL_SINIR = 20
+DEFNE_SAG_SINIR = 106
+# ALT SINIR: kurdele uclari ve altlarindaki golge de bu seritlere
+# tasiyor ve aktarilinca madalyanin yaninda bir leke olarak kaliyordu.
+# Defne dallari zaten cemberin hizasinda bitiyor.
+DEFNE_ALT_SINIR = 100
+# Gri defneyi bronza ceviren kanal carpanlari. Parlaklik korunuyor,
+# ton kaydiriliyor - kabartma ve golge boylece kaybolmuyor.
+# Ilk deneme (1.02, 0.74, 0.52) fazla acikti: gumus zaten parlak
+# oldugu icin sonuc bronzdan cok SARIYA kaciyordu.
+BRONZ_CARPAN = (0.86, 0.58, 0.38)
+
+
+def defneyi_tasi(kaynak_im, hedef_im):
+    """Kaynaktaki defne dallarini bronzlastirip hedefin ARKASINA koyar."""
+    en, boy = kaynak_im.size
+    kaynak_px = kaynak_im.load()
+
+    dallar = Image.new('RGBA', (en, boy), (255, 255, 255, 0))
+    dal_px = dallar.load()
+    kr, kg, kb = BRONZ_CARPAN
+
+    for x in range(en):
+        if DEFNE_SOL_SINIR <= x <= DEFNE_SAG_SINIR:
+            continue
+        for y in range(boy):
+            if y > DEFNE_ALT_SINIR:
+                continue
+            r, g, b, a = kaynak_px[x, y]
+            if a < 24:
+                continue
+            parlaklik = (r + g + b) / 3
+            dal_px[x, y] = (
+                min(255, int(parlaklik * kr)),
+                min(255, int(parlaklik * kg)),
+                min(255, int(parlaklik * kb)),
+                a,
+            )
+
+    # Dallar ARKADA: once onlar, sonra madalyanin kendisi. Boylece
+    # cembere giren uclar gorunmuyor.
+    birlesik = Image.new('RGBA', (en, boy), (255, 255, 255, 0))
+    birlesik.alpha_composite(dallar)
+    birlesik.alpha_composite(hedef_im)
+    return birlesik
+
+
 def main():
     kaynak = Image.open(KAYNAK).convert('RGB')
     bloklar = dikey_bloklar(kaynak)
@@ -191,18 +255,26 @@ def main():
     tuval_en = max(p.size[0] for p in parcalar)
     tuval_boy = max(p.size[1] for p in parcalar)
 
-    for sira, parca in enumerate(parcalar, start=1):
+    tuvaller = []
+    for parca in parcalar:
         tuval = Image.new('RGBA', (tuval_en, tuval_boy), (255, 255, 255, 0))
         tuval.paste(
             parca,
             ((tuval_en - parca.size[0]) // 2, (tuval_boy - parca.size[1]) // 2),
             parca,
         )
+        tuvaller.append(tuval)
+
+    tuvaller[DEFNE_HEDEFI - 1] = defneyi_tasi(
+        tuvaller[DEFNE_KAYNAGI - 1], tuvaller[DEFNE_HEDEFI - 1]
+    )
+
+    for sira, tuval in enumerate(tuvaller, start=1):
         yol = os.path.join(HEDEF, f'madalya-{sira}.png')
         tuval.save(yol, 'PNG', optimize=True)
         print(f'madalya-{sira}.png  {tuval_en}x{tuval_boy}  '
-              f'(icerik {parca.size[0]}x{parca.size[1]})  '
-              f'{os.path.getsize(yol) / 1024:.1f} KB')
+              f'{os.path.getsize(yol) / 1024:.1f} KB'
+              + ('  (defne turetildi)' if sira == DEFNE_HEDEFI else ''))
 
 
 if __name__ == '__main__':
