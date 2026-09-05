@@ -111,21 +111,28 @@ def zemini_sil(im):
     return im
 
 
-def ince_seritleri_sil(im):
-    """Listenin AYIRICI CIZGISINDEN gelen ince seritleri temizler.
+def yalniz_madalyayi_birak(im):
+    """Madalyanin disinda kalan her seyi siler.
 
-    Madalyanin dikey blogu, satirlar arasindaki ince ayirici cizgiyle
-    kesisebiliyor; cizgi zemine bagli olmadigi icin tasma onu silmiyor
-    ve saydam zeminde ince bir sirit olarak kaliyor.
+    Kirpma penceresine listenin AYIRICI CIZGISI ve komsu madalyanin
+    kurdele ucu girebiliyor; bunlar zemine bagli olmadigi icin tasma
+    onlari silmiyor ve saydam zeminde ince siritlar olarak kaliyor.
+    Kullanici bunu ekranda gordu ("madalyonun altinda ince cizik").
 
-    Olcut BOY: ayirici cizgi 1-3 piksel yuksekliginde ve genis. Defne
-    dallari da ince gorunuyor ama dikeyde cok daha uzunlar, o yuzden
-    bu filtreye takilmiyorlar - "en buyuk parcayi tut" yontemi onlari
-    silmisti, bu silmiyor.
+    Olcut "en buyuk bagli parcayi tut". Bu yontem daha once BIR KEZ
+    denenmis ve defne dallarini silmisti - ama o zaman kirpma araligi
+    yanlisti ve dallar madalyadan KOPUK kaliyordu. Sinirlar doluluk
+    profilinden bulunmaya baslayinca dallar govdeye bagli cikti
+    (1. ve 2. madalya tek parca), yani artik guvenli.
+
+    Onceki deneme "yukseklik <= 3 piksel" filtresiydi; 4. madalyadaki
+    31x4 pikselluk cizgiyi KACIRDI. Alan olcutu boyle bir esik
+    ayarina hic girmiyor.
     """
     en, boy = im.size
     px = im.load()
     gorulen = [[False] * boy for _ in range(en)]
+    parcalar = []
 
     for bx in range(en):
         for by in range(boy):
@@ -142,14 +149,17 @@ def ince_seritleri_sil(im):
                             and not gorulen[nx][ny] and px[nx, ny][3] >= 24):
                         gorulen[nx][ny] = True
                         kuyruk.append((nx, ny))
+            parcalar.append(pikseller)
 
-            ys = [y for _, y in pikseller]
-            xs = [x for x, _ in pikseller]
-            yukseklik = max(ys) - min(ys) + 1
-            genislik = max(xs) - min(xs) + 1
-            if yukseklik <= 3 and genislik >= 25:
-                for x, y in pikseller:
-                    px[x, y] = (255, 255, 255, 0)
+    if len(parcalar) <= 1:
+        return im
+
+    en_buyuk = max(parcalar, key=len)
+    for parca in parcalar:
+        if parca is en_buyuk:
+            continue
+        for x, y in parca:
+            px[x, y] = (255, 255, 255, 0)
     return im
 
 
@@ -166,7 +176,7 @@ def main():
         # Bir piksel pay: tasmanin baslayabilmesi icin cevrede saydam
         # bir cerceve kalmali.
         parca = kaynak.crop((SOL, max(0, y0 - 1), SAG, min(kaynak.size[1], y1 + 2)))
-        parca = ince_seritleri_sil(zemini_sil(parca))
+        parca = yalniz_madalyayi_birak(zemini_sil(parca))
         kutu = parca.getbbox()
         parcalar.append(parca.crop(kutu) if kutu else parca)
 
