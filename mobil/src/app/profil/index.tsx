@@ -131,6 +131,22 @@ function AyarlarIkonu() {
  */
 const EN_FAZLA_YER = 20
 
+/**
+ * Kart ikonlari - kullanicinin gonderdigi 3D gorseller.
+ *
+ * Kullanicinin talimati (2026-09-05): "Hic bozmadan degistirmeden
+ * oldugu gibi". Dosyalar KIRPILMADAN ve KUCULTULMEDEN duruyor;
+ * olcekleme ekranda `contain` ile yapiliyor.
+ *
+ * Henuz gelmemis olanlar `null`; o kartlarda gecici olarak emoji
+ * gorunuyor. Gorsel gelince buraya bir satir eklemek yetiyor.
+ */
+const KART_IKONLARI: Record<string, number | null> = {
+  anilar: require('../../../assets/images/profil-ikon-ani.png'),
+  fotograflar: null,
+  arkadaslar: null,
+}
+
 const MADALYA_GORSELLERI = [
   require('../../../assets/images/madalya-1.png'),
   require('../../../assets/images/madalya-2.png'),
@@ -533,7 +549,15 @@ export default function ProfilEkrani() {
                       accessibilityState={{ selected: secili }}
                       accessibilityLabel={`${k.sayi} ${k.etiket}`}
                     >
-                      <Text style={stiller.sayacIkonu}>{k.ikon}</Text>
+                      {KART_IKONLARI[k.anahtar] ? (
+                        <Image
+                          source={KART_IKONLARI[k.anahtar] as number}
+                          style={stiller.sayacGorseli}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <Text style={stiller.sayacIkonu}>{k.ikon}</Text>
+                      )}
                       <Text style={stiller.sayacSayisi}>{k.sayi}</Text>
                       <Text style={stiller.sayacEtiketi}>{k.etiket}</Text>
                     </Pressable>
@@ -1020,6 +1044,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // var, otekilerde secimi kartin kendisi tasiyor.
   sayacKartiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
   sayacIkonu: { fontSize: 26, marginBottom: bosluk.xs },
+  // Gorsel ikon emoji ile AYNI yuksekligi kapliyor ki kartlar
+  // birbiriyle hizali kalsin - biri gorsel biri emoji olabiliyor.
+  sayacGorseli: { width: 34, height: 30, marginBottom: bosluk.xs },
   sayacSayisi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.baslik,
