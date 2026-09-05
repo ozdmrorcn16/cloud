@@ -1,18 +1,7 @@
 import { useCallback, useState } from 'react'
 import { View, Text, Image, ScrollView, Pressable, Share, Modal, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
-// SVG'nin LinearGradient'i, profil bandindaki `expo-linear-gradient`
-// ile AYNI ADI tasiyor; takma ad vermezse ikisi cakisiyor.
-import Svg, {
-  Path,
-  Circle,
-  Ellipse,
-  G,
-  Rect,
-  Defs,
-  LinearGradient as SvgGecis,
-  Stop,
-} from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
 import * as ImagePicker from 'expo-image-picker'
 import { kendiProfilimiGetir, type KendiProfil } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
@@ -116,142 +105,47 @@ function AyarlarIkonu() {
  * canlilik demek; sira bilgisi ikisi de degil. Madalya renkleri
  * anlam tasiyor (birincilik/ikincilik), dekorasyon degil.
  */
-const MADALYALAR = [
-  // Altin - tek tacli olan bu.
-  {
-    ust: '#FFE9A8', alt: '#D9A21B', kenar: '#B07C0A',
-    yazi: '#6B4A00', dal: '#DFAE2E', tac: true,
-  },
-  // Gumus
-  {
-    ust: '#F6F8FA', alt: '#A9B3BB', kenar: '#8A959D',
-    yazi: '#465158', dal: '#B4BCC3', tac: false,
-  },
-  // Bronz
-  {
-    ust: '#F3CFA6', alt: '#C0763A', kenar: '#9A5A26',
-    yazi: '#5A3110', dal: '#C88B4E', tac: false,
-  },
-  // 4 - platin/krem. Madalya DEGIL ama dolu bir rozet: "ilk bese girdi".
-  {
-    ust: '#FDFAF6', alt: '#DCD2C6', kenar: '#BEB2A4',
-    yazi: '#6E6660', dal: '#D6CCC0', tac: false,
-  },
-  // 5 - koyu bronz
-  {
-    ust: '#E6CBB0', alt: '#A8794F', kenar: '#87613A',
-    yazi: '#523A22', dal: '#B08A63', tac: false,
-  },
-] as const
-
 /**
- * Defne dali - madalyanin bir yaninda, bes yaprak.
+ * Sira madalyalari GORSEL (kullanicinin istegi 2026-09-05: "Direk
+ * attigim gorseldeki gibi gorunmesini saglayamaz misin").
  *
- * `yon` -1 solda, +1 sagda: ayni path aynalanarak kullaniliyor, boylece
- * iki dal birbirinin tam simetrigi oluyor.
+ * Onceden SVG ile CIZILIYORLARDI ve referansa yakindi ama ayni degildi;
+ * artik referansin kendisi kullaniliyor. Varliklar
+ * `araclar/madalya-kirp.py` ile o gorselden cikarildi: bes satir
+ * kirpildi, zemin kenardan tasma yontemiyle saydama cevrildi.
+ *
+ * RAKAM GORSELIN ICINDE - ayri bir metin katmani YOK. Onceden rakam
+ * SVG'nin ustunde duran bir RN metniydi.
+ *
+ * `require` DIZI ICINDE ve SABIT: Metro paketleyici require yolunu
+ * derleme aninda cozuyor, `require(\`...${sira}.png\`)` calismiyor.
  */
-function DefneDali({ yon, renk: dalRengi }: { yon: -1 | 1; renk: string }) {
-  const x = 22 + yon * 13.5
-  return (
-    <G opacity={0.9}>
-      {/* Sap: madalyanin yanindan yukari kivrilan yay. */}
-      <Path
-        d={`M${x} 30 Q${22 + yon * 19} 21 ${22 + yon * 15.5} 9`}
-        stroke={dalRengi}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Yapraklar: sap boyunca bes tane, yukari dogru kuculuyor. */}
-      {[0, 1, 2, 3, 4].map((i) => {
-        const t = i / 4
-        // Sapin uzerindeki yaklasik konum (kuadratik egrinin ornegi).
-        const sx = (1 - t) * (1 - t) * x + 2 * (1 - t) * t * (22 + yon * 19) + t * t * (22 + yon * 15.5)
-        const sy = (1 - t) * (1 - t) * 30 + 2 * (1 - t) * t * 21 + t * t * 9
-        const boy = 4.4 - i * 0.45
-        return (
-          <Ellipse
-            key={i}
-            cx={sx + yon * 2.4}
-            cy={sy}
-            rx={boy}
-            ry={boy * 0.5}
-            fill={dalRengi}
-            transform={`rotate(${yon * (58 - i * 14)} ${sx + yon * 2.4} ${sy})`}
-          />
-        )
-      })}
-    </G>
-  )
-}
+const MADALYA_GORSELLERI = [
+  require('../../../assets/images/madalya-1.png'),
+  require('../../../assets/images/madalya-2.png'),
+  require('../../../assets/images/madalya-3.png'),
+  require('../../../assets/images/madalya-4.png'),
+  require('../../../assets/images/madalya-5.png'),
+] as const
 
 function SiraRozeti({ sira }: { sira: number }) {
   const stiller = useStiller(stilleriYap)
-  const madalya = MADALYALAR[sira - 1]
-  if (!madalya) {
+  const gorsel = MADALYA_GORSELLERI[sira - 1]
+  if (!gorsel) {
     return <Text style={stiller.yerSiraDuz}>{sira}</Text>
   }
 
-  // Gradyan kimligi sıraya bagli: ayni ekranda bes madalya birden
-  // ciziliyor ve hepsi ayni id'yi kullansaydi hepsi ILK madalyanin
-  // rengini alirdi (SVG'de id belge genelinde tekil olmali).
-  const gradyanId = `madalya-${sira}`
-
   return (
-    <View style={stiller.yerSiraAlan}>
-      <Svg width={44} height={48} viewBox="0 0 44 48">
-        <Defs>
-          <SvgGecis id={gradyanId} x1="0" y1="0" x2="0.4" y2="1">
-            <Stop offset="0" stopColor={madalya.ust} />
-            <Stop offset="1" stopColor={madalya.alt} />
-          </SvgGecis>
-        </Defs>
-
-        {/* Defne dallari madalyanin ARKASINDA duruyor. */}
-        <DefneDali yon={-1} renk={madalya.dal} />
-        <DefneDali yon={1} renk={madalya.dal} />
-
-        {/* Tac: yalnizca birincide. Uc sivri uc ve altinda bir bant. */}
-        {madalya.tac && (
-          <G>
-            <Path
-              d="M14 9.5 L15.8 4.5 L18.6 8 L22 3 L25.4 8 L28.2 4.5 L30 9.5z"
-              fill={madalya.alt}
-            />
-            <Rect x={14} y={9} width={16} height={2.4} rx={1.2} fill={madalya.kenar} />
-          </G>
-        )}
-
-        {/* Kurdele: madalyanin altindan sarkan iki uc. */}
-        <Path
-          d="M15 33 L11.5 46 L17.5 42.5 L22 46 L26.5 42.5 L32.5 46 L29 33z"
-          fill={madalya.alt}
-          opacity={0.75}
-        />
-
-        <Circle
-          cx={22}
-          cy={22}
-          r={13}
-          fill={`url(#${gradyanId})`}
-          stroke={madalya.kenar}
-          strokeWidth={1.5}
-        />
-        {/* Ic halka: kabartma hissi. */}
-        <Circle
-          cx={22}
-          cy={22}
-          r={9.6}
-          fill="none"
-          stroke={madalya.kenar}
-          strokeWidth={0.8}
-          opacity={0.5}
-        />
-        {/* Sol ustte parlama: metali duz bir daireden ayiran sey bu. */}
-        <Ellipse cx={17.5} cy={17} rx={4.6} ry={3} fill="#FFFFFF" opacity={0.34} />
-      </Svg>
-      <Text style={[stiller.yerSiraRozetYazi, { color: madalya.yazi }]}>{sira}</Text>
-    </View>
+    <Image
+      source={gorsel}
+      style={stiller.yerSiraAlan}
+      // Madalyalarin en/boy orani birbirinden biraz farkli (kirpma
+      // her birini kendi sinirina oturtuyor); `contain` hepsini ayni
+      // kutuda ortaliyor, hicbiri ezilmiyor.
+      resizeMode="contain"
+      accessibilityRole="image"
+      accessibilityLabel={`${sira}. sıra`}
+    />
   )
 }
 
@@ -1005,13 +899,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Ilk bes: kurdeleli madalya. Genislik duz rakamla AYNI (34) ki
   // altinci satirdan itibaren metinler sola kaymasin.
-  // Rozet 34x36 -> 44x48 (kullanicinin istegi 2026-09-05): defne
-  // dallari ve tac icin yer gerekiyordu.
-  yerSiraAlan: { width: 44, height: 48, alignItems: 'center', justifyContent: 'center' },
+  // Rozet 34x36 -> 44x46 (kullanicinin istegi 2026-09-05). Madalya
+  // gorselleri kareye yakin; `contain` ile bu kutuda ortalaniyorlar.
+  yerSiraAlan: { width: 44, height: 46 },
+  // ARTIK KULLANILMIYOR ama duruyor: 6 ve sonrasi icin duz rakam
+  // stiliyle ayni olcegi paylasiyor.
   yerSiraRozetYazi: {
     position: 'absolute',
-    // Dairenin merkezi 48'lik kutunun 22'sinde; metin optik olarak
-    // oraya oturtuluyor.
     top: 13,
     width: 44,
     textAlign: 'center',
