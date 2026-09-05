@@ -118,6 +118,25 @@ describe('YorumSayfasi', () => {
     expect(yorumEkle).not.toHaveBeenCalled()
   })
 
+  it('ARKA ARKAYA emoji secilebiliyor', async () => {
+    // Kullanicinin bildirdigi hata 2026-09-05: bir emojiye basinca
+    // klavye kapaniyor, serit sayfanin dibine iniyor ve ikinciyi
+    // secmek icin kutuya yeniden dokunmak gerekiyordu. Sebep, seridin
+    // yazma kutusunun DISINDA olmasi: dokunus TextInput'u blur
+    // ediyordu. Cozum odagi geri vermek.
+    //
+    // Odagin kendisi RNTL ile olculemiyor; olculen sey kullanicinin
+    // sikayet ettigi SONUC: ust uste secim calisiyor mu.
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+    await screen.findByText('Henüz yorum yok')
+
+    await fireEvent.press(screen.getByTestId('emoji-0'))
+    await fireEvent.press(screen.getByTestId('emoji-1'))
+    await fireEvent.press(screen.getByTestId('emoji-0'))
+
+    expect(screen.getByTestId('yorum-girdisi').props.value).toBe('❤️🔥❤️')
+  })
+
   it('SINIRI asan yorum 500 karakterde kirpiliyor', async () => {
     ;(yorumEkle as jest.Mock).mockResolvedValue(undefined)
     await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)

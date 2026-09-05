@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -77,6 +77,9 @@ export function YorumSayfasi({
 
   const [yorumlar, setYorumlar] = useState<Yorum[]>([])
   const [metin, setMetin] = useState('')
+  // Yazma kutusunun kendisi: emoji seridine basildiginda odak
+  // kaybolmasin diye geri veriliyor.
+  const girdiRef = useRef<TextInput>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState<string | null>(null)
@@ -296,7 +299,19 @@ export function YorumSayfasi({
                 <Pressable
                   key={emoji}
                   testID={`emoji-${sira}`}
-                  onPress={() => setMetin((m) => (m + emoji).slice(0, YORUM_EN_FAZLA))}
+                  onPress={() => {
+                    setMetin((m) => (m + emoji).slice(0, YORUM_EN_FAZLA))
+                    // ODAK GERI VERILIYOR (kullanicinin bildirdigi hata
+                    // 2026-09-05): emoji seridi yazma kutusunun DISINDA
+                    // oldugu icin ona dokunmak TextInput'u blur ediyor,
+                    // klavye kapaniyor ve sayfa asagi iniyor. Kullanici
+                    // arka arkaya emoji secemiyordu.
+                    //
+                    // `keyboardShouldPersistTaps` bu durumu COZMUYOR:
+                    // o ayar listedeki dokunuslar icin ve serit listenin
+                    // disinda.
+                    girdiRef.current?.focus()
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel={emoji}
                   hitSlop={6}
@@ -308,6 +323,7 @@ export function YorumSayfasi({
 
             <View style={stiller.yazmaAlani}>
               <TextInput
+                ref={girdiRef}
                 testID="yorum-girdisi"
                 style={stiller.girdi}
                 value={metin}
