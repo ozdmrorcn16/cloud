@@ -291,7 +291,14 @@ describe('AnaSayfa', () => {
     expect(screen.getByTestId('duzenle-not').props.value).toBe('guzel bir aksam')
   })
 
-  it('MEKAN VE ZAMANIN degismedigini ekranda soyluyor', async () => {
+  it('"Mekan ve zaman değişmez" SATIRI YOK ama ikisi baslikta duruyor', async () => {
+    // Kullanicinin istegi 2026-09-05: o satir kaldirildi. Bilgi
+    // kaybolmadi - pencerenin basligi mekan adini ve zamani yaziyor,
+    // ve ikisi de duzenlenebilir bir alan olarak gorunmuyor.
+    //
+    // KURALIN KENDISI DEGISMEDI: sunucudaki
+    // `check_in_notunu_guncelle` yalnizca notu yaziyor. Onu
+    // "notu degistirip kaydedince sunucuya yaziyor" testi olcuyor.
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
 
     await render(<AnaSayfa />)
@@ -300,7 +307,9 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-duzenle'))
 
-    expect(screen.getByText('Mekan ve zaman değişmez')).toBeTruthy()
+    expect(screen.queryByText('Mekan ve zaman değişmez')).toBeNull()
+    // Mekan adi pencerenin basliginda: neyin degismedigi yine belli.
+    expect(screen.getAllByText(/Sahil Kafe/).length).toBeGreaterThan(0)
   })
 
   it('notu degistirip kaydedince sunucuya yaziyor ve kartta gorunuyor', async () => {

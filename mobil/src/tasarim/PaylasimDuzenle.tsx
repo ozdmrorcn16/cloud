@@ -31,31 +31,6 @@ import { useRenk, useStiller } from './tema-baglami'
  * pencere ACIK KALIYOR ve hata gorunuyor, yani kullanici kaybettigi
  * metni yeniden yazmak zorunda kalmiyor.
  */
-function KilitIkonu() {
-  const renk = useRenk()
-  return (
-    <Svg width={15} height={15} viewBox="0 0 24 24">
-      <Path
-        d="M7 10V7.5a5 5 0 0 1 10 0V10"
-        stroke={renk.metinSoluk}
-        strokeWidth={1.9}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Rect
-        x={5}
-        y={10}
-        width={14}
-        height={10}
-        rx={2.5}
-        stroke={renk.metinSoluk}
-        strokeWidth={1.9}
-        fill="none"
-      />
-    </Svg>
-  )
-}
-
 export function PaylasimDuzenle({
   acikMi,
   baslikAltMetni,
@@ -169,10 +144,14 @@ export function PaylasimDuzenle({
             </>
           )}
 
-          <View style={stiller.kilitli}>
-            <KilitIkonu />
-            <Text style={stiller.kilitliYazi}>{t('anaSayfa.kilitliAlanlar')}</Text>
-          </View>
+          {/* "Mekan ve zaman degismez" satiri KALDIRILDI (kullanicinin
+              istegi 2026-09-05). Bilgi kaybolmadi: pencerenin basligi
+              zaten mekan adini ve zamani yaziyor, ve ikisi de
+              duzenlenebilir bir alan olarak GORUNMUYOR - yani neyin
+              degismedigi zaten belli.
+
+              KURALIN KENDISI DEGISMEDI: `check_in_notunu_guncelle`
+              yalnizca not yaziyor, mekan ve zamani sunucu koruyor. */}
 
           {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -273,18 +252,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   cipYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuKoyu },
   cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuKoyu },
-  kilitli: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.s,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
-    paddingHorizontal: bosluk.m,
-    paddingVertical: bosluk.s,
-  },
-  kilitliYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinSoluk },
   hata: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,

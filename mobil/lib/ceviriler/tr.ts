@@ -264,7 +264,6 @@ export default {
     etiketlenenler: 'Etiketlenenler',
     // Mekan ve zamanin neden kapali oldugu ekranda YAZIYOR; kullanici
     // eksik bir ozellik sanmasin.
-    kilitliAlanlar: 'Mekan ve zaman değişmez',
     etiketiKaldirEtiketi: '{{ad}} etiketini kaldır',
     duzenleAriza: 'Paylaşım güncellenemedi.',
   },
