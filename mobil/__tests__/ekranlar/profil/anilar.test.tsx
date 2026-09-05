@@ -112,6 +112,9 @@ describe('AnilarEkrani', () => {
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-duzenle'))
 
-    expect(screen.getByText('Paylaşımı düzenle')).toBeTruthy()
+    // AYRI PENCERE YOK (kullanicinin istegi 2026-09-05): duzenleme
+    // kartin kendi icinde aciliyor.
+    expect(screen.queryByText('Paylaşımı düzenle')).toBeNull()
+    expect(screen.getByTestId('yerinde-duzenle')).toBeTruthy()
   })
 })

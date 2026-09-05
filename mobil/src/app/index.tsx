@@ -3,7 +3,7 @@ import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'r
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, type AkisOgesi } from '../../lib/akis'
-import { etiketiKaldir } from '../../lib/etiket'
+import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
 import {
@@ -216,6 +216,13 @@ export default function AnaSayfa() {
     )
   }
 
+  async function etiketEkle(id: string, kullaniciIdler: string[]) {
+    await etiketleriKaydet(id, kullaniciIdler)
+    // Yeni etiket ONAY BEKLIYOR (karar 2026-08-29), yani karta hemen
+    // eklenmiyor - onaylanana kadar kimseye gorunmuyor. Ekran yalnizca
+    // sunucuya yaziyor; liste bir sonraki yenilemede dogru geliyor.
+  }
+
   async function etiketiSil(id: string, kullaniciId: string) {
     await etiketiKaldir(id, kullaniciId)
     setOgeler((mevcut) =>
@@ -303,6 +310,7 @@ export default function AnaSayfa() {
             onSil={sil}
             onNotKaydet={notuKaydet}
             onEtiketKaldir={etiketiSil}
+            onEtiketEkle={etiketEkle}
           />
         )}
         ListEmptyComponent={

@@ -258,6 +258,7 @@ export default {
     secenekler: 'Paylaşım seçenekleri',
     fotografiBuyut: 'Fotoğrafı büyüt',
     duzenle: 'Düzenle',
+    arkadasEtiketle: 'Arkadaş etiketle',
     duzenleBaslik: 'Paylaşımı düzenle',
     notEtiketi: 'Not',
     notYerTutucu: 'Bir not ekle',

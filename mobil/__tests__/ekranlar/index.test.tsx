@@ -4,7 +4,8 @@ import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
-import { etiketiKaldir } from '../../lib/etiket'
+import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
+import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
 
 jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
@@ -18,7 +19,13 @@ jest.mock('../../lib/checkin', () => ({
   checkIniSil: jest.fn(),
   checkInNotunuGuncelle: jest.fn(),
 }))
-jest.mock('../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
+jest.mock('../../lib/etiket', () => ({
+  etiketiKaldir: jest.fn(),
+  etiketleriKaydet: jest.fn(),
+}))
+// Yerinde duzenleme acilinca kart arkadas listesini cekiyor; gercek
+// modul supabase'e gider.
+jest.mock('../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 // requireActual: sabitler (YORUM_EN_FAZLA) gercek kalsin.
 jest.mock('../../lib/etkilesim', () => ({
   ...jest.requireActual('../../lib/etkilesim'),
@@ -67,6 +74,8 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
+  ;(etiketleriKaydet as jest.Mock).mockResolvedValue(undefined)
   ;(akisiGetir as jest.Mock).mockResolvedValue([])
   ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
   ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({
@@ -286,7 +295,10 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-duzenle'))
 
-    expect(screen.getByText('Paylaşımı düzenle')).toBeTruthy()
+    // AYRI PENCERE YOK (kullanicinin istegi 2026-09-05): duzenleme
+    // kartin kendi icinde aciliyor.
+    expect(screen.queryByText('Paylaşımı düzenle')).toBeNull()
+    expect(screen.getByTestId('yerinde-duzenle')).toBeTruthy()
     // Alan BOS acilmiyor: mevcut not iceride.
     expect(screen.getByTestId('duzenle-not').props.value).toBe('guzel bir aksam')
   })
@@ -393,7 +405,11 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByText('Kaydet'))
 
     expect(await screen.findByText('Bu paylaşım bulunamadı.')).toBeTruthy()
-    expect(screen.getByText('guzel bir aksam')).toBeTruthy()
+    // DUZENLEME ACIK KALIYOR: yazilan metin kaybolmasin diye. Not
+    // artik kartta duz metin degil, taslak olarak girdinin icinde -
+    // yerinde duzenlemede ikisi ayni anda gorunmuyor.
+    expect(screen.getByTestId('yerinde-duzenle')).toBeTruthy()
+    expect(screen.getByTestId('duzenle-not').props.value).toBe('yeni not')
   })
 
   it('not SINIRI asilmiyor: uzun metin 500 karakterde kirpiliyor', async () => {

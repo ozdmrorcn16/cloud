@@ -123,9 +123,13 @@ try {
     const bulundu = await sayfa.evaluate((aranan) => {
       // React Native Web dugmeyi <div> olarak ciziyor; 'button'
       // secicisi ise yaramiyor, metinden bulmak gerekiyor.
-      const hedef = [...document.querySelectorAll('div,span')].find(
-        (e) => e.textContent?.trim() === aranan && e.children.length === 0
-      )
+      // Once METINDEN, bulunamazsa ERISILEBILIRLIK ETIKETINDEN ara.
+      // Ikonlu dugmelerin (uc nokta menusu gibi) metni yok; RN Web
+      // onlari aria-label olarak ciziyor.
+      const hedef =
+        [...document.querySelectorAll('div,span')].find(
+          (e) => e.textContent?.trim() === aranan && e.children.length === 0
+        ) ?? document.querySelector(`[aria-label="${aranan}"]`)
       if (!hedef) return false
       const basilabilir = hedef.closest('[role="button"],[role="tab"]') ?? hedef
       basilabilir.click()
