@@ -382,7 +382,10 @@ export default {
     paylas: 'Paylaş',
     paylasilamadi: 'Paylaşım bu cihazda açılamadı.',
     sekmeAnilar: 'Anılar',
-    sekmeYerler: 'Yerler',
+    // Sekme adi "Yerler" -> "En sık" (kullanicinin karari 2026-09-05).
+    // Liste zaten en cok gidilenden siralaniyor; yeni ad ne oldugunu
+    // dogrudan soyluyor.
+    sekmeYerler: 'En sık',
     kezSayisi: '{{sayi}} kez',
     bosYerBaslik: 'Henüz bir yere gitmedin',
     bosYerAciklama: 'Check-in yaptıkça en çok gittiğin yerler burada sıralanır.',

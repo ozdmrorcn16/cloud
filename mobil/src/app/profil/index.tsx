@@ -120,6 +120,16 @@ function AyarlarIkonu() {
  * `require` DIZI ICINDE ve SABIT: Metro paketleyici require yolunu
  * derleme aninda cozuyor, `require(\`...${sira}.png\`)` calismiyor.
  */
+/**
+ * "En sik" listesinde gosterilecek en fazla mekan (kullanicinin karari
+ * 2026-09-05: "En fazla 20'ye kadar sinirli olucak").
+ *
+ * Liste zaten en cok gidilenden az gidilene sirali; sinir kuyrugu
+ * kesiyor. Bir kez gidilmis onlarca mekan listeyi uzatmaktan baska
+ * bir sey yapmiyordu.
+ */
+const EN_FAZLA_YER = 20
+
 const MADALYA_GORSELLERI = [
   require('../../../assets/images/madalya-1.png'),
   require('../../../assets/images/madalya-2.png'),
@@ -255,6 +265,16 @@ export default function ProfilEkrani() {
       .map(([mekanId, v]) => ({ mekanId, ...v }))
       .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
   })()
+
+  /**
+   * "En sik" sekmesinde gosterilen liste - SINIRLI.
+   *
+   * Sinir yalnizca BURADA (kullanicinin netlestirmesi 2026-09-05:
+   * "20 siniri sadece en sik icin gecerli olucak"). Gruplamanin
+   * kendisi sinirsiz kaliyor, cunku bandaki "Yer" sayaci ondan
+   * besleniyor: 25 farkli yere gitmis biri "20 Yer" gormemeli.
+   */
+  const enSikListe = yerler.slice(0, EN_FAZLA_YER)
 
   async function profiliPaylas() {
     if (!profil) return
@@ -523,13 +543,13 @@ export default function ProfilEkrani() {
             )}
 
             {sekme === 'yerler' ? (
-              yerler.length === 0 ? (
+              enSikListe.length === 0 ? (
                 <View style={stiller.bosAlan}>
                   <Text style={stiller.bosBaslik}>{t('profil.bosYerBaslik')}</Text>
                   <Text style={stiller.bosAciklama}>{t('profil.bosYerAciklama')}</Text>
                 </View>
               ) : (
-                yerler.map((yer, i) => (
+                enSikListe.map((yer, i) => (
                   <Pressable
                     key={yer.mekanId}
                     style={stiller.yerSatiri}

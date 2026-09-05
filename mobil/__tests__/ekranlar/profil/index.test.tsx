@@ -117,7 +117,7 @@ describe('ProfilEkrani', () => {
     ])
 
     await render(<ProfilEkrani />)
-    await fireEvent.press(await screen.findByText('Yerler'))
+    await fireEvent.press(await screen.findByText('En sık'))
 
     expect(await screen.findByText('2 kez')).toBeTruthy()
     expect(screen.getByText('1 kez')).toBeTruthy()
@@ -140,12 +140,38 @@ describe('ProfilEkrani', () => {
     )
 
     await render(<ProfilEkrani />)
-    await fireEvent.press(await screen.findByText('Yerler'))
+    await fireEvent.press(await screen.findByText('En sık'))
 
     const stil = StyleSheet.flatten((await screen.findByText('6')).props.style)
     expect(stil.fontSize).toBe(olcek.altBaslik)
     expect(stil.color).toBe(acikRenk.metinIkincil)
     expect(stil.color).not.toBe(acikRenk.metinSoluk)
+  })
+
+  it('EN COK 20 yer listeleniyor', async () => {
+    // Kullanicinin karari 2026-09-05: "En fazla 20'ye kadar sinirli
+    // olucak". Liste en cok gidilenden az gidilene sirali oldugu icin
+    // sinir kuyrugu kesiyor; bir kez gidilmis onlarca mekan listeyi
+    // uzatmaktan baska bir sey yapmiyordu.
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(
+      Array.from({ length: 25 }, (_, i) =>
+        ani({ id: `ani-${i}`, mekanId: `mekan-${i}`, mekanAdi: `Mekan ${i + 1}` })
+      )
+    )
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('En sık'))
+
+    // Sira rakamiyla saymak yaniltici: satir sayisi kez rozetinden
+    // olculuyor.
+    await screen.findByText('En sık')
+    expect(screen.getAllByText('1 kez')).toHaveLength(20)
+
+    // SINIR YALNIZCA LISTEDE: banddaki "Yer" sayaci gercek sayiyi
+    // gostermeye devam ediyor (kullanicinin netlestirmesi 2026-09-05).
+    // 25 hem Ani hem Yer sayacinda gorunuyor; sinir sayaca da
+    // uygulansaydi Yer 20 olur ve bu iki degil TEK olurdu.
+    expect(screen.getAllByText('25')).toHaveLength(2)
   })
 
   // 'Profili duzenle dugmesi duzenleme ekranina goturur' testi
