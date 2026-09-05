@@ -163,110 +163,47 @@ def yalniz_madalyayi_birak(im):
     return im
 
 
-# 3. MADALYANIN DEFNE DALLARI TURETILIYOR.
+# 3. MADALYA AYRI BIR KAYNAKTAN GELIYOR.
 #
 # Kullanicinin istegi (2026-09-05): "1 ve 2 deki bugday gibi bir sey
-# varya 3'e de onu yapabilir misin". Referansta defne yalnizca ilk iki
-# madalyada var; ucuncusu onlarla ayni ailedeymis gibi durmuyordu.
+# varya 3'e de onu yapabilir misin". Ilk denemede 2. madalyanin
+# dallari alinip bronza boyanmisti; kullanici sonucu begenmedi
+# ("3 olmamis, defne kopuk duruyor") ve defneli 3. madalyanin kendi
+# gorselini gonderdi. Turetme tamamen birakildi.
 #
-# Sifirdan cizmek yerine 2. madalyanin dallari aliniyor ve bronza
-# boyaniyor: ayni cizim dilinden geldigi icin form, isik ve doku
-# tutuyor. Hizalama bedava - butun madalyalar ayni tuvale ortalandigi
-# icin cemberlerin merkezi ayni noktada.
-#
-# 4 ve 5'e EKLENMIYOR: ilk uc gercek madalya (altin/gumus/bronz),
-# 4-5 ise "ilk bese girdi" rozeti. Defnenin orada bitmesi bu ayrimi
-# gorunur kiliyor.
-DEFNE_KAYNAGI = 2
-DEFNE_HEDEFI = 3
-# Alinacak yan seritler.
-#
-# SINIR CEMBERIN ICINE TASIYOR (20/106 degil 30/96): dalin CEMBERE
-# BAGLANDIGI yer tam orada. Dar sinirla o bagi kesince dal havada
-# kaliyor ve kullanicinin dedigi gibi "kopuk duruyor". Fazlalik
-# gorunmuyor cunku madalya dallarin UZERINE ciziliyor.
-DEFNE_SOL_SINIR = 30
-DEFNE_SAG_SINIR = 96
-# Gri defneyi bronza ceviren kanal carpanlari. Parlaklik korunuyor,
-# ton kaydiriliyor - kabartma ve golge boylece kaybolmuyor.
-# Ilk deneme (1.02, 0.74, 0.52) fazla acikti: gumus zaten parlak
-# oldugu icin sonuc bronzdan cok SARIYA kaciyordu.
-BRONZ_CARPAN = (0.86, 0.58, 0.38)
+# Kaynak depoda: tasarim/madalya-3-kaynak.jpg
+UC_KAYNAK = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', 'tasarim', 'madalya-3-kaynak.jpg')
+)
+# Kaynakta ustte 2. madalyanin kurdelesi, altta 4'un ustu de var;
+# ucuncusu bu dikey aralikta (doluluk profilinden olculdu).
+UC_ARALIK = (45, 178)
 
 
-def en_buyuk_ikisi(im):
-    """Iki dali tutar, kucuk artiklari atar."""
-    en, boy = im.size
-    px = im.load()
-    gorulen = [[False] * boy for _ in range(en)]
-    parcalar = []
+def ucuncuyu_oku(hedef_genislik):
+    """3. madalyayi kendi kaynagindan okur ve olcegi esitler.
 
-    for bx in range(en):
-        for by in range(boy):
-            if px[bx, by][3] < 24 or gorulen[bx][by]:
-                continue
-            pikseller, kuyruk = [], deque([(bx, by)])
-            gorulen[bx][by] = True
-            while kuyruk:
-                x, y = kuyruk.popleft()
-                pikseller.append((x, y))
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    nx, ny = x + dx, y + dy
-                    if (0 <= nx < en and 0 <= ny < boy
-                            and not gorulen[nx][ny] and px[nx, ny][3] >= 24):
-                        gorulen[nx][ny] = True
-                        kuyruk.append((nx, ny))
-            parcalar.append(pikseller)
+    `hedef_genislik` 2. madalyanin defne dahil genisligi; ikisi ayni
+    gorselden gelmedigi icin olcek elle esitleniyor, yoksa 3. madalya
+    listede otekilerden buyuk duruyor.
+    """
+    if not os.path.exists(UC_KAYNAK):
+        return None
 
-    parcalar.sort(key=len, reverse=True)
-    for parca in parcalar[2:]:
-        for x, y in parca:
-            px[x, y] = (255, 255, 255, 0)
-    return im
+    ham = Image.open(UC_KAYNAK).convert('RGB')
+    y0, y1 = UC_ARALIK
+    parca = zemini_sil(ham.crop((0, y0, ham.size[0], y1)))
+    # Ayirici cizgi ve komsu madalyalarin uclari kucuk parcalar olarak
+    # kaliyor; madalya en buyuk parca.
+    parca = yalniz_madalyayi_birak(parca)
+    kutu = parca.getbbox()
+    if kutu:
+        parca = parca.crop(kutu)
 
-
-def defneyi_tasi(kaynak_im, hedef_im):
-    """Kaynaktaki defne dallarini bronzlastirip hedefin ARKASINA koyar."""
-    en, boy = kaynak_im.size
-    kaynak_px = kaynak_im.load()
-
-    dallar = Image.new('RGBA', (en, boy), (255, 255, 255, 0))
-    dal_px = dallar.load()
-    kr, kg, kb = BRONZ_CARPAN
-
-    for x in range(en):
-        if DEFNE_SOL_SINIR <= x <= DEFNE_SAG_SINIR:
-            continue
-        for y in range(boy):
-            r, g, b, a = kaynak_px[x, y]
-            if a < 24:
-                continue
-            parlaklik = (r + g + b) / 3
-            dal_px[x, y] = (
-                min(255, int(parlaklik * kr)),
-                min(255, int(parlaklik * kg)),
-                min(255, int(parlaklik * kb)),
-                a,
-            )
-
-    # ARTIK TEMIZLIGI DAL KATMANINDA, birlesimde DEGIL.
-    #
-    # Once birlesimde deneniyordu ve dalin ALT UCUNU siliyordu: kaynak
-    # madalyada dal govdeye bagliydi ama serit kesilince o bag koptu,
-    # yani alt uc ayri bir parca haline geldi ve "en buyuk parcayi tut"
-    # onu attı. Kullanicinin gordugu "defne kopuk duruyor" tam buydu.
-    #
-    # Burada olcut farkli: seritte SOL DAL ve SAG DAL iki buyuk parca;
-    # kurdele ucu ve golge artiklari cok daha kucuk. En buyuk ikisi
-    # tutuluyor.
-    dallar = en_buyuk_ikisi(dallar)
-
-    # Dallar ARKADA: once onlar, sonra madalyanin kendisi. Boylece
-    # cembere giren uclar gorunmuyor.
-    birlesik = Image.new('RGBA', (en, boy), (255, 255, 255, 0))
-    birlesik.alpha_composite(dallar)
-    birlesik.alpha_composite(hedef_im)
-    return birlesik
+    olcek = hedef_genislik / parca.size[0]
+    return parca.resize(
+        (hedef_genislik, max(1, round(parca.size[1] * olcek))), Image.LANCZOS
+    )
 
 
 def main():
@@ -307,16 +244,23 @@ def main():
         )
         tuvaller.append(tuval)
 
-    tuvaller[DEFNE_HEDEFI - 1] = defneyi_tasi(
-        tuvaller[DEFNE_KAYNAGI - 1], tuvaller[DEFNE_HEDEFI - 1]
-    )
+    # 3. madalya kendi kaynagindan; olcegi 2. madalyaya esitleniyor.
+    ucuncu = ucuncuyu_oku(parcalar[1].size[0])
+    if ucuncu is not None:
+        tuval = Image.new('RGBA', (tuval_en, tuval_boy), (255, 255, 255, 0))
+        tuval.paste(
+            ucuncu,
+            ((tuval_en - ucuncu.size[0]) // 2, (tuval_boy - ucuncu.size[1]) // 2),
+            ucuncu,
+        )
+        tuvaller[2] = tuval
 
     for sira, tuval in enumerate(tuvaller, start=1):
         yol = os.path.join(HEDEF, f'madalya-{sira}.png')
         tuval.save(yol, 'PNG', optimize=True)
         print(f'madalya-{sira}.png  {tuval_en}x{tuval_boy}  '
               f'{os.path.getsize(yol) / 1024:.1f} KB'
-              + ('  (defne turetildi)' if sira == DEFNE_HEDEFI else ''))
+              + ('  (ayri kaynaktan)' if sira == 3 else ''))
 
 
 if __name__ == '__main__':
