@@ -101,9 +101,11 @@ describe('ProfilEkrani', () => {
 
     expect(await screen.findByText('2')).toBeTruthy()
     expect(screen.getByText('Anı')).toBeTruthy()
-    // Uc sayi var: iki ani AYNI mekanda oldugu icin Yer 1, arkadas da 1.
-    expect(screen.getByText('Yer')).toBeTruthy()
-    expect(screen.getAllByText('1')).toHaveLength(2)
+    // "Yer" sayaci KALKTI (kullanicinin istegi 2026-09-05), yerine
+    // fotograf sayisi geldi. Yer bilgisi kaybolmadi - anilar
+    // bolumunun "En sık" alt sekmesinde duruyor.
+    expect(screen.queryByText('Yer')).toBeNull()
+    expect(screen.getByText('Fotoğraf')).toBeTruthy()
     expect(screen.getByText('Arkadaşlarım')).toBeTruthy()
   })
 
@@ -167,11 +169,8 @@ describe('ProfilEkrani', () => {
     await screen.findByText('En sık')
     expect(screen.getAllByText('1 kez')).toHaveLength(20)
 
-    // SINIR YALNIZCA LISTEDE: banddaki "Yer" sayaci gercek sayiyi
-    // gostermeye devam ediyor (kullanicinin netlestirmesi 2026-09-05).
-    // 25 hem Ani hem Yer sayacinda gorunuyor; sinir sayaca da
-    // uygulansaydi Yer 20 olur ve bu iki degil TEK olurdu.
-    expect(screen.getAllByText('25')).toHaveLength(2)
+    // SINIR YALNIZCA LISTEDE: Ani sayaci 25 gostermeye devam ediyor.
+    expect(screen.getByText('25')).toBeTruthy()
   })
 
   // 'Profili duzenle dugmesi duzenleme ekranina goturur' testi
@@ -331,8 +330,10 @@ describe('ProfilEkrani', () => {
     const ad = await screen.findByText('Orcun Ozdemir')
 
     expect(duzYazi(ad).color).toBe('#17130F')
-    // Sayilar da ayni: beyaz kalsaydi bandin altinda kaybolurlardi.
-    expect(duzYazi(screen.getAllByText('0')[0]).color).toBe('#17130F')
+    // SAYILAR ARTIK KARTLARDA ve TURUNCU (kullanicinin istegi
+    // 2026-09-05, gorsel referansla). Beyaz olmadiklari surece
+    // bandin altinda kaybolmuyorlar; asil kural buydu.
+    expect(duzYazi(screen.getAllByText('0')[0]).color).toBe('#FE7813')
   })
 
   it('bandin DISINDA hicbir sey degismedi: mekan adi hala marka turuncusu', async () => {

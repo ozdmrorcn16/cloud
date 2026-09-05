@@ -386,6 +386,14 @@ export default {
     // Liste zaten en cok gidilenden siralaniyor; yeni ad ne oldugunu
     // dogrudan soyluyor.
     sekmeYerler: 'En sık',
+    sekmeFotograflar: 'Fotoğraflar',
+    // "Yer" sayaci kalkti, yerine bu geldi (kullanicinin istegi
+    // 2026-09-05). Yer bilgisi kaybolmadi - "En sık" sekmesi duruyor.
+    fotografSayisi: 'Fotoğraf',
+    bosFotografBaslik: 'Henüz fotoğrafın yok',
+    bosFotografAciklama: 'Check-in yaparken fotoğraf eklersen hepsi burada toplanır.',
+    bosArkadasBaslik: 'Henüz arkadaşın yok',
+    bosArkadasAciklama: 'Aynı yerde tanıştığın kişilere arkadaşlık isteği gönderebilirsin.',
     kezSayisi: '{{sayi}} kez',
     bosYerBaslik: 'Henüz bir yere gitmedin',
     bosYerAciklama: 'Check-in yaptıkça en çok gittiğin yerler burada sıralanır.',
