@@ -608,8 +608,9 @@ export default function ProfilEkrani() {
             {sekme === 'arkadaslar' ? (
               baglar.length === 0 ? (
                 <View style={stiller.bosAlan}>
+                  {/* Aciklama satiri KALDIRILDI (kullanicinin istegi
+                      2026-09-05). Baslik zaten durumu soyluyor. */}
                   <Text style={stiller.bosBaslik}>{t('profil.bosArkadasBaslik')}</Text>
-                  <Text style={stiller.bosAciklama}>{t('profil.bosArkadasAciklama')}</Text>
                 </View>
               ) : (
                 baglar.map((kisi) => (
@@ -701,7 +702,13 @@ export default function ProfilEkrani() {
               /* ORTAK KART (kullanicinin karari 2026-08-30): profil
                  akisi da ana sayfayla ve Anilarim'la AYNI karti
                  gosteriyor. Onceki zaman tuneli deseni kaldirildi. */
-              <View>
+              /* Kartlar sayfa payinin DISINDA (kullanicinin istegi
+                 2026-09-05: "anilari sagdan soldan ekrana sigdir").
+                 Kartin kendi ic payi var (16); sayfa payinin (24)
+                 icinde kalinca toplam 40 oluyor ve mekan adi bosuna
+                 iki satira kiriliyordu. Ana sayfadaki kartlar zaten
+                 tam genislikte - artik profil de onlarla ayni. */
+              <View style={stiller.aniListesi}>
                 {anilar.slice(0, ONIZLEME_ADEDI).map((ani) => (
                   <CheckInKarti
                     key={ani.id}
@@ -1044,12 +1051,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // var, otekilerde secimi kartin kendisi tasiyor.
   sayacKartiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
   sayacIkonu: { fontSize: 26, marginBottom: bosluk.xs },
-  // Gorsel ikon emoji ile AYNI yuksekligi kapliyor ki kartlar
-  // birbiriyle hizali kalsin - biri gorsel biri emoji olabiliyor.
-  sayacGorseli: { width: 34, height: 30, marginBottom: bosluk.xs },
+  // 34x30 -> 38x34 (kullanicinin istegi 2026-09-05: "ikonlari cok az
+  // buyult"). Kaynak 240 piksel oldugu icin buyutme cozunurlukten
+  // yemiyor; retina 3x'te hala iki kat pay var.
+  sayacGorseli: { width: 38, height: 34, marginBottom: bosluk.xs },
   sayacSayisi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
+    // 26 (olcek.baslik) -> 23 (kullanicinin istegi 2026-09-05:
+    // "rakamlari cok az kucult"). Olcek jetonlarinda 26 ile 19
+    // arasinda bir deger yok; ikisinden biri "cok az" olmuyordu, o
+    // yuzden burada ara bir deger yaziliyor. Kart ici bir gosterge,
+    // metin olcegine bagli degil.
+    fontSize: 23,
     color: renk.turuncu,
     letterSpacing: -0.4,
   },
@@ -1164,6 +1177,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
 
   izgaraBuyukFoto: { width: '100%', height: '80%' },
+
+  aniListesi: { marginHorizontal: -bosluk.xl },
 
   yerOrta: { flex: 1 },
   yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },

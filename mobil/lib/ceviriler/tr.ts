@@ -393,7 +393,6 @@ export default {
     bosFotografBaslik: 'Henüz fotoğrafın yok',
     bosFotografAciklama: 'Check-in yaparken fotoğraf eklersen hepsi burada toplanır.',
     bosArkadasBaslik: 'Henüz arkadaşın yok',
-    bosArkadasAciklama: 'Aynı yerde tanıştığın kişilere arkadaşlık isteği gönderebilirsin.',
     kezSayisi: '{{sayi}} kez',
     bosYerBaslik: 'Henüz bir yere gitmedin',
     bosYerAciklama: 'Check-in yaptıkça en çok gittiğin yerler burada sıralanır.',
