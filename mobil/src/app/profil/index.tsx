@@ -914,12 +914,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
   },
+  // 6 VE SONRASI: madalya yok, duz rakam. Kullanicinin bildirdigi
+  // hata 2026-09-05: "6-7 diye devam eden sayilar cok silik". Iki
+  // sebebi vardi - punto 13'tu (madalyalarin yanibasinda kayboluyordu)
+  // ve renk `metinSoluk`tu, yani ekranin en acik metin tonu.
+  // Punto 19'a cikti, renk bir kademe koyuya (`metinIkincil`) alindi.
+  //
+  // TAM KOYU YAPILMADI: bu satirlar madalyali ilk bes kadar one
+  // cikmamali; sira bilgisi orada bir odul, burada yalnizca bir sayi.
   yerSiraDuz: {
     width: 48,
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.kucuk,
-    color: renk.metinSoluk,
+    fontSize: olcek.altBaslik,
+    color: renk.metinIkincil,
   },
   yerOrta: { flex: 1 },
   yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },

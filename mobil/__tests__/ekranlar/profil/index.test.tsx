@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import { processColor, Share } from 'react-native'
-import { acikRenk, koyuRenk } from '../../../src/tasarim/tema'
+import { processColor, Share, StyleSheet } from 'react-native'
+import { acikRenk, koyuRenk, olcek } from '../../../src/tasarim/tema'
 import ProfilEkrani from '../../../src/app/profil/index'
 import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
 import { profilFotografiUrl } from '../../../lib/fotograf-url'
@@ -122,6 +122,30 @@ describe('ProfilEkrani', () => {
     expect(await screen.findByText('2 kez')).toBeTruthy()
     expect(screen.getByText('1 kez')).toBeTruthy()
     expect(screen.getByText('Kent Meydanı')).toBeTruthy()
+  })
+
+  it('6 VE SONRASI duz rakamla ve OKUNUR bir tonda cizilir', async () => {
+    // Kullanicinin bildirdigi hata 2026-09-05: "6-7 diye devam eden
+    // sayilar cok silik". Ilk bes sira madalya gorseli aliyor, sonrasi
+    // duz rakam; o rakamin puntosu 13'tu ve rengi ekranin en acik metin
+    // tonuydu (`metinSoluk`), yani madalyalarin yanibasinda
+    // kayboluyordu.
+    //
+    // Test rengin TAM KOYU olmadigini da dogruluyor: bu satirlar
+    // madalyali ilk bes kadar one cikmamali.
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(
+      Array.from({ length: 7 }, (_, i) =>
+        ani({ id: `ani-${i}`, mekanId: `mekan-${i}`, mekanAdi: `Mekan ${i + 1}` })
+      )
+    )
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Yerler'))
+
+    const stil = StyleSheet.flatten((await screen.findByText('6')).props.style)
+    expect(stil.fontSize).toBe(olcek.altBaslik)
+    expect(stil.color).toBe(acikRenk.metinIkincil)
+    expect(stil.color).not.toBe(acikRenk.metinSoluk)
   })
 
   // 'Profili duzenle dugmesi duzenleme ekranina goturur' testi
