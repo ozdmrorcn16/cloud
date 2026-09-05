@@ -199,11 +199,19 @@ def yalniz_madalyayi_birak(im):
 # hicbir tahmin gerekmiyor.
 AYRI_KAYNAKLAR = {2: 'madalya-2-kaynak.jpg',
                   3: 'madalya-3-kaynak.jpg',
-                  4: 'madalya-4-kaynak.jpg'}
+                  4: 'madalya-4-kaynak.png'}
 
 TASARIM = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '..', 'tasarim')
 )
+
+
+def zaten_saydam(im):
+    """Kaynak saydam zeminle mi geldi?"""
+    if im.mode not in ('RGBA', 'LA'):
+        return False
+    alfa = im.convert('RGBA').getchannel('A')
+    return alfa.getextrema()[0] < 24
 
 
 def ayri_kaynak_oku(sira, hedef_yukseklik):
@@ -221,16 +229,28 @@ def ayri_kaynak_oku(sira, hedef_yukseklik):
     if not os.path.exists(yol):
         return None
 
-    ham = Image.open(yol).convert('RGB')
-    bloklar = dikey_bloklar(ham, en_az=25, sol=0, sag=ham.size[0])
-    if not bloklar:
-        return None
-    orta = ham.size[1] // 2
-    icinde = [b for b in bloklar if b[0] <= orta <= b[1]]
-    y0, y1 = icinde[0] if icinde else max(bloklar, key=lambda b: b[1] - b[0])
+    ham = Image.open(yol)
 
-    parca = zemini_sil(ham.crop((0, max(0, y0 - 1), ham.size[0], min(ham.size[1], y1 + 2))))
-    parca = yalniz_madalyayi_birak(parca)
+    if zaten_saydam(ham):
+        # KAYNAK HAZIR: hicbir temizlik yapilmiyor.
+        # Kullanicinin talimati (2026-09-05): "Bu attigi direk kullan
+        # degistirmeden". Zemin silme ve parca ayiklama yalnizca beyaz
+        # zeminli kaynaklar icin gerekli; saydam bir PNG'ye
+        # dokunulmasi ancak zarar verir.
+        parca = ham.convert('RGBA')
+    else:
+        ham = ham.convert('RGB')
+        bloklar = dikey_bloklar(ham, en_az=25, sol=0, sag=ham.size[0])
+        if not bloklar:
+            return None
+        orta = ham.size[1] // 2
+        icinde = [b for b in bloklar if b[0] <= orta <= b[1]]
+        y0, y1 = icinde[0] if icinde else max(bloklar, key=lambda b: b[1] - b[0])
+        parca = zemini_sil(
+            ham.crop((0, max(0, y0 - 1), ham.size[0], min(ham.size[1], y1 + 2)))
+        )
+        parca = yalniz_madalyayi_birak(parca)
+
     kutu = parca.getbbox()
     if kutu:
         parca = parca.crop(kutu)
