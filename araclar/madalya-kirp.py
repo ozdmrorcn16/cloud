@@ -49,17 +49,33 @@ HEDEF = os.path.normpath(
 ADET = 5
 # Madalya sutununun yatay araligi; sagda mekan adi basliyor.
 SOL, SAG = 28, 200
-# Bu esigin uzerindeki her kanal "zemin" sayiliyor. Golgeyi de kapsamak
-# icin bilerek gevsek; madalyanin dis cemberi her sirada bundan koyu,
-# en acik olan 4. madalyada bile.
-ZEMIN_ESIGI = 225
+# ZEMIN OLCUTU IKI KOSULLU: acik OLACAK ve NOTR olacak.
+#
+# Tek esik ise yaramiyordu, cunku iki hata birbirinin ziddi:
+#   - Esik gevsek (225) olunca 4. MADALYAYA SIZIYOR. O krem renkli ve
+#     govdesinin parlakligi 221-225; tasma dis kenardan iceri girip
+#     rengi yiyordu - kullanicinin gordugu "silik yerler" buydu.
+#   - Esik dar olunca kurdelelerin altindaki GOLGE kaliyor ve acik
+#     zeminde beyazimsi bir bulut, koyu modda hale birakiyordu.
+#
+# Ayrim renkte: zemin ve golge NOTR (olculdu: zemin r-b = 0, golge
+# r-b = 8..16), madalyanin kremi ise SICAK (r-b = 29..31). Gumus de
+# notr ama dis cemberi koyu oldugu icin tasma ona giremiyor.
+# Parlaklik esigi BILEREK DUSUK (200): golgenin koyu katmani 232'de
+# yakalanmiyordu ve bariyer olusturup arkasindaki acik golgeyi
+# koruyordu - kurdelelerin altinda beyazimsi bir bulut kaliyordu.
+# Notrluk sarti sayesinde bu dusuk esik madalyalara zarar vermiyor:
+# 4'un kremi r-b = 29, gumusun dis cemberi ise zaten koyu.
+ZEMIN_PARLAKLIK = 200
+ZEMIN_NOTRLUK = 20
 # Bir blogu "madalya" saymak icin en az bu kadar satiri dolu olmali.
 EN_AZ_YUKSEKLIK = 60
 
 
 def zemin_mi(px, x, y):
     r, g, b = px[x, y][:3]
-    return r >= ZEMIN_ESIGI and g >= ZEMIN_ESIGI and b >= ZEMIN_ESIGI
+    parlaklik = (r + g + b) / 3
+    return parlaklik >= ZEMIN_PARLAKLIK and abs(r - b) <= ZEMIN_NOTRLUK
 
 
 def dikey_bloklar(im):
