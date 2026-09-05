@@ -179,18 +179,50 @@ def yalniz_madalyayi_birak(im):
 # gorunur kiliyor.
 DEFNE_KAYNAGI = 2
 DEFNE_HEDEFI = 3
-# Cemberin disinda kalan seritler; ortadaki her sey madalyanin kendisi.
-DEFNE_SOL_SINIR = 20
-DEFNE_SAG_SINIR = 106
-# ALT SINIR: kurdele uclari ve altlarindaki golge de bu seritlere
-# tasiyor ve aktarilinca madalyanin yaninda bir leke olarak kaliyordu.
-# Defne dallari zaten cemberin hizasinda bitiyor.
-DEFNE_ALT_SINIR = 100
+# Alinacak yan seritler.
+#
+# SINIR CEMBERIN ICINE TASIYOR (20/106 degil 30/96): dalin CEMBERE
+# BAGLANDIGI yer tam orada. Dar sinirla o bagi kesince dal havada
+# kaliyor ve kullanicinin dedigi gibi "kopuk duruyor". Fazlalik
+# gorunmuyor cunku madalya dallarin UZERINE ciziliyor.
+DEFNE_SOL_SINIR = 30
+DEFNE_SAG_SINIR = 96
 # Gri defneyi bronza ceviren kanal carpanlari. Parlaklik korunuyor,
 # ton kaydiriliyor - kabartma ve golge boylece kaybolmuyor.
 # Ilk deneme (1.02, 0.74, 0.52) fazla acikti: gumus zaten parlak
 # oldugu icin sonuc bronzdan cok SARIYA kaciyordu.
 BRONZ_CARPAN = (0.86, 0.58, 0.38)
+
+
+def en_buyuk_ikisi(im):
+    """Iki dali tutar, kucuk artiklari atar."""
+    en, boy = im.size
+    px = im.load()
+    gorulen = [[False] * boy for _ in range(en)]
+    parcalar = []
+
+    for bx in range(en):
+        for by in range(boy):
+            if px[bx, by][3] < 24 or gorulen[bx][by]:
+                continue
+            pikseller, kuyruk = [], deque([(bx, by)])
+            gorulen[bx][by] = True
+            while kuyruk:
+                x, y = kuyruk.popleft()
+                pikseller.append((x, y))
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if (0 <= nx < en and 0 <= ny < boy
+                            and not gorulen[nx][ny] and px[nx, ny][3] >= 24):
+                        gorulen[nx][ny] = True
+                        kuyruk.append((nx, ny))
+            parcalar.append(pikseller)
+
+    parcalar.sort(key=len, reverse=True)
+    for parca in parcalar[2:]:
+        for x, y in parca:
+            px[x, y] = (255, 255, 255, 0)
+    return im
 
 
 def defneyi_tasi(kaynak_im, hedef_im):
@@ -206,8 +238,6 @@ def defneyi_tasi(kaynak_im, hedef_im):
         if DEFNE_SOL_SINIR <= x <= DEFNE_SAG_SINIR:
             continue
         for y in range(boy):
-            if y > DEFNE_ALT_SINIR:
-                continue
             r, g, b, a = kaynak_px[x, y]
             if a < 24:
                 continue
@@ -218,6 +248,18 @@ def defneyi_tasi(kaynak_im, hedef_im):
                 min(255, int(parlaklik * kb)),
                 a,
             )
+
+    # ARTIK TEMIZLIGI DAL KATMANINDA, birlesimde DEGIL.
+    #
+    # Once birlesimde deneniyordu ve dalin ALT UCUNU siliyordu: kaynak
+    # madalyada dal govdeye bagliydi ama serit kesilince o bag koptu,
+    # yani alt uc ayri bir parca haline geldi ve "en buyuk parcayi tut"
+    # onu attı. Kullanicinin gordugu "defne kopuk duruyor" tam buydu.
+    #
+    # Burada olcut farkli: seritte SOL DAL ve SAG DAL iki buyuk parca;
+    # kurdele ucu ve golge artiklari cok daha kucuk. En buyuk ikisi
+    # tutuluyor.
+    dallar = en_buyuk_ikisi(dallar)
 
     # Dallar ARKADA: once onlar, sonra madalyanin kendisi. Boylece
     # cembere giren uclar gorunmuyor.
