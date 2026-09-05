@@ -217,7 +217,9 @@ TASARIM = os.path.normpath(
 # Ic yaricap = seklin icine sigan en buyuk dairenin yaricapi. Defne
 # dallari ince oldugu icin oraya sigmiyor, yani bu olcu dogrudan
 # madalya cemberini veriyor.
-HEDEF_IC_YARICAP = 48.0
+# 48 -> 56: rozet ekranda buyutuldugu icin (44x46 -> 48x48 kutu) ve
+# retina 3x cizdigi icin kaynak da buyudu, yoksa kenarlar bulaniklasir.
+HEDEF_IC_YARICAP = 56.0
 
 
 def ic_yaricap(im):

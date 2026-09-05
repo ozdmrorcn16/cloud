@@ -899,21 +899,23 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Ilk bes: kurdeleli madalya. Genislik duz rakamla AYNI (34) ki
   // altinci satirdan itibaren metinler sola kaymasin.
-  // Rozet 34x36 -> 44x46 (kullanicinin istegi 2026-09-05). Madalya
-  // gorselleri kareye yakin; `contain` ile bu kutuda ortalaniyorlar.
-  yerSiraAlan: { width: 44, height: 46 },
+  // Rozet 34x36 -> 44x46 -> 48x48 (kullanicinin istegi 2026-09-05:
+  // "cok az boyutlarini buyut"). Madalya gorselleri kareye yakin;
+  // `contain` ile bu kutuda ortalaniyorlar ve cember caplari kaynakta
+  // esitlendigi icin bes rozet ayni buyuklukte gorunuyor.
+  yerSiraAlan: { width: 48, height: 48 },
   // ARTIK KULLANILMIYOR ama duruyor: 6 ve sonrasi icin duz rakam
   // stiliyle ayni olcegi paylasiyor.
   yerSiraRozetYazi: {
     position: 'absolute',
     top: 13,
-    width: 44,
+    width: 48,
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
   },
   yerSiraDuz: {
-    width: 44,
+    width: 48,
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
