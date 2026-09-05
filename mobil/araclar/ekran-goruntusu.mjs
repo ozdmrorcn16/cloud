@@ -113,6 +113,30 @@ try {
   await sayfa.evaluate(() => document.fonts.ready)
   await new Promise((c) => setTimeout(c, 1200))
 
+  // SLOOIN_TIKLA="Yerler" verilirse goruntu alinmadan once o metne
+  // basiliyor. Sekmeli ekranlarda (profildeki Anilar/Yerler gibi)
+  // varsayilan olmayan sekmeyi gormenin tek yolu bu; onceden sekmeyi
+  // gormek icin kodda varsayilani gecici olarak degistirmek
+  // gerekiyordu. Birden fazla hedef "|" ile sirayla verilebilir.
+  const tiklanacaklar = (process.env.SLOOIN_TIKLA ?? '').split('|').filter(Boolean)
+  for (const metin of tiklanacaklar) {
+    const bulundu = await sayfa.evaluate((aranan) => {
+      // React Native Web dugmeyi <div> olarak ciziyor; 'button'
+      // secicisi ise yaramiyor, metinden bulmak gerekiyor.
+      const hedef = [...document.querySelectorAll('div,span')].find(
+        (e) => e.textContent?.trim() === aranan && e.children.length === 0
+      )
+      if (!hedef) return false
+      const basilabilir = hedef.closest('[role="button"],[role="tab"]') ?? hedef
+      basilabilir.click()
+      return true
+    }, metin)
+    if (!bulundu) {
+      console.error(`UYARI: "${metin}" bulunamadi, tiklanmadi.`)
+    }
+    await new Promise((c) => setTimeout(c, 900))
+  }
+
   // Yatay tasma gercekten var mi? Arac degil sayfa olcsun.
   const olcum = await sayfa.evaluate(() => ({
     govde: document.body.scrollWidth,
