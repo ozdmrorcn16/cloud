@@ -78,13 +78,17 @@ def zemin_mi(px, x, y):
     return parlaklik >= ZEMIN_PARLAKLIK and abs(r - b) <= ZEMIN_NOTRLUK
 
 
-def dikey_bloklar(im):
-    """Madalya sutunundaki dolu satir bloklarini dondurur."""
+def dikey_bloklar(im, en_az=None, sol=None, sag=None):
+    """Dolu satir bloklarini dondurur."""
     px = im.load()
-    _, boy = im.size
+    genislik, boy = im.size
+    sol = SOL if sol is None else sol
+    sag = min(SAG if sag is None else sag, genislik)
+    if en_az is None:
+        en_az = EN_AZ_YUKSEKLIK
     bloklar, bas = [], None
     for y in range(boy):
-        dolu = any(not zemin_mi(px, x, y) for x in range(SOL, SAG))
+        dolu = any(not zemin_mi(px, x, y) for x in range(sol, sag))
         if dolu and bas is None:
             bas = y
         elif not dolu and bas is not None:
@@ -92,7 +96,7 @@ def dikey_bloklar(im):
             bas = None
     if bas is not None:
         bloklar.append((bas, boy - 1))
-    return [b for b in bloklar if b[1] - b[0] >= EN_AZ_YUKSEKLIK]
+    return [b for b in bloklar if b[1] - b[0] >= en_az]
 
 
 def zemini_sil(im):
@@ -128,37 +132,6 @@ def zemini_sil(im):
                 ekle(nx, ny)
 
     return im
-
-
-def maskeyi_onar(im):
-    """Zemin silmenin madalyaya actigi dar koridorlari kapatir.
-
-    ESIKLE COZULEMEYEN BIR SORUN: gumus madalyanin parlak kisimlari
-    neredeyse saf beyaz (olculdu: govdenin %22'si parlaklik >= 200 ve
-    NOTR). Yani zemin ile madalyayi renkten ayirmak mumkun degil ve
-    tasma, cemberin parlak kenarindan iceri sizip gorunur centikler
-    birakiyor - kullanicinin telefonda gordugu buydu.
-
-    Cozum esigi bir kez daha oynatmak degil, MASKEYI ONARMAK:
-      - `binary_closing` dar sizinti koridorlarini kapatir; genis
-        zemin alani etkilenmez, cunku o bir koridor degil.
-      - `binary_fill_holes` govdenin icinde kalan adacik delikleri
-        doldurur.
-    Defne dallari arasindaki gercek bosluklar korunsun diye yapi
-    elemani kucuk tutuldu (5x5).
-    """
-    import numpy as np
-    from scipy import ndimage
-
-    dizi = np.array(im)
-    opak = dizi[:, :, 3] > 24
-    onarik = ndimage.binary_fill_holes(
-        ndimage.binary_closing(opak, structure=np.ones((5, 5)))
-    )
-    dizi[:, :, 3] = np.where(onarik, 255, 0).astype(dizi.dtype)
-    # `fromarray` salt-okunur bir goruntu donduruyor; sonraki adim
-    # piksel yaziyor, bu yuzden kopya aliniyor.
-    return Image.fromarray(dizi, 'RGBA').copy()
 
 
 def yalniz_madalyayi_birak(im):
@@ -213,46 +186,58 @@ def yalniz_madalyayi_birak(im):
     return im
 
 
-# 3. MADALYA AYRI BIR KAYNAKTAN GELIYOR.
+# 2, 3 VE 4 AYRI KAYNAKLARDAN GELIYOR.
 #
-# Kullanicinin istegi (2026-09-05): "1 ve 2 deki bugday gibi bir sey
-# varya 3'e de onu yapabilir misin". Ilk denemede 2. madalyanin
-# dallari alinip bronza boyanmisti; kullanici sonucu begenmedi
-# ("3 olmamis, defne kopuk duruyor") ve defneli 3. madalyanin kendi
-# gorselini gonderdi. Turetme tamamen birakildi.
+# Ana referans gorselde bu ucunde sorun vardi: 3'te defne yoktu, 2 ve
+# 4'un kenarlari ise zemin silme sirasinda bozuluyordu. Sebep olculdu:
+# gumusun ve 4'un kreminin parlak kisimlari neredeyse saf beyaz, yani
+# zeminden RENKLE ayrilamiyorlar. Esik oynatmak (uc tur denendi) ve
+# maske onarimi (closing) ikisi de bir tarafi duzeltip otekini
+# bozdu - closing madalyayi %12-21 sisirdi, olcumle goruldu.
 #
-# Kaynak depoda: tasarim/madalya-3-kaynak.jpg
-UC_KAYNAK = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..', 'tasarim', 'madalya-3-kaynak.jpg')
+# Kullanici uc temiz gorsel gonderdi; artik onlar kullaniliyor ve
+# hicbir tahmin gerekmiyor.
+AYRI_KAYNAKLAR = {2: 'madalya-2-kaynak.jpg',
+                  3: 'madalya-3-kaynak.jpg',
+                  4: 'madalya-4-kaynak.jpg'}
+
+TASARIM = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', 'tasarim')
 )
-# Kaynakta ustte 2. madalyanin kurdelesi, altta 4'un ustu de var;
-# ucuncusu bu dikey aralikta (doluluk profilinden olculdu).
-UC_ARALIK = (45, 178)
 
 
-def ucuncuyu_oku(hedef_genislik):
-    """3. madalyayi kendi kaynagindan okur ve olcegi esitler.
+def ayri_kaynak_oku(sira, hedef_yukseklik):
+    """Bir madalyayi kendi kaynagindan okur ve olcegini esitler.
 
-    `hedef_genislik` 2. madalyanin defne dahil genisligi; ikisi ayni
-    gorselden gelmedigi icin olcek elle esitleniyor, yoksa 3. madalya
-    listede otekilerden buyuk duruyor.
+    Kaynaklarda ustte ve altta komsu madalyalarin parcalari da var;
+    aranan madalya gorselin DIKEY MERKEZINI iceren blok.
+
+    Olcek YUKSEKLIKTEN esitleniyor: her kaynak farkli buyuklukte
+    geldigi icin, ana gorseldeki ayni siranin yuksekligi hedef
+    aliniyor. Genislikten esitlemek yanlis olurdu - defneli ve
+    defnesiz madalyalarin genisligi farkli.
     """
-    if not os.path.exists(UC_KAYNAK):
+    yol = os.path.join(TASARIM, AYRI_KAYNAKLAR[sira])
+    if not os.path.exists(yol):
         return None
 
-    ham = Image.open(UC_KAYNAK).convert('RGB')
-    y0, y1 = UC_ARALIK
-    parca = maskeyi_onar(zemini_sil(ham.crop((0, y0, ham.size[0], y1))))
-    # Ayirici cizgi ve komsu madalyalarin uclari kucuk parcalar olarak
-    # kaliyor; madalya en buyuk parca.
+    ham = Image.open(yol).convert('RGB')
+    bloklar = dikey_bloklar(ham, en_az=25, sol=0, sag=ham.size[0])
+    if not bloklar:
+        return None
+    orta = ham.size[1] // 2
+    icinde = [b for b in bloklar if b[0] <= orta <= b[1]]
+    y0, y1 = icinde[0] if icinde else max(bloklar, key=lambda b: b[1] - b[0])
+
+    parca = zemini_sil(ham.crop((0, max(0, y0 - 1), ham.size[0], min(ham.size[1], y1 + 2))))
     parca = yalniz_madalyayi_birak(parca)
     kutu = parca.getbbox()
     if kutu:
         parca = parca.crop(kutu)
 
-    olcek = hedef_genislik / parca.size[0]
+    olcek = hedef_yukseklik / parca.size[1]
     return parca.resize(
-        (hedef_genislik, max(1, round(parca.size[1] * olcek))), Image.LANCZOS
+        (max(1, round(parca.size[0] * olcek)), hedef_yukseklik), Image.LANCZOS
     )
 
 
@@ -269,7 +254,7 @@ def main():
         # Bir piksel pay: tasmanin baslayabilmesi icin cevrede saydam
         # bir cerceve kalmali.
         parca = kaynak.crop((SOL, max(0, y0 - 1), SAG, min(kaynak.size[1], y1 + 2)))
-        parca = yalniz_madalyayi_birak(maskeyi_onar(zemini_sil(parca)))
+        parca = yalniz_madalyayi_birak(zemini_sil(parca))
         kutu = parca.getbbox()
         parcalar.append(parca.crop(kutu) if kutu else parca)
 
@@ -294,23 +279,26 @@ def main():
         )
         tuvaller.append(tuval)
 
-    # 3. madalya kendi kaynagindan; olcegi 2. madalyaya esitleniyor.
-    ucuncu = ucuncuyu_oku(parcalar[1].size[0])
-    if ucuncu is not None:
+    # Ayri kaynagi olan siralar degistiriliyor; olcek ana gorseldeki
+    # ayni siranin yuksekligine esitleniyor.
+    for sira in AYRI_KAYNAKLAR:
+        yeni = ayri_kaynak_oku(sira, parcalar[sira - 1].size[1])
+        if yeni is None:
+            continue
         tuval = Image.new('RGBA', (tuval_en, tuval_boy), (255, 255, 255, 0))
         tuval.paste(
-            ucuncu,
-            ((tuval_en - ucuncu.size[0]) // 2, (tuval_boy - ucuncu.size[1]) // 2),
-            ucuncu,
+            yeni,
+            ((tuval_en - yeni.size[0]) // 2, (tuval_boy - yeni.size[1]) // 2),
+            yeni,
         )
-        tuvaller[2] = tuval
+        tuvaller[sira - 1] = tuval
 
     for sira, tuval in enumerate(tuvaller, start=1):
         yol = os.path.join(HEDEF, f'madalya-{sira}.png')
         tuval.save(yol, 'PNG', optimize=True)
         print(f'madalya-{sira}.png  {tuval_en}x{tuval_boy}  '
               f'{os.path.getsize(yol) / 1024:.1f} KB'
-              + ('  (ayri kaynaktan)' if sira == 3 else ''))
+              + ('  (ayri kaynaktan)' if sira in AYRI_KAYNAKLAR else ''))
 
 
 if __name__ == '__main__':
