@@ -118,13 +118,47 @@ def zemini_sil(im):
 
     while kuyruk:
         x, y = kuyruk.popleft()
-        px[x, y] = (255, 255, 255, 0)
+        # RENK KORUNUYOR, yalnizca alfa sifirlaniyor: maske onarimi
+        # yanlislikla silinmis bir kenari geri acabilsin diye.
+        r, g, b, _ = px[x, y]
+        px[x, y] = (r, g, b, 0)
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             nx, ny = x + dx, y + dy
             if 0 <= nx < en and 0 <= ny < boy:
                 ekle(nx, ny)
 
     return im
+
+
+def maskeyi_onar(im):
+    """Zemin silmenin madalyaya actigi dar koridorlari kapatir.
+
+    ESIKLE COZULEMEYEN BIR SORUN: gumus madalyanin parlak kisimlari
+    neredeyse saf beyaz (olculdu: govdenin %22'si parlaklik >= 200 ve
+    NOTR). Yani zemin ile madalyayi renkten ayirmak mumkun degil ve
+    tasma, cemberin parlak kenarindan iceri sizip gorunur centikler
+    birakiyor - kullanicinin telefonda gordugu buydu.
+
+    Cozum esigi bir kez daha oynatmak degil, MASKEYI ONARMAK:
+      - `binary_closing` dar sizinti koridorlarini kapatir; genis
+        zemin alani etkilenmez, cunku o bir koridor degil.
+      - `binary_fill_holes` govdenin icinde kalan adacik delikleri
+        doldurur.
+    Defne dallari arasindaki gercek bosluklar korunsun diye yapi
+    elemani kucuk tutuldu (5x5).
+    """
+    import numpy as np
+    from scipy import ndimage
+
+    dizi = np.array(im)
+    opak = dizi[:, :, 3] > 24
+    onarik = ndimage.binary_fill_holes(
+        ndimage.binary_closing(opak, structure=np.ones((5, 5)))
+    )
+    dizi[:, :, 3] = np.where(onarik, 255, 0).astype(dizi.dtype)
+    # `fromarray` salt-okunur bir goruntu donduruyor; sonraki adim
+    # piksel yaziyor, bu yuzden kopya aliniyor.
+    return Image.fromarray(dizi, 'RGBA').copy()
 
 
 def yalniz_madalyayi_birak(im):
@@ -208,7 +242,7 @@ def ucuncuyu_oku(hedef_genislik):
 
     ham = Image.open(UC_KAYNAK).convert('RGB')
     y0, y1 = UC_ARALIK
-    parca = zemini_sil(ham.crop((0, y0, ham.size[0], y1)))
+    parca = maskeyi_onar(zemini_sil(ham.crop((0, y0, ham.size[0], y1))))
     # Ayirici cizgi ve komsu madalyalarin uclari kucuk parcalar olarak
     # kaliyor; madalya en buyuk parca.
     parca = yalniz_madalyayi_birak(parca)
@@ -235,7 +269,7 @@ def main():
         # Bir piksel pay: tasmanin baslayabilmesi icin cevrede saydam
         # bir cerceve kalmali.
         parca = kaynak.crop((SOL, max(0, y0 - 1), SAG, min(kaynak.size[1], y1 + 2)))
-        parca = yalniz_madalyayi_birak(zemini_sil(parca))
+        parca = yalniz_madalyayi_birak(maskeyi_onar(zemini_sil(parca)))
         kutu = parca.getbbox()
         parcalar.append(parca.crop(kutu) if kutu else parca)
 
