@@ -478,13 +478,12 @@ export default {
     yolTarifi: 'Yol tarifi al',
     buradaCheckIn: 'Burada check-in yap',
     kisiBurada: 'kişi burada',
-    // Serit uc sutuna bolundugu icin etiketler TEK SATIRA sigmali;
-    // "Bugün check-in" 390 px'te siginin siniri, daha uzunu kirpilir.
-    bugunCheckIn: 'bugün check-in',
+    bugun: 'Bugün',
+    haritadaGoster: 'Konumu haritada göster',
     checkInSayisi: '{{sayi}} check-in',
     kisiSayisi: '{{sayi}} kişi',
     // Siralamanin evreni ILCE: o ilcenin yerleri arasinda kacinci.
-    ilcede: "{{ilce}}'de",
+    ilcedekiYerler: "{{ilce}}'deki yerler",
     // Ilce bilinmiyorsa ya da ilcede hic check-in yoksa siralamanin
     // bir evreni yok; uydurma bir "#1" yerine bunu yaziyoruz.
     siralamaYok: 'Sıralama yok',

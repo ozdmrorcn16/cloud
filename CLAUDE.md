@@ -603,13 +603,38 @@ Sonucu KASITLI bir tutarsizlik: ustte "7 kisi burada" yazarken asagida
 2 avatar gorunebilir. Fark **"+5" rozetiyle** anlatiliyor - sayi
 sizmaya devam ediyor, kimlikler sizmiyor. Bir testle kilitli.
 
-**REFERANSTAN ALINMAYAN IKI SEY:**
-1. **YUZLER.** Referansta profil fotograflari vardi; avatarlar BAS
-   HARFLI daireler olarak yapildi. "Haritada ve kartlarda yuz yok"
-   uygulamanin kalici kurali ve bu sayfa onu bozmuyor. Testle kilitli.
-2. **"Konumuma git" dugmesi.** Bizim haritamiz etkilesimsiz (dokununca
-   harita uygulamasi aciliyor), yani o dugmenin bir karsiligi yok.
-   Islevi olmayan dugme konmadi.
+**REFERANS BIREBIR KOPYALANDI** - kullanicinin iki ayri talimati:
+"Attigim gorseli bozmadan aynisi yap" ve "Ikonlari tasarimi
+boyutlarini hepsini tam kopyalamani istiyorum."
+
+Ilk gecuiste UC noktada referanstan sapilmisti; ucu de geri alindi:
+
+1. **YUZLER.** Avatarlar once bas harfli daireler yapilmisti; artik
+   GERCEK PROFIL FOTOGRAFI, `profilOzetleriniGetir` ile (akis ve
+   bildirimlerle ayni yardimci, yani "kim gorunur" kurali tek yerde -
+   `akis_profilleri` RPC'sinde). Fotografi olmayan kisi ADININ BAS
+   HARFINE duesuyor ve o geri duesme yolu testle kilitli.
+
+   **"Haritada yuz yok" kurali BURAYI KAPSAMIYOR** - ilk gecuiste
+   yanlis genellenmisti. O kural yogunluk sayacinin kimlik
+   sizdirmamasi icin: haritada yalnizca SAYI var. Bu listedeki kisiler
+   zaten RLS'ten gecmis, yani ADLARI da gorunuyor; adi gosterilen
+   birinin fotografini gizlemenin bir korumasi olmaz. Akis kartlari
+   2026-08-26'dan beri zaten avatar gosteriyor.
+
+2. **Haritanin uzerindeki IKI yuvarlak dugme.** Once tek dugme
+   konmustu ("bizim haritamiz etkilesimsiz, ikincinin karsiligi yok"
+   gerekcesiyle). Iki dugme de kondu ve ikisi GERCEKTEN farkli is
+   yapiyor - harita uygulamasinin iki ayri kipi:
+       ustteki (nisangah) -> konumu haritada GOSTER  (?ll= / search)
+       alttaki (ok)       -> YOL TARIFI ver          (?daddr= / dir)
+
+3. **OLCULER.** Butun boyutlar referans gorselden turetildi. Gorsel
+   914 px genisliginde uretilmis, telefon 390 px - yani olcek 2,344 ve
+   her deger referanstaki pikselin bu olcege bolunmus hali. Degisenler:
+   harita yuksekligi 280 -> 170, harita dugmeleri 44 -> 34, avatar
+   54 -> 44 (aralik 16 -> 3), liste avatari 38 -> 32, madalya 30 -> 26,
+   sekme ikonu 18 -> 15, liste satiri 62 -> ~50 px.
 
 **UYDURMA VERI YOK:** ilce bilinmiyorsa ya da ilcede hic check-in yoksa
 siralamanin bir evreni de yok; "#1" yerine cizgi (—) ve "Sıralama yok"
@@ -633,18 +658,45 @@ son check-inler yeniden eskiye sirali, ve kimliksiz cagri UCUNDE DE
 reddediliyor (istatistikler 400, listeler 401 - `revoke ... from public`
 sayesinde).
 
-**ILK EKRAN GORUNTUSUNDE BULUNAN YERLESIM KUSURU:** olcu seridinin orta
-kutusu farkli kurulmustu ("Bugün" ustte, "23 check-in" altta) ve 390
-px'lik ekranda "0 check-in" IKIYE BOLUNUYORDU; ucuncu kutunun etiketi de
-kirpilıyordu ("Nilüfer'deki ye…"). Uc kutu da ayni yapiya cekildi: ikon
-ustte, buyuk sayi ortada, kisa etiket altta. **Uc sutuna bolunmus bir
-seritte yan yana yazi icin yer yok** - etiketler tek satira sigmali.
+**OLCU SERIDI UC KEZ DEGISTI - 390 px cok dar.** Sirasiyla:
+(1) referans duzeni (ikon solda, iki satir sagda) kuruldu ve
+"0 check-in" IKIYE BOLUNDU; (2) uc kutu dikey yapiya cevrildi, bolunme
+gecti ama referanstan sapildi; (3) referansa geri donuldu ve bu kez
+ucuncu kutu kirpildi ("Nilüfer'deki ye…"); ucuncuye pay verilince ORTA
+kutu kirpildi ("0 check…").
+
+**Ikisini birden kurtaran sey yalnizca OLCULERI KISMAK oldu:** sayi
+fontu 15 -> 13, ikon 19 -> 17 (sonra referans olcusune 21'e cikti),
+gap 6 -> 5, serit ic payi 16 -> 12, ucuncu kutuya flex 1,22. Yani
+sorun duzen degil, YERDI. Referans gorselde bu sikisma gorunmuyor
+cunku orasi 914 px genisliginde uretilmis.
+
+**DERS: bu seridin metinlerinden herhangi biri uzarsa yeniden
+kirpilir.** Yeni bir dil eklenirken ("bugün check-in" karsiligi daha
+uzunsa) ya da bir ilce adi cok uzunsa ekran goruntusuyle olculmeli.
 
 Ikinci kusur: notu olmayan bir check-in satirinda gorece zaman hem alt
 satirda hem sagda yaziyordu. Not yoksa alt satir artik hic cizilmiyor.
 
+**GORSEL DOGRULAMA ICIN GECICI CANLI CHECK-IN GEREKTI.** Veritabaninda
+canli check-in olmadigi icin "Su an burada" bolumu bos ekranda hic
+cizilmiyordu - ve bos bir ekrana bakip "calisiyor" demek olcum degil
+(ayni ders 2026-09-03'te yorumlarda ogrenilmisti). Bes test hesabi icin
+gecici canli check-in eklendi, goruntu alindi, **hepsi hemen silindi**;
+`check_inler` 9 satira geri dondu, gercek veriye dokunulmadi.
+
+O goruntu bir yerlesim kusuru buldu: avatar 54 px + 16 px aralikla BES
+avatar bile 342 px'e sigmiyordu. Referansta avatarlar neredeyse bitisik
+(merkez araligi 107 px, cap 104 px -> 3 px bosluk); ayni orana
+gecilince alti avatar + "+1" rahat siginiyor.
+
+Avatar altindaki ad da YALNIZCA ILK KELIME: `check_inler.kullanici_adi`
+tam adi tasiyor ("Orçun Özdemir") ve 47 px'lik kutuda tam ad her zaman
+kirpiliyordu. Listelerde tam ad duruyor - orada satir genis.
+
 Ekran goruntuleri: `tasarim/mekan-sayfasi.png` (acik),
-`mekan-sayfasi-dark.png` (koyu + ikinci sekme).
+`mekan-sayfasi-dark.png` (koyu + ikinci sekme),
+`mekan-sayfasi-dolu.png` (gecici veriyle, "Su an burada" seridi dolu).
 
 Dogrulama: jest 60 paket / 593 test, tsc taban hatalari, canli 13/13.
 KVKK notu `docs/kvkk-uyum-listesi.md` icinde ("mekan sayfasindaki

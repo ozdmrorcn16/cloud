@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   View,
   Text,
+  Image,
   Pressable,
   ScrollView,
   Linking,
@@ -21,6 +22,7 @@ import {
   type SonCheckIn,
 } from '../../../lib/mekan-sayfasi'
 import { suAnBurdakileriGetir, type CheckInGorunumu } from '../../../lib/checkin'
+import { profilOzetleriniGetir } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
@@ -36,6 +38,9 @@ import {
   SaatIkonu,
   ArabaIkonu,
   NavigasyonIkonu,
+  NisangahIkonu,
+  TacIkonu,
+  OkIkonu,
   DikeyUcNoktaIkonu,
   SiraMadalyasi,
 } from '../../tasarim/mekan-ikonlari'
@@ -65,9 +70,15 @@ import { useRenk, useStiller } from '../../tasarim/tema-baglami'
  * Bu bir kusur DEGIL: fark "+5" rozetiyle anlatiliyor, sayi sizmaya
  * devam ediyor ama kimlikler sizmiyor.
  *
- * HARITADA VE LISTEDE YUZ YOK - avatarlar bas harfli daireler.
- * Uygulamanin kalici kurali bu ve referans gorseldeki fotograflar
- * bilerek alinmadi.
+ * AVATARLAR GERCEK PROFIL FOTOGRAFI, akistaki ve bildirimlerdeki
+ * desenin aynisi: `profilOzetleriniGetir` (yani `akis_profilleri`
+ * RPC'si) hem "kim gorunur" kuralini hem de imzali adresi tek yerde
+ * tutuyor. Fotografi olmayan kisi ADININ BAS HARFINE duesuyor.
+ *
+ * "Haritada yuz yok" kurali BURAYI KAPSAMIYOR: o kural yogunluk
+ * sayacinin kimlik sizdirmamasi icin - haritada yalnizca SAYI var.
+ * Buradaki kisiler zaten RLS'ten gecmis, yani adlari da gorunuyor;
+ * adi gosterilen birinin fotografini gizlemenin bir korumasi olmaz.
  *
  * HARITA DOKUNMATIK DEGIL, BIR DUGME. Ustune basinca hangi harita
  * uygulamasiyla acilacagi soruluyor (kullanicinin istegi 2026-08-30);
@@ -124,13 +135,37 @@ async function kuruluHaritalar(): Promise<('apple' | 'google')[]> {
   return kurulular.length > 0 ? kurulular : adaylar
 }
 
-/** Yol tarifi adresleri. Ikisi de HEDEFI verir, yani yol tarifi acilir. */
-function yolTarifiAdresi(secim: 'apple' | 'google', mekan: Mekan) {
+/**
+ * Harita adresleri. IKI KIP var ve ikisi gercekten farkli:
+ *   'tarif'  -> yol tarifi acilir (hedef verilir)
+ *   'goster' -> yalnizca konum haritada isaretlenir, rota cizilmez
+ * Haritanin uzerindeki iki yuvarlak dugme bu ikisine karsilik geliyor.
+ */
+function haritaAdresi(secim: 'apple' | 'google', mekan: Mekan, kip: 'tarif' | 'goster') {
   const { lat, lng } = mekan.konum
+  const ad = encodeURIComponent(mekan.ad)
+  if (kip === 'goster') {
+    return secim === 'apple'
+      ? `https://maps.apple.com/?ll=${lat},${lng}&q=${ad}`
+      : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+  }
   if (secim === 'apple') {
-    return `https://maps.apple.com/?daddr=${lat},${lng}&q=${encodeURIComponent(mekan.ad)}`
+    return `https://maps.apple.com/?daddr=${lat},${lng}&q=${ad}`
   }
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+}
+
+/**
+ * Avatar seridindeki ad: YALNIZCA ILK KELIME.
+ *
+ * `check_inler.kullanici_adi` tam adi tasiyor ("Orçun Özdemir") ve
+ * 50 px'lik bir avatar kutusunda tam ad her zaman kirpiliyor. Referans
+ * gorselde de tek isim var. Listelerde (liderlik / son check-inler) tam
+ * ad duruyor - orada satir genis.
+ */
+function ilkAd(ad: string | null): string | null {
+  if (!ad) return null
+  return ad.trim().split(/\s+/)[0] || null
 }
 
 /** Bas harf: ad yoksa kullanici adi, o da yoksa soru isareti. */
@@ -151,6 +186,9 @@ export default function MekanSayfasi() {
   const [cevre, setCevre] = useState<HaritaMekani[]>([])
   const [istatistik, setIstatistik] = useState<MekanIstatistikleri | null>(null)
   const [burdakiler, setBurdakiler] = useState<CheckInGorunumu[]>([])
+  // Kimlik -> imzali profil fotografi. Akis ve bildirimler de ayni
+  // yardimciyi kullaniyor; "kim gorunur" kurali RPC'de kaliyor.
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   const [liderlik, setLiderlik] = useState<LiderlikSatiri[]>([])
   const [sonlar, setSonlar] = useState<SonCheckIn[]>([])
   const [sekme, setSekme] = useState<Sekme>('liderlik')
@@ -182,19 +220,78 @@ export default function MekanSayfasi() {
     // yine geliyor. Mekanin kendisi olmadan sayfa cizilemez, ama
     // istatistik olmadan cizilebilir - bu yuzden hatalari yutuyorlar.
     mekanIstatistikleriniGetir(mekanId).then((d) => gecerli && setIstatistik(d)).catch(() => {})
-    suAnBurdakileriGetir(mekanId).then((d) => gecerli && setBurdakiler(d)).catch(() => {})
-    mekanLiderligiGetir(mekanId).then((d) => gecerli && setLiderlik(d)).catch(() => {})
-    mekanSonCheckInleriGetir(mekanId).then((d) => gecerli && setSonlar(d)).catch(() => {})
+    suAnBurdakileriGetir(mekanId)
+      .then((d) => {
+        if (!gecerli) return
+        setBurdakiler(d)
+        return avatarlariEkle(d.map((k) => k.kullaniciId))
+      })
+      .catch(() => {})
+    mekanLiderligiGetir(mekanId)
+      .then((d) => {
+        if (!gecerli) return
+        setLiderlik(d)
+        return avatarlariEkle(d.map((k) => k.kullaniciId))
+      })
+      .catch(() => {})
+    mekanSonCheckInleriGetir(mekanId)
+      .then((d) => {
+        if (!gecerli) return
+        setSonlar(d)
+        return avatarlariEkle(d.map((k) => k.kullaniciId))
+      })
+      .catch(() => {})
+
+    // Uc liste de ayni kisileri tasiyabiliyor; avatarlar TEK bir
+    // sozlukte birikiyor ve ayni kimlik icin ikinci kez cekilmiyor.
+    async function avatarlariEkle(kimlikler: string[]) {
+      const yeniler = [...new Set(kimlikler)]
+      if (yeniler.length === 0) return
+      const ozetler = await profilOzetleriniGetir(yeniler).catch(() => ({}))
+      if (!gecerli) return
+      setAvatarlar((onceki) => {
+        const sonuc = { ...onceki }
+        for (const [id, o] of Object.entries(ozetler)) sonuc[id] = o.avatarUrl
+        return sonuc
+      })
+    }
 
     return () => {
       gecerli = false
     }
   }, [mekanId])
 
-  function ac(secim: 'apple' | 'google') {
+  // Hangi kip icin secim yapiliyor: pencere kapandiginda hangi
+  // adresin acilacagini bu belirliyor.
+  const [kip, setKip] = useState<'tarif' | 'goster'>('tarif')
+
+  function ac(secim: 'apple' | 'google', hangi: 'tarif' | 'goster' = kip) {
     setSecimAcik(false)
     if (!mekan) return
-    Linking.openURL(yolTarifiAdresi(secim, mekan))
+    Linking.openURL(haritaAdresi(secim, mekan, hangi))
+  }
+
+  /** Ustteki yuvarlak dugme: konumu haritada goster. */
+  async function haritayiAc(hangi: 'tarif' | 'goster') {
+    setKip(hangi)
+    const secenekler = await kuruluHaritalar()
+    if (secenekler.length <= 1) {
+      ac(secenekler[0] ?? 'google', hangi)
+      return
+    }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...secenekler.map(secenekEtiketi), t('checkInHaritasi.vazgec')],
+          cancelButtonIndex: secenekler.length,
+        },
+        (secilen) => {
+          if (secilen < secenekler.length) ac(secenekler[secilen], hangi)
+        }
+      )
+      return
+    }
+    setSecimAcik(true)
   }
 
   function secenekEtiketi(secim: 'apple' | 'google'): string {
@@ -213,6 +310,7 @@ export default function MekanSayfasi() {
    *   web      -> yerel karsiligi yok, kendi Modal'imiz kaliyor.
    */
   async function haritayaDokunuldu() {
+    setKip('tarif')
     const secenekler = await kuruluHaritalar()
 
     // Hicbir harita uygulamasi yoksa yol tarifi TARAYICIDA aciliyor.
@@ -291,23 +389,35 @@ export default function MekanSayfasi() {
                 {/* Dokunuslar haritaya degil bu Pressable'a gitsin diye
                     harita katmani dokunusa kapali. */}
                 <View pointerEvents="none" style={stiller.haritaCercevesi}>
-                  <CanliHarita merkez={mekan.konum} mekanlar={cevre} yukseklik={280} />
+                  <CanliHarita merkez={mekan.konum} mekanlar={cevre} yukseklik={170} />
                 </View>
               </Pressable>
 
-              {/* Haritanin uzerindeki TEK yuvarlak dugme: yol tarifi.
-                  Referans gorselde bir de "konumuma git" dugmesi vardi;
-                  bizim haritamiz etkilesimsiz oldugu icin onun bir
-                  karsiligi yok - islevi olmayan bir dugme koymuyoruz. */}
-              <Pressable
-                style={stiller.haritaDugmesi}
-                onPress={haritayaDokunuldu}
-                accessibilityRole="button"
-                accessibilityLabel={t('mekanSayfasi.yolTarifi')}
-                testID="harita-yol-tarifi"
-              >
-                <NavigasyonIkonu />
-              </Pressable>
+              {/* IKI yuvarlak dugme, referanstaki gibi. Ikisi FARKLI
+                  is yapiyor - ayni isi yapan iki dugme koymak yerine
+                  harita uygulamasinin iki ayri kipi kullanildi:
+                    ustteki  -> konumu haritada GOSTER (?q=)
+                    alttaki  -> YOL TARIFI ver (?daddr= / dir/) */}
+              <View style={stiller.haritaDugmeleri}>
+                <Pressable
+                  style={stiller.haritaDugmesi}
+                  onPress={() => haritayiAc('goster')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('mekanSayfasi.haritadaGoster')}
+                  testID="harita-goster"
+                >
+                  <NisangahIkonu boyut={17} />
+                </Pressable>
+                <Pressable
+                  style={stiller.haritaDugmesi}
+                  onPress={haritayaDokunuldu}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('mekanSayfasi.yolTarifi')}
+                  testID="harita-yol-tarifi"
+                >
+                  <NavigasyonIkonu boyut={16} />
+                </Pressable>
+              </View>
             </View>
 
             <View style={stiller.baslikSatiri}>
@@ -321,7 +431,7 @@ export default function MekanSayfasi() {
                 accessibilityRole="button"
                 testID="yol-tarifi-al"
               >
-                <ArabaIkonu />
+                <ArabaIkonu boyut={16} />
                 <Text style={stiller.tarifYazi}>{t('mekanSayfasi.yolTarifi')}</Text>
               </Pressable>
             </View>
@@ -336,40 +446,53 @@ export default function MekanSayfasi() {
                 yan yana yazi icin yer yok. */}
             <View style={stiller.olcuSeridi}>
               <View style={stiller.olcu}>
-                <KisilerIkonu boyut={20} />
-                <View style={stiller.olcuSayiSatiri}>
-                  <Text style={stiller.olcuSayi}>{toplamBurada}</Text>
-                  {toplamBurada > 0 && <View style={stiller.canliNokta} />}
+                <KisilerIkonu boyut={21} />
+                <View style={stiller.olcuMetin}>
+                  <View style={stiller.olcuSayiSatiri}>
+                    <Text style={stiller.olcuSayi}>{toplamBurada}</Text>
+                    {toplamBurada > 0 && <View style={stiller.canliNokta} />}
+                  </View>
+                  <Text style={stiller.olcuEtiket} numberOfLines={1}>
+                    {t('mekanSayfasi.kisiBurada')}
+                  </Text>
                 </View>
-                <Text style={stiller.olcuEtiket} numberOfLines={1}>
-                  {t('mekanSayfasi.kisiBurada')}
-                </Text>
               </View>
 
               <View style={stiller.olcuAyirac} />
 
               <View style={stiller.olcu}>
                 <CubukIkonu boyut={20} />
-                <Text style={stiller.olcuSayi}>{istatistik?.bugunCheckIn ?? 0}</Text>
-                <Text style={stiller.olcuEtiket} numberOfLines={1}>
-                  {t('mekanSayfasi.bugunCheckIn')}
-                </Text>
+                <View style={stiller.olcuMetin}>
+                  <Text style={stiller.olcuUst} numberOfLines={1}>
+                    {t('mekanSayfasi.bugun')}
+                  </Text>
+                  <Text style={stiller.olcuSayi} numberOfLines={1}>
+                    {t('mekanSayfasi.checkInSayisi', { sayi: istatistik?.bugunCheckIn ?? 0 })}
+                  </Text>
+                </View>
               </View>
 
               <View style={stiller.olcuAyirac} />
 
-              <View style={stiller.olcu}>
-                <YildizIkonu boyut={20} />
-                {/* Sira YOKSA (ilce bilinmiyor ya da hic check-in yok)
-                    uydurma bir "#1" gostermiyoruz - cizgi koyuyoruz. */}
-                <Text style={stiller.olcuSayi}>
-                  {istatistik?.ilceSirasi ? `#${istatistik.ilceSirasi}` : '—'}
-                </Text>
-                <Text style={stiller.olcuEtiket} numberOfLines={1}>
-                  {istatistik?.ilce
-                    ? t('mekanSayfasi.ilcede', { ilce: istatistik.ilce })
-                    : t('mekanSayfasi.siralamaYok')}
-                </Text>
+              <View style={[stiller.olcu, stiller.olcuGenis]}>
+                <YildizIkonu boyut={21} />
+                <View style={stiller.olcuMetin}>
+                  {/* Sira YOKSA (ilce bilinmiyor ya da hic check-in yok)
+                      uydurma bir "#1" gostermiyoruz - cizgi koyuyoruz. */}
+                  <Text style={stiller.olcuSayi}>
+                    {istatistik?.ilceSirasi ? `#${istatistik.ilceSirasi}` : '—'}
+                  </Text>
+                  {/* IKI SATIRA izin veriliyor: 390 px'lik ekranda uc
+                      sutuna bolununce "Nilüfer'deki yerler" tek satira
+                      sigmiyor ve kirpiliyordu. Referansta tek satir ama
+                      orada gorsel daha genis - kirpmak yerine sarmak
+                      dogru. */}
+                  <Text style={stiller.olcuEtiket} numberOfLines={2}>
+                    {istatistik?.ilce
+                      ? t('mekanSayfasi.ilcedekiYerler', { ilce: istatistik.ilce })
+                      : t('mekanSayfasi.siralamaYok')}
+                  </Text>
+                </View>
               </View>
             </View>
 
@@ -386,6 +509,7 @@ export default function MekanSayfasi() {
                   <Text style={stiller.bolumSag}>
                     {t('mekanSayfasi.kisiSayisi', { sayi: toplamBurada })}
                   </Text>
+                  <OkIkonu boyut={15} />
                 </View>
 
                 <ScrollView
@@ -402,11 +526,19 @@ export default function MekanSayfasi() {
                       accessibilityLabel={kisi.kullaniciAdi ?? t('mekanSayfasi.biri')}
                     >
                       <View style={stiller.avatar}>
-                        <Text style={stiller.avatarHarf}>{basHarf(kisi.kullaniciAdi)}</Text>
+                        {avatarlar[kisi.kullaniciId] ? (
+                          <Image
+                            testID={`avatar-${kisi.kullaniciId}`}
+                            source={{ uri: avatarlar[kisi.kullaniciId] as string }}
+                            style={stiller.avatarGorsel}
+                          />
+                        ) : (
+                          <Text style={stiller.avatarHarf}>{basHarf(kisi.kullaniciAdi)}</Text>
+                        )}
                         <View style={stiller.avatarCanli} />
                       </View>
                       <Text style={stiller.avatarAd} numberOfLines={1}>
-                        {kisi.kullaniciAdi ?? t('mekanSayfasi.biri')}
+                        {ilkAd(kisi.kullaniciAdi) ?? t('mekanSayfasi.biri')}
                       </Text>
                     </Pressable>
                   ))}
@@ -431,7 +563,7 @@ export default function MekanSayfasi() {
                 accessibilityRole="button"
                 testID="sekme-liderlik"
               >
-                <KupaIkonu renk={sekme === 'liderlik' ? '#FFFFFF' : renk.metinIkincil} />
+                <KupaIkonu boyut={15} renk={sekme === 'liderlik' ? '#FFFFFF' : renk.metinIkincil} />
                 <Text style={[stiller.sekmeYazi, sekme === 'liderlik' && stiller.sekmeYaziAktif]}>
                   {t('mekanSayfasi.liderlik')}
                 </Text>
@@ -442,7 +574,7 @@ export default function MekanSayfasi() {
                 accessibilityRole="button"
                 testID="sekme-son"
               >
-                <SaatIkonu renk={sekme === 'son' ? '#FFFFFF' : renk.metinIkincil} />
+                <SaatIkonu boyut={15} renk={sekme === 'son' ? '#FFFFFF' : renk.metinIkincil} />
                 <Text style={[stiller.sekmeYazi, sekme === 'son' && stiller.sekmeYaziAktif]}>
                   {t('mekanSayfasi.sonCheckInler')}
                 </Text>
@@ -461,11 +593,18 @@ export default function MekanSayfasi() {
                       onPress={() => router.push(`/kullanici/${satir.kullaniciId}` as never)}
                       accessibilityRole="button"
                     >
-                      <SiraMadalyasi sira={sira + 1} />
+                      <SiraMadalyasi sira={sira + 1} boyut={26} />
                       <View style={stiller.kucukAvatar}>
-                        <Text style={stiller.kucukAvatarHarf}>
-                          {basHarf(satir.kullaniciAdi)}
-                        </Text>
+                        {avatarlar[satir.kullaniciId] ? (
+                          <Image
+                            source={{ uri: avatarlar[satir.kullaniciId] as string }}
+                            style={stiller.kucukAvatarGorsel}
+                          />
+                        ) : (
+                          <Text style={stiller.kucukAvatarHarf}>
+                            {basHarf(satir.kullaniciAdi)}
+                          </Text>
+                        )}
                       </View>
                       <View style={stiller.listeOrta}>
                         <Text style={stiller.listeAd} numberOfLines={1}>
@@ -475,6 +614,10 @@ export default function MekanSayfasi() {
                           {t('mekanSayfasi.checkInSayisi', { sayi: satir.checkInSayisi })}
                         </Text>
                       </View>
+                      {/* Tac YALNIZCA birincide: referanstaki gibi.
+                          Ikinci ve ucuncude madalya zaten sirayi
+                          soyluyor, tac orada anlamsiz tekrar olurdu. */}
+                      {sira === 0 && <TacIkonu boyut={17} />}
                       <Text style={stiller.listeSayi}>{satir.checkInSayisi}</Text>
                     </Pressable>
                   ))
@@ -490,7 +633,14 @@ export default function MekanSayfasi() {
                     accessibilityRole="button"
                   >
                     <View style={stiller.kucukAvatar}>
-                      <Text style={stiller.kucukAvatarHarf}>{basHarf(satir.kullaniciAdi)}</Text>
+                      {avatarlar[satir.kullaniciId] ? (
+                        <Image
+                          source={{ uri: avatarlar[satir.kullaniciId] as string }}
+                          style={stiller.kucukAvatarGorsel}
+                        />
+                      ) : (
+                        <Text style={stiller.kucukAvatarHarf}>{basHarf(satir.kullaniciAdi)}</Text>
+                      )}
                       {satir.canliMi && <View style={stiller.avatarCanli} />}
                     </View>
                     <View style={stiller.listeOrta}>
@@ -596,7 +746,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   icerik: {
     paddingHorizontal: bosluk.xl,
     paddingBottom: ALT_GEZINME_PAYI,
-    gap: bosluk.l,
+    gap: 14,
   },
   hata: {
     fontFamily: yazi.govdeOrta,
@@ -609,13 +759,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderWidth: 1,
     borderColor: renk.cizgi,
   },
-  haritaDugmesi: {
+  // Iki dugme dikey dizili, referanstaki gibi. Konteyner mutlak,
+  // dugmelerin kendisi akista - boylece aralarindaki bosluk `gap` ile
+  // veriliyor ve ikisini ayri ayri konumlandirmak gerekmiyor.
+  haritaDugmeleri: {
     position: 'absolute',
-    right: bosluk.m,
-    bottom: bosluk.m,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    right: 10,
+    bottom: 10,
+    gap: 9,
+  },
+  haritaDugmesi: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: renk.yuzey,
     alignItems: 'center',
     justifyContent: 'center',
@@ -630,14 +786,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bilgi: { flex: 1, gap: 2 },
   ad: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: 17,
     color: renk.metin,
     letterSpacing: -0.3,
   },
   adres: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 17,
     color: renk.metinIkincil,
   },
   // Turuncu KENARLIKLI, dolu degil: sayfadaki tek dolu turuncu alt
@@ -646,12 +802,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   tarifDugmesi: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    borderWidth: 1.5,
+    gap: 6,
+    borderWidth: 1.4,
     borderColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
   },
   tarifYazi: {
     fontFamily: yazi.govdeKalin,
@@ -659,37 +815,55 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.turuncu,
   },
 
+  // OLCULER SIKI, cunku 390 px'lik bir ekranda uc sutuna bolununce
+  // her kutuya ~95 px kaliyor ve "23 check-in" oraya ancak siginin
+  // sinirinda oturuyor. Ilk denemede once ucuncu kutu ("Nilüfer'deki
+  // yerler") kirpildi, pay verilince bu kez ORTA kutu kirpildi
+  // ("0 check…"). Ikisini birden kurtaran sey yalnizca ikonu, bosluklari
+  // ve ic payi kismak oldu. Referans gorsel ~914 px genislikte
+  // uretildigi icin orada bu sikisma gorunmuyor.
   olcuSeridi: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: renk.turuncuZemin,
     borderRadius: yuvarlak.kart,
-    paddingVertical: 14,
-    paddingHorizontal: bosluk.m,
+    paddingVertical: 13,
+    paddingHorizontal: bosluk.s,
   },
+  // Referans duzeni: ikon SOLDA, yaninda iki satir. 390 px'lik ekranda
+  // uc sutuna bolununce yer dar - bu yuzden sayi `govde` boyutunda
+  // (altBaslik degil) ve etiketler tek satira kilitli.
   olcu: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 2,
+    gap: 5,
   },
   olcuAyirac: {
     width: 1,
-    height: 44,
+    height: 34,
     backgroundColor: renk.cizgi,
   },
-  olcuSayiSatiri: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  // Ucuncu kutu digerlerinden GENIS: ilce adi en uzun metin.
+  olcuGenis: { flex: 1.22 },
+  olcuMetin: { flex: 1, minWidth: 0 },
+  olcuSayiSatiri: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   olcuSayi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: olcek.kucuk,
     color: renk.metin,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
+  },
+  olcuUst: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
   },
   olcuEtiket: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
+    lineHeight: 14,
     color: renk.metinIkincil,
-    textAlign: 'center',
   },
   canliNokta: {
     width: 7,
@@ -701,49 +875,58 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bolum: { gap: bosluk.s },
   bolumBasligi: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   canliNoktaBuyuk: {
-    width: 11,
-    height: 11,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: renk.turuncu,
   },
   bolumBaslikYazi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.govde,
+    fontSize: 15,
     color: renk.metin,
   },
   bolumSag: {
     marginLeft: 'auto',
     fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
+    fontSize: 12,
     color: renk.metinIkincil,
   },
 
-  avatarSeridi: { gap: bosluk.m, paddingVertical: 2 },
-  avatarKutu: { alignItems: 'center', width: 60, gap: 5 },
+  // Oge basina ~56 px: alti tanesi 342 px'lik icerik genisligine
+  // siginiyor, yedincisi kayiyor. Ilk olcude 70 px'ti ve BES avatar
+  // bile tasiyordu.
+  // Referansta avatarlar neredeyse bitisik: merkez araligi 107 px,
+  // cap 104 px - yani aradaki bosluk 3 px'e denk geliyor. Boylece
+  // alti avatar + "+1" tek ekrana siginiyor.
+  avatarSeridi: { gap: 3, paddingVertical: 2, paddingRight: bosluk.m },
+  avatarKutu: { alignItems: 'center', width: 47, gap: 4 },
   avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: renk.turuncuZemin,
-    borderWidth: 2,
+    borderWidth: 1.8,
     borderColor: renk.turuncu,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarHarf: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: olcek.govde,
     color: renk.turuncu,
   },
+  // Fotograf cemberin ICINE oturuyor: kenarlik disarida kaliyor, yani
+  // turuncu halka gorselin uzerine binmiyor.
+  avatarGorsel: { width: '100%', height: '100%', borderRadius: 20 },
   // Yesil nokta "su an burada" demek; turuncu cemberin uzerinde ayri
   // bir renk olmasi lazim ki halkayla karismasin.
   avatarCanli: {
     position: 'absolute',
-    right: 1,
-    bottom: 1,
-    width: 13,
-    height: 13,
-    borderRadius: 7,
+    right: 0,
+    bottom: 0,
+    width: 11,
+    height: 11,
+    borderRadius: 6,
     backgroundColor: '#2FBF5B',
     borderWidth: 2,
     borderColor: renk.zemin,
@@ -756,25 +939,25 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   avatarAd: {
     fontFamily: yazi.govde,
-    fontSize: olcek.minik,
+    fontSize: 10,
     color: renk.metinIkincil,
-    maxWidth: 60,
+    maxWidth: 47,
   },
 
   sekmeler: {
     flexDirection: 'row',
     backgroundColor: renk.turuncuZemin,
     borderRadius: yuvarlak.hap,
-    padding: 4,
-    gap: 4,
+    padding: 3,
+    gap: 3,
   },
   sekme: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 7,
-    paddingVertical: 11,
+    gap: 6,
+    paddingVertical: 9,
     borderRadius: yuvarlak.hap,
   },
   sekmeAktif: { backgroundColor: renk.turuncu },
@@ -795,37 +978,40 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   listeSatiri: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: bosluk.s,
-    paddingVertical: 12,
+    gap: 9,
+    paddingVertical: 9,
   },
   listeAyirac: { borderTopWidth: 1, borderTopColor: renk.cizgi },
   kucukAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: renk.turuncuZemin,
+    borderWidth: 1.5,
+    borderColor: renk.turuncu,
     alignItems: 'center',
     justifyContent: 'center',
   },
   kucukAvatarHarf: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.govde,
+    fontSize: olcek.kucuk,
     color: renk.turuncu,
   },
+  kucukAvatarGorsel: { width: '100%', height: '100%', borderRadius: 15 },
   listeOrta: { flex: 1, minWidth: 0 },
   listeAd: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
+    fontSize: olcek.kucuk,
     color: renk.metin,
   },
   listeAlt: {
     fontFamily: yazi.govde,
-    fontSize: olcek.minik,
+    fontSize: 10,
     color: renk.metinIkincil,
   },
   listeSayi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: olcek.govde,
     color: renk.turuncu,
   },
   listeZaman: {

@@ -169,3 +169,57 @@ export function SiraMadalyasi({ sira, boyut = 30 }: { sira: number; boyut?: numb
     </Svg>
   )
 }
+
+/** Nisangah - haritanin uzerindeki ust yuvarlak dugme (konumu goster). */
+export function NisangahIkonu({ boyut = 20, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.metin
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Circle cx={12} cy={12} r={4.2} fill="none" stroke={c} strokeWidth={2} />
+      <Path
+        d="M12 2.2v3.2M12 18.6v3.2M2.2 12h3.2M18.6 12h3.2"
+        stroke={c}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  )
+}
+
+/**
+ * Tac - liderlik tablosunda YALNIZCA birincinin yaninda.
+ *
+ * Ikinci ve ucuncude madalya zaten sirayi soyluyor; tac orada anlamsiz
+ * bir tekrar olurdu.
+ */
+export function TacIkonu({ boyut = 22, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.turuncu
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M3.2 8.4l3.5 3 5.3-6 5.3 6 3.5-3-1.8 10.2H5z"
+        fill={c}
+      />
+    </Svg>
+  )
+}
+
+/** Sag ok - bolum basligindaki "7 kisi ›". */
+export function OkIkonu({ boyut = 17, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.metinSoluk
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M9.5 5.5l6.5 6.5-6.5 6.5"
+        fill="none"
+        stroke={c}
+        strokeWidth={2.1}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}

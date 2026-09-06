@@ -306,9 +306,9 @@ describe('MekanSayfasi - olcu seridi', () => {
     await render(<CheckInHaritasiEkrani />)
 
     await waitFor(() => expect(screen.getByText('7')).toBeTruthy())
-    expect(screen.getByText('23')).toBeTruthy()
+    expect(screen.getByText('23 check-in')).toBeTruthy()
     expect(screen.getByText('#3')).toBeTruthy()
-    expect(screen.getByText('Nilüfer\'de')).toBeTruthy()
+    expect(screen.getByText('Nilüfer\'deki yerler')).toBeTruthy()
     await cevreOturana()
   })
 
@@ -359,11 +359,12 @@ describe('MekanSayfasi - su an burada', () => {
   })
 
   /**
-   * HARITADA VE LISTEDE YUZ YOK - uygulamanin kalici kurali. Referans
-   * gorselde fotograflar vardi, bilerek alinmadi: avatar bas harfli
-   * bir daire.
+   * Avatar GERCEK PROFIL FOTOGRAFI gosteriyor (referanstaki gibi), ama
+   * fotografi olmayan kisi ADININ BAS HARFINE duesuyor. Bu test o geri
+   * duesme yolunu kilitliyor - `profilOzetleriniGetir` mock'lanmadigi
+   * icin avatar sozlugu bos kaliyor.
    */
-  it('avatar YUZ degil BAS HARF gosterir', async () => {
+  it('fotografi olmayan kisi BAS HARF gosterir', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
     ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
       { id: 'c1', kullaniciId: 'k1', kullaniciAdi: 'Orçun' },
