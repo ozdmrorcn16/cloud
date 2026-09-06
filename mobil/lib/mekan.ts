@@ -118,26 +118,92 @@ type MekanYogunlukSatiri = MekanSatiri & {
  * edilebilir kilardi. 10 ve 3 secildi cunku ikisi de tek bir kisinin
  * uretemeyecegi sayilar.
  */
+/**
+ * TUR SECICIDEKI TEMEL TURLER (kullanicinin karari 2026-09-06).
+ *
+ * Once "cevredeki turler" gosteriliyordu ve liste 60'ta kesiliyordu -
+ * kullanicinin cevresinde 138 tur vardi, yani liste eksikti. Sonra
+ * "butun turler" denendi: veritabaninda 300 tur var ve kullanici
+ * "300 cok fazla olur" dedi.
+ *
+ * EN YAYGIN N TUR DE ISE YARAMADI, olculdu: ilk 45'in icinde "Yapi"
+ * (123.499), "Mekan" (66.417), "Isletme" (54.925), "Depo", "Ciftlik",
+ * "Dag" gibi bir insanin ARAMAYACAGI genel etiketler var. Yaygin olmak
+ * "temel" olmak degil.
+ *
+ * Bu yuzden liste ELLE secildi ve her turun veritabaninda gercekten
+ * bulundugu SQL ile dogrulandi (`mekan_turleri` gorunumunden). Cok
+ * seyrek olanlar bilerek disarida: "Berber" 477, "Piknik alani" 12 -
+ * secilse neredeyse hep bos liste verirlerdi.
+ *
+ * GRUPLU, cunku duz bir 50 satirlik liste taranamiyor; basliklar goze
+ * tutamak veriyor.
+ */
+export const TEMEL_TUR_GRUPLARI: { baslik: string; turler: string[] }[] = [
+  {
+    baslik: 'Yeme içme',
+    turler: [
+      'Kafe', 'Kahveci', 'Çay evi', 'Restoran', 'Lokanta', 'Türk mutfağı',
+      'Kebapçı', 'Balık restoranı', 'Ocakbaşı', 'Kahvaltı salonu', 'Fırın',
+    ],
+  },
+  {
+    baslik: 'Hızlı ve tatlı',
+    turler: ['Fast food', 'Burgerci', 'Pizzacı', 'Tatlıcı', 'Dondurmacı'],
+  },
+  {
+    baslik: 'Gece',
+    turler: ['Bar', 'Pub', 'Gece kulübü', 'Meyhane', 'Nargile kafe', 'Kokteyl barı'],
+  },
+  {
+    baslik: 'Açık alan',
+    turler: ['Park', 'Halk bahçesi', 'Doğal alan', 'Plaj', 'Meydan', 'Kamp alanı', 'Göl'],
+  },
+  {
+    baslik: 'Kültür',
+    turler: [
+      'Müze', 'Sinema', 'Tiyatro', 'Sanat galerisi', 'Kütüphane',
+      'Tarihi yer', 'Konser salonu', 'Kültür merkezi',
+    ],
+  },
+  {
+    baslik: 'Spor',
+    turler: ['Spor salonu', 'Stadyum', 'Yüzme havuzu', 'Halı saha'],
+  },
+  {
+    baslik: 'Alışveriş',
+    turler: ['AVM', 'Market', 'Bakkal', 'Giyim mağazası', 'Kitapçı', 'Kuyumcu'],
+  },
+  {
+    baslik: 'Diğer',
+    turler: ['Otel', 'Eczane', 'Hastane', 'Banka', 'Kuaför', 'Güzellik salonu', 'Üniversite'],
+  },
+]
+
+/** Duz liste - adet eslestirmesi ve dogrulama icin. */
+export const TEMEL_TURLER: string[] = TEMEL_TUR_GRUPLARI.flatMap((g) => g.turler)
+
 export type YakinTur = { tur: string; adet: number }
 
 /**
- * Kesfet tur secicisinin listesi: verilen yaricapta GERCEKTEN bulunan
- * turler ve adetleri.
+ * Tur secicideki ADETLER: kullanicinin ILINDEKI tur sayilari.
  *
- * Sabit bir tur listesi gosterilmiyor - veritabaninda 162 tur var ve
- * cogu herhangi bir cevrede hic bulunmuyor; kullanici "Marina" secip
- * bos bir listeyle karsilasirdi. Burada donen her tur o cevrede
- * gercekten var.
+ * Kullanicinin kurali (2026-09-06): "Filtrelemede km siniri yok,
+ * filtreleme yapan biri bulundugu sehirdeki kayitlara gore sonuclar
+ * bulur." Yani secicideki sayi da il bazli - "Kafe 23" yazip 500 sonuc
+ * gelmesi kullaniciyi yanıltirdi.
+ *
+ * Turlerin KENDISI bu cagriya bagli DEGIL: liste `TEMEL_TUR_GRUPLARI`
+ * ile istemcide sabit. Buradan yalnizca sayilar geliyor, yani cagri
+ * basarisiz olsa bile secici acilabiliyor.
  */
-export async function yakinTurleriGetir(
+export async function ildekiTurleriGetir(
   lat: number,
-  lng: number,
-  yaricapMetre = KESFET_YARICAP_METRE
+  lng: number
 ): Promise<YakinTur[]> {
-  const { data, error } = await supabase.rpc('yakin_turler', {
+  const { data, error } = await supabase.rpc('ildeki_turler', {
     p_lat: lat,
     p_lng: lng,
-    p_yaricap_metre: yaricapMetre,
   })
   if (error) throw new Error(hataMetni(error))
   return ((data as { tur: string; adet: number }[]) ?? []).map((s) => ({

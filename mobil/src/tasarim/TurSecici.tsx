@@ -21,11 +21,19 @@ import type { YakinTur } from '../../lib/mekan'
  * dokunus listeyi yeniden yukler, kullanici yanlislikla actigi bir
  * turden geri donemezdi.
  *
- * LISTE SUNUCUDAN, cevreye gore geliyor (`yakin_turler`). Sabit bir
- * tur listesi gosterilmiyor: veritabaninda 162 tur var ve cogu
- * herhangi bir cevrede hic bulunmuyor - kullanici "Marina" secip bos
- * bir listeyle karsilasirdi. Yanindaki sayi kac mekan oldugunu
- * soyluyor, yani secimden once sonucu tahmin edilebiliyor.
+ * LISTE ISTEMCIDE SABIT (`TEMEL_TUR_GRUPLARI`), yalnizca yanlarindaki
+ * ADETLER sunucudan geliyor. Uc secenek denendi:
+ *   - cevredeki turler -> liste 60'ta kesiliyordu, oysa 1 km'de 138
+ *     tur vardi
+ *   - butun turler (300) -> kullanici "300 cok fazla olur" dedi
+ *   - en yaygin N     -> olculdu, ilk 45'in icinde "Yapi", "Mekan",
+ *     "Isletme", "Depo", "Dag" gibi kimsenin aramayacagi genel
+ *     etiketler var; yaygin olmak "temel" olmak degil
+ * Bu yuzden liste elle secildi ve SQL ile dogrulandi.
+ *
+ * Adetler kullanicinin ILINDEKI sayilar (kullanicinin kurali
+ * 2026-09-06: filtrelemede km siniri yok, sehir siniri var). Bir tur o
+ * ilde hic yoksa satirda sayi yazmiyor.
  */
 
 function OnayIkonu({ renk: c }: { renk: string }) {
@@ -45,14 +53,18 @@ function OnayIkonu({ renk: c }: { renk: string }) {
 
 export function TurSecici({
   acikMi,
-  turler,
+  gruplar,
+  adetler,
   yukleniyor,
   secili,
   onKapat,
   onKaydet,
 }: {
   acikMi: boolean
-  turler: YakinTur[]
+  /** Gosterilecek TEMEL turler, basliklara ayrilmis. Istemcide sabit. */
+  gruplar: { baslik: string; turler: string[] }[]
+  /** Kullanicinin ILINDEKI adetler; eksik olan tur icin sayi gosterilmiyor. */
+  adetler: YakinTur[]
   yukleniyor: boolean
   /** Disarida SU AN uygulanan secim. Pencere her acilista bunu aliyor. */
   secili: string[]
@@ -74,6 +86,11 @@ export function TurSecici({
   }, [acikMi, secili])
 
   if (!acikMi) return null
+
+  // Tur -> adet. Sayilar il bazli geliyor ve bazi turler o ilde hic
+  // bulunmayabilir; o zaman satirda sayi YAZMIYOR (0 yazmak "burasi
+  // bos" gibi okunup gereksiz gurultu uretiyordu).
+  const adetSozlugu = new Map(adetler.map((a) => [a.tur, a.adet]))
 
   function degistir(tur: string) {
     setTaslak((onceki) =>
@@ -106,38 +123,43 @@ export function TurSecici({
             </Pressable>
           </View>
 
-          {yukleniyor ? (
-            <View style={stiller.ortala}>
-              <ActivityIndicator size="small" color={renk.turuncu} />
-            </View>
-          ) : turler.length === 0 ? (
-            <Text style={stiller.bos}>{t('kesfet.turBulunamadi')}</Text>
-          ) : (
-            <ScrollView style={stiller.liste} showsVerticalScrollIndicator={false}>
-              {turler.map((tur) => {
-                const isaretli = taslak.includes(tur.tur)
-                return (
-                  <Pressable
-                    key={tur.tur}
-                    style={stiller.satir}
-                    onPress={() => degistir(tur.tur)}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: isaretli }}
-                    testID={`tur-${tur.tur}`}
-                  >
-                    <View style={[stiller.kutu, isaretli && stiller.kutuIsaretli]}>
-                      {isaretli && <OnayIkonu renk="#FFFFFF" />}
-                    </View>
-                    <Text style={stiller.turAdi} numberOfLines={1}>
-                      {tur.tur}
-                    </Text>
-                    {/* Adet: secimden ONCE sonucu tahmin ettiriyor. */}
-                    <Text style={stiller.adet}>{tur.adet}</Text>
-                  </Pressable>
-                )
-              })}
-            </ScrollView>
-          )}
+          <ScrollView style={stiller.liste} showsVerticalScrollIndicator={false}>
+            {/* Yukleniyor gostergesi listeyi ENGELLEMIYOR: turler
+                istemcide sabit, gelen sey yalnizca sayilar. */}
+            {yukleniyor && (
+              <View style={stiller.ortala}>
+                <ActivityIndicator size="small" color={renk.turuncu} />
+              </View>
+            )}
+            {gruplar.map((grup) => (
+              <View key={grup.baslik}>
+                <Text style={stiller.grupBasligi}>{grup.baslik}</Text>
+                {grup.turler.map((tur) => {
+                  const isaretli = taslak.includes(tur)
+                  const adet = adetSozlugu.get(tur)
+                  return (
+                    <Pressable
+                      key={tur}
+                      style={stiller.satir}
+                      onPress={() => degistir(tur)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: isaretli }}
+                      testID={`tur-${tur}`}
+                    >
+                      <View style={[stiller.kutu, isaretli && stiller.kutuIsaretli]}>
+                        {isaretli && <OnayIkonu renk="#FFFFFF" />}
+                      </View>
+                      <Text style={stiller.turAdi} numberOfLines={1}>
+                        {tur}
+                      </Text>
+                      {/* Adet: secimden ONCE sonucu tahmin ettiriyor. */}
+                      {adet !== undefined && <Text style={stiller.adet}>{adet}</Text>}
+                    </Pressable>
+                  )
+                })}
+              </View>
+            ))}
+          </ScrollView>
 
           <View style={stiller.eylemler}>
             {/* "Tumu" secimi TEMIZLIYOR - yani suzgec kalkiyor ve butun
@@ -220,6 +242,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingVertical: bosluk.xl,
   },
   liste: { paddingHorizontal: bosluk.sayfa },
+  grupBasligi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: renk.metinSoluk,
+    paddingTop: bosluk.l,
+    paddingBottom: bosluk.xs,
+  },
   satir: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -3,7 +3,7 @@ import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
-  yakinTurleriGetir,
+  ildekiTurleriGetir,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
 } from '../../../lib/mekan'
@@ -21,7 +21,7 @@ jest.mock('../../../lib/konum', () => ({
 jest.mock('../../../lib/mekan', () => ({
   ...jest.requireActual('../../../lib/mekan'),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
-  yakinTurleriGetir: jest.fn().mockResolvedValue([]),
+  ildekiTurleriGetir: jest.fn().mockResolvedValue([]),
 }))
 
 const mockRouterPush = jest.fn()
@@ -442,7 +442,7 @@ describe('MekanAramaEkrani', () => {
   it('suzgec dugmesi tur secicisini aciyor, KAYDET secimi uyguluyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
-    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([
+    ;(ildekiTurleriGetir as jest.Mock).mockResolvedValue([
       { tur: 'Kafe', adet: 12 },
       { tur: 'Park', adet: 3 },
     ])
@@ -460,11 +460,15 @@ describe('MekanAramaEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('tur-kaydet'))
 
+    // TUR SUZGECI VARKEN YARICAP KALKIYOR (kullanicinin kurali
+    // 2026-09-06: "Filtrelemede km siniri yok, filtreleme yapan biri
+    // bulundugu sehirdeki kayitlara gore sonuclar bulur"). Il sinirini
+    // sunucu uyguluyor.
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
         41.015,
         28.979,
-        KESFET_YARICAP_METRE,
+        null,
         undefined,
         ['Kafe'],
         KESFET_LIMIT
@@ -476,7 +480,7 @@ describe('MekanAramaEkrani', () => {
   it('secici kapatilinca secim UYGULANMIYOR', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
-    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
+    ;(ildekiTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
 
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
@@ -494,7 +498,7 @@ describe('MekanAramaEkrani', () => {
   it('"Tumu" secimi temizliyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
-    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
+    ;(ildekiTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
 
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())

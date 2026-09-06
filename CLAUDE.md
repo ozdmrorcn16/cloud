@@ -567,6 +567,75 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### TUR FILTRESI: TEMEL TURLER, IL BAZLI, KM SINIRSIZ - 2026-09-06
+
+Kullanicinin kurallari (sirayla verildi, her biri oncekini duzeltti):
+
+    "Filtre tusuna basinca bizim mevcuttaki turlerimizin listesi ciksin"
+    "Filtrede butun verilerimizin turleri gorulmeli"
+    "Temel turleri goster, 300 cok fazla olur"
+    "Filtrelemede km siniri yok, filtreleme yapan biri bulundugu
+     sehirdeki kayitlara gore sonuclar bulur"
+    "Yaptigi filtrelemeye gore yakindan uzaga, bulundugu konuma gore"
+
+**TUR LISTESI ISTEMCIDE SABIT** (`TEMEL_TUR_GRUPLARI`, sekiz grup /
+~50 tur). Uc secenek denendi ve ikisi OLCUMLE elendi:
+
+| Deneme | Sonuc |
+|---|---|
+| Cevredeki turler | Liste 60'ta kesiliyordu; kullanicinin 1 km'sinde 138 tur vardi |
+| Butun turler (300) | Kullanici "300 cok fazla olur" dedi |
+| En yaygin N | Ilk 45'te "Yapi" 123.499, "Mekan" 66.417, "Isletme", "Depo", "Dag" - kimsenin aramayacagi genel etiketler |
+
+**Yaygin olmak "temel" olmak degil.** Liste elle secildi ve her turun
+veritabaninda gercekten bulundugu SQL ile dogrulandi. Cok seyrek
+olanlar bilerek disarida: "Berber" 477, "Piknik alani" 12 - secilse
+neredeyse hep bos liste verirlerdi.
+
+**ADETLER IL BAZLI** (`ildeki_turler` RPC). Sonuc il sinirli oldugu
+icin adet de oyle olmali - "Kafe 23" yazip 500 sonuc gelmesi
+yaniltirdi. Canli olculdu: 0,39 sn, Bursa'da 297 tur, Kafe 6105.
+
+**IL BAZLI SAYIM ONCEDEN HESAPLANIYOR** (`mekan_turleri` materialized
+view, gunluk cron). Ham sayim OLCULDU: **13,5 saniye**, 122.896 blok -
+`mekanlar_il_idx` kullanilmasina ragmen. PostgREST siniri 8 sn, yani
+canli sorgulanamaz. Gorunum en fazla 81 il x 300 tur = 24 bin satir.
+
+**KM SINIRI KALKTI, IL SINIRI GELDI.** `yakin_mekanlar_yogunluk` artik
+`p_turler` varken de il hesabi yapiyor (onceden yalnizca `p_arama`
+varken yapiyordu). Istemci tur secilince `yaricapMetre = null`
+gonderiyor. Bu, 2026-09-01'deki ARAMA kuralinin aynisi - iki yol artik
+ayni davraniyor.
+
+**SIRALAMA DEGISMEDI:** sabit kural geregi yakindan uzaga, kullanicinin
+konumuna gore (`konum <-> ST_MakePoint(...)`). Filtre yalnizca SUZUYOR.
+
+**(il, tur) BILESIK INDEKSI SART CIKTI - olculdu.** Indekssiz halde
+"Bursa'daki kafeler, yakindan uzaga, ilk 100" sorgusu **6.452 ms**
+suruyor ve zaman asimina duesuyordu. Plan sunu gosterdi:
+`mekanlar_il_ad_trgm_idx` ile `mekanlar_tur_idx` BitmapAnd ile
+birlestiriliyor, bitmap **TASIYOR** (lossy=43209) ve **1.214.581 satir
+heap'ten yeniden okunuyordu**.
+
+    once  : 6.452 ms, 47.383 blok
+    sonra :   946 ms,  6.050 blok      (mekanlar_il_tur_idx, 42 MB)
+
+**Ders: iki ayri btree indeksin BitmapAnd ile birlestirilmesi bilesik
+indeksin yerini tutmuyor** - bitmap tasinca kazanc tamamen kayboluyor.
+Ayni sinif sorun 2026-09-01'de arama tarafinda yasanmisti ve orada
+`btree_gin` bilesik indeksiyle cozulmustu.
+
+Canli dogrulama: Kafe 100 sonuc 0,56 sn, uc tur birlikte 1,51 sn,
+hepsi Bursa.
+
+**SECIM PENCEREDE GECICI:** liste ancak "Kaydet"e basilinca degisiyor;
+perde ya da carpi hicbir sey uygulamiyor - yoksa "vazgec" diye bir sey
+olmazdi. "Tumu" secimi temizliyor. Secili turler ekranda cip olarak
+duruyor ve tek dokunusla kaldirilabiliyor; suzgec dugmesinde de kac
+tur secili oldugunu soyleyen rozet var. Bunlarin hepsi kullanicinin
+"bu tus neye yariyor" sorusundan cikti - suzgec yalnizca pencerenin
+icinde kalirsa listenin neden kisa oldugu gorunmuyor.
+
 ### SUZGEC DUGMESI TUR SECICIYE DONDU - 2026-09-06
 
 Kullanici sordu: "Mekan ara'nin yanindaki filtreleme tusu neye

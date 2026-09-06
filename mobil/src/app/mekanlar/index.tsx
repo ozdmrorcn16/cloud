@@ -23,7 +23,8 @@ import {
   yakinMekanlariYogunlukIleGetir,
   turuGosterilir,
   mekanDurumu,
-  yakinTurleriGetir,
+  ildekiTurleriGetir,
+  TEMEL_TUR_GRUPLARI,
   type MekanDurumu,
   type YakinTur,
   KESFET_YARICAP_METRE,
@@ -215,7 +216,11 @@ export default function KesfetEkrani() {
       const sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
-        aramaVarMi ? null : KESFET_YARICAP_METRE,
+        // YARICAP: arama ya da TUR SUZGECI varken kalkiyor.
+        // Kullanicinin kurali (2026-09-06): "Filtrelemede km siniri
+        // yok, filtreleme yapan biri bulundugu sehirdeki kayitlara
+        // gore sonuclar bulur." Il sinirini SUNUCU uyguluyor.
+        aramaVarMi || turSuzgeci ? null : KESFET_YARICAP_METRE,
         metin || undefined,
         turSuzgeci ? turler : null,
         aramaVarMi ? null : KESFET_LIMIT
@@ -329,8 +334,10 @@ export default function KesfetEkrani() {
     if (!cihazKonumu) return
     setTurlerYukleniyor(true)
     try {
-      setYakinTurler(await yakinTurleriGetir(cihazKonumu.lat, cihazKonumu.lng))
+      setYakinTurler(await ildekiTurleriGetir(cihazKonumu.lat, cihazKonumu.lng))
     } catch {
+      // Sayilar gelmezse secici YINE aciliyor: tur listesi istemcide
+      // sabit, yalnizca yanlarindaki adet eksik kalir.
       setYakinTurler([])
     } finally {
       setTurlerYukleniyor(false)
@@ -886,7 +893,8 @@ export default function KesfetEkrani() {
 
     <TurSecici
       acikMi={turSeciciAcik}
-      turler={yakinTurler}
+      gruplar={TEMEL_TUR_GRUPLARI}
+      adetler={yakinTurler}
       yukleniyor={turlerYukleniyor}
       secili={seciliTurler}
       onKapat={() => setTurSeciciAcik(false)}
