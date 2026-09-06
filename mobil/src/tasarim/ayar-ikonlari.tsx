@@ -36,6 +36,24 @@ export const KisiIkonu = () => {
   )
 }
 
+// Etiket ikonu: klasik "tag" formu. Etiket onayi ayarinda kullaniliyor
+// (kullanicinin karari 2026-09-06).
+export const EtiketIkonu = () => {
+  const renk = useRenk()
+  return govde(
+    <>
+      <Path
+        d="M11.5 3.5H19a1.5 1.5 0 0 1 1.5 1.5v7.5L12 21 3 12l8.5-8.5z"
+        stroke={renk.metin}
+        strokeWidth={K}
+        fill="none"
+        strokeLinejoin="round"
+      />
+      <Circle cx={16} cy={8} r={1.4} fill={renk.metin} />
+    </>
+  )
+}
+
 export const BelgeIkonu = () => {
   const renk = useRenk()
   return govde(

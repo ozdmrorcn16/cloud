@@ -4,6 +4,7 @@ import {
   varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
   profilGizliGetir,
+  etiketOnayiGerekliGetir,
   aramadaGorunsunAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
@@ -18,6 +19,8 @@ jest.mock('../../../lib/ayarlar', () => ({
   profilGizliAyarla: jest.fn(),
   aramadaGorunsunAyarla: jest.fn(),
   kullaniciAdiDurumunuGetir: jest.fn(),
+  etiketOnayiGerekliGetir: jest.fn(),
+  etiketOnayiGerekliAyarla: jest.fn(),
 }))
 
 jest.mock('../../../lib/hesap', () => ({ hesabiDondur: jest.fn() }))
@@ -43,6 +46,7 @@ beforeEach(() => {
   ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
   ;(aramadaGorunsunGetir as jest.Mock).mockResolvedValue(true)
   ;(profilGizliGetir as jest.Mock).mockResolvedValue(false)
+    ;(etiketOnayiGerekliGetir as jest.Mock).mockResolvedValue(false)
   ;(aramadaGorunsunAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
     kullaniciAdi: 'orcun',

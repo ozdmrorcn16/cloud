@@ -567,6 +567,49 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### ETIKET ONAYI ARTIK BIR AYAR - 2026-09-06
+
+Kullanicinin karari: "Bir kullanici arkadas oldugu birisini direk
+etiketleyebilir. Ayarlar gizlilik ayarlarinda ... bir gizlilik ayari
+getirelim. Etiket onayi kapali olan birini birisi etiketlemek istedigi
+zaman o kisiye onay bildirimi gelsin."
+
+**2026-08-29'daki "HER etiket onay bekler" kurali ARTIK GECERSIZ.**
+Yeni varsayilan DIREK: karsilikli arkadasin seni onaysiz etiketliyor.
+Isteyen `profiller.etiket_onayi_gerekli` ile "once bana sor" diyor.
+Ayarlar > "Seni kimler görebilir?" altinda **"Etiketlemeden önce bana
+sor"** anahtari.
+
+**KARSILIKLI ARKADASLIK SARTI DEGISMEDI** - yabanci hala
+etiketleyemiyor. INSERT politikasindaki `bag.takip_ediyor_mu` duruyor;
+degisen yalnizca ONAYIN gerekip gerekmedigi.
+
+**DURUMU ISTEMCI DEGIL SUNUCU YAZIYOR.** Migrasyon 20260906090000:
+`etiket_durumu` adli BEFORE INSERT tetikleyicisi hedefin ayarina
+bakip `durum` alanini kendisi belirliyor ve **istemciden geleni
+EZIYOR**. Tetikleyici `security definer`, cunku `profiller` RLS'i
+yalnizca kendi satirini gosteriyor - etiketleyen hedefin ayarini
+okuyamaz.
+
+Politikadaki eski `durum = 'bekliyor'` sarti KALDIRILDI; o sart
+etiketleyenin kendi etiketini onayli yazmasini engellemek icindi,
+artik ayni isi tetikleyici yapiyor. Sart birakilsaydi "onaylandi"
+yazan tetikleyici kendi politikasina takilirdi (BEFORE trigger
+calisir, SONRA WITH CHECK degerlendirilir).
+
+**CANLI DOGRULANDI** - jest bu sinif davranisi goremez:
+
+    ayar KAPALI, istemci 'bekliyor' gonderdi  -> durum = onaylandi
+    ayar ACIK,   istemci 'onaylandi' gonderdi -> durum = bekliyor
+
+Ikinci satir onemli: istemci degeri zorlayamiyor. Test etiketleri
+sonrasinda silindi, gercek veriye dokunulmadi.
+
+**ACIK BORC:** onay istegi yalnizca UYGULAMA ICI bildirim ekraninda
+gorunuyor. PUSH bildirimi YOK - `bildirim-gonder` su an mesaj, takip
+istegi, sohbet istegi ve kabul turlerini tasiyor, etiketi tasimiyor.
+Eklenmesi ayri bir is.
+
 ### HESAP OLUSTURMA UC ADIMA BOLUNDU - 2026-09-04
 
 Kullanicinin secimi; uc yaklasim gorsel olarak sunuldu (etiketli tek

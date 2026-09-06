@@ -321,6 +321,11 @@ export default {
     bolumGorunurluk: 'Seni kimler görebilir?',
     checkInGorunurlugu: 'Yeni check-in’lerim',
     aniGorunurlugu: 'Geçmiş anılarım',
+    // ETIKET ONAYI (kullanicinin karari 2026-09-06). Varsayilan
+    // KAPALI: arkadasin seni direk etiketleyebiliyor.
+    etiketOnayi: 'Etiketlemeden önce bana sor',
+    etiketOnayiAciklama:
+      'Kapalıyken arkadaşların seni doğrudan etiketleyebilir. Açtığında etiket önce sana sorulur; onaylayana kadar kimse görmez.',
     aramadaGorun: 'Beni aramada göster',
     aramadaGorunEtiket: 'Aramada görünürlük',
 

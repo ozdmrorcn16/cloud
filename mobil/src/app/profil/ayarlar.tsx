@@ -7,6 +7,8 @@ import {
   aramadaGorunsunAyarla,
   profilGizliGetir,
   profilGizliAyarla,
+  etiketOnayiGerekliGetir,
+  etiketOnayiGerekliAyarla,
   kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import type { Bulunurluk } from '../../../lib/checkin'
@@ -27,6 +29,7 @@ import {
   KonumIkonu,
   GozIkonu,
   AramaIkonu,
+  EtiketIkonu,
   DurdurIkonu,
   CopIkonu,
   CikisIkonu,
@@ -53,6 +56,7 @@ export default function AyarlarEkrani() {
   const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
   const [profilGizli, setProfilGizli] = useState(false)
+  const [etiketOnayi, setEtiketOnayi] = useState(false)
   const [kullaniciAdi, setKullaniciAdi] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
@@ -68,6 +72,7 @@ export default function AyarlarEkrani() {
       setVarsayilanBulunurluk(await varsayilanBulunurluguGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
       setProfilGizli(await profilGizliGetir())
+      setEtiketOnayi(await etiketOnayiGerekliGetir())
       setKullaniciAdi((await kullaniciAdiDurumunuGetir()).kullaniciAdi)
       setHata(null)
     } catch (e) {
@@ -97,6 +102,29 @@ export default function AyarlarEkrani() {
       setHata(null)
     } catch (e) {
       setProfilGizli(oncekiDeger)
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
+
+  /**
+   * ETIKET ONAYI (kullanicinin karari 2026-09-06).
+   *
+   * Kapaliyken karsilikli arkadasin seni DIREK etiketliyor; aciksa
+   * once sana soruluyor ve onaylayana kadar etiket kimseye
+   * gorunmuyor.
+   *
+   * Digger gizlilik anahtarlarindaki desen: hata olursa ekran ESKI
+   * degere doner. Ayar gizlilikle ilgili oldugu icin ekranin
+   * sunucudan farkli bir sey gostermesi kabul edilemez.
+   */
+  async function etiketOnayiDegisti(deger: boolean) {
+    const oncekiDeger = etiketOnayi
+    setEtiketOnayi(deger)
+    try {
+      await etiketOnayiGerekliAyarla(deger)
+      setHata(null)
+    } catch (e) {
+      setEtiketOnayi(oncekiDeger)
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
@@ -188,6 +216,21 @@ export default function AyarlarEkrani() {
                 accessibilityLabel={t('ayarlar.profilGizli')}
                 value={profilGizli}
                 onValueChange={profilGizliDegisti}
+                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
+                thumbColor={renk.yuzey}
+                {...({ activeThumbColor: renk.yuzey } as object)}
+              />
+            }
+          />
+          <Satir
+            ikon={<EtiketIkonu />}
+            etiket={t('ayarlar.etiketOnayi')}
+            aciklama={t('ayarlar.etiketOnayiAciklama')}
+            sagBilesen={
+              <Switch
+                accessibilityLabel={t('ayarlar.etiketOnayi')}
+                value={etiketOnayi}
+                onValueChange={etiketOnayiDegisti}
                 trackColor={{ true: renk.turuncu, false: renk.cizgi }}
                 thumbColor={renk.yuzey}
                 {...({ activeThumbColor: renk.yuzey } as object)}

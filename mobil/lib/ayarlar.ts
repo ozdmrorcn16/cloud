@@ -79,6 +79,37 @@ export async function profilGizliAyarla(deger: boolean): Promise<void> {
   if (error) throw new Error(hataMetni(error))
 }
 
+/**
+ * ETIKET ONAYI (kullanicinin karari 2026-09-06).
+ *
+ * false (varsayilan): karsilikli arkadasin seni DIREK etiketler.
+ * true: etiket once sana soruluyor, onaylayana kadar kimseye
+ * gorunmuyor.
+ *
+ * Karar sunucuda uygulaniyor - `check_in_etiketleri` uzerindeki
+ * `etiket_durumu` tetikleyicisi durumu bu ayara gore yaziyor ve
+ * istemciden gelen degeri EZIYOR.
+ */
+export async function etiketOnayiGerekliGetir(): Promise<boolean> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('etiket_onayi_gerekli')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  return data?.etiket_onayi_gerekli ?? false
+}
+
+export async function etiketOnayiGerekliAyarla(deger: boolean): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase
+    .from('profiller')
+    .update({ etiket_onayi_gerekli: deger })
+    .eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}
+
 const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000
 
 export async function kullaniciAdiDurumunuGetir(): Promise<{
