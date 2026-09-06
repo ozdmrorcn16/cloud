@@ -357,8 +357,14 @@ export default function MekanSayfasi() {
 
   return (
     <View style={stiller.kok}>
+      {/* UST CUBUKTA MEKAN ADI YOK (kullanicinin istegi 2026-09-06):
+          "Konum isimleri ustte yazmasin, altlarinda yaziyor zaten."
+          Ad haritanin hemen altinda ve orada TAM haliyle duruyor;
+          ustte ayrica gostermek hem tekrar hem de uzun adlarda
+          kirpiliyordu ("Nilüfer Tüvtürk Araç ..."). Baslik bos
+          kalinca cubuk da kompaktlasiyor ve sayfa yukari geliyor. */}
       <UstCubuk
-        baslik={mekan?.ad ?? ''}
+        baslik=""
         geriEtiketi={t('checkInHaritasi.geri')}
         sag={
           mekan ? (

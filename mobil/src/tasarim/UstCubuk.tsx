@@ -31,8 +31,13 @@ export function UstCubuk({
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
 
+  // BASLIKSIZ CUBUK KOMPAKT. Baslik yoksa cubuk yalnizca iki ikon
+  // tasiyor ve 44 px'lik ust paya ihtiyaci kalmiyor; o pay basligin
+  // durum cubugundan ayrilmasi icindi.
+  const basliksiz = baslik.trim().length === 0
+
   return (
-    <View style={stiller.cubuk}>
+    <View style={[stiller.cubuk, basliksiz && stiller.cubukKompakt]}>
       <Pressable
         onPress={() => router.back()}
         accessibilityRole="button"
@@ -50,9 +55,11 @@ export function UstCubuk({
           />
         </Svg>
       </Pressable>
-      <Text style={stiller.baslik} accessibilityRole="header" numberOfLines={1}>
-        {baslik}
-      </Text>
+      {!basliksiz && (
+        <Text style={stiller.baslik} accessibilityRole="header" numberOfLines={1}>
+          {baslik}
+        </Text>
+      )}
       {sag && <View style={stiller.sag}>{sag}</View>}
     </View>
   )
@@ -67,6 +74,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingTop: bosluk.xxl + bosluk.m,
     paddingBottom: bosluk.m,
   },
+  cubukKompakt: { paddingTop: bosluk.m, paddingBottom: bosluk.s },
   // Sag bilesen varken baslik ile arasinda bosluk kalsin diye baslik
   // esneyerek buyuyor; sag uc sabit genislikte.
   sag: { marginLeft: 'auto' },

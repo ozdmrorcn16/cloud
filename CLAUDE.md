@@ -678,6 +678,18 @@ uzunsa) ya da bir ilce adi cok uzunsa ekran goruntusuyle olculmeli.
 Ikinci kusur: notu olmayan bir check-in satirinda gorece zaman hem alt
 satirda hem sagda yaziyordu. Not yoksa alt satir artik hic cizilmiyor.
 
+**UST CUBUKTA MEKAN ADI YOK** (kullanicinin istegi 2026-09-06:
+"Konum isimleri ustte yazmasin, altlarinda yaziyor zaten"). Ad
+haritanin hemen altinda TAM haliyle duruyor; ustte ayrica gostermek
+hem tekrardi hem de uzun adlar orada kirpiliyordu ("Nilüfer Tüvtürk
+Araç ...").
+
+`UstCubuk` artik BASLIKSIZKEN KOMPAKT: baslik bos gelirse Text hic
+cizilmiyor ve ust pay 44 -> 12 px'e iniyor. O pay basligin durum
+cubugundan ayrilmasi icindi; yalnizca iki ikon tasiyan bir cubukta
+gereksiz. Kural genel, yani baska bir ekran da basliksiz cubuk
+isterse ayni sekilde toparlaniyor.
+
 **GORSEL DOGRULAMA ICIN GECICI CANLI CHECK-IN GEREKTI.** Veritabaninda
 canli check-in olmadigi icin "Su an burada" bolumu bos ekranda hic
 cizilmiyordu - ve bos bir ekrana bakip "calisiyor" demek olcum degil
