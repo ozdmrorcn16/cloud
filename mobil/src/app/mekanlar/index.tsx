@@ -36,7 +36,6 @@ import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
-import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { TurSecici } from '../../tasarim/TurSecici'
 import {
   HaritaIkonu,
@@ -47,7 +46,6 @@ import {
   CubukIkonu,
   YildizIkonu,
   KisilerIkonu,
-  DikeyUcNoktaIkonu,
   GeriOkIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
@@ -158,8 +156,6 @@ export default function KesfetEkrani() {
    */
   const [durum, setDurum] = useState<'tumu' | MekanDurumu>('tumu')
 
-  /** Kart menusu: hangi mekanin uc noktasi acik. */
-  const [menuMekan, setMenuMekan] = useState<MekanYogunlukIle | null>(null)
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
@@ -837,7 +833,16 @@ export default function KesfetEkrani() {
             </View>
 
             <View style={stiller.kartSag}>
-              <View style={stiller.kartSagUst}>
+              {/* UC NOKTA KALDIRILDI (kullanicinin istegi 2026-09-06:
+                  "Yanlarindaki 3 noktayi kaldirip oyle duzenle").
+                  Icindeki iki islem zaten baska yerde: mekan ADINA
+                  basmak konum sayfasini aciyor, buton da check-in'i.
+                  Kalkinca sag blok daraldi ve ada yer acildi.
+
+                  ROZET, CHECK-IN'IN SOLUNDA ve ayni satirda
+                  (kullanicinin duzeltmesi: "Rozet check-in yazisinin
+                  soluna gelicek"). */}
+              <View style={stiller.kartAltSatir}>
                 <View style={[stiller.rozet, { backgroundColor: DURUM_ZEMINI[d] }]}>
                   {d === 'sakin' ? (
                     <YaprakIkonu boyut={12} />
@@ -850,28 +855,19 @@ export default function KesfetEkrani() {
                     {t(`kesfet.${d}`)}
                   </Text>
                 </View>
+
                 <Pressable
-                  onPress={() => setMenuMekan(item)}
+                  style={stiller.kartCheckIn}
+                  onPress={() => router.push(`/check-in/${item.id}`)}
                   accessibilityRole="button"
-                  accessibilityLabel={t('anaSayfa.secenekler')}
-                  hitSlop={8}
-                  testID={`kart-menu-${item.id}`}
+                  accessibilityLabel={`${item.ad} için check-in yap`}
+                  testID={`satir-checkin-${item.id}`}
                 >
-                  <DikeyUcNoktaIkonu boyut={17} renk={renk.metinSoluk} />
+                  <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
+                    {t('kesfet.checkIn')}
+                  </Text>
                 </Pressable>
               </View>
-
-              <Pressable
-                style={stiller.kartCheckIn}
-                onPress={() => router.push(`/check-in/${item.id}`)}
-                accessibilityRole="button"
-                accessibilityLabel={`${item.ad} için check-in yap`}
-                testID={`satir-checkin-${item.id}`}
-              >
-                <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
-                  {t('kesfet.checkIn')}
-                </Text>
-              </Pressable>
             </View>
           </View>
           )
@@ -901,36 +897,6 @@ export default function KesfetEkrani() {
       onKaydet={turleriUygula}
     />
 
-    {/* Kart menusu. Referans gorselde her kartin sag ustunde bir uc
-        nokta var; icerigi mekanla ilgili iki islem. */}
-    <SecimPenceresi
-      acikMi={menuMekan !== null}
-      onKapat={() => setMenuMekan(null)}
-      secimler={
-        menuMekan
-          ? [
-              {
-                etiket: t('kesfet.konumuGor'),
-                onSec: () => {
-                  const hedef = menuMekan.id
-                  setMenuMekan(null)
-                  router.push(`/harita/${hedef}` as never)
-                },
-                testID: 'menu-konumu-gor',
-              },
-              {
-                etiket: t('kesfet.checkInYap'),
-                onSec: () => {
-                  const hedef = menuMekan.id
-                  setMenuMekan(null)
-                  router.push(`/check-in/${hedef}`)
-                },
-                testID: 'menu-check-in',
-              },
-            ]
-          : []
-      }
-    />
     </View>
   )
 }
@@ -1202,22 +1168,27 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.turuncu,
   },
-  kartSag: { alignItems: 'flex-end', justifyContent: 'space-between' },
-  kartSagUst: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // Uc nokta kalkinca sag blokta tek satir kaldi: rozet + buton.
+  kartSag: { alignItems: 'flex-end', justifyContent: 'flex-end' },
+  // Rozet ve Check-in YAN YANA, rozet solda.
+  kartAltSatir: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  // Rozet ve buton YAN YANA durdugu icin ikisi de dar tutuluyor:
+  // 342 px'lik bir kartta sag blok genisledikce mekan adina yer
+  // kalmiyor ve ad iki satira duesuyor.
   rozet: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     borderRadius: yuvarlak.hap,
   },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
   kartCheckIn: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
   },
   kartCheckInYazi: {
     fontFamily: yazi.govdeKalin,

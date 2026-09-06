@@ -628,6 +628,18 @@ Ayni sinif sorun 2026-09-01'de arama tarafinda yasanmisti ve orada
 Canli dogrulama: Kafe 100 sonuc 0,56 sn, uc tur birlikte 1,51 sn,
 hepsi Bursa.
 
+**KART DUZENI KULLANICININ IKI DUZELTMESIYLE OTURDU:**
+
+1. "Rozet check-in yazisinin soluna gelicek" - rozet ustte, buton altta
+   ayri satirlardaydi; artik IKISI YAN YANA, rozet solda.
+2. "Yanlarindaki 3 noktayi kaldirip oyle duzenle" - kart menusu
+   KALDIRILDI. Icindeki iki islem zaten baska yerdeydi: mekan ADINA
+   basmak konum sayfasini aciyor, buton da check-in'i. Kalkinca sag
+   blok daraldi ve mekan adina yer acildi.
+
+Rozet ve buton yan yana durdugu icin ikisinin de dolgusu KISILDI: 342
+px'lik bir kartta sag blok genisledikce ad iki satira duesuyordu.
+
 **"TUMU" DUGMESI IKI ISLEVLI - kullanicinin duzeltmesi:** ilk halde
 secimi TEMIZLIYORDU (benim okumamla "filtre yok, hepsi gorunsun"), ama
 dugmenin adi tumunu SECECEGINI soyluyor ve kullanici hakli olarak onu
