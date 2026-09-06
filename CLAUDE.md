@@ -628,6 +628,21 @@ Ayni sinif sorun 2026-09-01'de arama tarafinda yasanmisti ve orada
 Canli dogrulama: Kafe 100 sonuc 0,56 sn, uc tur birlikte 1,51 sn,
 hepsi Bursa.
 
+**"TUMU" DUGMESI IKI ISLEVLI - kullanicinin duzeltmesi:** ilk halde
+secimi TEMIZLIYORDU (benim okumamla "filtre yok, hepsi gorunsun"), ama
+dugmenin adi tumunu SECECEGINI soyluyor ve kullanici hakli olarak onu
+bekledi ("Tumune basinca tumunu secmiyor"). Artik duruma gore
+degisiyor: hicbiri secili degilse **"Tumunu sec"**, hepsi seciliyse
+**"Temizle"**. Etiket her zaman ne yapacagini soyluyor.
+
+**HARITA ETIKETLERI ARTIK CAKISMIYOR.** Kullanicinin ekran
+goruntusunde bes igne secilmisti ama ikisi birbirine ~40 m uzaktaydi ve
+ADLARI ic ice geciyordu ("Gentaş Aspendos Evleri" ile "Hadim erikli
+subesi"). Igne kucuk, cakisan sey etiket. Artik igneler arasinda EN AZ
+bir aralik araniyor ve aralik CERCEVEYE ORANLI (gosterim yaricapinin
+%22'si): yakinlastirilmis haritada 60 m bile ayri gorunur, genis
+cercevede 200 m bile bitisik.
+
 **SECIM PENCEREDE GECICI:** liste ancak "Kaydet"e basilinca degisiyor;
 perde ya da carpi hicbir sey uygulamiyor - yoksa "vazgec" diye bir sey
 olmazdi. "Tumu" secimi temizliyor. Secili turler ekranda cip olarak

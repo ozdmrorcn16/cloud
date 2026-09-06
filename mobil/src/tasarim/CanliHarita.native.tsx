@@ -62,6 +62,9 @@ const EN_FAZLA_GOSTERIM_METRE = 100
  */
 const EN_FAZLA_KAPSAMA_METRE = 1200
 
+/** Haritada ayni anda en cok bu kadar etiketli igne. */
+const EN_FAZLA_ETIKET = 5
+
 const KAYDIRMA_SURESI_MS = 350
 
 /**
@@ -161,6 +164,48 @@ export function CanliHarita({
     return { igneler: mesafeli.map((m) => m.mekan), bolge: bolgeUret(merkez, gosterim) }
   }, [merkez, mekanlar])
 
+  /**
+   * HARITADA ETIKETLI GOSTERILECEK IGNELER.
+   *
+   * Ikisi birden gerekiyordu: en cok BES igne (390 px'lik bir haritada
+   * fazlasi sigmiyor) ve aralarinda EN AZ BIR MESAFE.
+   *
+   * Mesafe kurali kullanicinin ekran goruntusunden cikti: bes igne
+   * secilmisti ama ikisi birbirine 40 m uzaktaydi ve etiketleri ust
+   * uste biniyordu ("Gentaş Aspendos Evleri" ile "Hadim erikli
+   * subesi" ic ice gecmisti). Igne KENDISI kucuk, cakisan sey ADI.
+   *
+   * Esik cerceveye ORANLI: yakinlastirilmis bir haritada 60 m bile
+   * ayri gorunur, genis bir cercevede 200 m bile bitisik. `gosterim`
+   * cerceve yaricapi oldugu icin onun %22'si iyi bir yaklasim.
+   */
+  const etiketliIgneler = useMemo(() => {
+    if (!merkez) return [] as HaritaMekani[]
+
+    const gosterim = bolge
+      ? (bolge.latitudeDelta * 110540) / 2
+      : EN_FAZLA_GOSTERIM_METRE
+    const enAzAralik = Math.max(50, gosterim * 0.22)
+
+    const sirali = igneler.slice().sort((a, b) => {
+      const oncelik = (m: HaritaMekani) =>
+        m.kisiSayisi > 0 ? 2 : durumu(m) === 'populer' ? 1 : 0
+      return oncelik(b) - oncelik(a)
+    })
+
+    const secilen: HaritaMekani[] = []
+    for (const aday of sirali) {
+      if (secilen.length >= EN_FAZLA_ETIKET) break
+      const cakisiyor = secilen.some(
+        (s) =>
+          mesafeMetre(s.konum!.lat, s.konum!.lng, aday.konum!.lat, aday.konum!.lng) <
+          enAzAralik
+      )
+      if (!cakisiyor) secilen.push(aday)
+    }
+    return secilen
+  }, [igneler, bolge, merkez])
+
   // Merkez ya da mekanlar degisince harita yeni cerceveye kayar. Ilk
   // cizim initialRegion ile; bu efekt ilk cizimde de calisir ama
   // ayni bolgeye kaydirmak gorunur bir sey yapmiyor.
@@ -213,15 +258,7 @@ export function CanliHarita({
             bindiriyor. Once POPULER ve YOGUN olanlar seciliyor -
             haritanin cevaplamasi gereken soru "su an nerede hareket
             var". */}
-        {igneler
-          .slice()
-          .sort((a, b) => {
-            const oncelik = (m: HaritaMekani) =>
-              m.kisiSayisi > 0 ? 2 : durumu(m) === 'populer' ? 1 : 0
-            return oncelik(b) - oncelik(a)
-          })
-          .slice(0, 5)
-          .map((mekan) => {
+        {etiketliIgneler.map((mekan) => {
             const d = durumu(mekan)
             return (
               <Marker
@@ -256,7 +293,7 @@ export function CanliHarita({
                 </View>
               </Marker>
             )
-          })}
+        })}
 
         {/* Merkez: bizim turuncu igne. Ucu tam koordinata basiyor. */}
         <Marker

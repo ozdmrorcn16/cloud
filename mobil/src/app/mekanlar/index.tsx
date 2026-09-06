@@ -1167,8 +1167,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // --- mekan karti ---
   mekanKarti: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    // STRETCH: sag sutun govde yuksekligine yayiliyor, boylece rozet
+    // ustte / Check-in altta duruyor (referans gorseldeki hiza).
+    // `flex-start` ile ikisi bitisik kaliyor ve buton kartin ortasinda
+    // asili gorunuyordu.
+    alignItems: 'stretch',
     gap: bosluk.m,
+    // Iki satirlik kartlarda da rozet ile buton arasinda referanstaki
+    // aralik kalsin diye taban yukseklik.
+    minHeight: 84,
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
@@ -1194,7 +1201,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.turuncu,
   },
-  kartSag: { alignItems: 'flex-end', gap: bosluk.s },
+  kartSag: { alignItems: 'flex-end', justifyContent: 'space-between' },
   kartSagUst: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rozet: {
     flexDirection: 'row',

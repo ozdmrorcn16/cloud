@@ -92,6 +92,10 @@ export function TurSecici({
   // bos" gibi okunup gereksiz gurultu uretiyordu).
   const adetSozlugu = new Map(adetler.map((a) => [a.tur, a.adet]))
 
+  // Butun turlerin duz listesi - "Tumunu sec" bunu kullaniyor.
+  const tumTurler = gruplar.flatMap((g) => g.turler)
+  const hepsiSecili = taslak.length >= tumTurler.length
+
   function degistir(tur: string) {
     setTaslak((onceki) =>
       onceki.includes(tur) ? onceki.filter((x) => x !== tur) : [...onceki, tur]
@@ -162,16 +166,27 @@ export function TurSecici({
           </ScrollView>
 
           <View style={stiller.eylemler}>
-            {/* "Tumu" secimi TEMIZLIYOR - yani suzgec kalkiyor ve butun
-                turler gorunuyor. Ayri bir "temizle" kelimesi yerine
-                sonucu soyleyen bir etiket. */}
+            {/* IKI ISLEVLI DUGME (kullanicinin duzeltmesi 2026-09-06:
+                "Tumune basinca tumunu secmiyor").
+
+                Ilk halde "Tumu" secimi TEMIZLIYORDU - benim okumamla
+                "filtre yok, hepsi gorunsun" demekti. Ama dugmenin adi
+                tumunu SECECEGINI soyluyor; kullanici hakli olarak onu
+                bekledi.
+
+                Simdi duruma gore degisiyor: hicbiri secili degilse
+                hepsini isaretliyor, bir sey seciliyse temizliyor.
+                Boylece iki islev de tek dugmede ve etiket her zaman ne
+                yapacagini soyluyor. */}
             <Pressable
               style={[stiller.dugme, stiller.ikincil]}
-              onPress={() => setTaslak([])}
+              onPress={() => setTaslak(hepsiSecili ? [] : tumTurler)}
               accessibilityRole="button"
               testID="tur-tumu"
             >
-              <Text style={stiller.ikincilYazi}>{t('kesfet.tumu')}</Text>
+              <Text style={stiller.ikincilYazi}>
+                {hepsiSecili ? t('kesfet.temizle') : t('kesfet.tumunuSec')}
+              </Text>
             </Pressable>
 
             <Pressable

@@ -4,6 +4,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
   ildekiTurleriGetir,
+  TEMEL_TURLER,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
 } from '../../../lib/mekan'
@@ -494,7 +495,32 @@ describe('MekanAramaEkrani', () => {
     expect(yakinMekanlariYogunlukIleGetir).not.toHaveBeenCalled()
   })
 
-  /** "Tumu" secimi temizliyor, yani suzgec kalkiyor. */
+  /**
+   * "Tumunu sec" GERCEKTEN hepsini seciyor (kullanicinin duzeltmesi
+   * 2026-09-06: "Tumune basinca tumunu secmiyor"). Ilk halde bu dugme
+   * secimi TEMIZLIYORDU; adi tumunu sececegini soyledigi icin yanlisti.
+   */
+  it('"Tumunu sec" butun turleri isaretliyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    await waitFor(() => expect(screen.getByTestId('tur-secici')).toBeTruthy())
+
+    // Hicbiri secili degilken dugme "Tumunu sec" diyor.
+    expect(screen.getByText('Tümünü seç')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('tur-tumu'))
+
+    // Artik hepsi secili, yani dugme "Temizle"ye donuyor.
+    await waitFor(() => expect(screen.getByText('Temizle')).toBeTruthy())
+    // Kaydet sayisi da butun temel turleri gosteriyor.
+    expect(screen.getByText(`Kaydet (${TEMEL_TURLER.length})`)).toBeTruthy()
+  })
+
+  /** Disaridaki "Filtreyi kaldir" cipi secimi temizliyor. */
   it('"Tumu" secimi temizliyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])

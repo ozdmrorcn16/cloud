@@ -13,6 +13,8 @@ export default {
   ortak: {
     devam: 'Devam et',
     iptal: 'İptal',
+    tumunuSec: 'Tümünü seç',
+    temizle: 'Temizle',
     kaydet: 'Kaydet',
     tekrarDene: 'Tekrar dene',
     yukleniyor: 'Yükleniyor…',
@@ -459,6 +461,8 @@ export default {
     turFiltresi: 'Tür filtresi',
     turBulunamadi: 'Çevrende gösterilecek tür yok.',
     filtreyiKaldir: 'Filtreyi kaldır',
+    tumunuSec: 'Tümünü seç',
+    temizle: 'Temizle',
     kaydet: 'Kaydet',
     kaydetSayili: 'Kaydet ({{sayi}})',
     tumu: 'Tümü',
