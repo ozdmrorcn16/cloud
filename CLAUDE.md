@@ -51,3 +51,35 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+
+## Agent Reach
+
+Internet erisimi icin `agent-reach` (v1.5.0) kuruldu. **Konteyner gecici oldugu
+icin her yeni oturumda yeniden kurulmasi gerekir:**
+
+```bash
+python3 -m venv ~/.agent-reach-venv
+~/.agent-reach-venv/bin/pip install "git+https://github.com/Panniantong/agent-reach.git@main"
+export PATH="$HOME/.agent-reach-venv/bin:$PATH"
+agent-reach install --env=auto --system --channels=all
+apt-get install -y ffmpeg
+```
+
+Not: `pipx` yok ve `https://github.com/.../archive/main.zip` egress politikasi
+tarafindan 403 ile engelleniyor; bu yuzden venv + git kaynagi kullaniliyor.
+
+### Bu ortamda calisan kanallar (4/15)
+
+YouTube (yt-dlp), RSS/Atom, Web (Jina Reader), Bilibili (bili-cli).
+
+### Calismayanlar ve nedenleri
+
+| Kanal | Neden |
+|---|---|
+| Facebook, Instagram, OpenCLI, kismen 小红书 | Masaustu Chrome + OpenCLI eklentisi gerekiyor; konteynerde tarayici yok |
+| Exa semantik arama | `mcporter` tarayici uzerinden OAuth istiyor, headless ortamda zaman asimina ugruyor |
+| V2EX | Egress politikasi hostu engelliyor (403) |
+| Twitter/X, Reddit, 雪球 | CLI'lar kurulu; kullanicinin Cookie-Editor ile disari aktardigi cerezleri bekliyor |
+| 小宇宙 podcast | Script + ffmpeg hazir; ucretsiz Groq API key bekliyor |
+| LinkedIn | `mcporter` kaydi yapildi; ilk giris tarayici gerektiriyor |
+| GitHub (`gh`) | CLI kurulu; oturumun kendi GitHub MCP araclari zaten kullanilabilir |
