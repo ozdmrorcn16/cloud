@@ -567,6 +567,45 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### ADRES ONERISI GERI GELDI, AMA ONAYLI - 2026-09-06
+
+Kullanicinin istegi: "Bu yeni yer ekleme ekraninda adres kismina
+bulundugu adresi otomatik doldurma yapilabilir mi, dogru mu diye de
+sorsun ve degistirilebilsin."
+
+**BU OZELLIK 2026-08-31'DE KALDIRILMISTI** ve sebebi gizlilik ya da
+maliyet degil DOGRULUKTU: cihazin adres cozumu yanlis mahalle
+donduruyordu (Nilufer'deki bir mekana "Ertugrul" diyordu, dogrusu
+ALAADDINBEY). O gun adres kimse dogrulamadan ekranda gosteriliyordu.
+`lib/adres.ts` ve testleri silinmisti.
+
+**SIMDI FARKLI ve eski itiraz KAPANIYOR:** sonuc bir ONERI. Alan
+doluyor, altinda "Bu adres doğru mu?" sorusu ve iki dugme (Doğru /
+Temizle) duruyor, alan her zaman duzenlenebilir. Makine tahmin ediyor,
+insan dogruluyor.
+
+**Onay satiri kullanici alani ELLE DEGISTIRDIGI anda kalkiyor** -
+artik onaylanacak bir oneri yok, metin kisinin kendisinin.
+
+**KULLANICININ YAZDIGI EZILMIYOR:** oneri ancak alan BOSSA yaziliyor.
+Kisi cozum gelmeden once bir sey yazdiysa oldugu gibi kaliyor.
+
+**MEKAN LISTESINDE HALA KULLANILMIYOR.** Orada gosterilen konum ilce ve
+il, ikisi de poligon testiyle atandigi icin kesin (karar 2026-08-31,
+"TAM DOGRULUK ADINA"). Bu modul yalnizca kisinin KENDI ekledigi mekana
+yardim ediyor - liste tarafi degismedi.
+
+Il ve ulke oneriye GIRMIYOR: mekan zaten kullanicinin bulundugu yerde
+ve ekranda ilce/il ayrica gosteriliyor.
+
+Oneri gelmezse (web'de bu API yok, izin yok, saglayici bulamadi) hicbir
+sey olmuyor - alan zaten opsiyonel. Testle kilitli.
+
+11 yeni test: `lib/adres.test.ts` (6, saf birlestirme) ve ekran
+testinde 5 (oneri doluyor + onay cikiyor, "Doğru" sorusu kaldiriyor
+ama adresi birakiyor, elle duzeltince soru kalkiyor, "Temizle"
+bosaltiyor, oneri yoksa soru hic cikmiyor).
+
 ### TUR FILTRESI: TEMEL TURLER, IL BAZLI, KM SINIRSIZ - 2026-09-06
 
 Kullanicinin kurallari (sirayla verildi, her biri oncekini duzeltti):

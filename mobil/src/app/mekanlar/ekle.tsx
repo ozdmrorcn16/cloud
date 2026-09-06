@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
+import { adresOnerisiAl } from '../../../lib/adres'
 import { yakinMekanlariGetir, mekanEkle, type Mekan } from '../../../lib/mekan'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
@@ -35,11 +36,53 @@ export default function MekanEkleEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
 
+  /**
+   * ADRES ONERISI (kullanicinin istegi 2026-09-06): cihazin cozdugu
+   * adres alana ONERI olarak giriyor, kullanici dogruluyor ya da
+   * duzeltiyor.
+   *
+   * `onerildi` yalnizca ONAY SATIRINI gostermek icin: kullanici alani
+   * elle degistirdigi anda satir kalkiyor, cunku artik onaylanacak bir
+   * oneri kalmiyor - metin kisinin kendisinin.
+   */
+  const [onerilenAdres, setOnerilenAdres] = useState<string | null>(null)
+  const [adresOnaylandi, setAdresOnaylandi] = useState(false)
+
   useEffect(() => {
     cihazKonumunuAl()
       .then(setCihazKonumu)
       .catch((e) => setHata(e instanceof Error ? e.message : 'Bir sorun oluştu'))
   }, [])
+
+  /**
+   * Konum gelince adres ONERISI cekiliyor.
+   *
+   * Oneri gelmezse (web, izin yok, saglayici bulamadi) hicbir sey
+   * olmuyor: alan zaten opsiyonel ve bos kaliyor. Kullanici bu arada
+   * kendisi bir sey yazdiysa ONERI YAZILMIYOR - yazdigini ezmek en
+   * kotu davranis olurdu.
+   */
+  useEffect(() => {
+    if (!cihazKonumu) return
+    let gecerli = true
+    adresOnerisiAl(cihazKonumu.lat, cihazKonumu.lng).then((oneri) => {
+      if (!gecerli || !oneri) return
+      setOnerilenAdres(oneri)
+      setAdres((onceki) => (onceki.trim().length > 0 ? onceki : oneri))
+    })
+    return () => {
+      gecerli = false
+    }
+  }, [cihazKonumu])
+
+  /** Kullanici alani elle degistirince oneri onayi anlamini yitiriyor. */
+  function adresDegisti(metin: string) {
+    setAdres(metin)
+    if (metin !== onerilenAdres) {
+      setOnerilenAdres(null)
+      setAdresOnaylandi(false)
+    }
+  }
 
   useEffect(() => {
     async function benzerleriAra() {
@@ -100,7 +143,53 @@ export default function MekanEkleEkrani() {
           )
         })}
       </View>
-      <TextInput style={stiller.girdi} placeholder="Adres (opsiyonel)" value={adres} onChangeText={setAdres} />
+      <TextInput
+        style={stiller.girdi}
+        placeholder="Adres (opsiyonel)"
+        value={adres}
+        onChangeText={adresDegisti}
+        testID="adres-girdisi"
+      />
+
+      {/* ONAY SATIRI. Yalnizca ONERI DURURKEN ve henuz onaylanmamisken
+          gorunuyor; kullanici alani elle degistirirse ya da "Doğru"
+          derse kalkiyor.
+
+          Neden soruyoruz: cihazin adres cozumu YANILABILIYOR - bu
+          2026-08-31'de olculdu, saglayici Nilufer'deki bir mekana
+          "Ertugrul" demisti, dogrusu Alaaddinbey'di. O gun adres
+          dogrulanmadan gosteriliyordu ve ozellik bu yuzden
+          kaldirilmisti. Onay adimi tam olarak o itirazi kapatiyor. */}
+      {onerilenAdres !== null && !adresOnaylandi && (
+        <View style={stiller.onayKutusu} testID="adres-onayi">
+          <Text style={stiller.onaySoru}>Bu adres doğru mu?</Text>
+          <Text style={stiller.onayAciklama}>
+            Konumundan bulundu. Yanlışsa yukarıdaki alanı düzeltebilirsin.
+          </Text>
+          <View style={stiller.onayDugmeleri}>
+            <Pressable
+              style={[stiller.onayDugme, stiller.onayBirincil]}
+              onPress={() => setAdresOnaylandi(true)}
+              accessibilityRole="button"
+              testID="adres-dogru"
+            >
+              <Text style={stiller.onayBirincilYazi}>Doğru</Text>
+            </Pressable>
+            <Pressable
+              style={[stiller.onayDugme, stiller.onayIkincil]}
+              onPress={() => {
+                setAdres('')
+                setOnerilenAdres(null)
+                setAdresOnaylandi(false)
+              }}
+              accessibilityRole="button"
+              testID="adres-temizle"
+            >
+              <Text style={stiller.onayIkincilYazi}>Temizle</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {benzerMekanlar.length > 0 && (
         <View style={stiller.benzerKutu}>
@@ -126,6 +215,45 @@ export default function MekanEkleEkrani() {
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
+  // Adres onay kutusu: alanin hemen altinda, dikkat cekmesi icin
+  // turuncu zeminli ama YIKICI degil - bir uyari degil bir soru.
+  onayKutusu: {
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.m,
+    gap: 6,
+    marginTop: -bosluk.s,
+  },
+  onaySoru: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  onayAciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    lineHeight: 16,
+    color: renk.metinIkincil,
+  },
+  onayDugmeleri: { flexDirection: 'row', gap: bosluk.s, marginTop: 4 },
+  onayDugme: {
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 9,
+    paddingHorizontal: 18,
+  },
+  onayBirincil: { backgroundColor: renk.turuncu },
+  onayBirincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#FFFFFF',
+  },
+  onayIkincil: { borderWidth: 1.4, borderColor: renk.cizgi },
+  onayIkincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+
   kapsayici: {
     flex: 1,
     backgroundColor: renk.zemin,
