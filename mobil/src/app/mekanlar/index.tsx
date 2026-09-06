@@ -1173,16 +1173,17 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // asili gorunuyordu.
     alignItems: 'stretch',
     gap: bosluk.m,
-    // Iki satirlik kartlarda da rozet ile buton arasinda referanstaki
-    // aralik kalsin diye taban yukseklik.
-    minHeight: 84,
+    // TABAN YUKSEKLIK YOK: kart icerigi kadar. Ilk halde `minHeight: 84`
+    // vardi ve kisi satiri olmayan (0 kisi) kartlarda buton ile rozet
+    // arasinda bos bir bosluk biraktiyordu; referansta kartlar
+    // iceriklerine gore uzuyor.
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     padding: bosluk.m,
   },
-  kartGovde: { flex: 1, minWidth: 0, gap: 3 },
+  kartGovde: { flex: 1, minWidth: 0, gap: 4 },
   kartMekanAdi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
@@ -1202,21 +1203,21 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.turuncu,
   },
   kartSag: { alignItems: 'flex-end', justifyContent: 'space-between' },
-  kartSagUst: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  kartSagUst: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   rozet: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 9,
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: yuvarlak.hap,
   },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
   kartCheckIn: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 9,
-    paddingHorizontal: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   kartCheckInYazi: {
     fontFamily: yazi.govdeKalin,
