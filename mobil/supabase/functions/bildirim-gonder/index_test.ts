@@ -48,6 +48,40 @@ Deno.test('govdeyiCozumle: bes olayin hepsini cozuyor', () => {
   )
 })
 
+Deno.test('govdeyiCozumle: etiket olaylari (kullanicinin istegi 2026-09-06)', () => {
+  const govde = {
+    olay: 'etiket_istegi',
+    check_in_id: '11111111-1111-4111-8111-111111111111',
+    etiketlenen_id: '22222222-2222-4222-8222-222222222222',
+    etiketleyen_id: '33333333-3333-4333-8333-333333333333',
+    aktor_id: '33333333-3333-4333-8333-333333333333',
+  }
+  const cozulen = govdeyiCozumle(govde)
+  assertEquals(cozulen?.olay, 'etiket_istegi')
+
+  // Bildirim ETIKETLENENE gider, etiketleyene degil.
+  assertEquals(hedefleriBelirle(cozulen!, []), [
+    {
+      aliciId: '22222222-2222-4222-8222-222222222222',
+      karsiTarafId: '33333333-3333-4333-8333-333333333333',
+    },
+  ])
+
+  // Eksik id reddediliyor: sozlesme uc kimligi de zorunlu tutuyor.
+  assertEquals(govdeyiCozumle({ ...govde, etiketleyen_id: 'bozuk' }), null)
+})
+
+Deno.test('bildirimGovdesi: etiket metinleri ISTEK ve BILGI olarak ayriliyor', () => {
+  // Onay bekleyen etiket bir ISTEK - kisi karar verecek.
+  assertEquals(bildirimGovdesi('etiket_istegi', 'Deniz'), 'Deniz seni etiketlemek istiyor')
+  // Onay gerekmiyorsa yalnizca BILGI; yine de haber veriliyor cunku
+  // kisinin adi bir konum kaydina baglaniyor.
+  assertEquals(
+    bildirimGovdesi('etiket_eklendi', 'Deniz'),
+    "Deniz seni bir check-in'de etiketledi"
+  )
+})
+
 Deno.test('govdeyiCozumle: aktor_id yoklugu ve null ayni sayiliyor', () => {
   assertEquals(govdeyiCozumle({ olay: 'takip_istegi', takip_eden_id: A, takip_edilen_id: B })?.aktor_id, null)
   assertEquals(

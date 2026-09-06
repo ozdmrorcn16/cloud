@@ -605,10 +605,34 @@ calisir, SONRA WITH CHECK degerlendirilir).
 Ikinci satir onemli: istemci degeri zorlayamiyor. Test etiketleri
 sonrasinda silindi, gercek veriye dokunulmadi.
 
-**ACIK BORC:** onay istegi yalnizca UYGULAMA ICI bildirim ekraninda
-gorunuyor. PUSH bildirimi YOK - `bildirim-gonder` su an mesaj, takip
-istegi, sohbet istegi ve kabul turlerini tasiyor, etiketi tasimiyor.
-Eklenmesi ayri bir is.
+**PUSH BILDIRIMI EKLENDI (ayni gun, kullanicinin istegi: "Push
+bildirimine ekle") - yukaridaki acik borc KAPANDI.** Iki yeni olay:
+
+    durum = 'bekliyor'   -> etiket_istegi   "X seni etiketlemek istiyor"
+    durum = 'onaylandi'  -> etiket_eklendi  "X seni bir check-in'de etiketledi"
+
+Tek olay yapip metni durumdan turetmek Edge Function'a is dusururdu;
+sozlesme zaten olay adiyla ayriliyor.
+
+**ETIKETLEYENIN KIMLIGI GOVDEDE YOK, check-in'den okunuyor:**
+`check_in_etiketleri` satiri kimin etiketledigini tasimiyor - sahip,
+check-in'in sahibidir. Check-in bulunamazsa bildirim HIC gonderilmiyor
+(adsiz bildirim uretmektense hic uretmemek dogru).
+
+`kaynakDogrula` IKI SEY birden soruyor: etiket satiri gercekten var mi
+ve check-in'in sahibi govdede yazan etiketleyen mi. Ikincisi olmadan
+sahte bir `etiketleyen_id` ile bildirimde YANLIS AD gosterilebilirdi -
+belirli birini adiyla taklit eden taciz.
+
+Migrasyon 20260906091500 (`bildirim.olay_gonder`a `check_in_etiketleri`
+dali + `etiket_bildirimi` AFTER INSERT tetikleyicisi). Edge Function
+**surum 4 olarak DEPLOY EDILDI**, `verify_jwt` KAPALI (cagriyi pg_net
+yapiyor, elinde kullanici JWT'si yok). Bu metinler SUNUCUDA, yani OTA
+ile gitmiyor - `eas update` bunlari guncellemez.
+
+**TUZAK, yasandi:** yeni `case` bloklari `switch` icinde `default`un
+ALTINA yazilmisti; asla calismazlardi ve tsc uyarmiyordu. Sira
+duzeltildi, `deno test` 19/19.
 
 ### HESAP OLUSTURMA UC ADIMA BOLUNDU - 2026-09-04
 

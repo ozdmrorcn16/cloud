@@ -146,6 +146,31 @@ async function kaynakDogrula(yonetici: SupabaseClient, olay: Olay): Promise<bool
       return (data ?? []).length > 0
     }
 
+    if (olay.olay === 'etiket_istegi' || olay.olay === 'etiket_eklendi') {
+      // IKI SEY birden dogrulaniyor: etiket satiri gercekten var mi ve
+      // check-in'in sahibi govdede yazan etiketleyen mi. Ikincisi
+      // olmadan sahte bir `etiketleyen_id` ile bildirimde YANLIS AD
+      // gosterilebilirdi.
+      const { data: etiket, error: etiketHatasi } = await yonetici
+        .from('check_in_etiketleri')
+        .select('durum')
+        .eq('check_in_id', olay.check_in_id)
+        .eq('kullanici_id', olay.etiketlenen_id)
+        .eq('durum', olay.olay === 'etiket_istegi' ? 'bekliyor' : 'onaylandi')
+        .limit(1)
+      if (etiketHatasi) throw etiketHatasi
+      if ((etiket ?? []).length === 0) return false
+
+      const { data: checkIn, error: checkInHatasi } = await yonetici
+        .from('check_inler')
+        .select('id')
+        .eq('id', olay.check_in_id)
+        .eq('kullanici_id', olay.etiketleyen_id)
+        .limit(1)
+      if (checkInHatasi) throw checkInHatasi
+      return (checkIn ?? []).length > 0
+    }
+
     // sohbet_istegi / sohbet_kabul. Tablodaki sutun adi `alan_id`,
     // sozlesmedeki alan adi `hedef_id`.
     const { data, error } = await yonetici

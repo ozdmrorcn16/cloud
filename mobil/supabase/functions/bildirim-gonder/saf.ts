@@ -10,7 +10,7 @@
 // `kaynakDogrula`) `index.ts` icinde kalir.
 
 // ---------------------------------------------------------------------
-// Olay sozlesmesi (bildirim.olay_gonder'in urettigi bes bicim)
+// Olay sozlesmesi (bildirim.olay_gonder'in urettigi yedi bicim)
 // ---------------------------------------------------------------------
 
 export type Olay =
@@ -19,6 +19,25 @@ export type Olay =
   | { olay: 'takip_kabul'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
   | { olay: 'sohbet_istegi'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
   | { olay: 'sohbet_kabul'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
+  // ETIKET (kullanicinin istegi 2026-09-06). Iki ayri olay, cunku
+  // metin farkli: onay bekleyen etiket bir ISTEK, onaylanmis olan
+  // bir BILGI. Ikisini tek olay yapip metni durumdan turetmek
+  // Edge Function'a is dusururdu; sozlesme zaten olay adiyla
+  // ayriliyor.
+  | {
+      olay: 'etiket_istegi'
+      check_in_id: string
+      etiketlenen_id: string
+      etiketleyen_id: string
+      aktor_id: string | null
+    }
+  | {
+      olay: 'etiket_eklendi'
+      check_in_id: string
+      etiketlenen_id: string
+      etiketleyen_id: string
+      aktor_id: string | null
+    }
 
 const UUID_DESENI = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -80,6 +99,23 @@ export function govdeyiCozumle(ham: unknown): Olay | null {
         aktor_id: aktor,
       }
 
+    case 'etiket_istegi':
+    case 'etiket_eklendi':
+      if (
+        !uuidMi(k.check_in_id) ||
+        !uuidMi(k.etiketlenen_id) ||
+        !uuidMi(k.etiketleyen_id)
+      ) {
+        return null
+      }
+      return {
+        olay: k.olay,
+        check_in_id: k.check_in_id,
+        etiketlenen_id: k.etiketlenen_id,
+        etiketleyen_id: k.etiketleyen_id,
+        aktor_id: aktor,
+      }
+
     default:
       return null
   }
@@ -126,6 +162,9 @@ export function hedefleriBelirle(olay: Olay, konusmaDigerUyeleri: string[]): Hed
       return [{ aliciId: olay.hedef_id, karsiTarafId: olay.gonderen_id }]
     case 'sohbet_kabul':
       return [{ aliciId: olay.gonderen_id, karsiTarafId: olay.hedef_id }]
+    case 'etiket_istegi':
+    case 'etiket_eklendi':
+      return [{ aliciId: olay.etiketlenen_id, karsiTarafId: olay.etiketleyen_id }]
   }
 }
 
@@ -170,5 +209,9 @@ export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
       return `${ad} sana sohbet isteği gönderdi`
     case 'sohbet_kabul':
       return `${ad} sohbet isteğini kabul etti`
+    case 'etiket_istegi':
+      return `${ad} seni etiketlemek istiyor`
+    case 'etiket_eklendi':
+      return `${ad} seni bir check-in'de etiketledi`
   }
 }
