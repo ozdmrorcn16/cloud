@@ -567,6 +567,78 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### KESFET EKRANI REFERANSA CEVRILDI - 2026-09-06
+
+Kullanicinin istegi: "Bu sayfayi referans gorsele cevir aynisini yap",
+ardindan "Fotografsiz geri kalanini ayni yap" ve "Fotograflar disinda
+butun yerlesim ikonlari ayni yap".
+
+**MEKAN FOTOGRAFI YOK ve olculdu:** `mekanlar` tablosunda fotograf
+sutunu HIC yok, 5,9 milyon Foursquare kaydinin hicbirinde gorsel
+gelmiyor. Referanstaki kart kapaklari bu yuzden uygulanmadi -
+kullanicinin karari da bu yonde oldu.
+
+**DEGISENLER:**
+
+| Blok | Ne oldu |
+|---|---|
+| Ust cubuk | YENI: "Check-in" basligi + sagda Harita/Liste segmenti |
+| Sekmeler | "Mekan ara / Kesfet" KALKTI; tek liste kaldi |
+| Arama | Artik HER ZAMAN gorunur, yaninda tur suzgeci dugmesi |
+| Durum cipleri | YENI: Tumu / Sakin / Yogun / Populer |
+| Bolum basligi | "Yakinindaki Mekanlar" + "Tumunu gor" (liste gorunumune gecer) |
+| Liste | Duz satir yerine KART: ad, konum, kisi satiri, durum rozeti, Check-in, uc nokta |
+| Harita igneleri | Artik AD ve DURUM tasiyor, renkli; en cok bes tane |
+
+**"POPULER" ICIN SUNUCUYA SUTUN EKLENDI.** Sakin ve Yogun anlik
+`kisi_sayisi`ndan hesaplanabiliyordu ama Populer GECMISE bakan bir
+olcu; `yakin_mekanlar_yogunluk` artik `toplam_check_in` de donduruyor
+(migrasyon `yogunluk_toplam_check_in`). Uydurulamayacak bir veri.
+
+**RPC'nin DONUS TIPI DEGISTIGI ICIN DROP GEREKTI** (42P13): `create or
+replace` yeni sutunu kabul etmiyor. Drop ve create ayni islemde, yani
+disariya kayip gorunmuyor - ama **drop yetkileri de siliyor**, o yuzden
+`grant execute` hemen altinda yeniden veriliyor.
+
+**DURUM KURALLARI** (`lib/mekan.ts` icinde `mekanDurumu`):
+
+    populer -> toplam check-in >= 10   (gecmiste cok gidilmis)
+    yogun   -> su an >= 3 kisi
+    sakin   -> geri kalan
+
+Oncelik populer > yogun > sakin. **ESIKLER AYNI ZAMANDA BIR GIZLILIK
+KORUMASI:** az ziyaret edilen kucuk bir mekanda (ornegin bir konut
+sitesinde) "populer" etiketi orada kimin bulundugunu tahmin edilebilir
+kilardi; 10 ve 3 tek bir kisinin uretemeyecegi sayilar.
+
+**DURUM RENKLERI MARKA TURUNCUSUNDAN BAGIMSIZ** - yesil / kirmizi /
+sari, bir trafik isigi dili. Sebep: bunlar bir eylem degil bir OLCU
+anlatiyor; uygulamada turuncu "eylem ya da su an oluyor" demek ve uc
+durumu turuncunun tonlariyla gostermek o anlami tuketirdi. Ayni
+degerler HARITA IGNELERINDE de kullaniliyor - ikisi ayrilirsa haritada
+yesil gorunen bir mekan listede kirmizi rozet tasirdi.
+
+**"KESFET" SEKMESI KAYBOLMADI, DUGMEYE DONDU.** O sekme listeyi sosyal
+turlere daraltiyordu (kullanicinin 2026-08-31 karari); islev arama
+kutusunun yanindaki suzgec dugmesine tasindi, acikken turuncu.
+
+**HARITA IGNELERI EN COK BES.** 390 px'lik bir haritada daha fazlasi
+etiketleri ust uste bindiriyor; once kalabalik, sonra populer olanlar
+seciliyor. 2026-09-01'deki "gri noktalari kaldir" karariyla CELISMIYOR:
+o karar hicbir sey anlatmayan gri noktalar hakkindaydi, simdi her igne
+ad ve durum tasiyor.
+
+**TEST TUZAGI, yasandi:** igneler ad gosterince ayni mekan adi hem
+haritada hem listede goruntulendi ve `getByText` "birden fazla eleman"
+diye patladi (11 test). Cozum testleri `getAllByText`e cevirmek DEGIL -
+o listeyi dogrulayan iddialari zayiflatirdi; `jest.setup.js`'teki
+`react-native-maps` mock'u artik Marker'in COCUKLARINI render etmiyor.
+Ignenin tasidigi bilgi `accessibilityLabel`da duruyor, yani igne
+icerigi hala test edilebilir.
+
+Dogrulama: jest 60 paket / 600 test, tsc taban hatalari, ekran
+goruntusuyle olculdu (`tasarim/kesfet-yeni.png`).
+
 ### MEKAN SAYFASINA CHECK-IN CUBUGU - 2026-09-06
 
 Uc yerlesim gorsel olarak sunuldu (adin yaninda ikili / alta yapisik /

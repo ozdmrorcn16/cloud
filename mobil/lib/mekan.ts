@@ -89,9 +89,48 @@ export async function mekanEkle(
   return satiriMekanaCevir(data as MekanSatiri)
 }
 
-export type MekanYogunlukIle = Mekan & { kisiSayisi: number }
+export type MekanYogunlukIle = Mekan & {
+  /** SU AN orada olan kisi sayisi (canli check-in). */
+  kisiSayisi: number
+  /** Mekanin BUTUN gecmisindeki check-in sayisi - "Populer" olcusu. */
+  toplamCheckIn: number
+}
 
-type MekanYogunlukSatiri = MekanSatiri & { kisi_sayisi: number }
+type MekanYogunlukSatiri = MekanSatiri & {
+  kisi_sayisi: number
+  toplam_check_in: number
+}
+
+/**
+ * MEKANIN DURUMU (kullanicinin istegi 2026-09-06, referans gorselle):
+ * listedeki her mekan tek bir rozetle etiketleniyor.
+ *
+ *   populer -> gecmiste cok gidilmis (toplam check-in esigi)
+ *   yogun   -> SU AN kalabalik
+ *   sakin   -> geri kalan
+ *
+ * ONCELIK populer > yogun > sakin: "burasi genelde canli bir yer"
+ * bilgisi, o anki kalabaligi da kapsayan daha guclu bir ifade.
+ *
+ * ESIKLER kucuk sayilari disarida birakiyor ve bu bir GIZLILIK
+ * korumasi: az ziyaret edilen kucuk bir mekanda (ornegin bir konut
+ * sitesinde) "populer" etiketi, orada kimin bulundugunu tahmin
+ * edilebilir kilardi. 10 ve 3 secildi cunku ikisi de tek bir kisinin
+ * uretemeyecegi sayilar.
+ */
+export const POPULER_ESIGI = 10
+export const YOGUN_ESIGI = 3
+
+export type MekanDurumu = 'populer' | 'yogun' | 'sakin'
+
+export function mekanDurumu(m: {
+  kisiSayisi: number
+  toplamCheckIn: number
+}): MekanDurumu {
+  if (m.toplamCheckIn >= POPULER_ESIGI) return 'populer'
+  if (m.kisiSayisi >= YOGUN_ESIGI) return 'yogun'
+  return 'sakin'
+}
 
 /**
  * Yakindaki mekanlar, canli kisi sayilariyla.
@@ -134,6 +173,9 @@ export async function yakinMekanlariYogunlukIleGetir(
   return (data as MekanYogunlukSatiri[]).map((satir) => ({
     ...satiriMekanaCevir(satir),
     kisiSayisi: satir.kisi_sayisi,
+    // Eski bir sunucu surumu bu alani gondermiyorsa 0 - "Populer"
+    // rozeti cikmaz ama liste yine calisir.
+    toplamCheckIn: satir.toplam_check_in ?? 0,
   }))
 }
 

@@ -451,11 +451,22 @@ export default {
   },
 
   kesfet: {
-    // Listedeki satir dugmesi: dar alanda duruyor, kisa olmali.
-    satirCheckIn: 'Check-in',
+    // REFERANS GORSELE GORE (kullanicinin istegi 2026-09-06).
+    baslik: 'Check-in',
+    harita: 'Harita',
+    liste: 'Liste',
+    turSuzgeci: 'Yalnızca sosyal mekanlar',
+    tumu: 'Tümü',
     sakin: 'Sakin',
-    sekmeAra: 'Mekan ara',
-    sekmeKesfet: 'Keşfet',
+    yogun: 'Yoğun',
+    populer: 'Popüler',
+    yakinindakiMekanlar: 'Yakınındaki Mekanlar',
+    sonuclar: 'Sonuçlar',
+    tumunuGor: 'Tümünü gör',
+    kisiBurada: '{{sayi}} kişi burada',
+    checkIn: 'Check-in',
+    konumuGor: 'Konumu gör',
+    checkInYap: 'Buraya check-in yap',
   },
 
   checkInHaritasi: {

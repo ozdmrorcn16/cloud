@@ -14,7 +14,10 @@ import {
 } from '../../../lib/checkin'
 import { cihazKonumunuAl } from '../../../lib/konum'
 
+// `mekanDurumu` GERCEK kaliyor: harita ignesi onu cagiriyor ve saf bir
+// hesap - mock'lamak testin kendi varsayimini dogrulamasina yol acardi.
 jest.mock('../../../lib/mekan', () => ({
+  ...jest.requireActual('../../../lib/mekan'),
   mekaniGetir: jest.fn(),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
 }))

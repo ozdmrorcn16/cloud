@@ -66,15 +66,21 @@ jest.mock('react-native-maps', () => {
     React.useImperativeHandle(ref, () => ({ animateToRegion: jest.fn() }))
     return React.createElement(View, { testID: props.testID }, props.children)
   })
+  // Marker'in COCUKLARI RENDER EDILMIYOR - bilerek.
+  //
+  // 2026-09-06'da igneler mekan ADINI da tasimaya basladi (referans
+  // gorsel). Cocuklar cizilseydi ayni ad hem haritada hem listede
+  // gorunur ve `getByText('Sahil Kafe')` "birden fazla eleman" diye
+  // patlardi; testlerin hepsini `getAllByText`e cevirmek ise LISTEYI
+  // dogrulayan iddialari zayiflatirdi.
+  //
+  // Ignenin tasidigi bilgi kaybolmuyor: `accessibilityLabel` ad ve
+  // durumu birlikte veriyor, yani igne icerigi hala test edilebilir.
   const Marker = (props) =>
-    React.createElement(
-      Pressable,
-      {
-        testID: 'harita-ignesi',
-        onPress: props.onPress,
-        accessibilityLabel: props.accessibilityLabel,
-      },
-      props.children
-    )
+    React.createElement(Pressable, {
+      testID: 'harita-ignesi',
+      onPress: props.onPress,
+      accessibilityLabel: props.accessibilityLabel,
+    })
   return { __esModule: true, default: MapView, Marker, PROVIDER_GOOGLE: 'google' }
 })

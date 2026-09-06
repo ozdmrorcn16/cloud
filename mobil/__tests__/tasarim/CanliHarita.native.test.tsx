@@ -29,13 +29,16 @@ describe('CanliHarita (native)', () => {
     expect(screen.getByLabelText('Buradasın')).toBeTruthy()
   })
 
-  it('kalabalik mekanin ignesinde kisi sayisi yazar, sakin mekan cizilmez', async () => {
+  /**
+   * Igne artik SAYI degil AD + DURUM tasiyor (2026-09-06, referans
+   * gorsel). Sayi kalabalik mekanin erisilebilirlik etiketinde
+   * duruyor; sakin mekan da artik ciziliyor ve durumunu soyluyor.
+   */
+  it('igne ad ve durum tasiyor; sakin mekan da ciziliyor', async () => {
     await render(<CanliHarita merkez={MERKEZ} mekanlar={[mekan(1, 7), mekan(2)]} />)
 
-    expect(screen.getByText('7')).toBeTruthy()
     expect(screen.getByLabelText('Mekan 1, 7 kişi burada')).toBeTruthy()
-    // Mekan 2 SAKIN: 2026-09-01'den beri haritada gri nokta cizilmiyor.
-    expect(screen.queryByLabelText('Mekan 2')).toBeNull()
+    expect(screen.getByLabelText('Mekan 2, Sakin')).toBeTruthy()
   })
 
   it('igneye basinca mekan kimligiyle onMekanSec cagrilir', async () => {
@@ -52,29 +55,50 @@ describe('CanliHarita (native)', () => {
    * "Harita uzerinde bu gri noktalari kaldir, mekan konumlarini
    * gosteren turuncu ikon kalsin").
    *
-   * Gri noktalar haritayi dolduruyordu ve hicbir sey anlatmiyordu -
-   * cevrede mekan OLDUGUNU soyluyorlardi ama uygulamanin sorusu "su an
-   * nerede INSAN var". Kalabalik mekanlarin turuncu sayili ignesi
-   * KALIYOR; merkez ignesi de kaliyor.
+   * Gri noktalar haritayi dolduruyordu ve hicbir sey anlatmiyordu.
+   *
+   * 2026-09-06'DA DEGISTI (kullanicinin referans gorseli): igneler
+   * artik ANLAM TASIYOR - her biri renkli, yaninda mekanin adi ve
+   * durumu (Sakin / Yogun / Populer) yaziyor. Yani "hicbir sey
+   * anlatmayan gri nokta" itirazi ortadan kalkti; sakin mekanlar da
+   * yesil igneyle ciziliyor.
+   *
+   * Bunun yerine EN COK BES igne kurali geldi: 390 px'lik bir haritada
+   * daha fazlasi etiketleri ust uste bindiriyor.
    */
-  it('yalnizca KALABALIK mekanlari cizer, sakinleri cizmez', async () => {
+  it('en cok BES igne cizer (+ merkez)', async () => {
     const cok = Array.from({ length: 20 }, (_, i) => mekan(i + 1))
-    // 20. mekan en uzak ama tek kalabalik olan.
+    cok[19] = { ...cok[19], kisiSayisi: 5 }
+
+    await render(<CanliHarita merkez={MERKEZ} mekanlar={cok} />)
+
+    // 5 mekan ignesi + 1 merkez ignesi.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(6)
+  })
+
+  /**
+   * SIRALAMA: once kalabalik olanlar. Haritanin cevaplamasi gereken
+   * soru "su an nerede hareket var" - bes yer varsa kalabalik olani
+   * eleyip sakin birini cizmek yanlis olurdu.
+   */
+  it('kalabalik mekan, sakinlerin arasinda bile CIZILIYOR', async () => {
+    const cok = Array.from({ length: 20 }, (_, i) => mekan(i + 1))
+    // 20. mekan en UZAK ve tek kalabalik olan; yine de listeye girmeli.
     cok[19] = { ...cok[19], kisiSayisi: 5 }
 
     await render(<CanliHarita merkez={MERKEZ} mekanlar={cok} />)
 
     expect(screen.getByLabelText('Mekan 20, 5 kişi burada')).toBeTruthy()
-    // 1 kalabalik mekan ignesi + 1 merkez ignesi. Sakin 19 mekan YOK.
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(2)
   })
 
-  it('hic kalabalik mekan yoksa yalnizca merkez ignesi kalir', async () => {
-    const sakinler = Array.from({ length: 8 }, (_, i) => mekan(i + 1))
+  it('sakin mekanin ignesi DURUMUNU soyluyor', async () => {
+    const sakinler = Array.from({ length: 3 }, (_, i) => mekan(i + 1))
 
     await render(<CanliHarita merkez={MERKEZ} mekanlar={sakinler} />)
 
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1)
+    expect(screen.getByLabelText('Mekan 1, Sakin')).toBeTruthy()
+    // 3 mekan + merkez.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(4)
   })
 
   it('konumu olmayan mekani cizmez', async () => {

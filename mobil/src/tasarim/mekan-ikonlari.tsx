@@ -272,3 +272,84 @@ export function OkIkonu({ boyut = 17, renk: verilen }: IkonProps) {
     </Svg>
   )
 }
+
+/**
+ * KESFET EKRANININ IKONLARI (kullanicinin istegi 2026-09-06, referans
+ * gorselle). Durum ikonlari RENKLERINI disaridan aliyor: sakin yesil,
+ * yogun kirmizi, populer sari - bunlar marka turuncusundan bagimsiz bir
+ * TRAFIK ISIGI dili, cunku bir durum anlatiyorlar, bir eylem degil.
+ */
+
+/** Katmanli harita - "Harita" gorunumu. */
+export function HaritaIkonu({ boyut = 16, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.turuncu
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M9 3.6L3.4 5.9v14.5L9 18.1l6 2.3 5.6-2.3V3.6L15 5.9z"
+        fill="none"
+        stroke={c}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <Path d="M9 3.6v14.5M15 5.9v14.5" fill="none" stroke={c} strokeWidth={1.8} />
+    </Svg>
+  )
+}
+
+/** Satirlar - "Liste" gorunumu. */
+export function ListeIkonu({ boyut = 16, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.metinIkincil
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Rect x={3.4} y={4.6} width={17.2} height={14.8} rx={2.6} fill="none" stroke={c} strokeWidth={1.8} />
+      <Path d="M9.2 4.6v14.8" fill="none" stroke={c} strokeWidth={1.8} />
+    </Svg>
+  )
+}
+
+/** Kaydiraclar - tur suzgecini acan dugme. */
+export function SuzgecIkonu({ boyut = 20, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.turuncu
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path d="M3.4 7.4h17.2M3.4 12h17.2M3.4 16.6h17.2" fill="none" stroke={c} strokeWidth={1.9} strokeLinecap="round" />
+      <Circle cx={8.4} cy={7.4} r={2.4} fill={c} />
+      <Circle cx={15.6} cy={12} r={2.4} fill={c} />
+      <Circle cx={10.4} cy={16.6} r={2.4} fill={c} />
+    </Svg>
+  )
+}
+
+/** Yaprak - "Sakin". */
+export function YaprakIkonu({ boyut = 15, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? '#2FBF5B'
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M20.4 3.6c0 9.4-4.2 14.2-10.2 14.2-3.2 0-5.4-1.9-5.4-4.8 0-5.6 6.4-6.6 15.6-9.4z"
+        fill={c}
+      />
+      <Path d="M4.2 20.4c2.6-5.6 6.6-9.2 11.6-11.4" fill="none" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+/** Dolu konum ignesi - durum ciplerinde ve haritada. */
+export function IgneIkonu({ boyut = 17, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.turuncu
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M12 2.2c-4 0-7.2 3.15-7.2 7.05 0 5.2 7.2 12.55 7.2 12.55s7.2-7.35 7.2-12.55c0-3.9-3.2-7.05-7.2-7.05z"
+        fill={c}
+      />
+      <Circle cx={12} cy={9.2} r={2.7} fill="#FFFFFF" />
+    </Svg>
+  )
+}

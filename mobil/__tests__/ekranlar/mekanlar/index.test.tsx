@@ -117,10 +117,13 @@ describe('MekanAramaEkrani', () => {
 
     await waitFor(() => expect(screen.getByText('Alba')).toBeTruthy())
     // Iki satir da AYNI: mahalle yok sayiliyor.
-    // Alt satirda artik yogunluk da var (tasarim A, 2026-09-01):
-    // "ilce, il · mesafe · Sakin".
-    expect(screen.getAllByText('Nilüfer, Bursa · 240 m · Sakin').length).toBe(2)
+    // 2026-09-06'da referans gorsele gecilince DURUM alt satirdan
+    // cikip ayri bir ROZETE tasindi; alt satirda yalnizca yer ve
+    // mesafe kaldi.
+    expect(screen.getAllByText('Nilüfer, Bursa · 240 m').length).toBe(2)
     expect(screen.queryByText('Ertuğrul · 240 m')).toBeNull()
+    // Durum rozeti: iki mekan da sakin.
+    expect(screen.getAllByText('Sakin').length).toBeGreaterThanOrEqual(2)
   })
 
   it('bir mekana basinca check-in ekranina yonlendirir', async () => {
@@ -190,7 +193,6 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
     // Arama kutusu artik "Mekan ara" sekmesinin altinda (2026-08-31).
-    await fireEvent.press(screen.getByText('Mekan ara'))
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kafe')
 
     await waitFor(() => {
@@ -212,12 +214,9 @@ describe('MekanAramaEkrani', () => {
     ])
 
     await render(<MekanAramaEkrani />)
-    // "8 kisi burada" seridi KESFET sekmesinde: o sekme "su an nerede
-    // insan var" sorusunu cevapliyor. Varsayilan sekme 2026-09-01'de
-    // "Mekan ara" oldugu icin once oraya geciliyor.
-    await waitFor(() => screen.getByText('Keşfet'))
-    await fireEvent.press(screen.getByText('Keşfet'))
 
+    // 2026-09-06: sekmeler kalkti, TEK liste var. Kisi sayisi artik
+    // ayri bir "canlilar seridi"nde degil, mekanin kendi kartinda.
     await waitFor(() => {
       expect(screen.getByText('8 kişi burada')).toBeTruthy()
     })
@@ -320,16 +319,16 @@ describe('MekanAramaEkrani', () => {
   // nereye gidip birileriyle karsilasabilirim"), ama Mekan ara sekmesi
   // farkli bir soruyu cevapliyor: "yakinimda ne var". Orada eczane,
   // banka, oto tamirci de gorunmeli.
-  it('Mekan ara sekmesinde tur suzgeci GONDERMEZ, mesafe siniri kalir', async () => {
+  it('suzgec KAPALIYKEN tur suzgeci GONDERMEZ, mesafe siniri kalir', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
     await render(<MekanAramaEkrani />)
-    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
-    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
 
-    await fireEvent.press(screen.getByText('Mekan ara'))
-
+    // Acilista suzgec KAPALI: tur listesi null gidiyor, yani butun
+    // turler geliyor. (Onceden bu testi "Mekan ara sekmesine bas"
+    // adimi tetikliyordu; sekmeler 2026-09-06'da kalkti ve varsayilan
+    // zaten bu.)
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
         41.015,
@@ -352,7 +351,6 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
 
-    await fireEvent.press(screen.getByText('Mekan ara'))
     await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kahve')
 
     await waitFor(() => {
@@ -386,7 +384,7 @@ describe('MekanAramaEkrani', () => {
 
   // Kullanicinin istegi (2026-09-01): "Checkin sayfasi acildiginda ilk
   // mekan ara butonu uzerinden baslasin, kesfet degil."
-  it('varsayilan sekme Mekan ara: arama kutusu ACIK geliyor', async () => {
+  it('arama kutusu HER ZAMAN acik geliyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -400,11 +398,13 @@ describe('MekanAramaEkrani', () => {
 
     // Arama kutusu ILK ACILISTA gorunur olmali.
     expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
-    expect(screen.getByText('Yakınında')).toBeTruthy()
+    expect(screen.getByText('Yakınındaki Mekanlar')).toBeTruthy()
 
     // Kesfet'e gecilince arama kutusu kapaniyor.
-    await fireEvent.press(screen.getByText('Keşfet'))
-    expect(screen.queryByPlaceholderText('Mekan ara')).toBeNull()
+    // Suzgec ACILINCA da arama kutusu duruyor: 2026-09-06'da sekmeler
+    // kalkti, arama artik her durumda elinin altinda.
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
   })
   // Kullanicinin istegi (2026-08-31): "Mekan ara kisminda Sonuclar
   // yaziyor, bunu Yakininda olarak degistir."
@@ -413,7 +413,7 @@ describe('MekanAramaEkrani', () => {
   // yuzden baslik "Yakininda". Bir sey ARANDIGINDA mesafe siniri
   // kalkiyor ve sonuc baska sehirden de gelebiliyor - orada "Yakininda"
   // yaniltici olurdu, "Sonuclar" kaliyor.
-  it('Mekan ara sekmesinde arama bosken baslik "Yakininda"', async () => {
+  it('arama bosken baslik "Yakinindaki Mekanlar"', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -425,16 +425,15 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
-    await fireEvent.press(screen.getByText('Mekan ara'))
 
-    await waitFor(() => expect(screen.getByText('Yakınında')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Yakınındaki Mekanlar')).toBeTruthy())
     expect(screen.queryByText('Sonuçlar')).toBeNull()
   })
 
   // Kesfet sekmesi sosyal turlere daralmaya DEVAM ediyor: "su an nereye
   // gidip birileriyle karsilasabilirim" sorusu farkli. Varsayilan sekme
   // degisti diye bu davranis kaybolmamali.
-  it('Kesfet sekmesine gecince tur suzgeci GONDERILIR', async () => {
+  it('suzgec dugmesine basinca tur suzgeci GONDERILIR', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
@@ -442,7 +441,7 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
 
-    await fireEvent.press(screen.getByText('Keşfet'))
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
 
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
@@ -555,7 +554,7 @@ describe('MekanAramaEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-1')
   })
 
-  it('yogunluk SAG SUTUNDA degil, alt satirda mesafenin yaninda', async () => {
+  it('durum ROZET olarak gosteriliyor, alt satirda degil', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -567,7 +566,7 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    expect(await screen.findByText('Nilüfer, Bursa · 240 m · Sakin')).toBeTruthy()
+    expect(await screen.findByText('Nilüfer, Bursa · 240 m')).toBeTruthy()
   })
 
   /**
@@ -580,7 +579,7 @@ describe('MekanAramaEkrani', () => {
    * Yogunluk alt satira tasindigi icin artik tek listede hem sakin hem
    * kalabalik gosterilebiliyor.
    */
-  it('Mekan ara listesinde KALABALIK mekan da gorunuyor', async () => {
+  it('listede KALABALIK mekan da gorunuyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -592,7 +591,7 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
 
     expect(await screen.findByText('Sahil Kafe')).toBeTruthy()
-    expect(screen.getByText('240 m · 4 kişi')).toBeTruthy()
+    expect(screen.getByText('4 kişi burada')).toBeTruthy()
     expect(screen.getByTestId('satir-checkin-mekan-1')).toBeTruthy()
   })
 })

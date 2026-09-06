@@ -23,6 +23,8 @@ import {
   yakinMekanlariYogunlukIleGetir,
   turuGosterilir,
   SOSYAL_TURLER,
+  mekanDurumu,
+  type MekanDurumu,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
   type MekanYogunlukIle,
@@ -31,6 +33,19 @@ import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/t
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { UstCubuk } from '../../tasarim/UstCubuk'
+import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import {
+  HaritaIkonu,
+  ListeIkonu,
+  SuzgecIkonu,
+  YaprakIkonu,
+  IgneIkonu,
+  CubukIkonu,
+  YildizIkonu,
+  KisilerIkonu,
+  DikeyUcNoktaIkonu,
+} from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
@@ -73,6 +88,29 @@ function mesafeYazisi(metre: number): string {
   return `${(metre / 1000).toFixed(1).replace('.', ',')} km`
 }
 
+/**
+ * DURUM RENKLERI - marka turuncusundan BAGIMSIZ bir trafik isigi dili.
+ *
+ * Sebep: bunlar bir eylem degil bir OLCU anlatiyor. Uygulamada turuncu
+ * "eylem ya da su an oluyor" demek; uc durumu da turuncunun tonlariyla
+ * gostermek o anlami tuketirdi. Referans gorselde de yesil / kirmizi /
+ * sari kullaniliyor.
+ *
+ * Koyu modda ayni degerler kaliyor: uc renk de kendi zeminlerinin
+ * (DURUM_ZEMINI) uzerinde duruyor ve o zeminler saydam degil.
+ */
+const DURUM_RENGI: Record<MekanDurumu, string> = {
+  sakin: '#2FBF5B',
+  yogun: '#E5484D',
+  populer: '#F5A623',
+}
+
+const DURUM_ZEMINI: Record<MekanDurumu, string> = {
+  sakin: 'rgba(47, 191, 91, 0.12)',
+  yogun: 'rgba(229, 72, 77, 0.12)',
+  populer: 'rgba(245, 166, 35, 0.14)',
+}
+
 export default function KesfetEkrani() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -90,6 +128,22 @@ export default function KesfetEkrani() {
    * karsilasabilirim" (sosyal turlere daraliyor).
    */
   const [sekme, setSekme] = useState<'kesfet' | 'ara'>('ara')
+
+  /**
+   * GORUNUM (referans gorseldeki Harita / Liste segmenti).
+   * 'liste'de harita hic cizilmiyor ve butun ekran listeye kaliyor -
+   * uzun bir listede haritayi her seferinde kaydirip gecmek gerekmesin.
+   */
+  const [gorunum, setGorunum] = useState<'harita' | 'liste'>('harita')
+
+  /**
+   * DURUM SUZGECI (referanstaki dort cip). Tur suzgeci DEGIL - o
+   * `sekme` uzerinden ve artik suzgec dugmesinden yonetiliyor.
+   */
+  const [durum, setDurum] = useState<'tumu' | MekanDurumu>('tumu')
+
+  /** Kart menusu: hangi mekanin uc noktasi acik. */
+  const [menuMekan, setMenuMekan] = useState<MekanYogunlukIle | null>(null)
   const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
   // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
@@ -298,7 +352,16 @@ export default function KesfetEkrani() {
   // cizilmesin. "Mekan ara"da oyle bir serit YOK; orada liste her seyi
   // tasimali, yoksa aranan kalabalik mekan hic gorunmuyor (bu kusur
   // 2026-09-01'de bulundu ve testle kilitlendi).
-  const sakinler = sekme === 'ara' ? liste : liste.filter((m) => m.kisiSayisi === 0)
+  /**
+   * TEK LISTE (referans gorsel). Onceden Kesfet sekmesinde canlilar
+   * ayri bir yatay seritte one cikiyor ve alttaki liste yalnizca
+   * sakinleri gosteriyordu; referansta oyle bir ayrim yok - her mekan
+   * ayni listede, durumunu ROZETI soyluyor.
+   *
+   * SIRALAMA DEGISMIYOR: sunucudan gelen yakinlik sirasi korunuyor
+   * (sabit kural, 2026-09-01). Durum yalnizca SUZUYOR, siralamiyor.
+   */
+  const sakinler = liste.filter((m) => durum === 'tumu' || mekanDurumu(m) === durum)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
@@ -392,6 +455,37 @@ export default function KesfetEkrani() {
 
   return (
     <View style={stiller.kok}>
+    {/* UST CUBUK (referans gorsel): baslik ve sagda Harita/Liste
+        segmenti. Bu bir sekme ekrani oldugu icin geri oku ANLAMSIZ
+        olurdu - alt gezinmeden geliniyor, geri gidilecek yer yok. */}
+    <View style={stiller.ustCubuk}>
+      <Text style={stiller.ustBaslik}>{t('kesfet.baslik')}</Text>
+      <View style={stiller.gorunumSegmenti}>
+        <Pressable
+          style={[stiller.gorunumDugme, gorunum === 'harita' && stiller.gorunumSecili]}
+          onPress={() => setGorunum('harita')}
+          accessibilityRole="button"
+          testID="gorunum-harita"
+        >
+          <HaritaIkonu renk={gorunum === 'harita' ? renk.turuncu : renk.metinSoluk} />
+          <Text style={[stiller.gorunumYazi, gorunum === 'harita' && stiller.gorunumYaziSecili]}>
+            {t('kesfet.harita')}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[stiller.gorunumDugme, gorunum === 'liste' && stiller.gorunumSecili]}
+          onPress={() => setGorunum('liste')}
+          accessibilityRole="button"
+          testID="gorunum-liste"
+        >
+          <ListeIkonu renk={gorunum === 'liste' ? renk.turuncu : renk.metinSoluk} />
+          <Text style={[stiller.gorunumYazi, gorunum === 'liste' && stiller.gorunumYaziSecili]}>
+            {t('kesfet.liste')}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
       {/* Liste DOLUYKEN olusan hata (ornegin arama sirasinda ag
           kopmasi) tam ekran hata ekranini tetiklemez; sessizce
@@ -401,40 +495,13 @@ export default function KesfetEkrani() {
       {/* HARITA: merkezde kullanici, cevresinde mekanlar gercek yon ve
           mesafeleriyle. Buyuk iki satirlik baslik KALDIRILDI - harita
           zaten ekranin gorsel capasi, baslik onu asagi itiyordu. */}
-      <CanliHarita
-        merkez={cihazKonumu}
-        mekanlar={suzulmus}
-        onMekanSec={(id) => router.push(`/check-in/${id}`)}
-      />
-
-      {/* IKI SEKME: haritanin altinda, yan yana (kullanicinin karari
-          2026-08-31, uc tasarim arasindan "sekme cifti" secildi).
-          Dugme degil SEKME: alttaki icerigi degistiriyorlar. */}
-      <View style={stiller.sekmeCubugu}>
-        <Pressable
-          style={[stiller.sekme, sekme === 'ara' && stiller.sekmeSecili]}
-          onPress={() => sekmeSec('ara')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: sekme === 'ara' }}
-        >
-          <BuyutecIkonu renk={sekme === 'ara' ? renk.turuncu : renk.metinSoluk} />
-          <Text style={[stiller.sekmeYazi, sekme === 'ara' && stiller.sekmeYaziSecili]}>
-            {t('kesfet.sekmeAra')}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={[stiller.sekme, sekme === 'kesfet' && stiller.sekmeSecili]}
-          onPress={() => sekmeSec('kesfet')}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: sekme === 'kesfet' }}
-        >
-          <PusulaIkonu renk={sekme === 'kesfet' ? renk.turuncu : renk.metinSoluk} />
-          <Text style={[stiller.sekmeYazi, sekme === 'kesfet' && stiller.sekmeYaziSecili]}>
-            {t('kesfet.sekmeKesfet')}
-          </Text>
-        </Pressable>
-      </View>
+      {gorunum === 'harita' && (
+        <CanliHarita
+          merkez={cihazKonumu}
+          mekanlar={suzulmus}
+          onMekanSec={(id) => router.push(`/check-in/${id}`)}
+        />
+      )}
 
       {/* Aktif check-in kartI: check-in'i bitirmenin (Ayrıldım) ve
           silmenin tek yolu bu, o yuzden iki sekmede de duruyor. */}
@@ -513,31 +580,66 @@ export default function KesfetEkrani() {
         </View>
       )}
 
-      {sekme === 'kesfet' && (
-      <Text style={stiller.ozet}>
-        {toplamKisi > 0 ? (
-          <>
-            {canlilar.length} mekânda <Text style={stiller.ozetVurgu}>{toplamKisi} kişi</Text> canlı
-          </>
-        ) : (
-          `${suzulmus.length} mekan yakınında`
-        )}
-      </Text>
+      {/* ARAMA HER ZAMAN GORUNUR (referans gorsel). Onceden yalnizca
+          "Mekan ara" sekmesinde ciziliyordu; artik sekme yok, tek liste
+          var ve arama her durumda elinin altinda.
 
-      )}
+          Yanindaki SUZGEC DUGMESI eski "Kesfet" sekmesinin isini
+          goruyor: acikken liste yalnizca sosyal turlere daraliyor
+          (kafe, bar, park...). O ayrim kaybolmasin diye korundu -
+          kullanicinin 2026-08-31 karariydi. */}
+      <View style={stiller.aramaSatiri}>
+        <TextInput
+          style={stiller.arama}
+          placeholder="Mekan ara"
+          placeholderTextColor={renk.metinSoluk}
+          value={arama}
+          onChangeText={aramaDegisti}
+          autoCorrect={false}
+          autoCapitalize="none"
+          returnKeyType="search"
+        />
+        <Pressable
+          style={[stiller.suzgecDugmesi, sekme === 'kesfet' && stiller.suzgecAcik]}
+          onPress={() => sekmeSec(sekme === 'kesfet' ? 'ara' : 'kesfet')}
+          accessibilityRole="button"
+          accessibilityLabel={t('kesfet.turSuzgeci')}
+          accessibilityState={{ selected: sekme === 'kesfet' }}
+          testID="tur-suzgeci"
+        >
+          <SuzgecIkonu renk={sekme === 'kesfet' ? '#FFFFFF' : renk.turuncu} />
+        </Pressable>
+      </View>
 
-      {sekme === 'ara' && (
-        <>
-          <TextInput
-        style={stiller.arama}
-        placeholder="Mekan ara"
-        placeholderTextColor={renk.metinSoluk}
-        value={arama}
-        onChangeText={aramaDegisti}
-        autoCorrect={false}
-        autoCapitalize="none"
-            returnKeyType="search"
-          />
+      {/* DURUM CIPLERI (referans gorsel). Ikon ustte, metin altta.
+          Suzuyorlar, SIRALAMIYORLAR - yakinlik sirasi sabit kural. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={stiller.cipSeridi}
+      >
+        {([
+          { anahtar: 'tumu', etiket: t('kesfet.tumu'), ikon: <IgneIkonu renk={renk.turuncu} /> },
+          { anahtar: 'sakin', etiket: t('kesfet.sakin'), ikon: <YaprakIkonu /> },
+          { anahtar: 'yogun', etiket: t('kesfet.yogun'), ikon: <CubukIkonu boyut={15} renk={DURUM_RENGI.yogun} /> },
+          { anahtar: 'populer', etiket: t('kesfet.populer'), ikon: <YildizIkonu boyut={15} renk={DURUM_RENGI.populer} /> },
+        ] as const).map((c) => (
+          <Pressable
+            key={c.anahtar}
+            style={[stiller.cip, durum === c.anahtar && stiller.cipSecili]}
+            onPress={() => setDurum(c.anahtar)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: durum === c.anahtar }}
+            testID={`cip-${c.anahtar}`}
+          >
+            {c.ikon}
+            <Text style={[stiller.cipYazi, durum === c.anahtar && stiller.cipYaziSecili]}>
+              {c.etiket}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
 
       {/* Arama sirasinda ekran duzeni DEGISMIYOR; durum yalnizca bu
           ince seritle anlatiliyor. Boylece yazi kutusu agacta kaliyor
@@ -562,94 +664,109 @@ export default function KesfetEkrani() {
         </View>
       )}
 
-        </>
-      )}
-
-      {/* Canli mekanlar one cikiyor: uygulamanin tek sorusu "su an
-          nerede insan var". Kimse yoksa bu bolum hic cizilmiyor.
-          Yalnizca kesfet sekmesinde: arama sonuclari arasinda "canli"
-          vurgusu aramayi bolerdi. */}
-      {sekme === 'kesfet' && canlilar.length > 0 && (
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={canlilar}
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={stiller.kartSatiri}
-          renderItem={({ item }) => (
-            <Pressable
-              style={stiller.kart}
-              onPress={() => router.push(`/check-in/${item.id}`)}
-            >
-              <View style={stiller.canliRozet}>
-                <View style={stiller.canliNokta} />
-                <Text style={stiller.canliRozetYazi}>{item.kisiSayisi} kişi burada</Text>
-              </View>
-              <View style={stiller.kartAlt}>
-                <Text style={stiller.kartAd} numberOfLines={2}>
-                  {item.ad}
-                </Text>
-                <Text style={stiller.kartAltYazi}>{altSatir(item)}</Text>
-              </View>
-            </Pressable>
-          )}
-        />
-      )}
-
-      <Text style={stiller.bolumBasligi}>
-        {/* Kullanicinin istegi (2026-08-31): "Mekan ara kisminda Sonuclar
-            yaziyor, bunu Yakininda olarak degistir."
-            Arama BOSKEN liste gercekten yakindakiler (200 m). Bir sey
-            ARANINCA mesafe siniri kalkiyor ve sonuc baska sehirden de
-            gelebiliyor - orada "Yakininda" yaniltici olurdu. */}
-        {sekme === 'kesfet' || arama.trim().length === 0 ? 'Yakınında' : 'Sonuçlar'}
-      </Text>
+      {/* BOLUM BASLIGI + "Tumunu gor" (referans gorsel). Sagdaki
+          baglanti LISTE gorunumune geciyor: harita kalkiyor ve butun
+          ekran listeye kaliyor. */}
+      <View style={stiller.bolumSatiri}>
+        <Text style={stiller.bolumBasligi}>
+          {/* Arama BOSKEN liste gercekten yakindakiler. Bir sey
+              ARANINCA mesafe siniri kalkiyor ve sonuc baska ilceden de
+              gelebiliyor - orada "Yakinindaki" yaniltici olurdu. */}
+          {arama.trim().length === 0 ? t('kesfet.yakinindakiMekanlar') : t('kesfet.sonuclar')}
+        </Text>
+        {gorunum === 'harita' && (
+          <Pressable
+            style={stiller.tumunuGor}
+            onPress={() => setGorunum('liste')}
+            accessibilityRole="button"
+            testID="tumunu-gor"
+          >
+            <Text style={stiller.tumunuGorYazi}>{t('kesfet.tumunuGor')}</Text>
+            <Text style={stiller.tumunuGorOk}>›</Text>
+          </Pressable>
+        )}
+      </View>
       {sakinler.length === 0 ? (
         <Text style={stiller.bosDurum}>Bu filtreyle yakında mekan yok.</Text>
       ) : (
-        sakinler.map((item) => (
-          <Pressable
-            key={item.id}
-            style={stiller.satir}
-            onPress={() => router.push(`/check-in/${item.id}`)}
-          >
-            <View style={stiller.satirOrta}>
+        sakinler.map((item) => {
+          const d = mekanDurumu(item)
+          return (
+          <View key={item.id} style={stiller.mekanKarti}>
+            <View style={stiller.kartGovde}>
               {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin karari
-                  2026-08-31): turuncu ve dokununca KONUM ekranini
-                  aciyor. Uygulamanin geri kalaninda da turuncu mekan
-                  adi "konum etiketi" demek - akistaki ve profildeki
-                  kartlar da oyle. Satirin geri kalani ve soldaki igne
-                  check-in'e goturmeye devam ediyor. */}
+                  2026-08-31): dokununca mekanin KONUM sayfasini
+                  aciyor. */}
               <Pressable
                 onPress={() => router.push(`/harita/${item.id}` as never)}
                 accessibilityRole="button"
                 accessibilityLabel={`${item.ad} konumunu gör`}
                 hitSlop={6}
               >
-                <Text style={stiller.satirAd} numberOfLines={1}>
+                <Text style={stiller.kartMekanAdi} numberOfLines={2}>
                   {item.ad}
                 </Text>
               </Pressable>
-              <Text style={stiller.satirAlt}>{altSatir(item)}</Text>
+
+              <View style={stiller.kartSatir}>
+                <IgneIkonu boyut={12} renk={renk.metinSoluk} />
+                <Text style={stiller.kartSatirYazi} numberOfLines={1}>
+                  {[konumYazisi(item), uzaklik(item)].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
+
+              {/* Kisi satiri YALNIZCA birileri VARSA. Sifir yazmak
+                  bilgi tasimiyor; durumu zaten rozet soyluyor. */}
+              {item.kisiSayisi > 0 && (
+                <View style={stiller.kartSatir}>
+                  <KisilerIkonu boyut={13} />
+                  <Text style={stiller.kartKisiYazi}>
+                    {t('kesfet.kisiBurada', { sayi: item.kisiSayisi })}
+                  </Text>
+                </View>
+              )}
             </View>
-            {/* SAG TARAF EYLEME AYRILDI (kullanicinin sectigi tasarim A,
-                2026-09-01). Dugme check-in EKRANINI aciyor, dogrudan
-                check-in YAPMIYOR - kullanicinin karari: not ve fotograf
-                adimi atlanmasin. */}
-            <Pressable
-              testID={`satir-checkin-${item.id}`}
-              style={stiller.satirCheckInDugmesi}
-              onPress={() => router.push(`/check-in/${item.id}`)}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.ad} için check-in yap`}
-              hitSlop={6}
-            >
-              <Text style={stiller.satirCheckInYazi} numberOfLines={1}>
-                {t('kesfet.satirCheckIn')}
-              </Text>
-            </Pressable>
-          </Pressable>
-        ))
+
+            <View style={stiller.kartSag}>
+              <View style={stiller.kartSagUst}>
+                <View style={[stiller.rozet, { backgroundColor: DURUM_ZEMINI[d] }]}>
+                  {d === 'sakin' ? (
+                    <YaprakIkonu boyut={12} />
+                  ) : d === 'yogun' ? (
+                    <CubukIkonu boyut={12} renk={DURUM_RENGI.yogun} />
+                  ) : (
+                    <YildizIkonu boyut={12} renk={DURUM_RENGI.populer} />
+                  )}
+                  <Text style={[stiller.rozetYazi, { color: DURUM_RENGI[d] }]}>
+                    {t(`kesfet.${d}`)}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => setMenuMekan(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('anaSayfa.secenekler')}
+                  hitSlop={8}
+                  testID={`kart-menu-${item.id}`}
+                >
+                  <DikeyUcNoktaIkonu boyut={17} renk={renk.metinSoluk} />
+                </Pressable>
+              </View>
+
+              <Pressable
+                style={stiller.kartCheckIn}
+                onPress={() => router.push(`/check-in/${item.id}`)}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.ad} için check-in yap`}
+                testID={`satir-checkin-${item.id}`}
+              >
+                <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
+                  {t('kesfet.checkIn')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+          )
+        })
       )}
 
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
@@ -664,6 +781,37 @@ export default function KesfetEkrani() {
         Mekan verileri: Foursquare · Mahalle ve ilçe: © OpenStreetMap katkıda bulunanlar
       </Text>
     </ScrollView>
+
+    {/* Kart menusu. Referans gorselde her kartin sag ustunde bir uc
+        nokta var; icerigi mekanla ilgili iki islem. */}
+    <SecimPenceresi
+      acikMi={menuMekan !== null}
+      onKapat={() => setMenuMekan(null)}
+      secimler={
+        menuMekan
+          ? [
+              {
+                etiket: t('kesfet.konumuGor'),
+                onSec: () => {
+                  const hedef = menuMekan.id
+                  setMenuMekan(null)
+                  router.push(`/harita/${hedef}` as never)
+                },
+                testID: 'menu-konumu-gor',
+              },
+              {
+                etiket: t('kesfet.checkInYap'),
+                onSec: () => {
+                  const hedef = menuMekan.id
+                  setMenuMekan(null)
+                  router.push(`/check-in/${hedef}`)
+                },
+                testID: 'menu-check-in',
+              },
+            ]
+          : []
+      }
+    />
     </View>
   )
 }
@@ -747,6 +895,152 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   kok: { flex: 1, backgroundColor: renk.zemin },
+
+  // --- ust cubuk + gorunum segmenti ---
+  ustCubuk: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: bosluk.sayfa,
+    paddingTop: bosluk.m,
+    paddingBottom: bosluk.s,
+    gap: bosluk.m,
+  },
+  ustBaslik: {
+    flex: 1,
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.altBaslik,
+    color: renk.metin,
+    letterSpacing: -0.3,
+  },
+  gorunumSegmenti: {
+    flexDirection: 'row',
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.hap,
+    padding: 3,
+    gap: 3,
+  },
+  gorunumDugme: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 11,
+    borderRadius: yuvarlak.hap,
+  },
+  gorunumSecili: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1.2,
+    borderColor: renk.turuncu,
+  },
+  gorunumYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
+  },
+  gorunumYaziSecili: { color: renk.turuncu },
+
+  // --- arama satiri ---
+  aramaSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+  suzgecDugmesi: {
+    width: 46,
+    height: 46,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  suzgecAcik: { backgroundColor: renk.turuncu },
+
+  // --- durum cipleri ---
+  cipSeridi: { gap: bosluk.s, paddingVertical: 2 },
+  cip: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    minWidth: 76,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: yuvarlak.kart,
+    borderWidth: 1.2,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+  },
+  cipSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
+  cipYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+  },
+  cipYaziSecili: { color: renk.turuncu, fontFamily: yazi.govdeKalin },
+
+  // --- bolum basligi ---
+  bolumSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+  tumunuGor: { marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 3 },
+  tumunuGorYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  tumunuGorOk: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metinSoluk,
+  },
+
+  // --- mekan karti ---
+  mekanKarti: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: bosluk.m,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.m,
+    marginBottom: bosluk.s,
+  },
+  kartGovde: { flex: 1, minWidth: 0, gap: 3 },
+  kartMekanAdi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.govde,
+    color: renk.metin,
+    letterSpacing: -0.2,
+  },
+  kartSatir: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  kartSatirYazi: {
+    flexShrink: 1,
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+  },
+  kartKisiYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.minik,
+    color: renk.turuncu,
+  },
+  kartSag: { alignItems: 'flex-end', gap: bosluk.s },
+  kartSagUst: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rozet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: yuvarlak.hap,
+  },
+  rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
+  kartCheckIn: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 9,
+    paddingHorizontal: 18,
+  },
+  kartCheckInYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#FFFFFF',
+  },
+
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   // Harita EN USTTE. Onceden burada yaricap cipleri vardi ve ust pay
   // onlara ayrilmisti; cipler kalkinca harita bosluga tasindi.

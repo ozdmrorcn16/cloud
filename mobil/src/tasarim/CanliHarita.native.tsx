@@ -5,6 +5,7 @@ import Svg, { Circle, Path } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
 import { yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { mekanDurumu, type MekanDurumu } from '../../lib/mekan'
 import type { HaritaMekani } from './CanliHarita'
 
 export type { HaritaMekani } from './CanliHarita'
@@ -76,6 +77,29 @@ function bolgeUret(merkez: { lat: number; lng: number }, gosterimMetre: number):
     latitudeDelta: (gosterimMetre * 2) / 110540,
     longitudeDelta: (gosterimMetre * 2) / (111320 * Math.cos(enlemRadyan)),
   }
+}
+
+/**
+ * IGNE RENKLERI - kesfet listesindeki rozetlerle AYNI degerler.
+ *
+ * Ikisi ayrilirsa haritada yesil gorunen bir mekan listede kirmizi
+ * rozet tasiyabilir; ayni ekranda iki farkli dogruluk olur.
+ */
+const DURUM_RENGI: Record<MekanDurumu, string> = {
+  sakin: '#2FBF5B',
+  yogun: '#E5484D',
+  populer: '#F5A623',
+}
+
+/** `toplamCheckIn` istege bagli oldugu icin kucuk bir sarmalayici. */
+function durumu(m: HaritaMekani): MekanDurumu {
+  return mekanDurumu({ kisiSayisi: m.kisiSayisi, toplamCheckIn: m.toplamCheckIn ?? 0 })
+}
+
+const DURUM_ETIKETI: Record<MekanDurumu, string> = {
+  sakin: 'Sakin',
+  yogun: 'Yoğun',
+  populer: 'Popüler',
 }
 
 export function CanliHarita({
@@ -161,30 +185,60 @@ export function CanliHarita({
             cevrede mekan OLDUGUNU soyluyorlardi, oysa uygulamanin sorusu
             "su an nerede INSAN var". Kalabalik mekanin turuncu sayili
             ignesi ve merkez ignesi KALIYOR. */}
+        {/* IGNELER AD VE DURUM TASIYOR (kullanicinin istegi 2026-09-06,
+            referans gorselle). Onceden yalnizca kalabalik mekanlar
+            cizilip icine sayi yaziliyordu; artik her igne renkli ve
+            yaninda adi ile durumu duruyor.
+
+            EN COK BES IGNE: referansta da bes tane var ve daha
+            fazlasi 390 px'lik bir haritada etiketleri ust uste
+            bindiriyor. Once POPULER ve YOGUN olanlar seciliyor -
+            haritanin cevaplamasi gereken soru "su an nerede hareket
+            var". */}
         {igneler
-          .filter((mekan) => mekan.kisiSayisi > 0)
+          .slice()
+          .sort((a, b) => {
+            const oncelik = (m: HaritaMekani) =>
+              m.kisiSayisi > 0 ? 2 : durumu(m) === 'populer' ? 1 : 0
+            return oncelik(b) - oncelik(a)
+          })
+          .slice(0, 5)
           .map((mekan) => {
-          const canli = mekan.kisiSayisi > 0
-          return (
-            <Marker
-              key={mekan.id}
-              coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-              anchor={{ x: 0.5, y: 0.5 }}
-              onPress={() => onMekanSec?.(mekan.id)}
-              accessibilityLabel={
-                canli ? `${mekan.ad}, ${mekan.kisiSayisi} kişi burada` : mekan.ad
-              }
-            >
-              {canli ? (
-                <View style={stiller.canliIgne}>
-                  <Text style={stiller.canliSayi}>{mekan.kisiSayisi}</Text>
+            const d = durumu(mekan)
+            return (
+              <Marker
+                key={mekan.id}
+                coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
+                anchor={{ x: 0.5, y: 1 }}
+                onPress={() => onMekanSec?.(mekan.id)}
+                accessibilityLabel={
+                  mekan.kisiSayisi > 0
+                    ? `${mekan.ad}, ${mekan.kisiSayisi} kişi burada`
+                    : `${mekan.ad}, ${DURUM_ETIKETI[d]}`
+                }
+              >
+                <View style={stiller.igneKutu}>
+                  <Svg width={26} height={26} viewBox="0 0 24 24">
+                    <Path
+                      d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
+                      fill={DURUM_RENGI[d]}
+                      stroke="#FFFFFF"
+                      strokeWidth={1.6}
+                    />
+                    <Circle cx={12} cy={9.4} r={2.8} fill="#FFFFFF" />
+                  </Svg>
+                  <View style={stiller.igneEtiket}>
+                    <Text style={stiller.igneAd} numberOfLines={2}>
+                      {mekan.ad}
+                    </Text>
+                    <Text style={[stiller.igneDurum, { color: DURUM_RENGI[d] }]}>
+                      {DURUM_ETIKETI[d]}
+                    </Text>
+                  </View>
                 </View>
-              ) : (
-                <View style={stiller.sakinIgne} />
-              )}
-            </Marker>
-          )
-        })}
+              </Marker>
+            )
+          })}
 
         {/* Merkez: bizim turuncu igne. Ucu tam koordinata basiyor. */}
         <Marker
@@ -232,6 +286,27 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     lineHeight: 14,
     color: '#FFFFFF',
+  },
+  // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
+  // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
+  igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  igneEtiket: { maxWidth: 108 },
+  igneAd: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: 10,
+    lineHeight: 12,
+    color: '#1A1512',
+    // Harita zemini acik ama fotografli olabilir; ince beyaz golge
+    // yaziyi her zeminde okunur tutuyor.
+    textShadowColor: 'rgba(255,255,255,0.95)',
+    textShadowRadius: 3,
+  },
+  igneDurum: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: 9,
+    lineHeight: 11,
+    textShadowColor: 'rgba(255,255,255,0.95)',
+    textShadowRadius: 3,
   },
   sakinIgne: {
     width: 12,

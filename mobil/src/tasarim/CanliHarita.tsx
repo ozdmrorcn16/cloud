@@ -64,6 +64,13 @@ export type HaritaMekani = {
   ad: string
   konum: { lat: number; lng: number } | null
   kisiSayisi: number
+  /**
+   * Mekanin butun gecmisindeki check-in sayisi - "Populer" olcusu.
+   * Istege bagli: haritayi baska bir yerden besleyen cagirici (ornegin
+   * mekan sayfasindaki cevre listesi) bunu vermeyebilir; o zaman igne
+   * populer sayilmaz ama harita yine cizilir.
+   */
+  toplamCheckIn?: number
 }
 
 type Yerlesim = {
