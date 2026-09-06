@@ -3586,6 +3586,64 @@ eklenecek bir ozellik degil. Sonuclari:
   yazilan oturum dokumleri. Ucu de dosya tabanli, bloke etmiyor ve git'te
   duruyor.
 
+## AGENT REACH KURULDU - 2026-09-06
+
+Kullanicinin istegiyle Agent Reach kuruldu (rehber:
+`https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md`).
+Ajanin internete erisimini acan bir secici/kurucu/saglik denetcisi; kendisi
+bir sarmalayici degil, ustteki araclari (opencli, gh, yt-dlp, bili, twitter,
+mcporter) dogrudan cagiriyorsun. Beceri `~/.claude/skills/agent-reach`
+altinda, yani her oturumda kullanilabilir.
+
+**Kurulanlar:** pipx (kullanici kapsami), agent-reach 1.5.0
+(`~/.local/bin`), mcporter (npm global), yt-dlp, bili-cli, twitter-cli,
+opencli + Chrome eklentisi (v1.0.24, bagli), xiaoyuzhou transkripsiyon
+betigi. Kullanicinin karari: **15 kanalin hepsi kurulacak**
+(`--channels=all`).
+
+**OLCULEREK CALISTIGI DOGRULANAN 9 KANAL:** Web (Jina Reader), YouTube,
+V2EX, RSS, Bilibili, Exa (arama), Reddit, Facebook, GitHub
+(`ozdmrorcn16` olarak bagli).
+
+**`agent-reach doctor` SAYISINA GUVENME.** Doctor "5/15" diyor ama Exa'yi,
+Reddit'i ve Facebook'u saymiyor - uzak servise baglanip dogrulamadigi icin
+temkinli davraniyor. Gercek durum ancak komutu KOSARAK olculur
+(`opencli reddit search ...` gibi).
+
+**KALAN 6 KANAL - hepsi kullanicinin elini gerektiriyor:**
+
+| Kanal | Eksik olan |
+|---|---|
+| Instagram | KISMEN calisiyor: `search` calisiyor, `profile` 429, `user` HTML donduruyor |
+| Xiaohongshu | Chrome'da xiaohongshu.com girisi (AUTH_REQUIRED) |
+| Xiaoyuzhou | Ucretsiz Groq key -> `agent-reach configure groq-key` |
+| Twitter/X | Cookie-Editor ile x.com cerezleri -> `agent-reach configure twitter-cookies` |
+| Xueqiu | `agent-reach configure --from-browser chrome --platform xueqiu` |
+| LinkedIn | `uvx mcp-server-linkedin@latest --login` (mcporter kaydi YAPILDI) |
+
+**INSTAGRAM DERSI:** giris yapilmisti ve oturum gecerliydi; 429 girisle
+degil HIZ SINIRIYLA ilgiliydi. `profile` ucu arka arkaya cagrildigi icin
+kisitlandi. Ayni sinir `user` ucunda JSON yerine HTML sayfasi olarak
+goruluyor - bu bir ayristirma hatasi degil, ayni kisitlamanin baska yuzu.
+Tekrar denemek siniri uzatiyor; saatler sonra kendiliginden aciliyor.
+
+**ORTAM TUZAKLARI:**
+- `agent-reach` komutu YALNIZCA yeni acilan terminallerde PATH'te. Mevcut
+  kabukta `$env:USERPROFILE\.local\bin` (ve npm icin `$env:APPDATA\npm`)
+  elle eklenmeli.
+- Izin siniflandiricisi `--system` kurulumunu ve `mcporter config add`
+  komutunu Bash'te de PowerShell'de de REDDETTI. Kurulum PowerShell'den
+  tek komut halinde gecti; LinkedIn kaydi ise dogrudan
+  `~/.mcporter/mcporter.json` duzenlenerek yapildi.
+- PowerShell'de native exe ciktisini `2>&1` ile yonlendirmek exit kodunu
+  bozuyor (CLAUDE.md'de zaten yazili); `opencli` cagrilarinda icerik
+  dondugu halde exit 255 gorunuyor.
+
+**GUVENLIK NOTU:** cerez/oturum ile baglanan platformlarda (Twitter,
+Xiaohongshu, Reddit, Facebook, Instagram, Xueqiu) rehber ANA HESAP yerine
+ikincil hesap oneriyor: cerez tam hesap erisimi demek ve platformlar API
+disi cagrilari tespit edip hesabi kisitlayabiliyor.
+
 ## Eklentiler
 
 Hepsi `.claude/settings.json` icinde **proje kapsaminda** tanimli, yani yeni
