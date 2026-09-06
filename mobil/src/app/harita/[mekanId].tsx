@@ -21,9 +21,17 @@ import {
   type LiderlikSatiri,
   type SonCheckIn,
 } from '../../../lib/mekan-sayfasi'
-import { suAnBurdakileriGetir, type CheckInGorunumu } from '../../../lib/checkin'
+import {
+  suAnBurdakileriGetir,
+  aktifCheckInimiGetir,
+  checkIndenAyril,
+  CHECK_IN_YARICAP_METRE,
+  type CheckInGorunumu,
+  type AktifCheckIn,
+} from '../../../lib/checkin'
 import { profilOzetleriniGetir } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
+import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { CanliHarita, type HaritaMekani } from '../../tasarim/CanliHarita'
@@ -196,6 +204,13 @@ export default function MekanSayfasi() {
   const [secimAcik, setSecimAcik] = useState(false)
   const [menuAcik, setMenuAcik] = useState(false)
 
+  // ALT BUTONUN UC HALI (kullanicinin sectigi tasarim B, 2026-09-06).
+  // Hangi hal gosterilecegi iki seye bagli: bu mekanda aktif check-in'in
+  // var mi, ve mekana kac metre uzaktasin.
+  const [aktif, setAktif] = useState<AktifCheckIn | null>(null)
+  const [uzaklik, setUzaklik] = useState<number | null>(null)
+  const [ayriliyor, setAyriliyor] = useState(false)
+
   useEffect(() => {
     let gecerli = true
 
@@ -219,6 +234,9 @@ export default function MekanSayfasi() {
     // Sayfanin geri kalani BAGIMSIZ yukleniyor: biri patlarsa digerleri
     // yine geliyor. Mekanin kendisi olmadan sayfa cizilemez, ama
     // istatistik olmadan cizilebilir - bu yuzden hatalari yutuyorlar.
+    // Aktif check-in: bu mekandaysa buton "Ayril"a donuyor.
+    aktifCheckInimiGetir().then((d) => gecerli && setAktif(d)).catch(() => {})
+
     mekanIstatistikleriniGetir(mekanId).then((d) => gecerli && setIstatistik(d)).catch(() => {})
     suAnBurdakileriGetir(mekanId)
       .then((d) => {
@@ -260,6 +278,62 @@ export default function MekanSayfasi() {
       gecerli = false
     }
   }, [mekanId])
+
+  /**
+   * MEKANA UZAKLIK - yalnizca butonun hali icin.
+   *
+   * Bu ekranin eski kurali "kullanicinin kendi konumu BURADA
+   * KULLANILMIYOR" idi ve gerekcesi soyleydi: check-in baska bir gun
+   * baska bir yerde yapilmis olabilir, "sana uzakligi" yaniltici olur.
+   * O gerekce METIN icin hala gecerli - uzaklik listede ya da baslikta
+   * GOSTERILMIYOR; yalnizca basilamayacak bir butonu onceden soluk
+   * gostermek icin okunuyor.
+   *
+   * Konum alinamazsa (izin yok, ag yok, web'de reddedildi) uzaklik
+   * `null` kaliyor ve buton NORMAL gorunuyor - bilmedigimiz bir sey
+   * yuzunden kullaniciyi engellemek yanlis olurdu; o durumda kurali
+   * yine sunucu uyguluyor.
+   */
+  useEffect(() => {
+    if (!mekan) return
+    let gecerli = true
+    cihazKonumunuAl()
+      .then((k) => {
+        if (!gecerli) return
+        setUzaklik(mesafeMetre(k.lat, k.lng, mekan.konum.lat, mekan.konum.lng))
+      })
+      .catch(() => {})
+    return () => {
+      gecerli = false
+    }
+  }, [mekan])
+
+  const buradayim = Boolean(aktif && aktif.mekanId === mekanId)
+  const uzakta = uzaklik !== null && uzaklik > CHECK_IN_YARICAP_METRE
+
+  /** "2,4 km" ya da "820 m" - buton metnindeki mesafe. */
+  function mesafeYazisi(metre: number): string {
+    return metre >= 1000
+      ? `${(metre / 1000).toFixed(1).replace('.', ',')} km`
+      : `${Math.round(metre)} m`
+  }
+
+  async function ayril() {
+    if (!aktif) return
+    setAyriliyor(true)
+    try {
+      await checkIndenAyril(aktif.id)
+      setAktif(null)
+      // Sayfa artik "0 kisi burada" gostermeli; sayilar ve liste
+      // yeniden cekiliyor.
+      mekanIstatistikleriniGetir(mekanId).then(setIstatistik).catch(() => {})
+      suAnBurdakileriGetir(mekanId).then(setBurdakiler).catch(() => {})
+    } catch (e) {
+      setHata(hataMetni(e))
+    } finally {
+      setAyriliyor(false)
+    }
+  }
 
   // Hangi kip icin secim yapiliyor: pencere kapandiginda hangi
   // adresin acilacagini bu belirliyor.
@@ -677,18 +751,59 @@ export default function MekanSayfasi() {
         )}
       </ScrollView>
 
+      {/* ALTA YAPISIK CHECK-IN CUBUGU (kullanicinin sectigi tasarim B).
+          ScrollView'in DISINDA duruyor: React Native'de `position:
+          sticky` yok, bu yuzden "kaydirsan da altta kalan" bir oge
+          ancak kaydirilan alanin disina konarak yapiliyor. Alt gezinme
+          cubugunun hemen ustunde.
+
+          UC HALI VAR:
+            buradayim -> "Buradasın · Ayrıl"   (aktif check-in bu mekanda)
+            uzakta    -> soluk, mesafeyi yazar (1 km kurali)
+            digeri    -> "Buraya check-in yap"
+
+          Uzaklik BILINMIYORSA (konum izni yok, web'de reddedildi)
+          buton normal gorunuyor - bilmedigimiz bir sey yuzunden
+          engellemek yerine kurali sunucuya birakiyoruz. */}
+      {mekan && (
+        <View style={stiller.sabitCubuk} pointerEvents="box-none">
+          {buradayim ? (
+            <Pressable
+              style={[stiller.cubukDugme, stiller.cubukBuradayim]}
+              onPress={ayril}
+              disabled={ayriliyor}
+              accessibilityRole="button"
+              testID="checkin-cubugu"
+            >
+              <Text style={stiller.cubukBuradayimYazi}>
+                {t('mekanSayfasi.buradasinAyril')}
+              </Text>
+            </Pressable>
+          ) : uzakta ? (
+            <View style={[stiller.cubukDugme, stiller.cubukUzak]} testID="checkin-cubugu">
+              <Text style={stiller.cubukUzakYazi}>
+                {t('mekanSayfasi.yaklas', { mesafe: mesafeYazisi(uzaklik as number) })}
+              </Text>
+            </View>
+          ) : (
+            <Pressable
+              style={[stiller.cubukDugme, stiller.cubukBirincil]}
+              onPress={() => router.push(`/check-in/${mekanId}` as never)}
+              accessibilityRole="button"
+              testID="checkin-cubugu"
+            >
+              <Text style={stiller.cubukBirincilYazi}>
+                {t('mekanSayfasi.buradaCheckIn')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+
       <SecimPenceresi
         acikMi={menuAcik}
         onKapat={() => setMenuAcik(false)}
         secimler={[
-          {
-            etiket: t('mekanSayfasi.buradaCheckIn'),
-            onSec: () => {
-              setMenuAcik(false)
-              router.push(`/check-in/${mekanId}` as never)
-            },
-            testID: 'menu-check-in',
-          },
           {
             etiket: t('checkInHaritasi.haritadaAc'),
             onSec: () => {
@@ -747,11 +862,16 @@ export default function MekanSayfasi() {
   )
 }
 
+/** Sabit cubugun kapladigi dikey yer (dugme + alt/ust payi). */
+const CUBUK_YERI = 62
+
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.sayfa,
-    paddingBottom: ALT_GEZINME_PAYI,
+    // Sabit cubuk icerigin USTUNE biniyor; alt pay onun yuksekligini de
+    // kapsamali, yoksa listenin son satiri butonun altinda kaliyor.
+    paddingBottom: ALT_GEZINME_PAYI + CUBUK_YERI,
     gap: 14,
   },
   hata: {
@@ -1031,6 +1151,59 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
     paddingVertical: bosluk.l,
     textAlign: 'center',
+  },
+
+  // Cubuk alt gezinmenin USTUNDE duruyor.
+  //
+  // OLCULDU: ilk denemede `ALT_GEZINME_PAYI - 26` yazilmisti ve buton
+  // gezinme cubugunun ALTINDA kaliyordu - yarisi orutuluyordu.
+  // `ALT_GEZINME_PAYI` (104 + guvenli alan) gezinme cubugunun ust
+  // kenarindan yalnizca birkac piksel yukarisi; cubugun ustunde
+  // durabilmesi icin ondan CIKARMAK degil EKLEMEK gerekiyor.
+  sabitCubuk: {
+    position: 'absolute',
+    left: bosluk.sayfa,
+    right: bosluk.sayfa,
+    bottom: ALT_GEZINME_PAYI + 8,
+  },
+  cubukDugme: {
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cubukBirincil: {
+    backgroundColor: renk.turuncu,
+    ...golge.yuzer,
+  },
+  cubukBirincilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  // UZAK hali basilamiyor ve bunu RENKLE soyluyor: dolgu notr, yazi
+  // soluk. Turuncu birakip yalnizca opaklik dusurmek "yukleniyor" gibi
+  // okunurdu.
+  cubukUzak: {
+    backgroundColor: renk.cizgi,
+  },
+  cubukUzakYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
+  // BURADASIN hali hayalet: eylem artik "gel" degil "ayril", yani
+  // tesvik edilen bir sey degil.
+  cubukBuradayim: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1.5,
+    borderColor: renk.turuncu,
+    ...golge.yuzer,
+  },
+  cubukBuradayimYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.turuncu,
   },
 
   modalKok: { flex: 1, justifyContent: 'flex-end' },

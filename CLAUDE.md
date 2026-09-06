@@ -567,6 +567,61 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### MEKAN SAYFASINA CHECK-IN CUBUGU - 2026-09-06
+
+Uc yerlesim gorsel olarak sunuldu (adin yaninda ikili / alta yapisik /
+haritanin ustunde); kullanici **B - alta yapisik**'i secti ve ayrica
+"buton her zaman ayni gorunmuyor fikri de guzel" diyerek UC HALI de
+onayladi.
+
+Ondan once check-in'e giden tek yol UC NOKTA MENUSUNUN ICINDEYDI, yani
+sayfanin asil eylemi gorunmuyordu. Menuden kaldirildi.
+
+**CUBUK ScrollView'IN DISINDA.** React Native'de `position: sticky`
+yok; "kaydirsan da altta kalan" bir oge ancak kaydirilan alanin disina
+konarak yapiliyor. `ScrollView`in `paddingBottom`u da cubugun
+yuksekligini kapsiyor, yoksa listenin son satiri butonun altinda
+kaliyor.
+
+**UC HAL:**
+
+| Durum | Buton |
+|---|---|
+| Bu mekanda aktif check-in var | "Buradasın · Ayrıl", HAYALET (eylem tesvik edilen bir sey degil) |
+| Mekana 1 km'den uzak | Notr dolgu, basilamaz, "Check-in için yaklaş · 2,4 km" |
+| Digeri | Dolu turuncu, "Buraya check-in yap" |
+
+Uzak hali basilamadigini RENKLE soyluyor (notr dolgu + soluk yazi);
+turuncu birakip yalnizca opaklik dusurmek "yukleniyor" gibi okunurdu.
+
+**KONUM ARTIK BU EKRANDA OKUNUYOR** - eski kural "kullanicinin kendi
+konumu BURADA KULLANILMIYOR" idi ve gerekcesi "check-in baska bir gun
+baska bir yerde yapilmis olabilir, sana uzakligi yaniltici olur"
+seklindeydi. O gerekce METIN icin hala gecerli: uzaklik hicbir yerde
+GOSTERILMIYOR, yalnizca basilamayacak bir butonu onceden soluk yapmak
+icin okunuyor. Kullanicinin "bosa is yaptirma" kurali bunu gerektiriyor.
+
+**KONUM OKUNAMAZSA BUTON ENGELLENMIYOR** (izin yok, ag yok, web'de
+reddedildi): bilmedigimiz bir sey yuzunden kullaniciyi durdurmak
+yanlis olurdu, kurali yine sunucu uyguluyor. Bu bir testle kilitli.
+
+`CHECK_IN_YARICAP_METRE = 1000` sabiti `lib/checkin.ts`e kondu.
+**Asil kural SUNUCUDA** (migrasyon 20260828090000); buradaki sayi
+yalnizca ekranin once davranabilmesi icin. Ikisi ayrilirsa kullanici
+basabildigi bir butonun reddedilmesiyle karsilasir - sunucudaki
+yaricap degisirse bu sabit de degismeli.
+
+**OLCULEREK BULUNAN YERLESIM KUSURU:** cubuk once
+`bottom: ALT_GEZINME_PAYI - 26` ile konmustu ve gezinme cubugunun
+ALTINDA kaliyordu, yarisi ortuluyordu. `ALT_GEZINME_PAYI` (104 +
+guvenli alan) gezinme cubugunun ust kenarindan yalnizca birkac piksel
+yukarisi; ustunde durabilmesi icin ondan CIKARMAK degil EKLEMEK
+gerekiyor (`+ 8`).
+
+Uc hal de ekran goruntusuyle ayri ayri dogrulandi; "Buradasın · Ayrıl"
+icin gecici bir aktif check-in eklenip goruntu alindi ve **hemen
+silindi**. Alti yeni test (`test:harita` icinde 23 test).
+
 ### SAYFA YAN PAYI TEK JETONA BAGLANDI - 2026-09-06
 
 Kullanicinin istegi: "Ekrani yanlardan sigdir, ekrani yay, tam ekran

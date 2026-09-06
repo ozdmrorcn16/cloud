@@ -4,6 +4,17 @@ import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
 import { checkInFotografiUrl } from './fotograf-url'
 
+/**
+ * CHECK-IN YAKINLIK KURALI: en fazla 1 km.
+ *
+ * Asil kural SUNUCUDA (migrasyon 20260828090000) ve orada zorlaniyor;
+ * buradaki sayi yalnizca EKRANIN once davranabilmesi icin var - mekan
+ * sayfasindaki buton uzaktayken soluk gorunuyor ve mesafeyi soyluyor.
+ * Ikisi ayrilirsa kullanici basabildigi bir butonun reddedilmesiyle
+ * karsilasir; bu sayi degisirse migrasyon da degismeli.
+ */
+export const CHECK_IN_YARICAP_METRE = 1000
+
 export type Bulunurluk = 'herkese_acik' | 'takipcilerim' | 'gizli'
 export type AniGorunurlugu = 'herkese_acik' | 'takipcilerim' | 'kimse'
 

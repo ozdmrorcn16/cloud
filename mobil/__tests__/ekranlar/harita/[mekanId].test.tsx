@@ -7,7 +7,12 @@ import {
   mekanLiderligiGetir,
   mekanSonCheckInleriGetir,
 } from '../../../lib/mekan-sayfasi'
-import { suAnBurdakileriGetir } from '../../../lib/checkin'
+import {
+  suAnBurdakileriGetir,
+  aktifCheckInimiGetir,
+  checkIndenAyril,
+} from '../../../lib/checkin'
+import { cihazKonumunuAl } from '../../../lib/konum'
 
 jest.mock('../../../lib/mekan', () => ({
   mekaniGetir: jest.fn(),
@@ -24,6 +29,14 @@ jest.mock('../../../lib/mekan-sayfasi', () => ({
 jest.mock('../../../lib/checkin', () => ({
   ...jest.requireActual('../../../lib/checkin'),
   suAnBurdakileriGetir: jest.fn(),
+  aktifCheckInimiGetir: jest.fn(),
+  checkIndenAyril: jest.fn(),
+}))
+// `mesafeMetre` GERCEK kaliyor: buton hali bu hesaba dayaniyor ve
+// mock'lansaydi test kendi varsayimini dogrulardi.
+jest.mock('../../../lib/konum', () => ({
+  ...jest.requireActual('../../../lib/konum'),
+  cihazKonumunuAl: jest.fn(),
 }))
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ mekanId: 'mekan-1' }),
@@ -63,6 +76,12 @@ beforeEach(() => {
   ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
   ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([])
   ;(mekanSonCheckInleriGetir as jest.Mock).mockResolvedValue([])
+  ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
+  ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
+  // Varsayilan: konum OKUNAMIYOR. Boylece her test kendi konumunu
+  // vermek zorunda kaliyor ve "uzaklik bilinmiyor" hali de varsayilan
+  // olarak sinaniyor.
+  ;(cihazKonumunuAl as jest.Mock).mockRejectedValue(new Error('izin yok'))
 })
 
 /**
@@ -435,6 +454,108 @@ describe('MekanSayfasi - sekmeler', () => {
     await waitFor(() =>
       expect(screen.getByText('Burada henüz gösterilecek bir check-in yok.')).toBeTruthy()
     )
+    await cevreOturana()
+  })
+})
+
+/**
+ * ALTA YAPISIK CHECK-IN CUBUGU (kullanicinin sectigi tasarim B,
+ * 2026-09-06) ve UC HALI.
+ *
+ * MEKAN konumu 40.2106, 28.9213. Asagidaki testler gercek `mesafeMetre`
+ * hesabini kullaniyor - mock'lansaydi test kendi varsayimini
+ * dogrulamis olurdu.
+ */
+describe('MekanSayfasi - check-in cubugu', () => {
+  it('yakinken "Buraya check-in yap" gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    // ~120 m: yaricapin (1 km) icinde.
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2117, lng: 28.9213 })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Buraya check-in yap')).toBeTruthy())
+    await cevreOturana()
+  })
+
+  /**
+   * BOSA IS YAPTIRMA: 1 km kurali sunucuda zorlaniyor, ama kullanici
+   * basip check-in ekraninda reddedilmektense burada baştan gormeli.
+   * Buton basilamiyor VE mesafeyi soyluyor.
+   */
+  it('uzaktayken basilamaz ve MESAFEYI yazar', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    // ~2,2 km kuzey.
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2306, lng: 28.9213 })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() =>
+      expect(screen.getByText(/Check-in için yaklaş/)).toBeTruthy()
+    )
+    expect(screen.queryByText('Buraya check-in yap')).toBeNull()
+    await cevreOturana()
+  })
+
+  /**
+   * Konum OKUNAMAZSA buton normal gorunuyor. Bilmedigimiz bir sey
+   * yuzunden kullaniciyi engellemek yanlis olurdu; kurali yine sunucu
+   * uyguluyor.
+   */
+  it('konum okunamazsa butonu ENGELLEMEZ', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    // cihazKonumunuAl varsayilan olarak reddediyor.
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Buraya check-in yap')).toBeTruthy())
+    await cevreOturana()
+  })
+
+  it('bu mekanda aktif check-in varsa "Buradasın · Ayrıl" gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      mekanId: 'mekan-1',
+      mekanAdi: MEKAN.ad,
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Buradasın · Ayrıl')).toBeTruthy())
+    expect(screen.queryByText('Buraya check-in yap')).toBeNull()
+    await cevreOturana()
+  })
+
+  /** Aktif check-in BASKA bir mekandaysa bu sayfa etkilenmiyor. */
+  it('aktif check-in BASKA mekandaysa normal buton kalir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      mekanId: 'baska-mekan',
+      mekanAdi: 'Başka Yer',
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Buraya check-in yap')).toBeTruthy())
+    await cevreOturana()
+  })
+
+  it('"Ayrıl"a basinca check-inden cikiliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      mekanId: 'mekan-1',
+      mekanAdi: MEKAN.ad,
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+    await waitFor(() => expect(screen.getByText('Buradasın · Ayrıl')).toBeTruthy())
+
+    fireEvent.press(screen.getByTestId('checkin-cubugu'))
+
+    await waitFor(() => expect(checkIndenAyril).toHaveBeenCalledWith('c1'))
     await cevreOturana()
   })
 })

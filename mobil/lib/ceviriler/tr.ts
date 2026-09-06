@@ -476,7 +476,12 @@ export default {
   mekanSayfasi: {
     menu: 'Seçenekler',
     yolTarifi: 'Yol tarifi al',
-    buradaCheckIn: 'Burada check-in yap',
+    buradaCheckIn: 'Buraya check-in yap',
+    // Uzakken buton basilamiyor ve SEBEBINI soyluyor. Bos bir "check-in
+    // yapamazsin" yerine mesafeyi vermek kullaniciya ne yapacagini
+    // anlatiyor.
+    yaklas: 'Check-in için yaklaş · {{mesafe}}',
+    buradasinAyril: 'Buradasın · Ayrıl',
     kisiBurada: 'kişi burada',
     bugun: 'Bugün',
     haritadaGoster: 'Konumu haritada göster',
