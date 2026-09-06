@@ -567,6 +567,56 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### SUZGEC DUGMESI TUR SECICIYE DONDU - 2026-09-06
+
+Kullanici sordu: "Mekan ara'nin yanindaki filtreleme tusu neye
+yariyor su an?" - ve soru hakliydi. Dugme listeyi sosyal turlere
+daraltiyordu (kaldirilan "Kesfet" sekmesinin isi) ama bunu HICBIR
+YERDE soylemiyordu; yalnizca turuncuya donuyordu.
+
+Kullanicinin karari: "Filtre tusuna basinca bizim mevcuttaki
+turlerimizin listesi ciksin, o listeden sectigi turlere gore sadece o
+konumlar listelensin", ardindan "Filtredeki secenekleri kaydetme tusu
+da ekle ya da tumu/vazgec gibi secenek ekle".
+
+**YENI RPC `yakin_turler`** - cevrede GERCEKTEN bulunan turler ve
+adetleri. Sabit bir liste gosterilmiyor: veritabaninda 162 tur var ve
+cogu herhangi bir cevrede hic bulunmuyor, kullanici "Marina" secip bos
+bir listeyle karsilasirdi. Yanindaki sayi secimden ONCE sonucu
+tahmin ettiriyor. Canli olculdu: 0,51 sn, kullanicinin cevresinde
+Kampus binasi 582 / Universite 334 / Kafe 23.
+
+**SUZGEC YINE SUNUCUDA** (`p_turler`). Istemcide suzmek 2026-08-31'de
+olculmustu: sunucu en yakin 50 kaydi tur ayrimi yapmadan donduruyor ve
+o 50 kaydin yalnizca 3'u sosyal turdeydi, oysa yaricapta 111 sosyal
+mekan vardi - liste dolu bir cevrede bile bos gorunuyordu.
+
+**SECIM PENCEREDE GECICI.** Disaridaki liste ancak KAYDET'e basilinca
+degisiyor; perde ya da carpi hicbir sey uygulamiyor. Aksi halde
+"vazgec" diye bir sey olmazdi - her dokunus listeyi yeniden yukler ve
+kullanici yanlislikla actigi bir turden geri donemezdi. Testle kilitli.
+
+Alt satirda iki dugme: **"Tumu"** secimi temizliyor (suzgec kalkiyor,
+butun turler gorunuyor), **"Kaydet (N)"** uyguluyor.
+
+**SECILI TURLER EKRANDA GORUNUR DURUYOR** - cipler halinde, her biri
+tek dokunusla kaldirilabiliyor, yaninda "Filtreyi kaldir". Suzgec
+yalnizca pencerenin icinde kalsaydi kullanici listenin neden kisa
+oldugunu goremezdi; sorunun cikis noktasi tam olarak buydu. Suzgec
+dugmesinin uzerinde de kac tur secili oldugunu soyleyen bir rozet var.
+
+**ARAMA VARKEN TUR SUZGECI UYGULANMIYOR** (eski davranis korundu):
+"eczane" araninca secili turler yuzunden sonuc cikmamasi kullaniciyi
+sasirtirdi.
+
+`SOSYAL_TURLER` sabiti artik kesfet ekraninda KULLANILMIYOR ama
+`lib/mekan.ts` icinde duruyor - baska bir yerde ise yarayabilir.
+
+**ARACA BEKLEME ANAHTARI EKLENDI:** `SLOOIN_TIKLA_BEKLE`. Tur secici
+acilinca cevredeki turleri cekiyor ve ilk ekran goruntusu YUKLENIYOR
+halini yakaladi; tiklama sonrasi bekleme suresi artik ayarlanabiliyor
+(varsayilan 600 ms).
+
 ### KESFET EKRANI REFERANSA CEVRILDI - 2026-09-06
 
 Kullanicinin istegi: "Bu sayfayi referans gorsele cevir aynisini yap",

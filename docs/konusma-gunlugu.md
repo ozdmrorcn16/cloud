@@ -43,6 +43,7 @@ icinde `/hooks` menusunden devre disi birak.
 <!-- oturumlar:baslangic -->
 
 - 2026-09-06 — [2026-09-06-ef5efc65.md](oturumlar/2026-09-06-ef5efc65.md) — bilgisayar kapanmış kaldıgımız yerden devam edelim
+- 2026-09-06 — [2026-09-06-223ce166.md](oturumlar/2026-09-06-223ce166.md) — Şu rehbere göre Agent Reach'i kur: https://raw.githubusercontent.com/Panniantong…
 - 2026-09-05 — [2026-09-05-ef5efc65.md](oturumlar/2026-09-05-ef5efc65.md) — bilgisayar kapanmış kaldıgımız yerden devam edelim
 - 2026-09-04 — [2026-09-04-ef5efc65.md](oturumlar/2026-09-04-ef5efc65.md) — bilgisayar kapanmış kaldıgımız yerden devam edelim
 - 2026-09-03 — [2026-09-03-7087efe7.md](oturumlar/2026-09-03-7087efe7.md) — kaldığımız yerden devam edelim

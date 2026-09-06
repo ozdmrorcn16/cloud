@@ -118,6 +118,34 @@ type MekanYogunlukSatiri = MekanSatiri & {
  * edilebilir kilardi. 10 ve 3 secildi cunku ikisi de tek bir kisinin
  * uretemeyecegi sayilar.
  */
+export type YakinTur = { tur: string; adet: number }
+
+/**
+ * Kesfet tur secicisinin listesi: verilen yaricapta GERCEKTEN bulunan
+ * turler ve adetleri.
+ *
+ * Sabit bir tur listesi gosterilmiyor - veritabaninda 162 tur var ve
+ * cogu herhangi bir cevrede hic bulunmuyor; kullanici "Marina" secip
+ * bos bir listeyle karsilasirdi. Burada donen her tur o cevrede
+ * gercekten var.
+ */
+export async function yakinTurleriGetir(
+  lat: number,
+  lng: number,
+  yaricapMetre = KESFET_YARICAP_METRE
+): Promise<YakinTur[]> {
+  const { data, error } = await supabase.rpc('yakin_turler', {
+    p_lat: lat,
+    p_lng: lng,
+    p_yaricap_metre: yaricapMetre,
+  })
+  if (error) throw new Error(hataMetni(error))
+  return ((data as { tur: string; adet: number }[]) ?? []).map((s) => ({
+    tur: s.tur,
+    adet: s.adet,
+  }))
+}
+
 export const POPULER_ESIGI = 10
 export const YOGUN_ESIGI = 3
 

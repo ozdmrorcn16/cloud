@@ -141,6 +141,14 @@ try {
     await new Promise((c) => setTimeout(c, 900))
   }
 
+  // Tiklamadan sonra ag istegi olabilir (ornegin tur secici cevredeki
+  // turleri cekiyor). SLOOIN_TIKLA_BEKLE ile o istegin oturmasi
+  // beklenebiliyor; varsayilan 600 ms yalnizca cizim icin.
+  if (tiklanacaklar.length > 0) {
+    const bekle = Number(process.env.SLOOIN_TIKLA_BEKLE ?? 600)
+    await new Promise((c) => setTimeout(c, bekle))
+  }
+
   // Yatay tasma gercekten var mi? Arac degil sayfa olcsun.
   const olcum = await sayfa.evaluate(() => ({
     govde: document.body.scrollWidth,

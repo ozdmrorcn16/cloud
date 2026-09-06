@@ -22,9 +22,10 @@ import {
 import {
   yakinMekanlariYogunlukIleGetir,
   turuGosterilir,
-  SOSYAL_TURLER,
   mekanDurumu,
+  yakinTurleriGetir,
   type MekanDurumu,
+  type YakinTur,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
   type MekanYogunlukIle,
@@ -35,6 +36,7 @@ import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { TurSecici } from '../../tasarim/TurSecici'
 import {
   HaritaIkonu,
   ListeIkonu,
@@ -128,7 +130,19 @@ export default function KesfetEkrani() {
    * var" (tur suzgeci YOK), 'kesfet' "su an nereye gidip birileriyle
    * karsilasabilirim" (sosyal turlere daraliyor).
    */
-  const [sekme, setSekme] = useState<'kesfet' | 'ara'>('ara')
+  /**
+   * TUR SUZGECI (kullanicinin istegi 2026-09-06). Bos dizi = suzgec
+   * yok, yani butun turler.
+   *
+   * Onceden bu bir SEKME idi ('kesfet' sosyal turlere daraltiyordu);
+   * artik kullanici turleri tek tek seciyor. Suzgec yine SUNUCUDA
+   * uygulaniyor - 2026-08-31'de olculdu, istemcide suzmek dolu bir
+   * cevrede bile listeyi bosaltiyordu.
+   */
+  const [seciliTurler, setSeciliTurler] = useState<string[]>([])
+  const [turSeciciAcik, setTurSeciciAcik] = useState(false)
+  const [yakinTurler, setYakinTurler] = useState<YakinTur[]>([])
+  const [turlerYukleniyor, setTurlerYukleniyor] = useState(false)
 
   /**
    * GORUNUM (referans gorseldeki Harita / Liste segmenti).
@@ -163,7 +177,7 @@ export default function KesfetEkrani() {
    * `aktifSekme` PARAMETRE, cunku `sekmeSec` hemen ardindan yukluyor ve
    * o an `sekme` state'i henuz eski degerinde olur.
    */
-  async function yukle(metin = arama, aktifSekme: 'kesfet' | 'ara' = sekme) {
+  async function yukle(metin = arama, turler: string[] = seciliTurler) {
     // Yaris korumasi: hizli yazarken istekler sirayla degil paralel
     // doner. Sira numarasi olmadan eski ve yavas bir istek, yeni
     // sonucun uzerine yaziyor ve liste yanlis kaliyordu.
@@ -195,13 +209,15 @@ export default function KesfetEkrani() {
        * "yakinimda ne var" - orada eczane, banka, oto tamirci de
        * gorunmeli. Mesafe siniri ikisinde de duruyor.
        */
-      const turSuzgeci = aktifSekme === 'kesfet' && !aramaVarMi
+      // ARAMA VARKEN tur suzgeci uygulanmiyor: "eczane" araninca
+      // secili turler yuzunden sonuc cikmamasi kullaniciyi sasirtir.
+      const turSuzgeci = turler.length > 0 && !aramaVarMi
       const sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
         aramaVarMi ? null : KESFET_YARICAP_METRE,
         metin || undefined,
-        turSuzgeci ? [...SOSYAL_TURLER] : null,
+        turSuzgeci ? turler : null,
         aramaVarMi ? null : KESFET_LIMIT
       )
       /**
@@ -286,17 +302,39 @@ export default function KesfetEkrani() {
   }, [arama])
 
   /**
-   * Sekme degisince arama metni siliniyor: aksi halde 'kesfet'
-   * sekmesindeki "Yakininda" listesi hala arama sonucuyla suzulmus
-   * kalir ve kullanici bunun sebebini goremez.
+   * Tur secimi uygulaniyor (secicideki "Kaydet").
+   *
+   * ARAMA METNI SILINIYOR: tur suzgeci yalnizca arama bosken
+   * calisiyor, yani metin dururken secim gorunur bir sey yapmazdi ve
+   * kullanici sebebini goremezdi.
    */
-  function sekmeSec(yeni: 'kesfet' | 'ara') {
-    setSekme(yeni)
+  function turleriUygula(yeni: string[]) {
+    setSeciliTurler(yeni)
+    setTurSeciciAcik(false)
     setArama('')
-    // Listeyi HEMEN yeni sekmeye gore tazele: iki sekme farkli tur
-    // suzgeci kullaniyor. `arama` zaten bossa metin degisikligine bagli
-    // etki tetiklenmez, o yuzden burada acikca cagriliyor.
+    // Listeyi HEMEN tazele: `arama` zaten bossa metin degisikligine
+    // bagli etki tetiklenmez, o yuzden acikca cagriliyor.
     yukle('', yeni)
+  }
+
+  /**
+   * Secici acilirken cevredeki turler cekiliyor - HER ACILISTA, cunku
+   * kullanici bu arada baska bir yere gitmis olabilir.
+   *
+   * Liste okunamazsa pencere yine aciliyor ve bos durum metni
+   * gosteriyor; suzgeci hic acamamak daha kotu olurdu.
+   */
+  async function turSeciciyiAc() {
+    setTurSeciciAcik(true)
+    if (!cihazKonumu) return
+    setTurlerYukleniyor(true)
+    try {
+      setYakinTurler(await yakinTurleriGetir(cihazKonumu.lat, cihazKonumu.lng))
+    } catch {
+      setYakinTurler([])
+    } finally {
+      setTurlerYukleniyor(false)
+    }
   }
 
   function aramaDegisti(metin: string) {
@@ -622,16 +660,58 @@ export default function KesfetEkrani() {
           />
         </View>
         <Pressable
-          style={[stiller.suzgecDugmesi, sekme === 'kesfet' && stiller.suzgecAcik]}
-          onPress={() => sekmeSec(sekme === 'kesfet' ? 'ara' : 'kesfet')}
+          style={[stiller.suzgecDugmesi, seciliTurler.length > 0 && stiller.suzgecAcik]}
+          onPress={turSeciciyiAc}
           accessibilityRole="button"
           accessibilityLabel={t('kesfet.turSuzgeci')}
-          accessibilityState={{ selected: sekme === 'kesfet' }}
+          accessibilityState={{ selected: seciliTurler.length > 0 }}
           testID="tur-suzgeci"
         >
-          <SuzgecIkonu renk={sekme === 'kesfet' ? '#FFFFFF' : renk.turuncu} />
+          <SuzgecIkonu renk={seciliTurler.length > 0 ? '#FFFFFF' : renk.turuncu} />
+          {/* Kac tur secili oldugu dugmenin uzerinde: suzgecin ACIK
+              oldugunu yalnizca renkten anlamak yetmiyordu - kullanici
+              "bu tus neye yariyor" diye sordu (2026-09-06). */}
+          {seciliTurler.length > 0 && (
+            <View style={stiller.suzgecRozeti}>
+              <Text style={stiller.suzgecRozetYazi}>{seciliTurler.length}</Text>
+            </View>
+          )}
         </Pressable>
       </View>
+
+      {/* SECILI TURLER GORUNUR DURUYOR. Suzgec bir pencerenin icinde
+          kalirsa kullanici listenin neden kisa oldugunu goremez;
+          buradaki cipler hem sebebi soyluyor hem tek dokunusla
+          kaldirilabiliyor. */}
+      {seciliTurler.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={stiller.seciliSerit}
+        >
+          {seciliTurler.map((tur) => (
+            <Pressable
+              key={tur}
+              style={stiller.seciliCip}
+              onPress={() => turleriUygula(seciliTurler.filter((x) => x !== tur))}
+              accessibilityRole="button"
+              accessibilityLabel={`${tur} filtresini kaldır`}
+              testID={`secili-tur-${tur}`}
+            >
+              <Text style={stiller.seciliCipYazi}>{tur}</Text>
+              <Text style={stiller.seciliCipCarpi}>×</Text>
+            </Pressable>
+          ))}
+          <Pressable
+            style={[stiller.seciliCip, stiller.seciliCipTemizle]}
+            onPress={() => turleriUygula([])}
+            accessibilityRole="button"
+            testID="turleri-temizle"
+          >
+            <Text style={stiller.seciliCipTemizleYazi}>{t('kesfet.filtreyiKaldir')}</Text>
+          </Pressable>
+        </ScrollView>
+      )}
 
       {/* DURUM CIPLERI (referans gorsel). Ikon ustte, metin altta.
           Suzuyorlar, SIRALAMIYORLAR - yakinlik sirasi sabit kural. */}
@@ -803,6 +883,15 @@ export default function KesfetEkrani() {
         Mekan verileri: Foursquare · Mahalle ve ilçe: © OpenStreetMap katkıda bulunanlar
       </Text>
     </ScrollView>
+
+    <TurSecici
+      acikMi={turSeciciAcik}
+      turler={yakinTurler}
+      yukleniyor={turlerYukleniyor}
+      secili={seciliTurler}
+      onKapat={() => setTurSeciciAcik(false)}
+      onKaydet={turleriUygula}
+    />
 
     {/* Kart menusu. Referans gorselde her kartin sag ustunde bir uc
         nokta var; icerigi mekanla ilgili iki islem. */}
@@ -984,6 +1073,52 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     justifyContent: 'center',
   },
   suzgecAcik: { backgroundColor: renk.turuncu },
+  suzgecRozeti: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: renk.metin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  suzgecRozetYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: 10,
+    color: renk.zemin,
+  },
+
+  // --- secili tur cipleri ---
+  seciliSerit: { gap: 6, paddingVertical: 2 },
+  seciliCip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 11,
+    borderRadius: yuvarlak.hap,
+    backgroundColor: renk.turuncuZemin,
+  },
+  seciliCipYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.minik,
+    color: renk.turuncu,
+  },
+  seciliCipCarpi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.turuncu,
+  },
+  seciliCipTemizle: { backgroundColor: 'transparent' },
+  seciliCipTemizleYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+    textDecorationLine: 'underline',
+  },
 
   // --- durum cipleri ---
   cipSeridi: { gap: bosluk.s, paddingVertical: 2 },

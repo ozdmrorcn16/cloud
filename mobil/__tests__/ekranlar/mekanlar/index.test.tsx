@@ -3,7 +3,7 @@ import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
-  SOSYAL_TURLER,
+  yakinTurleriGetir,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
 } from '../../../lib/mekan'
@@ -21,6 +21,7 @@ jest.mock('../../../lib/konum', () => ({
 jest.mock('../../../lib/mekan', () => ({
   ...jest.requireActual('../../../lib/mekan'),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
+  yakinTurleriGetir: jest.fn().mockResolvedValue([]),
 }))
 
 const mockRouterPush = jest.fn()
@@ -433,15 +434,31 @@ describe('MekanAramaEkrani', () => {
   // Kesfet sekmesi sosyal turlere daralmaya DEVAM ediyor: "su an nereye
   // gidip birileriyle karsilasabilirim" sorusu farkli. Varsayilan sekme
   // degisti diye bu davranis kaybolmamali.
-  it('suzgec dugmesine basinca tur suzgeci GONDERILIR', async () => {
+  /**
+   * TUR SECICI (kullanicinin istegi 2026-09-06). Suzgec dugmesi artik
+   * dogrudan suzmuyor, cevredeki TURLERIN listesini aciyor; secim
+   * ancak "Kaydet"te uygulaniyor.
+   */
+  it('suzgec dugmesi tur secicisini aciyor, KAYDET secimi uyguluyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([
+      { tur: 'Kafe', adet: 12 },
+      { tur: 'Park', adet: 3 },
+    ])
 
     await render(<MekanAramaEkrani />)
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
 
     await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    await waitFor(() => expect(screen.getByTestId('tur-secici')).toBeTruthy())
+
+    // Secim PENCEREDE gecici: Kaydet'e basilana kadar liste degismiyor.
+    await fireEvent.press(screen.getByTestId('tur-Kafe'))
+    expect(yakinMekanlariYogunlukIleGetir).not.toHaveBeenCalled()
+
+    await fireEvent.press(screen.getByTestId('tur-kaydet'))
 
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
@@ -449,7 +466,55 @@ describe('MekanAramaEkrani', () => {
         28.979,
         KESFET_YARICAP_METRE,
         undefined,
-        [...SOSYAL_TURLER],
+        ['Kafe'],
+        KESFET_LIMIT
+      )
+    })
+  })
+
+  /** Pencereyi kapatmak secimi UYGULAMIYOR - "Vazgec" gercekten vazgeciyor. */
+  it('secici kapatilinca secim UYGULANMIYOR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
+
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    await waitFor(() => expect(screen.getByTestId('tur-secici')).toBeTruthy())
+    await fireEvent.press(screen.getByTestId('tur-Kafe'))
+    await fireEvent.press(screen.getByTestId('tur-secici-kapat'))
+
+    expect(yakinMekanlariYogunlukIleGetir).not.toHaveBeenCalled()
+  })
+
+  /** "Tumu" secimi temizliyor, yani suzgec kalkiyor. */
+  it('"Tumu" secimi temizliyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+    ;(yakinTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    await waitFor(() => expect(screen.getByTestId('tur-secici')).toBeTruthy())
+    await fireEvent.press(screen.getByTestId('tur-Kafe'))
+    await fireEvent.press(screen.getByTestId('tur-kaydet'))
+    await waitFor(() => expect(screen.getByTestId('secili-tur-Kafe')).toBeTruthy())
+
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockClear()
+    await fireEvent.press(screen.getByTestId('turleri-temizle'))
+
+    await waitFor(() => {
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+        41.015,
+        28.979,
+        KESFET_YARICAP_METRE,
+        undefined,
+        null,
         KESFET_LIMIT
       )
     })
