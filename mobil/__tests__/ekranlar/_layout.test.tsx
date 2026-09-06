@@ -1,7 +1,7 @@
 import { render, waitFor, act } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
 import type { ReactNode } from 'react'
-import KokLayout from '../../src/app/_layout'
+import KokLayout, { hedefRota } from '../../src/app/_layout'
 import { useOturum } from '../../lib/oturum'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 
@@ -399,5 +399,22 @@ describe('Ust guvenli alan', () => {
     mockSegments = ['bazi-ekran']
     const ekran = await render(<KokLayout />)
     expect(ustPay(ekran)).toBe(59)
+  })
+})
+
+/**
+ * GIZLILIK METNI OTURUMSUZ DA ACILABILIYOR (2026-09-06).
+ *
+ * App Store Connect harici test icin PRIVACY POLICY URL istiyor ve
+ * Apple incelemecisi o adresi giris yapmadan aciyor. Istisna olmadan
+ * `slooin.expo.app/gizlilik` karsilamaya yonleniyordu - olculdu.
+ */
+describe('hedefRota - gizlilik metni', () => {
+  it('oturumsuz kullaniciyi gizlilik ekranindan CIKARMIYOR', () => {
+    expect(hedefRota(false, false, false, ['gizlilik'])).toBeNull()
+  })
+
+  it('oturumsuz kullanici BASKA bir ekranda hala karsilamaya gidiyor', () => {
+    expect(hedefRota(false, false, false, ['profil'])).toBe('/karsilama')
   })
 })

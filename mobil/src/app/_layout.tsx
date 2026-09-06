@@ -38,7 +38,8 @@ function DilBekleyerek() {
  */
 type Hedef = '/karsilama' | '/hesap-durumu' | '/profil-olustur' | '/'
 
-function hedefRota(
+/** Test edilebilir olsun diye disa acik: yonlendirme kurallari saf. */
+export function hedefRota(
   oturumVar: boolean,
   profilVarMi: boolean | null,
   hesapDurumuVar: boolean,
@@ -54,12 +55,25 @@ function hedefRota(
   const profilOlusturEkraninda = segments[0] === 'profil-olustur'
   const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 
+  /**
+   * GIZLILIK METNI OTURUMSUZ DA ACILIYOR.
+   *
+   * Sebep somut: App Store Connect harici test icin bir PRIVACY POLICY
+   * URL istiyor ve Apple incelemecisi o adresi GIRIS YAPMADAN aciyor.
+   * Ekran zaten yalnizca metin gosteriyor, hicbir kisisel veri
+   * okumuyor - yani disari acilan bir sey yok.
+   *
+   * Olculdu: bu istisnadan once `slooin.expo.app/gizlilik` oturumsuz
+   * acilinca karsilama ekranina yonleniyordu.
+   */
+  const gizlilikEkraninda = segments[0] === 'gizlilik'
+
   // HESABI OLMAYAN HERKES, HER ACILISTA karsilama ekranini gorur
   // (kullanicinin karari 2026-08-25). Once "yalnizca ilk indirene
   // gosterilsin" denmisti ve isaret cihazda saklaniyordu; o isaret
   // tamamen kaldirildi. Hesap olusturan kisi zaten oturum actigi icin
   // buraya hic dusmuyor.
-  if (!oturumVar) return authGrubunda ? null : '/karsilama'
+  if (!oturumVar) return authGrubunda || gizlilikEkraninda ? null : '/karsilama'
 
   // Moderasyon karari profil kontrolunden ONCE geliyor: askiya alinmis
   // bir kullanicinin profili hic olmayabilir (kayit yarida kalmis
