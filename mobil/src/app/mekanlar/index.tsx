@@ -45,6 +45,7 @@ import {
   YildizIkonu,
   KisilerIkonu,
   DikeyUcNoktaIkonu,
+  GeriOkIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 
@@ -459,6 +460,21 @@ export default function KesfetEkrani() {
         segmenti. Bu bir sekme ekrani oldugu icin geri oku ANLAMSIZ
         olurdu - alt gezinmeden geliniyor, geri gidilecek yer yok. */}
     <View style={stiller.ustCubuk}>
+      {/* GERI OKU referans gorselde var. Bu bir sekme ekrani, yani
+          normalde geri gidilecek yer yok - ama kullanici buraya bir
+          mekan sayfasindan da gelebiliyor. `canGoBack` yanlissa ok
+          hic cizilmiyor: islevi olmayan bir dugme koymuyoruz. */}
+      {router.canGoBack() && (
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('checkInHaritasi.geri')}
+          hitSlop={10}
+          testID="kesfet-geri"
+        >
+          <GeriOkIkonu renk={renk.metin} />
+        </Pressable>
+      )}
       <Text style={stiller.ustBaslik}>{t('kesfet.baslik')}</Text>
       <View style={stiller.gorunumSegmenti}>
         <Pressable
@@ -589,16 +605,22 @@ export default function KesfetEkrani() {
           (kafe, bar, park...). O ayrim kaybolmasin diye korundu -
           kullanicinin 2026-08-31 karariydi. */}
       <View style={stiller.aramaSatiri}>
-        <TextInput
-          style={stiller.arama}
-          placeholder="Mekan ara"
-          placeholderTextColor={renk.metinSoluk}
-          value={arama}
-          onChangeText={aramaDegisti}
-          autoCorrect={false}
-          autoCapitalize="none"
-          returnKeyType="search"
-        />
+        {/* Kutu ESNIYOR, suzgec dugmesi sabit genislikte. Ilk halde
+            TextInput'a flex verilmemisti ve kutu icerigi kadar dar
+            kaliyordu; suzgec de ortada asili duruyordu. */}
+        <View style={stiller.aramaKutusu}>
+          <BuyutecIkonu renk={renk.turuncu} />
+          <TextInput
+            style={stiller.arama}
+            placeholder="Mekan ara"
+            placeholderTextColor={renk.metinSoluk}
+            value={arama}
+            onChangeText={aramaDegisti}
+            autoCorrect={false}
+            autoCapitalize="none"
+            returnKeyType="search"
+          />
+        </View>
         <Pressable
           style={[stiller.suzgecDugmesi, sekme === 'kesfet' && stiller.suzgecAcik]}
           onPress={() => sekmeSec(sekme === 'kesfet' ? 'ara' : 'kesfet')}
@@ -941,6 +963,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   // --- arama satiri ---
   aramaSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+  aramaKutusu: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.s,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.m,
+    height: 46,
+  },
   suzgecDugmesi: {
     width: 46,
     height: 46,
@@ -997,7 +1031,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     padding: bosluk.m,
-    marginBottom: bosluk.s,
   },
   kartGovde: { flex: 1, minWidth: 0, gap: 3 },
   kartMekanAdi: {
@@ -1044,7 +1077,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   // Harita EN USTTE. Onceden burada yaricap cipleri vardi ve ust pay
   // onlara ayrilmisti; cipler kalkinca harita bosluga tasindi.
-  icerik: { paddingTop: bosluk.m, paddingBottom: ALT_GEZINME_PAYI },
+  // YAN PAY BURADA, tek yerde. Onceden her oge kendi
+  // `marginHorizontal`ini koyuyordu; arama kutusu sarmalayiciya
+  // alininca o margin dustu ve satir ekranin kenarina yapisti.
+  // Referansta harita da dahil her sey kenarlardan iceride.
+  icerik: {
+    paddingTop: bosluk.m,
+    paddingBottom: ALT_GEZINME_PAYI,
+    paddingHorizontal: bosluk.sayfa,
+    gap: bosluk.m,
+  },
   ortala: {
     flex: 1,
     alignItems: 'center',
@@ -1146,25 +1188,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.turuncuKoyu,
     backgroundColor: renk.turuncuZemin,
-    marginHorizontal: bosluk.xl,
     marginTop: bosluk.m,
     paddingVertical: bosluk.s,
     paddingHorizontal: bosluk.m,
     borderRadius: yuvarlak.kart,
   },
 
+  // Kenarlik ve zemin artik SARMALAYICIDA (`aramaKutusu`); burada
+  // yalnizca yazi kaliyor.
   arama: {
+    flex: 1,
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     color: renk.metin,
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
-    paddingHorizontal: bosluk.l,
-    paddingVertical: bosluk.m,
-    marginHorizontal: bosluk.xl,
-    marginTop: bosluk.l,
+    paddingVertical: 0,
   },
 
   turSatiri: { gap: bosluk.s, paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.m },

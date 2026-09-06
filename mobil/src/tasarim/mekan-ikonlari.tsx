@@ -353,3 +353,21 @@ export function IgneIkonu({ boyut = 17, renk: verilen }: IkonProps) {
     </Svg>
   )
 }
+
+/** Geri oku - ust cubuk. */
+export function GeriOkIkonu({ boyut = 24, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.metin
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path
+        d="M15 5l-7 7 7 7"
+        fill="none"
+        stroke={c}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}

@@ -56,6 +56,12 @@ const EN_AZ_GOSTERIM_METRE = 100
  */
 const EN_FAZLA_GOSTERIM_METRE = 100
 
+/**
+ * Igneler varken cerceve bu yaricapa kadar acilabiliyor. Kesfet listesi
+ * 1 km yaricapla calisiyor, yani en uzak igne de bu sinirin icinde.
+ */
+const EN_FAZLA_KAPSAMA_METRE = 1200
+
 const KAYDIRMA_SURESI_MS = 350
 
 /**
@@ -134,11 +140,23 @@ export function CanliHarita({
       .sort((a, b) => b.mekan.kisiSayisi - a.mekan.kisiSayisi || a.metre - b.metre)
       .slice(0, EN_FAZLA_IGNE)
 
+    // CERCEVE IGNELERI KAPSAR.
+    //
+    // Olculerek bulunan kusur (2026-09-06): `EN_FAZLA_GOSTERIM_METRE`
+    // 100 m'ydi ve cerceve HER ZAMAN o degerle sinirlaniyordu. Cevredeki
+    // mekanlar 420-530 m uzakta oldugu icin igneler ciziliyor ama
+    // gorunur alanin DISINDA kaliyordu - harita bombos gorunuyordu.
+    // Kusur onceden fark edilmemisti cunku o gunlerde yalnizca KALABALIK
+    // mekanlarin ignesi ciziliyordu ve cevrede kalabalik mekan yoktu.
+    //
+    // Kullanicinin "daha yakin baslasin" karari (2026-09-01) KORUNUYOR
+    // ama artik yalnizca IGNE YOKKEN: gosterilecek bir sey olmadiginda
+    // harita yakin basliyor, igne varsa cerceve onlari kapsayacak kadar
+    // aciliyor. Iki kural da ayni seyi istiyor - harita DOLU gorunsun.
     const enUzak = mesafeli.length ? Math.max(...mesafeli.map((m) => m.metre)) : 0
-    const gosterim = Math.min(
-      EN_FAZLA_GOSTERIM_METRE,
-      Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.12)
-    )
+    const gosterim = mesafeli.length
+      ? Math.min(EN_FAZLA_KAPSAMA_METRE, Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.25))
+      : EN_FAZLA_GOSTERIM_METRE
 
     return { igneler: mesafeli.map((m) => m.mekan), bolge: bolgeUret(merkez, gosterim) }
   }, [merkez, mekanlar])

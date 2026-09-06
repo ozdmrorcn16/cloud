@@ -636,6 +636,34 @@ o listeyi dogrulayan iddialari zayiflatirdi; `jest.setup.js`'teki
 Ignenin tasidigi bilgi `accessibilityLabel`da duruyor, yani igne
 icerigi hala test edilebilir.
 
+**TELEFONDA OLCULEN UC KUSUR** (kullanicinin ekran goruntusuyle):
+
+1. **HARITA IGNELERI GORUNMUYORDU.** Kok neden `EN_FAZLA_GOSTERIM_METRE
+   = 100`: cerceve HER ZAMAN 100 m yaricapla sinirlaniyordu, oysa
+   cevredeki mekanlar 420-530 m uzakta - igneler ciziliyor ama gorunur
+   alanin DISINDA kaliyordu. Kusur daha once fark edilmemisti cunku o
+   gunlerde yalnizca KALABALIK mekanlarin ignesi ciziliyordu ve cevrede
+   kalabalik mekan yoktu.
+
+   Kullanicinin "daha yakin baslasin" karari (2026-09-01) KORUNDU ama
+   artik yalnizca IGNE YOKKEN gecerli; igne varsa cerceve onlari
+   kapsayacak kadar aciliyor (`EN_FAZLA_KAPSAMA_METRE = 1200`). Iki
+   kural da ayni seyi istiyor: harita dolu gorunsun.
+
+2. **ARAMA KUTUSU DARDI ve BUYUTECSIZDI.** `TextInput`e `flex`
+   verilmemisti, kutu icerigi kadar kaliyor ve suzgec dugmesi ortada
+   asili duruyordu. Kutu artik bir sarmalayici icinde (`aramaKutusu`);
+   kenarlik ve zemin orada, `TextInput` yalnizca yaziyi tasiyor.
+
+3. **YAN PAY HER OGEDE AYRIYDI.** Ekran yatay payi `icerik`te
+   vermiyordu, her oge kendi `marginHorizontal`ini koyuyordu; arama
+   kutusu sarmalayiciya alininca o margin dustu ve satir ekranin
+   kenarina yapisti. Pay artik TEK YERDE (`icerik.paddingHorizontal`)
+   ve referanstaki gibi harita da dahil her sey kenarlardan iceride.
+
+Ust cubuga GERI OKU da eklendi ama `router.canGoBack()` yanlissa
+cizilmiyor: bu bir sekme ekrani, normalde geri gidilecek yer yok.
+
 Dogrulama: jest 60 paket / 600 test, tsc taban hatalari, ekran
 goruntusuyle olculdu (`tasarim/kesfet-yeni.png`).
 

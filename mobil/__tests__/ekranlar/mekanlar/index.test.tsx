@@ -31,7 +31,7 @@ jest.mock('../../../lib/checkin', () => ({
 }))
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush, replace: jest.fn() }),
+  useRouter: () => ({ push: mockRouterPush, replace: jest.fn() , canGoBack: () => false }),
   // Alt gezinme cubugu hangi sekmenin aktif oldugunu yoldan okuyor.
   usePathname: () => '/mekanlar',
   useFocusEffect: (effect: () => void) => {
