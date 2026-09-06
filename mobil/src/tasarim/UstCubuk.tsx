@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
@@ -16,7 +17,16 @@ import { useRenk, useStiller } from './tema-baglami'
  * ama "Engellenenler" gibi uzun bir baslikta iki yana esit bosluk
  * birakmak geri okunu sikistiriyor.
  */
-export function UstCubuk({ baslik, geriEtiketi }: { baslik: string; geriEtiketi: string }) {
+export function UstCubuk({
+  baslik,
+  geriEtiketi,
+  sag,
+}: {
+  baslik: string
+  geriEtiketi: string
+  /** Cubugun sag ucuna konan istege bagli dugme (ornegin uc nokta). */
+  sag?: ReactNode
+}) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
@@ -43,6 +53,7 @@ export function UstCubuk({ baslik, geriEtiketi }: { baslik: string; geriEtiketi:
       <Text style={stiller.baslik} accessibilityRole="header" numberOfLines={1}>
         {baslik}
       </Text>
+      {sag && <View style={stiller.sag}>{sag}</View>}
     </View>
   )
 }
@@ -56,6 +67,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingTop: bosluk.xxl + bosluk.m,
     paddingBottom: bosluk.m,
   },
+  // Sag bilesen varken baslik ile arasinda bosluk kalsin diye baslik
+  // esneyerek buyuyor; sag uc sabit genislikte.
+  sag: { marginLeft: 'auto' },
   baslik: {
     flexShrink: 1,
     fontFamily: yazi.ekranBasligi,

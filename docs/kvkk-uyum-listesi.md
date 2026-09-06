@@ -228,6 +228,54 @@ ogrenebilir. Tavan bunu ENGELLEMIYOR, yalnizca toplu taramayi
 engelliyor. Gercek kullaniciya acilmadan once aydinlatma metnine bu
 davranisin eklenmesi gerekir.
 
+## Acik karar: mekan sayfasindaki sayilar ve liderlik tablosu
+
+2026-09-06'da konum ekrani bir **mekan sayfasina** donustu: ustte uc
+sayi (su an kac kisi, bugun kac check-in, ilcesinde kacinci), altinda
+"su an burada" avatarlari ve iki liste (liderlik tablosu / son
+check-inler).
+
+**Dort soru:**
+
+1. **Hangi veri?** Yeni bir kisisel veri TOPLANMIYOR. Islenen sey zaten
+   var olan `check_inler` kayitlari; yeni olan sey onlarin **toplu**
+   gosterimi (sayim, siralama) ve mekan bazli bir **erisim yolu** -
+   onceden bir mekanin gecmisine bakmanin yolu yoktu.
+2. **Dayanak?** Check-in'in kendisi sozlesmenin ifasi (uygulama onsuz
+   calismiyor); kim tarafindan gorulecegi ise kullanicinin kendi
+   **gorunurluk tercihi** ile belirleniyor - `bulunurluk` (canli) ve
+   `gorunurluk` (ani) alanlari. Yeni sayfa bu tercihleri degistirmiyor.
+3. **Sure?** Degismedi. Canli check-in suresi dolunca koordinat
+   siliniyor; ani kaydi kullanici silene ya da hesabini silene kadar
+   duruyor.
+4. **Kim gorebiliyor?** Burada **iki ayri rejim** var ve ayrim kasitli:
+
+   | Ne | Rejim | Kim gorur |
+   |---|---|---|
+   | Uc sayi | `security definer` | Giris yapmis herkes, ayni deger |
+   | Avatarlar, liderlik, son check-inler | `security invoker` | Yalnizca `check_inler` RLS'inin izin verdigi kisiler |
+
+   Yani **sayi herkese ayni, kimlikler degil**. Canli bir check-in'de
+   "herkese acik" bile ancak ayni mekanda canliysan ya da arkadasinsa
+   gorunuyor. Ekranda ustteki sayi ile asagidaki listenin uyusmadigi
+   durumda fark `+N` rozetiyle anlatiliyor.
+
+**Kabul edilen risk - kayitli olsun diye yaziyorum:** sayilar toplu
+oldugu icin kimseyi tanimlamiyor, ama **kucuk sayilar + kucuk mekan**
+birlesimi cikarim yapilabilir kilabilir. Ornegin bir konut sitesinde
+"bugun 1 check-in" gorunuyorsa ve orada kimin oturdugu biliniyorsa,
+sayi tek basina bir bilgi tasir.
+
+Bu risk **yeni degil**: kesfet listesindeki yogunluk sayaci
+(`yakin_mekanlar_yogunluk`) 2026-08-16'dan beri ayni sinif bilgiyi
+veriyor ve karar 71 ile gizli check-in'in bile o sayaca girmesi kabul
+edilmisti. Yeni sayfa bu davranisi genisletti ama degistirmedi.
+
+**Onerilen ama HENUZ ALINMAMIS karar:** bir esigin altindaki sayilari
+hic gostermemek (ornegin haftada 5'ten az check-in almis mekanda
+siralama ve toplam gizlensin) ve konut turu kayitlari siralama
+disinda birakmak. Esigin ne olacagi kullanicinin karari.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

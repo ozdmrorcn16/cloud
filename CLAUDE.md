@@ -567,6 +567,90 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### KONUM EKRANI MEKAN SAYFASI OLDU - 2026-09-06
+
+Kullanicinin istegi, referans gorselle: "Konumlara bastigimizdaki cikan
+sayfayi bu attigim referans gorsele gore uyarla aynisini yap."
+
+Onceki hal harita + ad + ilce/il + tek dugmeydi. Yeni sayfa
+(`src/app/harita/[mekanId].tsx`) mekanin KENDISINI anlatiyor:
+
+| Blok | Ne |
+|---|---|
+| Ust cubuk | geri + baslik + uc nokta menusu (Burada check-in / Yol tarifi) |
+| Harita | uzerinde tek yuvarlak dugme (navigasyon oku) |
+| Baslik satiri | ad + ilce,il solda; turuncu kenarlikli "Yol tarifi al" sagda |
+| Olcu seridi | su an kac kisi / bugun kac check-in / ilcede kacinci |
+| Su an burada | bas harfli avatarlar + "+N diger" |
+| Iki sekme | Liderlik Tablosu / Son Check-inler |
+
+**IKI FARKLI GORUNURLUK REJIMI VAR ve bu isin en onemli karari.**
+
+    SAYILAR      -> `mekan_istatistikleri`, security DEFINER
+                    herkese ayni deger; bir sayi kimseyi tanimlamiyor
+                    (mevcut yogunluk sayaciyla ayni sinif, karar 71)
+
+    KISI LISTELERI -> `mekan_liderlik`, `mekan_son_check_inler`,
+                      security INVOKER; `check_inler` RLS'i AYNEN
+                      calisiyor
+
+`security definer` liste tarafinda KULLANILMADI - kullanilsaydi tek bir
+ekran butun gorunurluk modelini delerdi. Canli bir check-in'de
+"herkese_acik" bile ancak AYNI MEKANDA CANLIYSAN ya da ARKADASINSA
+gorunuyor; bu RLS politikasi degistirilmedi.
+
+Sonucu KASITLI bir tutarsizlik: ustte "7 kisi burada" yazarken asagida
+2 avatar gorunebilir. Fark **"+5" rozetiyle** anlatiliyor - sayi
+sizmaya devam ediyor, kimlikler sizmiyor. Bir testle kilitli.
+
+**REFERANSTAN ALINMAYAN IKI SEY:**
+1. **YUZLER.** Referansta profil fotograflari vardi; avatarlar BAS
+   HARFLI daireler olarak yapildi. "Haritada ve kartlarda yuz yok"
+   uygulamanin kalici kurali ve bu sayfa onu bozmuyor. Testle kilitli.
+2. **"Konumuma git" dugmesi.** Bizim haritamiz etkilesimsiz (dokununca
+   harita uygulamasi aciliyor), yani o dugmenin bir karsiligi yok.
+   Islevi olmayan dugme konmadi.
+
+**UYDURMA VERI YOK:** ilce bilinmiyorsa ya da ilcede hic check-in yoksa
+siralamanin bir evreni de yok; "#1" yerine cizgi (—) ve "Sıralama yok"
+yaziyor. Testle kilitli.
+
+**BOS DURUM SEBEBINI SOYLEMIYOR** - bilerek. Liste iki sebepten bos
+olabilir: gercekten kimse gelmemistir, ya da gorunurluk tercihleri
+yuzunden sana gorunmuyordur. Ikincisini ima etmek de bir sizinti
+olurdu, bu yuzden tek bir notr metin var. Ayni sebeple "Su an burada"
+bolumu gorunur kimse yoksa HIC cizilmiyor.
+
+**Migrasyon 20260906120000** uc RPC + `check_inler(mekan_id)` indeksi.
+Ilce siralamasi bugun ucuz (`check_inler` binler mertebesinde); tablo
+yuz binlere cikarsa her sayfa acilisinda yeniden hesaplanmamali, o gun
+dogru cozum gunluk tazelenen bir materialized view.
+
+**CANLI DOGRULANDI:** `araclar/mekan-sayfasi-canli-test.py`, 13
+dogrulama. Salt okur, guvenle yeniden kosulur. Olculenler: uc RPC de
+calisiyor, liderlik cok gidenden az gidene sirali, limit 20'de kilitli,
+son check-inler yeniden eskiye sirali, ve kimliksiz cagri UCUNDE DE
+reddediliyor (istatistikler 400, listeler 401 - `revoke ... from public`
+sayesinde).
+
+**ILK EKRAN GORUNTUSUNDE BULUNAN YERLESIM KUSURU:** olcu seridinin orta
+kutusu farkli kurulmustu ("Bugün" ustte, "23 check-in" altta) ve 390
+px'lik ekranda "0 check-in" IKIYE BOLUNUYORDU; ucuncu kutunun etiketi de
+kirpilıyordu ("Nilüfer'deki ye…"). Uc kutu da ayni yapiya cekildi: ikon
+ustte, buyuk sayi ortada, kisa etiket altta. **Uc sutuna bolunmus bir
+seritte yan yana yazi icin yer yok** - etiketler tek satira sigmali.
+
+Ikinci kusur: notu olmayan bir check-in satirinda gorece zaman hem alt
+satirda hem sagda yaziyordu. Not yoksa alt satir artik hic cizilmiyor.
+
+Ekran goruntuleri: `tasarim/mekan-sayfasi.png` (acik),
+`mekan-sayfasi-dark.png` (koyu + ikinci sekme).
+
+Dogrulama: jest 60 paket / 593 test, tsc taban hatalari, canli 13/13.
+KVKK notu `docs/kvkk-uyum-listesi.md` icinde ("mekan sayfasindaki
+sayilar ve liderlik tablosu"); orada **alinmamis bir karar** duruyor:
+kucuk sayilarda siralamayi gizleyecek bir esik konsun mu.
+
 ### ETIKET ONAYI ARTIK BIR AYAR - 2026-09-06
 
 Kullanicinin karari: "Bir kullanici arkadas oldugu birisini direk

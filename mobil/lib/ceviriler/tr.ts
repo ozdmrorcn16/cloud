@@ -471,6 +471,37 @@ export default {
     vazgec: 'Vazgeç',
   },
 
+  // MEKAN SAYFASI (kullanicinin istegi 2026-09-06). Konum ekrani
+  // mekanin kendisini anlatan bir sayfaya donustu.
+  mekanSayfasi: {
+    menu: 'Seçenekler',
+    yolTarifi: 'Yol tarifi al',
+    buradaCheckIn: 'Burada check-in yap',
+    kisiBurada: 'kişi burada',
+    // Serit uc sutuna bolundugu icin etiketler TEK SATIRA sigmali;
+    // "Bugün check-in" 390 px'te siginin siniri, daha uzunu kirpilir.
+    bugunCheckIn: 'bugün check-in',
+    checkInSayisi: '{{sayi}} check-in',
+    kisiSayisi: '{{sayi}} kişi',
+    // Siralamanin evreni ILCE: o ilcenin yerleri arasinda kacinci.
+    ilcede: "{{ilce}}'de",
+    // Ilce bilinmiyorsa ya da ilcede hic check-in yoksa siralamanin
+    // bir evreni yok; uydurma bir "#1" yerine bunu yaziyoruz.
+    siralamaYok: 'Sıralama yok',
+    suAnBurada: 'Şu an burada',
+    diger: 'Diğer',
+    biri: 'Biri',
+    suAn: 'şu an',
+    liderlik: 'Liderlik Tablosu',
+    sonCheckInler: 'Son Check-inler',
+    // Bos durum metinleri neden bos oldugunu SOYLEMIYOR, cunku iki
+    // sebep var ve ayirt edilemez: gercekten kimse gelmemis olabilir
+    // ya da gorunurluk tercihleri yuzunden sana gorunmuyor olabilir.
+    // Ikinciyi ima etmek de bir sizinti olurdu.
+    liderlikBos: 'Burada henüz gösterilecek bir check-in yok.',
+    sonBos: 'Burada henüz gösterilecek bir check-in yok.',
+  },
+
   giris: {
     // GIRIS ARTIK E-POSTA ILE (kullanicinin karari 2026-09-01).
     epostaYerTutucu: 'E-posta adresi',

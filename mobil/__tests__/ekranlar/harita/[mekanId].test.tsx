@@ -2,14 +2,32 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react-nativ
 import { ActionSheetIOS, Linking } from 'react-native'
 import CheckInHaritasiEkrani from '../../../src/app/harita/[mekanId]'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
+import {
+  mekanIstatistikleriniGetir,
+  mekanLiderligiGetir,
+  mekanSonCheckInleriGetir,
+} from '../../../lib/mekan-sayfasi'
+import { suAnBurdakileriGetir } from '../../../lib/checkin'
 
 jest.mock('../../../lib/mekan', () => ({
   mekaniGetir: jest.fn(),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
 }))
+jest.mock('../../../lib/mekan-sayfasi', () => ({
+  mekanIstatistikleriniGetir: jest.fn(),
+  mekanLiderligiGetir: jest.fn(),
+  mekanSonCheckInleriGetir: jest.fn(),
+}))
+// Modulun SABITLERI gercek kalsin diye requireActual ile basliyor;
+// yalnizca ag cagrisi degistiriliyor (2026-09-02'de ogrenilen tuzak:
+// eksik sabit hata vermiyor, sessizce undefined donuyor).
+jest.mock('../../../lib/checkin', () => ({
+  ...jest.requireActual('../../../lib/checkin'),
+  suAnBurdakileriGetir: jest.fn(),
+}))
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ mekanId: 'mekan-1' }),
-  useRouter: () => ({ back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ back: jest.fn(), replace: jest.fn(), push: jest.fn() }),
 }))
 
 const MEKAN = {
@@ -32,6 +50,19 @@ beforeEach(() => {
   ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
     { id: 'mekan-2', ad: 'Komşu', konum: { lat: 40.211, lng: 28.922 }, kisiSayisi: 3 },
   ])
+  // Sayfanin geri kalani varsayilan olarak BOS: her test yalnizca
+  // kendi ilgilendigi parcayi doldursun.
+  ;(mekanIstatistikleriniGetir as jest.Mock).mockResolvedValue({
+    suAnKisi: 0,
+    bugunCheckIn: 0,
+    toplamCheckIn: 0,
+    ilceSirasi: null,
+    ilceMekanSayisi: 0,
+    ilce: null,
+  })
+  ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
+  ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([])
+  ;(mekanSonCheckInleriGetir as jest.Mock).mockResolvedValue([])
 })
 
 /**
@@ -249,6 +280,160 @@ describe('CheckInHaritasiEkrani - yalnizca kurulu haritalar', () => {
       'Google Haritalar',
       'Vazgeç',
     ])
+    await cevreOturana()
+  })
+})
+
+/**
+ * MEKAN SAYFASI (kullanicinin istegi 2026-09-06).
+ *
+ * Buradaki testlerin cogu bir GORUNUM degil bir KURAL kilitliyor:
+ * uydurma veri gostermemek, yuz gostermemek, ve gorunurluk farkini
+ * kimlik sizdirmadan anlatmak.
+ */
+describe('MekanSayfasi - olcu seridi', () => {
+  it('uc sayiyi da gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(mekanIstatistikleriniGetir as jest.Mock).mockResolvedValue({
+      suAnKisi: 7,
+      bugunCheckIn: 23,
+      toplamCheckIn: 140,
+      ilceSirasi: 3,
+      ilceMekanSayisi: 55,
+      ilce: 'Nilüfer',
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('7')).toBeTruthy())
+    expect(screen.getByText('23')).toBeTruthy()
+    expect(screen.getByText('#3')).toBeTruthy()
+    expect(screen.getByText('Nilüfer\'de')).toBeTruthy()
+    await cevreOturana()
+  })
+
+  /**
+   * UYDURMA VERI YOK. Ilce bilinmiyorsa ya da ilcede hic check-in
+   * yoksa siralamanin bir evreni yok; "#1" yazmak mekani olmadigi bir
+   * yere koymak olurdu.
+   */
+  it('siralama yoksa "#1" DEGIL cizgi gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Sıralama yok')).toBeTruthy())
+    expect(screen.queryByText('#1')).toBeNull()
+    await cevreOturana()
+  })
+})
+
+describe('MekanSayfasi - su an burada', () => {
+  /**
+   * SAYI ile LISTE UYUSMAYABILIR ve bu KASITLI: sayi `security
+   * definer` bir RPC'den geliyor (herkese ayni), liste ise
+   * `check_inler` RLS'inden (cagirana gore). Fark "+N" ile
+   * anlatiliyor - sayi gorunuyor ama kimlikler gorunmuyor.
+   */
+  it('gorunen kisiden daha cok kisi varsa farki "+N" ile gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(mekanIstatistikleriniGetir as jest.Mock).mockResolvedValue({
+      suAnKisi: 7,
+      bugunCheckIn: 0,
+      toplamCheckIn: 0,
+      ilceSirasi: null,
+      ilceMekanSayisi: 0,
+      ilce: null,
+    })
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'c1', kullaniciId: 'k1', kullaniciAdi: 'Orçun' },
+      { id: 'c2', kullaniciId: 'k2', kullaniciAdi: 'Ayşe' },
+    ])
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Orçun')).toBeTruthy())
+    // 7 kisi var, 2'sini gorebiliyoruz -> +5
+    expect(screen.getByText('+5')).toBeTruthy()
+    await cevreOturana()
+  })
+
+  /**
+   * HARITADA VE LISTEDE YUZ YOK - uygulamanin kalici kurali. Referans
+   * gorselde fotograflar vardi, bilerek alinmadi: avatar bas harfli
+   * bir daire.
+   */
+  it('avatar YUZ degil BAS HARF gosterir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([
+      { id: 'c1', kullaniciId: 'k1', kullaniciAdi: 'Orçun' },
+    ])
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('O')).toBeTruthy())
+    await cevreOturana()
+  })
+
+  /**
+   * Bos serit "burada kimse yok" demek degil - "senin gorme hakkin
+   * yok" da demek olabilir. Ikisini karistiran bir bosluk gostermek
+   * yerine bolum hic cizilmiyor.
+   */
+  it('gorunur kimse yoksa bolumu HIC cizmez', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
+    expect(screen.queryByText('Şu an burada')).toBeNull()
+    await cevreOturana()
+  })
+})
+
+describe('MekanSayfasi - sekmeler', () => {
+  it('liderlik tablosu acilista gorunur, sekme degisince son check-inler gelir', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([
+      { kullaniciId: 'k1', kullaniciAdi: 'Orçun', checkInSayisi: 18 },
+    ])
+    ;(mekanSonCheckInleriGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'c9',
+        kullaniciId: 'k2',
+        kullaniciAdi: 'Ayşe',
+        olusturmaZamani: new Date().toISOString(),
+        notMetni: 'Kahve molası',
+        canliMi: true,
+      },
+    ])
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('18 check-in')).toBeTruthy())
+    expect(screen.queryByText('Kahve molası')).toBeNull()
+
+    fireEvent.press(screen.getByTestId('sekme-son'))
+
+    await waitFor(() => expect(screen.getByText('Kahve molası')).toBeTruthy())
+    expect(screen.queryByText('18 check-in')).toBeNull()
+    await cevreOturana()
+  })
+
+  /**
+   * Bos durum metni SEBEBINI soylemiyor. Iki sebep var ve ayirt
+   * edilemez: gercekten kimse gelmemis olabilir, ya da gorunurluk
+   * tercihleri yuzunden sana gorunmuyor olabilir. Ikinciyi ima etmek
+   * de bir sizinti olurdu.
+   */
+  it('liste bossa sebebini ACIKLAMAZ', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Burada henüz gösterilecek bir check-in yok.')).toBeTruthy()
+    )
     await cevreOturana()
   })
 })
