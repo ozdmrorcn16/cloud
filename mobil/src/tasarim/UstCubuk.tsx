@@ -70,7 +70,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,
     paddingBottom: bosluk.m,
   },

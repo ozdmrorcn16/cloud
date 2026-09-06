@@ -400,7 +400,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   ustCubuk: {
     alignItems: 'center',
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xl,
     paddingBottom: bosluk.m,
   },
@@ -409,14 +409,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.yikici,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     marginBottom: bosluk.s,
   },
   durum: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
   },
 
   // Kartlar TAM GENISLIK (kullanicinin istegi 2026-09-02): yatay dolgu

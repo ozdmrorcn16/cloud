@@ -1,3 +1,4 @@
+import { Image } from 'react-native'
 import Svg, { Path, Circle, Rect } from 'react-native-svg'
 import { useRenk } from './tema-baglami'
 
@@ -15,42 +16,74 @@ import { useRenk } from './tema-baglami'
 
 type IkonProps = { boyut?: number; renk?: string }
 
-/** Uc kisi silueti - "su an kac kisi burada". */
+/**
+ * IKI kisi silueti - "su an kac kisi burada".
+ *
+ * Kullanicinin gonderdigi yakin cekime gore cizildi (2026-09-06).
+ * Ilk surumde ikinci kisi %55 opakligtaydi ve neredeyse gorunmuyordu;
+ * referansta ikisi de belirgin, yalnizca arkadaki BIR TIK acik. Kafalar
+ * da daha buyuk ve govdeler daha yuvarlak.
+ */
 export function KisilerIkonu({ boyut = 22, renk: verilen }: IkonProps) {
   const renk = useRenk()
   const c = verilen ?? renk.turuncu
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
-      <Circle cx={9} cy={8} r={3.4} fill={c} />
-      <Path d="M2.6 19c0-3.1 2.9-5.2 6.4-5.2s6.4 2.1 6.4 5.2z" fill={c} />
-      <Circle cx={17.4} cy={8.8} r={2.6} fill={c} opacity={0.55} />
-      <Path d="M17.4 13.2c2.6 0 4.4 1.6 4.4 3.9h-5.3c0-1.6-.5-2.9-1.4-3.8.7-.1 1.5-.1 2.3-.1z" fill={c} opacity={0.55} />
+      {/* ARKADAKI kisi - bir tik acik, soldan tasiyor. */}
+      <Circle cx={7.4} cy={7.6} r={3.1} fill={c} opacity={0.78} />
+      <Path
+        d="M1.6 18.6c0-3.2 2.6-5.4 5.8-5.4s5.8 2.2 5.8 5.4z"
+        fill={c}
+        opacity={0.78}
+      />
+      {/* ONDEKI kisi - tam doygun, sagda ve biraz daha buyuk. */}
+      <Circle cx={15.6} cy={7.2} r={3.5} fill={c} />
+      <Path
+        d="M9.2 18.6c0-3.5 2.9-5.9 6.4-5.9s6.4 2.4 6.4 5.9z"
+        fill={c}
+      />
     </Svg>
   )
 }
 
-/** Yukselen cubuklar - "bugun kac check-in". */
+/**
+ * Yukselen cubuklar - "bugun kac check-in".
+ *
+ * Referansta ORTADAKI en uzun, soldaki en kisa ve bir tik acik,
+ * sagdaki ortada. Ilk surumde soldan saga duz artan bir merdiven
+ * cizilmisti; referanstaki ritim o degil.
+ */
 export function CubukIkonu({ boyut = 22, renk: verilen }: IkonProps) {
   const renk = useRenk()
   const c = verilen ?? renk.turuncu
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
-      <Rect x={3} y={13} width={4.4} height={8} rx={1.6} fill={c} opacity={0.5} />
-      <Rect x={9.8} y={8} width={4.4} height={13} rx={1.6} fill={c} opacity={0.75} />
-      <Rect x={16.6} y={3.5} width={4.4} height={17.5} rx={1.6} fill={c} />
+      <Rect x={2.8} y={12.4} width={4.6} height={8.4} rx={2.1} fill={c} opacity={0.62} />
+      <Rect x={9.7} y={3.4} width={4.6} height={17.4} rx={2.1} fill={c} />
+      <Rect x={16.6} y={8.4} width={4.6} height={12.4} rx={2.1} fill={c} />
     </Svg>
   )
 }
 
-/** Yildiz - "ilcedeki sirasi". */
+/**
+ * Yildiz - "ilcedeki sirasi".
+ *
+ * KOSELERI YUVARLAK. Referanstaki yildiz keskin uclu degil, yumusak
+ * hatli; ayni dolgu rengiyle kalin bir `strokeLinejoin="round"` konturu
+ * cizmek bunu tek path ile veriyor.
+ */
 export function YildizIkonu({ boyut = 22, renk: verilen }: IkonProps) {
   const renk = useRenk()
   const c = verilen ?? renk.turuncu
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path
-        d="M12 2.8l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.65l-5.8 3.05 1.1-6.45-4.7-4.6 6.5-.95z"
+        d="M12 3.6l2.65 5.35 5.9.86-4.27 4.16 1.01 5.87L12 17.02l-5.29 2.78 1.01-5.87L3.45 9.77l5.9-.86z"
         fill={c}
+        stroke={c}
+        strokeWidth={2.4}
+        strokeLinejoin="round"
+        strokeLinecap="round"
       />
     </Svg>
   )
@@ -89,19 +122,35 @@ export function SaatIkonu({ boyut = 18, renk: verilen }: IkonProps) {
   )
 }
 
-/** Araba - "Yol tarifi al". */
-export function ArabaIkonu({ boyut = 17, renk: verilen }: IkonProps) {
-  const renk = useRenk()
-  const c = verilen ?? renk.turuncu
+/**
+ * Araba - "Yol tarifi al".
+ *
+ * BU BIR SVG DEGIL, KULLANICININ GONDERDIGI GORSEL. Talimat aciktı:
+ * "Bu attigimi direk kullan" (2026-09-06). Ondan once ayni ikon uc kez
+ * elle cizilmis ve ucu de referansi tutturamamisti - once kutu gibi bir
+ * govde, sonra dolu bir siluet, sonra tekerlekleri "iki bacak" gibi
+ * duran bir cizgi ikonu.
+ *
+ * Varlik `araclar/araba-ikonu-uret.py` ile uretiliyor. Kaynak gorsel
+ * SIYAH zeminliydi ve arabanin cevresinde genis bir turuncu parilti
+ * vardi; parilti gövdeyle NEREDEYSE AYNI RENKTE oldugu icin (govde
+ * 253,117,2 - parilti 240,127,15) renk esigiyle ayrilamiyordu.
+ * Ayiran tek sey keskinlik oldu: maske gradyandan cikariliyor.
+ *
+ * `renk` prop'u burada ISLEMIYOR - gorsel kendi rengini tasiyor. Ikon
+ * yalnizca turuncu kenarlikli "Yol tarifi al" dugmesinde kullaniliyor,
+ * yani koyu modda da dogru duruyor.
+ */
+export function ArabaIkonu({ boyut = 18 }: { boyut?: number }) {
+  // Kaynak 240x175; en/boy orani sabit tutuluyor ki araba ezilmesin.
+  const yukseklik = Math.round((boyut * 175) / 240)
   return (
-    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
-      <Path
-        d="M4.4 12.6l1.5-4.3A2.4 2.4 0 0 1 8.2 6.7h7.6a2.4 2.4 0 0 1 2.3 1.6l1.5 4.3v4.5a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-.8H7.6v.8a1 1 0 0 1-1 1H5.4a1 1 0 0 1-1-1z"
-        fill={c}
-      />
-      <Circle cx={7.9} cy={13.6} r={1.15} fill="#FFFFFF" />
-      <Circle cx={16.1} cy={13.6} r={1.15} fill="#FFFFFF" />
-    </Svg>
+    <Image
+      source={require('../../assets/araba.png')}
+      style={{ width: boyut, height: yukseklik }}
+      resizeMode="contain"
+      accessibilityIgnoresInvertColors
+    />
   )
 }
 

@@ -204,6 +204,19 @@ export const bosluk = {
   l: 16,
   xl: 24,
   xxl: 32,
+  /**
+   * SAYFA KENARI - butun ekranlarin yan payi.
+   *
+   * Kullanicinin istegi (2026-09-06): "Ekrani yanlardan sigdir, ekrani
+   * yay, tam ekran gorunsun uygulama her zaman." Onceden her ekran
+   * `bosluk.xl` (24) kullaniyordu ve icerik dar kaliyordu.
+   *
+   * AYRI BIR JETON olmasinin sebebi: `bosluk.xl` dikey bosluk ve gap
+   * olarak da kullaniliyor; degerini degistirmek istenmeyen yerleri de
+   * kaydirirdi. Sayfa kenari kendi adiyla durunca ileride tek yerden
+   * ayarlanabiliyor.
+   */
+  sayfa: 16,
 } as const
 
 export const yuvarlak = {

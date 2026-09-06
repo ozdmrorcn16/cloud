@@ -190,7 +190,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: 96,
     paddingBottom: bosluk.xl,
   },

@@ -246,7 +246,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flex: 1,
     // Karsilama, beyaz zemin kuralinin TEK istisnasi.
     backgroundColor: renk.karsilamaZemini,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     // UST PAY BURADA DEGIL: kok duzen bu ekrana pay vermiyor, ekran
     // kendi payini `guvenliAlan.top + UST_PAY` ile koyuyor. Boylece
     // krem zemin saatin ardina kadar uzaniyor ve ust sinir cizgisi

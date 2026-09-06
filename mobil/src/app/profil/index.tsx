@@ -858,7 +858,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1 },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     // Ust pay 44 -> 16 (kullanicinin istegi 2026-08-29: "biraz daha
     // kucultup yukari tasi"). Durum cubugunun altindaki bosluk
     // gereginden genisti.
@@ -933,7 +933,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.m,
     // Zemin YOK: gradyan `BAND_GECISI` ile LinearGradient'ten geliyor.
     marginHorizontal: -bosluk.xl,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.l,
     paddingBottom: bosluk.m,
     // Bandin altindaki bosluk DARALTILDI (kullanicinin istegi
@@ -976,7 +976,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     minWidth: 140,
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     borderRadius: yuvarlak.hap,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.6)',

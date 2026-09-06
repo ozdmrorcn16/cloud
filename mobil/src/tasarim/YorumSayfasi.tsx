@@ -469,7 +469,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   emojiSerit: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingVertical: bosluk.s,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: renk.cizgi,

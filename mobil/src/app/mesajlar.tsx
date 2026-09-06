@@ -192,7 +192,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   icerikAlani: {
     flex: 1,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,
   },
 

@@ -225,7 +225,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     backgroundColor: renk.yuzey,
     borderTopLeftRadius: yuvarlak.buyuk + 8,
     borderTopRightRadius: yuvarlak.buyuk + 8,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.m,
     paddingBottom: bosluk.xxl,
     ...golge.yuzer,

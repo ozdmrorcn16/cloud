@@ -116,7 +116,7 @@ export default function KullaniciAdiEkrani() {
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
-  icerik: { paddingHorizontal: bosluk.xl, paddingTop: bosluk.s, paddingBottom: ALT_GEZINME_PAYI },
+  icerik: { paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.s, paddingBottom: ALT_GEZINME_PAYI },
 
   etiket: {
     fontFamily: yazi.govde,

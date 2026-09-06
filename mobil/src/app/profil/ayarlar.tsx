@@ -321,7 +321,7 @@ export default function AyarlarEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },
   hata: {

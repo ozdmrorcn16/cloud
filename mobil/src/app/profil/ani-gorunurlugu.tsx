@@ -67,7 +67,7 @@ export default function AniGorunurluguEkrani() {
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
-  icerik: { paddingHorizontal: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
+  icerik: { paddingHorizontal: bosluk.sayfa, paddingBottom: ALT_GEZINME_PAYI },
   aciklama: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,

@@ -117,7 +117,7 @@ export default function GizlilikEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kaydirici: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     gap: bosluk.s,
     paddingBottom: ALT_GEZINME_PAYI,
   },

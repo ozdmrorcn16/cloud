@@ -446,7 +446,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,
     paddingBottom: bosluk.m,
   },
@@ -459,7 +459,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
@@ -543,7 +543,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
     paddingVertical: 10,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
   },
   birincilKucukYazi: {
     fontFamily: yazi.govdeKalin,

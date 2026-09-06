@@ -567,6 +567,70 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### SAYFA YAN PAYI TEK JETONA BAGLANDI - 2026-09-06
+
+Kullanicinin istegi: "Ekrani yanlardan sigdir, ekrani yay, tam ekran
+gorunsun uygulama her zaman."
+
+Yan pay 45 ayri yerde `paddingHorizontal: bosluk.xl` (24 px) diye
+yaziliydi. Hepsi yeni bir jetona baglandi: **`bosluk.sayfa = 16`**.
+
+**Neden yeni jeton, neden `bosluk.l` degil:** `bosluk.xl` dikey bosluk
+ve `gap` olarak da kullaniliyor; degerini degistirmek istenmeyen
+yerleri de kaydirirdi. Sayfa kenari kendi adiyla durunca ileride tek
+yerden ayarlanabiliyor - koyu moddaki jeton gecisinin ayni deseni.
+
+Etkilenen 29 dosya: butun ekranlar, `UstCubuk`, `SecimPenceresi`,
+`TarihSecici`, `YorumSayfasi`. Akis, profil ve kesfet ekran
+goruntusuyle ayrica kontrol edildi.
+
+**Yeni bir ekran yazarken yan pay `bosluk.sayfa` olmali**, `bosluk.xl`
+degil - yoksa o ekran digerlerinden dar gorunur.
+
+### MEKAN SAYFASI IKONLARI REFERANSTAN - 2026-09-06
+
+Kullanici ikonlarin yakin cekimlerini gonderip "ayni bu sekilde alip
+ayni boyle gorunmelerini sagla" dedi. Uc olcu ikonu yeniden cizildi:
+
+| Ikon | Duzeltme |
+|---|---|
+| Kisiler | UC degil IKI kisi; arkadaki %55 opaklikta neredeyse gorunmuyordu, %78'e cikti |
+| Cubuklar | Soldan saga duz artan merdiven degil: ORTADAKI en uzun, soldaki kisa ve acik |
+| Yildiz | Keskin uclu degil, KOSELERI YUVARLAK (ayni renkte kalin `strokeLinejoin="round"` konturu) |
+
+**ARABA IKONU UC KEZ ELLE CIZILDI, UCU DE TUTMADI** ve sonunda
+kullanici gorseli gonderip "bu attigimi direk kullan" dedi. Denenen ve
+basarisiz olan uc cizim: (1) kutu govde + uzerinde beyaz daireler -
+oyun koluna benziyordu; (2) dolu siluet - referans ici bos cizgiydi;
+(3) cizgi ikonu ama tekerlekler govdenin altina konmustu ve "iki bacak"
+gibi okunuyordu. Ders: bir ikon uc denemede tutturulamiyorsa cizmeye
+devam etmek yerine varligi istemek daha hizli.
+
+**Varlik uretimi: `araclar/araba-ikonu-uret.py`.** Kaynak gorsel siyah
+zeminliydi ve arabanin cevresinde genis bir turuncu PARILTI vardi.
+Parilti gövdeyle neredeyse ayni renkte - olculdu:
+
+    araba govdesi : (253, 117,  2)   gri 121
+    parilti       : (240, 127, 15)   gri 127
+
+Yani parlaklik, doygunluk ya da kanal farkiyla AYRILAMIYOR; toplam
+parlaklikta parilti gövdeyi bile geciyor. Ayiran tek sey KESKINLIK:
+arabanin dis hatti net bir kenar, parilti yumusak bir gecis. Maske bu
+yuzden renkten degil GRADYANDAN cikariliyor (gaussian -> sobel ->
+esik -> closing -> fill_holes -> en buyuk bilesen -> erosion).
+
+**Esik olculerek secildi, tahminle degil:** %80'den %94'e taranip her
+esigin urettigi maske orani ve bilesen sayisi yazdirildi. %88-%90
+araliginda sonuc SABIT (%53 maske, TEK bilesen) - kontur orada
+gercekten kapaniyor. %92 ustunde kontur 10-26 parcaya kiriliyor,
+%80 altinda parilti maskeye giriyor. Ilk denemede %96 kullanilmis ve
+maske %2,4 cikmisti (kontur kapanmadigi icin arabanin yalnizca bir
+parcasi secilmisti).
+
+`ArabaIkonu` artik SVG degil `<Image>`; `renk` prop'u ISLEMIYOR, gorsel
+kendi rengini tasiyor. Yalnizca turuncu kenarlikli "Yol tarifi al"
+dugmesinde kullanildigi icin koyu modda da dogru duruyor.
+
 ### KONUM EKRANI MEKAN SAYFASI OLDU - 2026-09-06
 
 Kullanicinin istegi, referans gorselle: "Konumlara bastigimizdaki cikan

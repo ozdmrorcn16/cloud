@@ -128,7 +128,7 @@ export default function BaglarEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
@@ -194,7 +194,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.yikici,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.m,
   },
 })

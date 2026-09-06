@@ -130,7 +130,7 @@ export default function MesajIstekleriEkrani() {
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
-  icerik: { flex: 1, paddingHorizontal: bosluk.xl },
+  icerik: { flex: 1, paddingHorizontal: bosluk.sayfa },
   liste: { paddingBottom: ALT_GEZINME_PAYI },
   aciklama: {
     fontFamily: yazi.govde,

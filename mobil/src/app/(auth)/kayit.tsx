@@ -233,7 +233,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: {
     flex: 1,
     backgroundColor: renk.zemin,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     // LOGO YUKARIDA, YAZILAR ASAGIDA (kullanicinin verdigi referans
     // duzeni, 2026-09-01). Isaret ekranin tepesine yakin duruyor;
     // arasindaki genis bosluk onu formdan ayiriyor ve tek basina

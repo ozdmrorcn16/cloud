@@ -247,7 +247,7 @@ const AVATAR_CAPI = 48
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.l,
     paddingBottom: ALT_GEZINME_PAYI,
   },

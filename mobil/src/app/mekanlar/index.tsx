@@ -771,7 +771,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
     paddingVertical: bosluk.m,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     marginTop: bosluk.s,
   },
   birincilButonYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.yuzey },
@@ -791,7 +791,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 34,
     color: renk.metin,
     letterSpacing: -0.8,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     marginTop: bosluk.l,
   },
   /**
@@ -830,7 +830,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     marginTop: bosluk.xs,
   },
   ozetVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuKoyu },
@@ -873,7 +873,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: bosluk.l,
   },
 
-  turSatiri: { gap: bosluk.s, paddingHorizontal: bosluk.xl, paddingTop: bosluk.m },
+  turSatiri: { gap: bosluk.s, paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.m },
   turCipi: {
     borderRadius: yuvarlak.hap,
     paddingVertical: 8,
@@ -886,7 +886,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   turYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
   turYaziSecili: { color: renk.yuzey },
 
-  kartSatiri: { gap: bosluk.m, paddingHorizontal: bosluk.xl, paddingTop: bosluk.l },
+  kartSatiri: { gap: bosluk.m, paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.l },
   kart: { width: KART_GENISLIK, height: KART_YUKSEKLIK, borderRadius: 28, ...golge.yuzer },
   // Beyaz kapak uzerinde cam rozet gorunmuyordu: dolgu turuncuya
   // gecti. Turuncu burada dogru - "su an canli" bir eylem/canlilik
@@ -919,7 +919,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     marginTop: bosluk.xl,
     marginBottom: bosluk.xs,
   },
@@ -928,7 +928,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     gap: bosluk.m,
     paddingVertical: bosluk.m,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
@@ -968,7 +968,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingVertical: bosluk.m,
   },
 
@@ -979,6 +979,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.metinSoluk,
     textAlign: 'center',
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
   },
 })

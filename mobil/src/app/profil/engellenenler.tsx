@@ -139,7 +139,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,
     paddingBottom: bosluk.m,
   },
@@ -151,7 +151,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     letterSpacing: -0.4,
   },
 
-  liste: { paddingHorizontal: bosluk.xl, paddingBottom: ALT_GEZINME_PAYI },
+  liste: { paddingHorizontal: bosluk.sayfa, paddingBottom: ALT_GEZINME_PAYI },
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,

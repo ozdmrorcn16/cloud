@@ -574,7 +574,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // yuksekligi ekrani doldurdugunda calisiyor. Onceden dugme
     // ortada kaliyor ve altinda genis bir bosluk duruyordu.
     flexGrow: 1,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.l,
     paddingBottom: bosluk.xxl,
   },

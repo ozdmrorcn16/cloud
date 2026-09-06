@@ -159,7 +159,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     gap: bosluk.m,
     paddingVertical: bosluk.l,
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
   },
   yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   yikici: { color: renk.yikici },

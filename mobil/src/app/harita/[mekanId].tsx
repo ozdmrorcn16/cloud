@@ -437,7 +437,7 @@ export default function MekanSayfasi() {
                 accessibilityRole="button"
                 testID="yol-tarifi-al"
               >
-                <ArabaIkonu boyut={16} />
+                <ArabaIkonu boyut={22} />
                 <Text style={stiller.tarifYazi}>{t('mekanSayfasi.yolTarifi')}</Text>
               </Pressable>
             </View>
@@ -750,7 +750,7 @@ export default function MekanSayfasi() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
-    paddingHorizontal: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
     gap: 14,
   },
