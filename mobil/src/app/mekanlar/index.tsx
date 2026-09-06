@@ -718,16 +718,25 @@ export default function KesfetEkrani() {
 
       {/* DURUM CIPLERI (referans gorsel). Ikon ustte, metin altta.
           Suzuyorlar, SIRALAMIYORLAR - yakinlik sirasi sabit kural. */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={stiller.cipSeridi}
-      >
+      {/* CIPLER EKRANA SIGIYOR (kullanicinin istegi 2026-09-06:
+          "Sagdan ve soldanda ekrana sigdir"). Onceden yatay bir
+          ScrollView'di ve dordu birden gorunmuyordu; artik dordu esit
+          bolusuyor. */}
+      <View style={stiller.cipSeridi}>
+        {/* CIP IKONLARI (kullanicinin referansi 2026-09-06): uc durum da
+            ayni IGNE, yalnizca rengi degisiyor - yesil sakin, kirmizi
+            yogun, turuncu tumu; populer tek basina YILDIZ.
+
+            KART ROZETLERINDEN FARKLI ve bu bilerek: orada yaprak /
+            cubuk / yildiz var. Cipte igne, kartta simge - referans da
+            oyle. Cipler bir HARITA suzgeci gibi okunuyor (hepsi ayni
+            bicim, renk ayiriyor), rozet ise satirin icinde tek basina
+            durdugu icin kendi simgesini tasiyor. */}
         {([
-          { anahtar: 'tumu', etiket: t('kesfet.tumu'), ikon: <IgneIkonu renk={renk.turuncu} /> },
-          { anahtar: 'sakin', etiket: t('kesfet.sakin'), ikon: <YaprakIkonu /> },
-          { anahtar: 'yogun', etiket: t('kesfet.yogun'), ikon: <CubukIkonu boyut={15} renk={DURUM_RENGI.yogun} /> },
-          { anahtar: 'populer', etiket: t('kesfet.populer'), ikon: <YildizIkonu boyut={15} renk={DURUM_RENGI.populer} /> },
+          { anahtar: 'tumu', etiket: t('kesfet.tumu'), ikon: <IgneIkonu boyut={19} renk={renk.turuncu} /> },
+          { anahtar: 'sakin', etiket: t('kesfet.sakin'), ikon: <IgneIkonu boyut={19} renk={DURUM_RENGI.sakin} /> },
+          { anahtar: 'yogun', etiket: t('kesfet.yogun'), ikon: <IgneIkonu boyut={19} renk={DURUM_RENGI.yogun} /> },
+          { anahtar: 'populer', etiket: t('kesfet.populer'), ikon: <YildizIkonu boyut={19} renk={DURUM_RENGI.populer} /> },
         ] as const).map((c) => (
           <Pressable
             key={c.anahtar}
@@ -743,7 +752,7 @@ export default function KesfetEkrani() {
             </Text>
           </Pressable>
         ))}
-      </ScrollView>
+      </View>
 
 
       {/* Arama sirasinda ekran duzeni DEGISMIYOR; durum yalnizca bu
@@ -1095,18 +1104,24 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   // --- durum cipleri ---
-  cipSeridi: { gap: bosluk.s, paddingVertical: 2 },
+  cipSeridi: { flexDirection: 'row', gap: 6, paddingVertical: 2 },
+  // Referansta cipler KENARLIKSIZ ve yumusak golgeli; yalnizca SECILI
+  // olan turuncu kenarlik ve krem zemin aliyor.
   cip: {
+    // FLEX: dort cip yan yana ekrana siginiyor. `minWidth` ile
+    // 4x80 + 3x6 = 338 px gerekiyordu, oysa icerik genisligi 310 -
+    // serit kayiyordu.
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    minWidth: 76,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    gap: 5,
+    paddingVertical: 11,
+    paddingHorizontal: 6,
     borderRadius: yuvarlak.kart,
-    borderWidth: 1.2,
-    borderColor: renk.cizgi,
+    borderWidth: 1.4,
+    borderColor: 'transparent',
     backgroundColor: renk.yuzey,
+    ...golge.kart,
   },
   cipSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
   cipYazi: {
