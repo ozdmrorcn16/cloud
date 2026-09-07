@@ -24,6 +24,12 @@ panel/node_modules
 panel/dist
 panel/.env
 
+# Site (slooin.com) - sirlar ve uretilen dosyalar
+site/node_modules
+site/dist
+site/.env
+site/.astro
+
 # Mekan yukleme araclarinin urettigi buyuk/gecici dosyalar
 araclar/overture-tr.parquet
 araclar/kategori-tam.txt
