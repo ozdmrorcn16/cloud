@@ -10,7 +10,11 @@ import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
 
-jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn() }))
+// AKIS_SAYFA_BOYU testte KUCULTULUYOR (3): FlatList sanallastirmasi
+// varsayilan olarak yalnizca ilk 10 satiri ciziyor, yani 30'luk bir
+// sayfada ikinci sayfanin ilk ogesi hic render edilmezdi ve iddia
+// gercek davranisi degil sanallastirmayi olcerdi.
+jest.mock('../../lib/akis', () => ({ akisiGetir: jest.fn(), AKIS_SAYFA_BOYU: 3 }))
 jest.mock('../../lib/sohbet', () => ({ konusmalarimiGetir: jest.fn() }))
 // requireActual: mock yalnizca AG CAGRILARINI degistiriyor, modulun
 // sabitleri (NOT_EN_FAZLA) gercek kalsin. Bunlar mock'lanmis olsaydi
@@ -565,5 +569,75 @@ describe('AnaSayfa', () => {
 
     await fireEvent.press(await screen.findByText('Sahil Kafe'))
     expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+  })
+})
+
+/**
+ * SAYFALAMA.
+ *
+ * Kullanicinin kurali (2026-09-07): "Yapilan butun paylasimlar
+ * check-in'ler hem ana sayfaya hem profile duesecek." Akis en yeni bir
+ * sayfayi cekiyordu ve devami HIC yuklenmiyordu; yani sayfa boyunu
+ * asan eski paylasimlar ana sayfada erisilemez oluyordu.
+ */
+describe('AnaSayfa sayfalama', () => {
+  // "Kullanici listenin sonuna geldi." fireEvent.scroll DENENDI ve
+  // tetiklemedi: VirtualizedList sonu hesaplamak icin yerlesim
+  // olculerini bekliyor, testte hicbir sey olculmuyor. Olay dogrudan
+  // listenin kendi kancasina gonderiliyor.
+  function sonaGel() {
+    fireEvent(screen.getByTestId('akis-listesi'), 'endReached')
+  }
+
+  function sayfa(baslangic: number, adet: number): AkisOgesi[] {
+    return Array.from({ length: adet }, (_, i) =>
+      oge({
+        id: `checkin-${baslangic + i}`,
+        mekanAdi: `Mekan ${baslangic + i}`,
+        olusturmaZamani: new Date(
+          Date.parse('2026-09-07T12:00:00Z') - (baslangic + i) * 60_000
+        ).toISOString(),
+      })
+    )
+  }
+
+  it('sona gelince sonraki sayfayi ZAMAN IMLECIYLE isteyip ALTA ekliyor', async () => {
+    const ilk = sayfa(0, 3)
+    ;(akisiGetir as jest.Mock)
+      .mockResolvedValueOnce(ilk)
+      .mockResolvedValueOnce(sayfa(3, 1))
+    await render(<AnaSayfa />)
+    await screen.findByText('Mekan 0')
+
+    sonaGel()
+
+    expect(await screen.findByText('Mekan 3')).toBeTruthy()
+    expect(akisiGetir).toHaveBeenLastCalledWith(3, ilk[2].olusturmaZamani)
+    // Ilk sayfa YERINDE duruyor: yeni sayfa altina ekleniyor, yerine
+    // gecmiyor.
+    expect(screen.getByText('Mekan 0')).toBeTruthy()
+  })
+
+  it('sayfa dolu gelmediyse daha fazlasini ISTEMIYOR', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue(sayfa(0, 2))
+    await render(<AnaSayfa />)
+    await screen.findByText('Mekan 0')
+
+    sonaGel()
+
+    await waitFor(() => expect(akisiGetir).toHaveBeenCalledTimes(1))
+  })
+
+  it('sonraki sayfa hata verirse eldeki akis KAYBOLMUYOR', async () => {
+    ;(akisiGetir as jest.Mock)
+      .mockResolvedValueOnce(sayfa(0, 3))
+      .mockRejectedValueOnce(new Error('ag hatasi'))
+    await render(<AnaSayfa />)
+    await screen.findByText('Mekan 0')
+
+    sonaGel()
+
+    expect(await screen.findByText('ag hatasi')).toBeTruthy()
+    expect(screen.getByText('Mekan 0')).toBeTruthy()
   })
 })

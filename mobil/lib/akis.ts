@@ -100,7 +100,19 @@ type AkisSatiri = {
 
 export const AKIS_SAYFA_BOYU = 30
 
-export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOgesi[]> {
+/**
+ * Akisin bir SAYFASI.
+ *
+ * `oncesi` verilirse yalnizca o andan eski kayitlar gelir - sayfalama
+ * imleci budur. Imlec OFFSET degil ZAMAN: `range` ile sayfalarken iki
+ * istek arasinda yeni bir check-in eklenirse pencere bir satir kayar
+ * ve ayni kayit iki kez gelir ya da bir kayit hic gelmez. Zaman imleci
+ * sabit bir noktadan geriye bakiyor, akis buyudukce kaymiyor.
+ */
+export async function akisiGetir(
+  adet: number = AKIS_SAYFA_BOYU,
+  oncesi?: string
+): Promise<AkisOgesi[]> {
   const { data: kullaniciVerisi } = await supabase.auth.getUser()
   const benimId = kullaniciVerisi.user?.id
   if (!benimId) throw new Error('Oturum bulunamadı')
@@ -108,12 +120,15 @@ export async function akisiGetir(adet: number = AKIS_SAYFA_BOYU): Promise<AkisOg
   const baglar = await takipcilerimiGetir()
   const kimlikler = [benimId, ...baglar.map((k) => k.id)]
 
-  const { data, error } = await supabase
+  let sorgu = supabase
     .from('check_inler')
     .select(
       'id, kullanici_id, kullanici_adi, mekan_id, not_metni, fotograf, olusturma_zamani, konum, mekanlar(ad, semt)'
     )
     .in('kullanici_id', kimlikler)
+  if (oncesi) sorgu = sorgu.lt('olusturma_zamani', oncesi)
+
+  const { data, error } = await sorgu
     .order('olusturma_zamani', { ascending: false })
     .limit(adet)
   if (error) throw new Error(hataMetni(error))

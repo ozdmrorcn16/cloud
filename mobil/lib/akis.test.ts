@@ -138,3 +138,40 @@ describe('akisiGetir', () => {
     await expect(akisiGetir()).rejects.toThrow('Oturum bulunamadı')
   })
 })
+
+/**
+ * SAYFALAMA.
+ *
+ * Imlec OFFSET degil ZAMAN. Sebep olculebilir bir hata: `range` ile
+ * sayfalarken iki sayfa arasinda yeni bir check-in eklenirse pencere
+ * bir satir kayar; ayni kayit iki kez gelir ya da bir kayit hic
+ * gelmez. Zaman imleci sabit bir noktadan geriye bakiyor.
+ */
+describe('akisiGetir sayfalama', () => {
+  function imlecliZincir(satirlar: unknown[]) {
+    const limit = jest.fn().mockResolvedValue({ data: satirlar, error: null })
+    const order = jest.fn().mockReturnValue({ limit })
+    const lt = jest.fn().mockReturnValue({ order })
+    const inFn = jest.fn().mockReturnValue({ order, lt })
+    const select = jest.fn().mockReturnValue({ in: inFn })
+    ;(supabase.from as jest.Mock).mockReturnValue({ select })
+    return { lt, limit }
+  }
+
+  it('imlec verilince yalnizca ondan ESKI kayitlari ister', async () => {
+    const { lt, limit } = imlecliZincir([])
+
+    await akisiGetir(30, '2026-09-05T10:00:00Z')
+
+    expect(lt).toHaveBeenCalledWith('olusturma_zamani', '2026-09-05T10:00:00Z')
+    expect(limit).toHaveBeenCalledWith(30)
+  })
+
+  it('imlec yokken zaman suzgeci UYGULANMIYOR (ilk sayfa)', async () => {
+    const { lt } = imlecliZincir([])
+
+    await akisiGetir(30)
+
+    expect(lt).not.toHaveBeenCalled()
+  })
+})

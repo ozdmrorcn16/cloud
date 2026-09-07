@@ -10,6 +10,7 @@ import {
   checkIndenAyril,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { checkIniSil } from '../../../lib/checkin'
 
 jest.mock('../../../lib/profil', () => ({
   kendiProfilimiGetir: jest.fn(),
@@ -23,10 +24,14 @@ jest.mock('expo-image-picker', () => ({
 }))
 jest.mock('../../../lib/fotograf-url', () => ({ profilFotografiUrl: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({
+  ...jest.requireActual('../../../lib/checkin'),
   kullanicininAnilariniGetir: jest.fn(),
   aktifCheckInimiGetir: jest.fn(),
   checkIndenAyril: jest.fn(),
+  checkIniSil: jest.fn(),
+  checkInNotunuGuncelle: jest.fn(),
 }))
+jest.mock('../../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
@@ -424,5 +429,90 @@ describe('ProfilEkrani', () => {
     // Rozet bir DOLGU, yani dolgu turuncusunu takip ediyor. Deger
     // 2026-09-07'de #FE7813'ten #F66A01'e indi (bkz. tema.ts).
     expect(koyuRenk.rozetZemin).toBe(koyuRenk.turuncu)
+  })
+})
+
+/**
+ * PROFILDE TUM PAYLASIMLAR.
+ *
+ * Kullanicinin kurali (2026-09-07): "Yapilan butun paylasimlar
+ * profilde de gorunecek, orda kalicak kullanici tek tek silmek
+ * isteyene kadar" ve "profilde hep asagi dogru kaydirilabilsin".
+ *
+ * Onceki hal: profil yalnizca UC ani onizliyor, gerisi ayri bir
+ * ekranda duruyordu ("Tümü" baglantisi). Onizlemedeki kartlar ayrica
+ * SALT OKUNURDU - silme ve duzenleme yalnizca o ayri ekranda vardi.
+ */
+describe('ProfilEkrani anilar listesi', () => {
+  // Kaydirma olayi: gorunen alanin alt kenari icerigin dibine geldi.
+  const dibeGeldi = {
+    nativeEvent: {
+      contentOffset: { y: 900 },
+      contentSize: { height: 1000, width: 390 },
+      layoutMeasurement: { height: 100, width: 390 },
+    },
+  }
+
+  function anilar(adet: number) {
+    return Array.from({ length: adet }, (_, i) =>
+      ani({
+        id: `ani-${i}`,
+        mekanId: `mekan-${i}`,
+        mekanAdi: `Mekan ${i}`,
+        olusturmaZamani: new Date(
+          Date.parse('2026-09-07T12:00:00Z') - i * 60_000
+        ).toISOString(),
+      })
+    )
+  }
+
+  it('"Tümü" baglantisi YOK, ayri ani ekranina gonderilmiyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(5))
+
+    await render(<ProfilEkrani />)
+    await screen.findByText('Mekan 0')
+
+    expect(screen.queryByText('Tümü')).toBeNull()
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/profil/anilar')
+  })
+
+  it('UC ile sinirli DEGIL: bes aninin hepsi profilde', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(5))
+
+    await render(<ProfilEkrani />)
+
+    expect(await screen.findByText('Mekan 0')).toBeTruthy()
+    expect(screen.getByText('Mekan 3')).toBeTruthy()
+    expect(screen.getByText('Mekan 4')).toBeTruthy()
+  })
+
+  it('uzun listede asagi kaydirinca DEVAMI geliyor', async () => {
+    // Ilk cizim penceresi 10; 12 ani ile son ikisi baslangicta yok.
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(12))
+
+    await render(<ProfilEkrani />)
+    await screen.findByText('Mekan 0')
+    expect(screen.queryByText('Mekan 11')).toBeNull()
+
+    fireEvent.scroll(screen.getByTestId('profil-kaydirma'), dibeGeldi)
+
+    expect(await screen.findByText('Mekan 11')).toBeTruthy()
+  })
+
+  it('ani PROFILDEN silinebiliyor (menu -> sil -> onay)', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(2))
+    ;(checkIniSil as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<ProfilEkrani />)
+    await screen.findByText('Mekan 0')
+
+    fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
+    fireEvent.press(await screen.findByTestId('menu-sil'))
+    fireEvent.press(await screen.findByTestId('onay-eylemi'))
+
+    await waitFor(() => expect(checkIniSil).toHaveBeenCalledWith('ani-0'))
+    await waitFor(() => expect(screen.queryByText('Mekan 0')).toBeNull())
+    // Digeri YERINDE: silme tek tek.
+    expect(screen.getByText('Mekan 1')).toBeTruthy()
   })
 })

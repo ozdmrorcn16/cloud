@@ -635,6 +635,81 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### LISTELER SONSUZ: ONIZLEME VE "TUMU" EKRANI KALKTI - 2026-09-07
+
+Kullanicinin kurali: "Yapilan butun paylasimlar check-in'ler hem ana
+sayfaya hem profile duesecek, ayni check-in yapilsa da yapilan butun
+paylasimlar profilde de gorunecek, orda kalicak kullanici tek tek
+silmek isteyene kadar." Ardindan: "Ekle ve profilde tumu sekmesini
+kaldir direk profilde tumu hep gorunsun" ve "Ana sayfada profilde hep
+asagi dogru kaydirilabilsin".
+
+**VERI TARAFI ZATEN DOGRUYDU** (migrasyon 20260907130000): `check_in_yap`
+her zaman YENI satir aciyor, hicbir cron satir silmiyor, iki akista da
+teklestirme yok. Canli olculdu: `byorcun` hesabinda 21 satir / 11 mekan,
+yalnizca bugun "Hadim erikli subesi"ne BES ayri check-in (11:52, 14:35,
+14:59, 15:07, 21:22) ve hepsi duruyor.
+
+**DEGISEN IKI SEY GOSTERIMDI:**
+
+| Yer | Onceki | Simdi |
+|---|---|---|
+| Ana sayfa akisi | En yeni 30 kayit, devami HIC yuklenmiyor | Sonsuz: sona yaklasinca sonraki sayfa iniyor |
+| Profil > Anilar | UC kart onizleme + "Tumu" baglantisi | Hepsi burada; kaydirdikca cizim penceresi buyuyor |
+
+**AYRI "Anılarım" EKRANI SILINDI** (`src/app/profil/anilar.tsx` ve
+testi). Erisim yalnizca o "Tumu" baglantisindaydi; baglanti kalkinca
+ekran oksuz kalirdi. **Icindeki islemler profile TASINDI** - profil
+onizlemesindeki kartlar SALT OKUNURDU (silme, not duzenleme, etiket
+kaldirma yalnizca o ayri ekranda vardi). Tasinmasaydi kullanicinin
+"kullanici tek tek silmek isteyene kadar" kurali uygulanamaz olurdu.
+Ayni tuzak 2026-09-03'te ayarlardaki "Profilini duzenle" satirinda
+yasanmisti: bir girisi kaldirmadan once o islemin baska girisi var mi
+diye BAK.
+
+**IMLEC OFFSET DEGIL ZAMAN.** `akisiGetir(adet, oncesi?)` ikinci
+parametreyi alinca `lt('olusturma_zamani', oncesi)` uyguluyor. `range`
+ile sayfalansaydi iki istek arasinda yeni bir check-in eklendiginde
+pencere bir satir kayar, ayni kayit iki kez gelir ya da bir kayit hic
+gelmezdi. Ayrica kimlikle eleme var: iki kayit ayni ana denk gelirse
+imlec onlari ayiramaz.
+
+**TAZELEME ELDEKI KADARINI ISTIYOR.** `useFocusEffect` sabit bir sayfa
+isteseydi, kullanici asagi kaydirip baska ekrana gidip donduegunde liste
+ilk sayfaya duesuer ve okudugu yeri kaybederdi. Istenen adet
+`max(mevcut uzunluk, sayfa boyu)`; uzunluk bir REF'ten okunuyor cunku
+odak etkisi bos bagimlilik listesiyle calisiyor ve state'i eski gorurdu.
+
+**PROFILDE VERI DEGIL CIZIM PENCERELENIYOR.** Butun anilar cekilmeye
+devam ediyor - banttaki "Anı" sayaci, "En sık" listesi ve fotograf
+izgarasi hepsinden besleniyor; sayfalansaydi "21 Anı" yerine "10 Anı"
+yazardi. Cizim `ILK_CIZIM_ADEDI = 10` ile basliyor ve `ScrollView`in
+`onScroll`u dibe bir ekran boyu kala pencereyi 10 buyutuyor. Profil bir
+`FlatList` degil (ust blok + sekmeler + izgara ayni kaydirmada), yani
+sanallastirma yok - yuzlerce karti bir anda cizmek acilisi yavaslatirdi.
+
+**OLCUM TUZAGI - iki kez yasandi:** "sona geldim" olayi ne jest'teki
+`fireEvent.scroll` ile ne de puppeteer'daki `mouse.wheel` ile
+tetikleniyor. Jest'te olay dogrudan listeye gonderiliyor
+(`fireEvent(liste, 'endReached')`); tarayicida kaydirilabilir elemanin
+`scrollTop` degeri dogrudan artiriliyor. `araclar/ekran-goruntusu.mjs`
+artik `SLOOIN_KAYDIR=<tur>` ile kaydiriyor ve **her turda scrollTop'u
+yazdiriyor** - sessizce kaydirmayan bir arac "sayfalama calismiyor"
+diye yanlis teshise yol aciyor.
+
+**CANLI DOGRULAMA (uc ayri olcum):**
+1. PostgREST'e dogrudan imlecli istek: ilk sayfanin son kaydi
+   12:41:27, ikinci sayfa 12:10:15'ten basliyor - cakisma yok, atlama
+   yok.
+2. Web'de sayfa boyu gecici 15 yapilip kaydirildi: liste yuksekligi
+   **1702 -> 2839 px** buyudu ve en eski kayda ("6 gun once") kadar
+   indi, sonra durdu.
+3. Profil: kaydirildikca 10'un otesindeki kartlar cizildi, "Tumu"
+   baglantisi ekranda YOK, her kartta uc nokta menusu duruyor
+   (`tasarim/profil-tumu.png`, `profil-kaydirilmis.png`).
+
+Dogrulama: jest 63 paket / 721 test, tsc yalnizca yedi taban hatasi.
+
 ### AKTIF CHECK-IN KARTI: EYLEMLER SATIR ICINE TASINDI - 2026-09-07
 
 Kullanicinin istegi: "Ayrıldım sil kaldiriyoruz, konum ismi, su an

@@ -1,5 +1,16 @@
 import { useCallback, useState } from 'react'
-import { View, Text, Image, ScrollView, Pressable, Share, Modal, StyleSheet } from 'react-native'
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  Pressable,
+  Share,
+  Modal,
+  StyleSheet,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import * as ImagePicker from 'expo-image-picker'
@@ -9,11 +20,13 @@ import {
   kullanicininAnilariniGetir,
   aktifCheckInimiGetir,
   checkIniSil,
+  checkInNotunuGuncelle,
   checkIndenAyril,
   type AniGorunumu,
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { etiketiKaldir } from '../../../lib/etiket'
 import type { BagKisi } from '../../../lib/bag'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
@@ -27,8 +40,22 @@ import { anidanAkisOgesi } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 
-/** Anilar bolumunde kac satir onizlenir. Tamami ayri ekranda. */
-const ONIZLEME_ADEDI = 3
+/**
+ * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
+ *
+ * Bu bir veri siniri DEGIL, cizim penceresi: butun anilar zaten
+ * cekiliyor (banttaki "Anı" sayaci, "En sık" listesi ve fotograf
+ * izgarasi hepsinden besleniyor) ve kullanici asagi kaydirdikca
+ * pencere buyuyor. Profil bir `ScrollView`, yani sanallastirma yok -
+ * yuzlerce karti bir anda cizmek acilisi yavaslatirdi.
+ *
+ * Onceki hal UC idi ve gercek bir SINIRDI: gerisi "Tümü" baglantisiyla
+ * ayri bir ekrana gonderiliyordu. Kullanicinin karari 2026-09-07:
+ * butun paylasimlar profilde durur, liste hep asagi kaydirilabilir.
+ */
+const ILK_CIZIM_ADEDI = 10
+/** Her kaydirmada pencere bu kadar buyur. */
+const CIZIM_ADIMI = 10
 
 function tarihiBicimlendir(zaman: string): string {
   const tarih = new Date(zaman)
@@ -213,8 +240,11 @@ export default function ProfilEkrani() {
   const [baglar, setBaglar] = useState<BagKisi[]>([])
   // Izgaradan acilan buyuk gorunum; null ise kapali.
   const [buyukFotograf, setBuyukFotograf] = useState<string | null>(null)
-  // Silme geri alinamaz: once onay.
-  const [silOnayi, setSilOnayi] = useState(false)
+  // Silme geri alinamaz: once onay. Deger, onayi acik olan aninin
+  // kimligi (akis ekranindaki desenin aynisi).
+  const [silOnayi, setSilOnayi] = useState<string | null>(null)
+  // Cizim penceresi; kaydirdikca buyuyor.
+  const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
   // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
   // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
@@ -252,6 +282,59 @@ export default function ProfilEkrani() {
     } finally {
       setYukleniyor(false)
     }
+  }
+
+  /**
+   * Kaydirma dibe yaklasinca cizim penceresini buyutur.
+   *
+   * Esik bir ekran boyu: kullanici dibe VARMADAN kartlar hazir olsun,
+   * kaydirma bosluga carpmasin.
+   */
+  function dibeYaklasinca(olay: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = olay.nativeEvent
+    const dibeUzaklik = contentSize.height - (contentOffset.y + layoutMeasurement.height)
+    if (dibeUzaklik > layoutMeasurement.height) return
+    setGorunenAdet((mevcut) => (mevcut >= anilar.length ? mevcut : mevcut + CIZIM_ADIMI))
+  }
+
+  /**
+   * Ani kartinin ic islemleri.
+   *
+   * Bunlar eskiden yalnizca ayri "Anılarım" ekranindaydi; profildeki
+   * onizleme kartlari SALT OKUNURDU. Liste profile tasininca islemler
+   * de tasindi - yoksa silme ve duzenlemenin baska bir girisi
+   * kalmazdi (ayni tuzak 2026-09-03'te ayarlardaki "Profilini
+   * duzenle" satirinda yasanmisti).
+   */
+  async function aniyiSil(checkInId: string) {
+    try {
+      await checkIniSil(checkInId)
+      setAnilar((mevcut) => mevcut.filter((a) => a.id !== checkInId))
+      setSilOnayi(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
+
+  // Hata pencereye birakiliyor (akis ekranindaki desen): kayit
+  // basarisizsa pencere acik kalsin, yazilan metin kaybolmasin.
+  async function notuKaydet(checkInId: string, yeniNot: string) {
+    await checkInNotunuGuncelle(checkInId, yeniNot)
+    const temiz = yeniNot.trim()
+    setAnilar((mevcut) =>
+      mevcut.map((a) => (a.id === checkInId ? { ...a, notMetni: temiz === '' ? null : temiz } : a))
+    )
+  }
+
+  async function etiketiSil(checkInId: string, kisiId: string) {
+    await etiketiKaldir(checkInId, kisiId)
+    setAnilar((mevcut) =>
+      mevcut.map((a) =>
+        a.id === checkInId
+          ? { ...a, etiketler: (a.etiketler ?? []).filter((e) => e.kullaniciId !== kisiId) }
+          : a
+      )
+    )
   }
 
   // Ekran her odaklandiginda yeniden cekiliyor: kullanici check-in yapip
@@ -365,6 +448,12 @@ export default function ProfilEkrani() {
         style={stiller.sayfa}
         contentContainerStyle={[stiller.icerik, { paddingTop: guvenliAlan.top + bosluk.l }]}
         showsVerticalScrollIndicator={false}
+        // Liste SONSUZ: dibe yaklasinca cizim penceresi buyuyor.
+        // `FlatList` degil `ScrollView` oldugu icin bunu ekran
+        // kendisi yapiyor; kaydirma olayi 16 ms'de bir gelmesin diye
+        // aralik seyreltiliyor.
+        scrollEventThrottle={160}
+        onScroll={dibeYaklasinca}
       >
         {/* GECIS EN TEPEDEN BASLAR (kullanicinin secimi 2026-09-03,
             "A"): ust cubugun ve icerigin ust payinin ARDINDAN gecip
@@ -593,18 +682,6 @@ export default function ProfilEkrani() {
               </View>
             )}
 
-            {sekme === 'anilar' && anilar.length > ONIZLEME_ADEDI && (
-              <View style={stiller.tumuSatiri}>
-                <Pressable
-                  onPress={() => router.push('/profil/anilar')}
-                  accessibilityRole="button"
-                  hitSlop={8}
-                >
-                  <Text style={stiller.tumu}>{t('profil.tumu')}</Text>
-                </Pressable>
-              </View>
-            )}
-
             {sekme === 'arkadaslar' ? (
               baglar.length === 0 ? (
                 <View style={stiller.bosAlan}>
@@ -709,7 +786,7 @@ export default function ProfilEkrani() {
                  iki satira kiriliyordu. Ana sayfadaki kartlar zaten
                  tam genislikte - artik profil de onlarla ayni. */
               <View style={stiller.aniListesi}>
-                {anilar.slice(0, ONIZLEME_ADEDI).map((ani) => (
+                {anilar.slice(0, gorunenAdet).map((ani) => (
                   <CheckInKarti
                     key={ani.id}
                     oge={anidanAkisOgesi(ani, {
@@ -718,6 +795,11 @@ export default function ProfilEkrani() {
                       rumuz: profil.kullaniciAdi,
                     })}
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
+                    silOnayiAcik={silOnayi === ani.id}
+                    onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
+                    onSil={aniyiSil}
+                    onNotKaydet={notuKaydet}
+                    onEtiketKaldir={etiketiSil}
                   />
                 ))}
               </View>
@@ -1123,7 +1205,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sekmeAktif: { borderBottomWidth: 2, borderBottomColor: renk.metin, marginBottom: -1 },
   sekmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
   sekmeYaziAktif: { color: renk.metin },
-  tumuSatiri: { alignItems: 'flex-end', marginTop: bosluk.m },
 
   // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
   yerSatiri: {
@@ -1307,11 +1388,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
-  },
-  tumu: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metin,
   },
 
   aniSatiri: {

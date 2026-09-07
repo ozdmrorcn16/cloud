@@ -425,7 +425,6 @@ export default {
       'Bulunduğun yere check-in yap, tam o anda orada olan insanları gör.',
     checkInYap: 'Bir yere check-in yap',
     anilarBaslik: 'Anılar',
-    tumu: 'Tümü',
     bosAniBaslik: 'Henüz bir anın yok',
     bosAniAciklama: 'Check-in’in bittiğinde burada bir anı olarak kalır.',
     profilYok: 'Profilin henüz hazır değil',

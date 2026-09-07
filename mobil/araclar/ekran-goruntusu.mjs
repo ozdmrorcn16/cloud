@@ -152,6 +152,47 @@ try {
     await new Promise((c) => setTimeout(c, bekle))
   }
 
+  // SONSUZ LISTELERI OLCMEK ICIN KAYDIRMA. SLOOIN_KAYDIR=<tur sayisi>
+  // verilince sayfa (ya da icindeki en uzun kaydirilabilir alan) her
+  // turda bir ekran boyu asagi iniyor ve yeni icerigin yuklenmesi
+  // bekleniyor. Sayfalama ancak boyle gorulebiliyor: ilk ekran
+  // goruntusu her zaman ilk sayfayi gosterir.
+  const kaydirmaTuru = Number(process.env.SLOOIN_KAYDIR ?? 0)
+  for (let i = 0; i < kaydirmaTuru; i++) {
+    // Kaydirmanin GERCEKTEN olup olmadigi raporlanıyor: sessizce
+    // kaydirmayan bir arac, "sayfalama calismiyor" gibi yanlis bir
+    // teshise yol aciyor (bir kez yasandi).
+    const once = await sayfa.evaluate(() => {
+      const d = [...document.querySelectorAll('div')]
+        .filter((x) => x.scrollHeight > x.clientHeight + 20)
+        .sort((a, b) => b.scrollHeight - a.scrollHeight)[0]
+      return d ? { ust: d.scrollTop, ic: d.scrollHeight, dis: d.clientHeight } : null
+    })
+    // GERCEK TEKERLEK OLAYI. `scrollTop` atamasi da bir scroll olayi
+    // uretiyor ama FlatList'in sanallastirmasi olcumlerini guncellemedigi
+    // icin "sona geldim" hic tetiklenmiyordu - olculdu: sayfa boyu 5
+    // iken sekiz kaydirmada bile ikinci sayfa gelmedi.
+    // Once dogrudan kaydirma (RN Web'de en guvenilir yol), sonra
+    // yedek olarak gercek tekerlek olayi.
+    await sayfa.evaluate(() => {
+      const d = [...document.querySelectorAll('div')]
+        .filter((x) => x.scrollHeight > x.clientHeight + 20)
+        .sort((a, b) => b.scrollHeight - a.scrollHeight)[0]
+      if (d) d.scrollTop = Math.min(d.scrollTop + d.clientHeight, d.scrollHeight)
+      else window.scrollBy(0, window.innerHeight)
+    })
+    await sayfa.mouse.move(195, 500)
+    await sayfa.mouse.wheel({ deltaY: 400 })
+    await new Promise((c) => setTimeout(c, Number(process.env.SLOOIN_KAYDIR_BEKLE ?? 700)))
+    const sonra = await sayfa.evaluate(() => {
+      const d = [...document.querySelectorAll('div')]
+        .filter((x) => x.scrollHeight > x.clientHeight + 20)
+        .sort((a, b) => b.scrollHeight - a.scrollHeight)[0]
+      return d ? d.scrollTop : null
+    })
+    console.log(`  kaydirma ${i + 1}: ${JSON.stringify(once)} -> ust=${sonra}`)
+  }
+
   // Yatay tasma gercekten var mi? Arac degil sayfa olcsun.
   const olcum = await sayfa.evaluate(() => ({
     govde: document.body.scrollWidth,

@@ -1,8 +1,8 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
-import { akisiGetir, type AkisOgesi } from '../../lib/akis'
+import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
 import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
@@ -88,6 +88,18 @@ export default function AnaSayfa() {
   // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
   const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
+  // SAYFALAMA. Akis eskiden yalnizca en yeni sayfayi cekiyordu ve
+  // devami hic yuklenmiyordu; sayfa boyunu asan eski paylasimlar ana
+  // sayfada erisilemez oluyordu (kullanicinin kurali 2026-09-07:
+  // butun paylasimlar ana sayfada da profilde de kalir).
+  const [dahaVarMi, setDahaVarMi] = useState(true)
+  const [dahaYukleniyor, setDahaYukleniyor] = useState(false)
+  // Ayni "sona geldim" olayi arka arkaya birkac kez tetiklenebiliyor;
+  // durum guncellemesi asenkron oldugu icin kapiyi REF tutuyor.
+  const dahaYukleniyorRef = useRef(false)
+  // Tazeleme kaC oge oldugunu bilmeli: `useFocusEffect` bos bagimlilik
+  // listesiyle calistigi icin state uzerinden okusa eski degeri gorur.
+  const ogelerRef = useRef<AkisOgesi[]>([])
 
   // KISI ARAMA (kullanicinin istegi 2026-08-28): markanin hemen
   // altinda bir arama sutunu; kullanici adi ya da isim yazilinca
@@ -136,9 +148,14 @@ export default function AnaSayfa() {
   const aramaAcik = arama.trim().length > 0
 
   async function yukle() {
+    // Tazelemede ELDEKI KADARINI istiyoruz. Sabit bir sayfa istenseydi
+    // kullanici asagi kaydirip baska bir ekrana gidip donduegunde liste
+    // ilk sayfaya duesuer, okudugu yeri kaybederdi.
+    const istenen = Math.max(ogelerRef.current.length, AKIS_SAYFA_BOYU)
     try {
-      const gelen = await akisiGetir()
+      const gelen = await akisiGetir(istenen)
       setOgeler(gelen)
+      setDahaVarMi(gelen.length === istenen)
       // Begeni/yorum sayilari TEK cagrida: kart basina sorgu atmak otuz
       // gidis-donus demekti. Okunamazsa akis yine ciziliyor, yalnizca
       // eylem satiri gorunmuyor - sayilar yuzunden akisi kaybetmek
@@ -235,6 +252,48 @@ export default function AnaSayfa() {
     )
   }
 
+  // Ref'i state ile ayni tutuyoruz; okuyanlar (tazeleme, sonraki
+  // sayfa) her zaman guncel listeyi gorsun.
+  useEffect(() => {
+    ogelerRef.current = ogeler
+  }, [ogeler])
+
+  /**
+   * SONRAKI SAYFA. Imlec listedeki EN ESKI ogenin zamani; boylece iki
+   * istek arasinda yeni bir check-in eklense bile pencere kaymiyor.
+   */
+  async function dahaYukle() {
+    if (dahaYukleniyorRef.current || !dahaVarMi || yukleniyor) return
+    const son = ogelerRef.current[ogelerRef.current.length - 1]
+    if (!son) return
+
+    dahaYukleniyorRef.current = true
+    setDahaYukleniyor(true)
+    try {
+      const gelen = await akisiGetir(AKIS_SAYFA_BOYU, son.olusturmaZamani)
+      setDahaVarMi(gelen.length === AKIS_SAYFA_BOYU)
+      if (gelen.length > 0) {
+        // Kimlikle eleme: iki kayit ayni ana denk gelirse imlec onlari
+        // ayiramaz ve ayni satir iki sayfada gorunebilir.
+        setOgeler((mevcut) => {
+          const varolan = new Set(mevcut.map((o) => o.id))
+          return [...mevcut, ...gelen.filter((o) => !varolan.has(o.id))]
+        })
+        const yeniOzetler = await etkilesimOzetleriniGetir(
+          gelen.map((o) => o.id)
+        ).catch(() => ({}) as Record<string, EtkilesimOzeti>)
+        setOzetler((mevcut) => ({ ...mevcut, ...yeniOzetler }))
+      }
+      setHata(null)
+    } catch (e) {
+      // Eldeki akis KAYBOLMUYOR: yalnizca hata satiri cikiyor.
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    } finally {
+      dahaYukleniyorRef.current = false
+      setDahaYukleniyor(false)
+    }
+  }
+
   async function yenile() {
     setYenileniyor(true)
     await yukle()
@@ -283,12 +342,23 @@ export default function AnaSayfa() {
         />
       ) : (
       <FlatList
+        testID="akis-listesi"
         data={ogeler}
         keyExtractor={(o) => o.id}
         contentContainerStyle={stiller.liste}
         showsVerticalScrollIndicator={false}
         refreshing={yenileniyor}
         onRefresh={yenile}
+        // Liste SONSUZ: sona yaklasinca bir sonraki sayfa iniyor.
+        // Esik 0.6 - kullanici tam dibe varmadan yukleme basliyor,
+        // boylece kaydirma bosluga carpmıyor.
+        onEndReached={dahaYukle}
+        onEndReachedThreshold={0.6}
+        ListFooterComponent={
+          dahaYukleniyor ? (
+            <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>
+          ) : null
+        }
         // "Su an disarida" seridi AKISLA BIRLIKTE kayiyor
         // (ListHeaderComponent), ekranin tepesine cakili degil:
         // referansta da kaydiriliyor ve cakili olsa akisa ayrilan
