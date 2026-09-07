@@ -65,7 +65,7 @@ yaptirimlari uygulanir.
 Check-in'e ekledigin not ve fotografin sahibi sensin. Bunlari
 paylasarak Slooin'e, o icerigi uygulama icinde (akista, profilinde,
 ilgili mekan sayfasinda) gosterme izni vermis olursun. Icerigin
-sahipligi sende kalir; uygulama onu baska bir amacla kullanmaz.
+sahipligi sende kalir.
 
 ## 7. Moderasyon
 
@@ -87,7 +87,7 @@ ulasabilirsin.
 ## 9. Sorumluluk siniri
 
 Slooin, kullanicilarin birbiriyle check-in araciligiyla ayni ortami
-paylasmasini kolaylastiran bir araçtir. Kullanicilarin bulusmasindan ya
+paylasmasini kolaylastiran bir aractir. Kullanicilarin bulusmasindan ya
 da birbirleriyle olan etkilesiminden dogan sonuclardan isletmeci
 sorumlu degildir.
 
