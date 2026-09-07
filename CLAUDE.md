@@ -494,6 +494,25 @@ PARLAK olmali (yon kilidi), ve 2,24 degeri OLCUM KAYDI olarak sabit
 (`toBe`) - ton sessizce daha da acilirsa test kirilir ve karar yeniden
 onune gelir.
 
+**YAYINDA** (ayni gun): web `npm run yayinla`, OTA grup
+`a8ef067f-16c3-4392-a36f-49e1e135d5c3`.
+
+**DOGRULAMA RENGIN KENDISIYLE YAPILDI** - bir renk degisikliginde en
+dogrudan olcum bu. Canli adrese puppeteer ile baglanilip dugmenin
+`backgroundColor`i okundu:
+
+    ana sayfadayken (pasif) : rgb(254, 120, 19)  = #FE7813 marka
+    check-in ekraninda      : rgb(255, 145, 66)  = #FF9142 secili
+
+**ORTAM NOTU - ayni depoda PARALEL BIR OTURUM calisiyordu.** Yayindan
+hemen sonra o oturum kendi isini (`7e04230`, check-in canlilik suresi)
+commit'leyip ayri bir OTA daha gonderdi, yani `channel:view` artik
+BENIM grup kimligimi degil onunkini gosteriyor. Bu bir sorun degil:
+`git merge-base --is-ancestor` ile dogrulandi, benim commit'im
+onunkinin ATASI, dolayisiyla son OTA bu degisikligi de tasiyor. Ders:
+paralel oturum varken `channel:view`daki mesaja bakip "benim yayinim
+gitmemis" sonucuna VARMA; commit atalik iliskisini kontrol et.
+
 ### ALT GEZINME: AKTIF SEKME DAIRESI - 2026-09-07
 
 Kullanici bir video gonderdi ("Navigation tabs V2", uc alt gezinme
