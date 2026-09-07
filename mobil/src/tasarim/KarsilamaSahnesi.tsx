@@ -1,174 +1,276 @@
 import { useEffect, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native'
-import Svg, { G, Path, Rect } from 'react-native-svg'
-import { ANA_YOLLAR, ORTA_YOLLAR, INCE_YOLLAR } from './karsilama-yollari'
-import { bosluk, yazi, type Renk } from './tema'
+import {
+  AccessibilityInfo,
+  Animated,
+  Dimensions,
+  Easing,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
+import Svg, { Circle, G, Path, Rect } from 'react-native-svg'
+import {
+  ANA_YOLLAR,
+  ORTA_YOLLAR,
+  INCE_YOLLAR,
+  YESIL_ALANLAR,
+  SU_ALANLAR,
+  SU_CIZGILERI,
+} from './karsilama-harita'
+import { useDil } from '../../lib/dil'
+import { bosluk, yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 
 /**
- * KARSILAMA SAHNESI - "sicak nokta".
+ * KARSILAMA SAHNESI - "disarida kim var".
  *
- * Kullanicinin secimi (2026-09-03): dort kompozisyon gorsel olarak
- * sunuldu, "1" secildi. Amac uc vaadi ANLATMAK degil HISSETTIRMEK:
+ * Kullanicinin 2026-09-08'de gonderdigi REFERANS GORSELE gore yeniden
+ * yazildi (`tasarim/karsilama-referans.png`): gercek bir harita
+ * uzerinde, insanlarin bulundugu mekanlar igneyle isaretli; her ignenin
+ * yaninda kac kisi oldugu, altinda mekanin turu yaziyor. Ortada
+ * kullanicinin kendi konumu.
  *
- *   igne          -> check-in yapilmis bir yer
- *   avatar kumesi -> orada olan insanlar (tanisma)
- *   halkalar      -> hangisi daha canli (populer yerler)
+ * Onceki hal soyut "sicak nokta" lekeleriydi (2026-09-03). Referans
+ * ayni uc vaadi daha somut anlatiyor:
  *
- * UC NOKTA VAR (kullanicinin istegi 2026-09-04): once yalnizca
- * merkezde igne vardi, diger iki leke bostu. Artik ucunde de igne ve
- * birkac kisi var - "baska yerlerde de hareket var" fikri boylece
- * gorunuyor.
+ *   igne + tur etiketi -> check-in yapilmis bir MEKAN
+ *   fotograf + sayi    -> orada olan INSANLAR (tanisma)
+ *   ignelerin dagilimi -> nerede hareket var (populer yerler)
  *
- * NABIZ (ayni istek): halkalar ignenin dibinden dogup disari yayiliyor
- * ve yolda soluyor - radar sinyali gibi. Uc nokta AYNI ANDA degil,
- * sirayla atiyor; ayni anda atsalardi ekran tek bir sey gibi yanip
- * sonerdi.
+ * BU BIR CIZIM, VERI YUZEYI DEGIL. Sayilar ve fotograflar referans
+ * gorselden geliyor; hicbiri sunucudan okunmuyor ve hicbiri kullanicinin
+ * cevresi hakkinda bir iddia tasimiyor.
  *
- * HAREKETI AZALT ayari aciksa nabiz HIC BASLAMIYOR (uygulamanin
- * erisilebilirlik tabani): halkalar duruyor, kompozisyon aynen kaliyor.
+ * HARITA GERCEK: Bursa/Nilufer'in yol agi ve yesil alanlari
+ * OpenStreetMap'ten bir kez cikarilip vektor olarak gomulu
+ * (`karsilama-harita.ts`). Ag istegi yok, etiket yok. ODbL atfi
+ * karsilama ekraninin altinda duruyor - hukuken sart.
  *
- * LEKELER ARTIK SVG DEGIL: SVG dairelerini `Animated` ile olceklemek
- * native surucuyu kullanamiyor. Halkalar yuvarlatilmis `Animated.View`;
- * yalnizca yollar SVG kaldi.
- *
- * UYDURMA VERI YOK. Mekan adi da, "yakininda su kadar kisi var" gibi
- * bir iddia da gecmiyor - bu bir cizim, bir veri yuzeyi degil.
- * Karsilama ekranindaki ornek check-in kartlari 2026-08-27'de tam bu
- * yuzden kaldirilmisti; o karar duruyor.
- *
- * YUZ YOK: avatarlar harfli daireler. Uygulamanin kendi kurali da bu -
- * haritada ve yogunluk sayacinda kimlik degil SAYI gosteriliyor.
+ * HAREKETI AZALT ayari aciksa merkezdeki nabiz HIC BASLAMIYOR;
+ * kompozisyon aynen kaliyor.
  */
 
-type Kisi = { harf: string; arka: string }
+/** Harita verisinin uretildigi SVG kutusu; uretici betikle AYNI olmali. */
+const KUTU_EN = 300
+const KUTU_BOY = 220
 
-type Nokta = {
-  /** Sahnenin yuzdesi olarak konum. */
-  x: `${number}%`
-  y: `${number}%`
-  /** En dis halkanin capi. */
-  cap: number
-  /** Igne dugmesinin capi. */
-  igne: number
-  /** Avatar capi. */
-  avatar: number
+/**
+ * Harita renkleri.
+ *
+ * Referanstan olculdu: zemin #F7F1EB, yesil #D5EBBD, yollar beyaz.
+ * Jetonlara baglanmadilar cunku bunlar TEMA rengi degil HARITA rengi -
+ * bir haritanin cimeni koyu modda da yesildir.
+ */
+const HARITA = {
+  zemin: '#F6F1EA',
+  yesil: '#D9EBC2',
+  su: '#C5DDF2',
+  yol: '#FFFFFF',
+  yolIkincil: '#FBF8F4',
   /**
-   * Sinyalin baslama gecikmesi (ms). KISA tutuluyor: noktalar ayni anda
-   * atmasin diye var, ama uzun olursa ekran acildiginda o nokta bos
-   * duruyor ve sicak nokta olmadigi saniliyor.
+   * Haritanin UZERINDEKI haplarin zemini ve yazisi.
+   *
+   * Bunlar da SABIT, jeton degil - ve sebebi olculdu: hap zemini beyaz
+   * ama yazi `renk.metin` olsaydi koyu modda yazi ACILIR ve beyaz
+   * hapta okunmaz hale gelirdi (koyu modda ekran goruntusuyle
+   * gorulen gercek kusur). Harita katmani temadan bagimsiz: iki modda
+   * da ayni acik haritayi gosteriyoruz, dolayisiyla uzerindeki her sey
+   * de acik zemine gore secilir.
    */
-  gecikme: number
-  kisiler: Kisi[]
-  /** Kumenin sonundaki "+n" balonu; yoksa hic cizilmiyor. */
-  fazla?: string
+  hap: '#FFFFFF',
+  hapYazi: '#17130F',
 }
 
-const NOKTALAR: Nokta[] = [
-  {
-    x: '50%',
-    y: '36%',
-    cap: 190,
-    igne: 44,
-    avatar: 30,
-    gecikme: 0,
-    kisiler: [
-      { harf: 'D', arka: '#7B8CFF' },
-      { harf: 'E', arka: '#E0562A' },
-      { harf: 'M', arka: '#0E9488' },
-    ],
-    fazla: '+4',
-  },
-  {
-    x: '20%',
-    y: '76%',
-    cap: 120,
-    igne: 32,
-    avatar: 24,
-    gecikme: 250,
-    kisiler: [{ harf: 'S', arka: '#C084FC' }],
-    fazla: '+1',
-  },
-  {
-    x: '80%',
-    y: '18%',
-    cap: 96,
-    igne: 28,
-    avatar: 22,
-    gecikme: 500,
-    kisiler: [{ harf: 'B', arka: '#0E9488' }],
-  },
+type Igne = {
+  ad: 'kafe' | 'restoran' | 'bar' | 'etkinlik'
+  /** Sahne kutusunun yuzdesi olarak ignenin dairesinin MERKEZI. */
+  x: number
+  y: number
+  /** Igne dairesinin capi, sahne genisliginin yuzdesi. */
+  cap: number
+  kisi: number
+  turAnahtari: 'turKafe' | 'turRestoran' | 'turBar' | 'turEtkinlik'
+}
+
+/**
+ * Dort igne - konum, olcu ve sayilar referans gorselden OLCULDU
+ * (853 px genislikteki gorselde daire merkezleri ve caplari).
+ *
+ * ETKINLIK IGNESI referanstan biraz YUKARI alindi (y 63 -> 50):
+ * 390 px'lik bir telefonda alt serit ("Yakininda N kisi disarida")
+ * oransal olarak referanstakinden cok daha genis kaliyor - ayni metin,
+ * dar tuval - ve ignenin tur etiketini ortuyordu. Olculdu, gozle
+ * tahmin edilmedi.
+ */
+const IGNELER: Igne[] = [
+  { ad: 'kafe', x: 22.5, y: 13, cap: 13.6, kisi: 8, turAnahtari: 'turKafe' },
+  { ad: 'restoran', x: 77, y: 18, cap: 8.9, kisi: 3, turAnahtari: 'turRestoran' },
+  { ad: 'bar', x: 14, y: 52, cap: 9.4, kisi: 2, turAnahtari: 'turBar' },
+  { ad: 'etkinlik', x: 71, y: 50, cap: 12.7, kisi: 5, turAnahtari: 'turEtkinlik' },
 ]
 
-function Avatar({
-  harf,
-  arka,
-  cap,
-  yaziRengi,
-}: {
-  harf: string
-  arka: string
-  cap: number
-  yaziRengi?: string
-}) {
-  const renk = useRenk()
+/** Referanstaki kucuk bos igneler: "baska yerlerde de check-in var". */
+const BOS_IGNELER = [
+  { x: 39, y: 13 },
+  { x: 90, y: 3 },
+  { x: 70, y: 39 },
+  { x: 93, y: 47 },
+  { x: 35, y: 71 },
+  { x: 62, y: 76 },
+  { x: 8, y: 27 },
+]
+
+/** Sahnedeki toplam kisi - alt seritte yaziyor. */
+const TOPLAM_KISI = IGNELER.reduce((t, i) => t + i.kisi, 0) + 6
+
+const AVATARLAR = {
+  kafe: require('../../assets/karsilama/kafe.png'),
+  restoran: require('../../assets/karsilama/restoran.png'),
+  bar: require('../../assets/karsilama/bar.png'),
+  etkinlik: require('../../assets/karsilama/etkinlik.png'),
+} as const
+
+/**
+ * Harita zemini. Ciziliyor: yesil alanlar (dolgu), su, sonra yollar -
+ * kalindan inceye. Sira onemli: ince sokaklar en ustte kalmali, yoksa
+ * ana arterler onlari yutuyor.
+ */
+function HaritaZemini() {
   return (
-    <View
-      style={{
-        width: cap,
-        height: cap,
-        borderRadius: cap / 2,
-        backgroundColor: arka,
-        borderWidth: 2.5,
-        // Halka sayfanin zeminiyle ayni: daireler birbirinden ayrilsin
-        // ama zeminden kopmasin.
-        borderColor: renk.karsilamaZemini,
-        alignItems: 'center',
-        justifyContent: 'center',
-        // Ust uste binme CAPA ORANTILI: sabit bir deger kucuk
-        // dairelerde harfin uzerini kapatiyordu.
-        marginLeft: -Math.round(cap / 4),
-      }}
+    <Svg
+      style={StyleSheet.absoluteFill}
+      viewBox={`0 0 ${KUTU_EN} ${KUTU_BOY}`}
+      preserveAspectRatio="xMidYMid slice"
     >
-      <Text
-        style={{
-          fontFamily: yazi.ekranBasligi,
-          fontSize: cap * 0.42,
-          color: yaziRengi ?? '#FFFFFF',
-        }}
-      >
-        {harf}
-      </Text>
+      <Rect x={0} y={0} width={KUTU_EN} height={KUTU_BOY} fill={HARITA.zemin} />
+      <G>
+        {YESIL_ALANLAR.map((d, i) => (
+          <Path key={`y${i}`} d={d} fill={HARITA.yesil} />
+        ))}
+        {SU_ALANLAR.map((d, i) => (
+          <Path key={`s${i}`} d={d} fill={HARITA.su} />
+        ))}
+        {SU_CIZGILERI.map((d, i) => (
+          <Path key={`d${i}`} d={d} stroke={HARITA.su} strokeWidth={3.2} fill="none" />
+        ))}
+        {INCE_YOLLAR.map((d, i) => (
+          <Path
+            key={`i${i}`}
+            d={d}
+            stroke={HARITA.yolIkincil}
+            strokeWidth={1.6}
+            strokeLinecap="round"
+            fill="none"
+          />
+        ))}
+        {ORTA_YOLLAR.map((d, i) => (
+          <Path
+            key={`o${i}`}
+            d={d}
+            stroke={HARITA.yol}
+            strokeWidth={3.4}
+            strokeLinecap="round"
+            fill="none"
+          />
+        ))}
+        {ANA_YOLLAR.map((d, i) => (
+          <Path
+            key={`a${i}`}
+            d={d}
+            stroke={HARITA.yol}
+            strokeWidth={6.5}
+            strokeLinecap="round"
+            fill="none"
+          />
+        ))}
+      </G>
+    </Svg>
+  )
+}
+
+/** Igne sekli: daire + asagi sivri uc. Fotograf dairenin icine oturuyor. */
+function IgneGovdesi({ cap, children }: { cap: number; children?: React.ReactNode }) {
+  const renk = useRenk()
+  // Ucun boyu capin %38'i - referanstaki oran (igne yuksekligi 130,
+  // daire capi 96 -> uc 34).
+  const boy = cap * 1.38
+  return (
+    <View style={{ width: cap, height: boy }}>
+      <Svg width={cap} height={boy} viewBox="0 0 100 138" style={StyleSheet.absoluteFill}>
+        {/* Once uc, sonra daire: daire ustte cizilince birlesim yeri
+            gorunmuyor. */}
+        <Path d="M26 72 L50 136 L74 72 Z" fill={renk.turuncu} />
+        <Circle cx={50} cy={50} r={48} fill={renk.turuncu} />
+      </Svg>
+      {children}
     </View>
   )
 }
 
+function KisilerIkonu({ boyut, renk: r }: { boyut: number; renk: string }) {
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Circle cx={9} cy={8.4} r={3.5} fill={r} />
+      <Path d="M2.6 19.4c0-3.5 2.9-5.8 6.4-5.8s6.4 2.3 6.4 5.8z" fill={r} />
+      <Circle cx={17.2} cy={9.4} r={2.6} fill={r} />
+      <Path d="M14.6 19.4c0-2.6 1.4-4.4 3.4-4.4 2 0 3.4 1.8 3.4 4.4z" fill={r} />
+    </Svg>
+  )
+}
+
+/** Tur hapindaki kucuk ikonlar - referanstakilerle ayni dort sekil. */
+function TurIkonu({ ad, boyut, renk: r }: { ad: Igne['ad']; boyut: number; renk: string }) {
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      {ad === 'kafe' && (
+        <>
+          <Path
+            d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"
+            stroke={r}
+            strokeWidth={1.8}
+            fill="none"
+          />
+          <Path d="M16 10h2.2a2.3 2.3 0 0 1 0 4.6H16" stroke={r} strokeWidth={1.8} fill="none" />
+          <Path d="M7 5.2V3.4M10.5 5.2V3.4M14 5.2V3.4" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
+        </>
+      )}
+      {ad === 'restoran' && (
+        <>
+          <Path d="M6 3v8M9 3v8M7.5 11v10" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
+          <Path d="M16.5 3c-1.6 0-2.5 2-2.5 4.5S15 12 16.5 12 19 9.5 19 7.5 18.1 3 16.5 3z" stroke={r} strokeWidth={1.8} fill="none" />
+          <Path d="M16.5 12v9" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
+        </>
+      )}
+      {ad === 'bar' && (
+        <>
+          <Path d="M4 4h16l-8 8z" stroke={r} strokeWidth={1.8} strokeLinejoin="round" fill="none" />
+          <Path d="M12 12v8M8 20h8" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
+        </>
+      )}
+      {ad === 'etkinlik' && (
+        <>
+          <Path d="M9 18V5.5l10-2V16" stroke={r} strokeWidth={1.8} strokeLinejoin="round" fill="none" />
+          <Circle cx={6.6} cy={18} r={2.6} fill={r} />
+          <Circle cx={16.6} cy={16} r={2.6} fill={r} />
+        </>
+      )}
+    </Svg>
+  )
+}
+
 /**
- * Yayilan sinyal halkalari - radar nabzi.
+ * Merkezdeki kullanici noktasi ve yayilan sinyal.
  *
- * Kullanicinin istegi (2026-09-04): "azdan coga artan sinyal gibi
- * olsun". Onceki hal uc halkayi BIRLIKTE buyutup soluyordu, yani
- * bir nefes gibiydi; simdi her halka ignenin dibinden dogup disari
- * dogru buyuyor ve yolda soluyor - bir yerden sinyal YAYILIYOR
- * izlenimi.
- *
- * Uc halka ayni turun ucte biri kadar gecikmeyle basliyor, boylece
- * hep biri dogarken bir digeri sonuyor: dalga kesintisiz.
- *
- * Dongude gecikme YOK; ilk gecikme setTimeout ile bir kez veriliyor.
- * Gecikme dongunun ICINE konsaydi her turdan sonra tekrarlanir ve
- * halkalar arasinda olu bir bosluk olusurdu.
- *
- * TUR SURESI 2800 -> 4200 (kullanicinin istegi, 2026-09-04: "sinyaller
- * cok hizli"). Sinyal aceleci degil sakin bir nabiz olmali; ustelik
- * bu ekran ilk izlenim ve hizli hareket dikkati metinden caliyor.
+ * Nabiz KORUNDU (2026-09-04 kararlari): tur 4200 ms, halkalar ignenin
+ * dibinden dogup disari yayilarak soluyor. Referans gorsel duragan bir
+ * kare oldugu icin hareketi gostermiyor; ekranin tek hareketli ogesi
+ * burasi ve "su an oluyor" fikrini o tasiyor.
  */
 const TUR_SURESI = 4200
 
-function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; hareket: boolean }) {
+function MerkezNokta({ cap, hareket }: { cap: number; hareket: boolean }) {
   const renk = useRenk()
-  // Uc halkanin ilerlemesi; her biri 0 -> 1 arasinda kendi turunu
-  // dondurur.
   const ilerleme = useRef([0, 1, 2].map(() => new Animated.Value(0))).current
 
   useEffect(() => {
@@ -179,12 +281,11 @@ function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; har
         Animated.timing(deger, {
           toValue: 1,
           duration: TUR_SURESI,
-          // Disa dogru hizli acilip yavaslayarak sonuyor.
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         })
       )
-      zamanlayicilar.push(setTimeout(() => dongu.start(), gecikme + (sira * TUR_SURESI) / 3))
+      zamanlayicilar.push(setTimeout(() => dongu.start(), (sira * TUR_SURESI) / 3))
       return dongu
     })
     return () => {
@@ -192,115 +293,59 @@ function Halkalar({ cap, gecikme, hareket }: { cap: number; gecikme: number; har
       dongular.forEach((d) => d.stop())
       ilerleme.forEach((d) => d.setValue(0))
     }
-  }, [hareket, gecikme, ilerleme])
+  }, [hareket, ilerleme])
 
-  // HAREKET KAPALIYSA sabit ic ice halkalar; kompozisyon aynen kaliyor.
-  const duragan = [
-    { oran: 1, opaklik: 0.1 },
-    { oran: 0.65, opaklik: 0.13 },
-    { oran: 0.36, opaklik: 0.17 },
-  ]
-
+  const nokta = cap * 0.3
   return (
-    <>
-      {/* Ignenin dibindeki sabit sicaklik: sinyal sondugu anda nokta
-          bombos kalmasin. */}
-      <Halka cap={cap * 0.34} opaklik={0.16} renk={renk.turuncu} />
-
+    <View style={{ width: cap, height: cap, alignItems: 'center', justifyContent: 'center' }}>
       {hareket
-        ? ilerleme.map((deger, sira) => (
-            <Halka
-              key={sira}
-              cap={cap}
-              renk={renk.turuncu}
-              olcek={deger.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] })}
-              opaklik={deger.interpolate({
-                // Dogarken hizli beliriyor, yolun tamaminda soluyor.
-                inputRange: [0, 0.12, 1],
-                outputRange: [0, 0.22, 0],
-              })}
+        ? ilerleme.map((deger, i) => (
+            <Animated.View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: cap,
+                height: cap,
+                borderRadius: cap / 2,
+                backgroundColor: renk.turuncu,
+                opacity: deger.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 0.22, 0] }),
+                transform: [
+                  { scale: deger.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) },
+                ],
+              }}
             />
           ))
-        : duragan.map(({ oran, opaklik }) => (
-            <Halka key={oran} cap={cap * oran} opaklik={opaklik} renk={renk.turuncu} />
+        : [0.55, 1].map((oran, i) => (
+            <View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: cap * oran,
+                height: cap * oran,
+                borderRadius: cap / 2,
+                backgroundColor: renk.turuncu,
+                opacity: 0.14,
+              }}
+            />
           ))}
-    </>
-  )
-}
-
-/** Tek bir halka; ignenin merkezine oturur. */
-function Halka({
-  cap,
-  renk,
-  opaklik,
-  olcek,
-}: {
-  cap: number
-  renk: string
-  opaklik: number | Animated.AnimatedInterpolation<number>
-  olcek?: Animated.AnimatedInterpolation<number>
-}) {
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={{
-        position: 'absolute',
-        // Igne dugmesinin merkeziyle ayni eksen.
-        top: -cap / 2 + 22,
-        width: cap,
-        height: cap,
-        borderRadius: cap / 2,
-        backgroundColor: renk,
-        opacity: opaklik,
-        transform: olcek ? [{ scale: olcek }] : [],
-      }}
-    />
-  )
-}
-
-function NoktaGorunumu({ nokta, hareket }: { nokta: Nokta; hareket: boolean }) {
-  const renk = useRenk()
-  const stiller = useStiller(stilleriYap)
-
-  return (
-    <View style={[stiller.nokta, { left: nokta.x, top: nokta.y }]}>
-      <Halkalar cap={nokta.cap} gecikme={nokta.gecikme} hareket={hareket} />
-
       <View
-        style={[
-          stiller.igne,
-          { width: nokta.igne, height: nokta.igne, borderRadius: nokta.igne / 2 },
-        ]}
+        style={{
+          width: nokta,
+          height: nokta,
+          borderRadius: nokta / 2,
+          backgroundColor: renk.turuncu,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <Svg width={nokta.igne * 0.5} height={nokta.igne * 0.5} viewBox="0 0 24 24">
-          <Path
-            d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"
-            stroke="#FFFFFF"
-            strokeWidth={2.2}
-            fill="none"
-          />
-          <Path
-            d="M12 12.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z"
-            stroke="#FFFFFF"
-            strokeWidth={2.2}
-            fill="none"
-          />
-        </Svg>
-      </View>
-      <View style={[stiller.kuyruk, { borderTopColor: renk.turuncu }]} />
-
-      <View style={[stiller.kume, { paddingLeft: Math.round(nokta.avatar / 4) }]}>
-        {nokta.kisiler.map(({ harf, arka }) => (
-          <Avatar key={harf} harf={harf} arka={arka} cap={nokta.avatar} />
-        ))}
-        {nokta.fazla && (
-          <Avatar
-            harf={nokta.fazla}
-            arka={renk.turuncuZemin}
-            cap={nokta.avatar}
-            yaziRengi={renk.turuncuYazi}
-          />
-        )}
+        <View
+          style={{
+            width: nokta * 0.42,
+            height: nokta * 0.42,
+            borderRadius: nokta,
+            backgroundColor: '#FFFFFF',
+          }}
+        />
       </View>
     </View>
   )
@@ -309,99 +354,206 @@ function NoktaGorunumu({ nokta, hareket }: { nokta: Nokta; hareket: boolean }) {
 export function KarsilamaSahnesi() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
-
-  // Hareketi azalt aciksa nabiz hic baslamiyor.
+  const { t } = useDil()
   const [hareket, setHareket] = useState(true)
+  // Sahnenin genisligi: igne olculeri ona oranli. Baslangic degeri
+  // EKRAN GENISLIGI, sifir degil - sahne zaten kenardan kenara. Sifirla
+  // baslasaydi ilk kare bos bir harita cizer, olcum gelince igneler
+  // birden belirirdi; ayrica testte `onLayout` hic tetiklenmedigi icin
+  // igneler HIC gorunmuyordu.
+  const [en, setEn] = useState(() => Dimensions.get('window').width)
+
   useEffect(() => {
     let gecerli = true
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((azalt) => {
-        if (gecerli) setHareket(!azalt)
-      })
-      .catch(() => {
-        // Ayar okunamazsa hareket acik kalir; her platformda bu cagri
-        // desteklenmiyor.
-      })
+    AccessibilityInfo.isReduceMotionEnabled().then((azalt) => {
+      if (gecerli) setHareket(!azalt)
+    })
+    const abone = AccessibilityInfo.addEventListener('reduceMotionChanged', (azalt) =>
+      setHareket(!azalt)
+    )
     return () => {
       gecerli = false
+      abone.remove()
     }
   }, [])
 
   return (
-    <View style={stiller.kok}>
-      {/* Zemin yalnizca yollar: lekeler artik animasyonlu gorunumler. */}
-      {/* ZEMIN GERCEK BIR YOL AGI (kullanicinin istegi 2026-09-04:
-          "Bunu gercek map goruntusuyle olustursana"). Onceden dort elle
-          cizilmis cizgiydi. Geometri OpenStreetMap'ten, Bursa/Nilufer
-          kesiti; `araclar/karsilama-yollari-uret.py` bir kez cikarip
-          `karsilama-yollari.ts` icine yaziyor.
+    <View
+      style={stiller.sahne}
+      onLayout={(o) => setEn(o.nativeEvent.layout.width)}
+      accessibilityRole="image"
+      accessibilityLabel={t('karsilama.aciklama')}
+    >
+      <HaritaZemini />
 
-          HAZIR HARITA BILESENI KULLANILMADI, uc sebeple: web'de
-          `react-native-maps` calismiyor ve bu ekran tarayicida da
-          aciliyor; Android'de Google anahtari olmadigi icin zemin gri
-          kalirdi; ve hazir dosemelerde SOKAK ADLARI gomulu geliyor -
-          kullanici tam olarak onlari istemedi ("Sokak cadde gibi seyler
-          yazmasin"). Vektor cizim uculunu de cozuyor, ustelik acilista
-          hicbir ag istegi yapmiyor.
+      {en > 0 && (
+        <>
+          {BOS_IGNELER.map((b, i) => {
+            const cap = en * 0.038
+            return (
+              <View
+                key={`bos${i}`}
+                style={[
+                  stiller.konum,
+                  { left: `${b.x}%`, top: `${b.y}%`, marginLeft: -cap / 2, marginTop: -cap / 2 },
+                ]}
+              >
+                <IgneGovdesi cap={cap} />
+              </View>
+            )
+          })}
 
-          UC KALINLIK: hepsi ayni kalinlikta olsaydi yol agi tek tip bir
-          ag gibi okunurdu; gercek haritada arter ile sokak ayirt
-          edilir. */}
-      <Svg style={StyleSheet.absoluteFill} viewBox="0 0 300 330" preserveAspectRatio="xMidYMid slice">
-        <Rect width={300} height={330} fill={renk.karsilamaZemini} />
-        <G stroke={renk.cizgi} fill="none" strokeLinecap="round" strokeLinejoin="round">
-          <G strokeWidth={1.6} opacity={0.75}>
-            {INCE_YOLLAR.map((d) => (
-              <Path key={d} d={d} />
-            ))}
-          </G>
-          <G strokeWidth={3.4}>
-            {ORTA_YOLLAR.map((d) => (
-              <Path key={d} d={d} />
-            ))}
-          </G>
-          <G strokeWidth={6.5}>
-            {ANA_YOLLAR.map((d) => (
-              <Path key={d} d={d} />
-            ))}
-          </G>
-        </G>
-      </Svg>
+          {IGNELER.map((igne) => {
+            const cap = (en * igne.cap) / 100
+            const foto = cap * 0.85
+            return (
+              <View
+                key={igne.ad}
+                style={[
+                  stiller.konum,
+                  { left: `${igne.x}%`, top: `${igne.y}%`, marginLeft: -cap / 2, marginTop: -cap / 2 },
+                ]}
+              >
+                <IgneGovdesi cap={cap}>
+                  <Image
+                    source={AVATARLAR[igne.ad]}
+                    style={{
+                      position: 'absolute',
+                      left: (cap - foto) / 2,
+                      top: (cap - foto) / 2,
+                      width: foto,
+                      height: foto,
+                      borderRadius: foto / 2,
+                    }}
+                  />
+                </IgneGovdesi>
 
-      {NOKTALAR.map((nokta) => (
-        <NoktaGorunumu key={nokta.x + nokta.y} nokta={nokta} hareket={hareket} />
-      ))}
+                {/* KISI SAYISI - ignenin sagindan cikan hap. Dairenin
+                    dikey ortasina hizali. */}
+                <View style={[stiller.sayiHapi, { left: cap * 0.86, top: cap * 0.26 }]}>
+                  <KisilerIkonu boyut={12} renk={renk.turuncu} />
+                  <Text style={stiller.sayiYazi} numberOfLines={1}>
+                    {t('karsilama.kisiSayisi', { sayi: igne.kisi })}
+                  </Text>
+                </View>
+
+                {/* TUR - ignenin ucunun altinda. */}
+                <View style={[stiller.turHapi, { top: cap * 1.34, left: cap * 0.1 }]}>
+                  <TurIkonu ad={igne.ad} boyut={12} renk={HARITA.hapYazi} />
+                  <Text style={stiller.turYazi} numberOfLines={1}>
+                    {t(`karsilama.${igne.turAnahtari}`)}
+                  </Text>
+                </View>
+              </View>
+            )
+          })}
+
+          {/* KULLANICININ KENDI KONUMU - ortada, tek hareketli oge. */}
+          <View
+            style={[
+              stiller.konum,
+              {
+                left: '50%',
+                top: '43%',
+                marginLeft: -(en * 0.26) / 2,
+                marginTop: -(en * 0.26) / 2,
+              },
+            ]}
+          >
+            <MerkezNokta cap={en * 0.26} hareket={hareket} />
+          </View>
+        </>
+      )}
+
+      {/* ALT SERIT: sahnenin ozeti. Referanstaki gibi haritanin uzerinde
+          duruyor ve tikanabilir GORUNMUYOR - bir dugme degil, cizimin
+          parcasi. */}
+      <View style={stiller.serit}>
+        <KisilerIkonu boyut={16} renk={renk.turuncu} />
+        <Text style={stiller.seritYazi}>
+          {t('karsilama.disarida', { sayi: TOPLAM_KISI })}
+        </Text>
+        <Text style={stiller.seritOk}>›</Text>
+      </View>
     </View>
   )
 }
 
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
-    kok: { flex: 1, overflow: 'hidden' },
+    sahne: {
+      flex: 1,
+      overflow: 'hidden',
+      justifyContent: 'flex-end',
+    },
+    konum: { position: 'absolute' },
 
-    // Nokta kendi merkezine gore konumlaniyor: halkalar da igne de
-    // ayni eksende.
-    nokta: {
+    sayiHapi: {
       position: 'absolute',
+      flexDirection: 'row',
       alignItems: 'center',
-      transform: [{ translateX: -70 }, { translateY: -30 }],
-      width: 140,
+      gap: 4,
+      backgroundColor: HARITA.hap,
+      borderRadius: yuvarlak.hap,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      shadowColor: '#000000',
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 3,
     },
-    igne: {
-      backgroundColor: renk.turuncu,
+    sayiYazi: {
+      fontFamily: yazi.govdeKalin,
+      fontSize: olcek.minik,
+      color: HARITA.hapYazi,
+    },
+
+    turHapi: {
+      position: 'absolute',
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      gap: 4,
+      backgroundColor: HARITA.hap,
+      borderRadius: yuvarlak.hap,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      shadowColor: '#000000',
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 3,
     },
-    // Igne ucu: dugmenin altindaki kucuk ucgen.
-    kuyruk: {
-      width: 0,
-      height: 0,
-      borderLeftWidth: 5,
-      borderRightWidth: 5,
-      borderTopWidth: 8,
-      borderLeftColor: 'transparent',
-      borderRightColor: 'transparent',
-      marginTop: -2,
+    turYazi: {
+      fontFamily: yazi.govdeKalin,
+      fontSize: olcek.minik,
+      color: HARITA.hapYazi,
     },
-    kume: { flexDirection: 'row', marginTop: bosluk.s },
+
+    serit: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: bosluk.s,
+      backgroundColor: HARITA.hap,
+      borderRadius: yuvarlak.hap,
+      paddingHorizontal: bosluk.l,
+      paddingVertical: 10,
+      marginBottom: bosluk.l,
+      shadowColor: '#000000',
+      shadowOpacity: 0.12,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
+    },
+    seritYazi: {
+      fontFamily: yazi.govdeKalin,
+      fontSize: olcek.kucuk,
+      color: HARITA.hapYazi,
+    },
+    seritOk: {
+      fontFamily: yazi.govde,
+      fontSize: olcek.govde,
+      color: '#A39B93',
+    },
   })

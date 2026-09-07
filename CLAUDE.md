@@ -635,6 +635,90 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### ACILIS EKRANI REFERANSA GORE YENIDEN YAZILDI - 2026-09-08
+
+Kullanici bir tasarim referansi gonderip "Acilis ekranini bunun aynisini
+yap" dedi. Referans depoda: `tasarim/karsilama-referans.png`.
+
+**YENI DUZEN:** marka -> tek cumlelik vaat ("Dışarıda kim var,
+**keşfet.**") -> aciklama -> HARITA SAHNESI -> dort tanitim karti (2x2)
+-> "Hesap oluştur →" -> "Hesabın var mı? Giriş yap" -> ODbL atfi.
+
+**SAHNE ARTIK SOYUT DEGIL SOMUT.** 2026-09-03'te secilen "sicak nokta"
+lekeleri kalkti; yerine gercek bir harita uzerinde dort igne geldi. Her
+igne bir MEKAN: icinde orada olan insanlarin fotografi, saginda kac kisi
+oldugu ("8 kişi"), altinda turu ("Kafe"). Ortada kullanicinin kendi
+konumu - nabzi atan tek oge. Altta ozet serit: "Yakınında 24 kişi
+dışarıda".
+
+**IKI ESKI KURAL BU EKRANDA GECERSIZ - kullanicinin karari:**
+
+1. **"Karsilama ekraninda uydurma veri yok"** (2026-08-27, ornek
+   check-in kartlari bu yuzden kaldirilmisti). Referans sayilarla dolu
+   ve kullanici "aynisini yap" dedi. Sayilar sunucudan gelmiyor,
+   hicbiri kullanicinin cevresi hakkinda bir iddia degil - bir CIZIM.
+   **Kural uygulamanin VERI YUZEYLERINDE aynen gecerli**; degisen
+   yalnizca tanitim sahnesi.
+2. **"Haritada yuz yok"** (yogunluk sayaci kimlik sizdirmasin diye).
+   O kural GERCEK veriyle calisan ekranlar icin; buradaki yuzler
+   referans gorselden gelen ornek gorsellerdir.
+
+**AVATARLAR REFERANSTAN CIKARILDI.** `araclar/karsilama-avatar-uret.py`
+dort ignenin ICINDEKI fotograf dairesini kirpip saydam PNG uretiyor
+(`mobil/assets/karsilama/*.png`). Igne SEKLI kodda SVG - renk temadan
+geliyor, olcu ekrana gore degisiyor; yalnizca fotograf kolaji
+referanstan.
+
+**OLCUM TUZAGI (yasandi):** ignenin turuncu maskesinde "en genis satir"
+dairenin capi SANILDI, ama bazi ignelerde sivri uc daha genis olcuIuyor
+ve daire 12 px yukari kayiyordu - kirpilan parcada turuncu cerceve
+gorunuyordu. Dogrusu en genis satiri yalnizca UST %60'lik bolgede
+aramak.
+
+**HARITA VERISI GENISLETILDI.** `araclar/karsilama-yollari-uret.py`
+artik yol agina ek olarak YESIL ALANLARI ve suyu da cekiyor; cikti
+`karsilama-yollari.ts` -> **`karsilama-harita.ts`** olarak yeniden
+adlandirildi (eski dosya silindi). Bursa/Nilufer: 9 ana + 24 orta + 141
+ince yol, 49 yesil alan.
+
+**SU DENENDI VE BULUNAMADI:** referansta bir dere var; iki merkez
+olculdu, ikisinde de cizilebilir su cikmadi (kuzeydeki Nilufer Cayi
+kadrajinda yalnizca iki kucuk havuz vardi, ikisi de en kucuk cevre
+esiginin altinda). Merkez asil yerinde birakildi - orada yol dokusu
+daha zengin (ana yol 9'a karsi 2). Su cizim yollari kodda DURUYOR,
+baska bir sehir secilirse kendiliginden calisir.
+
+**REFERANSTAN IKI BILINCLI SAPMA:**
+
+1. **Etkinlik ignesi yukari alindi** (y %63 -> %50). 390 px'lik bir
+   telefonda alt serit ayni metinle oransal olarak referanstakinden cok
+   daha genis kaliyor (dar tuval) ve ignenin tur etiketini ortuyordu.
+   Ekran goruntusuyle olculdu.
+2. **Haritanin uzerindeki haplar TEMADAN BAGIMSIZ.** Zemin ve yazi
+   sabit (`HARITA.hap` / `HARITA.hapYazi`). Ilk yazimda yazi
+   `renk.metin`di ve KOYU MODDA beyaz hapin uzerinde acik yaziya
+   donuesuep okunamaz oluyordu - koyu mod ekran goruntusunde yakalandi.
+   Harita iki modda da acik, dolayisiyla uzerindeki her sey acik zemine
+   gore secilir.
+
+**SAHNE GENISLIGI `Dimensions`TAN BASLIYOR**, sifirdan degil: sifirla
+baslasa ilk kare bos bir harita cizer, olcum gelince igneler birden
+belirirdi. Ayrica testte `onLayout` hic tetiklenmedigi icin igneler HIC
+gorunmuyordu - bu, testin yakaladigi gercek bir kusurdu.
+
+**ACIK BORC - magaza oncesi bakilmali:** sahnedeki yuzler referans
+gorselden geliyor ve kaynagi/lisansi bilinmiyor (gorseli kullanici
+uretti; yuzler AI uretimi gibi duruyor). Depo public. Magaza
+basvurusundan once ya lisansi netlesmis gorseller kullanilmali ya da
+yuzler kendi uretecegimiz cizimlerle degistirilmeli. Ayni sekilde
+"Etkinlik" turu uygulamada YOK - sahnedeki etiket bir ornek.
+
+Yeni test: `__tests__/ekranlar/karsilama.test.tsx` (6 test) - vaat
+cumlesi, dort kart, sahnedeki tur/sayi/serit, iki eylem ve ODbL atfi.
+Dogrulama: jest 64 paket / 727 test, tsc uygulama kodunda 0 hata, iki
+modda da ekran goruntusu (`tasarim/karsilama-referansa-gore.png`,
+`karsilama-referansa-gore-dark.png`).
+
 ### LISTELER SONSUZ: ONIZLEME VE "TUMU" EKRANI KALKTI - 2026-09-07
 
 Kullanicinin kurali: "Yapilan butun paylasimlar check-in'ler hem ana

@@ -26,30 +26,37 @@ export default {
   },
 
   karsilama: {
-    baslikBirinci: 'Aynı yerdesiniz.',
-    baslikIkinci: 'Tanışmaya ne dersin?',
-    aciklama:
-      'Bulunduğun yere check-in yap, tam o anda orada olan başka insanları gör. Konum paylaşımı check-in yaptığın süreyle sınırlı.',
-    dilEtiket: 'Dil',
+    // ACILIS EKRANI - kullanicinin 2026-09-08'de gonderdigi referans
+    // gorsele gore yeniden yazildi.
+    baslik: 'Dışarıda kim var, ',
+    baslikVurgu: 'keşfet.',
+    aciklama: 'Yakınındaki mekanlarda neler oluyor, gerçek insanlarla bağlantı kur.',
 
+    // Sahnedeki igne etiketleri ve sayilari. Bunlar ORNEK bir sahnedir,
+    // veri degildir - referans gorseldeki kompozisyonun parcasi.
+    kisiSayisi: '{{sayi}} kişi',
+    disarida: 'Yakınında {{sayi}} kişi dışarıda',
+    turKafe: 'Kafe',
+    turRestoran: 'Restoran',
+    turBar: 'Bar',
+    turEtkinlik: 'Etkinlik',
 
-    // DORT OZELLIK BASLIGI KALDIRILDI (kullanicinin secimi
-    // 2026-09-03): ekran uc vaadi YAZMAK yerine GOSTERIYOR. Yerine tek
-    // soru ve tek satirlik cevap geldi; vaatlerin kendisi cizimde
-    // (bkz. `KarsilamaSahnesi`).
-    // Dort tanitim basligi GERI GELDI (kullanicinin istegi
-    // 2026-09-04). Sahne vaatleri hissettiriyor, bu satirlar adiyla
-    // soyluyor.
+    // Dort tanitim karti: baslik + tek satirlik aciklama.
     adim1Baslik: 'Check-in Yap',
-    adim2Baslik: 'Yakınında kimler var gör',
+    adim1Aciklama: 'Bulunduğun mekanda görün',
+    adim2Baslik: 'Yakınında kimler var',
+    adim2Aciklama: 'Aynı yerdeki insanları keşfet',
     adim3Baslik: 'Sohbet Et',
+    adim3Aciklama: 'Yeni insanlarla tanış',
     adim4Baslik: 'Popüler yerleri keşfet',
+    adim4Aciklama: 'Şehrindeki trend mekanları gör',
 
     hesapOlustur: 'Hesap oluştur',
     hesabinVarMi: 'Hesabın var mı?',
     girisYap: 'Giriş yap',
     // Yol agi OpenStreetMap verisinden turetildi; ODbL atfi sart.
     haritaAtfi: 'Harita verisi © OpenStreetMap katkıcıları',
+
   },
 
   kayit: {

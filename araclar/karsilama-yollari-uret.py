@@ -36,12 +36,19 @@ import urllib.request
 
 # Sahnenin SVG kutusu. KarsilamaSahnesi.tsx icindeki viewBox ile AYNI
 # olmali; degisirse burasi da degismeli.
-EN, BOY = 300.0, 330.0
+EN, BOY = 300.0, 220.0
 
 # Bolge merkezi ve kapsam. Kapsam metre cinsinden veriliyor ve viewBox
 # oraniyla ayni tutuluyor, boylece yollar ezilmiyor.
+# SU DENENDI VE BULUNAMADI (2026-09-08): referans gorselde bir dere
+# var; iki ayri merkez olculdu ve ikisinde de cizilebilir su cikmadi
+# (kuzeydeki Nilufer Cayi kadrajinda yalnizca iki kucuk havuz vardi,
+# ikisi de en kucuk cevre esiginin altinda). Merkez bu yuzden asil
+# yerinde kaldi - orada yol dokusu daha zengin (ana yol 9'a karsi 2,
+# yesil alan 49'a karsi 38). Su cizim yollari kodda duruyor; ileride
+# baska bir sehir secilirse kendiliginden calisir.
 MERKEZ_LAT, MERKEZ_LON = 40.2160, 28.9690
-YUKSEKLIK_M = 1350.0
+YUKSEKLIK_M = 1050.0
 GENISLIK_M = YUKSEKLIK_M * (EN / BOY)
 
 # Yol siniflari -> cizgi kalinligi. Hiyerarsi olmadan yol agi tek tip
@@ -51,6 +58,19 @@ KALINLIK = {
     'secondary': 'orta', 'tertiary': 'orta',
     'residential': 'ince', 'unclassified': 'ince', 'living_street': 'ince',
 }
+
+# ALANLAR (2026-09-08, kullanicinin referans gorseli): yesil alanlar ve
+# su. Referanstaki harita yalnizca yol agi degil; parklar ve dere
+# dokuyu "gercek harita" yapan sey. Yalnizca cizgi cizilirse zemin bos
+# bir ag gibi duruyor.
+YESIL = {
+    'leisure': {'park', 'garden', 'pitch', 'recreation_ground', 'golf_course'},
+    'landuse': {'grass', 'forest', 'meadow', 'village_green', 'cemetery'},
+    'natural': {'wood', 'scrub', 'grassland'},
+}
+SU_ALAN = {'natural': {'water'}, 'landuse': {'reservoir', 'basin'}}
+# Dereler cizgi olarak geliyor (kapali poligon degil).
+SU_CIZGI = {'river', 'stream', 'canal'}
 
 # Douglas-Peucker toleransi (SVG birimi). Buyudukce dosya kuculur ama
 # yollar koselenir.
@@ -69,10 +89,22 @@ def indir():
     dogu = MERKEZ_LON + (GENISLIK_M / 2) / derece_lon
 
     turler = '|'.join(KALINLIK)
+    kutu = f'{guney:.6f},{bati:.6f},{kuzey:.6f},{dogu:.6f}'
+    yesil_kosul = ''.join(
+        f'way({kutu})[{anahtar}~"^({"|".join(sorted(degerler))})$"];'
+        for anahtar, degerler in YESIL.items()
+    )
+    su_kosul = ''.join(
+        f'way({kutu})[{anahtar}~"^({"|".join(sorted(degerler))})$"];'
+        for anahtar, degerler in SU_ALAN.items()
+    )
     sorgu = (
-        '[out:json][timeout:60];'
-        f'(way({guney:.6f},{bati:.6f},{kuzey:.6f},{dogu:.6f})'
-        f'[highway~"^({turler})$"];);'
+        '[out:json][timeout:90];'
+        '('
+        f'way({kutu})[highway~"^({turler})$"];'
+        f'{yesil_kosul}{su_kosul}'
+        f'way({kutu})[waterway~"^({"|".join(sorted(SU_CIZGI))})$"];'
+        ');'
         'out geom;'
     )
     istek = urllib.request.Request(
@@ -138,16 +170,30 @@ def uzunluk(noktalar):
                for i in range(len(noktalar) - 1))
 
 
+def alan_sinifi(etiketler):
+    """Bir way'in hangi ALAN grubuna girdigini soyler (yoksa None)."""
+    for anahtar, degerler in YESIL.items():
+        if etiketler.get(anahtar) in degerler:
+            return 'yesil'
+    for anahtar, degerler in SU_ALAN.items():
+        if etiketler.get(anahtar) in degerler:
+            return 'su'
+    if etiketler.get('waterway') in SU_CIZGI:
+        return 'dere'
+    return None
+
+
 def main():
     veri, sinirlar = indir()
-    gruplar = {'ana': [], 'orta': [], 'ince': []}
+    gruplar = {'ana': [], 'orta': [], 'ince': [], 'yesil': [], 'su': [], 'dere': []}
     ham_nokta = sade_nokta = 0
 
     for oge in veri['elements']:
         geo = oge.get('geometry')
         if not geo or len(geo) < 2:
             continue
-        sinif = KALINLIK.get(oge.get('tags', {}).get('highway'))
+        etiketler = oge.get('tags', {})
+        sinif = KALINLIK.get(etiketler.get('highway')) or alan_sinifi(etiketler)
         if not sinif:
             continue
         noktalar = [yansit(n, sinirlar) for n in geo]
@@ -155,14 +201,18 @@ def main():
         if not kirp(noktalar):
             continue
         noktalar = sadelestir(noktalar, TOLERANS)
-        if uzunluk(noktalar) < EN_KISA:
+        # Alanlarda uzunluk degil CEVRE olcusu anlamli; kucuk parseller
+        # bu olcekte nokta gibi gorunuyor ve yalnizca dosyayi buyutuyor.
+        en_kisa = EN_KISA * (4 if sinif in ('yesil', 'su') else 1)
+        if uzunluk(noktalar) < en_kisa:
             continue
         sade_nokta += len(noktalar)
         gruplar[sinif].append(noktalar)
 
-    def d(noktalar):
+    def d(noktalar, kapali=False):
         bas = f'M{noktalar[0][0]:.1f} {noktalar[0][1]:.1f}'
-        return bas + ''.join(f'L{x:.1f} {y:.1f}' for x, y in noktalar[1:])
+        yol = bas + ''.join(f'L{x:.1f} {y:.1f}' for x, y in noktalar[1:])
+        return yol + 'Z' if kapali else yol
 
     satirlar = [
         '// URETILMIS DOSYA - elle duzenleme.',
@@ -183,15 +233,26 @@ def main():
         '/** Sokaklar - en ince cizgi, dokuyu bunlar veriyor. */',
         f'export const INCE_YOLLAR = {json.dumps([d(y) for y in gruplar["ince"]], ensure_ascii=False)}',
         '',
+        '/** Parklar, cimenlik ve agaclik alanlar - dolgu. */',
+        f'export const YESIL_ALANLAR = {json.dumps([d(y, True) for y in gruplar["yesil"]], ensure_ascii=False)}',
+        '',
+        '/** Golet ve havuzlar - dolgu. */',
+        f'export const SU_ALANLAR = {json.dumps([d(y, True) for y in gruplar["su"]], ensure_ascii=False)}',
+        '',
+        '/** Dere ve kanallar - kalin cizgi. */',
+        f'export const SU_CIZGILERI = {json.dumps([d(y) for y in gruplar["dere"]], ensure_ascii=False)}',
+        '',
     ]
 
     hedef = os.path.join(os.path.dirname(__file__), '..', 'mobil', 'src',
-                         'tasarim', 'karsilama-yollari.ts')
+                         'tasarim', 'karsilama-harita.ts')
     with open(os.path.normpath(hedef), 'w', encoding='utf-8', newline='\n') as f:
         f.write('\n'.join(satirlar))
 
     print(f'ana {len(gruplar["ana"])} / orta {len(gruplar["orta"])} / '
           f'ince {len(gruplar["ince"])} yol')
+    print(f'yesil {len(gruplar["yesil"])} / su {len(gruplar["su"])} / '
+          f'dere {len(gruplar["dere"])} alan')
     print(f'nokta {ham_nokta} -> {sade_nokta}')
     print(f'dosya {os.path.getsize(os.path.normpath(hedef)) / 1024:.1f} KB')
 
