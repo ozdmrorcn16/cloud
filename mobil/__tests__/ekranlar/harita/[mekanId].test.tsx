@@ -21,6 +21,7 @@ jest.mock('../../../lib/mekan', () => ({
   mekaniGetir: jest.fn(),
   yakinMekanlariYogunlukIleGetir: jest.fn(),
 }))
+
 jest.mock('../../../lib/mekan-sayfasi', () => ({
   mekanIstatistikleriniGetir: jest.fn(),
   mekanLiderligiGetir: jest.fn(),
@@ -88,12 +89,13 @@ beforeEach(() => {
 })
 
 /**
- * Ekran iki bagimsiz async zincir isletiyor; test yalnizca adresi
- * bekliyor, cevre mekanlari ondan sonra oturuyor. Beklenmezse React
- * "act(...) disinda guncelleme" uyarisi basiyor.
+ * Harita YALNIZCA bu mekanin ignesini ciziyor (2026-09-07): cevre
+ * mekanlari artik ne cekiliyor ne de gosteriliyor. Bekleme, ignenin
+ * cizilmis olmasina dayaniyor - onsuz React "act(...) disinda
+ * guncelleme" uyarisi basiyor.
  */
 const cevreOturana = () =>
-  waitFor(() => expect(screen.getAllByTestId('harita-ignesi').length).toBeGreaterThan(1))
+  waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
 
 describe('CheckInHaritasiEkrani', () => {
   /**
@@ -469,6 +471,39 @@ describe('MekanSayfasi - sekmeler', () => {
  * hesabini kullaniyor - mock'lansaydi test kendi varsayimini
  * dogrulamis olurdu.
  */
+/**
+ * HARITA (kullanicinin istegi 2026-09-07: "haritada sadece o konumun
+ * yeri gorunsun obur yerler gorunmesin ... ve haritayi kipirdatabiliyim
+ * yakinlastirip uzaklastirabiliyim").
+ */
+describe('MekanSayfasi - harita', () => {
+  it('YALNIZCA bu mekanin ignesini ciziyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    // Cevrede baska mekanlar OLSA BILE haritaya girmiyorlar: ekran
+    // artik o listeyi hic cekmiyor.
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      { id: 'm2', ad: 'Komşu', konum: { lat: 40.211, lng: 28.922 }, kisiSayisi: 5 },
+      { id: 'm3', ad: 'Öteki', konum: { lat: 40.212, lng: 28.923 }, kisiSayisi: 9 },
+    ])
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
+    expect(screen.queryByLabelText(/Komşu/)).toBeNull()
+  })
+
+  /** Cevre listesi artik HIC cekilmiyor - bosa giden bir istekti. */
+  it('cevre mekanlarini CEKMIYOR', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
+
+    expect(yakinMekanlariYogunlukIleGetir).not.toHaveBeenCalled()
+    await cevreOturana()
+  })
+})
+
 describe('MekanSayfasi - check-in cubugu', () => {
   it('yakinken "Buraya check-in yap" gosterir', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)

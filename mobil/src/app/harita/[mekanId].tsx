@@ -12,7 +12,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { mekaniGetir, yakinMekanlariYogunlukIleGetir, type Mekan } from '../../../lib/mekan'
+import { mekaniGetir, type Mekan } from '../../../lib/mekan'
 import {
   mekanIstatistikleriniGetir,
   mekanLiderligiGetir,
@@ -34,7 +34,7 @@ import { gorecelZaman } from '../../../lib/zaman'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
-import { CanliHarita, type HaritaMekani } from '../../tasarim/CanliHarita'
+import { CanliHarita } from '../../tasarim/CanliHarita'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -191,7 +191,6 @@ export default function MekanSayfasi() {
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
 
   const [mekan, setMekan] = useState<Mekan | null>(null)
-  const [cevre, setCevre] = useState<HaritaMekani[]>([])
   const [istatistik, setIstatistik] = useState<MekanIstatistikleri | null>(null)
   const [burdakiler, setBurdakiler] = useState<CheckInGorunumu[]>([])
   // Kimlik -> imzali profil fotografi. Akis ve bildirimler de ayni
@@ -203,6 +202,7 @@ export default function MekanSayfasi() {
   const [hata, setHata] = useState<string | null>(null)
   const [secimAcik, setSecimAcik] = useState(false)
   const [menuAcik, setMenuAcik] = useState(false)
+  const [sayfaKayabilir, setSayfaKayabilir] = useState(true)
 
   // ALT BUTONUN UC HALI (kullanicinin sectigi tasarim B, 2026-09-06).
   // Hangi hal gosterilecegi iki seye bagli: bu mekanda aktif check-in'in
@@ -214,18 +214,12 @@ export default function MekanSayfasi() {
   useEffect(() => {
     let gecerli = true
 
+    // CEVRE MEKANLARI ARTIK CEKILMIYOR: harita yalnizca bu mekanin
+    // ignesini gosteriyor (kullanicinin istegi 2026-09-07), yani o
+    // istek bosa gidiyordu.
     mekaniGetir(mekanId)
-      .then(async (bulunan) => {
-        if (!gecerli) return
-        setMekan(bulunan)
-        if (!bulunan) return
-        // Cevre baglami; okunamazsa harita yine ciziliyor.
-        const yakinlar = await yakinMekanlariYogunlukIleGetir(
-          bulunan.konum.lat,
-          bulunan.konum.lng,
-          1000
-        ).catch(() => [])
-        if (gecerli) setCevre(yakinlar)
+      .then((bulunan) => {
+        if (gecerli) setMekan(bulunan)
       })
       .catch((e) => {
         if (gecerli) setHata(hataMetni(e))
@@ -455,23 +449,48 @@ export default function MekanSayfasi() {
         }
       />
 
-      <ScrollView contentContainerStyle={stiller.icerik} showsVerticalScrollIndicator={false}>
+      {/* HARITA KAYDIRILIRKEN SAYFA KILITLENIYOR. Ikisi de dikey
+          kayabildigi icin tek parmak hareketi ikisini birden
+          oynatiyordu; ayni cakisma kesfet ekraninda da yasanmisti
+          (2026-08-30) ve orada harita kaydirmasi kapatilarak
+          cozulmustu. Burada harita kaydirilabilir olmak zorunda, o
+          yuzden sayfa geri cekiliyor. */}
+      <ScrollView
+        contentContainerStyle={stiller.icerik}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={sayfaKayabilir}
+      >
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         {mekan && (
           <>
             <View>
-              <Pressable
-                onPress={haritayaDokunuldu}
-                accessibilityRole="button"
-                accessibilityLabel={t('checkInHaritasi.haritaAcikla')}
+              {/* HARITA ARTIK ETKILESIMLI (kullanicinin istegi
+                  2026-09-07: "haritayi kipirdatabiliyim yakinlastirip
+                  uzaklastirabiliyim").
+
+                  Onceki kural "harita dokunmatik degil, bir dugme"ydi
+                  (2026-08-30) ve gerekcesi soyleydi: ayni alan hem
+                  kaydirilip hem "basilinca acilan" bir dugme olamaz.
+                  Kullanici kaydirmayi sectigi icin harita uygulamasini
+                  acma isi TAMAMEN sagdaki iki yuvarlak dugmeye ve
+                  "Yol tarifi al"a kaldi - islev kaybolmadi.
+
+                  YALNIZCA BU MEKANIN IGNESI: `mekanlar={[]}`. Cevre
+                  mekanlari da ciziliyordu ve sayfa "bu mekan nerede"
+                  sorusunu cevaplarken ekranda alti ad birden
+                  duruyordu. Igne listesi bos olunca `CanliHarita`
+                  cerceveyi en dar haline (100 m) aliyor, yani sokak ve
+                  cadde adlari okunur oluyor - kullanicinin istedigi
+                  yakinlik. */}
+              <View
+                style={stiller.haritaCercevesi}
+                onTouchStart={() => setSayfaKayabilir(false)}
+                onTouchEnd={() => setSayfaKayabilir(true)}
+                onTouchCancel={() => setSayfaKayabilir(true)}
               >
-                {/* Dokunuslar haritaya degil bu Pressable'a gitsin diye
-                    harita katmani dokunusa kapali. */}
-                <View pointerEvents="none" style={stiller.haritaCercevesi}>
-                  <CanliHarita merkez={mekan.konum} mekanlar={cevre} yukseklik={170} />
-                </View>
-              </Pressable>
+                <CanliHarita merkez={mekan.konum} mekanlar={[]} yukseklik={210} />
+              </View>
 
               {/* IKI yuvarlak dugme, referanstaki gibi. Ikisi FARKLI
                   is yapiyor - ayni isi yapan iki dugme koymak yerine

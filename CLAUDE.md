@@ -567,6 +567,48 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### MEKAN SAYFASINDAKI HARITA ETKILESIMLI OLDU - 2026-09-07
+
+Kullanicinin istegi: "Bir konuma bastigimdaki bu gelen ekranda haritada
+sadece o konumun yeri gorunsun obur yerler gorunmesin ve yakin bir
+goruntusu gelsin sokak cadde anlasilir sekilde ve haritayi
+kipirdatabiliyim yakinlastirip uzaklastirabiliyim."
+
+**ONCEKI KURAL GERI ALINDI.** 2026-08-30'da "harita dokunmatik degil,
+BIR DUGME" karari alinmisti ve gerekcesi soyleydi: ayni alan hem
+kaydirilip hem "basilinca acilan" bir dugme olamaz. Kullanici
+kaydirmayi sectigi icin harita uygulamasini acma isi TAMAMEN sagdaki
+iki yuvarlak dugmeye ve "Yol tarifi al"a kaldi - islev kaybolmadi,
+yalnizca yeri degisti.
+
+Uygulamasi: haritayi saran `Pressable` ve `pointerEvents="none"`
+kaldirildi. `CanliHarita`nin kendisinde `scrollEnabled` ve
+`zoomEnabled` ZATEN aciKTI; engelleyen sey o sarmalayiciydi.
+
+**YALNIZCA BU MEKANIN IGNESI** (`mekanlar={[]}`). Cevre mekanlari da
+ciziliyordu ve sayfa "bu mekan nerede" sorusunu cevaplarken ekranda
+alti ad birden duruyordu. Igne listesi bos olunca `CanliHarita`
+cerceveyi en dar haline (100 m) aliyor - sokak ve cadde adlari okunur
+oluyor, yani "yakin goruntu" istegi de ayni degisiklikle karsilaniyor.
+
+**CEVRE LISTESI ARTIK HIC CEKILMIYOR.** `yakinMekanlariYogunlukIleGetir`
+cagrisi kaldirildi: harita onu kullanmadigi icin bosa giden bir
+istekti. Bir testle kilitli.
+
+**SCROLLVIEW KILIDI SART OLDU.** Harita ve sayfa ikisi de dikey
+kayabildigi icin tek parmak hareketi ikisini birden oynatiyordu. Ayni
+cakisma kesfet ekraninda da yasanmisti (2026-08-30) ve orada harita
+kaydirmasi KAPATILARAK cozulmustu; burada harita kaydirilabilir olmak
+zorunda oldugu icin ters yon secildi - haritaya dokunuldugu surece
+sayfa kaydirmasi kapali (`onTouchStart` / `onTouchEnd`).
+
+Harita yuksekligi 170 -> 210: kaydirilabilir bir harita dar bir seritte
+kullanissiz.
+
+**WEB'DE DOGRULANAMAZ** - orada radar cizimi var, gercek harita yok.
+Tek igne kurali web'de de gorunuyor ama kaydirma/yakinlastirma yalnizca
+telefonda olculebiliyor.
+
 ### HARITA IGNE SINIRI 5 -> 9, KLAVYE KAPANMASI - 2026-09-07
 
 **IGNE SINIRI.** Kullanicinin sorusu: "Haritada sadece 4 tane yesil yer
