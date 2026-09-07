@@ -239,6 +239,11 @@ export default {
 
   anaSayfa: {
     aramaYerTutucu: 'Ara',
+    // "SU AN DISARIDA" SERIDI (2026-09-07, referans gorselden).
+    suAnDisarida: 'Şu an dışarıda',
+    disaridaSayi: '{{sayi}} kişi',
+    disaridaDiger: 'Diğer',
+    disaridaErisim: '{{ad}}, {{mekan}} konumunda',
     baslik: 'slooin',
     suAnBurada: 'şu an burada',
     bosBaslik: 'Akışın henüz boş',

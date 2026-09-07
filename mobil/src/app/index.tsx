@@ -17,6 +17,7 @@ import { KisiSatiri, type KisiSatirVerisi } from '../tasarim/KisiSatiri'
 import { kisiAra } from '../../lib/kisi-ara'
 import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { gorecelZaman } from '../../lib/zaman'
+import { SuAnDisarida } from '../tasarim/SuAnDisarida'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
@@ -288,6 +289,13 @@ export default function AnaSayfa() {
         showsVerticalScrollIndicator={false}
         refreshing={yenileniyor}
         onRefresh={yenile}
+        // "Su an disarida" seridi AKISLA BIRLIKTE kayiyor
+        // (ListHeaderComponent), ekranin tepesine cakili degil:
+        // referansta da kaydiriliyor ve cakili olsa akisa ayrilan
+        // yer 100 pikselden fazla azalirdi. Serit kendi verisini
+        // `ogeler`den turetiyor, yeni bir ag cagrisi yok; kimse
+        // disarida degilse hic cizilmiyor.
+        ListHeaderComponent={<SuAnDisarida ogeler={ogeler} />}
         renderItem={({ item }) => (
           // ORTAK KART (kullanicinin karari 2026-08-30): ana sayfa,
           // profil ve Anilarim ayni CheckInKarti'yi kullaniyor. Zaman
