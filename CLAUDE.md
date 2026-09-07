@@ -446,6 +446,54 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### DORDUENCUE TURUNCU JETONU: `turuncuSecili` - 2026-09-07
+
+Kullanicinin bildirdigi sey: "sabit sutundaki checkin dugmesine
+basinca koyu renk oluyor, daha acik parlak bir renk olsun."
+
+**KOK NEDEN BIR ROL KARISIKLIGIYDI.** `turuncuBasili` IKI ayri isi
+birden yapiyordu ve ikisi ZIT yonde ayar ister:
+
+    basili  = parmak su an uzerinde, ANLIK   -> KOYULASMALI
+    secili  = o bolumdesin, KALICI bir hal   -> PARLAKLASMALI
+
+Check-in dugmesi aslinda BASILI degil SECILI (yola bagli, kalici) ve
+koyu bir ton orada "basildi" degil "sonmus" okunuyordu. Ayni jeton
+`giris` ve `karsilama` ekranlarinda gercek basili hal icin de
+kullaniliyor - orada koyulasma DOGRU, o yuzden jetonun kendisi
+degistirilmedi.
+
+**YENI JETON `turuncuSecili: '#FF9142'`** (iki palette de ayni),
+yalnizca check-in dugmesinin secili halinde ve o dugmenin ikonunun ic
+dairesinde kullaniliyor.
+
+**TON OLCUELEREK SECILDI, tahminle degil.** Beyaz konum ignesinin
+dugme uzerindeki kontrasti:
+
+    turuncu (marka)  #FE7813   2,65
+    turuncuBasili    #E06509   3,48   (koyu - basili hal icin dogru)
+    SECILEN          #FF9142   2,24
+    elenen           #FFA45C   1,96   <- igne gorunur sekilde soluk
+    elenen           #FF8A2B   2,35   <- markadan farki gozle secilmiyor
+
+**ODUN acikca kabul edildi:** 2,24 grafik esigi olan 3:1'in ALTINDA.
+Bu, marka turuncusundaki ayni odunun devami (o da 2,65 ile altinda ve
+`marka-turuncusu-degistirilmez` karariyla korunuyor). Secili dugme
+ayrica BUYUEYUEP YUKARI KALKIYOR, yani ayirt edicilik yalnizca renge
+yuklenmis degil.
+
+**Bu, koyu moddaki eski notla CELISMIYOR.** Orada `turuncuBasili`
+#FFA45C'ten #E06509'a geri koyulastirilmisti ve gerekce "alt
+gezinmedeki aktif merkez dugme listedeki butonlardan daha ZAYIF
+gorunuyordu" idi. O sorunun kaynagi tam da iki rolun tek jetonu
+paylasmasiydi; ayirmak onu kokten cozuyor - butonlar koyu kaliyor,
+check-in dugmesi parlaklasiyor.
+
+Kontrast paketine uc iddia eklendi: secili ton markadan ve basilidan
+PARLAK olmali (yon kilidi), ve 2,24 degeri OLCUM KAYDI olarak sabit
+(`toBe`) - ton sessizce daha da acilirsa test kirilir ve karar yeniden
+onune gelir.
+
 ### ALT GEZINME: AKTIF SEKME DAIRESI - 2026-09-07
 
 Kullanici bir video gonderdi ("Navigation tabs V2", uc alt gezinme

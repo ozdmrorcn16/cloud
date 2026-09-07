@@ -260,7 +260,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
             d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
             fill="#FFFFFF"
           />
-          <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuBasili : renk.turuncu} />
+          <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuSecili : renk.turuncu} />
         </Svg>
       </View>
     </AnimasyonluPressable>
@@ -318,7 +318,7 @@ export function AltGezinme() {
 
   // Check-in dugmesi bir SEKME degil eylem; aktifken hicbir sekme
   // aktif olmuyor ve daire soneuyor. Dugme kendi aktif halini zaten
-  // `turuncuBasili` ile gosteriyor, ayrica daire ile isaretlemek
+  // `turuncuSecili` ile gosteriyor, ayrica daire ile isaretlemek
   // ikinci bir vurgu olurdu.
   const checkInAktif = yol.startsWith('/mekanlar') || yol.startsWith('/check-in')
   // Ana sayfanin oneki "/" oldugu icin startsWith her yolu
@@ -607,7 +607,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // yapiyor.
     ...golge.yuzer,
   },
-  merkezDaireAktif: { backgroundColor: renk.turuncuBasili },
+  /*
+   * SECILI hal PARLAKLASIR, koyulasmaz (kullanicinin istegi
+   * 2026-09-07). `turuncuBasili` degil `turuncuSecili` - ikisinin
+   * farki tema.ts'te yazili.
+   */
+  merkezDaireAktif: { backgroundColor: renk.turuncuSecili },
 
   rozet: {
     position: 'absolute',

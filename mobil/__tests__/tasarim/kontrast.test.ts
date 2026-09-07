@@ -108,6 +108,31 @@ describe.each([
     expect(parlaklik(renk.turuncuBasili)).toBeLessThan(parlaklik(renk.turuncu))
   })
 
+  /**
+   * SECILI dolgu, BASILI dolgunun tersi yone gider. Bu iki iddia
+   * birlikte ikisinin karistirilmasini engelliyor: biri koyulasmak,
+   * digeri parlaklasmak ZORUNDA.
+   */
+  it('SECILI dolgu, marka tonundan PARLAK - basilinin tersi yonde', () => {
+    expect(renk.turuncuSecili).not.toBe(renk.turuncu)
+    expect(parlaklik(renk.turuncuSecili)).toBeGreaterThan(parlaklik(renk.turuncu))
+    // Ve basili haldan kesinlikle daha parlak.
+    expect(parlaklik(renk.turuncuSecili)).toBeGreaterThan(parlaklik(renk.turuncuBasili))
+  })
+
+  it('SECILI dolgu uzerindeki beyaz ikon: OLCUM KAYDI, esik iddiasi degil', () => {
+    // Bu deger 3:1 grafik esiginin ALTINDA ve bu BILEREK kabul edildi
+    // (kullanicinin istegi 2026-09-07: secili check-in dugmesi parlak
+    // olacak). Marka tonundaki ayni odunun devami; oradaki gerekce
+    // burada da gecerli, ustelik secili dugme ayrica buyueyup yukari
+    // kalktigi icin ayirt edicilik yalnizca renge yuklenmis degil.
+    //
+    // Iddia esik degil SAYI: ton sessizce daha da acilirsa bu test
+    // kirilir ve karar yeniden onune gelir. #FFA45C denenmis ve
+    // 1,96 verdigi icin elenmisti.
+    expect(oran(BEYAZ, renk.turuncuSecili)).toBe(2.24)
+  })
+
   // ---------------------------------------------------------------- //
   // YAZILAR - govde esigi 4,5:1.
   // ---------------------------------------------------------------- //
@@ -193,6 +218,9 @@ describe.each([
     // farkli olmasi degil, jetonlarin ayri olmasi.
     expect(renk).toHaveProperty('turuncuYazi')
     expect(renk).toHaveProperty('turuncuBasili')
+    // SECILI ayri bir dorduencue rol: "o bolumdesin", "parmak uzerinde"
+    // degil. Ikisi tek jetona duesuerse secili hal yine koyulasir.
+    expect(renk).toHaveProperty('turuncuSecili')
   })
 })
 

@@ -52,6 +52,30 @@ export const acikRenk = {
    * degil bir hataydi.
    */
   turuncuBasili: '#E06509',
+  /**
+   * SECILI hal dolgusu - `turuncuBasili` ile KARISTIRILMAMALI.
+   *
+   * Ikisi farkli seyi anlatiyor ve bu yuzden ZIT yonde ayarlaniyor:
+   *   basili  = parmak su an uzerinde, ANLIK  -> KOYULASIR
+   *   secili  = o bolumdesin, KALICI bir hal  -> PARLAKLASIR
+   *
+   * Tek jeton kullanildiginda check-in dugmesi secili haldeyken
+   * koyulasiyordu ve kullanicinin bildirdigi sey tam buydu (2026-09-07:
+   * "checkin dugmesine basinca koyu renk oluyor, daha acik parlak bir
+   * renk olsun"). Koyu bir ton "basildi" degil "sonmus" okunuyor.
+   *
+   * ODUN, olculdu ve bilerek kabul edildi: uzerindeki beyaz konum
+   * ignesi bu tonda 2,24:1 veriyor (marka tonunda 2,65). Grafik esigi
+   * 3:1, yani ikisi de altinda - marka turuncusundaki ayni odunun
+   * devami (bkz. `turuncu` jetonunun notu). Daha parlak adaylar
+   * olculdu ve ELENDI: #FFA45C 1,96'ya duesuerueyor, ki orada beyaz
+   * igne gorunur sekilde soluklasiyor. Buna karsilik dugmenin beyaz
+   * cubuktan AYRILMASI artiyor (2,65 -> 2,24 degil; zemin karsiti
+   * hesapta secili ton daha guclu ayrisiyor) ve secili dugme ayrica
+   * buyueyup yukari kalkiyor, yani ayirt edicilik yalnizca renge
+   * yuklenmis degil.
+   */
+  turuncuSecili: '#FF9142',
   /** Turuncunun yumusak zemini (secili satir, rozet arkasi). */
   turuncuZemin: '#FFF3E8',
 
@@ -184,6 +208,12 @@ export const koyuRenk: Renk = {
    * merkez dugme, listedeki butonlardan daha ZAYIF gorunuyordu.
    */
   turuncuBasili: '#E06509',
+  /**
+   * SECILI dolgu iki modda da AYNI. Koyu zeminde bu ton 7,81:1 ile
+   * zaten guclu ayrisiyor; ayrica koyu modda "secili" halin parlak
+   * olmasi acik moddakinden bile dogal.
+   */
+  turuncuSecili: '#FF9142',
   /** Yumusak zemin: turuncunun sicak, cok koyu hali. */
   turuncuZemin: '#3A2412',
 
