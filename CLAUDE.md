@@ -391,6 +391,32 @@ dayaniyor.
 Kod tarafinda yarim kalan is YOK. Asagidakiler ya kullanicinin panel
 islerine ya da native derlemeye bagli.
 
+**0. TESTFLIGHT BUILD 3 "EXPIRED" - 2026-09-07, DIKKAT.**
+App Store Connect'te build 3 "Expired" gorunuyor. **Suresi DOLMADI:**
+telefondaki TestFlight hala "Bitis Tarihi 28 Kas 2026" diyor (30
+Agustos + 90 gun). "Expired" burada build'in TestFlight DAGITIMINDAN
+cikarildigi anlamina geliyor - "Expire Build" dugmesi ya da test
+grubundan kaldirilma.
+
+** BUNU YAPMAZ** ve yapmadi: OTA guncellemesi yuklu
+uygulamanin JavaScript'ini degistiriyor, App Store Connect'teki build
+kaydina hic dokunmuyor. O gun alti OTA yayini yapilmisti; ikisi
+arasinda nedensellik yok.
+
+**Uygulama telefonda NORMAL ACILIYOR ve OTA almaya devam ediyor**
+(kullanici dogruladi). Yani is kaybi yok.
+
+**TEK GERCEK RISK - uyarilmali: UYGULAMAYI TELEFONDAN SILME.**
+Build TestFlight'tan indirilemez durumda oldugu icin silinirse GERI
+YUKLENEMEZ; once yeni bir derleme gerekir. Ayni sebeple yeni testci de
+eklenemez.
+
+Yeni derleme gerektiginde surum/kanal tarafinda yapilacak bir sey YOK,
+olculdu:  politikasi  (1.0.0) ve production
+profili  + . Yani yeni build
+1.0.0 (4) olur ve bugune kadarki BUTUN OTA guncellemelerini aninda
+alir.
+
 **1. NATIVE DERLEME BEKLIYOR.** Su degisiklikler OTA ILE GITMEZ, yeni
 bir iOS derlemesi gerekiyor: Apple ile giris, Google ile giris
 (`@react-native-google-signin`), `LSApplicationQueriesSchemes` (yol
