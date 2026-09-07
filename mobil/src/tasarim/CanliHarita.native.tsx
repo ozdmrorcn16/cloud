@@ -62,8 +62,20 @@ const EN_FAZLA_GOSTERIM_METRE = 100
  */
 const EN_FAZLA_KAPSAMA_METRE = 1200
 
-/** Haritada ayni anda en cok bu kadar etiketli igne. */
-const EN_FAZLA_ETIKET = 5
+/**
+ * Haritada ayni anda en cok bu kadar etiketli igne.
+ *
+ * 5'TEN 9'A CIKARILDI (kullanicinin sorusu 2026-09-07: "Haritada
+ * sadece 4 tane yesil yer gorunuyor neden"). Cakismayi onleyen IKI
+ * kural vardi - sayi siniri ve igneler arasi en az aralik - ve ekran
+ * goruntusu asil isi ARALIK kuralinin yaptigini gosterdi: bes ignenin
+ * arasi bol bol acikti, yani sayi siniri gereksiz yere bagliyordu.
+ *
+ * Aralik kurali yerinde durdugu icin sayiyi buyutmek etiketleri yeniden
+ * ust uste bindirmiyor: birbirine yakin adaylar zaten eleniyor, sinir
+ * yalnizca "kac tanesi sigabilir" sorusunun tavani.
+ */
+const EN_FAZLA_ETIKET = 9
 
 const KAYDIRMA_SURESI_MS = 350
 

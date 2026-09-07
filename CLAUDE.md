@@ -567,6 +567,33 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### HARITA IGNE SINIRI 5 -> 9, KLAVYE KAPANMASI - 2026-09-07
+
+**IGNE SINIRI.** Kullanicinin sorusu: "Haritada sadece 4 tane yesil yer
+gorunuyor neden." Sebep benim koydugum `EN_FAZLA_ETIKET = 5`. Cakismayi
+onleyen IKI kural vardi - sayi siniri ve igneler arasi en az aralik - ve
+ekran goruntusu asil isi ARALIK kuralinin yaptigini gosterdi: bes ignenin
+arasi bol bol acikti, yani sayi siniri gereksiz yere bagliyordu. 9'a
+cikarildi; aralik kurali yerinde durdugu icin etiketler yeniden ust uste
+binmiyor.
+
+**KLAVYE.** Kullanicinin bildirdigi hata: "Bu ekranda boş biryere
+basınca klavye kapanmıyor" (yeni mekan ekle). Kok bir `View`di, yani
+dokunusu yakalayan hicbir sey yoktu; klavye ekranin yarisini kapatinca
+adres alani ve altindaki onay kutusu gorunmez oluyordu. Kok `Pressable`
+oldu, `onPress={Keyboard.dismiss}`.
+
+Ic ogeler etkilenmiyor: RN'de en ICTEKI basilabilir oge once yanit
+veriyor, kok yalnizca bosluga dokunuldugunda tetikleniyor.
+`accessible={false}` sart - onsuz butun ekran ekran okuyucuda tek bir
+"buton" olarak okunurdu.
+
+**AYNI SINIF SORUN DIGER FORM EKRANLARINDA DA VAR** ve duzeltilmedi:
+`profil-olustur`, `profil/duzenle`, `profil/kullanici-adi`,
+`profil/hesabi-sil`, `check-in/[mekanId]`. Kullanici yalnizca mekan
+ekleme ekranini bildirdi; ayni desen (kok `Pressable` +
+`Keyboard.dismiss` + `accessible={false}`) oralara da uygulanabilir.
+
 ### ADRES ONERISI GERI GELDI, AMA ONAYLI - 2026-09-06
 
 Kullanicinin istegi: "Bu yeni yer ekleme ekraninda adres kismina

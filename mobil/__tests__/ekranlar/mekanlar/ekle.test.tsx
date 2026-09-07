@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { Keyboard } from 'react-native'
 import MekanEkleEkrani from '../../../src/app/mekanlar/ekle'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle } from '../../../lib/mekan'
@@ -169,5 +170,22 @@ describe('MekanEkleEkrani - adres onerisi', () => {
     await waitFor(() => expect(screen.getByTestId('adres-girdisi')).toBeTruthy())
     expect(screen.queryByTestId('adres-onayi')).toBeNull()
     expect(screen.getByTestId('adres-girdisi').props.value).toBe('')
+  })
+})
+
+/**
+ * KLAVYE (kullanicinin bildirdigi hata 2026-09-07: "Bu ekranda boş
+ * biryere basınca klavye kapanmıyor"). Kok bir `View`di, yani dokunusu
+ * yakalayan hicbir sey yoktu.
+ */
+describe('MekanEkleEkrani - klavye', () => {
+  it('bos alana dokununca klavye kapaniyor', async () => {
+    const kapat = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {})
+
+    await render(<MekanEkleEkrani />)
+    fireEvent.press(screen.getByTestId('ekle-kok'))
+
+    expect(kapat).toHaveBeenCalled()
+    kapat.mockRestore()
   })
 })

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, FlatList, Keyboard, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { adresOnerisiAl } from '../../../lib/adres'
@@ -125,7 +125,22 @@ export default function MekanEkleEkrani() {
   }
 
   return (
-    <View style={stiller.kapsayici}>
+    /* BOS ALANA DOKUNUNCA KLAVYE KAPANIYOR (kullanicinin bildirdigi
+       hata 2026-09-07: "Bu ekranda boş biryere basınca klavye
+       kapanmıyor"). Kok bir `View`di, yani dokunusu yakalayan hicbir
+       sey yoktu; klavye ekranin yarisini kapatinca adres alani ve
+       altindaki onay kutusu gorunmez oluyordu.
+
+       Ic ogeler ETKILENMIYOR: RN'de en ICTEKI basilabilir oge once
+       yanit veriyor, kok yalnizca bosluga dokunuldugunda tetikleniyor.
+       `accessible={false}` sart - onsuz butun ekran ekran okuyucuda
+       tek bir "buton" olarak okunurdu. */
+    <Pressable
+      style={stiller.kapsayici}
+      onPress={Keyboard.dismiss}
+      accessible={false}
+      testID="ekle-kok"
+    >
       <UstCubuk baslik="Yeni mekan ekle" geriEtiketi="Geri" />
       <TextInput style={stiller.girdi} placeholder="Mekan adı" value={ad} onChangeText={setAd} />
       <Text style={stiller.turBaslik}>Türü seç</Text>
@@ -210,7 +225,7 @@ export default function MekanEkleEkrani() {
       <Pressable style={stiller.buton} onPress={ekle} disabled={gonderiliyor}>
         <Text style={stiller.butonYazi}>{gonderiliyor ? 'Ekleniyor...' : 'Ekle'}</Text>
       </Pressable>
-    </View>
+    </Pressable>
   )
 }
 
