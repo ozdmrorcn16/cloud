@@ -13,16 +13,42 @@
 
 export const acikRenk = {
   /**
-   * Ana vurgu. Eylem ve canlilik.
+   * DOLGU ve IKON turuncusu. Eylem ve canlilik.
    *
-   * Kullanicinin karari (2026-08-25): ton logodan OLCULEREK alindi ve
-   * uygulamanin her yerine tasindi. Marka isareti ile butonlar arasinda
-   * renk farki kalmiyor. Onceki degerler #FF6B1A ve #E66208'di; ikisi
-   * de logonun gercek tonu degildi.
+   * Ton logodan olculdu (kullanicinin karari 2026-08-25): hue 25,8 derece,
+   * doygunluk %99. Onceki deger #FE7813'tu; ACIKLIK %54'ten %48'e indi
+   * (2026-09-07 tasarim denetimi). Sebep olculdu: #FE7813 uzerinde beyaz
+   * yazi 2,65:1 veriyordu - govde esiginin (4,5) yarisi ve kalin yazi
+   * icin gecerli gevsek esigin (3,0) de altinda. #F66A01 ile 3,01:1.
+   *
+   * Ton ve doygunluk DEGISMEDI, yani marka isaretiyle yan yana fark
+   * gozle secilmiyor. Ikon ve grafik olarak da beyaz uzerinde 3,01:1,
+   * yani metin olmayan ogeler icin gereken 3:1 esigini geciyor.
+   *
+   * DIKKAT: bu jeton YAZI RENGI OLARAK KULLANILMAZ - onun icin
+   * `turuncuYazi` var. Beyaz zeminde turuncu yazi bu tonda 3,01:1'de
+   * kalir ve govde metni esigini gecmez.
    */
-  turuncu: '#FE7813',
-  /** Basili/aktif hal. */
-  turuncuKoyu: '#E06509',
+  turuncu: '#F66A01',
+  /**
+   * TURUNCU YAZI ve ikon-yaninda-etiket rengi.
+   *
+   * Acik modda dolgudan AYRI olmak zorunda: ayni ton hem dolgu (uzerinde
+   * beyaz yazi) hem yazi (beyaz zeminde) olamaz, cunku ikisi zit yonde
+   * duzeltme ister. Bu ton uygulamadaki BUTUN acik yuzeylerde 4,5:1'i
+   * geciyor - en zorlayicisi profil bandinin ustu (#FFE6D2): 4,51:1.
+   */
+  turuncuYazi: '#B04C01',
+  /**
+   * BASILI hal dolgusu. Uzerinde beyaz etiket durdugu icin iki modda da
+   * KOYU kalir (beyaz yaziyla 3,98:1).
+   *
+   * Eskiden bu is `turuncuKoyu` jetonundaydi ve o jeton ayni zamanda
+   * yazi rengi olarak da kullaniliyordu. Koyu modda yazi rolu icin
+   * acilinca (#FFA45C) dolgu rolu bozuldu: basili butonun beyaz etiketi
+   * 1,96:1'e dusup kayboluyordu. Jeton bu yuzden ikiye ayrildi.
+   */
+  turuncuBasili: '#D25C05',
   /** Turuncunun yumusak zemini (secili satir, rozet arkasi). */
   turuncuZemin: '#FFF3E8',
 
@@ -53,8 +79,20 @@ export const acikRenk = {
   karsilamaZemini: '#FAF7F3',
   /** Kart ve yuzer yuzeyler. */
   yuzey: '#FFFFFF',
-  /** Ayirici cizgi ve kenarlik. */
-  cizgi: '#EFEAE5',
+  /**
+   * Ayirici cizgi ve kenarlik.
+   *
+   * Onceki deger #EFEAE5'ti ve beyaz zeminde 1,20:1 veriyordu; sayfa da
+   * kart da tam beyaz oldugu icin kartlarin sinirlari ekranda neredeyse
+   * gorunmuyordu (2026-09-07 denetimi, ekran goruntusuyle olculdu).
+   * #DCD3C9 ile 1,48:1 - %23 daha gorunur.
+   *
+   * NOT: 3:1 grafik esigine cikarmak MUMKUN DEGIL. Olculdu: #CFC4B8 bile
+   * yalnizca 1,72:1 veriyor; 3:1 icin cizgiyi orta griye cekmek gerekir
+   * ve o da karti cerceveli bir kutuya cevirir. Koyu modda ayni sorun
+   * yok, cunku orada yuzey zeminden bir ton acik - ayrimi ton tasiyor.
+   */
+  cizgi: '#DCD3C9',
 
   /**
    * YIKICI EYLEM (sil, sikayet et, engelle).
@@ -87,11 +125,18 @@ export const acikRenk = {
   rozetZemin: '#17130F',
 
   /**
-   * Yuzer cubugun zemini: yari saydam, altindaki icerik hafifce
-   * suzuluyor. Alt gezinme cubugu haritanin uzerinde durdugu icin
-   * dolu bir renk oraya agir geliyordu.
+   * Yuzer cubugun zemini: OPAK.
+   *
+   * Eskiden yari saydamdi (rgba(255,255,255,0.86)) ve Instagram'in ust
+   * cubugunu taklit ediyordu. Kaldirildi (2026-09-07 denetimi): saydamlik
+   * BULANIKLIK OLMADAN malzeme gibi degil cizim hatasi gibi okunuyordu -
+   * cubugun ardindan kirpilmis bir mekan adi ve tam bir turuncu buton
+   * hayalet gibi goruenuyordu (iki ekran goruntusunde de olculdu).
+   *
+   * Gercek buzlu cam `expo-blur` istiyor ve o NATIVE bir paket: yeni bir
+   * derleme gerektirir, OTA ile gitmez. Opak cozum bugun gidiyor.
    */
-  yuzerZemin: 'rgba(255, 255, 255, 0.86)',
+  yuzerZemin: '#FFFFFF',
 
   /** Fotograf uzerindeki yazinin okunmasi icin karartma. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',
@@ -122,16 +167,32 @@ export type Renk = { [A in keyof typeof acikRenk]: string }
  */
 export const koyuRenk: Renk = {
   /**
-   * Vurgu KOYU MODDA DA AYNI: marka rengi degismiyor, cunku dolgu
-   * olarak kullanildigi yerlerde (buton, rozet, check-in dugmesi)
-   * koyu zeminde zaten parliyor.
+   * DOLGU turuncusu koyu modda da AYNI degeri tasiyor: uzerindeki beyaz
+   * etiketin kontrasti sayfanin temasina bagli degil, yalnizca dolgunun
+   * kendisine bagli. Yani beyaz-uzerine-turuncu sorunu iki modda ayni
+   * sorundu ve ayni degerle cozuluyor (3,01:1).
+   *
+   * Koyu zeminde gorunurluk de tamam: #F66A01 / #121110 = 6,27:1.
    */
-  turuncu: '#FE7813',
+  turuncu: '#F66A01',
   /**
-   * Basili hal koyu modda ACILIYOR, koyulasmiyor: koyu zeminde daha
-   * koyu bir turuncu "basildi" degil "pasif" gibi okunuyor.
+   * TURUNCU YAZI koyu modda MARKA TONUNDA kalabiliyor - hicbir odun
+   * gerekmiyor, cunku zemin koyu: #FE7813 / #121110 = 7,10:1,
+   * kart yuzeyinde 6,59:1, cipte 5,49:1.
+   *
+   * Yani turuncu yazinin koyulastirilmasi (acik moddaki #B04C01)
+   * YALNIZCA ACIK MODUN bedeli. Koyu modda vurgu tam canliligiyla
+   * duruyor.
    */
-  turuncuKoyu: '#FFA45C',
+  turuncuYazi: '#FE7813',
+  /**
+   * BASILI dolgu iki modda da AYNI ve KOYU. Onceki hal #FFA45C'ti ve
+   * "koyu zeminde daha koyu bir turuncu pasif gorunur" gerekcesiyle
+   * acilmisti - o gerekce YAZI icin dogruydu, dolgu icin degil: basili
+   * butonun beyaz etiketi 1,96:1'e dusuyordu ve alt gezinmedeki aktif
+   * merkez dugme, listedeki butonlardan daha ZAYIF gorunuyordu.
+   */
+  turuncuBasili: '#D25C05',
   /** Yumusak zemin: turuncunun sicak, cok koyu hali. */
   turuncuZemin: '#3A2412',
 
@@ -155,9 +216,10 @@ export const koyuRenk: Renk = {
   bandUst: '#3A2412',
   bandOrta: '#221A15',
 
-  rozetZemin: '#FE7813',
+  rozetZemin: '#F66A01',
 
-  yuzerZemin: 'rgba(28, 25, 23, 0.88)',
+  /** Yuzer cubuk koyu modda da OPAK - acik modla ayni gerekce. */
+  yuzerZemin: '#1C1917',
 
   /** Fotograf karartmasi ayni: fotograf iki modda da ayni fotograf. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',

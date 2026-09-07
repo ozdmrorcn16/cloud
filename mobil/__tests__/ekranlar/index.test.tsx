@@ -1,4 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
+import { acikRenk, olcek } from '../../src/tasarim/tema'
 import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
@@ -69,6 +71,14 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     benimMi: false,
     etiketler: [],
     ...ustune,
+  }
+}
+
+/** Ic ice stil dizilerini tek nesneye duzlestirir. */
+function duzYazi(dugum: { props: { style?: unknown } }) {
+  return StyleSheet.flatten(dugum.props.style) as {
+    color?: string
+    fontSize?: number
   }
 }
 
@@ -507,5 +517,66 @@ describe('AnaSayfa', () => {
     await fireEvent.press(await screen.findByText('guzel bir aksam'))
 
     expect(mockRouterPush).not.toHaveBeenCalled()
+  })
+
+  // ------------------------------------------------------------------ //
+  // KART HIYERARSISI (2026-09-07 tasarim denetimi)
+  //
+  // Onceden ad, mekan ve etiketler TEK satirdaydi; mekan adi turuncu ve
+  // yari kalin oldugu icin kisinin adini bastiriyordu, ustelik beyaz
+  // kart uzerinde 2,65:1 veriyordu. Ayrica zaman IKI KEZ yaziyordu.
+  // ------------------------------------------------------------------ //
+
+  it('mekan adi IKINCIL METIN: kisinin adini bastirmiyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+    await render(<AnaSayfa />)
+
+    const mekan = await screen.findByText('Sahil Kafe')
+    const ad = await screen.findByText('Ada')
+
+    // Mekan turuncu DEGIL; turuncu yalnizca yanindaki igne ikonunda.
+    expect(duzYazi(mekan).color).toBe(acikRenk.metinIkincil)
+    expect(duzYazi(mekan).color).not.toBe(acikRenk.turuncu)
+    expect(duzYazi(mekan).color).not.toBe(acikRenk.turuncuYazi)
+
+    // Kisinin adi ana metin tonunda ve daha buyuk puntoda: akista once
+    // "kim" sorusu okunur.
+    expect(duzYazi(ad).color).toBe(acikRenk.metin)
+    expect(duzYazi(ad).fontSize ?? olcek.govde).toBeGreaterThan(
+      duzYazi(mekan).fontSize as number
+    )
+  })
+
+  it('mekan adi TEK SATIR: uzun adlar kart yuksekligini degistirmiyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ mekanAdi: 'Uludag Universitesi Lojmanlari ORMAN Sosyal Tesisleri' }),
+    ])
+    await render(<AnaSayfa />)
+
+    const mekan = await screen.findByText(
+      'Uludag Universitesi Lojmanlari ORMAN Sosyal Tesisleri'
+    )
+    expect(mekan.props.numberOfLines).toBe(1)
+  })
+
+  it('TAM TARIH YOK: zaman tek bicimde yaziliyor', async () => {
+    // Onceden sagda "10 saat once", adin altinda da "06.09.2026 22:54"
+    // vardi - ayni bilgi, iki bicim, her kartta.
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+    await render(<AnaSayfa />)
+
+    await screen.findByText('Sahil Kafe')
+    // Gun.ay.yil bicimindeki hicbir metin kalmamali.
+    expect(screen.queryByText(/\d{2}\.\d{2}\.\d{4}/)).toBeNull()
+  })
+
+  it('mekan adina basmak HALA haritayi aciyor', async () => {
+    // Duzen degisti ama davranis degismedi: mekan adi konum ekranina
+    // giden tek kapi (kullanicinin karari 2026-08-30).
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+    await render(<AnaSayfa />)
+
+    await fireEvent.press(await screen.findByText('Sahil Kafe'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 })

@@ -654,7 +654,7 @@ export default function KesfetEkrani() {
           <TextInput
             style={stiller.arama}
             placeholder="Mekan ara"
-            placeholderTextColor={renk.metinSoluk}
+            placeholderTextColor={renk.metinIkincil}
             value={arama}
             onChangeText={aramaDegisti}
             autoCorrect={false}
@@ -866,7 +866,10 @@ export default function KesfetEkrani() {
                 </View>
 
                 <Pressable
-                  style={stiller.kartCheckIn}
+                  style={({ pressed }) => [
+                    stiller.kartCheckIn,
+                    pressed && stiller.kartCheckInBasili,
+                  ]}
                   onPress={() => router.push(`/check-in/${item.id}`)}
                   accessibilityRole="button"
                   accessibilityLabel={`${item.ad} için check-in yap`}
@@ -922,7 +925,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
   },
   canliEylemler: { flexDirection: 'row', gap: bosluk.s },
   ikincilButon: {
@@ -1031,7 +1034,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.metinSoluk,
   },
-  gorunumYaziSecili: { color: renk.turuncu },
+  gorunumYaziSecili: { color: renk.turuncuYazi },
 
   // --- arama satiri ---
   aramaSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
@@ -1088,12 +1091,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   seciliCipYazi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.minik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   seciliCipCarpi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   seciliCipTemizle: { backgroundColor: 'transparent' },
   seciliCipTemizleYazi: {
@@ -1129,7 +1132,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.metinIkincil,
   },
-  cipYaziSecili: { color: renk.turuncu, fontFamily: yazi.govdeKalin },
+  cipYaziSecili: { color: renk.turuncuYazi, fontFamily: yazi.govdeKalin },
 
   // --- bolum basligi ---
   bolumSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
@@ -1181,7 +1184,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kartKisiYazi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.minik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   // Uc nokta kalkinca sag blokta tek satir kaldi: rozet + buton.
   kartSag: { alignItems: 'flex-end', justifyContent: 'flex-end' },
@@ -1199,16 +1202,32 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: yuvarlak.hap,
   },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
+  /**
+   * LISTEDEKI CHECK-IN BUTONU HAYALET (2026-09-07 denetimi).
+   *
+   * Onceden dolu turuncuydu ve ekranda AYNI ANDA DORT TANE
+   * gorunuyordu; yaninda segment, arama ikonu, suzgec, secili cip,
+   * "Tumunu gor" ve alt gezinmenin merkez dugmesi de turuncuydu.
+   * Kimligin kendi kurali "bir ekranda genelde TEK birincil turuncu
+   * eylem olur" diyor; dort ozdes dolu buton o kurali tuketiyordu -
+   * turuncu artik "asil eylem bu" demiyordu.
+   *
+   * Dolu turuncu ekranda TEK kaldi: alt gezinmedeki merkez check-in
+   * dugmesi, cunku ekranin asil eylemi o. Buradaki butonlar hala
+   * turuncu (yani hala "eylem") ama kenarlikla.
+   */
   kartCheckIn: {
-    backgroundColor: renk.turuncu,
+    borderWidth: 1.5,
+    borderColor: renk.turuncuYazi,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 9,
+    paddingVertical: 8,
     paddingHorizontal: 13,
   },
+  kartCheckInBasili: { backgroundColor: renk.turuncuZemin },
   kartCheckInYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: '#FFFFFF',
+    color: renk.turuncuYazi,
   },
 
   sayfa: { flex: 1, backgroundColor: renk.zemin },
@@ -1257,7 +1276,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metin,
     letterSpacing: -0.6,
   },
-  markaNokta: { color: renk.turuncu },
+  markaNokta: { color: renk.turuncuYazi },
   baslik: {
     fontFamily: yazi.ekranBasligi,
     fontSize: 30,
@@ -1306,7 +1325,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingHorizontal: bosluk.sayfa,
     marginTop: bosluk.xs,
   },
-  ozetVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuKoyu },
+  ozetVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
   aramaDurumu: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1323,7 +1342,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   hataSeridi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
     backgroundColor: renk.turuncuZemin,
     marginTop: bosluk.m,
     paddingVertical: bosluk.s,
@@ -1413,7 +1432,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     letterSpacing: -0.2,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   satirAlt: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
   satirCheckInDugmesi: {
@@ -1441,7 +1460,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   ekleButonu: { alignItems: 'center', paddingVertical: bosluk.l, marginTop: bosluk.s },
-  ekleButonuYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuKoyu },
+  ekleButonuYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi },
   atif: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,

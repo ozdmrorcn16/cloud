@@ -122,7 +122,7 @@ export default function GirisEkrani() {
         <TextInput
           style={[stiller.girdi, odaklanan === 'eposta' && stiller.girdiOdakli]}
           placeholder={t('giris.epostaYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           keyboardType="email-address"
           autoCorrect={false}
           autoComplete="email"
@@ -136,7 +136,7 @@ export default function GirisEkrani() {
         <TextInput
           style={[stiller.girdi, odaklanan === 'sifre' && stiller.girdiOdakli]}
           placeholder={t('giris.sifreYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           secureTextEntry
           autoComplete="current-password"
           value={sifre}
@@ -147,9 +147,15 @@ export default function GirisEkrani() {
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-        {/* Alanlar bosken buton soluk: basmadan once ne bekledigi
+        {/* Alanlar bosken buton NOTR: basmadan once ne bekledigi
             belli oluyor. Yine de basilabilir ve eksigi soyluyor -
-            devre disi bir buton neyin eksik oldugunu anlatmiyor. */}
+            devre disi bir buton neyin eksik oldugunu anlatmiyor.
+
+            Eskiden bu hal `opacity: 0.45` ile yapiliyordu ve butun
+            butonu (dolguyu VE etiketi) birlikte soldurdugu icin
+            etiket 1,57:1'e dusup OKUNMAZ oluyordu - yani kullanici
+            neye bastigini goremiyordu. Artik yalnizca dolgu notre
+            cekiliyor, etiket kendi kontrastini koruyor (5,15:1). */}
         <Pressable
           style={({ pressed }) => [
             stiller.birincil,
@@ -160,7 +166,7 @@ export default function GirisEkrani() {
           disabled={gonderiliyor}
           accessibilityRole="button"
         >
-          <Text style={stiller.birincilYazi}>
+          <Text style={[stiller.birincilYazi, !hazir && stiller.birincilYaziSoluk]}>
             {gonderiliyor ? t('giris.gonderiliyor') : t('giris.gonder')}
           </Text>
         </Pressable>
@@ -225,8 +231,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     marginTop: bosluk.xs,
   },
-  birincilSoluk: { opacity: 0.45 },
-  birincilBasili: { backgroundColor: renk.turuncuKoyu },
+  birincilSoluk: { backgroundColor: renk.cizgi },
+  birincilYaziSoluk: { color: renk.metinIkincil },
+  birincilBasili: { backgroundColor: renk.turuncuBasili },
   birincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
@@ -247,7 +254,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ikincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   marka: {
@@ -257,5 +264,5 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     textAlign: 'center',
     marginTop: bosluk.l,
   },
-  markaNokta: { color: renk.turuncu },
+  markaNokta: { color: renk.turuncuYazi },
 })

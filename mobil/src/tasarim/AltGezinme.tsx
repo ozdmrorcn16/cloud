@@ -156,7 +156,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
             d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
             fill="#FFFFFF"
           />
-          <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuKoyu : renk.turuncu} />
+          <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuBasili : renk.turuncu} />
         </Svg>
       </View>
       <Text style={stiller.merkezEtiket} numberOfLines={1}>
@@ -322,11 +322,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // yapiyor.
     ...golge.yuzer,
   },
-  merkezDaireAktif: { backgroundColor: renk.turuncuKoyu },
+  merkezDaireAktif: { backgroundColor: renk.turuncuBasili },
   merkezEtiket: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
     // Daire diger ikonlardan 30 px buyuk ve 18 px yukarida; etiket
     // aksi halde komsu etiketlerden asagida kaliyor. -12 fazlaydi,
     // yazi dairenin altina biniyordu; -4 hem cakismiyor hem komsu
@@ -338,7 +338,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.minik,
     color: renk.metinIkincil,
   },
-  etiketAktif: { fontFamily: yazi.govdeKalin, color: renk.turuncu },
+  etiketAktif: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 
   rozet: {
     position: 'absolute',

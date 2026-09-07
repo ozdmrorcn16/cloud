@@ -446,7 +446,131 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
-### KARSILAMA EKRANI: OZELLIK LISTESI YERINE SICAK NOKTA - 2026-09-04
+### TASARIM DENETIMI UYGULANDI - 2026-09-07
+
+Kullanicinin istegi: "buldugun butun hatalari duzelt ve onerilerini
+uygula uygulamayi olmasi gereken en iyi hale getir." Oncesinde bir
+denetim yapilmisti (Artifact:
+`https://claude.ai/code/artifact/005fb7ce-593d-482a-834d-f53a8fa1bd92`);
+10 bulgunun hepsi kapatildi.
+
+**BULGULARIN HEPSI OLCUMDEN GELDI, gozden degil.** Kontrast oranlari
+`tema.ts` jetonlarindan WCAG bagil parlaklik formuluyle hesaplandi;
+yerlesim kusurlari yayindaki surumun 390 px ekran goruntusunden. Hicbiri
+gozle fark edilmemisti.
+
+#### TURUNCU ARTIK UC JETON - en onemli degisiklik
+
+Kok neden: TEK bir turuncu hem dolgu (uzerinde beyaz yazi) hem yazi
+(acik zeminde) olarak kullaniliyordu. Bu iki rol ZIT YONDE duzeltme
+ister, yani tek jetonla birini duzeltmek digerini bozar - nitekim
+bozmustu (asagida).
+
+| Jeton | Acik | Koyu | Rolu |
+|---|---|---|---|
+| `turuncu` | `#F66A01` | `#F66A01` | DOLGU ve IKON |
+| `turuncuYazi` | `#B04C01` | `#FE7813` | METIN |
+| `turuncuBasili` | `#D25C05` | `#D25C05` | BASILI dolgu |
+
+`turuncuKoyu` DUSURULDU. 17 kullanim yeri roluene gore ikiye ayrildi
+(4 dolgu, 13 yazi), ayrica `color: renk.turuncu` yazan 37 satir
+`turuncuYazi`ya gecti.
+
+Olculen sonuclar:
+
+    turuncu dolgu / beyaz yazi ......... 2,65 -> 3,01
+    beyaz zemin / turuncu yazi ......... 2,65 -> 5,41
+    profil bandi / turuncu yazi ........ 2,21 -> 4,51
+    KOYU MODDA basili buton etiketi .... 1,96 -> 3,98
+
+**Marka tonu #FE7813 KAYBOLMADI:** koyu modda `turuncuYazi` olarak
+aynen duruyor (orada zemin koyu, odun gerekmiyor) ve marka isareti
+varliklari hic degismedi. Acik moddaki koyulastirma YALNIZCA acik
+modun bedeli. Dolgudaki degisiklik ise ton ve doygunlugu koruyor,
+yalnizca aciklik %54 -> %48; marka isaretiyle yan yana fark gozle
+secilmiyor.
+
+**IKONLAR CANLI KALDI.** `turuncu` ikon olarak beyaz uzerinde 3,01:1
+veriyor ve metin olmayan ogeler icin gereken esik 3:1 - yani ikonlarin
+koyulastirilmasina gerek yoktu, yapilsaydi vurgu gereksiz yere
+sonerdi.
+
+#### Diger dokuz bulgu
+
+1. **Akis kartinda hiyerarsi ters donmustu.** Mekan adi turuncu ve yari
+   kalindi, kisinin adini bastiriyordu, uzun adlarda iki satira tasip
+   her kartin yuksekligini degistiriyordu. Ayrica zaman IKI KEZ
+   yaziyordu (sagda "10 saat once", altta "06.09.2026 22:54"). Simdi:
+   satir 1 ad (`metin`, kalin), satir 2 igne ikonu + mekan
+   (`metinIkincil`, tek satir, `…` ile kirpilir), tam tarih KALDIRILDI.
+   Turuncu yalnizca igne ikonunda.
+2. **Kesfet ekraninda turuncu enflasyonu.** Ekranda ayni anda DORT dolu
+   turuncu Check-in butonu + alti baska turuncu oge vardi. Listedeki
+   butonlar HAYALET oldu (kenarlik + `turuncuYazi`); dolu turuncu
+   ekranda tek kaldi - alt gezinmenin merkez dugmesi.
+3. **Eksik formun butonu okunmuyordu.** `opacity: 0.45` butun butonu
+   soldurdugu icin etiket 1,57:1'e duesuyordu; yeni kullanicinin
+   gordugu ilk uc ekranda kullanici neye bastigini goremiyordu. Artik
+   yalnizca DOLGU notre cekiliyor (`cizgi` + `metinIkincil`), buton
+   basilabilir kaliyor.
+4. **Yer tutucular** (14 alan) `metinSoluk` -> `metinIkincil`:
+   2,74 -> 5,63 (acik), 4,06 -> 7,96 (koyu).
+5. **ODbL harita atfi 2,23:1'di** - `opacity: 0.55` yuzunden. Hukuken
+   zorunlu bir metin ekranin en zor okunan yeriydi. Opaklik kaldirildi,
+   5,27:1.
+6. **Kart siniri** `#EFEAE5` (1,20:1) -> `#DCD3C9` (1,48:1). NOT: 3:1
+   grafik esigine cikmak MUMKUN DEGIL, olculdu - `#CFC4B8` bile 1,72:1
+   veriyor ve daha koyusu karti cerceveli bir kutuya cevirir.
+7. **Alt gezinme cubugu OPAK.** Yari saydamdi ama BULANIKLASTIRILMIYOR
+   (gercek buzlu cam `expo-blur` ister, o da yeni bir native derleme);
+   ardindan gecen icerik malzeme gibi degil cizim hatasi gibi
+   okunuyordu. Ileride `expo-blur` eklenirse geri alinabilir.
+8. **Harita dugmelerine `hitSlop={5}`.** 34x34'tuler ve dokunma esigi
+   44. GORUNTU DEGISMEDI - olculer referans gorselden turetildigi icin
+   onlara dokunulmadi, dokunma alani buyutuldu.
+9. **`CLAUDE.md` karsilama bolumu yanlisti** (bkz. o bolumdeki
+   duzeltme kutusu).
+
+#### YENI TEST PAKETI: `__tests__/tasarim/kontrast.test.ts`
+
+55 iddia, iki paleti de geziyor. Her metin jetonunu her yuzeyle
+(zemin, yuzey, karsilama, cip, bandin iki tonu) esleyip esigi olcuyor;
+dolgularin uzerindeki beyaz etiketi, basili halin ayirt edilebilirligini
+ve ikon esigini de kontrol ediyor.
+
+**Bunu yazmanin sebebi:** butun bu kusurlar aylarca fark edilmedi cunku
+hicbir sey onlari olcmuyordu. Bir jetonun degeri ileride degistirilirse
+bu paket kirilir. Yardimcinin kendisi de test ediliyor (siyah/beyaz 21,
+ayni renk 1, ve denetimde olculen 2,65 degeri) - yoksa yanlis bir
+hesap butun iddialari anlamsiz kilardi.
+
+**Dogrulama:** jest 62 paket / 684 test (once 61/622), tsc yalnizca
+yedi taban hatasi (`@types/node`, yalnizca test/arac dosyalarinda),
+akis ve kesfet ekranlari iki modda ekran goruntusuyle karsilastirildi
+(`tasarim/son-akis.png`, `son-kesfet.png`, `son-kesfet-dark.png`;
+oncesi `inc-*.png`).
+
+**Bir bulgu KISMEN uygulandi:** kart siniri icin uc yol onerilmisti ve
+onerim "liste satirlarini kart olmaktan cikarmak"ti. Uygulanan (b)
+sikki, yani yalnizca cizginin koyulastirilmasi. Sebep:
+`referans-gorseli-birebir-uygula` kurali - kesfet ekranindaki kartlar
+2026-09-06'da kullanicinin onayladigi bir REFERANS GORSELDEN geliyor
+ve kart kapsayicisini silmek o referanstan yapisal bir sapma olurdu.
+Bir butonun rengini degistirmek (hayalet buton) daha kucuk bir sapma
+oldugu icin o uygulandi. Kart yapisini kaldirmak isteniyorsa karar
+kullanicinin.
+
+### KARSILAMA EKRANI: SICAK NOKTA **VE** OZELLIK LISTESI - 2026-09-04
+
+> **DUZELTME (2026-09-07):** bu bolum uzun sure "dort baslik SILINDI"
+> diyordu ve YANLISTI. Basliklar ayni gun kullanicinin istegiyle GERI
+> GELDI; gerekce `karsilama.tsx` icindeki yorumda yazili: "Sahne uc
+> vaadi hissettiriyor, bu dort satir onlari ADIYLA soyluyor - ikisi
+> birbirinin yerine degil, birlikte calisiyor." Kaldirilan sey tek
+> satirlik `soru`/`cevap` metniydi, `OzellikIkonu` bloklari DEGIL.
+> Belge o son adimi kaydetmemisti; ekranin gercek halini gormek icin
+> koda bak. Asagisi yazildigi gunun ilk halidir.
+
 
 Kullanicinin istegi: karsilama ekrani check-in, tanisma ve populer
 yerler algisini VERSIN. Uc tur gorsel sunuldu (once dort icerik yonu,

@@ -516,6 +516,7 @@ export default function MekanSayfasi() {
                   onPress={() => haritayiAc('goster')}
                   accessibilityRole="button"
                   accessibilityLabel={t('mekanSayfasi.haritadaGoster')}
+                  hitSlop={5}
                   testID="harita-goster"
                 >
                   <NisangahIkonu boyut={17} />
@@ -525,6 +526,7 @@ export default function MekanSayfasi() {
                   onPress={haritayaDokunuldu}
                   accessibilityRole="button"
                   accessibilityLabel={t('mekanSayfasi.yolTarifi')}
+                  hitSlop={5}
                   testID="harita-yol-tarifi"
                 >
                   <NavigasyonIkonu boyut={16} />
@@ -970,7 +972,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   tarifYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   // OLCULER SIKI, cunku 390 px'lik bir ekranda uc sutuna bolununce
@@ -1071,7 +1073,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   avatarHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   // Fotograf cemberin ICINE oturuyor: kenarlik disarida kaliyor, yani
   // turuncu halka gorselin uzerine binmiyor.
@@ -1093,7 +1095,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   avatarKalanYazi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   avatarAd: {
     fontFamily: yazi.govde,
@@ -1153,7 +1155,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kucukAvatarHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.kucuk,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   kucukAvatarGorsel: { width: '100%', height: '100%', borderRadius: 15 },
   listeOrta: { flex: 1, minWidth: 0 },
@@ -1170,7 +1172,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   listeSayi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   listeZaman: {
     fontFamily: yazi.govdeOrta,
@@ -1235,7 +1237,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   cubukBuradayimYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   modalKok: { flex: 1, justifyContent: 'flex-end' },
@@ -1272,7 +1274,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   secenekYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   vazgec: { paddingVertical: 12, alignItems: 'center' },
   vazgecYazi: {

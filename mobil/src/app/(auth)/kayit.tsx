@@ -163,7 +163,7 @@ export default function KayitEkrani() {
         value={eposta}
         onChangeText={setEposta}
         placeholder={t('kayit.epostaYerTutucu')}
-        placeholderTextColor={renk.metinSoluk}
+        placeholderTextColor={renk.metinIkincil}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}

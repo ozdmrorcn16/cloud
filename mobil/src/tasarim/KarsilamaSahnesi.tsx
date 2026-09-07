@@ -298,7 +298,7 @@ function NoktaGorunumu({ nokta, hareket }: { nokta: Nokta; hareket: boolean }) {
             harf={nokta.fazla}
             arka={renk.turuncuZemin}
             cap={nokta.avatar}
-            yaziRengi={renk.turuncuKoyu}
+            yaziRengi={renk.turuncuYazi}
           />
         )}
       </View>

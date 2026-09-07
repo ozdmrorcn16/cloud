@@ -93,7 +93,7 @@ export default function ProfilDuzenleEkrani() {
         <TextInput
           style={[stiller.girdi, odakli === 'ad' && stiller.girdiOdakli]}
           placeholder={t('profilDuzenle.adYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           value={ad}
           onChangeText={(y) => {
             setAd(y)
@@ -134,7 +134,7 @@ export default function ProfilDuzenleEkrani() {
         <TextInput
           style={[stiller.girdi, stiller.cokSatirli, odakli === 'bio' && stiller.girdiOdakli]}
           placeholder={t('profilDuzenle.biyografiYerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           value={biyografi}
           onChangeText={(y) => {
             setBiyografi(y)
@@ -207,7 +207,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bilgi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
     marginTop: bosluk.m,
   },
 

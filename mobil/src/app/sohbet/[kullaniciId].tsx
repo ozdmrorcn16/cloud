@@ -319,7 +319,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kabulButonu: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   reddetButonu: {
     fontFamily: yazi.govdeOrta,

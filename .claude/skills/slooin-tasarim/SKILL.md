@@ -21,6 +21,13 @@ Bunlar kullanicinin verdigi kararlardir; tasarim tercihi degil kisittir.
    tiklanabilir ya da "su an oluyor" demektir. Dekorasyon icin turuncu
    kullanmak kimligi tuketir. Bir ekranda genelde TEK birincil turuncu
    eylem olur.
+
+   **UC AYRI JETON var, karistirilmaz** (2026-09-07 denetimi):
+   `turuncu` DOLGU ve IKON icin, `turuncuYazi` METIN icin,
+   `turuncuBasili` basili dolgu icin. Sebep olculebilir: ayni ton
+   hem dolgu (uzerinde beyaz yazi) hem yazi (acik zeminde) olamaz -
+   ikisi zit yonde duzeltme ister. `color: renk.turuncu` YAZMA;
+   `__tests__/tasarim/kontrast.test.ts` bunu kilitliyor.
 2. **EKRAN METINLERI KODA GOMULMEZ.** Uygulama cok dilli (2026-08-24).
    Kullaniciya gorunen her metin `mobil/lib/ceviriler/tr.ts` icine
    yazilir, `en.ts` icine cevrilir ve ekranda `const { t } = useDil()`
@@ -91,8 +98,9 @@ renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
 **Renk**
 | Jeton | Deger | Kullanim |
 |---|---|---|
-| `renk.turuncu` | `#FE7813` | Birincil eylem, canlilik. Logodan OLCULEN ton |
-| `renk.turuncuKoyu` | `#E06509` | Basili hal |
+| `renk.turuncu` | `#F66A01` | DOLGU ve IKON. Beyaz yaziyla 3,01:1 |
+| `renk.turuncuYazi` | `#B04C01` acik / `#FE7813` koyu | TURUNCU YAZI. Acik yuzeylerde 4,5:1 |
+| `renk.turuncuBasili` | `#D25C05` | Basili dolgu. Iki modda da koyu |
 | `renk.turuncuZemin` | `#FFF3E8` | Secili satir, rozet arkasi |
 | `renk.metin` | `#17130F` | Ana metin (saf siyah degil) |
 | `renk.metinIkincil` | `#6E6660` | Aciklama, zaman damgasi |
@@ -137,9 +145,20 @@ dugmeli basligi `src/tasarim/UstCubuk.tsx` icinde. Alt gezinme cubugu
 
 ## Bilesen desenleri
 
-**Birincil eylem**: turuncu zemin, `yuvarlak.hap`, `paddingVertical`
-16-17, beyaz `govdeKalin` yazi, `golge.yuzer`. Basili halde
-`turuncuKoyu`. Ekranda tek tane.
+**Birincil eylem**: `renk.turuncu` zemin, `yuvarlak.hap`,
+`paddingVertical` 16-17, beyaz `govdeKalin` yazi, `golge.yuzer`.
+Basili halde `renk.turuncuBasili`. Ekranda tek tane.
+
+**Hayalet eylem**: dolgu yok, `renk.turuncuYazi` kenarlik (1.5) ve
+yazi; basili halde `renk.turuncuZemin` dolgu. Bir LISTEDE tekrar
+eden eylem (kesfet listesindeki "Check-in") bu deseni kullanir -
+dolu turuncu ekranda tek kalmali.
+
+**Eksik/pasif buton**: `opacity` ILE SOLDURULMAZ. Butun butonu
+soldurmak etiketi de soluyor ve okunmaz hale getiriyor (olculdu:
+1,57:1). Dogrusu dolguyu `renk.cizgi`ye, etiketi
+`renk.metinIkincil`e cekmek. Buton basilabilir kalir ve eksigi
+soyler.
 
 **Ikincil eylem**: zeminsiz, yalnizca metin. Vurgulu kelime
 `govdeKalin` + `renk.metin`.

@@ -349,7 +349,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ayirac: { color: renk.metinSoluk },
   // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
   // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
-  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncu },
+  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
   etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
 
   silDugmesi: { padding: 4, marginRight: 2 },
@@ -444,7 +444,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   zaman: {
@@ -465,7 +465,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
   },
 
   fotograf: {

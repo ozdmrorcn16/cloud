@@ -1,4 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
+import { acikRenk } from '../../src/tasarim/tema'
 import GirisEkrani from '../../src/app/(auth)/giris'
 import { supabase } from '../../lib/supabase'
 
@@ -78,5 +80,42 @@ describe('GirisEkrani', () => {
 
     expect(mockRouterBack).not.toHaveBeenCalled()
     expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
+  })
+
+  // ------------------------------------------------------------------ //
+  // EKSIK FORMUN BUTONU (2026-09-07 tasarim denetimi)
+  //
+  // Onceden bu hal `opacity: 0.45` ile yapiliyordu; dolguyu VE etiketi
+  // birlikte soldurdugu icin etiket 1,57:1'e dusuyor ve kullanici neye
+  // bastigini goremiyordu. Buton basilabilir kalmali (devre disi bir
+  // buton neyin eksik oldugunu anlatmaz) ama etiketi OKUNMALI.
+  // ------------------------------------------------------------------ //
+
+  it('alanlar bosken buton OKUNABILIR kaliyor: opacity ile soldurulmuyor', async () => {
+    await render(<GirisEkrani />)
+
+    const etiket = screen.getByText('Giriş yap')
+    const yaziStili = StyleSheet.flatten(etiket.props.style) as { color?: string }
+
+    // Etiket beyaz DEGIL: notr dolgunun uzerinde beyaz okunmaz.
+    expect(yaziStili.color).toBe(acikRenk.metinIkincil)
+
+    // Butonun kendisi de opacity ile soldurulmuyor.
+    const buton = etiket.parent
+    const butonStili = StyleSheet.flatten(buton?.props.style) as {
+      opacity?: number
+      backgroundColor?: string
+    }
+    expect(butonStili.opacity).toBeUndefined()
+    expect(butonStili.backgroundColor).toBe(acikRenk.cizgi)
+  })
+
+  it('eksik formda buton HALA BASILABILIR: eksigi soylemesi gerekiyor', async () => {
+    await render(<GirisEkrani />)
+
+    // Devre disi olsaydi bu basis hicbir sey yapmazdi; buton basiliyor
+    // ve ekran eksigi soyluyor.
+    await fireEvent.press(screen.getByText('Giriş yap'))
+    expect(await screen.findByText('E-posta adresini ve şifreni gir.')).toBeTruthy()
   })
 })

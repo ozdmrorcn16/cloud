@@ -351,7 +351,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bilgi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
     marginTop: bosluk.m,
   },
 

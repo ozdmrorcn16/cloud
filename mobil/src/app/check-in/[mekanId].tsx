@@ -276,7 +276,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.metin,
   },
-  etiketYaziSecili: { fontFamily: yazi.govdeKalin, color: renk.turuncuKoyu },
+  etiketYaziSecili: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 
   kapsayici: {
     flex: 1,
@@ -358,7 +358,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   uyari: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
     marginBottom: bosluk.m,
   },
 })

@@ -333,17 +333,31 @@ describe('ProfilEkrani', () => {
     // SAYILAR ARTIK KARTLARDA ve TURUNCU (kullanicinin istegi
     // 2026-09-05, gorsel referansla). Beyaz olmadiklari surece
     // bandin altinda kaybolmuyorlar; asil kural buydu.
-    expect(duzYazi(screen.getAllByText('0')[0]).color).toBe('#FE7813')
+    //
+    // Ton 2026-09-07 denetiminde #FE7813'ten `turuncuYazi`ya gecti:
+    // marka turuncusu bandin ustunde (#FFE6D2) 2,21:1 veriyordu,
+    // yani bandin icindeki en zor okunan yerdi. Yeni ton 4,51:1.
+    expect(duzYazi(screen.getAllByText('0')[0]).color).toBe(acikRenk.turuncuYazi)
   })
 
-  it('bandin DISINDA hicbir sey degismedi: mekan adi hala marka turuncusu', async () => {
+  it('bandin DISI band renklerinden etkilenmiyor: mekan adi standart ikincil metin', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
     await render(<ProfilEkrani />)
 
-    // Kullanicinin kurali: "sadece profil resminin arkasindaki renk
-    // icin, geri kalan her sey ayni kalsin".
+    // Kullanicinin kurali (2026-09-03): "sadece profil resminin
+    // arkasindaki renk icin, geri kalan her sey ayni kalsin". Bu test
+    // o kurali koruyor: bandin renkleri (bandUst / bandOrta) kartlara
+    // SIZMIYOR.
+    //
+    // Beklenen deger degisti (2026-09-07 denetimi): mekan adi artik
+    // turuncu degil ikincil metin. Sebep hiyerarsi - turuncu ve yari
+    // kalin mekan adi kisinin adini bastiriyordu; ustelik beyaz kart
+    // uzerinde 2,65:1 veriyordu. Turuncu artik yalnizca yanindaki
+    // igne ikonunda. Yani test hala "band disi degismedi" diyor,
+    // yalnizca disinin ne oldugu guncellendi.
     const mekan = await screen.findByText('Sahil Kafe')
-    expect(duzYazi(mekan).color).toBe('#FE7813')
+    expect(duzYazi(mekan).color).toBe(acikRenk.metinIkincil)
+    expect(duzYazi(mekan).color).not.toBe(acikRenk.bandUst)
   })
 
   // ---------------------------------------------------------------- //
@@ -412,6 +426,8 @@ describe('ProfilEkrani', () => {
     // Palet karsilastirmasi: ekran testinde sema degistirilemedigi icin
     // iddia jetonun kendisine.
     expect(acikRenk.rozetZemin).toBe('#17130F')
-    expect(koyuRenk.rozetZemin).toBe('#FE7813')
+    // Rozet bir DOLGU, yani dolgu turuncusunu takip ediyor. Deger
+    // 2026-09-07'de #FE7813'ten #F66A01'e indi (bkz. tema.ts).
+    expect(koyuRenk.rozetZemin).toBe(koyuRenk.turuncu)
   })
 })

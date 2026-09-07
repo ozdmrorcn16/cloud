@@ -4,7 +4,7 @@ import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
-import { suAnBuradaMi, tamZaman } from '../../lib/zaman'
+import { suAnBuradaMi } from '../../lib/zaman'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
@@ -14,6 +14,7 @@ import { NOT_EN_FAZLA } from '../../lib/checkin'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
+import { IgneIkonu } from './mekan-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 
 /**
@@ -26,18 +27,23 @@ import type { EtkilesimOzeti } from '../../lib/etkilesim'
  * profil akisinda da bu gorunus olacak; mekan ismi turuncu ve
  * tiklanabilir." Zaman tuneli deseni (AniTuneli) bu kararla KALDIRILDI.
  *
- * Duzen: [profil resmi] KULLANICI ADI - MEKAN ADI (turuncu) - etiketlenenler
- *        (kullanicinin karari 2026-08-30: kartta "byorcun" gibi kullanici
- *        adi yazar, ad-soyad DEGIL; bildirimlerde ise ad-soyad)
- *        tam zaman
- *        not
- *        fotograf
+ * Duzen (2026-09-07 denetiminden sonra):
+ *   [profil resmi] KULLANICI ADI - etiketlenenler
+ *                  (igne) mekan adi          <- ikincil, tek satir
+ *                  not
+ *                  fotograf
  *        sagda gorece zaman ("7 saat önce") ya da "şu an burada"
  *
- * Ad, mekan ve etiketler TEK metin akisinda: ayri View'lara bolununce
- * uzun mekan adlari satiri tasiriyordu. Ic ice `Text` ile parcalar
- * satir sonunda birlikte kiriliyor ve her parcanin kendi dokunma
- * hedefi kaliyor.
+ * Kartta "byorcun" gibi KULLANICI ADI yazar, ad-soyad DEGIL
+ * (kullanicinin karari 2026-08-30); bildirimlerde ise ad-soyad.
+ *
+ * Ad ve etiketler TEK metin akisinda: ayri View'lara bolununce satir
+ * tasiyordu. Ic ice `Text` ile parcalar satir sonunda birlikte
+ * kiriliyor ve her parcanin kendi dokunma hedefi kaliyor. Mekan adi
+ * ise ARTIK AYRI SATIRDA - o yuzden kendi Pressable'inda.
+ *
+ * TAM ZAMAN KALDIRILDI: sagdaki gorece zamanla ayni bilgiyi iki ayri
+ * bicimde tekrarliyordu. Tam tarih mekan sayfasinda duruyor.
  */
 
 export function CheckInKarti({
@@ -211,30 +217,18 @@ export function CheckInKarti({
           )}
         </Pressable>
 
+        {/* IKI SATIR: once KIM, sonra NEREDE (2026-09-07 denetimi).
+            Onceden ucu de tek satirdaydi ve mekan adi turuncu + yari
+            kalin oldugu icin kisinin adini bastiriyordu; uzun adlarda
+            iki satira tasip satir yuksekligini kart kart degistiriyordu.
+            Akista once "kim" sorusu okunur, duzen de artik onu soyluyor. */}
         <View style={stiller.orta}>
-          <Text style={stiller.satir}>
+          <Text style={stiller.satir} numberOfLines={1}>
             <Text
               style={stiller.kullaniciAdi}
               onPress={() => router.push(kisiYolu as never)}
             >
               {gosterilenAd}
-            </Text>
-            <Text style={stiller.ayirac}> - </Text>
-            <Text
-              style={stiller.mekanAdi}
-              // Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
-              // 2026-08-30). Onceden yeni check-in formunu aciyordu;
-              // konum etiketine basan kisi orayi gormek istiyor, oraya
-              // check-in yapmak degil.
-              //
-              // 2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
-              // Pressable'i kaldirildigi icin erisilebilirlik etiketi de
-              // buraya tasindi.
-              accessibilityRole="link"
-              accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
-              onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
-            >
-              {oge.mekanAdi}
             </Text>
             {oge.etiketler.length > 0 && (
               <>
@@ -253,9 +247,33 @@ export function CheckInKarti({
               </>
             )}
           </Text>
-          {/* Tam zaman: gorece etiket "ne kadar once" der, bu da "tam
-              olarak ne zaman". */}
-          <Text style={stiller.tamZaman}>{tamZaman(oge.olusturmaZamani)}</Text>
+
+          {/* Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
+              2026-08-30). Onceden yeni check-in formunu aciyordu;
+              konum etiketine basan kisi orayi gormek istiyor, oraya
+              check-in yapmak degil.
+
+              2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
+              Pressable'i kaldirildigi icin erisilebilirlik etiketi de
+              burada duruyor.
+
+              Turuncu artik YAZIDA degil yalnizca IGNE IKONUNDA: ikon
+              beyaz uzerinde 3,01:1 ile grafik esigini geciyor, ayni
+              turuncu YAZI olsa 2,65:1'de kaliyordu. Vurgu "burada bir
+              yer var" demeye devam ediyor ama okunacak metni ele
+              gecirmiyor. */}
+          <Pressable
+            style={stiller.mekanSatiri}
+            accessibilityRole="link"
+            accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
+            onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
+            hitSlop={6}
+          >
+            <IgneIkonu boyut={12} renk={renk.turuncu} />
+            <Text style={stiller.mekanAdi} numberOfLines={1}>
+              {oge.mekanAdi}
+            </Text>
+          </Pressable>
         </View>
 
         {menuVar && (
@@ -296,7 +314,7 @@ export function CheckInKarti({
             onChangeText={(d) => setTaslakNot(d.slice(0, NOT_EN_FAZLA))}
             maxLength={NOT_EN_FAZLA}
             placeholder={t('anaSayfa.notYerTutucu')}
-            placeholderTextColor={renk.metinSoluk}
+            placeholderTextColor={renk.metinIkincil}
             multiline
             editable={!kaydediliyor}
           />
@@ -603,8 +621,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: yuvarlak.hap,
     backgroundColor: renk.turuncuZemin,
   },
-  cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.turuncu },
-  cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
+  cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.turuncuYazi },
+  cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
   // Eklenebilir arkadaslar: dolu degil hayalet - henuz secilmediler.
   cipEkle: { backgroundColor: 'transparent', borderWidth: 1, borderColor: renk.cizgi },
   cipEkleYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
@@ -664,16 +682,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.govde,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   orta: { flex: 1 },
-  tamZaman: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    color: renk.metinSoluk,
-    marginTop: 2,
-  },
   satir: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
@@ -684,7 +696,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ayirac: { color: renk.metinSoluk },
   // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
   // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
-  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncu },
+  mekanSatiri: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
+  mekanAdi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    // Tek satir: uzun mekan adlari eskiden ikinci satira tasip her
+    // kartin yuksekligini degistiriyordu ve liste tekliyordu.
+    flexShrink: 1,
+  },
   etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
 
   silDugmesi: { padding: 4, marginRight: 2 },
@@ -707,7 +727,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
   },
 
   not: {

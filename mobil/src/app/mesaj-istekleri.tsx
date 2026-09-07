@@ -148,7 +148,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ad: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   mesaj: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
   eylemler: { flexDirection: 'row', gap: bosluk.xl, marginTop: bosluk.xs },
-  kabul: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
+  kabul: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
   reddet: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metinIkincil },
   hata: {
     fontFamily: yazi.govdeOrta,

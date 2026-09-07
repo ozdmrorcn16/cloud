@@ -263,7 +263,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
     color: renk.metinIkincil,
-    opacity: 0.55,
+    // OPACITY YOK (2026-09-07 denetimi): `opacity: 0.55` vardi ve
+    // metinIkincil'i acik modda 5,27:1'den 2,23:1'e dusuruyordu. Bu
+    // satir ODbL atfi, yani HUKUKEN ZORUNLU bir metin - ekranin en zor
+    // okunan yeri olmasi kabul edilemez. Jeton zaten ikincil metin
+    // tonunda, kucultmek icin punto (olcek.minik) yeterli.
     textAlign: 'center',
     marginTop: bosluk.xs,
   },
@@ -302,7 +306,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: bosluk.l,
     ...golge.yuzer,
   },
-  birincilBasili: { backgroundColor: renk.turuncuKoyu },
+  birincilBasili: { backgroundColor: renk.turuncuBasili },
   birincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,

@@ -362,7 +362,7 @@ export function CanliHarita({
             merkezDurumu ? `Bu mekan, ${DURUM_ETIKETI[merkezDurumu]}` : 'Buradasın'
           }
         >
-          <Svg width={44} height={44} viewBox="0 0 24 24">
+          <Svg width={38} height={38} viewBox="0 0 24 24">
             <Path
               d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
               fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
@@ -373,10 +373,14 @@ export function CanliHarita({
           </Svg>
         </Marker>
 
-        {/* KULLANICININ KONUMU - her zaman TURUNCU, yani "sen"
-            demek. Mekan ignesi durum rengi tasidigi icin ikisi
-            karismiyor. Nokta bicimi de farkli: mekan bir IGNE, kullanici
-            bir DAIRE - haritalarda alisilmis ayrim. */}
+        {/* KULLANICININ KONUMU - alt gezinme cubugundaki CHECK-IN
+            ikonunun aynisi (kullanicinin istegi 2026-09-07: "turuncu
+            checkin ikonu olucak"). Duz bir turuncu noktaydi ve neyi
+            anlattigi belli degildi; check-in ikonu "sen buradasin, buraya
+            check-in yapabilirsin" demeyi tek bicimle yapiyor.
+
+            Mekan ignesi durum rengi tasidigi icin ikisi karismiyor:
+            mekan RENKLI BIR IGNE, kullanici TURUNCU BIR DAIRE. */}
         {kullaniciKonumu && (
           <Marker
             coordinate={{
@@ -387,7 +391,15 @@ export function CanliHarita({
             tracksViewChanges={false}
             accessibilityLabel="Buradasın"
           >
-            <View style={stiller.kullaniciNoktasi} />
+            <View style={stiller.kullaniciDaire}>
+              <Svg width={15} height={15} viewBox="0 0 24 24">
+                <Path
+                  d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
+                  fill="#FFFFFF"
+                />
+                <Circle cx={12} cy={9.6} r={2.8} fill={renk.turuncu} />
+              </Svg>
+            </View>
           </Marker>
         )}
       </MapView>
@@ -422,15 +434,21 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
   // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
-  // Kullanici noktasi: turuncu daire, beyaz halka. Igne DEGIL - mekan
-  // ignesiyle karismasin.
-  kullaniciNoktasi: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+  // Kullanici: alt gezinmedeki check-in dugmesinin kucuk hali - turuncu
+  // dolu daire, icinde beyaz igne. Beyaz halka alt gezinmede YOK ama
+  // burada sart: harita zemini bej/gri ve halka olmadan daire zemine
+  // yapisiyor.
+  //
+  // 18 -> 26 (kullanicinin istegi 2026-09-07: "cok az daha buyuk").
+  kullaniciDaire: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: renk.turuncu,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   igneEtiket: { maxWidth: 108 },

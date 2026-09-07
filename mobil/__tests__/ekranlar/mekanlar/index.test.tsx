@@ -1,4 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
+import { acikRenk } from '../../../src/tasarim/tema'
 import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import {
@@ -688,5 +690,46 @@ describe('MekanAramaEkrani', () => {
     expect(await screen.findByText('Sahil Kafe')).toBeTruthy()
     expect(screen.getByText('4 kişi burada')).toBeTruthy()
     expect(screen.getByTestId('satir-checkin-mekan-1')).toBeTruthy()
+  })
+
+  // ------------------------------------------------------------------ //
+  // TURUNCU ENFLASYONU (2026-09-07 tasarim denetimi)
+  //
+  // Ekranda ayni anda DORT dolu turuncu Check-in butonu vardi; yaninda
+  // segment, arama ikonu, suzgec, secili cip, "Tumunu gor" ve alt
+  // gezinmenin merkez dugmesi de turuncuydu. Kimligin kurali "bir
+  // ekranda genelde TEK birincil turuncu eylem olur" diyor.
+  // ------------------------------------------------------------------ //
+
+  it('listedeki check-in butonu HAYALET: dolu turuncu degil', async () => {
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 4,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+
+    const buton = await screen.findByTestId('satir-checkin-mekan-1')
+    const stil = StyleSheet.flatten(buton.props.style) as {
+      backgroundColor?: string
+      borderColor?: string
+      borderWidth?: number
+    }
+
+    // Dolgu YOK - eylem kenarlikla anlatiliyor.
+    expect(stil.backgroundColor).toBeUndefined()
+    expect(stil.borderWidth).toBeGreaterThan(0)
+    expect(stil.borderColor).toBe(acikRenk.turuncuYazi)
+
+    // Etiket de dolu butondaki beyaz degil, okunabilir turuncu.
+    // "Check-in" metni sayfa basliginda ve alt gezinmede de var, bu
+    // yuzden etiket BUTONUN ICINDEN aliniyor.
+    const yaziStili = StyleSheet.flatten(
+      within(buton).getByText('Check-in').props.style
+    ) as { color?: string }
+    expect(yaziStili.color).toBe(acikRenk.turuncuYazi)
+    expect(yaziStili.color).not.toBe('#FFFFFF')
   })
 })

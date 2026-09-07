@@ -68,7 +68,7 @@ export default function KisilerEkrani() {
         <TextInput
           style={[stiller.arama, odakli && stiller.aramaOdakli]}
           placeholder={t('kisiler.yerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           autoCapitalize="none"
           autoCorrect={false}
           value={metin}
@@ -163,7 +163,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
   satirOrta: { flex: 1 },
   kullaniciAdi: {

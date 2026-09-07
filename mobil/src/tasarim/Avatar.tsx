@@ -58,6 +58,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 })

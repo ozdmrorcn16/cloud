@@ -87,7 +87,7 @@ export default function KullaniciAdiEkrani() {
         <TextInput
           style={[stiller.girdi, odakli && stiller.girdiOdakli]}
           placeholder={t('kullaniciAdiEkrani.yerTutucu')}
-          placeholderTextColor={renk.metinSoluk}
+          placeholderTextColor={renk.metinIkincil}
           autoCapitalize="none"
           autoCorrect={false}
           value={yeniAd}

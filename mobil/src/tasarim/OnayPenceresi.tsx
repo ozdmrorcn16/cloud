@@ -132,6 +132,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   dugme: { paddingVertical: bosluk.l, alignItems: 'center', justifyContent: 'center' },
   dugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
   yikici: { color: renk.yikici },
-  birincil: { color: renk.turuncu },
+  birincil: { color: renk.turuncuYazi },
   vazgec: { color: renk.metinIkincil },
 })

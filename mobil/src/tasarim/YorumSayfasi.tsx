@@ -330,7 +330,7 @@ export function YorumSayfasi({
                 onChangeText={(d) => setMetin(d.slice(0, YORUM_EN_FAZLA))}
                 maxLength={YORUM_EN_FAZLA}
                 placeholder={t('etkilesim.yorumYaz')}
-                placeholderTextColor={renk.metinSoluk}
+                placeholderTextColor={renk.metinIkincil}
                 multiline
                 editable={!gonderiliyor}
               />
@@ -442,7 +442,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  basHarf: { fontFamily: yazi.ekranBasligi, fontSize: olcek.kucuk, color: renk.turuncu },
+  basHarf: { fontFamily: yazi.ekranBasligi, fontSize: olcek.kucuk, color: renk.turuncuYazi },
   govde: { flex: 1, minWidth: 0 },
   satirUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   yazar: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metin },
@@ -498,6 +498,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metin,
   },
-  gonderYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
+  gonderYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
   gonderPasif: { color: renk.metinSoluk },
 })

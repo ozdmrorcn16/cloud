@@ -351,7 +351,7 @@ export default function ProfilOlusturEkrani() {
                 Boolean(alanHatalari.ad) && stiller.girdiHatali,
               ]}
               placeholder={t('profilOlustur.adOrnek')}
-              placeholderTextColor={renk.metinSoluk}
+              placeholderTextColor={renk.metinIkincil}
               autoComplete="name"
               value={ad}
               onChangeText={(yeniAd) => {
@@ -418,7 +418,7 @@ export default function ProfilOlusturEkrani() {
               <TextInput
                 style={stiller.onekliYazi}
                 placeholder={t('profilOlustur.kullaniciAdiYerTutucu')}
-                placeholderTextColor={renk.metinSoluk}
+                placeholderTextColor={renk.metinIkincil}
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={kullaniciAdi}
@@ -469,7 +469,7 @@ export default function ProfilOlusturEkrani() {
               <TextInput
                 style={stiller.onekliYazi}
                 placeholder={t('profilOlustur.sifreYerTutucu', { adet: EN_AZ_SIFRE })}
-                placeholderTextColor={renk.metinSoluk}
+                placeholderTextColor={renk.metinIkincil}
                 secureTextEntry={!sifreGorunur}
                 autoCapitalize="none"
                 value={sifre}
@@ -502,7 +502,7 @@ export default function ProfilOlusturEkrani() {
                 Boolean(alanHatalari.sifre) && stiller.girdiHatali,
               ]}
               placeholder={t('profilOlustur.tekrarYerTutucu')}
-              placeholderTextColor={renk.metinSoluk}
+              placeholderTextColor={renk.metinIkincil}
               secureTextEntry={!sifreGorunur}
               autoCapitalize="none"
               value={sifreTekrar}
@@ -538,7 +538,7 @@ export default function ProfilOlusturEkrani() {
             disabled={gonderiliyor}
             accessibilityRole="button"
           >
-            <Text style={stiller.birincilYazi}>
+            <Text style={[stiller.birincilYazi, !adimTamam && stiller.birincilYaziPasif]}>
               {adim < 3
                 ? t('profilOlustur.devam')
                 : gonderiliyor
@@ -587,7 +587,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
     letterSpacing: 0.8,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
     textTransform: 'uppercase',
     marginBottom: bosluk.s,
   },
@@ -738,7 +738,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Onay verilmeden dugme SOLUK duruyor: sozlesme onaylanmadan hesap
   // olusmayacagi basmadan once gorunuyor.
-  birincilPasif: { opacity: 0.45 },
+  // NOTR DOLGU, opacity DEGIL (2026-09-07 denetimi): butun butonu
+  // soldurmak etiketi de soluyordu ve 1,57:1'e dusuruyordu. Buton
+  // hala basilabilir ve eksigi soyluyor; degisen tek sey etiketin
+  // okunabilir kalmasi.
+  birincilPasif: { backgroundColor: renk.cizgi },
+  birincilYaziPasif: { color: renk.metinIkincil },
   birincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,

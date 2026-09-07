@@ -1027,7 +1027,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: 30,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
@@ -1063,7 +1063,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // yuzden burada ara bir deger yaziliyor. Kart ici bir gosterge,
     // metin olcegine bagli degil.
     fontSize: 23,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
     letterSpacing: -0.4,
   },
   sayacEtiketi: {
@@ -1093,7 +1093,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kisiBasHarf: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
-    color: renk.turuncu,
+    color: renk.turuncuYazi,
   },
 
   // Bandin icindeki dugmeler: dolu olan birincil (Profili duzenle),
@@ -1191,7 +1191,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   yerAdet: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
     backgroundColor: renk.turuncuZemin,
     borderRadius: yuvarlak.hap,
     paddingVertical: 4,
@@ -1245,7 +1245,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliEtiket: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
-    color: renk.turuncuKoyu,
+    color: renk.turuncuYazi,
   },
   canliMekan: {
     fontFamily: yazi.govdeKalin,
