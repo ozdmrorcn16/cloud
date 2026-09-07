@@ -1,0 +1,107 @@
+---
+import Metin from '../duzen/Metin.astro'
+---
+
+<Metin
+  baslik="Hesabını sil"
+  aciklama="Slooin hesabını ve hesabına bağlı verileri kalıcı olarak silme."
+  guncelleme="7 Eylül 2026"
+>
+  <p>
+    Hesabını uygulama içinden <strong>Ayarlar &rsaquo; Hesabımı sil</strong>
+    adımından silebilirsin. Uygulamayı telefonundan kaldırdıysan bu
+    sayfadan da silebilirsin — uygulamayı yeniden kurman gerekmez.
+  </p>
+
+  <h2>Ne silinir?</h2>
+  <ul>
+    <li>Hesabın ve profilin (adın, kullanıcı adın, biyografin, doğum tarihin)</li>
+    <li>Profil fotoğrafın ve check-in fotoğrafların</li>
+    <li>Bütün check-in'lerin ve anıların</li>
+    <li>Arkadaşlıkların, istekler, engellemeler ve bildirim kayıtların</li>
+  </ul>
+
+  <h2>Ne kalır?</h2>
+  <p>
+    Başkalarına gönderdiğin mesajlar ve gönderdiğin şikâyetler
+    <strong>silinmez, anonimleşir</strong> — gönderen bilgisi kaldırılır.
+    Mesajları silmek karşı tarafın konuşma geçmişini de silmek anlamına
+    geleceği için bu tercih edildi.
+  </p>
+
+  <p class="kutu">
+    Silme işlemi <strong>geri alınamaz</strong>. Aynı e-posta ile yeniden
+    kayıt olabilirsin ama eski verilerin geri gelmez. Hesabını geçici
+    olarak kapatmak istiyorsan, uygulama içindeki
+    <strong>hesabı dondurma</strong> seçeneğini kullan — tekrar giriş
+    yaptığında hesabın kendiliğinden açılır.
+  </p>
+
+  <h2>Sil</h2>
+  <p>
+    Güvenlik için parolan isteniyor. Parolan sunucuda doğrulanır;
+    bu sayfanın hesabın üzerinde hiçbir yetkisi yoktur.
+  </p>
+
+  <form id="silme-formu">
+    <label>
+      E-posta
+      <input type="email" name="eposta" autocomplete="email" required />
+    </label>
+    <label>
+      Parola
+      <input type="password" name="parola" autocomplete="current-password" required />
+    </label>
+    <button id="sil-dugmesi" type="submit">Hesabımı kalıcı olarak sil</button>
+  </form>
+
+  <p id="durum" class="durum" role="status" aria-live="polite"></p>
+
+  <p>
+    Hesabını telefon numarasıyla açtıysan ya da hiç parola
+    belirlemediysen bu form çalışmaz. O durumda
+    <a href="mailto:destek@slooin.com">destek@slooin.com</a> adresine
+    yaz; silme talebini oradan alırız.
+  </p>
+</Metin>
+
+<script>
+  import '../betik/hesap-sil.ts'
+</script>
+
+<style>
+  form { display: flex; flex-direction: column; gap: 14px; margin: 18px 0 10px; max-width: 380px; }
+
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+
+  input {
+    font: inherit;
+    font-weight: 400;
+    padding: 10px 12px;
+    border: 1px solid var(--cizgi);
+    border-radius: 10px;
+    background: var(--beyaz);
+    color: var(--metin);
+  }
+
+  input:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 1px; }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #c0392b;
+    color: var(--beyaz);
+    cursor: pointer;
+  }
+
+  button:disabled { opacity: 0.6; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--metin); outline-offset: 2px; }
+
+  .durum { font-size: 15px; margin: 6px 0 0; min-height: 1.5em; }
+  .durum.hata { color: #c0392b; }
+  .durum.bilgi { color: var(--ikincil); }
+  .durum.basari { color: #1f7a4d; font-weight: 600; }
+</style>

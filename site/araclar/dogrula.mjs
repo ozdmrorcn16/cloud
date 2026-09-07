@@ -148,6 +148,21 @@ try {
     await sayfa.close()
   }
 
+  // 6) Hesap silme sayfasi JS kapaliyken de ANLATIYOR mu
+  console.log('\nHesap silme erisilebilirligi')
+  {
+    const sayfa = await tarayici.newPage()
+    await sayfa.setJavaScriptEnabled(false)
+    await sayfa.goto(TABAN + '/hesap-sil', { waitUntil: 'domcontentloaded' })
+    const metin = await sayfa.evaluate(() => document.body.innerText)
+    kontrol(metin.length > 500, `JS'siz aciklama uzunlugu ${metin.length} (>500 bekleniyor)`)
+    kontrol(
+      metin.includes('destek@slooin.com'),
+      "JS'siz halde destek adresi gorunuyor (parolasiz hesaplar icin tek yol)",
+    )
+    await sayfa.close()
+  }
+
   // 5) Olu ic baglanti
   console.log('\nIc baglantilar')
   const gorulen = new Set()
