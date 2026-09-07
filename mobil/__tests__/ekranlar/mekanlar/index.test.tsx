@@ -270,12 +270,70 @@ describe('MekanAramaEkrani', () => {
     expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
     expect(screen.queryByText('Check-in yap')).toBeNull()
 
-    // KART EYLEM TASIMIYOR (kullanicinin istegi 2026-09-07). Ayrilma
-    // mekan sayfasindaki "Buradasın · Ayrıl" cubugunda, silme ise
-    // akis kartinin uc nokta menusunde duruyor; bu kart yalnizca
-    // nerede oldugunu soyluyor.
+    // EYLEMLER DURUM SERIDININ ICINDE (kullanicinin istegi
+    // 2026-09-07). Bir kez kaldirilip ayni gun geri kondular; fark
+    // yerlesimde: ayri bir buton satiri degil, seridin sagindaki
+    // yazilar. Eski etiket "Ayrıldım" idi, artik "Ayrıl" - mekan
+    // sayfasindaki "Buradasın · Ayrıl" cubuguyla ayni kelime.
+    expect(screen.getByText('Ayrıl')).toBeTruthy()
+    expect(screen.getByText('Sil')).toBeTruthy()
     expect(screen.queryByText('Ayrıldım')).toBeNull()
-    expect(screen.queryByText('Sil')).toBeNull()
+  })
+
+  /**
+   * Kullanicinin istegi 2026-09-07: "yapilan konumun uzerine
+   * basilabilsin ve konum icerigi acilsin." Listedeki satirlarla ayni
+   * yol: `/harita/<id>`.
+   */
+  it('karttaki mekan adina basinca mekan sayfasi aciliyor', async () => {
+    const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'ci-1',
+      mekanId: 'mekan-1',
+      mekanAdi: 'Sahil Kafe',
+      notMetni: null,
+      fotograf: null,
+      olusturmaZamani: '2026-08-29T10:00:00Z',
+      bitisZamani: '2026-08-29T10:30:00Z',
+      canliMi: true,
+      bulunurluk: 'herkese_acik',
+    })
+
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('Şu an buradasın')
+
+    await fireEvent.press(screen.getByLabelText('Sahil Kafe konumunu aç'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+  })
+
+  /**
+   * Kartin KOKU basilabilir OLMAMALI. Kabin tamamini basilabilir
+   * yapmak icindeki her ogeyi de sessizce ayni eyleme baglar - akis
+   * kartinda tam bu hata yasanmisti (2026-09-04). Burada "Ayrıl" ve
+   * "Sil" o tuzaga duesuerdue.
+   */
+  it('"Sil" karta degil kendi eylemine bagli: mekan sayfasi ACILMIYOR', async () => {
+    const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'ci-1',
+      mekanId: 'mekan-1',
+      mekanAdi: 'Sahil Kafe',
+      notMetni: null,
+      fotograf: null,
+      olusturmaZamani: '2026-08-29T10:00:00Z',
+      bitisZamani: '2026-08-29T10:30:00Z',
+      canliMi: true,
+      bulunurluk: 'herkese_acik',
+    })
+
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('Şu an buradasın')
+
+    mockRouterPush.mockClear()
+    await fireEvent.press(screen.getByText('Sil'))
+    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
   it('check-in BASKA bir mekandaysa kart o mekani gosterir', async () => {

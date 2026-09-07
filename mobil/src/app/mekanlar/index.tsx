@@ -15,6 +15,8 @@ import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { useDil } from '../../../lib/dil'
 import {
   aktifCheckInimiGetir,
+  checkIndenAyril,
+  checkIniSil,
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import {
@@ -31,6 +33,7 @@ import {
 } from '../../../lib/mekan'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { TurSecici } from '../../tasarim/TurSecici'
@@ -158,6 +161,7 @@ export default function KesfetEkrani() {
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
   // Ayrıldım ve Sil sunuyor. Baska bir mekan secilene kadar boyle.
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
+  const [silOnayi, setSilOnayi] = useState(false)
   // Silme GERI ALINAMAZ: once onay satiri aciliyor.
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -261,6 +265,30 @@ export default function KesfetEkrani() {
       }
     }, [])
   )
+
+  async function ayril() {
+    if (!aktifCheckIn) return
+    try {
+      await checkIndenAyril(aktifCheckIn.id)
+      setAktifCheckIn(null)
+      setSilOnayi(false)
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+    }
+  }
+
+  async function canliyiSil() {
+    if (!aktifCheckIn) return
+    try {
+      await checkIniSil(aktifCheckIn.id)
+      setAktifCheckIn(null)
+      setSilOnayi(false)
+      await yukle()
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+    }
+  }
 
   // Arama kutusu her harfte istek ATMIYOR. Onceki surumde her tusa
   // basista sunucuya gidiliyordu; bu hem agi bosa yoruyor hem de
@@ -532,21 +560,40 @@ export default function KesfetEkrani() {
         />
       )}
 
-      {/* Aktif check-in karti: nerede oldugunu ve orada kac kisi
-          bulundugunu soyleyen bir DURUM karti. Eylem tasimiyor
-          (kullanicinin istegi 2026-09-07: "Ayrıldım ve Sil'i kaldir,
-          konum ismi, su an buradasin ve kac kisi kalsin").
+      {/* Aktif check-in karti: nerede oldugun, orada kac kisi
+          bulundugu ve iki eylem (Ayrıl / Sil).
 
-          ISLEV KAYBI YOK, iki eylem de baska yerde duruyor:
-            ayrilma -> mekan sayfasindaki "Buradasın · Ayrıl" cubugu
-            silme   -> akis/anilar kartinin uc nokta menusu
-          Buradan kalkmalarinin sebebi de bu: ikisi de artik baska
-          ekranlarda oldugu icin bu kart tek basina bir eylem yuzeyi
-          olmak zorunda degil. */}
+          EYLEMLER BIR KEZ KALDIRILIP AYNI GUN GERI KONDU: once
+          kullanicinin istegiyle cikarildilar, sonra yine kullanicinin
+          istegiyle geri geldiler - ama bu kez ayri bir buton satiri
+          olarak DEGIL, durum seridinin icinde yazi olarak ("bulundugu
+          sutunu bozma"). Aradaki fark kartin yuksekligi: eski halde
+          iki buton alta ayri bir satir aciyordu.
+
+          Ayni eylemler baska ekranlarda da duruyor ve bu bir tekrar
+          degil kolaylik: ayrilma mekan sayfasindaki "Buradasın · Ayrıl"
+          cubugunda, silme akis kartinin uc nokta menusunde. */}
       {kartMekani && (
         <View style={stiller.buradaKart}>
           <View style={stiller.buradaUst}>
-            <View style={stiller.buradaMetin}>
+            {/*
+              MEKAN ADI BASILABILIR (kullanicinin istegi 2026-09-07:
+              "yapilan konumun uzerine basilabilsin ve konum icerigi
+              acilsin"). Listedeki satirlarla AYNI yola gidiyor:
+              `/harita/<id>`, yani mekan sayfasi.
+
+              Basilabilir olan yalnizca bu blok, KARTIN TAMAMI DEGIL.
+              Kabin tamamini basilabilir yapmak icindeki her ogeyi de
+              sessizce ayni eyleme baglar - akis kartinda tam bu hata
+              yasanmisti (2026-09-04) ve buradaki "Ayrıl"/"Sil" de o
+              tuzaga duesuerdue.
+            */}
+            <Pressable
+              style={stiller.buradaMetin}
+              onPress={() => router.push(`/harita/${kartMekani.id}` as never)}
+              accessibilityRole="button"
+              accessibilityLabel={`${kartMekani.ad} konumunu aç`}
+            >
               <Text style={stiller.buradaAd} numberOfLines={1}>
                 {kartMekani.ad}
               </Text>
@@ -557,7 +604,7 @@ export default function KesfetEkrani() {
                     .join(' · ')}
                 </Text>
               )}
-            </View>
+            </Pressable>
             {(kartMekani.listedeki?.kisiSayisi ?? 0) > 0 && (
               <View style={stiller.buradaSayiAlani}>
                 <Text style={stiller.buradaSayi}>{kartMekani.listedeki?.kisiSayisi}</Text>
@@ -566,13 +613,56 @@ export default function KesfetEkrani() {
             )}
           </View>
           {/* BU MEKANDA ZATEN CHECK-IN VARSA "Check-in yap" YOK
-              (kullanicinin istegi 2026-08-29). Yerine yalnizca durum
-              seridi kaliyor. Baska bir mekan secilene kadar boyle. */}
+              (kullanicinin istegi 2026-08-29). Yerine durum seridi ve
+              icindeki iki eylem. Baska bir mekan secilene kadar
+              boyle. */}
           {kartCanli ? (
-            <View style={stiller.canliSerit}>
-              <View style={stiller.buradaNokta} />
-              <Text style={stiller.canliYazi}>Şu an buradasın</Text>
-            </View>
+            <>
+              {/*
+                "Ayrıl" ve "Sil" DURUM SERIDININ ICINDE, sagda
+                (kullanicinin istegi 2026-09-07: "ayril ve sil yazisi
+                yine ekle ama bulundugu sutunu bozma"). Serit zaten
+                `flexDirection: 'row'` oldugu icin buraya girmeleri
+                yeni bir satir acmiyor ve kartin iki sutunlu duzeni
+                (solda metin, sagda kisi sayisi) oldugu gibi kaliyor -
+                onceki halde ayri bir buton satiri vardi ve karti
+                uzatiyordu.
+
+                Yazi olarak duruyorlar, buton kutusu olarak degil;
+                dokunma alani `hitSlop` ile buyutuldu cunku kucuk bir
+                metnin kendi yuksekligi 44 px esiginin altinda.
+              */}
+              <View style={stiller.canliSerit}>
+                <View style={stiller.buradaNokta} />
+                <Text style={stiller.canliYazi}>Şu an buradasın</Text>
+                <View style={stiller.canliEylemler}>
+                  <Pressable onPress={ayril} accessibilityRole="button" hitSlop={10}>
+                    <Text style={stiller.ayrilYazi}>Ayrıl</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSilOnayi(true)}
+                    accessibilityRole="button"
+                    hitSlop={10}
+                  >
+                    <Text style={stiller.silYazi}>Sil</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* SILME GERI ALINAMAZ; ayrilmaktan farki aciklamada
+                  yaziyor: ayrilma check-in'i aniya cevirir, silme
+                  satiri tamamen kaldirir. Onay ekranin ortasinda
+                  (kullanicinin istegi 2026-09-02), akistaki kartla
+                  ayni pencere. */}
+              <OnayPenceresi
+                acikMi={silOnayi}
+                baslik="Bu check-in kalıcı olarak silinsin mi?"
+                aciklama="Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz."
+                eylemEtiketi="Sil"
+                onOnay={canliyiSil}
+                onVazgec={() => setSilOnayi(false)}
+              />
+            </>
           ) : (
             <Pressable
               style={stiller.checkInButonu}
@@ -869,6 +959,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // pay da ona gore sagda.
 
   canliSerit: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+  // `marginLeft: 'auto'` eylemleri seridin sagina itiyor; sabit bir
+  // genislik verilseydi uzun bir durum metni onlari tasardi.
+  canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m, marginLeft: 'auto' },
+  ayrilYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.yikici },
   buradaNokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: renk.turuncu },
   canliYazi: {
     fontFamily: yazi.govdeKalin,
