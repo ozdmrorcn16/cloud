@@ -69,6 +69,11 @@ module.exports = ({ config }) => {
       ...(googleIosSemasi
         ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosSemasi }]]
         : []),
+      // EN SONDA olmali: expo-apple-authentication'in kendi plugin'i
+      // entitlement'i kosulsuz ekliyor ve bu onu geri siliyor. Once
+      // calissaydi silinen anahtar yeniden eklenirdi. Gerekce ve geri
+      // acma adimlari dosyanin kendi basinda.
+      './plugins/apple-signin-entitlement-kaldir',
     ],
   }
 }

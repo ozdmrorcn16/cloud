@@ -427,9 +427,30 @@ derlemeyi kiriyordu. Xcode hatasi aynen:
     2026-08-29T22:52:14.006Z" doesn't include the Sign In with Apple
     capability / the com.apple.developer.applesignin entitlement.
 
-**Kok neden:** provisioning profile 29 Agustos'ta, o satir eklenmeden
-ONCE uretilmisti. Build 3 (30 Agustos) bu yuzden gecti; build 4 ve 5
-bu yuzden patladi. **Teshis tuzagi:** EAS "All credentials are ready
+**Kok neden IKI KATMANLI ve ilk teshis EKSIKTI:**
+
+1. Provisioning profile 29 Agustos'ta, Apple girisi eklenmeden ONCE
+   uretilmisti ve o yetkiyi tasimiyor. Build 3 (30 Agustos) bu yuzden
+   gecti; 4 ve 5 bu yuzden patladi.
+2. **`app.json`daki `usesAppleSignIn` satirini kaldirmak YETMEDI** -
+   build 6 ayni hatayla duestue. Cunku entitlement o alandan degil,
+   `expo-apple-authentication` PAKETININ KENDI config plugin'inden
+   geliyor ve autolinking onu kendiliginden uyguluyor. Plugin
+   kosulsuz yaziyor, app.json'a hic bakmiyor:
+
+       config.modResults['com.apple.developer.applesignin'] = ['Default']
+
+**COZUM: KARSI PLUGIN.** `mobil/plugins/apple-signin-entitlement-kaldir.js`
+o anahtari geri siliyor ve `app.config.js` icindeki listenin EN SONUNA
+konuyor - once calissaydi sildigi anahtar yeniden eklenirdi.
+
+**OLCULEREK DOGRULANDI.** iOS prebuild Windows'ta calismiyor ("Run
+npx expo prebuild again from macOS or Linux"), bu yuzden olcum
+`npx expo config --type introspect --json` ile yapildi; o komut
+plugin'leri uygulayip sonucu veriyor. Cikti:
+
+    iOS entitlements: aps-environment = development
+    com.apple.developer.applesignin: YOK **Teshis tuzagi:** EAS "All credentials are ready
 to build" diyor ve profile "active" gorunuyor - yani credential
 ekranina bakarak sorun ANLASILMIYOR, hata ancak Xcode asamasinda
 cikiyor. Ayrica `--non-interactive` build hatanin metnini GOSTERMIYOR;
@@ -446,7 +467,10 @@ giris varsa App Store "Apple ile giris"i ZORUNLU tutuyor):
     1. developer.apple.com > Certificates, IDs & Profiles >
        Identifiers > com.slooin.app > "Sign In with Apple" > Save
     2. app.json icindeki ios blokuna "usesAppleSignIn": true geri konur
-    3. Yeni derleme; EAS profile'i capability ile yeniden uretir
+    3. plugins/apple-signin-entitlement-kaldir.js, app.config.js
+       icindeki plugins listesinden CIKARILIR  <-- bu adim atlanirsa
+       entitlement yine silinir ve Apple girisi calismaz
+    4. Yeni derleme; EAS profile'i capability ile yeniden uretir
 
 Ayrinti ve gerekce `mobil/app.config.js` basindaki yorumda.
 
