@@ -541,13 +541,26 @@ dosya `jest.unmock` kullaniyor - AltGezinme `jest.setup.js` icinde
 GLOBAL mock'lu oldugu icin baska hicbir test onu render etmiyor, yani
 bu sinif degisiklik ancak burada olculebiliyor.
 
-**YAYINDA** (2026-09-07, kullanicinin istegi): web (`npm run yayinla`,
-paket `entry-86d8d90b...`) ve telefon/TestFlight (`eas update
---channel production`, grup `63485624-808c-4678-88e0-3d063b01f0d3`).
-Ayni yayin paralel bir oturumun "Su an disarida" seridini (commit
-`bd25de2`) da tasidi. Dogrulama: canli pakette `aktif-sekme-dairesi`,
-`alt-gezinme-cubugu` ve `sekme-ikonu` testID'leri bulundu ve canli
-adresten ekran goruntusu alindi (`tasarim/navbar-canli.png`).
+**IKI KEZ YAYINLANDI** (2026-09-07, kullanicinin istegi). Ilki
+referans uygulamasi, ikincisi kaymanin kaldirildigi duzeltme:
+
+| Yayin | Web paketi | OTA grup |
+|---|---|---|
+| 1 - referans (kaymali) | `entry-86d8d90b...` | `63485624-808c-4678-88e0-3d063b01f0d3` |
+| 2 - kayma kalkti | `slooin--et4cdr06yt` | `736f8a40-771d-4491-85f3-197ebdf904e1` |
+
+Ilk yayin paralel bir oturumun "Su an disarida" seridini (commit
+`bd25de2`) da tasidi.
+
+**IKINCI YAYIN DAVRANISLA DOGRULANDI, paket adiyla DEGIL.** Sebep:
+`npm run yayinla`dan sonra `eas update` calistirildiginda update kendi
+`expo export`unu yapip yerel `dist/` klasorunu YENIDEN YAZIYOR, yani
+yereldeki paket adi artik web'e yuklenen paketin adi degil. Bunun
+yerine canli adrese puppeteer ile baglanip animasyon kare kare
+olculdu: daire sol slotta soneuyor, GORUNMEZKEN sag slota geciyor,
+orada beliriyor - iki slot arasindaki bolgede opakligi sifirdan buyuk
+tek bir kare bile yok. Ilk yayinda ise ASCII testID araması yeterliydi
+(o gun yeni testID'ler eklenmisti).
 
 **ORTAM TUZAGI (yasandi):** Bash heredoc'a `'C:\Program Files\...'`
 gibi ters bolulu bir yol gecirmek ters bolueleri yiyor; puppeteer
