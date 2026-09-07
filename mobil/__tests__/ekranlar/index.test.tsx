@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
-import { acikRenk, olcek } from '../../src/tasarim/tema'
+import { acikRenk } from '../../src/tasarim/tema'
 import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
@@ -527,36 +527,23 @@ describe('AnaSayfa', () => {
   // kart uzerinde 2,65:1 veriyordu. Ayrica zaman IKI KEZ yaziyordu.
   // ------------------------------------------------------------------ //
 
-  it('mekan adi IKINCIL METIN: kisinin adini bastirmiyor', async () => {
+  it('mekan adi ADIN YANINDA ve TURUNCU', async () => {
+    // Kullanicinin karari (2026-09-07): "konumlar ismin yaninda yine
+    // turuncu gorunsun". Bir ara mekan adi alt satira, ikincil metin
+    // tonuna indirilmisti (hiyerarsi gerekcesiyle); ayni gun geri
+    // alindi. Bu test o karari kilitliyor.
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
     await render(<AnaSayfa />)
 
     const mekan = await screen.findByText('Sahil Kafe')
     const ad = await screen.findByText('Ada')
 
-    // Mekan turuncu DEGIL; turuncu yalnizca yanindaki igne ikonunda.
-    expect(duzYazi(mekan).color).toBe(acikRenk.metinIkincil)
-    expect(duzYazi(mekan).color).not.toBe(acikRenk.turuncu)
-    expect(duzYazi(mekan).color).not.toBe(acikRenk.turuncuYazi)
+    expect(duzYazi(mekan).color).toBe(acikRenk.turuncuYazi)
+    expect(duzYazi(mekan).color).toBe('#FE7813')
 
-    // Kisinin adi ana metin tonunda ve daha buyuk puntoda: akista once
-    // "kim" sorusu okunur.
+    // Ad ile mekan AYNI metin akisinda: ad turuncu degil, mekan turuncu.
     expect(duzYazi(ad).color).toBe(acikRenk.metin)
-    expect(duzYazi(ad).fontSize ?? olcek.govde).toBeGreaterThan(
-      duzYazi(mekan).fontSize as number
-    )
-  })
-
-  it('mekan adi TEK SATIR: uzun adlar kart yuksekligini degistirmiyor', async () => {
-    ;(akisiGetir as jest.Mock).mockResolvedValue([
-      oge({ mekanAdi: 'Uludag Universitesi Lojmanlari ORMAN Sosyal Tesisleri' }),
-    ])
-    await render(<AnaSayfa />)
-
-    const mekan = await screen.findByText(
-      'Uludag Universitesi Lojmanlari ORMAN Sosyal Tesisleri'
-    )
-    expect(mekan.props.numberOfLines).toBe(1)
+    expect(mekan.parent).toBe(ad.parent)
   })
 
   it('TAM TARIH YOK: zaman tek bicimde yaziliyor', async () => {

@@ -22,12 +22,21 @@ Bunlar kullanicinin verdigi kararlardir; tasarim tercihi degil kisittir.
    kullanmak kimligi tuketir. Bir ekranda genelde TEK birincil turuncu
    eylem olur.
 
-   **UC AYRI JETON var, karistirilmaz** (2026-09-07 denetimi):
-   `turuncu` DOLGU ve IKON icin, `turuncuYazi` METIN icin,
-   `turuncuBasili` basili dolgu icin. Sebep olculebilir: ayni ton
-   hem dolgu (uzerinde beyaz yazi) hem yazi (acik zeminde) olamaz -
-   ikisi zit yonde duzeltme ister. `color: renk.turuncu` YAZMA;
-   `__tests__/tasarim/kontrast.test.ts` bunu kilitliyor.
+   **TON `#FE7813` VE DEGISTIRILMEZ.** Logodan olculdu (2026-08-25).
+   2026-09-07'de kontrast gerekcesiyle koyulastirildi ve kullanici
+   AYNI GUN geri aldirdi. Marka tonu uzerinde beyaz yazinin 2,65:1
+   verdigi BILINIYOR ve kabul edilmis bir odun. Iyilestirme
+   gerekiyorsa tona dokunmayan yollar var: yaziyi buyutmek ya da
+   kalinlastirmak, dolgu yerine kenarlik kullanmak, zemini
+   degistirmek. Tonu oynatma.
+
+   **UC JETON var** (2026-09-07): `turuncu` dolgu ve ikon,
+   `turuncuYazi` metin, `turuncuBasili` basili dolgu. Ilk ikisi su
+   an AYNI degeri tasiyor; jetonlarin ayri durmasi rolu
+   isaretlemek ve ileride yalnizca bir tarafi degistirmeyi tek
+   satirlik is yapmak icin. Metin yazarken `renk.turuncuYazi`
+   kullan. `__tests__/tasarim/kontrast.test.ts` degerleri
+   kilitliyor - hem gecen esikleri hem kabul edilen odunleri.
 2. **EKRAN METINLERI KODA GOMULMEZ.** Uygulama cok dilli (2026-08-24).
    Kullaniciya gorunen her metin `mobil/lib/ceviriler/tr.ts` icine
    yazilir, `en.ts` icine cevrilir ve ekranda `const { t } = useDil()`
@@ -98,9 +107,9 @@ renk kodu ya da ham piksel YAZILMAZ; jeton kullanilir.
 **Renk**
 | Jeton | Deger | Kullanim |
 |---|---|---|
-| `renk.turuncu` | `#F66A01` | DOLGU ve IKON. Beyaz yaziyla 3,01:1 |
-| `renk.turuncuYazi` | `#B04C01` acik / `#FE7813` koyu | TURUNCU YAZI. Acik yuzeylerde 4,5:1 |
-| `renk.turuncuBasili` | `#D25C05` | Basili dolgu. Iki modda da koyu |
+| `renk.turuncu` | `#FE7813` | MARKA TONU - dolgu, ikon. Logodan olculdu, DEGISTIRILMEZ |
+| `renk.turuncuYazi` | `#FE7813` | TURUNCU YAZI. Su an marka tonuyla ayni; rolu isaretliyor |
+| `renk.turuncuBasili` | `#E06509` | Basili dolgu. Iki modda da koyu |
 | `renk.turuncuZemin` | `#FFF3E8` | Secili satir, rozet arkasi |
 | `renk.metin` | `#17130F` | Ana metin (saf siyah degil) |
 | `renk.metinIkincil` | `#6E6660` | Aciklama, zaman damgasi |

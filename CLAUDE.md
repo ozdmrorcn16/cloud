@@ -448,6 +448,34 @@ da sinif adi ara.
 
 ### TASARIM DENETIMI UYGULANDI - 2026-09-07
 
+> **IKI DEGISIKLIK AYNI GUN GERI ALINDI (kullanicinin karari).**
+> "Turuncu rengi eski haline cevir, ana sayfa akisi konumlar ismin
+> yaninda yine turuncu gorunsun, altindaki tarih yine silinmis devam
+> etsin."
+>
+> 1. **MARKA TONU `#FE7813` GERI GELDI.** Asagida anlatilan
+>    koyulastirma (`turuncu` #F66A01, `turuncuYazi` #B04C01) gecersiz.
+>    Uc jetonlu YAPI korundu ama `turuncu` ve `turuncuYazi` ayni marka
+>    tonunu tasiyor; `turuncuBasili` #E06509. Marka tonu uzerinde
+>    beyaz yazinin 2,65:1 verdigi BILINEN VE KABUL EDILEN bir odun -
+>    bkz. `marka-turuncusu-degistirilmez` hafizasi. Tonu kontrast
+>    gerekcesiyle bile oynatma.
+> 2. **AKIS KARTINDA MEKAN ADI ADIN YANINDA VE TURUNCU.** Asagida
+>    anlatilan iki satirli duzen (ad ustte, igne ikonu + ikincil metin
+>    altta) gecersiz.
+>
+> **GERI ALINMAYANLAR** - hepsi duruyor: mekan adinin altindaki
+> tekrar eden tam tarih (kullanici acikca korunmasini istedi), yer
+> tutucular, ODbL atfi, eksik formun buton etiketi, koyu modda basili
+> buton, opak gezinme cubugu, kart siniri, hayalet check-in butonlari,
+> harita dugmelerinin hitSlop'u ve kontrast test paketi.
+>
+> Kontrast testi buna gore guncellendi: gecen esikler ESIK IDDIASI
+> olarak, gecmeyen marka tonu degerleri ise OLCUM KAYDI olarak duruyor
+> (`toBe(2.65)`). Ikincisini silmek "turuncu her yerde esigi geciyor"
+> izlenimi birakirdi.
+
+
 Kullanicinin istegi: "buldugun butun hatalari duzelt ve onerilerini
 uygula uygulamayi olmasi gereken en iyi hale getir." Oncesinde bir
 denetim yapilmisti (Artifact:

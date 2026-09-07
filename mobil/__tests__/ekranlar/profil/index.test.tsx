@@ -340,23 +340,18 @@ describe('ProfilEkrani', () => {
     expect(duzYazi(screen.getAllByText('0')[0]).color).toBe(acikRenk.turuncuYazi)
   })
 
-  it('bandin DISI band renklerinden etkilenmiyor: mekan adi standart ikincil metin', async () => {
+  it('bandin DISINDA hicbir sey degismedi: mekan adi hala marka turuncusu', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
     await render(<ProfilEkrani />)
 
     // Kullanicinin kurali (2026-09-03): "sadece profil resminin
-    // arkasindaki renk icin, geri kalan her sey ayni kalsin". Bu test
-    // o kurali koruyor: bandin renkleri (bandUst / bandOrta) kartlara
-    // SIZMIYOR.
+    // arkasindaki renk icin, geri kalan her sey ayni kalsin".
     //
-    // Beklenen deger degisti (2026-09-07 denetimi): mekan adi artik
-    // turuncu degil ikincil metin. Sebep hiyerarsi - turuncu ve yari
-    // kalin mekan adi kisinin adini bastiriyordu; ustelik beyaz kart
-    // uzerinde 2,65:1 veriyordu. Turuncu artik yalnizca yanindaki
-    // igne ikonunda. Yani test hala "band disi degismedi" diyor,
-    // yalnizca disinin ne oldugu guncellendi.
+    // 2026-09-07'de bu deger bir kez ikincil metne cevrilmis, ayni gun
+    // geri alinmisti ("konumlar ismin yaninda yine turuncu gorunsun").
+    // Mekan adinin marka turuncusu olmasi verilmis bir karar.
     const mekan = await screen.findByText('Sahil Kafe')
-    expect(duzYazi(mekan).color).toBe(acikRenk.metinIkincil)
+    expect(duzYazi(mekan).color).toBe('#FE7813')
     expect(duzYazi(mekan).color).not.toBe(acikRenk.bandUst)
   })
 

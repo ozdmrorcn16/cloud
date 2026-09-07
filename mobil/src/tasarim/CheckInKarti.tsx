@@ -14,7 +14,6 @@ import { NOT_EN_FAZLA } from '../../lib/checkin'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
-import { IgneIkonu } from './mekan-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 
 /**
@@ -27,23 +26,22 @@ import type { EtkilesimOzeti } from '../../lib/etkilesim'
  * profil akisinda da bu gorunus olacak; mekan ismi turuncu ve
  * tiklanabilir." Zaman tuneli deseni (AniTuneli) bu kararla KALDIRILDI.
  *
- * Duzen (2026-09-07 denetiminden sonra):
- *   [profil resmi] KULLANICI ADI - etiketlenenler
- *                  (igne) mekan adi          <- ikincil, tek satir
- *                  not
- *                  fotograf
+ * Duzen: [profil resmi] KULLANICI ADI - MEKAN ADI (turuncu) - etiketlenenler
+ *                       not
+ *                       fotograf
  *        sagda gorece zaman ("7 saat önce") ya da "şu an burada"
  *
  * Kartta "byorcun" gibi KULLANICI ADI yazar, ad-soyad DEGIL
  * (kullanicinin karari 2026-08-30); bildirimlerde ise ad-soyad.
  *
- * Ad ve etiketler TEK metin akisinda: ayri View'lara bolununce satir
- * tasiyordu. Ic ice `Text` ile parcalar satir sonunda birlikte
- * kiriliyor ve her parcanin kendi dokunma hedefi kaliyor. Mekan adi
- * ise ARTIK AYRI SATIRDA - o yuzden kendi Pressable'inda.
+ * Ad, mekan ve etiketler TEK metin akisinda: ayri View'lara bolununce
+ * uzun mekan adlari satiri tasiriyordu. Ic ice `Text` ile parcalar
+ * satir sonunda birlikte kiriliyor ve her parcanin kendi dokunma
+ * hedefi kaliyor.
  *
- * TAM ZAMAN KALDIRILDI: sagdaki gorece zamanla ayni bilgiyi iki ayri
- * bicimde tekrarliyordu. Tam tarih mekan sayfasinda duruyor.
+ * TAM ZAMAN KALDIRILDI (2026-09-07): sagdaki gorece zamanla ayni bilgiyi
+ * iki ayri bicimde tekrarliyordu. Tam tarih mekan sayfasinda duruyor.
+ * Denetimden gelen degisikliklerden KORUNAN tek sey bu.
  */
 
 export function CheckInKarti({
@@ -217,18 +215,41 @@ export function CheckInKarti({
           )}
         </Pressable>
 
-        {/* IKI SATIR: once KIM, sonra NEREDE (2026-09-07 denetimi).
-            Onceden ucu de tek satirdaydi ve mekan adi turuncu + yari
-            kalin oldugu icin kisinin adini bastiriyordu; uzun adlarda
-            iki satira tasip satir yuksekligini kart kart degistiriyordu.
-            Akista once "kim" sorusu okunur, duzen de artik onu soyluyor. */}
+        {/* TEK SATIR: ad - MEKAN (turuncu) - etiketlenenler.
+            2026-09-07'de mekan adi bir alt satira, ikincil metin tonuna
+            indirilmisti (hiyerarsi gerekcesiyle); kullanici AYNI GUN geri
+            aldirdi: "konumlar ismin yaninda yine turuncu gorunsun".
+            Mekan adinin turuncu ve adin yaninda olmasi bir tercih degil,
+            verilmis bir karar.
+
+            Ayni denetimden gelen TEK sey korundu: adin altindaki tekrar
+            eden tam tarih ("06.09.2026 22:54") kaldirilmisti ve
+            kaldirilmis kaliyor - sagdaki gorece zamanla ayni bilgiyi iki
+            ayri bicimde soyluyordu. */}
         <View style={stiller.orta}>
-          <Text style={stiller.satir} numberOfLines={1}>
+          <Text style={stiller.satir}>
             <Text
               style={stiller.kullaniciAdi}
               onPress={() => router.push(kisiYolu as never)}
             >
               {gosterilenAd}
+            </Text>
+            <Text style={stiller.ayirac}> - </Text>
+            <Text
+              style={stiller.mekanAdi}
+              // Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
+              // 2026-08-30). Onceden yeni check-in formunu aciyordu;
+              // konum etiketine basan kisi orayi gormek istiyor, oraya
+              // check-in yapmak degil.
+              //
+              // 2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
+              // Pressable'i kaldirildigi icin erisilebilirlik etiketi de
+              // buraya tasindi.
+              accessibilityRole="link"
+              accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
+              onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
+            >
+              {oge.mekanAdi}
             </Text>
             {oge.etiketler.length > 0 && (
               <>
@@ -247,33 +268,6 @@ export function CheckInKarti({
               </>
             )}
           </Text>
-
-          {/* Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
-              2026-08-30). Onceden yeni check-in formunu aciyordu;
-              konum etiketine basan kisi orayi gormek istiyor, oraya
-              check-in yapmak degil.
-
-              2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
-              Pressable'i kaldirildigi icin erisilebilirlik etiketi de
-              burada duruyor.
-
-              Turuncu artik YAZIDA degil yalnizca IGNE IKONUNDA: ikon
-              beyaz uzerinde 3,01:1 ile grafik esigini geciyor, ayni
-              turuncu YAZI olsa 2,65:1'de kaliyordu. Vurgu "burada bir
-              yer var" demeye devam ediyor ama okunacak metni ele
-              gecirmiyor. */}
-          <Pressable
-            style={stiller.mekanSatiri}
-            accessibilityRole="link"
-            accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
-            onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
-            hitSlop={6}
-          >
-            <IgneIkonu boyut={12} renk={renk.turuncu} />
-            <Text style={stiller.mekanAdi} numberOfLines={1}>
-              {oge.mekanAdi}
-            </Text>
-          </Pressable>
         </View>
 
         {menuVar && (
@@ -696,15 +690,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ayirac: { color: renk.metinSoluk },
   // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
   // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
-  mekanSatiri: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  mekanAdi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    // Tek satir: uzun mekan adlari eskiden ikinci satira tasip her
-    // kartin yuksekligini degistiriyordu ve liste tekliyordu.
-    flexShrink: 1,
-  },
+  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
   etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
 
   silDugmesi: { padding: 4, marginRight: 2 },

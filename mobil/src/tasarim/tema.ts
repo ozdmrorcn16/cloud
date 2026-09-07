@@ -13,42 +13,45 @@
 
 export const acikRenk = {
   /**
-   * DOLGU ve IKON turuncusu. Eylem ve canlilik.
+   * MARKA TURUNCUSU - dolgu, ikon ve yazi. Eylem ve canlilik.
    *
-   * Ton logodan olculdu (kullanicinin karari 2026-08-25): hue 25,8 derece,
-   * doygunluk %99. Onceki deger #FE7813'tu; ACIKLIK %54'ten %48'e indi
-   * (2026-09-07 tasarim denetimi). Sebep olculdu: #FE7813 uzerinde beyaz
-   * yazi 2,65:1 veriyordu - govde esiginin (4,5) yarisi ve kalin yazi
-   * icin gecerli gevsek esigin (3,0) de altinda. #F66A01 ile 3,01:1.
+   * Ton logodan OLCULEREK alindi (kullanicinin karari 2026-08-25) ve
+   * DEGISTIRILMEZ. 2026-09-07 denetiminde kontrast gerekcesiyle %6
+   * koyulastirilmisti (#F66A01); kullanici ayni gun GERI ALDIRDI:
+   * "turuncu rengi eski haline cevir."
    *
-   * Ton ve doygunluk DEGISMEDI, yani marka isaretiyle yan yana fark
-   * gozle secilmiyor. Ikon ve grafik olarak da beyaz uzerinde 3,01:1,
-   * yani metin olmayan ogeler icin gereken 3:1 esigini geciyor.
+   * BILINEN VE KABUL EDILEN ODUN: uzerinde beyaz yazi 2,65:1 veriyor,
+   * WCAG govde esigi 4,5 ve kalin yazi icin gevsek esik 3,0. Beyaz
+   * zeminde turuncu YAZI da ayni orani veriyor. Bu bir gozden kacma
+   * degil, marka tonu lehine verilmis bir karar.
    *
-   * DIKKAT: bu jeton YAZI RENGI OLARAK KULLANILMAZ - onun icin
-   * `turuncuYazi` var. Beyaz zeminde turuncu yazi bu tonda 3,01:1'de
-   * kalir ve govde metni esigini gecmez.
+   * Ileride kontrast iyilestirilecekse TONA DOKUNMAYAN yollar var:
+   * yaziyi buyutmek/kalinlastirmak, turuncuyu dolgu yerine kenarlik
+   * yapmak, altindaki zemini degistirmek, ya da o metni turuncu
+   * yapmaktan vazgecmek. Tonu degistirmek bir secenek degil.
    */
-  turuncu: '#F66A01',
+  turuncu: '#FE7813',
   /**
-   * TURUNCU YAZI ve ikon-yaninda-etiket rengi.
+   * TURUNCU YAZI. Su an marka tonuyla AYNI deger.
    *
-   * Acik modda dolgudan AYRI olmak zorunda: ayni ton hem dolgu (uzerinde
-   * beyaz yazi) hem yazi (beyaz zeminde) olamaz, cunku ikisi zit yonde
-   * duzeltme ister. Bu ton uygulamadaki BUTUN acik yuzeylerde 4,5:1'i
-   * geciyor - en zorlayicisi profil bandinin ustu (#FFE6D2): 4,51:1.
+   * Jeton ayri duruyor cunku bir ROL isaretliyor: "burada turuncu metin
+   * var". Metin ve dolgu ayni tonu paylastigi surece degeri ayni, ama
+   * ileride yalnizca metin tarafi degistirilmek istenirse tek satirlik
+   * bir is oluyor - 37 kullanim yerini yeniden gezmek gerekmiyor.
    */
-  turuncuYazi: '#B04C01',
+  turuncuYazi: '#FE7813',
   /**
    * BASILI hal dolgusu. Uzerinde beyaz etiket durdugu icin iki modda da
-   * KOYU kalir (beyaz yaziyla 3,98:1).
+   * KOYU kalir (beyaz yaziyla 3,48:1).
    *
    * Eskiden bu is `turuncuKoyu` jetonundaydi ve o jeton ayni zamanda
    * yazi rengi olarak da kullaniliyordu. Koyu modda yazi rolu icin
    * acilinca (#FFA45C) dolgu rolu bozuldu: basili butonun beyaz etiketi
-   * 1,96:1'e dusup kayboluyordu. Jeton bu yuzden ikiye ayrildi.
+   * 1,96:1'e dusup kayboluyordu. Jeton bu yuzden ayri kaldi - marka
+   * tonu geri alinirken bu ayrim KORUNDU, cunku duzelttigi sey renk
+   * degil bir hataydi.
    */
-  turuncuBasili: '#D25C05',
+  turuncuBasili: '#E06509',
   /** Turuncunun yumusak zemini (secili satir, rozet arkasi). */
   turuncuZemin: '#FFF3E8',
 
@@ -166,23 +169,11 @@ export type Renk = { [A in keyof typeof acikRenk]: string }
  * "yuzey", "cizgi" diyor.
  */
 export const koyuRenk: Renk = {
+  /** Marka turuncusu iki modda da ayni. */
+  turuncu: '#FE7813',
   /**
-   * DOLGU turuncusu koyu modda da AYNI degeri tasiyor: uzerindeki beyaz
-   * etiketin kontrasti sayfanin temasina bagli degil, yalnizca dolgunun
-   * kendisine bagli. Yani beyaz-uzerine-turuncu sorunu iki modda ayni
-   * sorundu ve ayni degerle cozuluyor (3,01:1).
-   *
-   * Koyu zeminde gorunurluk de tamam: #F66A01 / #121110 = 6,27:1.
-   */
-  turuncu: '#F66A01',
-  /**
-   * TURUNCU YAZI koyu modda MARKA TONUNDA kalabiliyor - hicbir odun
-   * gerekmiyor, cunku zemin koyu: #FE7813 / #121110 = 7,10:1,
-   * kart yuzeyinde 6,59:1, cipte 5,49:1.
-   *
-   * Yani turuncu yazinin koyulastirilmasi (acik moddaki #B04C01)
-   * YALNIZCA ACIK MODUN bedeli. Koyu modda vurgu tam canliligiyla
-   * duruyor.
+   * Koyu modda turuncu yazinin zaten hicbir sorunu yok: #FE7813 koyu
+   * zeminde 7,10:1, kart yuzeyinde 6,59:1, cipte 5,49:1 veriyor.
    */
   turuncuYazi: '#FE7813',
   /**
@@ -192,7 +183,7 @@ export const koyuRenk: Renk = {
    * butonun beyaz etiketi 1,96:1'e dusuyordu ve alt gezinmedeki aktif
    * merkez dugme, listedeki butonlardan daha ZAYIF gorunuyordu.
    */
-  turuncuBasili: '#D25C05',
+  turuncuBasili: '#E06509',
   /** Yumusak zemin: turuncunun sicak, cok koyu hali. */
   turuncuZemin: '#3A2412',
 
@@ -216,7 +207,7 @@ export const koyuRenk: Renk = {
   bandUst: '#3A2412',
   bandOrta: '#221A15',
 
-  rozetZemin: '#F66A01',
+  rozetZemin: '#FE7813',
 
   /** Yuzer cubuk koyu modda da OPAK - acik modla ayni gerekce. */
   yuzerZemin: '#1C1917',

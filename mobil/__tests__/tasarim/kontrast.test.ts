@@ -3,20 +3,28 @@ import { acikRenk, koyuRenk, type Renk } from '../../src/tasarim/tema'
 /**
  * JETONLARIN KONTRAST TESTI (2026-09-07 tasarim denetimi).
  *
- * Bu paket bir tasarim tercihini degil OLCULEBILIR bir esigi koruyor.
- * Denetimde bulunan kusurlarin hepsi renk jetonlarindaydi ve hicbiri
- * gozle fark edilmemisti - ancak hesaplanınca ortaya cikti:
+ * Paket iki ayri isi birden yapiyor ve bu ayrimi bilerek koruyor:
  *
- *   turuncu dolgu uzerinde beyaz yazi ......... 2,65:1  (esik 3,0)
- *   beyaz zeminde turuncu yazi ................ 2,65:1  (esik 4,5)
- *   profil bandinda turuncu yazi .............. 2,21:1
- *   koyu modda BASILI butonun beyaz etiketi ... 1,96:1
- *   yer tutucu metni .......................... 2,74:1
+ *   1. ESIK IDDIALARI - metin jetonlarinin gercekten okunmasi gereken
+ *      yerler. Bunlar duzeltildi ve artik gerileyemez:
+ *        yer tutucu metni ................... 2,74 -> 5,63
+ *        ODbL harita atfi ................... 2,23 -> 5,27
+ *        eksik formun buton etiketi ......... 1,57 -> 5,15
+ *        koyu modda BASILI buton etiketi .... 1,96 -> 3,48
  *
- * Bir jetonun degeri ileride degistirilirse bu testler kirilir. Amaci
- * tam bu: renk kararlari artik sessizce gerileyemez.
+ *   2. OLCUM KAYITLARI - marka tonunun esigi GECMEDIGI yerler.
+ *      Bunlar birer hata degil, verilmis bir karar: ton kontrast
+ *      gerekcesiyle koyulastirilmisti ve kullanici geri aldirdi
+ *      ("turuncu rengi eski haline cevir", 2026-09-07). Iddia esik
+ *      degil, SAYININ KENDISI - boylece deger sessizce degisemiyor
+ *      ve degistirilirse karar yeniden onune gelir:
+ *        turuncu dolgu uzerinde beyaz yazi ... 2,65:1
+ *        beyaz zeminde turuncu yazi .......... 2,65:1
  *
- * WCGA 2.1 esikleri: govde metni 4,5:1; kalin >=14px ya da >=18px yazi
+ * Bu ikinci grubu silmek yerine kayda gecirmek onemli: silinseydi
+ * "turuncu her yerde esigi geciyor" izlenimi kalirdi.
+ *
+ * WCAG 2.1 esikleri: govde metni 4,5:1; kalin >=14px ya da >=18px yazi
  * 3:1; metin olmayan ogeler (ikon, grafik) 3:1.
  */
 
@@ -73,8 +81,18 @@ describe.each([
   // duruyorlar. Bu yuzden esik moda bagli degil.
   // ---------------------------------------------------------------- //
 
-  it('turuncu dolgu uzerindeki beyaz etiket 3:1 esigini geciyor', () => {
-    expect(oran(BEYAZ, renk.turuncu)).toBeGreaterThanOrEqual(3)
+  it('turuncu dolgu uzerindeki beyaz etiket: KABUL EDILEN ODUN 2,65:1', () => {
+    // BU BIR ESIK IDDIASI DEGIL, BIR KAYIT. Marka tonu (#FE7813) uzerinde
+    // beyaz yazi 2,65:1 veriyor; WCAG govde esigi 4,5, kalin yazi icin
+    // gevsek esik 3,0. Ikisini de gecmiyor.
+    //
+    // Bu bir gozden kacma degil: 2026-09-07'de ton koyulastirilip esik
+    // gecirilmisti, kullanici ayni gun GERI ALDIRDI ("turuncu rengi eski
+    // haline cevir"). Marka tonu kontrastin onunde.
+    //
+    // Iddia yine de degerli: sayi SESSIZCE degisemiyor. Ton ileride
+    // oynatilirsa bu test kirilir ve karar yeniden onune gelir.
+    expect(oran(BEYAZ, renk.turuncu)).toBe(2.65)
   })
 
   it('BASILI dolgu uzerindeki beyaz etiket 3:1 esigini geciyor', () => {
@@ -115,10 +133,19 @@ describe.each([
       expect(oran(renk.metinIkincil, yuzey)).toBeGreaterThanOrEqual(4.5)
     })
 
-    it('turuncu YAZI okunuyor', () => {
-      // Denetimin en yaygin bulgusu: 37 yerde turuncu yazi vardi ve
-      // acik modda hicbirinde esigi gecmiyordu.
-      expect(oran(renk.turuncuYazi, yuzey)).toBeGreaterThanOrEqual(4.5)
+    it('turuncu YAZI: acik modda esigin altinda, koyu modda geciyor', () => {
+      // Turuncu yazi marka tonunda (kullanicinin karari 2026-09-07).
+      // Koyu zeminlerde bu zaten sorunsuz; acik zeminlerde 2,2-2,7
+      // arasinda kaliyor ve bu KABUL EDILMIS bir odun.
+      const olculen = oran(renk.turuncuYazi, yuzey)
+      if (mod === 'koyu') {
+        expect(olculen).toBeGreaterThanOrEqual(4.5)
+      } else {
+        // Acik modda esik gecilmiyor; iddia yalnizca degerin BILINEN
+        // araligin disina KAYMAMASI - yani yuzey renkleri degisip
+        // turuncu yaziyi daha da okunmaz yapmasin.
+        expect(olculen).toBeGreaterThan(2.1)
+      }
     })
   })
 
@@ -130,11 +157,17 @@ describe.each([
   // IKONLAR ve GRAFIKLER - esik 3:1, metin degil.
   // ---------------------------------------------------------------- //
 
-  it('turuncu ikon sayfa zemininde 3:1 esigini geciyor', () => {
-    // Dolgu jetonu ikon olarak da kullaniliyor (alt gezinme, igneler,
-    // arama ikonu). Metin esigini gecmesi gerekmiyor, grafik esigini
-    // gecmesi gerekiyor.
-    expect(oran(renk.turuncu, renk.zemin)).toBeGreaterThanOrEqual(3)
+  it('turuncu ikon koyu modda grafik esigini geciyor, acik modda gecmiyor', () => {
+    // Turuncu ikonlar alt gezinmede, ignelerde ve arama kutusunda.
+    // Metin olmayan ogeler icin esik 3:1. Marka tonu koyu zeminde
+    // 7,10:1 veriyor; beyaz zeminde 2,65:1'de kaliyor - ayni kabul
+    // edilmis odun.
+    const olculen = oran(renk.turuncu, renk.zemin)
+    if (mod === 'koyu') {
+      expect(olculen).toBeGreaterThanOrEqual(3)
+    } else {
+      expect(olculen).toBe(2.65)
+    }
   })
 
   it('profil rozetinin isareti zemininde okunuyor', () => {
@@ -163,11 +196,18 @@ describe.each([
   })
 })
 
-describe('kontrast: acik modun kendine ozgu kisiti', () => {
-  it('turuncu yazi acik modda marka tonundan KOYU olmak zorunda', () => {
-    // Bu, acik modun bedeli. Koyu modda ayni odun gerekmiyor - orada
-    // marka tonu 7,10:1 veriyor ve jeton marka tonunda kaliyor.
-    expect(parlaklik(acikRenk.turuncuYazi)).toBeLessThan(parlaklik(acikRenk.turuncu))
+describe('kontrast: marka tonu', () => {
+  it('MARKA TURUNCUSU #FE7813 - iki paletde de, dolguda da yazida da', () => {
+    // Kullanicinin karari (2026-08-25, 2026-09-07'de yeniden dogrulandi):
+    // ton logodan olculdu ve degistirilmez. Bu test onu kilitliyor.
+    //
+    // Kontrast gerekcesiyle bile tonu oynatma: bir kez denendi ve geri
+    // alindi. Iyilestirme gerekiyorsa TONA DOKUNMAYAN yollar var -
+    // yaziyi buyutmek/kalinlastirmak, dolgu yerine kenarlik kullanmak,
+    // zemini degistirmek.
+    expect(acikRenk.turuncu).toBe('#FE7813')
+    expect(koyuRenk.turuncu).toBe('#FE7813')
+    expect(acikRenk.turuncuYazi).toBe('#FE7813')
     expect(koyuRenk.turuncuYazi).toBe('#FE7813')
   })
 
