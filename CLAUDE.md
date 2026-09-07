@@ -509,6 +509,14 @@ dosya `jest.unmock` kullaniyor - AltGezinme `jest.setup.js` icinde
 GLOBAL mock'lu oldugu icin baska hicbir test onu render etmiyor, yani
 bu sinif degisiklik ancak burada olculebiliyor.
 
+**YAYINDA** (2026-09-07, kullanicinin istegi): web (`npm run yayinla`,
+paket `entry-86d8d90b...`) ve telefon/TestFlight (`eas update
+--channel production`, grup `63485624-808c-4678-88e0-3d063b01f0d3`).
+Ayni yayin paralel bir oturumun "Su an disarida" seridini (commit
+`bd25de2`) da tasidi. Dogrulama: canli pakette `aktif-sekme-dairesi`,
+`alt-gezinme-cubugu` ve `sekme-ikonu` testID'leri bulundu ve canli
+adresten ekran goruntusu alindi (`tasarim/navbar-canli.png`).
+
 **ORTAM TUZAGI (yasandi):** Bash heredoc'a `'C:\Program Files\...'`
 gibi ters bolulu bir yol gecirmek ters bolueleri yiyor; puppeteer
 "Browser was not found at C:Program FilesGoogle..." diyor. Windows'ta
