@@ -1,0 +1,67 @@
+---
+interface Props {
+  baslik: string
+  aciklama: string
+}
+const { baslik, aciklama } = Astro.props
+---
+
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{baslik}</title>
+    <meta name="description" content={aciklama} />
+    <link rel="icon" href="/marka-isareti.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --turuncu: #fe7813;
+    --turuncu-acik: #ffa451;
+    --turuncu-koyu: #e9640a;
+    --metin: #17130f;
+    --ikincil: #6e6660;
+    --soluk: #a39b93;
+    --cizgi: #e2dad2;
+    --beyaz: #ffffff;
+    --sakin: #2fa36b;
+    --populer: #e2a32b;
+    --yogun: #d2483c;
+    --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--beyaz);
+    color: var(--metin);
+    font-family: var(--govde);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--turuncu); }
+
+  img { max-width: 100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

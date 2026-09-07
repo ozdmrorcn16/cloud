@@ -109,7 +109,46 @@ try {
     }
   }
 
-  // 4) Olu ic baglanti
+  // 4) Marka lockup ve radar hizasi
+  console.log('\nMarka ve radar')
+  {
+    const sayfa = await tarayici.newPage()
+    await sayfa.setViewport({ width: 1280, height: 900 })
+    await sayfa.goto(TABAN + '/', { waitUntil: 'networkidle0' })
+    await new Promise((c) => setTimeout(c, 1200))
+
+    const olcum = await sayfa.evaluate(() => {
+      const img = document.querySelector('.kelime-markasi')
+      const halkalar = [...document.querySelectorAll('.halka')]
+      if (!img || halkalar.length === 0) return null
+      const k = img.getBoundingClientRect()
+      // Igne bas dairesinin merkezi goruntude (911, 44.5) / (1200, 348)
+      const igne = {
+        x: k.x + k.width * (911 / 1200),
+        y: k.y + k.height * (44.5 / 348),
+      }
+      const h = halkalar[0].getBoundingClientRect()
+      const olcekler = halkalar
+        .map((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).a)
+        .sort((a, b) => a - b)
+      return {
+        adet: halkalar.length,
+        sapmaX: Math.abs(igne.x - (h.x + h.width / 2)),
+        sapmaY: Math.abs(igne.y - (h.y + h.height / 2)),
+        olcekler,
+      }
+    })
+
+    kontrol(olcum !== null, 'kelime markasi ve halkalar sayfada var')
+    if (olcum) {
+      kontrol(olcum.adet === 3, `radar halkasi sayisi ${olcum.adet} (3 bekleniyor)`)
+      kontrol(olcum.sapmaX < 2, `radar yatay sapma ${olcum.sapmaX.toFixed(2)}px (<2 bekleniyor)`)
+      kontrol(olcum.sapmaY < 2, `radar dikey sapma ${olcum.sapmaY.toFixed(2)}px (<2 bekleniyor)`)
+    }
+    await sayfa.close()
+  }
+
+  // 5) Olu ic baglanti
   console.log('\nIc baglantilar')
   const gorulen = new Set()
   for (const yol of SAYFALAR) {

@@ -1,0 +1,64 @@
+---
+interface Props {
+  genislik?: string
+  radar?: boolean
+}
+const { genislik = 'clamp(240px, 31vw, 356px)', radar = true } = Astro.props
+---
+
+<div class="marka-lockup" style={`width: ${genislik}`}>
+  <img
+    class="kelime-markasi"
+    src="/marka-yazisi.png"
+    alt="Slooin"
+    width="1200"
+    height="348"
+  />
+  {radar && (
+    <svg viewBox="0 0 1200 348" aria-hidden="true" focusable="false">
+      <circle class="halka" cx="911" cy="44.5" r="50"></circle>
+      <circle class="halka gecikmeli" cx="911" cy="44.5" r="50"></circle>
+      <circle class="halka gecikmeli2" cx="911" cy="44.5" r="50"></circle>
+    </svg>
+  )}
+</div>
+
+<style>
+  .marka-lockup { position: relative; display: block; }
+  .marka-lockup .kelime-markasi { width: 100%; height: auto; display: block; }
+
+  .marka-lockup svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /*
+   * "i" ustundeki konum ignesinden yayilan radar.
+   *
+   * DOGRUSAL hiz BILEREK secildi. Yumusatilmis (ease-out) bir egride
+   * halkalar once firliyor sonra suruenuyor; ucue esit gecikmeyle
+   * baslatilsa bile aralari surekli degistigi icin sinyal duzensiz
+   * gorunuyor - kullanicinin "tutarli olsun" istegi tam olarak bunu
+   * isaret ediyordu. Dogrusal hizda aralik sabit kaliyor.
+   */
+  .halka {
+    fill: none;
+    stroke: var(--turuncu);
+    stroke-width: 9;
+    opacity: 0.45;
+    transform-origin: 911px 44.5px;
+    animation: yayil 4.8s linear infinite;
+  }
+
+  .halka.gecikmeli { animation-delay: 1.6s; }
+  .halka.gecikmeli2 { animation-delay: 3.2s; }
+
+  @keyframes yayil {
+    0%   { transform: scale(1);   opacity: 0.6; stroke-width: 9; }
+    100% { transform: scale(2.5); opacity: 0;   stroke-width: 2; }
+  }
+</style>

@@ -1,13 +1,16 @@
 ---
 // Gecici iskelet - Task 3'te gercek ana sayfayla degistirilecek.
+import Duzen from '../duzen/Duzen.astro'
+import AltSerit from '../duzen/AltSerit.astro'
+import MarkaLockup from '../ortak/MarkaLockup.astro'
 ---
-<html lang="tr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Slooin</title>
-  </head>
-  <body>
-    <h1>Slooin</h1>
-  </body>
-</html>
+
+<Duzen
+  baslik="Slooin"
+  aciklama="Slooin, aynı anda aynı yerde olan insanların birbirini fark etmesini sağlayan konum tabanlı bir tanışma uygulamasıdır."
+>
+  <header style="background: var(--turuncu); padding: 60px 28px;">
+    <MarkaLockup />
+  </header>
+  <AltSerit />
+</Duzen>
