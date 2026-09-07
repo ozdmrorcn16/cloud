@@ -89,13 +89,15 @@ beforeEach(() => {
 })
 
 /**
- * Harita YALNIZCA bu mekanin ignesini ciziyor (2026-09-07): cevre
- * mekanlari artik ne cekiliyor ne de gosteriliyor. Bekleme, ignenin
- * cizilmis olmasina dayaniyor - onsuz React "act(...) disinda
- * guncelleme" uyarisi basiyor.
+ * Harita CEVRE mekanlarini cizmiyor (2026-09-07). Cizilen igneler:
+ * mekanin kendisi ve - konum okunabildiyse - kullanicinin konumu.
+ * Bekleme ignenin cizilmis olmasina dayaniyor; onsuz React "act(...)
+ * disinda guncelleme" uyarisi basiyor.
  */
 const cevreOturana = () =>
-  waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
+  waitFor(() =>
+    expect(screen.getAllByTestId('harita-ignesi').length).toBeGreaterThanOrEqual(1)
+  )
 
 describe('CheckInHaritasiEkrani', () => {
   /**
@@ -488,6 +490,8 @@ describe('MekanSayfasi - harita', () => {
 
     await render(<CheckInHaritasiEkrani />)
 
+    // Konum okunamadigi icin (varsayilan mock reddediyor) yalnizca
+    // mekanin ignesi var; cevredeki mekanlar haritaya HIC girmiyor.
     await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
     expect(screen.queryByLabelText(/Komşu/)).toBeNull()
   })
@@ -501,6 +505,55 @@ describe('MekanSayfasi - harita', () => {
 
     expect(yakinMekanlariYogunlukIleGetir).not.toHaveBeenCalled()
     await cevreOturana()
+  })
+})
+
+/**
+ * IGNE RENGI VE KULLANICI KONUMU (kullanicinin istegi 2026-09-07:
+ * "haritada konumun ignesi yogunluguna ve sakinligine gore renk alsin
+ * ve haritada o an kullanici nerdeyse onun ignesi de gorunsun turuncu
+ * ki sectigi konuma mesafesini gorebilsin").
+ *
+ * Renk dogrudan olculemiyor (igne bir SVG), ama erisilebilirlik
+ * etiketi durumu tasiyor - yani hangi durumun secildigi test edilebilir.
+ */
+describe('MekanSayfasi - igne durumu ve kullanici konumu', () => {
+  it('mekan ignesi DURUMU tasiyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(mekanIstatistikleriniGetir as jest.Mock).mockResolvedValue({
+      suAnKisi: 6,
+      bugunCheckIn: 0,
+      toplamCheckIn: 0,
+      ilceSirasi: null,
+      ilceMekanSayisi: 0,
+      ilce: null,
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    // 6 kisi -> yogun (esik 3).
+    await waitFor(() => expect(screen.getByLabelText('Bu mekan, Yoğun')).toBeTruthy())
+  })
+
+  it('konum okunabiliyorsa KULLANICI ignesi de ciziliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2117, lng: 28.9213 })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByLabelText('Buradasın')).toBeTruthy())
+    // Mekan + kullanici = iki igne.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(2)
+  })
+
+  it('konum okunamazsa YALNIZCA mekan ignesi kaliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    // cihazKonumunuAl varsayilan olarak reddediyor.
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
+    expect(screen.queryByLabelText('Buradasın')).toBeNull()
   })
 })
 

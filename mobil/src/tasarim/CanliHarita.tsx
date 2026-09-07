@@ -12,6 +12,7 @@ import Svg, { Circle, Path, G, Line } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import type { MekanDurumu } from '../../lib/mekan'
 
 /**
  * CANLI HARITA - "su an neredesin ve cevrende ne var".
@@ -58,6 +59,14 @@ const EN_FAZLA_IGNE = 12
 const EN_AZ_ARALIK = 34
 
 const NABIZ_SURESI = 2600
+
+/** Native surumle AYNI degerler; ikisi ayrilirsa ayni mekan iki
+ *  platformda farkli renk gosterirdi. */
+const DURUM_RENGI: Record<MekanDurumu, string> = {
+  sakin: '#2FBF5B',
+  yogun: '#E5484D',
+  populer: '#F5A623',
+}
 
 export type HaritaMekani = {
   id: string
@@ -141,11 +150,25 @@ export function CanliHarita({
   mekanlar,
   yukseklik = 260,
   onMekanSec,
+  merkezDurumu,
+  kullaniciKonumu,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
   yukseklik?: number
   onMekanSec?: (mekanId: string) => void
+  /**
+   * Merkez ignesinin durumu; verilmezse turuncu kaliyor. Native
+   * surumle AYNI sozlesme - ekranlar hangi platformda calistigini
+   * bilmek zorunda kalmasin.
+   */
+  merkezDurumu?: MekanDurumu
+  /**
+   * Web'de RADAR ciziliyor ve radarin merkezi zaten kullanicinin
+   * kendisi; ayri bir kullanici noktasi cizmenin karsiligi yok. Prop
+   * yalnizca imzayi native surumle ayni tutmak icin duruyor.
+   */
+  kullaniciKonumu?: { lat: number; lng: number } | null
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -278,12 +301,13 @@ export function CanliHarita({
         )
       })}
 
-      {/* Merkez: kullanicinin kendisi. */}
+      {/* Merkez. Kesfet ekraninda kullanicinin kendisi (turuncu),
+          mekan sayfasinda o mekan (durum rengi). */}
       <View style={stiller.merkez} pointerEvents="none">
         <Svg width={44} height={44} viewBox="0 0 24 24">
           <Path
             d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-            fill={renk.turuncu}
+            fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
             stroke="#FFFFFF"
             strokeWidth={1.4}
           />

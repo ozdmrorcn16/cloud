@@ -12,7 +12,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { mekaniGetir, type Mekan } from '../../../lib/mekan'
+import { mekaniGetir, mekanDurumu, type Mekan } from '../../../lib/mekan'
 import {
   mekanIstatistikleriniGetir,
   mekanLiderligiGetir,
@@ -209,6 +209,9 @@ export default function MekanSayfasi() {
   // var mi, ve mekana kac metre uzaktasin.
   const [aktif, setAktif] = useState<AktifCheckIn | null>(null)
   const [uzaklik, setUzaklik] = useState<number | null>(null)
+  // Haritada TURUNCU noktayla ciziliyor: kullanici secilen mekana
+  // olan mesafesini gorsel olarak da gorsun (istegi 2026-09-07).
+  const [benimKonumum, setBenimKonumum] = useState<{ lat: number; lng: number } | null>(null)
   const [ayriliyor, setAyriliyor] = useState(false)
 
   useEffect(() => {
@@ -294,6 +297,7 @@ export default function MekanSayfasi() {
     cihazKonumunuAl()
       .then((k) => {
         if (!gecerli) return
+        setBenimKonumum(k)
         setUzaklik(mesafeMetre(k.lat, k.lng, mekan.konum.lat, mekan.konum.lng))
       })
       .catch(() => {})
@@ -489,7 +493,16 @@ export default function MekanSayfasi() {
                 onTouchEnd={() => setSayfaKayabilir(true)}
                 onTouchCancel={() => setSayfaKayabilir(true)}
               >
-                <CanliHarita merkez={mekan.konum} mekanlar={[]} yukseklik={210} />
+                <CanliHarita
+                  merkez={mekan.konum}
+                  mekanlar={[]}
+                  yukseklik={210}
+                  merkezDurumu={mekanDurumu({
+                    kisiSayisi: istatistik?.suAnKisi ?? 0,
+                    toplamCheckIn: istatistik?.toplamCheckIn ?? 0,
+                  })}
+                  kullaniciKonumu={benimKonumum}
+                />
               </View>
 
               {/* IKI yuvarlak dugme, referanstaki gibi. Ikisi FARKLI

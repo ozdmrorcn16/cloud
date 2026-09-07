@@ -567,6 +567,50 @@ istemciden geldigi icin sunucu onu DOGRULAMALI (izinli degerler
 disindaki bir sure kabul edilmemeli), yoksa dogrudan RPC cagirarak
 sinirsiz gorunurluk alinabilir.
 
+### HARITADA IKI IGNE: DURUM RENGI + KULLANICI - 2026-09-07
+
+Kullanicinin istegi: "Haritada konumun ignesi yogunluguna ve
+sakinligine gore renk alsin ve haritada o an kullanici nerdeyse onun
+ignesi de gorunsun turuncu ki sectigi konuma mesafesini gorebilsin",
+ardindan "yakin uzakligi ona gore ayarla, otomatik goruntu ona gore
+ayarlasin".
+
+| Igne | Renk | Bicim |
+|---|---|---|
+| Mekan | Durumuna gore: yesil sakin / kirmizi yogun / sari populer | IGNE |
+| Kullanici | Her zaman TURUNCU ("sen") | DAIRE |
+
+Bicim farki bilerek: mekan bir igne, kullanici bir daire - haritalarda
+alisilmis ayrim, ikisi karismiyor.
+
+**CERCEVE IKISINI DE KAPSIYOR**, yani mesafe gorsel olarak okunuyor.
+`EN_FAZLA_KAPSAMA_METRE` 1200 -> 25000: secilen mekan baska bir ilcede
+olabiliyor.
+
+**KABUL EDILEN GERILIM:** ayni gun "yakin goruntu, sokak cadde
+anlasilir" da istenmisti. Kullanici uzaktaysa cerceve genisliyor ve
+sokak adlari kuculuyor - ikisi ayni anda saglanamaz. Harita artik
+ETKILESIMLI oldugu icin kullanici yakinlastirabiliyor; acilis cercevesi
+"iki noktayi da goster" tarafini seciyor.
+
+**IKI YAN ETKI CIKTI, testler yakaladi:**
+
+1. **Igne araligi cerceveye ORANLIYDI** (`gosterim * 0.22`) ve cerceve
+   kilometrelerce acilinca esik sacma buyudu - 25 km'lik bir cercevede
+   5,5 km'lik aralik neredeyse butun igneleri eliyordu. Kesfet ekraninda
+   iki igne kayboldu. Esige 300 m UST SINIRI kondu.
+
+2. Mekan sayfasi testlerindeki bekleme "tam bir igne" sayiyordu; artik
+   konum okunabildiginde iki igne var. Bekleme "en az bir" oldu ve
+   igne sayisi ayri testlerle kilitlendi.
+
+**WEB SURUMU AYNI SOZLESMEYI TASIYOR** ama kullanici noktasini
+cizmiyor: orada RADAR var ve radarin merkezi zaten kullanicinin
+kendisi. Prop yalnizca imza ayni kalsin diye duruyor - ekranlar hangi
+platformda calistigini bilmek zorunda kalmasin. `DURUM_RENGI` degerleri
+iki dosyada da AYNI; ayrilirlarsa ayni mekan iki platformda farkli renk
+gosterirdi.
+
 ### MEKAN SAYFASINDAKI HARITA ETKILESIMLI OLDU - 2026-09-07
 
 Kullanicinin istegi: "Bir konuma bastigimdaki bu gelen ekranda haritada

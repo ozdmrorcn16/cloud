@@ -57,10 +57,14 @@ const EN_AZ_GOSTERIM_METRE = 100
 const EN_FAZLA_GOSTERIM_METRE = 100
 
 /**
- * Igneler varken cerceve bu yaricapa kadar acilabiliyor. Kesfet listesi
- * 1 km yaricapla calisiyor, yani en uzak igne de bu sinirin icinde.
+ * Cerceve bu yaricapa kadar acilabiliyor.
+ *
+ * 1200 -> 25000: kullanici ignesi de cerceveye girdiginden (2026-09-07)
+ * secilen mekan baska bir ilcede olabiliyor. 25 km bir sehir icinde
+ * makul bir tavan; daha uzagi zaten iki nokta olarak gorunur ve
+ * kullanici haritayi kendisi kaydirabiliyor.
  */
-const EN_FAZLA_KAPSAMA_METRE = 1200
+const EN_FAZLA_KAPSAMA_METRE = 25000
 
 /**
  * Haritada ayni anda en cok bu kadar etiketli igne.
@@ -128,11 +132,28 @@ export function CanliHarita({
   mekanlar,
   yukseklik = 260,
   onMekanSec,
+  merkezDurumu,
+  kullaniciKonumu,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
   yukseklik?: number
   onMekanSec?: (mekanId: string) => void
+  /**
+   * Merkez ignesinin DURUMU (kullanicinin istegi 2026-09-07: "haritada
+   * konumun ignesi yogunluguna ve sakinligine gore renk alsin").
+   *
+   * Verilmezse igne TURUNCU kaliyor - kesfet ekraninda merkez
+   * kullanicinin KENDISI, orada bir "durum" yok.
+   */
+  merkezDurumu?: MekanDurumu
+  /**
+   * Kullanicinin o anki konumu; verilirse ayri bir TURUNCU igneyle
+   * ciziliyor ve cerceve ikisini birden kapsiyor - boylece secilen
+   * mekana olan mesafe GORSEL olarak okunuyor (kullanicinin istegi
+   * 2026-09-07).
+   */
+  kullaniciKonumu?: { lat: number; lng: number } | null
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -168,13 +189,30 @@ export function CanliHarita({
     // ama artik yalnizca IGNE YOKKEN: gosterilecek bir sey olmadiginda
     // harita yakin basliyor, igne varsa cerceve onlari kapsayacak kadar
     // aciliyor. Iki kural da ayni seyi istiyor - harita DOLU gorunsun.
-    const enUzak = mesafeli.length ? Math.max(...mesafeli.map((m) => m.metre)) : 0
-    const gosterim = mesafeli.length
-      ? Math.min(EN_FAZLA_KAPSAMA_METRE, Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.25))
-      : EN_FAZLA_GOSTERIM_METRE
+    // KULLANICI IGNESI de cerceveye giriyor: mesafenin gorsel olarak
+    // okunabilmesi icin ikisi de ekranda olmali.
+    //
+    // BURADA BIR GERILIM VAR ve kabul ediliyor: kullanici uzaktaysa
+    // cerceve genisliyor ve sokak adlari kuculuyor - oysa ayni gun
+    // "yakin goruntu, sokak cadde anlasilir" da istenmisti. Harita
+    // artik ETKILESIMLI oldugu icin kullanici yakinlastirabiliyor;
+    // acilis cercevesi "iki noktayi da goster" tarafini seciyor.
+    const kullaniciMesafesi =
+      kullaniciKonumu && merkez
+        ? mesafeMetre(merkez.lat, merkez.lng, kullaniciKonumu.lat, kullaniciKonumu.lng)
+        : 0
+
+    const enUzak = Math.max(
+      mesafeli.length ? Math.max(...mesafeli.map((m) => m.metre)) : 0,
+      Number.isFinite(kullaniciMesafesi) ? kullaniciMesafesi : 0
+    )
+    const gosterim =
+      enUzak > 0
+        ? Math.min(EN_FAZLA_KAPSAMA_METRE, Math.max(EN_AZ_GOSTERIM_METRE, enUzak * 1.25))
+        : EN_FAZLA_GOSTERIM_METRE
 
     return { igneler: mesafeli.map((m) => m.mekan), bolge: bolgeUret(merkez, gosterim) }
-  }, [merkez, mekanlar])
+  }, [merkez, mekanlar, kullaniciKonumu])
 
   /**
    * HARITADA ETIKETLI GOSTERILECEK IGNELER.
@@ -197,7 +235,12 @@ export function CanliHarita({
     const gosterim = bolge
       ? (bolge.latitudeDelta * 110540) / 2
       : EN_FAZLA_GOSTERIM_METRE
-    const enAzAralik = Math.max(50, gosterim * 0.22)
+    // ARALIK ESIGINE UST SINIR: cerceve kullanici ignesi yuzunden
+    // kilometrelerce acilabiliyor (2026-09-07) ve oransal esik o zaman
+    // saçma buyuyordu - 25 km'lik bir cercevede 5,5 km'lik aralik
+    // neredeyse butun igneleri eler. 300 m, etiketlerin ust uste
+    // binmedigi en dar degerin epey ustunde.
+    const enAzAralik = Math.min(300, Math.max(50, gosterim * 0.22))
 
     const sirali = igneler.slice().sort((a, b) => {
       const oncelik = (m: HaritaMekani) =>
@@ -307,23 +350,46 @@ export function CanliHarita({
             )
         })}
 
-        {/* Merkez: bizim turuncu igne. Ucu tam koordinata basiyor. */}
+        {/* MERKEZ IGNESI. Ucu tam koordinata basiyor.
+            Rengi `merkezDurumu` ile geliyor; verilmezse turuncu kaliyor
+            (kesfet ekraninda merkez kullanicinin kendisi, orada durum
+            yok). */}
         <Marker
           coordinate={{ latitude: merkez.lat, longitude: merkez.lng }}
           anchor={{ x: 0.5, y: 1 }}
           tracksViewChanges={false}
-          accessibilityLabel="Buradasın"
+          accessibilityLabel={
+            merkezDurumu ? `Bu mekan, ${DURUM_ETIKETI[merkezDurumu]}` : 'Buradasın'
+          }
         >
           <Svg width={44} height={44} viewBox="0 0 24 24">
             <Path
               d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-              fill={renk.turuncu}
+              fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
               stroke="#FFFFFF"
               strokeWidth={1.4}
             />
             <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
           </Svg>
         </Marker>
+
+        {/* KULLANICININ KONUMU - her zaman TURUNCU, yani "sen"
+            demek. Mekan ignesi durum rengi tasidigi icin ikisi
+            karismiyor. Nokta bicimi de farkli: mekan bir IGNE, kullanici
+            bir DAIRE - haritalarda alisilmis ayrim. */}
+        {kullaniciKonumu && (
+          <Marker
+            coordinate={{
+              latitude: kullaniciKonumu.lat,
+              longitude: kullaniciKonumu.lng,
+            }}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+            accessibilityLabel="Buradasın"
+          >
+            <View style={stiller.kullaniciNoktasi} />
+          </Marker>
+        )}
       </MapView>
     </View>
   )
@@ -356,6 +422,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
   // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
+  // Kullanici noktasi: turuncu daire, beyaz halka. Igne DEGIL - mekan
+  // ignesiyle karismasin.
+  kullaniciNoktasi: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: renk.turuncu,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   igneEtiket: { maxWidth: 108 },
   igneAd: {
