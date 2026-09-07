@@ -453,6 +453,44 @@ dayaniyor.
 Kod tarafinda yarim kalan is YOK. Asagidakiler ya kullanicinin panel
 islerine ya da native derlemeye bagli.
 
+**0. TESTFLIGHT: BUILD 7 YUKLENDI, HARICI TEST INCELEMEDE - 2026-09-07.**
+
+Build 3'un "Expired" olmasi bir YAN BELIRTIYDI; altindaki gercek sorun
+iOS DERLEMESININ 9 GUNDUR KIRIK olmasiydi ve fark edilmemisti, cunku o
+sure boyunca yalnizca OTA (JavaScript) yayini yapildi, native derleme
+hic denenmedi. Ayrinti asagida "APPLE ILE GIRIS ENTITLEMENT" maddesinde.
+
+    Build 7   finished   1.0.0 (7)   TestFlight'a yuklendi
+    Harici grup "tesstt" + public link: testflight.apple.com/join/vfgCFp3b
+    Durum: Beta App Review - "Waiting for Review" (kullanici dogruladi)
+
+**PUBLIC LINK ONAY GELENE KADAR CALISMAZ** - grup sayfasindaki sari
+uyari ("Testers cannot join public link until this group has an
+approved build") bu yuzden duruyor ve bizim tarafimizda yapilacak bir
+sey yok.
+
+**Test Information doldurulurken TAKILINAN YER kayda geciyor:** Apple
+"Email / Sign-in required / User Name / Password couldn't be saved
+because ANOTHER field is invalid" diyor ve asil hatali alani
+soylemiyor. Suclu TELEFON NUMARASI idi; Turkiye bicimi (0 ile
+baslayan) kabul edilmiyor, uluslararasi bicim gerekiyor:
+`+905xxxxxxxxx` (bosluksuz, bastaki sifir ATILARAK).
+
+**Beta App Review icin verilen demo hesap** - Slooin girissiz hicbir
+sey gostermedigi icin bu ZORUNLU, verilmezse dogrudan reddediliyor:
+
+    test0@slooin.test / test1234
+
+**Gizlilik metni WEB'DE YAYINDA ve Apple'a o adres verildi:**
+`https://slooin.expo.app/gizlilik` - giris istemeden aciliyor,
+olculerek dogrulandi. ACIK BORC: metin hala "telefon numaran (hesap ve
+dogrulama icin)" diyor, oysa kayit E-POSTAYA tasinmisti. Apple magaza
+basvurusunda gizlilik metnini uygulamanin gercekte topladigi veriyle
+karsilastiriyor; o metin guncellenmeli.
+
+**Kendi cihazin icin inceleme BEKLENMEZ:** dahili (internal) test
+Beta App Review'a tabi degil, gruba build eklenince aninda calisiyor.
+
 **0. TESTFLIGHT BUILD 3 "EXPIRED" - 2026-09-07, DIKKAT.**
 App Store Connect'te build 3 "Expired" gorunuyor. **Suresi DOLMADI:**
 telefondaki TestFlight hala "Bitis Tarihi 28 Kas 2026" diyor (30
