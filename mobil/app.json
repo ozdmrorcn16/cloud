@@ -18,8 +18,7 @@
           "comgooglemaps",
           "maps"
         ]
-      },
-      "usesAppleSignIn": true
+      }
     },
     "android": {
       "package": "com.slooin.app",

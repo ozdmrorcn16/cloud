@@ -418,6 +418,44 @@ Yani yeni build
 1.0.0 (4) olur ve bugune kadarki BUTUN OTA guncellemelerini aninda
 alir.
 
+**0.5. APPLE ILE GIRIS ENTITLEMENT'I GECICI KAPALI - 2026-09-07.**
+
+`app.json` icindeki `ios.usesAppleSignIn: true` KALDIRILDI cunku
+derlemeyi kiriyordu. Xcode hatasi aynen:
+
+    Provisioning profile "[expo] com.slooin.app AppStore
+    2026-08-29T22:52:14.006Z" doesn't include the Sign In with Apple
+    capability / the com.apple.developer.applesignin entitlement.
+
+**Kok neden:** provisioning profile 29 Agustos'ta, o satir eklenmeden
+ONCE uretilmisti. Build 3 (30 Agustos) bu yuzden gecti; build 4 ve 5
+bu yuzden patladi. **Teshis tuzagi:** EAS "All credentials are ready
+to build" diyor ve profile "active" gorunuyor - yani credential
+ekranina bakarak sorun ANLASILMIYOR, hata ancak Xcode asamasinda
+cikiyor. Ayrica `--non-interactive` build hatanin metnini GOSTERMIYOR;
+gormek icin CLI'yi bekleyen (interaktif) modda kosmak gerekti.
+
+**Kaldirmanin bedeli SIFIR oldu:** Apple ile giris Supabase tarafinda
+zaten etkin degil, dugmeye basinca "Bu giris yontemi su an
+kullanilamiyor" donuyor. Paket ve dugme yerinde duruyor, yalnizca
+entitlement kapali.
+
+**GERI ACMA - magazaya cikmadan ONCE sart** (iOS'ta baska bir sosyal
+giris varsa App Store "Apple ile giris"i ZORUNLU tutuyor):
+
+    1. developer.apple.com > Certificates, IDs & Profiles >
+       Identifiers > com.slooin.app > "Sign In with Apple" > Save
+    2. app.json icindeki ios blokuna "usesAppleSignIn": true geri konur
+    3. Yeni derleme; EAS profile'i capability ile yeniden uretir
+
+Ayrinti ve gerekce `mobil/app.config.js` basindaki yorumda.
+
+**AYRICA - derleme arsivi 496 MB** ve her denemede ~1,5 dakikasi
+yuklemeye gidiyor. `mobil/` altindaki gercek icerik ~50 MB (dist 41,
+assets 3, .expo 2); geri kalani node_modules. `.easignore` eklenirse
+kisalir ama DIKKAT: `.easignore` varsa `.gitignore` YOKSAYILIR, yani
+node_modules dahil her sey o dosyada tek tek yazilmali.
+
 **1. NATIVE DERLEME BEKLIYOR.** Su degisiklikler OTA ILE GITMEZ, yeni
 bir iOS derlemesi gerekiyor: Apple ile giris, Google ile giris
 (`@react-native-google-signin`), `LSApplicationQueriesSchemes` (yol

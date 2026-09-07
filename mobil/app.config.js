@@ -11,6 +11,40 @@
  * (gri) gorunur, igneler yine cizilir. iOS Apple Haritalar kullandigi
  * icin anahtardan hic etkilenmiyor.
  */
+/**
+ * ACIK BORC - APPLE ILE GIRIS entitlement'i GECICI OLARAK KAPALI
+ * (2026-09-07).
+ *
+ * `app.json` icinde `ios.usesAppleSignIn: true` vardi ve derlemeyi
+ * KIRIYORDU. Xcode\'un verdigi hata aynen soyleydi:
+ *
+ *   Provisioning profile "[expo] com.slooin.app AppStore
+ *   2026-08-29T22:52:14.006Z" doesn't include the Sign In with Apple
+ *   capability / the com.apple.developer.applesignin entitlement.
+ *
+ * Sebep: profile 29 Agustos\'ta, o satir eklenmeden ONCE uretilmisti;
+ * icinde o yetki yok. Build 3 bu yuzden gecmis, 4 ve 5 bu yuzden
+ * patlamisti.
+ *
+ * Satir kaldirildi cunku o an CALISAN bir islevi yoktu: Apple ile
+ * giris Supabase tarafinda zaten etkin degil, dugmeye basinca "Bu
+ * giris yontemi su an kullanilamiyor" donuyor. Yani kayip sifir,
+ * kazanc TestFlight\'in yeniden calisir hale gelmesi.
+ *
+ * GERI ACMAK ICIN (magazaya cikmadan ONCE yapilmali - iOS\'ta baska
+ * bir sosyal giris sunuluyorsa App Store "Apple ile giris"i ZORUNLU
+ * tutuyor):
+ *   1. developer.apple.com > Certificates, IDs & Profiles >
+ *      Identifiers > com.slooin.app > "Sign In with Apple" isaretle,
+ *      Save.
+ *   2. `app.json` icindeki `ios` blokuna `"usesAppleSignIn": true`
+ *      geri konur.
+ *   3. Yeni bir derleme alinir; EAS profile\'i capability ile birlikte
+ *      yeniden uretir.
+ *
+ * `expo-apple-authentication` paketi ve ekrandaki dugme YERINDE
+ * duruyor - yalnizca entitlement kapali.
+ */
 module.exports = ({ config }) => {
   const androidAnahtari = process.env.GOOGLE_MAPS_ANDROID_ANAHTARI
 
