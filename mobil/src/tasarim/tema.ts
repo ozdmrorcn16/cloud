@@ -64,18 +64,34 @@ export const acikRenk = {
    * "checkin dugmesine basinca koyu renk oluyor, daha acik parlak bir
    * renk olsun"). Koyu bir ton "basildi" degil "sonmus" okunuyor.
    *
+   * FARK KASITLI OLARAK KUCUK. Ilk denemede #FF9142 kullanildi ve
+   * kullanici "cok acik renk olmus" dedi (2026-09-07); istegi
+   * "basilmadan onceki rengi kalsin, basinca SADECE daha parlak
+   * gorunsun, obur butonlar gibi olsun" seklindeydi.
+   *
+   * "Obur butonlar kadar ama ters yonde" diye simetrik bir hesap
+   * denendi ve ELENDI: butonlarin koyulasma miktari 0,0938 parlaklik
+   * ve ayni miktarda yukari cikmak 0,4393 hedefi veriyor - yani zaten
+   * cok acik bulunan #FF9142'den (0,4190) DAHA acik bir ton. Simetri
+   * burada yanlis olcut; goz koyulasmayi ve aciltmayi ayni buyuklukte
+   * algilamiyor.
+   *
+   * Secilen fark, butonlarin basili farkinin ucte biri kadar:
+   *     marka   #FE7813  parlaklik 0,3455
+   *     secili  #FF8419  parlaklik 0,3783   (+0,0328)
+   *
    * ODUN, olculdu ve bilerek kabul edildi: uzerindeki beyaz konum
-   * ignesi bu tonda 2,24:1 veriyor (marka tonunda 2,65). Grafik esigi
+   * ignesi bu tonda 2,45:1 veriyor (marka tonunda 2,65). Grafik esigi
    * 3:1, yani ikisi de altinda - marka turuncusundaki ayni odunun
-   * devami (bkz. `turuncu` jetonunun notu). Daha parlak adaylar
-   * olculdu ve ELENDI: #FFA45C 1,96'ya duesuerueyor, ki orada beyaz
-   * igne gorunur sekilde soluklasiyor. Buna karsilik dugmenin beyaz
-   * cubuktan AYRILMASI artiyor (2,65 -> 2,24 degil; zemin karsiti
-   * hesapta secili ton daha guclu ayrisiyor) ve secili dugme ayrica
-   * buyueyup yukari kalkiyor, yani ayirt edicilik yalnizca renge
-   * yuklenmis degil.
+   * devami (bkz. `turuncu` jetonunun notu). Farki kucultmek ikon
+   * okunurlugunu da iyilestirdi (2,24 -> 2,45). Elenen adaylar:
+   * #FFA45C 1,96 (beyaz igne gorunur sekilde soluk), #FF9142 2,24
+   * (kullanici cok acik buldu).
+   *
+   * Secili dugme ayrica buyueyup yukari kalkiyor, yani ayirt edicilik
+   * yalnizca renge yuklenmis degil - ton bu yuzden ince kalabiliyor.
    */
-  turuncuSecili: '#FF9142',
+  turuncuSecili: '#FF8419',
   /** Turuncunun yumusak zemini (secili satir, rozet arkasi). */
   turuncuZemin: '#FFF3E8',
 
@@ -209,11 +225,11 @@ export const koyuRenk: Renk = {
    */
   turuncuBasili: '#E06509',
   /**
-   * SECILI dolgu iki modda da AYNI. Koyu zeminde bu ton 7,81:1 ile
-   * zaten guclu ayrisiyor; ayrica koyu modda "secili" halin parlak
-   * olmasi acik moddakinden bile dogal.
+   * SECILI dolgu iki modda da AYNI. Koyu zeminde bu ton zaten guclu
+   * ayrisiyor; ayrica koyu modda "secili" halin parlak olmasi acik
+   * moddakinden bile dogal.
    */
-  turuncuSecili: '#FF9142',
+  turuncuSecili: '#FF8419',
   /** Yumusak zemin: turuncunun sicak, cok koyu hali. */
   turuncuZemin: '#3A2412',
 

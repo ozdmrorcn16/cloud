@@ -463,20 +463,45 @@ koyu bir ton orada "basildi" degil "sonmus" okunuyordu. Ayni jeton
 kullaniliyor - orada koyulasma DOGRU, o yuzden jetonun kendisi
 degistirilmedi.
 
-**YENI JETON `turuncuSecili: '#FF9142'`** (iki palette de ayni),
+**YENI JETON `turuncuSecili: '#FF8419'`** (iki palette de ayni),
 yalnizca check-in dugmesinin secili halinde ve o dugmenin ikonunun ic
 dairesinde kullaniliyor.
+
+**TON AYNI GUN BIR KEZ KISILDI.** Ilk deger `#FF9142` idi ve kullanici
+"cok acik renk olmus" dedi; istegi "basilmadan onceki rengi kalsin,
+basinca SADECE daha parlak gorunsun, obur butonlar gibi olsun."
+
+**"Obur butonlar kadar ama ters yonde" diye simetrik bir hesap denendi
+ve ELENDI** - ilgin bir sonuc verdi: butonlarin basili haldeki
+koyulasmasi 0,0938 parlaklik ve ayni miktarda YUKARI cikmak 0,4393
+hedefi veriyor, yani zaten cok acik bulunan #FF9142'den (0,4190) DAHA
+acik bir ton. **Ders: goz koyulasmayi ve aciltmayi ayni buyuklukte
+algilamiyor; parlak yonde ayni sayisal fark cok daha buyuek gorunuyor.**
+
+Secilen fark, butonlarin basili farkinin UCTE BIRI:
+
+    marka   #FE7813  parlaklik 0,3455   beyaz igne 2,65
+    secili  #FF8419  parlaklik 0,3783   beyaz igne 2,45   (+0,0328)
+    elenen  #FF9142  parlaklik 0,4190   beyaz igne 2,24   (cok acik)
+    elenen  #FFA45C  parlaklik 0,4600   beyaz igne 1,96   (igne soluk)
+
+Farki kucultmek ikon okunurlugunu da iyilestirdi (2,24 -> 2,45).
+
+Kontrast paketinde farkin BUYUEKLUEGUE de kilitli: 0,02 ile 0,05
+arasinda olmali - alt sinir farkin gozle secilebilir kalmasi, ust
+sinir kullanicinin "cok acik" dedigi denemenin (+0,0735) altinda
+kalmak icin.
 
 **TON OLCUELEREK SECILDI, tahminle degil.** Beyaz konum ignesinin
 dugme uzerindeki kontrasti:
 
     turuncu (marka)  #FE7813   2,65
     turuncuBasili    #E06509   3,48   (koyu - basili hal icin dogru)
-    SECILEN          #FF9142   2,24
+    SECILEN          #FF8419   2,45
+    elenen           #FF9142   2,24   <- kullanici "cok acik" buldu
     elenen           #FFA45C   1,96   <- igne gorunur sekilde soluk
-    elenen           #FF8A2B   2,35   <- markadan farki gozle secilmiyor
 
-**ODUN acikca kabul edildi:** 2,24 grafik esigi olan 3:1'in ALTINDA.
+**ODUN acikca kabul edildi:** 2,45 grafik esigi olan 3:1'in ALTINDA.
 Bu, marka turuncusundaki ayni odunun devami (o da 2,65 ile altinda ve
 `marka-turuncusu-degistirilmez` karariyla korunuyor). Secili dugme
 ayrica BUYUEYUEP YUKARI KALKIYOR, yani ayirt edicilik yalnizca renge

@@ -120,6 +120,18 @@ describe.each([
     expect(parlaklik(renk.turuncuSecili)).toBeGreaterThan(parlaklik(renk.turuncuBasili))
   })
 
+  /**
+   * Yon kadar BUYUEKLUEK de onemli: ilk denemede fark fazla buyuektue
+   * ve kullanici "cok acik renk olmus" dedi. Ust sinir o denemenin
+   * (#FF9142, +0,0735) altinda tutuluyor; alt sinir ise farkin gozle
+   * secilebilir kalmasini sagliyor.
+   */
+  it('SECILI dolgunun farki OLCUELUE - ne kaybolacak kadar az, ne cirkin kadar cok', () => {
+    const fark = parlaklik(renk.turuncuSecili) - parlaklik(renk.turuncu)
+    expect(fark).toBeGreaterThan(0.02)
+    expect(fark).toBeLessThan(0.05)
+  })
+
   it('SECILI dolgu uzerindeki beyaz ikon: OLCUM KAYDI, esik iddiasi degil', () => {
     // Bu deger 3:1 grafik esiginin ALTINDA ve bu BILEREK kabul edildi
     // (kullanicinin istegi 2026-09-07: secili check-in dugmesi parlak
@@ -127,10 +139,11 @@ describe.each([
     // burada da gecerli, ustelik secili dugme ayrica buyueyup yukari
     // kalktigi icin ayirt edicilik yalnizca renge yuklenmis degil.
     //
-    // Iddia esik degil SAYI: ton sessizce daha da acilirsa bu test
-    // kirilir ve karar yeniden onune gelir. #FFA45C denenmis ve
-    // 1,96 verdigi icin elenmisti.
-    expect(oran(BEYAZ, renk.turuncuSecili)).toBe(2.24)
+    // Iddia esik degil SAYI: ton sessizce oynatilirsa bu test kirilir
+    // ve karar yeniden onune gelir. Elenen adaylar: #FFA45C 1,96
+    // (beyaz igne gorunur sekilde soluk), #FF9142 2,24 (kullanici
+    // "cok acik" buldu).
+    expect(oran(BEYAZ, renk.turuncuSecili)).toBe(2.45)
   })
 
   // ---------------------------------------------------------------- //
