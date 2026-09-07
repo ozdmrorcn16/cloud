@@ -131,6 +131,68 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SLOOIN WEB SITESI EKLENDI - 2026-09-07 (henuz yayinda degil)
+
+Magaza basvurusu icin ayri, statik bes sayfalik bir web sitesi
+yazildi: `site/` (Astro 7.3.1, `output: 'static'`). Uygulamanin
+kendisi degil, `mobil/`den TAMAMEN ayri bir proje - kendi
+`package.json`'i, kendi `README.md`'si var (`site/README.md`).
+
+    /            ana sayfa - tek ekranlik tanitim sahnesi
+    /gizlilik    KVKK gizlilik metni  (Apple ve Play ikisi de sart kosuyor)
+    /kosullar    kullanim kosullari   (bu is kaleminde SIFIRDAN yazildi)
+    /destek      destek + SSS         (Apple Guideline 1.5, Support URL)
+    /hesap-sil   web'den hesap silme  (Play sarti; JavaScript tasiyan tek sayfa)
+
+**BARINDIRMA CLOUDFLARE PAGES, EAS Hosting DEGIL.** EAS Hosting
+denendi (uygulamanin web surumu zaten orada) ama ozel alan adi
+baglamak Expo'nun ucretli planini gerektiriyor; Cloudflare Pages
+ucretsiz katmanda ozel alan adini destekliyor.
+
+**HENUZ YAYINDA DEGIL.** Alan adi (`slooin.com`) satin alinmadi,
+Cloudflare Pages projesi kurulmadi - ikisi de kullaniciya ait,
+etkilesimli adimlar. Kurulunca proje ayarlari: kok dizin `site`,
+derleme komutu `npm run build`, cikti klasoru `dist`; ortam
+degiskenleri (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`)
+yalnizca Cloudflare panelinde tanimlanir, depoya YAZILMAZ.
+
+**UC AYRI YAYIN YOLU VAR, KARISTIRILMAMALI:**
+
+| Hedef | Nasil |
+|---|---|
+| Bu site (`slooin.com`, yayinda olunca) | Cloudflare Pages, `main` dalina push ile otomatik |
+| Uygulamanin web surumu (`slooin.expo.app`) | `cd mobil && npm run yayinla` |
+| Telefon / TestFlight | `eas update --channel production` |
+
+Bu siteye push atmak digerlerini GUNCELLEMEZ, digerlerini yayinlamak
+bu siteyi GUNCELLEMEZ.
+
+**DOGRULAMA ARACI: `site/araclar/dogrula.mjs`** (`npm run dogrula`).
+Butun sayfalarin 200 dondugunu, hukuki sayfalarin JavaScript
+kapaliyken de okunabildigini (Apple sarti), 1280/390 px'te yatay
+tasma olmadigini, ic baglantilarin canli oldugunu ve cok dilli
+yapinin (su an yalnizca `tr`, `site/src/i18n/diller.ts`) gercekten
+calistigini olcuyor.
+
+**CANLI SILME TESTI IKI GERCEK URETIM HATASI BULDU** (ikisi de bu is
+kaleminde duzeltildi): (1) yayindaki `hesap-sil` Edge Function'i
+ESKIYDI, depodaki e-posta destekli kod hic deploy edilmemisti - e-posta
+ile acilmis hicbir hesap silinemiyordu; guncel kod deploy edilerek
+duzeltildi. (2) `auth.admin.deleteUser` her cagrildiginda
+`mekanlar.ekleyen_kullanici` INDEKSSIZ bir yabanci anahtar yuzunden
+5,98 milyon satirlik `mekanlar` tablosunun tamamini tariyor ve ~10
+saniyede zaman asimina duesuyordu; kismi bir indeks
+(`where ekleyen_kullanici is not null`, `CONCURRENTLY`) eklenerek
+duzeltildi, sonrasinda silme tek denemede ~59 ms'de tamamlandi. Test
+`site/araclar/silme-canli-test.mjs` + `araclar/site-silme-test-hesabi.py`
+- gercek (atilabilir) bir hesap acip GERCEKTEN siliyor, mock degil.
+
+Telefon ekran goruntuleri (`site/public/ekran-*.png`) gercek test
+hesabindan ama **provizyonel**: mobil'in WEB surumunden alindilar
+(gercek harita yerine radar cizimi gosteriyor) ve kullanicinin
+uzerinde calistigi ekran degisiklikleri bitince yeniden cekilmeleri
+gerekiyor. Ayrinti ve yenileme komutu `site/README.md` icinde.
+
 ### KIMLIK TELEFONDAN E-POSTAYA TASINDI - 2026-09-01/02
 
 Kullanicinin karari. **Sebep hukuki degil pratik: SMS gonderemiyoruz.**
