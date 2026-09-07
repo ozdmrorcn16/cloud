@@ -76,18 +76,32 @@ describe('AltGezinme - aktif sekme dairesi', () => {
   })
 
   /**
-   * Etiketler referans varyantta yok. Ekran okuyucu icin kayip
-   * olmadigini da olcuyoruz: ad hala erisilebilirlik etiketinde.
+   * Etiketler referans varyantta yoktu ve bir sure kaldirilmislardi;
+   * kullanici geri istedi (2026-09-07). Iddia silinmedi TERSINE
+   * cevrildi, boylece sessizce yeniden kaldirilirlarsa test kirilir.
    */
-  it('sekme adlarini yazi olarak gostermez ama erisilebilirlik etiketinde tutar', async () => {
+  it('sekme adlarini etiket olarak gosterir', async () => {
     await render(<AltGezinme />)
 
-    expect(screen.queryByText('Ana sayfa')).toBeNull()
-    expect(screen.queryByText('Mesajlar')).toBeNull()
-    expect(screen.queryByText('Check-in')).toBeNull()
+    expect(screen.getByText('Ana sayfa')).toBeTruthy()
+    expect(screen.getByText('Mesajlar')).toBeTruthy()
+    expect(screen.getByText('Check-in')).toBeTruthy()
 
-    expect(screen.getByLabelText('Mesajlar')).toBeTruthy()
+    // Erisilebilirlik etiketi de duruyor - gorsel etiketten bagimsiz.
     expect(screen.getByLabelText('Check-in yap')).toBeTruthy()
+  })
+
+  /**
+   * Aktif sekmede IKON gizleniyor ama ETIKET gizlenmiyor: ikonun
+   * yerini ustteki daire aliyor, etiket ise slotta kalan tek isaret.
+   * Gizlenseydi aktif sekmenin adi hicbir yerde yazmazdi.
+   */
+  it('aktif sekmenin etiketi GORUNUR kaliyor', async () => {
+    mockYol.mockReturnValue('/profil')
+    await render(<AltGezinme />)
+
+    expect(screen.getByTestId('sekme-ikonu/profil')).toHaveStyle({ opacity: 0 })
+    expect(screen.getByText('Profil')).toBeTruthy()
   })
 
   /** Rozet pasif sekmede duruyor. */

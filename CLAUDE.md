@@ -687,8 +687,43 @@ kayarken cubugun ICINDE oldugu icin dugmeyle cakismiyordu.
 2. Videodaki varyantlarda merkez dugme yok; bizde check-in dugmesi
    duruyor ve animasyon onun etrafindan kurgulandi.
 
-**ETIKETLER KALKTI** (referans varyantta yok). Ekran okuyucu icin
-kayip yok - her sekme `accessibilityLabel` tasiyor.
+**ETIKETLER GERI GELDI.** Referans varyantta yoktular ve bir sure
+kaldirilmislardi; kullanici geri istedi (2026-09-07: "sabit sutunu
+butonlari eski haline getir, altlarinda yazi olan haline"). Yani daire
+referanstan, etiketler bizden.
+
+Geri gelmeleri IKI YERI etkiledi ve ikisi de olcuelerek duzeltildi:
+
+1. **Check-in dugmesinin tasmasi transform yerine `marginTop`.**
+   Etiketler yokken tasma transform'daydi (layout'u etkilemedigi icin
+   satiri kisaltmiyordu). Etiketler gelince o cozum bozuldu: transform
+   PRESSABLE'a uygulandigi icin ETIKETI de yukari tasiyor ve komsu
+   etiketlerden 18 px yukarida birakiyordu. Simdi statik tasma
+   `marginTop`ta, secili haldeki EK hareket ise ICTEKI DAIREYE
+   uygulanan bir transform - etiket onunla oynamiyor. Pressable'a
+   `hitSlop={{ top: 12 }}` verildi: daire secilince transform'la
+   yukari cikiyor ve dokunma alani onunla tasinmiyor.
+
+2. **Daireye ETIKET TELAFISI gerekti.** Yuva cubugun tam dikey
+   ortasina oturuyor, ama hizalanmasi gereken sey cubugun ortasi degil
+   IKONUN merkezi - etiket eklenince ikon kendi slotunda yukari kaydi
+   (ikon + gap + etiket birlikte ortalaniyor). `daireYuva`ya
+   `paddingBottom: 18` kondu (gap 4 + etiket satiri ~14), icerigi tam
+   yarisi kadar (9 px) yukari itiyor.
+
+   **OLCULEREK DOGRULANDI:** dairenin dalista inecegi merkez 783,0 ve
+   ikonun merkezi 783 - dikey sapma 0 px, yatay sapma 0,2 px. Bu sayi
+   etiketin puntosu ya da gap degisirse GUNCELLENMELI, yoksa daire
+   dalista ikonun uzerine tam oturmaz.
+
+**AKTIF SEKMEDE IKON GIZLI AMA ETIKET GORUNUR.** Ikonun yerini ustteki
+daire aliyor; etiket ise slotta kalan tek isaret, gizlenseydi aktif
+sekmenin adi hicbir yerde yazmazdi. Iki testle kilitli.
+
+**KARTTAKI ETIKET "Ayrıldım"** - bir tur "Ayrıl" yapilmisti (mekan
+sayfasindaki cubukla ayni kelime olsun diye) ama kullanici geri
+dondurdu. Yani kartta "Ayrıldım", mekan sayfasinda "Ayrıl"; ikisi
+bilerek farkli.
 
 **CUBUK KISALMADI - kullanicinin duzeltmesi.** Etiketler kalkinca
 cubuk 80 -> 62 px'e duestu; kullanici "cubuk kisalmasin boyutu onceki

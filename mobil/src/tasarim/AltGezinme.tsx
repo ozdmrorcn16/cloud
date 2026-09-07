@@ -6,7 +6,7 @@ import { useSafeAreaInsets, initialWindowMetrics } from 'react-native-safe-area-
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { bekleyenEtiketleriGetir } from '../../lib/etiket'
-import { yazi, bosluk, yuvarlak, golge, type Renk } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 
 /**
@@ -63,9 +63,10 @@ import { useRenk, useStiller } from './tema-baglami'
  * kalkiyor, birakildiginda eski olcusune donuyor. Boylece cubuktaki
  * her secim ayni dili konusuyor.
  *
- * ETIKETLER KALKTI (ayni karar): referans varyantta ikon var etiket
- * yok. Ekran okuyucu icin kayip yok - her sekme `accessibilityLabel`
- * tasiyor.
+ * ETIKETLER DURUYOR. Referans varyantta yoktular ve bir sure
+ * kaldirildilar, ama kullanici geri istedi (2026-09-07: "sabit sutunu
+ * butonlari eski haline getir, altlarinda yazi olan haline"). Yani
+ * daire referanstan, etiketler bizden.
  *
  * ANIMASYON `Animated` ILE, Reanimated ile DEGIL. Sebep: hareketin
  * tamami transform ve opacity, yani `useNativeDriver` ile JS
@@ -200,13 +201,6 @@ const SEKMELER: Sekme[] = [
 ]
 
 /**
- * Transform DOGRUDAN Pressable'a veriliyor, icindeki gorsel View'a
- * degil: RN dokunma alanini transform'a gore hesapliyor, ice
- * verilseydi dugme yukarida gorunup dokunma alani asagida kalirdi.
- */
-const AnimasyonluPressable = Animated.createAnimatedComponent(Pressable)
-
-/**
  * Ortadaki check-in dugmesi.
  *
  * Sekme degil EYLEM: turuncu dolu daire, beyaz konum ignesi. Diger
@@ -234,27 +228,39 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
   }, [aktif, vurgu])
 
   return (
-    <AnimasyonluPressable
-      style={[
-        stiller.merkez,
-        {
-          transform: [
-            {
-              translateY: vurgu.interpolate({
-                inputRange: [0, 1],
-                outputRange: [MERKEZ_TASMA, MERKEZ_TASMA - 8],
-              }),
-            },
-            { scale: vurgu.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
-          ],
-        },
-      ]}
+    <Pressable
+      style={stiller.merkez}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: aktif }}
       accessibilityLabel="Check-in yap"
+      /*
+       * Daire secilince 8 px daha yukari cikiyor ve transform layout'u
+       * etkilemedigi icin Pressable'in alani onunla birlikte
+       * TASINMIYOR. Ust paya ek dokunma alani veriliyor ki dairenin
+       * gorunen tepesi de basilabilir kalsin.
+       */
+      hitSlop={{ top: 12, bottom: 0, left: 0, right: 0 }}
     >
-      <View style={[stiller.merkezDaire, aktif && stiller.merkezDaireAktif]}>
+      {/*
+        TRANSFORM ICTEKI DAIREDE, Pressable'da DEGIL. Pressable'a
+        verilseydi ETIKET de onunla birlikte oynar ve komsu
+        etiketlerden yukarida kalirdi; etiketler geri gelince bu ortaya
+        cikti. Statik tasma zaten `merkez` stilindeki `marginTop`ta,
+        buradaki animasyon yalnizca secili haldeki EK hareketi tasiyor.
+      */}
+      <Animated.View
+        style={[
+          stiller.merkezDaire,
+          aktif && stiller.merkezDaireAktif,
+          {
+            transform: [
+              { translateY: vurgu.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
+              { scale: vurgu.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
+            ],
+          },
+        ]}
+      >
         <Svg width={30} height={30} viewBox="0 0 24 24">
           <Path
             d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
@@ -262,8 +268,11 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
           />
           <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuSecili : renk.turuncu} />
         </Svg>
-      </View>
-    </AnimasyonluPressable>
+      </Animated.View>
+      <Text style={stiller.merkezEtiket} numberOfLines={1}>
+        Check-in
+      </Text>
+    </Pressable>
   )
 }
 
@@ -470,6 +479,15 @@ export function AltGezinme() {
                   </View>
                 )}
               </View>
+              {/*
+                Etiket GIZLENMIYOR - ikonun aksine. Aktif sekmede ikonun
+                yerini ustteki daire aliyor, ama etiket slotta kalan tek
+                isaret; gizlenseydi aktif sekmenin adi hicbir yerde
+                yazmazdi.
+              */}
+              <Text style={[stiller.etiket, aktif && stiller.etiketAktif]} numberOfLines={1}>
+                {s.ad}
+              </Text>
             </Pressable>
             </React.Fragment>
           )
@@ -534,8 +552,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     height: SATIR,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
     paddingHorizontal: 2,
   },
+  etiket: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+  },
+  /*
+   * Aktif etiket turuncu ve kalin. Aktif sekmenin IKONU gizli (yerini
+   * ustteki daire aldi), yani sekmeyi slotta temsil eden tek sey bu
+   * etiket - vurguyu tasimasi gerekiyor.
+   */
+  etiketAktif: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 
   /**
    * Dairenin altinda kalan ikon SILINMIYOR, soneuyor: slot
@@ -558,6 +588,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     width: DAIRE,
     alignItems: 'center',
     justifyContent: 'center',
+    /*
+     * ETIKET TELAFISI. Yuva cubugun tam dikey ortasina oturuyor ama
+     * hizalanmasi gereken sey cubugun ortasi degil IKONUN merkezi -
+     * etiket eklenince ikon, kendi slotunda yukari kaydi (ikon + gap +
+     * etiket birlikte ortalaniyor). Alt pay icerigi tam o kadar yukari
+     * itiyor: gap (4) + etiket satiri (~14) = 18, yarisi 9 px.
+     *
+     * Bu sayi etiketin punto ya da gap degistiginde GUNCELLENMELI;
+     * yoksa daire ikonun uzerine tam oturmaz ve dalis sirasinda kayma
+     * gorunur.
+     */
+    paddingBottom: 18,
   },
   /** IC katman: gorunen turuncu yuvarlak. */
   daireGovde: {
@@ -583,14 +625,39 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Merkez dugme cubugun USTUNE tasiyor: buyuklugu ancak boyle
   // gorunuyor, yoksa cubugun ic yuksekligi onu diger ikonlarla ayni
   // hizaya sikistiriyor.
-  // Tasma ve buyume artik ANIMASYONDA (bkz. CheckInDugmesi); burada
-  // sabit bir transform birakilsaydi animasyonlu olan onu ezer ve ayni
-  // ozelligi iki kaynak surerdi.
+  /*
+   * TASMA `marginTop` ILE, transform ile DEGIL - ve bu bilincli bir
+   * geri donue.
+   *
+   * Etiketler yokken tasma transform'daydi cunku transform layout'u
+   * etkilemiyor ve satirin boyunu kisaltmiyordu. Etiketler gelince o
+   * cozum bozuldu: transform PRESSABLE'a uygulandigi icin etiketi de
+   * yukari tasiyor ve komsu etiketlerden 18 px yukarida birakiyordu.
+   *
+   * `marginTop` yalnizca dugmeyi kaldiriyor, etiket kendi akisinda
+   * kaliyor. Satirin boyunu `sekme` (height: SATIR) belirledigi icin
+   * cubuk yine 80 px.
+   *
+   * Secili haldeki ek hareket (yukselme + buyume) hala ANIMASYONDA,
+   * ama artik Pressable'a degil ICTEKI DAIREYE uygulaniyor - ayni
+   * sebeple: etiket onunla birlikte oynamasin.
+   */
   merkez: {
     flex: 1,
-    height: SATIR,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
+    marginTop: -18,
+  },
+  merkezEtiket: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.turuncuYazi,
+    /*
+     * Daire diger ikonlardan 30 px buyuk ve 18 px yukarida; etiket
+     * aksi halde komsu etiketlerden asagida kalir. -4 hem daireyle
+     * cakismiyor hem komsu etiketlere yakin duruyor (olculdu).
+     */
+    marginTop: -4,
   },
   merkezDaire: {
     width: 54,

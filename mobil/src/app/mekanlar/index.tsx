@@ -637,7 +637,7 @@ export default function KesfetEkrani() {
                 <Text style={stiller.canliYazi}>Şu an buradasın</Text>
                 <View style={stiller.canliEylemler}>
                   <Pressable onPress={ayril} accessibilityRole="button" hitSlop={10}>
-                    <Text style={stiller.ayrilYazi}>Ayrıl</Text>
+                    <Text style={stiller.ayrilYazi}>Ayrıldım</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => setSilOnayi(true)}

@@ -275,9 +275,9 @@ describe('MekanAramaEkrani', () => {
     // yerlesimde: ayri bir buton satiri degil, seridin sagindaki
     // yazilar. Eski etiket "Ayrıldım" idi, artik "Ayrıl" - mekan
     // sayfasindaki "Buradasın · Ayrıl" cubuguyla ayni kelime.
-    expect(screen.getByText('Ayrıl')).toBeTruthy()
+    expect(screen.getByText('Ayrıldım')).toBeTruthy()
     expect(screen.getByText('Sil')).toBeTruthy()
-    expect(screen.queryByText('Ayrıldım')).toBeNull()
+    expect(screen.queryByText('Ayrıl')).toBeNull()
   })
 
   /**
