@@ -245,7 +245,8 @@ check-inler).
    calismiyor); kim tarafindan gorulecegi ise kullanicinin kendi
    **gorunurluk tercihi** ile belirleniyor - `bulunurluk` (canli) ve
    `gorunurluk` (ani) alanlari. Yeni sayfa bu tercihleri degistirmiyor.
-3. **Sure?** Degismedi. Canli check-in suresi dolunca koordinat
+3. **Sure?** Canli check-in 1 SAAT surer (kullanicinin karari
+   2026-09-07; onceki deger 30 dakikaydi). Suresi dolunca koordinat
    siliniyor; ani kaydi kullanici silene ya da hesabini silene kadar
    duruyor.
 4. **Kim gorebiliyor?** Burada **iki ayri rejim** var ve ayrim kasitli:

@@ -36,7 +36,7 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
 - **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
   cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
-  koordinatin saklanir, check-in aniya donusunce (suresi dolunca ya da
+  koordinatin saklanir, check-in aniya donusunce (1 SAAT sonra ya da
   hemen "ayrildim" dediginde) koordinat SILINIR ve geriye
   yalnizca hangi mekanda oldugun kalir (tam ayrinti madde 3'te)
 - Gonderdigin ve aldigin mesajlarin icerigi
@@ -73,10 +73,12 @@ karistirmamak onemli:
   `mekan_ekle` fonksiyonu `p_cihaz_lat`/`p_cihaz_lng`yi yalnizca
   `ST_DWithin` kontrolunde kullanir, hicbir sutuna yazmaz.)
 - **Check-in yaptiginda:** check-in **AKTIFKEN** koordinatin saklanir.
-  Ama bu gecici: check-in **suresi dolunca** (ya da hemen
+  Ama bu gecici: check-in **1 SAAT** sonra (ya da hemen
   "ayrildim" dediginde) otomatik olarak **aniya** donusur, ve bu
   donusumde **koordinat SILINIR** (veritabaninda null'a cekilir) -
   geriye yalnizca hangi mekanda oldugun kalir, tam koordinat degil.
+  Temizlik isi 10 dakikada bir kostugu icin koordinat en fazla
+  **~1 saat 10 dakika** saklanir.
   (Kod: `check_inden_ayril` RPC'si ve 10 dakikada bir calisan
   `check-in-suresi-dolanlari-aniya-cevir` adli pg_cron isi `konum`
   sutununu null yapiyor.)

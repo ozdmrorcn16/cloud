@@ -29,21 +29,36 @@ export function gorecelZaman(
 }
 
 /**
- * ZAMAN ETIKETININ UC KADEMESI (kullanicinin karari 2026-08-29).
+ * ZAMAN ETIKETI (kullanicinin karari 2026-09-07).
  *
- * Onceki kural "4 saat canli, ilk bir saat 'şu an burada'" idi. 4 saat
- * kaldirildi; yerine su geldi:
+ * Kullanicinin ifadesi: "Check-in yapan biri yaptigi an 'su an burada'
+ * kisminda gorunuyor... 1 saati dolunca '1 saat once', kac saat
+ * gecmisse o sekilde devam eden bir gosterme."
  *
- *   0 - 30 dk   "şu an burada"
- *   30 - 60 dk  gorece zaman: "35 dk önce", "1 saat önce"
- *   60 dk sonra ibare YOK; yalnizca tarih ve saat kaliyor
+ *   0 - 60 dk    "şu an burada"
+ *   60 dk sonra  gorece zaman: "1 saat önce", "5 saat önce", "1 gün önce"
  *
- * Sunucu tarafi da ayni pencereye cekildi: check-in 30 dakika sonra
- * aniya donusuyor (migrasyon 20260829100000). Yani "canli" olmanin
- * suresi ile etiketin suresi artik AYNI - onceden etiket bir saatte
- * susuyor ama kayit dort saat canli kaliyordu.
+ * Bu, 2026-08-29'un uc kademeli 30 dakikalik kuralinin YERINI ALIYOR.
+ * Ayrica 2026-09-04'te "sure kullanici tarafindan secilecek" diye acik
+ * birakilan karar da kapandi: sure SABIT ve 1 saat.
+ *
+ * Ikinci kademe icin yeni bir sey yazilmadi - `gorecelZaman` zaten
+ * dakika -> saat -> gun -> tarih basamaklarini uretiyor.
+ *
+ * Sunucu ayni pencerede: check-in bir saat sonra aniya donusuyor
+ * (migrasyon 20260907120000) ve her 10 dakikada bir kosan cron
+ * koordinati siliyor.
  */
-const CANLI_ETIKET_SURESI = 30 * DAKIKA
+/**
+ * "Su an burada" etiketinin suresi: 1 SAAT (kullanicinin karari
+ * 2026-09-07).
+ *
+ * Sunucu tarafi da ayni: `check_in_yap` bitis zamanini
+ * `now() + interval '1 hour'` yaziyor (migrasyon 20260907120000).
+ * Iki sayi AYRI YERLERDE durdugu icin birlikte degismeli - yoksa
+ * kayit sunucuda hala canliyken ekran ona tarih basar.
+ */
+const CANLI_ETIKET_SURESI = SAAT
 
 /** Gorece zamanin ("35 dk önce") gosterildigi ust sinir. */
 const GORECE_SINIRI = SAAT

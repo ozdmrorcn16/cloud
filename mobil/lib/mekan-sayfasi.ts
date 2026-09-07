@@ -81,9 +81,17 @@ export type LiderlikSatiri = {
   checkInSayisi: number
 }
 
+/**
+ * Mekanin liderlik tablosu: EN COK CHECK-IN YAPAN 3 KISI.
+ *
+ * Kullanicinin karari (2026-09-07): "liderlik tablosu en cok o
+ * konumda check-in yapan 3 kisi sabit kalir her zaman". Sunucu da
+ * ust siniri 3'te kilitliyor, yani buradan daha genis bir liste
+ * istenemiyor - sayi iki tarafta da ayni.
+ */
 export async function mekanLiderligiGetir(
   mekanId: string,
-  limit = 5
+  limit = 3
 ): Promise<LiderlikSatiri[]> {
   const { data, error } = await supabase.rpc('mekan_liderlik', {
     p_mekan_id: mekanId,

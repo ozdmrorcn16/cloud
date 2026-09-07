@@ -18,16 +18,27 @@ function oncesi(ms: number): string {
 }
 
 describe('suAnBuradaMi', () => {
-  it('CANLI ve 30 dakikadan yeniyse "şu an burada" gosterilir', () => {
+  it('CANLI ve 1 saatten yeniyse "şu an burada" gosterilir', () => {
     expect(suAnBuradaMi(oncesi(5 * DAKIKA), true)).toBe(true)
-    expect(suAnBuradaMi(oncesi(29 * DAKIKA), true)).toBe(true)
+    expect(suAnBuradaMi(oncesi(31 * DAKIKA), true)).toBe(true)
+    expect(suAnBuradaMi(oncesi(SAAT - DAKIKA), true)).toBe(true)
   })
 
-  it('30 dakika DOLUNCA artik "şu an burada" DEGIL', () => {
-    // Kullanicinin karari 2026-08-29: 4 saat kurali kalkti, canlilik
-    // penceresi 30 dakika. Sunucu tarafi da ayni sureye cekildi.
-    expect(suAnBuradaMi(oncesi(31 * DAKIKA), true)).toBe(false)
+  it('1 SAAT DOLUNCA artik "şu an burada" DEGIL', () => {
+    // Kullanicinin karari 2026-09-07: "1 saati dolunca '1 saat once',
+    // kac saat gecmisse o sekilde devam eden bir gosterme". Onceki
+    // deger 30 dakikaydi (2026-08-29). Sunucu tarafi da ayni sureye
+    // cekildi: check_in_yap artik `now() + interval '1 hour'` yaziyor
+    // (migrasyon 20260907120000).
+    expect(suAnBuradaMi(oncesi(SAAT + DAKIKA), true)).toBe(false)
     expect(suAnBuradaMi(oncesi(3 * SAAT), true)).toBe(false)
+  })
+
+  it('ikinci kademe: 1 saatten sonra GORECE ZAMAN devam ediyor', () => {
+    // Kural iki parcali - once "su an burada", sonra saatler. Ikinci
+    // parca icin yeni kod yazilmadi; `gorecelZaman` zaten basamakli.
+    expect(suAnBuradaMi(oncesi(5 * SAAT), true)).toBe(false)
+    expect(gorecelZaman(oncesi(5 * SAAT), t)).toBe('5 saat önce')
   })
 
   it('canli olmayan check-in hicbir zaman "şu an burada" degil', () => {

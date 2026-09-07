@@ -615,6 +615,100 @@ gibi ters bolulu bir yol gecirmek ters bolueleri yiyor; puppeteer
 "Browser was not found at C:Program FilesGoogle..." diyor. Windows'ta
 duez egik cizgi (`C:/Program Files/...`) kullan.
 
+### CHECK-IN SURESI VE TEKRAR KURALI - 2026-09-07 (KARAR TAM, UYGULANDI)
+
+Kullanicinin karari. **Bu, 2026-08-29'un 30 DAKIKA kuralini ve
+2026-09-04'te "sure kullanici tarafindan secilecek" diye acik birakilan
+kararin ikisini de KAPATIYOR.** Asagidaki iki eski bolum artik
+gecersiz: "CHECK-IN CANLILIK PENCERESI 30 DAKIKA" ve "GORUNURLUK
+SURESI DEGISECEK (KARAR YARIM)".
+
+Kullanicinin ifadesi: "Check-in yapan biri yaptigi an 'su an burada'
+kisminda gorunuyor. Konumun icine girildiginde son check-inlerde 'su an
+burada'; 1 saati dolunca '1 saat once', kac saat gecmisse o sekilde
+devam eden bir gosterme. Yapilan bir check-in 24 saatini doldurdugunda
+son check-inlerden silinir. Ayni kisi ayni yerde 24 saati dolmadan yine
+check-in yaparsa yaptigi saate gore check-in guncellenir. Liderlik
+tablosu en cok o konumda check-in yapan 3 kisi sabit kalir her zaman."
+
+| Kural | Deger |
+|---|---|
+| "Su an burada" suresi | **1 saat** (onceki 30 dk) |
+| 1 saatten sonra | gorece zaman: "1 saat once", "5 saat once", "1 gun once" |
+| Son check-inler listesi | son **24 saat**, kisi basina TEK satir |
+| Ayni kisi + ayni mekan, 24 saat icinde | kayit **GUNCELLENIR** |
+| Liderlik tablosu | **her zaman 3 kisi** (ust sinir da 3) |
+
+**COZULEN CELISKI - en onemli karar.** "Check-in guncellenir" kurali
+kisi basina TEK SATIR birakiyor; `mekan_liderlik` ise satir sayiyor
+(`count(*)`, canli semadan olculdu). Ikisi bir arada olsa her gun gelen
+birinin sayaci 1'de takilir ve liderlik tablosu anlamsizlasirdi.
+
+Kullaniciya uc secenek gorsel olarak sunuldu ve **"24 saati ilk
+kayittan say"** secildi: ayni gun icindeki tekrarlar tek satiri
+gunceller, 24 saat dolduktan sonraki check-in YENI satir acar. Boylece
+gunde bir satir birikiyor ve liderlik "kac kez geldi" sorusunu dogru
+cevapliyor. Ayri bir sayac sutunu gerekmedi.
+
+**YENI SUTUN: `check_inler.ilk_check_in`.** 24 saatlik pencerenin
+capasi. Ayri olmasi SART: ekranda gorunen zaman `olusturma_zamani` ve o
+guncelleniyor; capa onu tasisaydi pencere her ziyarette ileri kayar ve
+yeni satir hic acilmazdi (tam da yukaridaki celiski). Mevcut 13 satir
+geriye donuk `olusturma_zamani` ile dolduruldu.
+
+**"SILINIR" LISTEYE AIT, SATIRA DEGIL.** 24 saati dolan kayit yalnizca
+mekanin "Son check-inler" listesinden duesuyor; satir DURUYOR. Check-in
+kisinin anisi - silmek gecmisini, begenilerini ve yorumlarini goturur.
+Canli testte ayrica dogrulandi.
+
+**Guncellemede not ve fotograf `coalesce` ile korunuyor:** kullanici
+ikinci check-in'inde bir sey yazmadiysa ilk yazdigi silinmiyor.
+`gorunurluk` ise canli varsayilanina donuyor - guncellenen satir bir
+ANI olmus olabilir ve yeniden canli olduguna gore yeni bir check-in'le
+ayni degeri tasimasi gerekiyor.
+
+**`moderasyon_gizli` satir guncellenmiyor**, yeni satir aciliyor:
+moderasyon karariyla gizlenmis bir kaydi guncelleyip yeniden gorunur
+kilmak kararin etrafindan dolanmak olurdu.
+
+**DEGISEN YERLER**
+
+| Yer | Ne |
+|---|---|
+| Migrasyon `20260907120000` | `ilk_check_in` sutunu + indeks, `check_in_yap` (1 saat + guncelleme dali), `mekan_son_check_inler` (24 saat + teklestirme), `mekan_liderlik` (3) |
+| `lib/zaman.ts` | `CANLI_ETIKET_SURESI` 30 dk -> `SAAT` |
+| `lib/mekan-sayfasi.ts` | liderlik varsayilani 5 -> 3 |
+| `src/app/gizlilik.tsx`, `docs/gizlilik-metni.md`, `docs/kvkk-uyum-listesi.md` | koordinat saklama suresi somutlastirildi |
+
+`gorecelZaman` icin YENI KOD YAZILMADI - zaten dakika/saat/gun/tarih
+basamaklarini uretiyor. `goreceZamanGosterilir` ise yalnizca testlerde
+kullaniliyor, uygulamada olu.
+
+**GIZLILIK ETKISI, atlanmadi:** canli pencere 30 dk -> 1 saat cikinca
+koordinat da daha uzun saklaniyor. Cron 10 dakikada bir kostugu icin
+ust sinir **~1 saat 10 dakika**. 2026-09-04'te "gizlilik metninde artik
+somut saklama suresi yok, sure kesinlesince geri konmali" diye yazilan
+acik borc BUNUNLA KAPANDI: uc metne de gercek sure yazildi.
+
+**CANLI DOGRULANDI: `araclar/check-in-tekrar-canli-test.py`, 17/17.**
+Jest Supabase'i mock'ladigi icin guncelleme-mi-yeni-satir-mi dali
+mock'la GORULEMEZ. Betik idempotent, actigi satirlari siliyor;
+kosumdan sonra veritabani 14 satirda ve Hozee'de artik yok.
+
+Olculenler: 1 saatlik bitis zamani, ikinci check-in'in yeni satir
+ACMAMASI, capanin degismemesi, notun korunmasi, capa eskitilince yeni
+satir acilmasi, listede kisi basina tek satir, listedeki kaydin en
+yenisi olmasi, liderligin limit 20 istense de 3 dondurmesi, sayacin 2
+olmasi, ve 24 saati dolan kaydin listeden duesup SATIR OLARAK
+KALMASI.
+
+**TUZAK, yasandi:** `mekanlar` tablosunda ada gore tam esitlik
+(`eq('ad', 'Hozee')`) PostgREST'in 8 saniyelik sinirinda zaman asimina
+duesuyor - 5,9 milyon satir ve `ad` uzerinde yalnizca `tr_kucuk(ad)`
+trigram GIN'i var. Betik mekan kimligini DOGRUDAN tasiyor. Ayrica
+check-in'in 1 km kuralini gecmesi icin mekanin KENDI koordinati
+gerekiyor; Nilufer merkezi Hozee'ye 5.157 m uzakta ve reddediliyor.
+
 ### TASARIM DENETIMI UYGULANDI - 2026-09-07
 
 > **IKI DEGISIKLIK AYNI GUN GERI ALINDI (kullanicinin karari).**
@@ -839,6 +933,10 @@ Uygulamasi iki satir: `MarkaYazisi genislik={132}` ve stildeki
 `tasarim/karsilama-marka-ortali.png`.
 
 ### GORUNURLUK SURESI DEGISECEK - 2026-09-04 (KARAR YARIM)
+
+> **KAPANDI 2026-09-07.** Sure kullanici tarafindan secilmiyor;
+> SABIT ve 1 SAAT. Bkz. "CHECK-IN SURESI VE TEKRAR KURALI".
+
 
 **30 DAKIKA KURALI KALKIYOR.** Kullanicinin karari: "30 dakika kuralini
 kaldir, ona farkli kurallar koyucaz, 30 dakikadan fazla gorunurluk
