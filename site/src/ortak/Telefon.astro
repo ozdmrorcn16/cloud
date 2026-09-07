@@ -1,0 +1,54 @@
+---
+interface Props {
+  konum: 'on' | 'arka'
+  gorsel: string
+  alt: string
+}
+const { konum, gorsel, alt } = Astro.props
+---
+
+<div class:list={['telefon', konum]}>
+  <img class="ekran" src={gorsel} alt={alt} />
+</div>
+
+<style>
+  .telefon {
+    position: absolute;
+    border-radius: 34px;
+    background: #16151a;
+    padding: 9px;
+    box-shadow:
+      0 34px 60px -26px rgba(60, 22, 0, 0.6),
+      0 6px 18px -8px rgba(60, 22, 0, 0.32);
+  }
+
+  .ekran {
+    width: 250px;
+    height: 512px;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 26px;
+    display: block;
+    background: var(--beyaz);
+  }
+
+  .telefon.arka {
+    transform: translate(132px, 26px) scale(0.93);
+    background: #edeae6;
+    z-index: 0;
+  }
+
+  .telefon.on { transform: translate(-88px, 0); z-index: 1; }
+
+  @media (max-width: 899px) {
+    .ekran { width: 206px; height: 424px; }
+    .telefon.arka { transform: translate(104px, 20px) scale(0.92); }
+    .telefon.on { transform: translate(-62px, 0); }
+  }
+
+  @media (max-width: 520px) {
+    .ekran { width: 178px; height: 368px; }
+    .telefon.arka { transform: translate(84px, 18px) scale(0.9); }
+    .telefon.on { transform: translate(-50px, 0); }
+  }
+</style>

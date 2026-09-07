@@ -78,10 +78,13 @@ try {
     isMobile: true,
     hasTouch: true,
   })
-  // Ic ekranlar oturum istiyor. SLOOIN_TEST_TELEFON ve
-  // SLOOIN_TEST_SIFRE tanimliysa once giris yapiliyor; yoksa dogrudan
-  // istenen yola gidiliyor (giris/kayit gibi acik ekranlar icin).
-  const tel = process.env.SLOOIN_TEST_TELEFON
+  // Ic ekranlar oturum istiyor. SLOOIN_TEST_EPOSTA ve SLOOIN_TEST_SIFRE
+  // tanimliysa once giris yapiliyor; yoksa dogrudan istenen yola
+  // gidiliyor (giris/kayit gibi acik ekranlar icin). Kimlik e-postaya
+  // tasindigi icin (2026-09-01/02) giris ekranindaki ilk alan artik
+  // e-posta - SLOOIN_TEST_TELEFON eski adiyla geriye donuk uyumluluk
+  // icin hala okunuyor.
+  const tel = process.env.SLOOIN_TEST_EPOSTA ?? process.env.SLOOIN_TEST_TELEFON
   const sif = process.env.SLOOIN_TEST_SIFRE
   if (tel && sif) {
     await sayfa.goto(`${tabanAdres}/giris`, {
