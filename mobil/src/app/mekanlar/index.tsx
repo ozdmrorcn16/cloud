@@ -556,7 +556,20 @@ export default function KesfetEkrani() {
         <CanliHarita
           merkez={cihazKonumu}
           mekanlar={suzulmus}
-          onMekanSec={(id) => router.push(`/check-in/${id}`)}
+          /*
+            HARITA IGNESI MEKAN SAYFASINI ACIYOR, check-in ekranini
+            DEGIL (kullanicinin istegi 2026-09-07: "haritadaki
+            konumlardan birine basinca o konumun sayfasi acilsin, hemen
+            check-in yapma not yazma sayfasi acilmasin").
+
+            Boylece ekrandaki uc giris ayni dili konusuyor: mekan ADINA
+            (listede, kartta) ve IGNEYE basmak mekan sayfasini aciyor;
+            check-in yalnizca acikca "Check-in" yazan dugmeden
+            baslatiliyor. Once igne dogrudan not yazma ekranina
+            gotueruyordu - mekana bakmak isteyen kisi kendini form
+            doldururken buluyordu.
+          */
+          onMekanSec={(id) => router.push(`/harita/${id}` as never)}
         />
       )}
 

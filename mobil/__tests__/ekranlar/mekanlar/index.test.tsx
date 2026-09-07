@@ -336,6 +336,35 @@ describe('MekanAramaEkrani', () => {
     expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
+  /**
+   * Kullanicinin istegi 2026-09-07: "haritadaki konumlardan birine
+   * basinca o konumun sayfasi acilsin, hemen check-in yapma not yazma
+   * sayfasi acilmasin."
+   *
+   * Boylece ekrandaki UC giris de ayni yere gidiyor: listedeki mekan
+   * adi, karttaki mekan adi ve harita ignesi. Check-in yalnizca acikca
+   * "Check-in" yazan dugmeden baslatiliyor.
+   */
+  it('harita ignesine basinca MEKAN SAYFASI aciliyor, check-in ekrani DEGIL', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-7', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 7,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    // Beklemeyi ADA degil IGNEYE bagliyoruz: ad hem haritada hem
+    // listede geciyor ve findByText "birden fazla eleman" diye patliyor.
+    const igneler = await screen.findAllByTestId('harita-ignesi')
+    mockRouterPush.mockClear()
+    await fireEvent.press(igneler[0])
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-7')
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/check-in/mekan-7')
+  })
+
   it('check-in BASKA bir mekandaysa kart o mekani gosterir', async () => {
     // Kullanicinin istegi 2026-08-29: kart en yakini degil, check-in
     // yapilan yeri gostermeli - "baska mekan secene kadar".
