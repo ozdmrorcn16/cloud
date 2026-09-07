@@ -720,6 +720,18 @@ Geri gelmeleri IKI YERI etkiledi ve ikisi de olcuelerek duzeltildi:
 daire aliyor; etiket ise slotta kalan tek isaret, gizlenseydi aktif
 sekmenin adi hicbir yerde yazmazdi. Iki testle kilitli.
 
+**YAYINDA ve CANLIDA DOGRULANDI** (2026-09-07): web `npm run yayinla`,
+OTA grup `20e6a6f8-a2df-4455-8935-4917ef6a7a68`. Canli adresten alinan
+ekran goruntusunde hem bes etiket (Ana sayfa / Bildirimler / Check-in /
+Mesajlar / Profil) hem kartta "Ayrıldım" gorunuyor
+(`tasarim/canli-son.png`).
+
+**Kart dogrulamasi icin GECICI bir canli check-in gerekti:** test
+hesabinin check-in'i sona ermisti ve kart hic cizilmiyordu. Veritabanina
+`not_metni = GECICI-DOGRULAMA-SILINECEK` isaretli bir satir eklenip
+goruntu alindi ve satir HEMEN silindi (silme dogrulandi, 0 kaldi).
+Gercek veriye dokunulmadi.
+
 **KARTTAKI ETIKET "Ayrıldım"** - bir tur "Ayrıl" yapilmisti (mekan
 sayfasindaki cubukla ayni kelime olsun diye) ama kullanici geri
 dondurdu. Yani kartta "Ayrıldım", mekan sayfasinda "Ayrıl"; ikisi
