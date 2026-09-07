@@ -1001,13 +1001,13 @@ const { baslik, aciklama, guncelleme } = Astro.props
 
 - [ ] **Step 2: `docs/gizlilik-metni.md` dosyasina veri sorumlusu bolumu ekle**
 
-Belgenin BASINA, ilk basliktan hemen sonra su bolum eklenir. Ad soyad
-kullanicidan alinir; **posta adresi YAZILMAZ** (kullanicinin karari).
+Belgenin BASINA, ilk basliktan hemen sonra su bolum eklenir.
+**Posta adresi YAZILMAZ** (kullanicinin karari).
 
 ```markdown
 ## Veri sorumlusu
 
-Bu uygulamanın veri sorumlusu, gerçek kişi olarak <AD SOYAD>'dır.
+Bu uygulamanın veri sorumlusu, gerçek kişi olarak Orçun Özdemir'dir.
 KVKK kapsamındaki başvurularını destek@slooin.com adresine
 iletebilirsin; başvurun en geç 30 gün içinde yanıtlanır.
 ```
@@ -1051,7 +1051,7 @@ import Metin from '../duzen/Metin.astro'
   <h2>Veri sorumlusu</h2>
   <p>
     Bu uygulamanın veri sorumlusu, gerçek kişi olarak
-    <strong>&lt;AD SOYAD&gt;</strong>'dır. KVKK kapsamındaki
+    <strong>Orçun Özdemir</strong>'dir. KVKK kapsamındaki
     başvurularını <a href="mailto:destek@slooin.com">destek@slooin.com</a>
     adresine iletebilirsin; başvurun en geç 30 gün içinde yanıtlanır.
   </p>
@@ -1812,9 +1812,7 @@ git commit -m "docs(site): dagitim rehberi ve proje durumu"
 4. **`ekran-goruntusu.mjs` e-posta girisine gecmeli.** Task 3 Step
    1'de guncelleniyor; arac bugun telefon numarasiyla giris yapiyor
    olabilir.
-5. **Veri sorumlusunun ADI SORULMADI.** Task 4'te `<AD SOYAD>` yer
-   tutucusu var. Kullanici "ad soyad + e-posta" yayinlanmasini
-   onayladi ama adin kendisini yazmadi; deponun git kimliginden ya da
-   test verisinden TAHMIN EDILMEZ - hukuki bir metne girecegi icin
-   kullaniciya sorulur. Task 4 bu cevap alinmadan tamamlanmis
-   sayilmaz.
+5. ~~Veri sorumlusunun adi~~ **KAPANDI (2026-09-07):** kullanici adini
+   verdi. Hukuki metinlerde veri sorumlusu olarak
+   **Orçun Özdemir** yazacak, iletisim `destek@slooin.com`.
+   Posta adresi YAYINLANMAZ (kullanicinin karari).

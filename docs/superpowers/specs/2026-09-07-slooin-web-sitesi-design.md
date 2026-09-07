@@ -15,7 +15,7 @@ uygulamada kullandigimiz ve logomuzla".
 | Gorsel yon | Swarm'in ana sayfasi birebir; tek ekran, kaydirma yok |
 | Yigin | Astro, cikti duz HTML; JavaScript yalnizca hesap silme formunda |
 | Barindirma | Cloudflare Pages |
-| Veri sorumlusu | Gercek kisi: ad soyad + destek e-postasi (posta adresi YAYINLANMAZ) |
+| Veri sorumlusu | Gercek kisi: **Orçun Özdemir** + destek e-postasi (posta adresi YAYINLANMAZ) |
 | Dil | Once yalnizca Turkce; dil klasoru sonradan eklenebilecek yapida |
 
 ## 1. Site neden zorunlu
@@ -262,8 +262,9 @@ Kaynak `docs/gizlilik-metni.md`. Iki eksigi var:
 
 1. **Veri sorumlusu kimligi yok.** KVKK aydinlatma yukumluluegue
    veri sorumlusunun kimliginin metinde yer almasini istiyor.
-   Kullanicinin karari: ad soyad + destek e-postasi. **Posta adresi
-   yayinlanmaz**; basvurular e-posta uzerinden alinir.
+   Kullanicinin karari: ad soyad + destek e-postasi; adi 2026-09-07'de
+   verdi - **Orçun Özdemir**. **Posta adresi yayinlanmaz**; basvurular
+   e-posta uzerinden alinir.
 2. **Somut saklama suresi yok.** 30 dakika kuralinin kaldirilma karari
    sonrasi metinlerde sabit sayi yerine "check-in suresi dolunca"
    yaziyor. Bu ACIK BORC olarak duruyor (bkz. bolum 9).
