@@ -1,0 +1,45 @@
+-- Hesap silmeyi kiran eksik indeks.
+--
+-- BULUNMA BICIMI: sitenin hesap silme sayfasi icin yazilan CANLI uctan
+-- uca test (site/araclar/silme-canli-test.mjs) surekli basarisiz oldu;
+-- `auth.admin.deleteUser` 504 ile zaman asimina duesuyordu. CLAUDE.md
+-- bunu "Supabase auth admin silme bu projede sik sik zaman asimina
+-- dusuyor" diye kaydetmisti, yani belirti biliniyordu ama TESHIS
+-- EDILMEMISTI. Silme bu yuzden bilinmeyen bir suredir kirikti.
+--
+-- KOK NEDEN, olculdu: `mekanlar.ekleyen_kullanici` sutunu `auth.users`a
+-- bakan bir yabanci anahtar ve kurali ON DELETE SET NULL. Sutunda
+-- indeks YOKTU. Yani bir kullanici silinirken Postgres, o kullaniciya
+-- ait satirlari bulup NULL'a cekmek icin `mekanlar` tablosunu bastan
+-- sona tariyordu - 5,98 milyon satir, 4450 MB.
+--
+--   EXPLAIN (indeks yokken):
+--     Gather  (cost=1000.00..280186.25 rows=1)
+--       ->  Parallel Seq Scan on mekanlar  (cost=0.00..279186.15)
+--
+--   EXPLAIN (ANALYZE, BUFFERS) (indeks varken, FK tetikleyicisinin
+--   kullandigi sorgu bicimiyle - FOR KEY SHARE):
+--     LockRows  (actual time=0.048..0.049 rows=0)
+--       ->  Index Scan using mekanlar_ekleyen_kullanici_idx
+--     Buffers: shared hit=1     Execution Time: 0.850 ms
+--
+-- NEDEN KISMI INDEKS: `mekanlar` kayitlarinin neredeyse tamami
+-- Foursquare'den geliyor ve `ekleyen_kullanici` alanlari NULL; yalnizca
+-- kullanicinin uygulama icinden ekledigi mekanlar dolu. Tam indeks
+-- ~130 MB olurdu, kismi indeks 16 kB. Postgres `col = $1` kosulundan
+-- `col IS NOT NULL` cikarimini yapabildigi icin kismi indeks FK
+-- kontrolunde KULLANILIYOR - yukaridaki ikinci EXPLAIN bunun kaniti,
+-- varsayim degil.
+--
+-- CONCURRENTLY NOTU: uretime `CREATE INDEX CONCURRENTLY` ile eklendi
+-- (yazmalari bloke etmemek icin, tablo 4,45 GB). Burada CONCURRENTLY
+-- YOK, cunku migrasyonlar islem blogu icinde kosuyor ve CONCURRENTLY
+-- orada calismaz. Bos ya da kucuk bir veritabaninda (yeni ortam, CI)
+-- normal CREATE INDEX aninda biter, dolayisiyla bu fark zararsiz.
+--
+-- Bu migrasyon URETIMDE ZATEN UYGULANMIS durumdadir; buraya
+-- yazilmasinin sebebi depo ile canli semanin ayrisma birakmamasi.
+
+create index if not exists mekanlar_ekleyen_kullanici_idx
+  on public.mekanlar (ekleyen_kullanici)
+  where ekleyen_kullanici is not null;
