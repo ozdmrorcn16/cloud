@@ -446,6 +446,74 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### ALT GEZINME: AKTIF SEKME DAIRESI - 2026-09-07
+
+Kullanici bir video gonderdi ("Navigation tabs V2", uc alt gezinme
+varyanti) ve "bu videodaki tasarim orneklerini kopyalabilirmisin"
+dedi. Uc varyant sunuldu, kullanici **ikincisini** secti: aktif
+sekmenin ikonu yukari firlayip dolu bir daireye donuesuyor.
+
+**HAREKET VIDEODAN KARE KARE OLCULDU** (ffmpeg ile 12 fps'te
+kirpilarak). Duz bir yatay kayma DEGIL, **dalis**: daire once cubugun
+icine INIYOR, sonra yatay olarak KAYIYOR, sonra yeniden CIKIYOR.
+Icindeki ikon daire asagidayken degisiyor - aninda degistirilirse
+ikon havada donuesuyor.
+
+**DALIS BURADA AYRICA ISLEVSEL:** daire ortadaki check-in dugmesinin
+uzerinden gecmek zorunda ve ikisi de cubugun ustunde duruyor. Daire
+kayarken cubugun ICINDE oldugu icin dugmeyle hic cakismiyor.
+
+**IKI NOKTADA BIREBIR KOPYA DEGIL, sebebi kayitli:**
+1. Videodaki pembe/kirmizi gradyan yerine marka turuncusu `#FE7813`
+   (o ton sabit, bkz. `marka-turuncusu-degistirilmez` hafizasi).
+2. Videodaki varyantlarda merkez dugme yok; bizde check-in dugmesi
+   duruyor ve animasyon onun etrafindan kurgulandi.
+
+**ETIKETLER KALKTI** (referans varyantta yok). Ekran okuyucu icin
+kayip yok - her sekme `accessibilityLabel` tasiyor.
+
+**CUBUK KISALMADI - kullanicinin duzeltmesi.** Etiketler kalkinca
+cubuk 80 -> 62 px'e duestu; kullanici "cubuk kisalmasin boyutu onceki
+gibi olsun ona gore uyarla" dedi. Yeni `SATIR = 54` sabiti eski ic
+yuksekligi kilitliyor (cubuk = 12 + 54 + 12 + 2 = 80). Bu ayrica
+`ALT_GEZINME_PAYI`ni koruyor - o pay 45 ekranda kullaniliyor ve cubuk
+kisalsaydi hepsinde alt bosluk buyurdu.
+
+Merkez dugme artik `marginTop: -18` yerine **transform** ile
+tasiniyor: marginTop dugmeyi yukari tasirken satirin yuksekligini de
+KISALTIYORDU (54 - 18 = 36) ve cubugun kisalmasinin asil sebebi buydu.
+Transform PRESSABLE'a veriliyor, icindeki daireye degil - RN dokunma
+alanini transform'a gore hesapliyor, daireye verilseydi dugme yukarida
+gorunup dokunma alani asagida kalirdi.
+
+**ANIMASYON `Animated` ILE, Reanimated ile DEGIL.** Hareketin tamami
+transform ve opacity, yani `useNativeDriver` ile JS kuyrugunu hic
+mesgul etmeden calisiyor; ustelik web surumunde ek yapilandirma
+istemiyor (ekran goruntusu araci orayi olcuyor). `react-native-svg`
+15.15.4 `FeGaussianBlur`/`FeColorMatrix` tasiyor, yani videodaki
+UCUNCU varyantin sivi damla efekti de ileride yapilabilir.
+**Yeni paket gerekmedi, degisiklik OTA ile gidiyor.**
+
+**CANLI OLCULDU** (puppeteer, `getBoundingClientRect` ile kare kare):
+
+    0-110 ms   INIS   y: -34 -> -0.8, x sabit
+    165-275 ms KAYMA  x: 14.8 -> 301.2, y sabit ~1
+    330-495 ms CIKIS  y: 1 -> -37.7
+    550-770 ms yayin oturmasi: -37.7 -> -33.9 (hafif asma)
+
+Olcumler: cubuk 80 px, satir 54 px, dugme tasmasi 5 px (eskisiyle
+birebir), daire tasmasi 17 px.
+
+**TESTLER:** `__tests__/tasarim/alt-gezinme.test.tsx` (6 test). Bu
+dosya `jest.unmock` kullaniyor - AltGezinme `jest.setup.js` icinde
+GLOBAL mock'lu oldugu icin baska hicbir test onu render etmiyor, yani
+bu sinif degisiklik ancak burada olculebiliyor.
+
+**ORTAM TUZAGI (yasandi):** Bash heredoc'a `'C:\Program Files\...'`
+gibi ters bolulu bir yol gecirmek ters bolueleri yiyor; puppeteer
+"Browser was not found at C:Program FilesGoogle..." diyor. Windows'ta
+duez egik cizgi (`C:/Program Files/...`) kullan.
+
 ### TASARIM DENETIMI UYGULANDI - 2026-09-07
 
 > **IKI DEGISIKLIK AYNI GUN GERI ALINDI (kullanicinin karari).**
