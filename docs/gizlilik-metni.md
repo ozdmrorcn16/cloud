@@ -38,7 +38,13 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 
 ## 1. Hangi verilerini isliyoruz
 
-- Telefon numaran (hesap ve dogrulama icin)
+- **E-posta adresin** - bugun hesabinin BIRINCIL kimligi. Hesap
+  acarken ve giris yaparken kullanilir, dogrulama kodu buraya
+  gonderilir.
+- Telefon numaran - YALNIZCA ESKI HESAPLARDA. Kayit ve giris 2026
+  Eylul'unde e-postaya tasindi; daha once telefonla acilmis hesaplar
+  calismaya devam ettigi icin numara o hesaplarda kayitli kalir. Yeni
+  bir hesap acarken telefon numarasi istenmez.
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
 - **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
   cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
@@ -51,13 +57,34 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - Bildirim gonderebilmemiz icin cihazinin bildirim jetonu
 - Sikayet ettigin ya da hakkinda sikayet edilen bilgiler
 
-## 2. Ne amacla isliyoruz
+## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple
 
-- Hesabini kurmak ve telefon numarani dogrulamak
-- Yakinindaki mekanlari ve kisileri kesfetmeni saglamak
-- Mesajlasmani saglamak
-- Kotuye kullanimi (taciz, sahte hesap, uygunsuz icerik) onlemek ve
-  incelemek
+KVKK m.10, isleme amacinin yaninda **hukuki sebebin** de bildirilmesini
+ister. Her amacin dayanagi ayri ayri yazilidir:
+
+- **Hesabini kurmak ve e-posta adresini dogrulamak** (eski hesaplarda
+  telefon numarani). Hukuki sebep: **sozlesmenin ifasi** (KVKK
+  m.5/2-c) - hesap olmadan uygulamanin hicbir islevi calismaz.
+- **Yakinindaki mekanlari ve kisileri kesfetmeni saglamak** (konum ve
+  check-in). Hukuki sebep: **sozlesmenin ifasi** (KVKK m.5/2-c).
+  Slooin'in yaptigi tek sey bir yere check-in yapman ve orada kimin
+  oldugunu gormendir; konum islenmeden uygulama calismaz, yani konum
+  ayri bir "ek ozellik" degil hizmetin kendisidir.
+- **Mesajlasmani saglamak.** Hukuki sebep: **sozlesmenin ifasi**
+  (KVKK m.5/2-c).
+- **Kotuye kullanimi (taciz, sahte hesap, uygunsuz icerik) onlemek ve
+  incelemek** - sikayet kayitlari, moderasyon denetim izi, hesap
+  durumu kayitlari ve istek tavani sayaclari. Hukuki sebep: **mesru
+  menfaat** (KVKK m.5/2-f): kullanicilari taciz ve kotuye kullanimdan
+  koruyabilmek.
+
+Hesap acarken "Devam"a bastiginda verdigin kabul, bir **ispat kaydi**
+olarak veritabanina yazilir: aydinlatma metnini okudugun ve konum
+verinin islenmesini kabul ettigin, hangi metin surumu icin ve ne zaman
+onay verdiginle birlikte kaydedilir (`kvkk_onaylari` tablosu;
+`aydinlatma` ve `konum_rizasi` olmak uzere iki kayit). Bu kayit
+yukaridaki hukuki sebeplerin yerine gecmez - onlarin ustune, sana neyin
+bildirildigini geriye donuk gosterebilmek icin tutulur.
 
 ## 3. Konum ozel olarak
 
@@ -129,12 +156,18 @@ okuyabilir.** Bu, bulunurluk kademen `gizli` olsa da mesaj icerigin
 `gizli` gorunse de gecerlidir - taciz ve kotuye kullanim iddialarini
 inceleyebilmek icin gereklidir.
 
-Moderasyonun **her erisimi kaydedilecek**: kim, ne zaman, hangi
-kaydina baktigi bir denetim izinde tutulacak. Bu erisim yalnizca bir
-sikayet ya da inceleme baglaminda kullanilir, gelisiguzel goz atma
-degildir. (Bu denetim izinin kendisi - `moderasyon_kayitlari` tablosu
-- bugun henuz kurulmadi; moderasyon paneliyle birlikte gelecek. Bkz.
-madde 6'daki not.)
+Moderasyonun **her erisimi kaydedilir**: kim, ne zaman, hangi kaydina
+baktigi `moderasyon_kayitlari` adli denetim izinde tutulur. Bu tablo
+**YALNIZCA EKLEME** kabul eder - kayit sunucu tarafinda olusturulur,
+bir moderatorun kendi erisim kaydini silmesine ya da degistirmesine
+izin veren hicbir yol yoktur. Erisim yalnizca bir sikayet ya da
+inceleme baglaminda kullanilir, gelisiguzel goz atma degildir.
+Kayitlar **2 YIL** saklanir (bkz. madde 6).
+
+Bu satiri yazdigimiz gun denetim izinde **hic kayit yok** - bugune
+kadar hicbir moderator erisimi olmadi. Bu, mekanizmanin kurulu
+olmadigi anlamina gelmez; kurulu ve calisiyor, henuz kullanilmasi
+gerekmedi.
 
 ## 5. Yurt disina aktarim
 
@@ -157,6 +190,20 @@ Verilerin uc ayri yerde islenir:
   saglayiciya gider; kimligin, hesabin ya da check-in'lerin gitmez.
   Web surumunde gercek harita yoktur, bu aktarim da olmaz.
 
+**Aktarimin hukuki sebebi:** uc aktarim da hizmetin verilebilmesi icin
+zorunludur, yani madde 2'deki dayanaklarin aynisina - **sozlesmenin
+ifasina** - dayanir; bildirim gonderimi ayrica mesru menfaat
+kapsamindadir.
+
+Bunu acikca yazmak istiyoruz: KVKK m.9 yurt disina aktarim icin hukuki
+sebebin yaninda bir **aktarim mekanizmasi** da arar (yeterlilik karari,
+standart sozlesme, taahhutname ya da acik riza). Kisisel Verileri
+Koruma Kurulu'nun bu ulkeleri kapsayan bir yeterlilik karari
+bulunmuyor ve bizim de bugun imzalanmis bir standart sozlesmemiz
+**YOK**. Bu, uygulama gercek kullanicilara acilmadan once tamamlanmasi
+gereken acik bir eksiktir ve KVKK uyum listemizde boyle kayitlidir. Var
+olmayan bir mekanizmayi varmis gibi gostermemeyi tercih ediyoruz.
+
 ## 6. Saklama sureleri
 
 **Bugun gecerli olan otomatik silme/temizleme kurallari BIRDEN
@@ -169,6 +216,10 @@ FAZLA** (tek bir kural degil):
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
   donustugunde otomatik olarak silinir (null'a cekilir).
+- **Moderasyon erisim kayitlari** (`moderasyon_kayitlari`, bkz. madde
+  4) **2 YIL** saklanir. Her gun 04:45'te calisan
+  `moderasyon-izi-buda` adli temizlik isi bundan eski satirlari siler.
+  Bu kural bugun **YURURLUKTEDIR**.
 
 Anilarin (check-in gecmisinin geri kalani - hangi mekanda oldugun,
 notun, fotografin), mesajlarin ve sikayetler icin bugun tam bir
@@ -176,11 +227,9 @@ otomatik silme islemi **YOKTUR** - suresiz saklanirlar. "Gerekli
 oldugu sure kadar saklama" ilkesinin tam karsiligi henuz
 tamamlanmadi; bu KVKK uyum listemizde acik bir madde olarak durur.
 
-**Planlanan (henuz uygulanmadi):** moderasyon erisim kayitlarinin 2
-yil, karara baglanmis sikayetlerin karardan 1 yil sonra silinmesi. Bu
-sureler moderasyon paneliyle birlikte gelecek `moderasyon_kayitlari`
-tablosuna baglidir ve bugun icin gecerli DEGILDIR - o tablo henuz
-veritabaninda yok.
+**Planlanan (henuz uygulanmadi):** karara baglanmis sikayetlerin
+karardan 1 yil sonra silinmesi. Sikayet kayitlari icin bugun otomatik
+bir silme isi YOKTUR.
 
 ### Hesabini silersen ne olur
 

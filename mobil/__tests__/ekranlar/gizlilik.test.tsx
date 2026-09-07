@@ -22,12 +22,47 @@ it('silme ve dondurma haklarini belirtir', async () => {
 // Yapisal emniyet (duzeltme turu 1): yukaridaki uc test yalnizca birer
 // regex ariyor - bir bolum yanlislikla silinse bile suite yesil
 // kalirdi. Bu testler BOLUMLER dizisinin sekli hakkinda.
-it('yedi bolumun hepsi mevcut, hicbiri bos degil', () => {
-  expect(BOLUMLER).toHaveLength(7)
+it('veri sorumlusu bolumu + yedi maddenin hepsi mevcut, hicbiri bos degil', () => {
+  // Veri sorumlusu + madde 1..7. Sayi 7'den 8'e cikti (final inceleme
+  // Bulgu 4): ekran, kaynak metindeki "Veri sorumlusu" bolumunu
+  // tasimiyordu, yani web sitesiyle celisiyordu.
+  expect(BOLUMLER).toHaveLength(8)
   for (const bolum of BOLUMLER) {
     expect(bolum.baslik.length).toBeGreaterThan(0)
     expect(bolum.paragraflar.length).toBeGreaterThan(0)
   }
+})
+
+it('veri sorumlusunu ve gercek basvuru adresini yazar (final inceleme: Bulgu 4)', async () => {
+  const { getByText, getAllByText, queryByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/Orçun Özdemir'dir/)).toBeTruthy()
+  // Adres iki yerde geciyor - kaynak metinde de oyle: "Veri sorumlusu"
+  // bolumunde ve madde 7'deki basvuru yolunda.
+  expect(getAllByText(/başvurularını destek@slooin.com adresine/)).toHaveLength(2)
+  // Yer tutucu ifade hicbir paragrafta kalmamali.
+  expect(queryByText(/somut bir destek kanalı/)).toBeNull()
+})
+
+it('e-postayi birincil kimlik olarak yazar (final inceleme: Bulgu 2)', async () => {
+  const { getByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/E-posta adresin - bugün hesabının BİRİNCİL kimliği/)).toBeTruthy()
+  expect(getByText(/Telefon numaran - YALNIZCA ESKİ HESAPLARDA/)).toBeTruthy()
+})
+
+it('her amacin hukuki sebebini yazar (final inceleme: Bulgu 3)', async () => {
+  const { getByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/Mesajlaşmanı sağlamak\. Hukuki sebep: sözleşmenin ifası/)).toBeTruthy()
+  expect(getByText(/Hukuki sebep: meşru menfaat/)).toBeTruthy()
+  expect(getByText(/aktarım mekanizması da arar/)).toBeTruthy()
+})
+
+it('moderasyon denetim izinin KURULU oldugunu yazar (final inceleme: Bulgu 1)', async () => {
+  const { getByText, queryByText } = await render(<GizlilikEkrani />)
+  expect(getByText(/Moderasyonun her erişimi kaydedilir/)).toBeTruthy()
+  expect(getByText(/Moderasyon erişim kayıtları .* 2 YIL saklanır/)).toBeTruthy()
+  // Denetim izini "yok" gosteren eski yanlis beyanlar geri gelmemeli.
+  expect(queryByText(/denetim izinin kendisi bugün henüz kurulmadı/)).toBeNull()
+  expect(queryByText(/moderasyon erişim kayıtlarının 2 yıl.*bugün için geçerli değildir/)).toBeNull()
 })
 
 it('mekan aramasinin konumu sundugu ama saklamadigi acikca yazar (duzeltme turu 1: Critical)', async () => {

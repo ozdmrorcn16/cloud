@@ -23,6 +23,30 @@ Bunlara ek olarak bir **ana sayfa** (`/`) var - uygulamayi tanitan tek
 ekranlik bir sahne (Swarm tarzi kalabalik animasyonu + iki telefon
 maketi).
 
+## UYARI: gizlilik ve kosullar metni UC/IKI YERDE tekrarlaniyor
+
+Bu iki hukuki metin tek bir kaynaktan servis edilmiyor; ayni icerik
+birden fazla dosyada elle tutuluyor:
+
+**Gizlilik metni (3 yer):**
+- `docs/gizlilik-metni.md` - kaynak, karar defteri burada tutuluyor.
+- `site/src/pages/[...dil]/gizlilik.astro` - bu sitenin sayfasi.
+- `mobil/src/app/gizlilik.tsx` - uygulama ici ekran; metin kodun icine
+  KOPYALANMIS, cunku ekran cevrimdisi de okunabilmeli.
+
+**Kullanim kosullari (2 yer):**
+- `docs/kullanim-kosullari.md` - kaynak.
+- `site/src/pages/[...dil]/kosullar.astro` - bu sitenin sayfasi.
+
+**Kural: bu dosyalardan birine yapilan bir degisiklik AYNI COMMIT
+icinde hepsine uygulanmali.** Tek dosya guncelleyip digerlerini
+"sonraya birakmak" onlari birbirinden koparir. Bu zaten BIR KEZ oldu:
+denetim, kaynak belge ve site guncellenirken uygulama ici ekranin
+eskisini gosterip iki yeni surumle celistigini buldu. Yeni bir hukuki
+degisiklik yapiliyorsa checklist su: kaynagi yaz, siteyi yaz, uygulama
+ekranini yaz, sonra bu ucunu ayni anahtar kelimeler icin grep'le
+karsilastir.
+
 ## Neden Astro, neden Cloudflare Pages
 
 - **Astro 7.3.1, `output: 'static'`.** Bes sayfanin dorduncusu

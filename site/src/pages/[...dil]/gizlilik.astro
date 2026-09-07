@@ -26,7 +26,17 @@ const { dil } = Astro.props as { dil: Dil }
 
   <h2>1. Hangi verilerini işliyoruz</h2>
   <ul>
-    <li>Telefon numaran (hesap ve doğrulama için).</li>
+    <li>
+      <strong>E-posta adresin</strong> - bugün hesabının birincil kimliği.
+      Hesap açarken ve giriş yaparken kullanılır, doğrulama kodu buraya
+      gönderilir.
+    </li>
+    <li>
+      Telefon numaran - <strong>yalnızca eski hesaplarda</strong>. Kayıt ve
+      giriş 2026 Eylül'ünde e-postaya taşındı; daha önce telefonla açılmış
+      hesaplar çalışmaya devam ettiği için numara o hesaplarda kayıtlı kalır.
+      Yeni bir hesap açarken telefon numarası istenmez.
+    </li>
     <li>Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.</li>
     <li>
       <strong>Konumun</strong> - <strong>üç</strong> farklı şekilde: mekan ararken ve
@@ -45,13 +55,47 @@ const { dil } = Astro.props as { dil: Dil }
     <li>Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.</li>
   </ul>
 
-  <h2>2. Ne amaçla işliyoruz</h2>
+  <h2>2. Ne amaçla işliyoruz - ve hangi hukuki sebeple</h2>
+  <p>
+    KVKK m.10, işleme amacının yanında <strong>hukuki sebebin</strong> de
+    bildirilmesini ister. Her amacın dayanağı ayrı ayrı yazılıdır:
+  </p>
   <ul>
-    <li>Hesabını kurmak ve telefon numaranı doğrulamak.</li>
-    <li>Yakınındaki mekanları ve kişileri keşfetmeni sağlamak.</li>
-    <li>Mesajlaşmanı sağlamak.</li>
-    <li>Kötüye kullanımı (taciz, sahte hesap, uygunsuz içerik) önlemek ve incelemek.</li>
+    <li>
+      <strong>Hesabını kurmak ve e-posta adresini doğrulamak</strong> (eski
+      hesaplarda telefon numaranı). Hukuki sebep:
+      <strong>sözleşmenin ifası</strong> (KVKK m.5/2-c) - hesap olmadan
+      uygulamanın hiçbir işlevi çalışmaz.
+    </li>
+    <li>
+      <strong>Yakınındaki mekanları ve kişileri keşfetmeni sağlamak</strong>
+      (konum ve check-in). Hukuki sebep: <strong>sözleşmenin ifası</strong>
+      (KVKK m.5/2-c). Slooin'in yaptığı tek şey bir yere check-in yapman ve
+      orada kimin olduğunu görmendir; konum işlenmeden uygulama çalışmaz, yani
+      konum ayrı bir "ek özellik" değil hizmetin kendisidir.
+    </li>
+    <li>
+      <strong>Mesajlaşmanı sağlamak.</strong> Hukuki sebep:
+      <strong>sözleşmenin ifası</strong> (KVKK m.5/2-c).
+    </li>
+    <li>
+      <strong>Kötüye kullanımı (taciz, sahte hesap, uygunsuz içerik) önlemek
+      ve incelemek</strong> - şikayet kayıtları, moderasyon denetim izi, hesap
+      durumu kayıtları ve istek tavanı sayaçları. Hukuki sebep:
+      <strong>meşru menfaat</strong> (KVKK m.5/2-f): kullanıcıları taciz ve
+      kötüye kullanımdan koruyabilmek.
+    </li>
   </ul>
+  <p>
+    Hesap açarken "Devam"a bastığında verdiğin kabul, bir
+    <strong>ispat kaydı</strong> olarak veritabanına yazılır: aydınlatma
+    metnini okuduğun ve konum verinin işlenmesini kabul ettiğin, hangi metin
+    sürümü için ve ne zaman onay verdiğinle birlikte kaydedilir
+    (<code>kvkk_onaylari</code> tablosu; <code>aydinlatma</code> ve
+    <code>konum_rizasi</code> olmak üzere iki kayıt). Bu kayıt yukarıdaki
+    hukuki sebeplerin yerine geçmez - onların üstüne, sana neyin
+    bildirildiğini geriye dönük gösterebilmek için tutulur.
+  </p>
 
   <h2>3. Konum özel olarak</h2>
   <p>
@@ -143,12 +187,19 @@ const { dil } = Astro.props as { dil: Dil }
     gereklidir.
   </p>
   <p>
-    Moderasyonun <strong>her erişimi kaydedilecek</strong>: kim, ne zaman,
-    hangi kaydına baktığı bir denetim izinde tutulacak. Bu erişim yalnızca bir
-    şikayet ya da inceleme bağlamında kullanılır, gelişigüzel göz atma
-    değildir. (Bu denetim izinin kendisi - <code>moderasyon_kayitlari</code>
-    tablosu - bugün henüz kurulmadı; moderasyon paneliyle birlikte gelecek.
-    Bkz. 6. maddedeki not.)
+    Moderasyonun <strong>her erişimi kaydedilir</strong>: kim, ne zaman, hangi
+    kaydına baktığı <code>moderasyon_kayitlari</code> adlı denetim izinde
+    tutulur. Bu tablo <strong>yalnızca ekleme</strong> kabul eder - kayıt
+    sunucu tarafında oluşturulur, bir moderatörün kendi erişim kaydını
+    silmesine ya da değiştirmesine izin veren hiçbir yol yoktur. Erişim
+    yalnızca bir şikayet ya da inceleme bağlamında kullanılır, gelişigüzel göz
+    atma değildir. Kayıtlar <strong>2 yıl</strong> saklanır (6. maddeye bak).
+  </p>
+  <p>
+    Bu satırı yazdığımız gün denetim izinde <strong>hiç kayıt yok</strong> -
+    bugüne kadar hiçbir moderatör erişimi olmadı. Bu, mekanizmanın kurulu
+    olmadığı anlamına gelmez; kurulu ve çalışıyor, henüz kullanılması
+    gerekmedi.
   </p>
 
   <h2>5. Yurt dışına aktarım</h2>
@@ -179,6 +230,23 @@ const { dil } = Astro.props as { dil: Dil }
       da olmaz.
     </li>
   </ul>
+  <p>
+    <strong>Aktarımın hukuki sebebi:</strong> üç aktarım da hizmetin
+    verilebilmesi için zorunludur, yani 2. maddedeki dayanakların aynısına -
+    <strong>sözleşmenin ifasına</strong> - dayanır; bildirim gönderimi ayrıca
+    meşru menfaat kapsamındadır.
+  </p>
+  <p>
+    Bunu açıkça yazmak istiyoruz: KVKK m.9 yurt dışına aktarım için hukuki
+    sebebin yanında bir <strong>aktarım mekanizması</strong> da arar
+    (yeterlilik kararı, standart sözleşme, taahhütname ya da açık rıza).
+    Kişisel Verileri Koruma Kurulu'nun bu ülkeleri kapsayan bir yeterlilik
+    kararı bulunmuyor ve bizim de bugün imzalanmış bir standart sözleşmemiz
+    <strong>yok</strong>. Bu, uygulama gerçek kullanıcılara açılmadan önce
+    tamamlanması gereken açık bir eksiktir ve KVKK uyum listemizde böyle
+    kayıtlıdır. Var olmayan bir mekanizmayı varmış gibi göstermemeyi tercih
+    ediyoruz.
+  </p>
 
   <h2>6. Saklama süreleri</h2>
   <p>
@@ -201,6 +269,13 @@ const { dil } = Astro.props as { dil: Dil }
       Check-in koordinatın (3. maddede anlatıldığı gibi) check-in anıya
       dönüştüğünde otomatik olarak silinir (null'a çekilir).
     </li>
+    <li>
+      <strong>Moderasyon erişim kayıtları</strong>
+      (<code>moderasyon_kayitlari</code>, 4. maddeye bak)
+      <strong>2 yıl</strong> saklanır. Her gün 04:45'te çalışan
+      <code>moderasyon-izi-buda</code> adlı temizlik işi bundan eski satırları
+      siler. Bu kural bugün <strong>yürürlüktedir</strong>.
+    </li>
   </ul>
   <p>
     Anıların (check-in geçmişinin geri kalanı - hangi mekanda olduğun, notun,
@@ -210,11 +285,9 @@ const { dil } = Astro.props as { dil: Dil }
     listemizde açık bir madde olarak durur.
   </p>
   <p>
-    <strong>Planlanan (henüz uygulanmadı):</strong> moderasyon erişim
-    kayıtlarının 2 yıl, karara bağlanmış şikayetlerin karardan 1 yıl sonra
-    silinmesi. Bu süreler moderasyon paneliyle birlikte gelecek
-    <code>moderasyon_kayitlari</code> tablosuna bağlıdır ve bugün için geçerli
-    <strong>DEĞİLDİR</strong> - o tablo henüz veritabanında yok.
+    <strong>Planlanan (henüz uygulanmadı):</strong> karara bağlanmış
+    şikayetlerin karardan 1 yıl sonra silinmesi. Şikayet kayıtları için bugün
+    otomatik bir silme işi <strong>yoktur</strong>.
   </p>
 
   <h3>Hesabını silersen ne olur</h3>

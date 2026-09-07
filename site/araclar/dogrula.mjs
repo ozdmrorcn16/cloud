@@ -18,7 +18,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
-import puppeteer from 'file:///C:/Users/orcns/projects/cloud/mobil/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js'
 
 const BURASI = path.dirname(fileURLToPath(import.meta.url))
 const SITE_DIZINI = path.join(BURASI, '..')
@@ -27,6 +26,24 @@ const DILLER_TS = path.join(SITE_DIZINI, 'src', 'i18n', 'diller.ts')
 const CHROME =
   process.env.SLOOIN_CHROME ||
   'C:/Program Files/Google/Chrome/Application/chrome.exe'
+
+// Bu yol da CHROME gibi tek makineye ozel; sabit `import` bir degiskeni
+// kabul etmedigi icin calisma aninda dinamik import ile yukleniyor.
+const PUPPETEER_YOLU =
+  process.env.SLOOIN_PUPPETEER ||
+  'file:///C:/Users/orcns/projects/cloud/mobil/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js'
+
+let puppeteer
+try {
+  puppeteer = (await import(PUPPETEER_YOLU)).default
+} catch (e) {
+  console.error(
+    `puppeteer-core yuklenemedi (${PUPPETEER_YOLU}). Bu makinede yol farkliysa ` +
+      `SLOOIN_PUPPETEER ortam degiskenini gecerli puppeteer-core.js dosyasina isaret et.\n` +
+      (e && e.message ? e.message : e),
+  )
+  process.exit(1)
+}
 
 const SAYFALAR = ['/', '/gizlilik', '/kosullar', '/destek', '/hesap-sil']
 // JS kapaliyken tam okunmasi GEREKEN sayfalar (Apple sarti).
@@ -74,11 +91,22 @@ const sunucu = sunucuKur(DIST)
 await new Promise((c) => sunucu.listen(4321, c))
 const TABAN = 'http://127.0.0.1:4321'
 
-const tarayici = await puppeteer.launch({
-  executablePath: CHROME,
-  headless: 'new',
-  args: ['--no-sandbox'],
-})
+let tarayici
+try {
+  tarayici = await puppeteer.launch({
+    executablePath: CHROME,
+    headless: 'new',
+    args: ['--no-sandbox'],
+  })
+} catch (e) {
+  console.error(
+    `Chrome baslatilamadi (${CHROME}). Bu makinede yol farkliysa SLOOIN_CHROME ` +
+      `ortam degiskenini gecerli chrome.exe/chrome dosyasina isaret et.\n` +
+      (e && e.message ? e.message : e),
+  )
+  sunucu.close()
+  process.exit(1)
+}
 
 try {
   // 1) Butun sayfalar 200 donuyor mu

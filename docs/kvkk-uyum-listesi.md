@@ -56,12 +56,42 @@ satir gercek bir kanal degil, tek basina bir yer tutucu. Madde 1'in
 basvuru kanalinin gercek bir adrese baglanmasi ayri ve hala acik bir
 is, gercek kullaniciya acilmadan once tamamlanmali.
 
-### 2. Acik riza, ozellikle konum icin (KVKK m.5) - EKSIK
+### 2. Isleme sartlari ve hukuki sebep (KVKK m.5) - KAPANDI
 
-Isletim sisteminin konum izni ile KVKK anlaminda acik riza **ayni sey
-degildir**. Bugun yalnizca birincisi var. Konum paylasimi icin ayrik,
-bilgilendirilmis ve geri alinabilir bir riza akisi gerekiyor; riza
-kaydinin ne zaman ve hangi metin surumu icin alindigi saklanmali.
+**2026-09-07'de kapandi.** Gizlilik metni artik yalnizca AMACLARI degil
+her amacin **hukuki sebebini** de sayiyor. Onceden hicbir metinde
+"sozlesmenin ifasi", "acik riza" ya da "mesru menfaat" ifadeleri
+gecmiyordu; KVKK m.10 hukuki sebebin de bildirilmesini istedigi icin
+bu, aydinlatmanin eksik olmasi demekti.
+
+Yazilan dayanaklar (madde 2, uc metinde de ayni):
+
+| Amac | Hukuki sebep |
+|---|---|
+| Hesap kurmak, e-postayi dogrulamak | Sozlesmenin ifasi (m.5/2-c) |
+| Konum ve check-in | Sozlesmenin ifasi (m.5/2-c) |
+| Mesajlasma | Sozlesmenin ifasi (m.5/2-c) |
+| Sikayet, moderasyon izi, hesap durumu, istek tavani | Mesru menfaat (m.5/2-f) |
+
+**Konumun dayanagi neden acik riza degil sozlesmenin ifasi:** check-in
+uygulamanin kendisidir, konum islenmeden hicbir islevi calismaz. Bir
+seyi "riza"ya baglamak, ancak reddedildiginde hizmetin calismaya devam
+etmesi halinde anlamlidir; burada oyle degil. Bu gerekce daha once
+kayit ekranindaki onay kutusu kaldirilirken de kullanilmisti
+(`CLAUDE.md`, e-postaya gecis bolumu).
+
+**Ispat kaydi DURUYOR ve bu onemli:** `kvkk_onaylari` tablosu kayit
+aninda iki satir yaziyor - `aydinlatma` ve `konum_rizasi` - metin
+surumu ve zaman damgasiyla. Canlida dogrulandi (2026-09-07): tabloda 4
+satir var, onay turleri tam olarak bu ikisi. Bu kayit hukuki sebebin
+YERINE GECMEZ, onun ustune "kullaniciya ne bildirildi" sorusunu geriye
+donuk cevaplayabilmek icin tutulur - ve gizlilik metni artik bunu da
+oyle anlatiyor.
+
+Isletim sisteminin konum izni ile KVKK anlaminda acik rizanin **ayni
+sey olmadigi** uyarisi hala dogrudur; degisen sey, konumun dayanaginin
+acik riza OLMAMASI, dolayisiyla ayrik bir riza akisinin da
+gerekmemesidir.
 
 ### 3. Yurt disina aktarim (KVKK m.9) - EKSIK, hukukcu onayi
 
