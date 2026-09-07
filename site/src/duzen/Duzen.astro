@@ -1,18 +1,30 @@
 ---
+import { DILLER, KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
+
 interface Props {
   baslik: string
   aciklama: string
+  dil?: Dil
+  yol?: string
 }
-const { baslik, aciklama } = Astro.props
+const { baslik, aciklama, dil = KOK_DIL, yol = '' } = Astro.props
+
+// hreflang adresleri KARSILIKLI olmali: her dilin sayfasi butun
+// dilleri gostermeli, kendisi dahil (bkz. plan Task 8, Step 4).
+function hreflangAdresi(hedefDil: Dil): string {
+  const yolBirlesik = dilOneki(hedefDil) + yol
+  return new URL(yolBirlesik || '/', Astro.site).toString()
+}
 ---
 
-<html lang="tr">
+<html lang={dil}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{baslik}</title>
     <meta name="description" content={aciklama} />
     <link rel="icon" href="/marka-isareti.png" />
+    {DILLER.map((d) => <link rel="alternate" hreflang={d} href={hreflangAdresi(d)} />)}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

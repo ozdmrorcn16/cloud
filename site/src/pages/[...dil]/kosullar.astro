@@ -1,11 +1,20 @@
 ---
-import Metin from '../duzen/Metin.astro'
+import Metin from '../../duzen/Metin.astro'
+import { dilYollari, type Dil } from '../../i18n/diller'
+
+export function getStaticPaths() {
+  return dilYollari()
+}
+
+const { dil } = Astro.props as { dil: Dil }
 ---
 
 <Metin
   baslik="Kullanım Koşulları"
   aciklama="Slooin'i kullanırken geçerli olan kurallar: yaş sınırı, hesap kuralları, yasak davranışlar ve sorumluluk sınırları."
   guncelleme="7 Eylül 2026"
+  dil={dil}
+  yol="/kosullar"
 >
   <h2>1. Taraflar</h2>
   <p>

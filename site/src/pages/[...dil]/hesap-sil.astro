@@ -1,11 +1,20 @@
 ---
-import Metin from '../duzen/Metin.astro'
+import Metin from '../../duzen/Metin.astro'
+import { dilYollari, type Dil } from '../../i18n/diller'
+
+export function getStaticPaths() {
+  return dilYollari()
+}
+
+const { dil } = Astro.props as { dil: Dil }
 ---
 
 <Metin
   baslik="Hesabını sil"
   aciklama="Slooin hesabını ve hesabına bağlı verileri kalıcı olarak silme."
   guncelleme="7 Eylül 2026"
+  dil={dil}
+  yol="/hesap-sil"
 >
   <p>
     Hesabını uygulama içinden <strong>Ayarlar &rsaquo; Hesabımı sil</strong>
@@ -66,7 +75,7 @@ import Metin from '../duzen/Metin.astro'
 </Metin>
 
 <script>
-  import '../betik/hesap-sil.ts'
+  import '../../betik/hesap-sil.ts'
 </script>
 
 <style>

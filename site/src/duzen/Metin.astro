@@ -2,18 +2,23 @@
 import Duzen from './Duzen.astro'
 import AltSerit from './AltSerit.astro'
 import MarkaLockup from '../ortak/MarkaLockup.astro'
+import { KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
 
 interface Props {
   baslik: string
   aciklama: string
   guncelleme: string
+  dil?: Dil
+  /** Dil onegi HARIC sayfa yolu, orn. "/gizlilik". Hreflang icin sart. */
+  yol: string
 }
-const { baslik, aciklama, guncelleme } = Astro.props
+const { baslik, aciklama, guncelleme, dil = KOK_DIL, yol } = Astro.props
+const anaSayfaYolu = dilOneki(dil) || '/'
 ---
 
-<Duzen baslik={`${baslik} · Slooin`} aciklama={aciklama}>
+<Duzen baslik={`${baslik} · Slooin`} aciklama={aciklama} dil={dil} yol={yol}>
   <header class="ust-serit">
-    <a href="/" aria-label="Slooin ana sayfa">
+    <a href={anaSayfaYolu} aria-label="Slooin ana sayfa">
       <MarkaLockup genislik="128px" radar={false} />
     </a>
   </header>
@@ -24,7 +29,7 @@ const { baslik, aciklama, guncelleme } = Astro.props
     <slot />
   </main>
 
-  <AltSerit />
+  <AltSerit dil={dil} yol={yol} />
 </Duzen>
 
 <style>

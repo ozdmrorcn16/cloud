@@ -1,20 +1,33 @@
 ---
-import Duzen from '../duzen/Duzen.astro'
-import AltSerit from '../duzen/AltSerit.astro'
-import MarkaLockup from '../ortak/MarkaLockup.astro'
-import Telefon from '../ortak/Telefon.astro'
+import Duzen from '../../duzen/Duzen.astro'
+import AltSerit from '../../duzen/AltSerit.astro'
+import MarkaLockup from '../../ortak/MarkaLockup.astro'
+import Telefon from '../../ortak/Telefon.astro'
+import { dilYollari, type Dil } from '../../i18n/diller'
+import { tr } from '../../i18n/tr'
+
+export function getStaticPaths() {
+  return dilYollari()
+}
+
+const { dil } = Astro.props as { dil: Dil }
+// Kabuk metni bugun yalniz Turkce; sonradan dil eklenince burada
+// AltSerit'teki gibi bir dil->sozluk haritasi kurulur.
+const t = tr
 ---
 
 <Duzen
   baslik="Slooin"
   aciklama="Slooin, aynı anda aynı yerde olan insanların birbirini fark etmesini sağlayan konum tabanlı bir tanışma uygulamasıdır."
+  dil={dil}
+  yol=""
 >
   <header class="kahraman">
     <span class="dalga" aria-hidden="true"></span>
     <img class="filigran" src="/marka-isareti.png" alt="" aria-hidden="true" />
 
     <div class="ust">
-      <a class="giris" href="https://slooin.expo.app">Giriş</a>
+      <a class="giris" href="https://slooin.expo.app">{t.girisDugmesi}</a>
     </div>
 
     <div class="govde">
@@ -45,7 +58,7 @@ import Telefon from '../ortak/Telefon.astro'
     </div>
   </header>
 
-  <AltSerit />
+  <AltSerit dil={dil} yol="" />
 </Duzen>
 
 <style>

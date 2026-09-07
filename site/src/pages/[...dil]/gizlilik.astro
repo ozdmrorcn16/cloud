@@ -1,11 +1,20 @@
 ---
-import Metin from '../duzen/Metin.astro'
+import Metin from '../../duzen/Metin.astro'
+import { dilYollari, type Dil } from '../../i18n/diller'
+
+export function getStaticPaths() {
+  return dilYollari()
+}
+
+const { dil } = Astro.props as { dil: Dil }
 ---
 
 <Metin
   baslik="Gizlilik Politikası"
   aciklama="Slooin'in hangi kişisel verileri, hangi amaçla işlediğini ve ne kadar süreyle sakladığını anlatan gizlilik politikası."
   guncelleme="7 Eylül 2026"
+  dil={dil}
+  yol="/gizlilik"
 >
   <h2>Veri sorumlusu</h2>
   <p>

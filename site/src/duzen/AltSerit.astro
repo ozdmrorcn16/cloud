@@ -1,13 +1,47 @@
+---
+import { DILLER, KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
+import { tr } from '../i18n/tr'
+
+// Bugun tek dil (tr) var; kayit genisletilebilir olsun diye kucuk bir
+// harita uzerinden okunuyor. Bilinmeyen bir dil gelirse Turkce'ye
+// duesuer - uygulamadaki `lib/dil.tsx` ile ayni desen.
+const SOZLUKLER: Record<string, typeof tr> = { tr }
+function kabukMetni(dil: Dil) {
+  return SOZLUKLER[dil] ?? tr
+}
+
+interface Props {
+  dil?: Dil
+  yol?: string
+}
+const { dil = KOK_DIL, yol = '' } = Astro.props
+const onek = dilOneki(dil)
+const t = kabukMetni(dil)
+---
+
 <footer class="alt-serit">
   <nav class="baglantilar">
-    <a href="/gizlilik">Gizlilik</a>
-    <a href="/kosullar">Kullanım koşulları</a>
-    <a href="/destek">Destek</a>
-    <a href="/hesap-sil">Hesap silme</a>
-    <a href="mailto:destek@slooin.com">İletişim</a>
+    <a href={`${onek}/gizlilik`}>{t.altSeritGizlilik}</a>
+    <a href={`${onek}/kosullar`}>{t.altSeritKosullar}</a>
+    <a href={`${onek}/destek`}>{t.altSeritDestek}</a>
+    <a href={`${onek}/hesap-sil`}>{t.altSeritHesapSil}</a>
+    <a href="mailto:destek@slooin.com">{t.altSeritIletisim}</a>
   </nav>
+
+  {
+    DILLER.length > 1 && (
+      <nav class="dil-secici" aria-label={t.dilSeciciEtiket}>
+        {DILLER.map((d) => (
+          <a href={(dilOneki(d) + yol) || '/'} aria-current={d === dil ? 'page' : undefined}>
+            {d.toUpperCase()}
+          </a>
+        ))}
+      </nav>
+    )
+  }
+
   <p class="kunye">
-    Mekan verisi Foursquare ve OpenStreetMap katkıcılarından (ODbL).
+    {t.kunye}
   </p>
 </footer>
 
@@ -26,6 +60,20 @@
   .baglantilar a { color: var(--turuncu); text-decoration: none; font-weight: 500; }
   .baglantilar a:hover { text-decoration: underline; }
   .baglantilar a:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 3px; border-radius: 3px; }
+
+  .dil-secici {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .dil-secici a { color: var(--ikincil); text-decoration: none; }
+  .dil-secici a[aria-current='page'] { color: var(--turuncu); }
+  .dil-secici a:hover { text-decoration: underline; }
+  .dil-secici a:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 3px; border-radius: 3px; }
 
   .kunye { text-align: center; font-size: 12px; color: var(--soluk); line-height: 1.6; margin: 0; }
 </style>

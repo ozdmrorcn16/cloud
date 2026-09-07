@@ -17,10 +17,13 @@ import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
 import puppeteer from 'file:///C:/Users/orcns/projects/cloud/mobil/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js'
 
 const BURASI = path.dirname(fileURLToPath(import.meta.url))
-const DIST = path.join(BURASI, '..', 'dist')
+const SITE_DIZINI = path.join(BURASI, '..')
+const DIST = path.join(SITE_DIZINI, 'dist')
+const DILLER_TS = path.join(SITE_DIZINI, 'src', 'i18n', 'diller.ts')
 const CHROME =
   process.env.SLOOIN_CHROME ||
   'C:/Program Files/Google/Chrome/Application/chrome.exe'
@@ -148,7 +151,7 @@ try {
     await sayfa.close()
   }
 
-  // 6) Hesap silme sayfasi JS kapaliyken de ANLATIYOR mu
+  // 5) Hesap silme sayfasi JS kapaliyken de ANLATIYOR mu
   console.log('\nHesap silme erisilebilirligi')
   {
     const sayfa = await tarayici.newPage()
@@ -163,7 +166,64 @@ try {
     await sayfa.close()
   }
 
-  // 5) Olu ic baglanti
+  // 6) Cok dilli yapi (yapi hazir, yayina bos dil konmuyor)
+  console.log('\nCok dilli yapi')
+  if (!fs.existsSync(DILLER_TS)) {
+    kontrol(false, 'site/src/i18n/diller.ts henuz yok')
+  } else {
+    const ozgunIcerik = fs.readFileSync(DILLER_TS, 'utf8')
+    const desen = /export const DILLER = \[.*?\] as const/
+    const geciciIcerik = ozgunIcerik.replace(desen, "export const DILLER = ['tr', 'en'] as const")
+
+    if (!desen.test(ozgunIcerik) || geciciIcerik === ozgunIcerik) {
+      kontrol(false, 'diller.ts icinde DILLER deseni bulunamadi, gecici degisiklik yapilamadi')
+    } else {
+      let derlemeBasarili = false
+      try {
+        fs.writeFileSync(DILLER_TS, geciciIcerik)
+        try {
+          execSync('npm run build', { cwd: SITE_DIZINI, stdio: 'pipe' })
+          derlemeBasarili = true
+        } catch (e) {
+          kontrol(false, `gecici (iki dilli) derleme basarisiz: ${(e.stderr || e.message).toString().slice(0, 400)}`)
+        }
+
+        if (derlemeBasarili) {
+          for (const yol of ['/en', '/en/gizlilik', '/en/kosullar', '/en/destek', '/en/hesap-sil']) {
+            const dosya = path.join(DIST, yol, 'index.html')
+            kontrol(fs.existsSync(dosya), `${yol}/index.html uretildi mi`)
+          }
+
+          const trDosya = path.join(DIST, 'gizlilik', 'index.html')
+          const enDosya = path.join(DIST, 'en', 'gizlilik', 'index.html')
+          if (fs.existsSync(trDosya) && fs.existsSync(enDosya)) {
+            const trHtml = fs.readFileSync(trDosya, 'utf8')
+            const enHtml = fs.readFileSync(enDosya, 'utf8')
+            kontrol(/hreflang="tr"/.test(trHtml), 'Turkce sayfa hreflang="tr" tasiyor')
+            kontrol(/hreflang="en"/.test(trHtml), 'Turkce sayfa hreflang="en" tasiyor (karsilikli)')
+            kontrol(/hreflang="tr"/.test(enHtml), 'Ingilizce sayfa hreflang="tr" tasiyor (karsilikli)')
+            kontrol(/hreflang="en"/.test(enHtml), 'Ingilizce sayfa hreflang="en" tasiyor')
+            kontrol(/<html[^>]*\slang="en"/.test(enHtml), 'Ingilizce sayfada <html lang="en">')
+          } else {
+            kontrol(false, 'hreflang karsilastirmasi icin gizlilik sayfalari eksik')
+          }
+        }
+      } finally {
+        // Olcum ortasinda bir hata olsa bile diller.ts BOZUK KALMAMALI -
+        // yayina bos dil konmamasi bu geri donuse bagli.
+        fs.writeFileSync(DILLER_TS, ozgunIcerik)
+        try {
+          execSync('npm run build', { cwd: SITE_DIZINI, stdio: 'pipe' })
+        } catch (e) {
+          kontrol(false, `geri donus derlemesi basarisiz: ${(e.stderr || e.message).toString().slice(0, 400)}`)
+        }
+      }
+
+      kontrol(!fs.existsSync(path.join(DIST, 'en')), 'geri donduktan sonra yayinda /en/ uretilmiyor')
+    }
+  }
+
+  // 7) Olu ic baglanti
   console.log('\nIc baglantilar')
   const gorulen = new Set()
   for (const yol of SAYFALAR) {

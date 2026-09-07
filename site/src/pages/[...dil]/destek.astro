@@ -1,11 +1,20 @@
 ---
-import Metin from '../duzen/Metin.astro'
+import Metin from '../../duzen/Metin.astro'
+import { dilYollari, type Dil } from '../../i18n/diller'
+
+export function getStaticPaths() {
+  return dilYollari()
+}
+
+const { dil } = Astro.props as { dil: Dil }
 ---
 
 <Metin
   baslik="Destek"
   aciklama="Slooin hakkında sık sorulan sorular ve destek iletişimi."
   guncelleme="7 Eylül 2026"
+  dil={dil}
+  yol="/destek"
 >
   <p>
     Sorun, sorusun ya da bildirmek istediğin bir hata varsa
@@ -15,7 +24,7 @@ import Metin from '../duzen/Metin.astro'
 
   <h2>Sık sorulan sorular</h2>
 
-  <h2>Konumum sürekli paylaşılıyor mu?</h2>
+  <h3>Konumum sürekli paylaşılıyor mu?</h3>
   <p>
     Hayır. Konumun yalnızca sen check-in yaptığında ve seçtiğin
     görünürlük kademesine göre paylaşılır. Check-in'in süresi
@@ -23,14 +32,14 @@ import Metin from '../duzen/Metin.astro'
     kaydı kalır.
   </p>
 
-  <h2>Beni kimler görebilir?</h2>
+  <h3>Beni kimler görebilir?</h3>
   <p>
     Her check-in'de üç seçenekten birini seçersin: herkese açık
     (aynı mekandakiler ve arkadaşların), sadece arkadaşlarım, ya da
     gizli (kimse görmez).
   </p>
 
-  <h2>Birinden rahatsız oldum, ne yapabilirim?</h2>
+  <h3>Birinden rahatsız oldum, ne yapabilirim?</h3>
   <p>
     Kişiyi profilinden engelleyebilirsin. Engelleme çift taraflıdır ve
     aranızdaki konuşmayı siler; engellenen kişi bunu bir hata mesajı
@@ -38,14 +47,14 @@ import Metin from '../duzen/Metin.astro'
     edebilirsin.
   </p>
 
-  <h2>Hesabımı nasıl silerim?</h2>
+  <h3>Hesabımı nasıl silerim?</h3>
   <p>
     Uygulama içinde Ayarlar &rsaquo; Hesabımı sil adımından, ya da
     uygulamayı silmiş olsan bile <a href="/hesap-sil">hesap silme
     sayfasından</a> silebilirsin.
   </p>
 
-  <h2>Uygulama neden benim şehrimde az mekan gösteriyor?</h2>
+  <h3>Uygulama neden benim şehrimde az mekan gösteriyor?</h3>
   <p>
     Mekan verisi Foursquare ve OpenStreetMap katkıcılarından geliyor.
     Bir mekan eksikse uygulama içinden kendin ekleyebilirsin.
