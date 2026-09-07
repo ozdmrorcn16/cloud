@@ -138,7 +138,7 @@ madde 6'daki not.)
 
 ## 5. Yurt disina aktarim
 
-Verilerin iki ayri yerde islenir:
+Verilerin uc ayri yerde islenir:
 
 - **Supabase** (veritabani ve dosya depolama): sunucular **Almanya**'da
   (`eu-central-1` bolgesi). Butun kisisel verin Turkiye disinda, Avrupa
@@ -209,7 +209,5 @@ veritabaninda yok.
 - **Verilerinin bir kopyasini talep edebilirsin.** Bu talep icin bugun
   uygulama icinde otomatik bir akis yok; bize ulasarak talep
   edebilirsin (asagidaki basvuru yolu).
-- **Basvuru yolu:** bugun icin somut bir destek kanali (e-posta,
-  form) yayinda degil - **bu, yayin oncesi eklenmesi gereken acik bir
-  bosluktur.** Eklenene kadar bu satir bir yer tutucudur, gercek bir
-  kanal degildir.
+- **Basvuru yolu:** basvurularini destek@slooin.com adresine
+  gonderebilirsin; basvurun en gec 30 gun icinde yanitlanir.
