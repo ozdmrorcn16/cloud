@@ -398,7 +398,7 @@ Agustos + 90 gun). "Expired" burada build'in TestFlight DAGITIMINDAN
 cikarildigi anlamina geliyor - "Expire Build" dugmesi ya da test
 grubundan kaldirilma.
 
-** BUNU YAPMAZ** ve yapmadi: OTA guncellemesi yuklu
+**`eas update` BUNU YAPMAZ** ve yapmadi: OTA guncellemesi yuklu
 uygulamanin JavaScript'ini degistiriyor, App Store Connect'teki build
 kaydina hic dokunmuyor. O gun alti OTA yayini yapilmisti; ikisi
 arasinda nedensellik yok.
@@ -412,8 +412,9 @@ YUKLENEMEZ; once yeni bir derleme gerekir. Ayni sebeple yeni testci de
 eklenemez.
 
 Yeni derleme gerektiginde surum/kanal tarafinda yapilacak bir sey YOK,
-olculdu:  politikasi  (1.0.0) ve production
-profili  + . Yani yeni build
+olculdu: `runtimeVersion` politikasi `appVersion` (1.0.0) ve
+production profili `autoIncrement: true` + `channel: production`.
+Yani yeni build
 1.0.0 (4) olur ve bugune kadarki BUTUN OTA guncellemelerini aninda
 alir.
 
