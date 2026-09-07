@@ -1,0 +1,102 @@
+---
+import Duzen from './Duzen.astro'
+import AltSerit from './AltSerit.astro'
+import MarkaLockup from '../ortak/MarkaLockup.astro'
+
+interface Props {
+  baslik: string
+  aciklama: string
+  guncelleme: string
+}
+const { baslik, aciklama, guncelleme } = Astro.props
+---
+
+<Duzen baslik={`${baslik} · Slooin`} aciklama={aciklama}>
+  <header class="ust-serit">
+    <a href="/" aria-label="Slooin ana sayfa">
+      <MarkaLockup genislik="128px" radar={false} />
+    </a>
+  </header>
+
+  <main class="metin">
+    <h1>{baslik}</h1>
+    <p class="guncelleme">Son güncelleme: {guncelleme}</p>
+    <slot />
+  </main>
+
+  <AltSerit />
+</Duzen>
+
+<style>
+  .ust-serit {
+    background: var(--turuncu);
+    padding: 20px 28px;
+  }
+
+  .metin {
+    max-width: 68ch;
+    margin: 0 auto;
+    padding: 44px 28px 64px;
+  }
+
+  .metin h1 {
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .guncelleme { color: var(--soluk); font-size: 14px; margin: 0 0 32px; }
+
+  .metin :global(h2) {
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 34px 0 10px;
+  }
+
+  .metin :global(h3) {
+    font-size: 17.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 24px 0 8px;
+  }
+
+  .metin :global(p),
+  .metin :global(li) { color: var(--metin); font-size: 16.5px; }
+
+  .metin :global(ul) { padding-left: 22px; }
+  .metin :global(li) { margin-bottom: 7px; }
+
+  .metin :global(code) {
+    font-size: 0.92em;
+    background: var(--cizgi);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .metin :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin: 14px 0;
+  }
+
+  .metin :global(th),
+  .metin :global(td) {
+    border: 1px solid var(--cizgi);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .metin :global(.kutu) {
+    border-left: 3px solid var(--turuncu);
+    background: #fff8f2;
+    padding: 14px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 20px 0;
+  }
+</style>

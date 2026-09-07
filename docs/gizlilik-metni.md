@@ -1,5 +1,11 @@
 # Gizlilik metni
 
+## Veri sorumlusu
+
+Bu uygulamanın veri sorumlusu, gerçek kişi olarak Orçun Özdemir'dir.
+KVKK kapsamındaki başvurularını destek@slooin.com adresine
+iletebilirsin; başvurun en geç 30 gün içinde yanıtlanır.
+
 Bu metin uygulama icinde `Ayarlar > Gizlilik metni` uzerinden okunur
 (`mobil/src/app/gizlilik.tsx`). Kaynak metin burasidir; ekrandaki metin
 bu dosyadan koda sabit olarak kopyalanir, ag baglantisi olmadan da

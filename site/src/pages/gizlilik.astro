@@ -1,0 +1,267 @@
+---
+import Metin from '../duzen/Metin.astro'
+---
+
+<Metin
+  baslik="Gizlilik Politikası"
+  aciklama="Slooin'in hangi kişisel verileri, hangi amaçla işlediğini ve ne kadar süreyle sakladığını anlatan gizlilik politikası."
+  guncelleme="7 Eylül 2026"
+>
+  <h2>Veri sorumlusu</h2>
+  <p>
+    Bu uygulamanın veri sorumlusu, gerçek kişi olarak
+    <strong>Orçun Özdemir</strong>'dir. KVKK kapsamındaki
+    başvurularını <a href="mailto:destek@slooin.com">destek@slooin.com</a>
+    adresine iletebilirsin; başvurun en geç 30 gün içinde yanıtlanır.
+  </p>
+
+  <h2>1. Hangi verilerini işliyoruz</h2>
+  <ul>
+    <li>Telefon numaran (hesap ve doğrulama için).</li>
+    <li>Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.</li>
+    <li>
+      <strong>Konumun</strong> - <strong>üç</strong> farklı şekilde: mekan ararken ve
+      mekan eklerken cihaz konumun sunucuya <strong>GÖNDERİLİR</strong> ama
+      <strong>SAKLANMAZ</strong>; check-in aktifken koordinatın saklanır, check-in
+      anıya dönüşünce (1 saat sonra ya da hemen "ayrıldım" dediğinde) koordinat
+      <strong>SİLİNİR</strong> ve geriye yalnızca hangi mekanda olduğun kalır
+      (tam ayrıntı 3. maddede).
+    </li>
+    <li>Gönderdiğin ve aldığın mesajların içeriği.</li>
+    <li>
+      Arkadaşlık bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde
+      bulunduğun, kimi engellediğin.
+    </li>
+    <li>Bildirim gönderebilmemiz için cihazının bildirim jetonu.</li>
+    <li>Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.</li>
+  </ul>
+
+  <h2>2. Ne amaçla işliyoruz</h2>
+  <ul>
+    <li>Hesabını kurmak ve telefon numaranı doğrulamak.</li>
+    <li>Yakınındaki mekanları ve kişileri keşfetmeni sağlamak.</li>
+    <li>Mesajlaşmanı sağlamak.</li>
+    <li>Kötüye kullanımı (taciz, sahte hesap, uygunsuz içerik) önlemek ve incelemek.</li>
+  </ul>
+
+  <h2>3. Konum özel olarak</h2>
+  <p>
+    Cihazının konumu <strong>üç farklı şekilde</strong> kullanılır; bunları
+    karıştırmamak önemli:
+  </p>
+  <ul>
+    <li>
+      <strong>Mekan ararken:</strong> yakınındaki mekanları gösterebilmemiz için
+      cihazının konumu her mekan aramasında (<code>Mekanlar</code> ekranı
+      açıldığında ve arama/yarıçap değiştikçe) sunucuya
+      <strong>GÖNDERİLİR</strong>. Bu konum <strong>SAKLANMAZ</strong> - yalnızca
+      o anki sorguyu cevaplamak (hangi mekanlar yakında, hangi sırada) için
+      kullanılır, veritabanında bir yere yazılmaz. (Kod:
+      <code>yakin_mekanlar_yogunluk</code> fonksiyonu konumu yalnızca mesafe
+      hesabında kullanır, hiçbir sütuna yazmaz.)
+    </li>
+    <li>
+      <strong>Yeni bir mekan eklerken:</strong> eklemek istediğin mekana
+      gerçekten yakın olduğunu doğrulamak için cihazının konumu gönderilir
+      (~200 metre içinde olman gerekir). Bu konum da <strong>SAKLANMAZ</strong> -
+      yalnızca bu yakınlık kontrolü için kullanılır. Saklanan tek şey eklenen
+      <strong>mekanın</strong> konumudur, senin o andaki konumun değil. (Kod:
+      <code>mekan_ekle</code> fonksiyonu <code>p_cihaz_lat</code>/<code>p_cihaz_lng</code>'yi
+      yalnızca <code>ST_DWithin</code> kontrolünde kullanır, hiçbir sütuna yazmaz.)
+    </li>
+    <li>
+      <strong>Check-in yaptığında:</strong> check-in <strong>AKTİFKEN</strong>
+      koordinatın saklanır. Ama bu geçici: check-in <strong>1 saat</strong>
+      sonra (ya da hemen "ayrıldım" dediğinde) otomatik olarak
+      <strong>anıya</strong> dönüşür, ve bu dönüşümde
+      <strong>koordinat SİLİNİR</strong> (veritabanında null'a çekilir) - geriye
+      yalnızca hangi mekanda olduğun kalır, tam koordinat değil. Temizlik işi
+      10 dakikada bir koştuğu için koordinat en fazla
+      <strong>~1 saat 10 dakika</strong> saklanır. (Kod:
+      <code>check_inden_ayril</code> RPC'si ve 10 dakikada bir çalışan
+      <code>check-in-suresi-dolanlari-aniya-cevir</code> adlı pg_cron işi
+      <code>konum</code> sütununu null yapıyor.)
+    </li>
+  </ul>
+  <p>
+    Check-in aktifken saklanan koordinat, check-in için seçtiğin bulunurluk
+    kademesine göre paylaşılır. <strong>Bu, canlı check-in içindir</strong> -
+    check-in anıya dönüştükten sonra geçerli olan kademe farklı, aşağıda ayrıca
+    anlatılıyor:
+  </p>
+  <ul>
+    <li>
+      <strong>Herkese açık:</strong> uygulamadaki herkes <strong>DEĞİL</strong>,
+      yalnızca <strong>aynı mekanda o an canlı check-in'i olanlar</strong> ya da
+      <strong>karşılıklı takiplerin</strong> görür. (Kod: check-in görünürlüğü
+      RLS politikası, <code>bulunurluk = 'herkese_acik'</code> kolunda
+      <code>gizli.ayni_mekanda_canli_mi</code> veya
+      <code>bag.takip_ediyor_mu</code> şartlarından biri sağlanmalı.)
+    </li>
+    <li><strong>Sadece takipçilerim:</strong> yalnızca karşılıklı takiplerinin gördüğü.</li>
+    <li><strong>Gizli:</strong> kimse görmez, check-in yalnızca kendi geçmişinde kalır.</li>
+  </ul>
+  <p>
+    Check-in anıya dönüştükten sonra (yani konum silindikten sonra), anının
+    görünürlüğü <strong>ayrı bir üç kademedir</strong> ve farklı çalışır - artık
+    "aynı mekanda canlı olma" şartı yoktur:
+  </p>
+  <ul>
+    <li><strong>Herkese açık:</strong> uygulamadaki herkes görür (aktif hesaplar, engelleme hariç).</li>
+    <li><strong>Sadece takipçilerim:</strong> yalnızca karşılıklı takiplerinin gördüğü.</li>
+    <li><strong>Kimse:</strong> yalnızca kendi profilinde sen görürsün.</li>
+  </ul>
+  <p>
+    <code>Gizli</code> seçtiğinde <strong>kimliğin</strong> kimseye görünmez -
+    moderasyon dışında (bkz. 4. madde). Ama bir istisna var: bulunduğun
+    mekanın herkese açık "kaç kişi var" sayacına (yoğunluk) bulunurluk
+    kademenden <strong>BAĞIMSIZ</strong> olarak dahil olursun. Yani kimliğin
+    gizli kalır, ama sayaç senin varlığınla artar -
+    <strong>sakin bir mekanda sayaç 0'dan 1'e çıktığında oradaki biri "birisi
+    var" bilgisini çıkarabilir.</strong> (Kod:
+    <code>yakin_mekanlar_yogunluk</code> içindeki <code>kisi_sayisi</code> alt
+    sorgusu <code>bulunurluk</code>'a hiç bakmıyor, yalnızca aktif check-in ve
+    aktif hesap kontrolü yapıyor.)
+  </p>
+
+  <h2>4. Moderasyon erişimi</h2>
+  <p>
+    Bir şikayet aldığında ya da kötüye kullanım şüphesiyle incelenirken,
+    moderasyon ekibimiz <strong>profilini, check-in'lerini ve mesaj
+    içeriklerini okuyabilir.</strong> Bu, bulunurluk kademen
+    <code>gizli</code> olsa da mesaj içeriğin <code>gizli</code> görünse de
+    geçerlidir - taciz ve kötüye kullanım iddialarını inceleyebilmek için
+    gereklidir.
+  </p>
+  <p>
+    Moderasyonun <strong>her erişimi kaydedilecek</strong>: kim, ne zaman,
+    hangi kaydına baktığı bir denetim izinde tutulacak. Bu erişim yalnızca bir
+    şikayet ya da inceleme bağlamında kullanılır, gelişigüzel göz atma
+    değildir. (Bu denetim izinin kendisi - <code>moderasyon_kayitlari</code>
+    tablosu - bugün henüz kurulmadı; moderasyon paneliyle birlikte gelecek.
+    Bkz. 6. maddedeki not.)
+  </p>
+
+  <h2>5. Yurt dışına aktarım</h2>
+  <p>Verilerin iki ayrı yerde işlenir:</p>
+  <ul>
+    <li>
+      <strong>Supabase</strong> (veritabanı ve dosya depolama): sunucular
+      <strong>Almanya</strong>'da (<code>eu-central-1</code> bölgesi). Bütün
+      kişisel verin Türkiye dışında, Avrupa Birliği sınırları içinde tutulur.
+    </li>
+    <li>
+      <strong>Expo Push API</strong> (bildirim gönderimi): sunucuları
+      <strong>Amerika Birleşik Devletleri</strong>'nde. Bildirim gönderirken
+      cihazının bildirim jetonu, kime gönderildiği bilgisi ve bildirimi
+      tetikleyen kişinin <strong>adı</strong> buradan geçer - örneğin "Deniz
+      sana mesaj gönderdi" gibi bir metin gider. Mesajın kendi
+      <strong>METNİ</strong> bildirime hiçbir zaman eklenmez, ama başka bir
+      kullanıcının adı da kişisel veridir ve bu aktarımın bir parçasıdır -
+      "içerik taşımaz" ifadesi yalnızca mesaj metni için geçerlidir, "hiçbir
+      kişisel veri gitmiyor" anlamına gelmez.
+    </li>
+    <li>
+      <strong>Harita zemini</strong> (2026-08-30'dan itibaren, yalnızca iOS ve
+      Android uygulamalarında): iOS'ta <strong>Apple Haritalar</strong>,
+      Android'de <strong>Google Haritalar</strong>. Harita çizilirken ekranda
+      görünen bölgenin koordinatları sağlayıcıya gider; kimliğin, hesabın ya
+      da check-in'lerin gitmez. Web sürümünde gerçek harita yoktur, bu aktarım
+      da olmaz.
+    </li>
+  </ul>
+
+  <h2>6. Saklama süreleri</h2>
+  <p>
+    <strong>Bugün geçerli olan otomatik silme/temizleme kuralları BİRDEN
+    FAZLA</strong> (tek bir kural değil):
+  </p>
+  <ul>
+    <li>
+      Süresi dolmuş (90 günden eski) hesap askıya alma kayıtları her gün
+      otomatik olarak veritabanından <strong>SİLİNİR</strong> (tam silme,
+      arşivlenmez). Bu kayıtların başka bir yerde saklanan bir kopyası bugün
+      <strong>yoktur</strong>.
+    </li>
+    <li>
+      Takip/sohbet isteği günlük tavanını hesaplamak için tutulan kayıtlar
+      (<code>istek_gunlugu</code>) 2 günden eski satırlar her gün otomatik
+      silinir.
+    </li>
+    <li>
+      Check-in koordinatın (3. maddede anlatıldığı gibi) check-in anıya
+      dönüştüğünde otomatik olarak silinir (null'a çekilir).
+    </li>
+  </ul>
+  <p>
+    Anıların (check-in geçmişinin geri kalanı - hangi mekanda olduğun, notun,
+    fotoğrafın), mesajların ve şikayetler için bugün tam bir otomatik silme
+    işlemi <strong>YOKTUR</strong> - süresiz saklanırlar. "Gerekli olduğu süre
+    kadar saklama" ilkesinin tam karşılığı henüz tamamlanmadı; bu KVKK uyum
+    listemizde açık bir madde olarak durur.
+  </p>
+  <p>
+    <strong>Planlanan (henüz uygulanmadı):</strong> moderasyon erişim
+    kayıtlarının 2 yıl, karara bağlanmış şikayetlerin karardan 1 yıl sonra
+    silinmesi. Bu süreler moderasyon paneliyle birlikte gelecek
+    <code>moderasyon_kayitlari</code> tablosuna bağlıdır ve bugün için geçerli
+    <strong>DEĞİLDİR</strong> - o tablo henüz veritabanında yok.
+  </p>
+
+  <h3>Hesabını silersen ne olur</h3>
+  <ul>
+    <li>
+      Profilin, anıların, arkadaşlıklarının (takip, sohbet isteği, engelleme)
+      ve konuşma listen <strong>kalıcı olarak silinir</strong>.
+    </li>
+    <li>
+      Gönderdiğin <strong>mesajlar silinmez</strong> - çünkü bir konuşma iki
+      kişinin ortak verisidir ve karşı tarafın geçmişini yarıda kesmek doğru
+      olmaz. Ancak gönderen kimliğin konuşmadan koparılır; karşı taraf mesajı
+      görür ama artık senin adına bağlanmaz.
+    </li>
+    <li>
+      <strong>Senin açtığın şikayetler</strong> silinmez, ama kimin açtığı
+      bilgisi (kimlik bağı) <strong>kopar</strong> - kayıtta artık kim açtığı
+      bilinmez.
+    </li>
+    <li>
+      <strong>Hakkında açılan şikayetler</strong> de silinmez, ama bu
+      şikayetlerde kimlik bağı <strong>KOPMAZ</strong> - hedef kimliği
+      moderasyon kaydında kalmaya devam eder. Bunun sebebi: tekrar eden
+      kötüye kullanımı tespit edebilmek (biri hesabını silip yeniden açarak
+      geçmiş şikayetlerinden kurtulamamalı).
+    </li>
+    <li>Profil ve check-in fotoğrafların depolama alanından silinir.</li>
+  </ul>
+
+  <h2>7. Hakların</h2>
+  <ul>
+    <li>
+      <strong>Hesabını dondurabilirsin.</strong> Verilerin silinmez, görünmez
+      hale gelirsin; tekrar giriş yaptığında hesabın kendiliğinden aktif olur.
+    </li>
+    <li>
+      <strong>Hesabını kalıcı olarak silebilirsin.</strong> Geri dönüşü
+      yoktur; yeniden gelmek istersen sıfırdan hesap açman gerekir. Ne
+      sildiğin ve ne kaldığı 6. maddede yazılı.
+    </li>
+    <li>
+      <strong>Verilerinin bir kopyasını talep edebilirsin.</strong> Bu talep
+      için bugün uygulama içinde otomatik bir akış yok; bize ulaşarak talep
+      edebilirsin (aşağıdaki başvuru yolu).
+    </li>
+    <li>
+      <strong>Başvuru yolu:</strong> bugün için somut bir destek kanalı
+      (e-posta, form) yayında değil - <strong>bu, yayın öncesi eklenmesi
+      gereken açık bir boşluktur.</strong> Eklenene kadar bu satır bir yer
+      tutucudur, gerçek bir kanal değildir.
+    </li>
+  </ul>
+
+  <p class="kutu">
+    Check-in görünürlük süresi yakında senin seçebileceğin bir ayara
+    dönüşecek. O değişiklik yayınlandığında bu metindeki süreler
+    güncellenecek ve sana uygulama içinde bildirilecek.
+  </p>
+</Metin>
