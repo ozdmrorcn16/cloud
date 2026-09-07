@@ -1,14 +1,19 @@
 """CHECK-IN SURESI VE TEKRAR KURALI - CANLI dogrulama.
 
-Kullanicinin karari (2026-09-07):
+Kullanicinin karari (2026-09-07) ve ayni gun yaptigi KAPSAM
+DUZELTMESI: "Kural mekan listesi icin gecerli. Ana sayfa ve profil
+akisi paylasilanlar oldugu gibi kaliyor, kisi paylasima ozel duzenleme
+ve silme yapabiliyor."
+
   - Check-in 1 SAAT "su an burada" kalir.
-  - Ayni kisi ayni yerde 24 saati dolmadan yine check-in yaparsa
-    check-in GUNCELLENIR (yeni satir acilmaz).
-  - 24 saatlik pencere ILK KAYITTAN sayilir; dolduktan sonraki
-    check-in YENI satir acar. (Liderlik tablosu satir saydigi icin
-    bu sart - yoksa her gun gelen birinin sayaci 1'de takilirdi.)
-  - Son check-inler listesi 24 saatlik ve kisi basina tek satir.
-  - Liderlik her zaman 3 kisi.
+  - HER check-in KENDI kaydi: check_in_yap her zaman yeni satir aciyor.
+    Boylece her ziyaret ana sayfada ve profilde AYRI bir paylasim ve
+    kisi her birini ayri ayri duzenleyip silebiliyor.
+  - Teklestirme ve 24 saat suzgeci YALNIZCA mekan sayfasinin listesinde
+    (mekan_son_check_inler): son 24 saat, kisi basina tek satir, en
+    yenisi.
+  - Liderlik her zaman 3 kisi ve satir sayiyor, yani her check-in
+    sayaci artiriyor.
 
 Jest Supabase'i mock'luyor, yani bu davranisi GOREMEZ. Ayni sinif hata
 bu projede yasandi: 66 test yesilken ekran canlida hic calismiyordu.
@@ -63,10 +68,10 @@ print(f'Mekan: Hozee  ({MEKAN_ID})')
 def kendi_satirlarim():
     return (
         yonetici.table('check_inler')
-        .select('id, olusturma_zamani, ilk_check_in, bitis_zamani, konum, not_metni')
+        .select('id, olusturma_zamani, bitis_zamani, konum, not_metni')
         .eq('kullanici_id', ben)
         .eq('mekan_id', MEKAN_ID)
-        .order('ilk_check_in', desc=True)
+        .order('olusturma_zamani', desc=True)
         .execute()
         .data
     )
@@ -112,52 +117,61 @@ kontrol(
     timedelta(minutes=59) < sure < timedelta(minutes=61),
     f'olculen {sure}',
 )
-ilk_capa = satirlar[0]['ilk_check_in']
 ilk_id = satirlar[0]['id']
 
-print('\n2) 24 saat ICINDE ikinci check-in -> GUNCELLEME beklenir')
+print('\n2) Ayni mekana IKINCI check-in -> YENI PAYLASIM beklenir')
+# Kapsam duzeltmesi buraya bakiyor: paylasimlar oldugu gibi kaliyor,
+# yani ikinci ziyaret ana sayfada ve profilde AYRI bir kayit.
 istemci.rpc(
     'check_in_yap',
     {
         'p_mekan_id': MEKAN_ID,
         'p_lat': LAT,
         'p_lng': LNG,
-        'p_not_metni': None,
+        'p_not_metni': 'ikinci ziyaret',
         'p_bulunurluk': 'herkese_acik',
     },
 ).execute()
 
 satirlar = kendi_satirlarim()
-kontrol('YENI SATIR ACILMADI', len(satirlar) == 1, f'{len(satirlar)} satir')
-kontrol('ayni satir guncellendi', satirlar and satirlar[0]['id'] == ilk_id)
-kontrol('ilk_check_in capasi DEGISMEDI', satirlar and satirlar[0]['ilk_check_in'] == ilk_capa)
+kontrol('YENI SATIR ACILDI', len(satirlar) == 2, f'{len(satirlar)} satir')
+ilki = [s for s in satirlar if s['id'] == ilk_id]
+kontrol('ilk paylasim YERINDE', len(ilki) == 1)
 kontrol(
-    'not KORUNDU (yeni not verilmedi)',
-    satirlar and satirlar[0]['not_metni'] == 'ilk not',
-    f'okunan {satirlar[0]["not_metni"] if satirlar else "-"}',
+    'ilk paylasimin notu DEGISMEDI',
+    ilki and ilki[0]['not_metni'] == 'ilk not',
+    f'okunan {ilki[0]["not_metni"] if ilki else "-"}',
 )
-yeni_olusma = datetime.fromisoformat(
-    satirlar[0]['olusturma_zamani'].replace('Z', '+00:00')
+kontrol(
+    'ilk paylasimin zamani DEGISMEDI',
+    ilki
+    and datetime.fromisoformat(ilki[0]['olusturma_zamani'].replace('Z', '+00:00'))
+    == olusma,
 )
-kontrol('olusturma_zamani ILERI alindi', yeni_olusma >= olusma)
+kontrol(
+    'yalnizca YENISI canli (tek aktif check-in kurali)',
+    sum(1 for s in satirlar if s['konum'] is not None) == 1,
+)
 
-print('\n3) Capa 24 saatten ESKI yapilinca -> YENI SATIR beklenir')
-eski = (datetime.now(timezone.utc) - timedelta(hours=25)).isoformat()
-yonetici.table('check_inler').update({'ilk_check_in': eski}).eq('id', ilk_id).execute()
-
+print('\n3) Iki paylasim AYRI AYRI duzenlenebiliyor')
+# Kullanicinin ifadesi: "kisi paylasima ozel duzenleme ve silme
+# yapabiliyor". Duzenleme yolu check_in_notunu_guncelle RPC'si.
 istemci.rpc(
-    'check_in_yap',
-    {
-        'p_mekan_id': MEKAN_ID,
-        'p_lat': LAT,
-        'p_lng': LNG,
-        'p_not_metni': 'ikinci gun',
-        'p_bulunurluk': 'herkese_acik',
-    },
+    'check_in_notunu_guncelle',
+    {'p_check_in_id': ilk_id, 'p_not': 'ilk not duzenlendi'},
 ).execute()
-
 satirlar = kendi_satirlarim()
-kontrol('IKINCI SATIR acildi', len(satirlar) == 2, f'{len(satirlar)} satir')
+ilki = [s for s in satirlar if s['id'] == ilk_id]
+digeri = [s for s in satirlar if s['id'] != ilk_id]
+kontrol(
+    'ILK paylasimin notu degisti',
+    ilki and ilki[0]['not_metni'] == 'ilk not duzenlendi',
+)
+kontrol(
+    'IKINCI paylasim ETKILENMEDI',
+    digeri and digeri[0]['not_metni'] == 'ikinci ziyaret',
+)
+
 
 print('\n4) mekan_son_check_inler: 24 saat + kisi basina TEK satir')
 son = istemci.rpc(
@@ -171,7 +185,7 @@ kontrol(
 )
 kontrol(
     'listedeki kayit EN YENISI',
-    benimkiler and benimkiler[0]['not_metni'] == 'ikinci gun',
+    benimkiler and benimkiler[0]['not_metni'] == 'ikinci ziyaret',
     f'okunan {benimkiler[0]["not_metni"] if benimkiler else "-"}',
 )
 

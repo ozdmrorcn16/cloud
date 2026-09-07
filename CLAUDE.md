@@ -699,6 +699,37 @@ duez egik cizgi (`C:/Program Files/...`) kullan.
 
 ### CHECK-IN SURESI VE TEKRAR KURALI - 2026-09-07 (KARAR TAM, UYGULANDI)
 
+> **KAPSAM DUZELTMESI (ayni gun, kullanicinin duzeltmesi):** "Kural
+> mekan listesi icin gecerli. Ana sayfa ve profil akisi paylasilanlar
+> oldugu gibi kaliyor, kisi paylasima ozel duzenleme ve silme
+> yapabiliyor."
+>
+> Asagida anlatilan **"check_in_yap mevcut satiri gunceller" dali
+> GERI ALINDI** (migrasyon 20260907130000). `check_in_yap` HER ZAMAN
+> yeni satir aciyor: her check-in kendi paylasimi, kisi her birini
+> ayri ayri duzenleyip siliyor. Teklestirme ve 24 saat suzgeci
+> YALNIZCA `mekan_son_check_inler` icinde - kullanicinin tarif ettigi
+> davranis tam olarak orasi.
+>
+> Hata bir ASIRI GENELLEMEYDI: bir listenin gosterim kurali veri
+> modeline indirilmisti. Kullanicinin ayni mesajdaki diger cumleleri
+> kapsami zaten soyluyordu ("son check-inlerde", "son check-inlerden
+> silinir") - kural bir LISTEDEN bahsediyordu.
+>
+> Yan sonuc: `ilk_check_in` sutunu ve indeksi DUSURULDU. O sutun
+> yalnizca guncelleme dalinin 24 saatlik capasiydi; satirlar artik
+> birikmeye devam ettigi icin liderlik sayaci dogal olarak buyuyor ve
+> asagida anlatilan "celiski" kendiliginden ortadan kalkti. Yani
+> asagidaki "COZULEN CELISKI" bolumu tarihsel bir kayittir.
+>
+> GECERLI OLANLAR: 1 saatlik canlilik, 24 saatlik liste penceresi,
+> listede kisi basina tek satir, liderlik 3 kisi.
+>
+> Canli dogrulama guncellendi: `araclar/check-in-tekrar-canli-test.py`
+> **18/18**. Yeni olctugu seyler: ikinci check-in YENI satir aciyor,
+> ilk paylasimin notu ve zamani DEGISMIYOR, yalnizca yenisi canli
+> kaliyor, ve iki paylasim AYRI AYRI duzenlenebiliyor.
+
 Kullanicinin karari. **Bu, 2026-08-29'un 30 DAKIKA kuralini ve
 2026-09-04'te "sure kullanici tarafindan secilecek" diye acik birakilan
 kararin ikisini de KAPATIYOR.** Asagidaki iki eski bolum artik
