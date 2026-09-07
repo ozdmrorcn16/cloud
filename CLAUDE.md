@@ -454,14 +454,46 @@ dedi. Uc varyant sunuldu, kullanici **ikincisini** secti: aktif
 sekmenin ikonu yukari firlayip dolu bir daireye donuesuyor.
 
 **HAREKET VIDEODAN KARE KARE OLCULDU** (ffmpeg ile 12 fps'te
-kirpilarak). Duz bir yatay kayma DEGIL, **dalis**: daire once cubugun
-icine INIYOR, sonra yatay olarak KAYIYOR, sonra yeniden CIKIYOR.
-Icindeki ikon daire asagidayken degisiyor - aninda degistirilirse
-ikon havada donuesuyor.
+kirpilarak): videodaki daire once cubugun icine iniyor, sonra yatay
+olarak KAYIYOR, sonra yeniden cikiyor.
 
-**DALIS BURADA AYRICA ISLEVSEL:** daire ortadaki check-in dugmesinin
-uzerinden gecmek zorunda ve ikisi de cubugun ustunde duruyor. Daire
-kayarken cubugun ICINDE oldugu icin dugmeyle hic cakismiyor.
+**AMA YANA KAYMA AYNI GUN KALDIRILDI - kullanicinin duzeltmesi:**
+"yana kayiyormus gibi bir animasyon olmasi, sadece secilen one ciksin,
+chekin dugmesine de aynisi olsun." Yani referanstaki yatay hareket
+uygulanip GERI ALINDI; asagidaki "dalis" anlatimi tarihsel kayittir.
+
+**SU ANKI HAREKET YERINDE:** daire birakilan sekmede kuceuelerek
+cubugun icine cekilip soneuyor, sonra yeni sekmede yay ile buyueyerek
+one cikiyor. Yatay konum ikisinin ARASINDA, daire tamamen gorunmezken
+(`opaklik = 0`) aninda degisiyor.
+
+**OLCULEREK DOGRULANDI** (puppeteer, 45 ms araliklarla): x degeri
+19 -> 311.1'e SICRIYOR ve sicramanin oldugu karede opaklik tam 0; ara
+konum (100, 150, 200 gibi) hic gorunmuyor.
+
+**DIKKAT - olcumde tuzak:** daire kuceuelurken kendi sinirlayici
+kutusu da daraliyor, bu yuzden `getBoundingClientRect().x` ayni slotta
+dururken bile birkac piksel oynuyor. "x kac farkli deger aldi" diye
+otomatik saymak YANILTICI sonuc veriyor; bakilacak sey x'in ARA
+KONUMLARDAN gecip gecmedigi.
+
+**CHECK-IN DUGMESI DE ONE CIKIYOR** (ayni istek): secilince yay ile
+8 px yukari kalkip %10 buyueyor, birakilinca eski olcusune donueyor.
+Olculdu: pasif `y=-5, genislik=68` -> secili `y=-15.7, genislik=74.8`
+(8 px tasma + olcek buyuemesinin kutuya katkisi).
+
+Tasma artik stilde degil ANIMASYONDA (`MERKEZ_TASMA` sabiti). Stilde
+sabit bir transform birakilsaydi animasyonlu olan onu ezer ve ayni
+ozelligi iki kaynak surerdi. Transform yine PRESSABLE'a veriliyor.
+
+**Yan fayda:** daire artik check-in dugmesinin uzerinden gecmiyor,
+ikisinin cakisma ihtimali tamamen ortadan kalkti.
+
+Asagisi referansin ilk uygulamasidir, TARIHSEL:
+
+**DALIS (artik yok):** daire ortadaki check-in dugmesinin uzerinden
+gecmek zorundaydi ve ikisi de cubugun ustunde duruyordu; daire
+kayarken cubugun ICINDE oldugu icin dugmeyle cakismiyordu.
 
 **IKI NOKTADA BIREBIR KOPYA DEGIL, sebebi kayitli:**
 1. Videodaki pembe/kirmizi gradyan yerine marka turuncusu `#FE7813`
@@ -494,12 +526,12 @@ istemiyor (ekran goruntusu araci orayi olcuyor). `react-native-svg`
 UCUNCU varyantin sivi damla efekti de ileride yapilabilir.
 **Yeni paket gerekmedi, degisiklik OTA ile gidiyor.**
 
-**CANLI OLCULDU** (puppeteer, `getBoundingClientRect` ile kare kare):
+**CANLI OLCULDU** (puppeteer, `getBoundingClientRect` ile kare kare).
+Kayma kaldirildiktan SONRAKI degerler:
 
-    0-110 ms   INIS   y: -34 -> -0.8, x sabit
-    165-275 ms KAYMA  x: 14.8 -> 301.2, y sabit ~1
-    330-495 ms CIKIS  y: 1 -> -37.7
-    550-770 ms yayin oturmasi: -37.7 -> -33.9 (hafif asma)
+    0-45 ms    CEKIL    daire kuceuelup soneuyor (op 1 -> 0.58 -> 0)
+    ~90 ms     SICRAMA  x: 19 -> 311.1, opaklik 0 (gorunmuyor)
+    135-225 ms ONE CIK  op 0 -> 1, cap 24 -> 47 -> 44 (yay asmasi)
 
 Olcumler: cubuk 80 px, satir 54 px, dugme tasmasi 5 px (eskisiyle
 birebir), daire tasmasi 17 px.

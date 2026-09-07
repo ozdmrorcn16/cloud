@@ -43,14 +43,25 @@ import { useRenk, useStiller } from './tema-baglami'
  * ustune tasan turuncu dolu bir dairenin icinde beyaz olarak duruyor.
  * Dairenin altinda yumusak turuncu bir parilti var.
  *
- * SEKME DEGISINCE DAIRE UC ADIMDA HAREKET EDIYOR - videodaki hareket
- * kare kare olculdu: once cubugun icine INIYOR, sonra yatay olarak
- * yeni sekmeye KAYIYOR, sonra yeniden yukari CIKIYOR. Duz bir yatay
- * kayma degil; dalis hareketi.
+ * SEKME DEGISINCE DAIRE YANA KAYMIYOR (kullanicinin duzeltmesi
+ * 2026-09-07: "yana kayiyormus gibi bir animasyon olmasi, sadece
+ * secilen one ciksin"). Ilk uygulamada daire referans videodaki gibi
+ * bir sekmeden digerine kayiyordu; kullanici o hareketi istemedi.
  *
- * DALIS BURADA AYRICA ISLEVSEL: daire ortadaki check-in dugmesinin
- * uzerinden gecmek zorunda ve ikisi de cubugun ustunde duruyor. Daire
- * kayarken cubugun ICINDE oldugu icin dugmeyle hic cakismiyor.
+ * Yeni hareket YERINDE: daire birakilan sekmede kuceuelerek cubugun
+ * icine cekilip soneuyor, ardindan yeni sekmede yay ile buyueyerek
+ * ONE CIKIYOR. Yatay konum ikisinin ARASINDA, daire tamamen
+ * gorunmezken aninda degisiyor - yani gozle izlenebilen bir yatay
+ * hareket hic yok.
+ *
+ * Yan fayda: daire artik ortadaki check-in dugmesinin uzerinden
+ * gecmiyor, dolayisiyla ikisinin cakisma ihtimali tamamen ortadan
+ * kalkti.
+ *
+ * CHECK-IN DUGMESI DE AYNI SEKILDE ONE CIKIYOR (ayni istek: "chekin
+ * dugmesine de aynisi olsun"): secildiginde yay ile buyueyup yukari
+ * kalkiyor, birakildiginda eski olcusune donuyor. Boylece cubuktaki
+ * her secim ayni dili konusuyor.
  *
  * ETIKETLER KALKTI (ayni karar): referans varyantta ikon var etiket
  * yok. Ekran okuyucu icin kayip yok - her sekme `accessibilityLabel`
@@ -77,6 +88,13 @@ import { useRenk, useStiller } from './tema-baglami'
  * kullaniliyor ve cubuk kisalsaydi hepsinde alt bosluk buyurdu.
  */
 const SATIR = 54
+
+/**
+ * Ortadaki check-in dugmesinin cubuktan yukari tasmasi. Stilde degil
+ * burada duruyor cunku artik bir animasyonun BASLANGIC degeri: dugme
+ * secilince bundan biraz daha yukari cikiyor.
+ */
+const MERKEZ_TASMA = -18
 
 /** Aktif sekmeyi isaretleyen dairenin capi. */
 const DAIRE = 44
@@ -182,6 +200,13 @@ const SEKMELER: Sekme[] = [
 ]
 
 /**
+ * Transform DOGRUDAN Pressable'a veriliyor, icindeki gorsel View'a
+ * degil: RN dokunma alanini transform'a gore hesapliyor, ice
+ * verilseydi dugme yukarida gorunup dokunma alani asagida kalirdi.
+ */
+const AnimasyonluPressable = Animated.createAnimatedComponent(Pressable)
+
+/**
  * Ortadaki check-in dugmesi.
  *
  * Sekme degil EYLEM: turuncu dolu daire, beyaz konum ignesi. Diger
@@ -193,9 +218,37 @@ const SEKMELER: Sekme[] = [
 function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => void }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
+
+  // 0 pasif, 1 secili. TEK bir deger iki ozelligi birden suruyor
+  // (yukselme ve buyume), boylece ikisi asla birbirinden ayri
+  // duesmuyor.
+  const vurgu = useRef(new Animated.Value(aktif ? 1 : 0)).current
+  useEffect(() => {
+    Animated.spring(vurgu, {
+      toValue: aktif ? 1 : 0,
+      useNativeDriver: true,
+      damping: 12,
+      stiffness: 190,
+      mass: 0.65,
+    }).start()
+  }, [aktif, vurgu])
+
   return (
-    <Pressable
-      style={stiller.merkez}
+    <AnimasyonluPressable
+      style={[
+        stiller.merkez,
+        {
+          transform: [
+            {
+              translateY: vurgu.interpolate({
+                inputRange: [0, 1],
+                outputRange: [MERKEZ_TASMA, MERKEZ_TASMA - 8],
+              }),
+            },
+            { scale: vurgu.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
+          ],
+        },
+      ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: aktif }}
@@ -210,7 +263,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
           <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuBasili : renk.turuncu} />
         </Svg>
       </View>
-    </Pressable>
+    </AnimasyonluPressable>
   )
 }
 
@@ -286,6 +339,7 @@ export function AltGezinme() {
 
   const x = useRef(new Animated.Value(0)).current
   const y = useRef(new Animated.Value(-DAIRE_YUKSEK)).current
+  const olcek = useRef(new Animated.Value(1)).current
   const opaklik = useRef(new Animated.Value(0)).current
   const ilkYerlesim = useRef(true)
 
@@ -293,11 +347,14 @@ export function AltGezinme() {
     if (cubukGenislik === 0) return
 
     if (!daireGorunur) {
-      Animated.timing(opaklik, {
-        toValue: 0,
-        duration: 140,
-        useNativeDriver: true,
-      }).start()
+      // Check-in ekrani: daire GERI CEKILIYOR. Olcek de kuceuelueyor -
+      // yalnizca opaklik dueseydi daire "solmus" gorunurdu, oysa
+      // burada sekmeyi birakiyor.
+      Animated.parallel([
+        Animated.timing(opaklik, { toValue: 0, duration: 130, useNativeDriver: true }),
+        Animated.timing(olcek, { toValue: 0.55, duration: 130, useNativeDriver: true }),
+        Animated.timing(y, { toValue: 0, duration: 130, useNativeDriver: true }),
+      ]).start()
       return
     }
 
@@ -313,6 +370,7 @@ export function AltGezinme() {
       ilkYerlesim.current = false
       x.setValue(hedef)
       y.setValue(-DAIRE_YUKSEK)
+      olcek.setValue(1)
       setDaireIkonSira(aktifSira)
       Animated.timing(opaklik, {
         toValue: 1,
@@ -322,28 +380,36 @@ export function AltGezinme() {
       return
     }
 
-    // UC ADIM, videodan kare kare olculdu: IN -> KAY -> CIK.
+    // IKI ADIM: CEKIL -> ONE CIK. Yatay konum ikisinin arasinda,
+    // daire gorunmezken degisiyor; yana kayma diye bir sey yok.
     Animated.parallel([
-      Animated.timing(y, { toValue: 0, duration: 150, useNativeDriver: true }),
-      Animated.timing(opaklik, { toValue: 0.65, duration: 150, useNativeDriver: true }),
+      Animated.timing(y, { toValue: 0, duration: 120, useNativeDriver: true }),
+      Animated.timing(olcek, { toValue: 0.55, duration: 120, useNativeDriver: true }),
+      Animated.timing(opaklik, { toValue: 0, duration: 120, useNativeDriver: true }),
     ]).start(({ finished }) => {
       // Animasyon yarida kesildiyse (hizli sekme degisimi) yeni
       // effect zaten devrali; buradan devam etmek iki animasyonu
       // ust uste bindirirdi.
       if (!finished) return
+      // YATAY SICRAMA TAM BURADA: opaklik 0, yani hareket gorunmuyor.
+      x.setValue(hedef)
       setDaireIkonSira(aktifSira)
-      Animated.sequence([
-        Animated.timing(x, { toValue: hedef, duration: 210, useNativeDriver: true }),
-        Animated.parallel([
-          Animated.spring(y, {
-            toValue: -DAIRE_YUKSEK,
-            useNativeDriver: true,
-            damping: 13,
-            stiffness: 180,
-            mass: 0.7,
-          }),
-          Animated.timing(opaklik, { toValue: 1, duration: 160, useNativeDriver: true }),
-        ]),
+      Animated.parallel([
+        Animated.timing(opaklik, { toValue: 1, duration: 140, useNativeDriver: true }),
+        Animated.spring(olcek, {
+          toValue: 1,
+          useNativeDriver: true,
+          damping: 11,
+          stiffness: 210,
+          mass: 0.6,
+        }),
+        Animated.spring(y, {
+          toValue: -DAIRE_YUKSEK,
+          useNativeDriver: true,
+          damping: 12,
+          stiffness: 190,
+          mass: 0.65,
+        }),
       ]).start()
     })
   }, [aktifSira, daireGorunur, cubukGenislik])
@@ -420,7 +486,10 @@ export function AltGezinme() {
           pointerEvents="none"
           style={[
             stiller.daireYuva,
-            { opacity: opaklik, transform: [{ translateX: x }, { translateY: y }] },
+            {
+              opacity: opaklik,
+              transform: [{ translateX: x }, { translateY: y }, { scale: olcek }],
+            },
           ]}
         >
           <View style={stiller.daireGovde}>
@@ -514,12 +583,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Merkez dugme cubugun USTUNE tasiyor: buyuklugu ancak boyle
   // gorunuyor, yoksa cubugun ic yuksekligi onu diger ikonlarla ayni
   // hizaya sikistiriyor.
+  // Tasma ve buyume artik ANIMASYONDA (bkz. CheckInDugmesi); burada
+  // sabit bir transform birakilsaydi animasyonlu olan onu ezer ve ayni
+  // ozelligi iki kaynak surerdi.
   merkez: {
     flex: 1,
     height: SATIR,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateY: -18 }],
   },
   merkezDaire: {
     width: 54,
