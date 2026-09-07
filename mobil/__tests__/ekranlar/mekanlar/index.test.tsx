@@ -365,6 +365,73 @@ describe('MekanAramaEkrani', () => {
     expect(mockRouterPush).not.toHaveBeenCalledWith('/check-in/mekan-7')
   })
 
+  /**
+   * Kullanicinin bildirdigi hata 2026-09-07: "Yogun" secilikken
+   * haritada yesil (sakin) igneler duruyordu - durum suzgeci yalnizca
+   * LISTEYE uygulaniyordu. Ekranin iki yarisi farkli sey soyluyordu.
+   */
+  it('durum cipi HARITAYI da suzuyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'sakin-1', ad: 'Sessiz Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+      {
+        id: 'yogun-1', ad: 'Dolu Bar', tur: 'bar', adres: null, osmId: 2,
+        konum: { lat: 41.016, lng: 28.979 }, kisiSayisi: 5,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    // Basta iki mekan da haritada.
+    expect(await screen.findByLabelText('Sessiz Kafe, Sakin')).toBeTruthy()
+    expect(screen.getByLabelText('Dolu Bar, 5 kişi burada')).toBeTruthy()
+
+    // "Yoğun" metni hem CIPTE hem listedeki durum ROZETINDE geciyor;
+    // cipi rolueyle seciyoruz.
+    await fireEvent.press(screen.getByRole('button', { name: 'Yoğun' }))
+
+    // Yalnizca kalabalik olan kaliyor.
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Sessiz Kafe, Sakin')).toBeNull()
+    })
+    expect(screen.getByLabelText('Dolu Bar, 5 kişi burada')).toBeTruthy()
+
+    // KULLANICININ KENDI IGNESI suzgecten ETKILENMIYOR - o bir mekan
+    // degil, nerede oldugunu soyleyen isaret.
+    expect(screen.getByLabelText('Buradasın')).toBeTruthy()
+  })
+
+  /**
+   * Kullanicinin istegi: "secilen kriter yoksa hic birsey gorunmesin."
+   */
+  it('secili duruma uyan mekan yoksa haritada IGNE KALMIYOR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'sakin-1', ad: 'Sessiz Kafe', tur: 'kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    expect(await screen.findByLabelText('Sessiz Kafe, Sakin')).toBeTruthy()
+
+    // Cevrede kalabalik mekan yok.
+    await fireEvent.press(screen.getByText('Yoğun'))
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Sessiz Kafe, Sakin')).toBeNull()
+    })
+
+    // Haritada MEKAN ignesi kalmiyor; geriye yalnizca kullanicinin
+    // kendi isareti kaliyor.
+    const kalanlar = screen.queryAllByTestId('harita-ignesi')
+    expect(kalanlar).toHaveLength(1)
+    expect(screen.getByLabelText('Buradasın')).toBeTruthy()
+  })
+
   it('check-in BASKA bir mekandaysa kart o mekani gosterir', async () => {
     // Kullanicinin istegi 2026-08-29: kart en yakini degil, check-in
     // yapilan yeri gostermeli - "baska mekan secene kadar".

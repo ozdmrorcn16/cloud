@@ -403,7 +403,29 @@ export default function KesfetEkrani() {
    * SIRALAMA DEGISMIYOR: sunucudan gelen yakinlik sirasi korunuyor
    * (sabit kural, 2026-09-01). Durum yalnizca SUZUYOR, siralamiyor.
    */
-  const sakinler = liste.filter((m) => durum === 'tumu' || mekanDurumu(m) === durum)
+  /**
+   * DURUM SUZGECI (Tumu / Sakin / Yogun / Populer) HEM LISTEYE HEM
+   * HARITAYA uygulaniyor.
+   *
+   * Once yalnizca listeye uygulaniyordu ve harita suzuelmemis listeyi
+   * aliyordu; kullanicinin bildirdigi sey buydu (2026-09-07): "Yogun"
+   * secilikken haritada yesil (sakin) igneler duruyordu, yani ekranin
+   * iki yarisi farkli seyler soyluyordu.
+   *
+   * Secili olcuete uyan mekan yoksa harita BOS kaliyor - kullanicinin
+   * istegi: "secilen kriter yoksa hic birsey gorunmesin". Kullanicinin
+   * kendi ignesi kaliyor; o bir mekan degil, nerede oldugunu soyleyen
+   * isaret.
+   */
+  const durumaUyan = (m: MekanYogunlukIle) => durum === 'tumu' || mekanDurumu(m) === durum
+
+  const sakinler = liste.filter(durumaUyan)
+
+  // Harita KART MEKANINI da gosteriyor: `liste` ondan arindirilmis
+  // (kart zaten onu ayrica cizdigi icin listede tekrar etmesin diye),
+  // ama haritada o mekanin ignesi durmali - kullanici nerede oldugunu
+  // haritada gormek istiyor.
+  const haritaMekanlari = suzulmus.filter(durumaUyan)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
@@ -555,7 +577,7 @@ export default function KesfetEkrani() {
       {gorunum === 'harita' && (
         <CanliHarita
           merkez={cihazKonumu}
-          mekanlar={suzulmus}
+          mekanlar={haritaMekanlari}
           /*
             HARITA IGNESI MEKAN SAYFASINI ACIYOR, check-in ekranini
             DEGIL (kullanicinin istegi 2026-09-07: "haritadaki
