@@ -1524,7 +1524,149 @@ git commit -m "feat(site): hesap silme sayfasi - Play'in web silme sarti"
 
 ---
 
-### Task 8: Hesap silmenin canli uctan uca dogrulanmasi
+### Task 8: Cok dilli yapi
+
+**Files:**
+- Create: `site/src/i18n/diller.ts`
+- Create: `site/src/i18n/tr.ts`
+- Modify: `site/src/duzen/Duzen.astro`
+- Modify: `site/src/duzen/AltSerit.astro`
+- Modify: bes sayfanin tamami (`index`, `gizlilik`, `kosullar`, `destek`,
+  `hesap-sil`)
+- Modify: `site/araclar/dogrula.mjs`
+
+**Interfaces:**
+- Consumes: Task 1-7'nin butun sayfalari ve duzeni.
+- Produces:
+  - `diller.ts` -> `DILLER` (dizi), `KOK_DIL`, `Dil` tipi, `dilOneki(dil)`
+  - `Duzen.astro` yeni prop: `dil?: Dil` (varsayilan `KOK_DIL`)
+  - **Uretilen adresler BUGUNKUYLE AYNI kalir** (`/gizlilik`, `/kosullar`...)
+
+**Kullanicinin karari (2026-09-07):** "site farkli dillerde de uyarli
+olucak". Uc secenek sunuldu, **"yapi simdi, ceviri sonra"** secildi.
+Gerekce spec bolum 12'de.
+
+**IKI KURAL, ikisi de baglayici:**
+
+1. **Turkce KOKTE kalir.** `/gizlilik` adresi degismez; diger diller
+   `/en/gizlilik` gibi onek alir. Magaza basvurusuna ve gizlilik metnine
+   yazilacak adresler kok adreslerdir - sonradan onek eklemek kirik
+   baglanti uretir.
+2. **Bos bir dil YAYINLANMAZ.** `DILLER` ilk surumde yalnizca `tr`
+   icerir. Bir dil ancak dort hukuki metni de tam yazildiginda listeye
+   girer. Yarim cevrilmis bir gizlilik politikasi cevrilmemisten
+   kotudur - o dildeki eksik cumle, o dildeki kullanici icin gecerli
+   olan cumledir. Uygulamada eksik ceviri Turkce'ye duesuer
+   (`lib/dil.tsx`); hukuki metinde boyle bir geri duesme YAPILAMAZ.
+
+- [ ] **Step 1: Dogrulama aracina cok dil kontrolu ekle (once basarisiz)**
+
+`site/araclar/dogrula.mjs` icine, "Olu ic baglanti" blogunun ONUNE yeni
+bir blok eklenir; bolum numaralari sonrasinda okundugu sirada yeniden
+verilir. Dosyanin basina `import { execSync } from 'node:child_process'`
+eklenir.
+
+Blok GECICI bir derleme uzerinde calisir: `diller.ts` icindeki listeye
+ikinci bir dil eklenir, derlenir, olculur, sonra dosya ESKI HALINE
+DONDURULUR ve yeniden derlenir. Yayina bos bir dil koymadan yapinin
+gercekten calistigini olcmenin tek yolu budur; yoksa "yapi hazir"
+test edilmemis bir iddia olarak kalir. Bu projede tam bu sinif hata
+yasandi: 20260829090000 migrasyonu etiket onayi politikasini yazdi ama
+tablo yetkisini geri vermedi, politika aylarca olu kaldi ve kimse fark
+etmedi.
+
+Geri dondurme `try/finally` icinde olmali - olcum ortasinda bir hata
+olursa `diller.ts` bozuk kalmamali.
+
+Blogun olcecegi seyler:
+
+```
+ikinci dil acilinca /en/, /en/gizlilik, /en/kosullar, /en/destek,
+  /en/hesap-sil uretiliyor mu
+Turkce sayfa hem hreflang="tr" hem hreflang="en" tasiyor mu
+Ingilizce sayfa da ikisini tasiyor mu (KARSILIKLI olmali)
+ikinci dilde <html lang="en"> dogru mu
+ve geri dondukten sonra: yayinda /en/ URETILMIYOR mu
+```
+
+- [ ] **Step 2: Araci calistir, yeni kontrollerin kaldigini gor**
+
+Run: `node site/araclar/dogrula.mjs`
+Expected: "Cok dilli yapi" kontrolleri KALDI (`diller.ts` henuz yok).
+
+- [ ] **Step 3: Dil yapilandirmasini yaz**
+
+`site/src/i18n/diller.ts`:
+
+```ts
+/**
+ * Sitenin dilleri.
+ *
+ * KURAL: bir dil ancak DORT hukuki metni de tam yazildiginda bu listeye
+ * girer. Yarim cevrilmis bir hukuki metin, cevrilmemisten kotudur.
+ *
+ * KOK_DIL onek ALMAZ: `/gizlilik` Turkce'dir, `/tr/gizlilik` degil.
+ * Magaza basvurusuna yazilan adresler bunlar.
+ */
+export const DILLER = ['tr'] as const
+export const KOK_DIL = 'tr'
+
+export type Dil = (typeof DILLER)[number]
+
+/** Bir dilin adres oneki: kok dil icin bos, digerleri icin `/en` gibi. */
+export function dilOneki(dil: Dil): string {
+  return dil === KOK_DIL ? '' : '/' + dil
+}
+```
+
+`site/src/i18n/tr.ts` YALNIZCA KABUK metinlerini tasir - alt seritteki
+baglanti adlari, dil secici etiketi, kuenye, "Giris" dugmesi.
+
+**Sayfa GOVDELERI sozluge TASINMAZ.** Dort hukuki metni anahtar-deger
+yapisina cevirmek, cevirisi henuz yazilmayacak bir is icin buyuk ve
+riskli bir yeniden duzenleme olurdu; metinler kendi sayfa dosyalarinda
+kalir ve bir dil eklenirken o dilin sayfa dosyalari yazilir.
+
+- [ ] **Step 4: `Duzen.astro`ya dil ve hreflang ekle**
+
+`dil?: Dil` prop'u eklenir (varsayilan `KOK_DIL`), `<html lang>` ondan
+gelir, ve `<head>` icine her etkin dil icin `<link rel="alternate"
+hreflang=...>` konur. Baglantilar KARSILIKLI olmali: her dilin sayfasi
+butun dilleri gostermeli, kendisi dahil.
+
+- [ ] **Step 5: Sayfalari dil parametreli hale getir**
+
+Bes sayfa dil parametresi alacak sekilde duzenlenir ve `getStaticPaths`
+`DILLER` uzerinden uretir. Kok dil icin onek BOS kalir.
+
+`DILLER` yalnizca `tr` icerdigi surece cikti bugunkuyle BIREBIR AYNI
+olmalidir. Step 7 bunu olcuyor: eski adreslerin hepsi hala 200
+donmeli.
+
+- [ ] **Step 6: Alt serite dil secici ekle**
+
+`AltSerit.astro`ya, `DILLER.length > 1` oldugunda gorunen bir dil
+secici konur. **Tek dil varken HIC cizilmez** - tek secenekli bir
+secici kullaniciya hicbir sey sunmaz, yalnizca yer kaplar.
+
+- [ ] **Step 7: Derle ve dogrula**
+
+Run: `npm --prefix site run build && node site/araclar/dogrula.mjs`
+Expected: butun kontroller GECTI, **cikis kodu 0** (bes sayfanin hepsi
+artik var). Ozellikle: eski adresler degismedi, ikinci dil gecici
+acilinca bes sayfa da uretiliyor, hreflang karsilikli, yayinda `/en/`
+yok.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add site/src/i18n site/src/duzen site/src/pages site/araclar/dogrula.mjs
+git commit -m "feat(site): cok dilli yapi - Turkce kokte, diger diller onekli"
+```
+
+---
+
+### Task 9: Hesap silmenin canli uctan uca dogrulanmasi
 
 **Files:**
 - Create: `araclar/site-silme-test-hesabi.py`
@@ -1711,14 +1853,14 @@ git commit -m "test(site): hesap silme uctan uca canli dogrulama"
 
 ---
 
-### Task 9: Dagitim
+### Task 10: Dagitim
 
 **Files:**
 - Create: `site/README.md`
 - Modify: `CLAUDE.md`
 
 **Interfaces:**
-- Consumes: Task 1-8'in tamami.
+- Consumes: Task 1-9'un tamami.
 - Produces: `slooin.com` adresinde yayindaki site.
 
 **Kullaniciya bagli adimlar:** alan adi satin alma ve Cloudflare hesabi

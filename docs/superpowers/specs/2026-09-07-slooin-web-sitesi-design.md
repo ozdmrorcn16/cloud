@@ -16,7 +16,7 @@ uygulamada kullandigimiz ve logomuzla".
 | Yigin | Astro, cikti duz HTML; JavaScript yalnizca hesap silme formunda |
 | Barindirma | Cloudflare Pages |
 | Veri sorumlusu | Gercek kisi: **Orçun Özdemir** + destek e-postasi (posta adresi YAYINLANMAZ) |
-| Dil | Once yalnizca Turkce; dil klasoru sonradan eklenebilecek yapida |
+| Dil | Cok dilli YAPI kurulur; yayinda yalnizca Turkce ACIK (karar 2026-09-07) |
 
 ## 1. Site neden zorunlu
 
@@ -357,9 +357,59 @@ duesuer. Ayri bir is kalemi olarak ele alinmali.
 ## 11. Kapsam disi (YAGNI)
 
 - Blog, basin kiti, kariyer sayfasi
-- Cok dilli yapi (yapi buna hazir olacak ama ilk surumde yalnizca
-  Turkce)
+- Diger dillerin CEVIRISI (yapi kurulur, iceriik sonra yazilir -
+  bkz. bolum 12)
 - Analitik ve cerez - statik site, cerez kullanmiyor; boylece cerez
   bildirimi de gerekmiyor
 - Uygulamanin web surumunu bu siteye tasimak - `slooin.expo.app`
   oldugu yerde kaliyor
+
+## 12. Cok dillilik
+
+Kullanicinin karari (2026-09-07): "site farkli dillerde de uyarli
+olucak". Sunulan uc secenekten **"yapi simdi, ceviri sonra"** secildi.
+
+### Neden ceviri ertelendi
+
+Iki olculu sebep:
+
+1. **Magaza tek bir calisan dille gecer.** Apple gizlilik politikasi
+   URL'sini dil basina AYRI kabul ediyor ama zorunlu tutmuyor;
+   basvuruyu bloke eden sey tek bir erisilebilir sayfa. Yani ceviri
+   magaza basvurusunu bekletmez - siteyi yapma sebebimiz o basvuruydu.
+2. **Yarim cevrilmis hukuki metin, cevrilmemisten kotudur.** Gizlilik
+   politikasi ve kullanim kosullari BAGLAYICI belgeler; bir dildeki
+   eksik ya da hatali cumle, o dildeki kullanici icin gecerli olan
+   cumledir. Uygulamanin kendisinde alti dil geride ve eksik anahtarlar
+   Turkce'ye duesuer (`lib/dil.tsx`); hukuki metinde boyle bir geri
+   duesme YAPILAMAZ.
+
+### URL semasi: Turkce kokte kalir
+
+```
+/gizlilik          -> Turkce (kok, DEGISMEZ)
+/en/gizlilik       -> Ingilizce (dil acildiginda)
+```
+
+Turkce'yi de `/tr/` altina almak DENMEDI ve yapilmayacak: magaza
+basvurularina ve gizlilik metnine yazilacak adresler kok adreslerdir,
+onlari sonradan degistirmek kirik baglanti uretir.
+
+### Yayinda yalnizca Turkce ACIK
+
+Diller tek bir yapilandirma listesinde (`DILLER`) tutulur ve ilk
+surumde yalnizca `tr` icerir. Sonucu onemli: **uretilen adresler bugun
+oldugu gibi kalir**, cunku kok dil Turkce. Bir dil eklemek, listeye bir
+satir ve o dilin metin dosyasini eklemekten ibaret olur.
+
+Bos bir `/en/gizlilik` sayfasi YAYINLANMAZ. Bir dil ancak dort hukuki
+metni de tam yazildiginda listeye girer.
+
+### Yapinin gercekten calistigi nasil dogrulanir
+
+`dogrula.mjs` ikinci bir dili gecici olarak acip butun sayfa setinin
+uretildigini, `hreflang` etiketlerinin karsilikli oldugunu ve dil
+seciciinin gorundugunu olcer. Yoksa "yapi hazir" iddiasi test edilmemis
+bir iddia olarak kalir - bu projede daha once tam bu sinif hata
+yasandi (politika yazildi, tablo yetkisi verilmedi, ozellik aylarca olu
+kaldi).
