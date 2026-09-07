@@ -603,9 +603,23 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // turuncu. Eskiden 4 px'lik bir zemin halkasi vardi; acik modda
     // beyaz oldugu icin gorunmuyordu ama koyu modda zemin koyulasinca
     // turuncunun etrafinda siyah bir hale olarak ortaya cikti.
-    // Halkanin isi dugmeyi cubuktan ayirmakti; o isi golge zaten
-    // yapiyor.
-    ...golge.yuzer,
+    // Halkanin isi dugmeyi cubuktan ayirmakti; o isi golge yapiyor.
+    //
+    // PARILTI, notr golge DEGIL (kullanicinin istegi 2026-09-07:
+    // "checkin dugmesinin altina da yanindaki sutunlar gibi parlak
+    // neon bir isik koy, yanlarindaki butonlardan referans al").
+    // Degerler aktif sekme dairesinden (`daireGovde`) BIREBIR
+    // alindi - referans acikca o oldugu icin ikisi ayni jetonlari
+    // paylasiyor; biri degistirilirse digeri de degismeli, yoksa
+    // cubukta iki farkli parilti dili olur.
+    //
+    // `golge.yuzer`in yerini aliyor, yanina gelmiyor: RN'de tek bir
+    // golge var, iki tanim ust uste yazilir ve sonuncusu kazanirdi.
+    shadowColor: renk.turuncu,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
   /*
    * SECILI hal PARLAKLASIR, koyulasmaz (kullanicinin istegi

@@ -446,15 +446,43 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
-### AKTIF CHECK-IN KARTI EYLEMSIZ KALDI - 2026-09-07
+### AKTIF CHECK-IN KARTI: EYLEMLER SATIR ICINE TASINDI - 2026-09-07
 
 Kullanicinin istegi: "Ayrıldım sil kaldiriyoruz, konum ismi, su an
 buradasin, kac kisi bunlar kaliyor."
 
-Check-in ekranindaki (`src/app/mekanlar/index.tsx`) aktif check-in
-kartindan **"Ayrıldım" ve "Sil" butonlari KALDIRILDI**. Kart artik bir
-DURUM karti: mekan adi, ilce/il ve uzaklik, "Şu an buradasın" seridi,
-ve kac kisi bulundugu. Hicbir eylem tasimiyor.
+**BU IS AYNI GUN IKI ADIMDA OLDU; SON HAL IKINCI ADIM.**
+
+Once kullanicinin istegiyle "Ayrıldım" ve "Sil" butonlari kartdan
+KALDIRILDI (asagisi o adimin kaydi). Ardindan yine kullanicinin
+istegiyle GERI KONDULAR: "ayril ve sil yazisi yine ekle ama bulundugu
+sutunu bozma."
+
+**Degisen sey eylemlerin varligi degil YERI.** Eski halde kartin
+altinda ayri bir buton satiri vardi ve karti uzatiyordu; simdi ikisi
+"Şu an buradasın" SERIDININ ICINDE, sagda, yazi olarak duruyor. Serit
+zaten `flexDirection: 'row'` oldugu icin yeni bir satir acilmiyor ve
+kartin iki sutunlu duzeni (solda metin, sagda kisi sayisi) oldugu gibi
+kaliyor - kullanicinin "sutunu bozma" kisiti tam olarak bu.
+
+Etiket de degisti: **"Ayrıldım" -> "Ayrıl"**, mekan sayfasindaki
+"Buradasın · Ayrıl" cubuguyla ayni kelime.
+
+Dokunma alani `hitSlop={10}` ile buyutuldu: kucuk bir metnin kendi
+yuksekligi 44 px esiginin altinda.
+
+**MEKAN ADI ARTIK BASILABILIR** (ayni istek: "yapilan konumun uzerine
+basilabilsin ve konum icerigi acilsin"). Listedeki satirlarla AYNI
+yola gidiyor: `/harita/<id>`.
+
+**KARTIN KOKU BASILABILIR DEGIL** ve bu bilincli: bir kabin tamamini
+basilabilir yapmak icindeki her ogeyi de sessizce ayni eyleme baglar -
+akis kartinda tam bu hata yasanmisti (2026-09-04) ve buradaki "Ayrıl"
+ile "Sil" de o tuzaga duesuerdue. Iki testle kilitli: mekan adina
+basinca `/harita/mekan-1` aciliyor, "Sil"e basinca HICBIR yonlendirme
+olmuyor.
+
+Asagisi ilk adimin (kaldirma) kaydidir:
 
 **ISLEV KAYBI YOK - onceden kontrol edildi.** Kodda duran yorum
 "check-in'i bitirmenin ve silmenin TEK YOLU bu" diyordu ve o ifade
@@ -483,6 +511,34 @@ Ekran goruntusu: `tasarim/kart-eylemsiz.png`. NOT: konum satiri ve kisi
 sayisi o goruntude gorunmuyor, cunku ikisi de KOSULLU (mekan listede
 degilse konum satiri, `kisiSayisi === 0` ise sayi cizilmiyor) ve test
 hesabinda o kosullar saglanmiyor. Ikisinin de kodu degistirilmedi.
+
+### CHECK-IN DUGMESINE NEON PARILTI - 2026-09-07
+
+Kullanicinin istegi: "sabit sutundaki checkin dugmesinin altina da
+yanindaki sutunlar gibi parlak neon bir isik koy, yanlarindaki
+butonlardan referans al."
+
+`merkezDaire` stilindeki notr `golge.yuzer` yerini TURUNCU parilti
+aldi. Degerler aktif sekme dairesinden (`daireGovde`) BIREBIR alindi -
+referans acikca o oldugu icin ikisi ayni degerleri paylasiyor:
+
+    shadowColor: renk.turuncu
+    shadowOpacity: 0.5
+    shadowRadius: 12
+    shadowOffset: { width: 0, height: 6 }
+    elevation: 10
+
+**Biri degistirilirse digeri de degismeli**, yoksa cubukta iki farkli
+parilti dili olur.
+
+`golge.yuzer`in YERINI aliyor, yanina gelmiyor: RN'de tek bir golge
+var, iki tanim ust uste yazilir ve sonuncusu kazanirdi. Golgenin eski
+isi (dugmeyi cubuktan ayirmak) kayboluyor degil - renkli parilti onu
+daha da guclu yapiyor.
+
+Iki modda da ekran goruntusuyle dogrulandi (`tasarim/neon-light.png`,
+`neon-dark.png`); koyu zeminde parilti belirgin sekilde daha guclu
+okunuyor.
 
 ### DORDUENCUE TURUNCU JETONU: `turuncuSecili` - 2026-09-07
 
