@@ -15,8 +15,6 @@ import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { useDil } from '../../../lib/dil'
 import {
   aktifCheckInimiGetir,
-  checkIndenAyril,
-  checkIniSil,
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import {
@@ -33,7 +31,6 @@ import {
 } from '../../../lib/mekan'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
-import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { TurSecici } from '../../tasarim/TurSecici'
@@ -162,7 +159,6 @@ export default function KesfetEkrani() {
   // Ayrıldım ve Sil sunuyor. Baska bir mekan secilene kadar boyle.
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
   // Silme GERI ALINAMAZ: once onay satiri aciliyor.
-  const [silOnayi, setSilOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   // Ilk acilis bittikten sonra ekran duzeni bir daha tam ekran
@@ -265,30 +261,6 @@ export default function KesfetEkrani() {
       }
     }, [])
   )
-
-  async function ayril() {
-    if (!aktifCheckIn) return
-    try {
-      await checkIndenAyril(aktifCheckIn.id)
-      setAktifCheckIn(null)
-      setSilOnayi(false)
-      await yukle()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
-    }
-  }
-
-  async function canliyiSil() {
-    if (!aktifCheckIn) return
-    try {
-      await checkIniSil(aktifCheckIn.id)
-      setAktifCheckIn(null)
-      setSilOnayi(false)
-      await yukle()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
-    }
-  }
 
   // Arama kutusu her harfte istek ATMIYOR. Onceki surumde her tusa
   // basista sunucuya gidiliyordu; bu hem agi bosa yoruyor hem de
@@ -560,8 +532,17 @@ export default function KesfetEkrani() {
         />
       )}
 
-      {/* Aktif check-in kartI: check-in'i bitirmenin (Ayrıldım) ve
-          silmenin tek yolu bu, o yuzden iki sekmede de duruyor. */}
+      {/* Aktif check-in karti: nerede oldugunu ve orada kac kisi
+          bulundugunu soyleyen bir DURUM karti. Eylem tasimiyor
+          (kullanicinin istegi 2026-09-07: "Ayrıldım ve Sil'i kaldir,
+          konum ismi, su an buradasin ve kac kisi kalsin").
+
+          ISLEV KAYBI YOK, iki eylem de baska yerde duruyor:
+            ayrilma -> mekan sayfasindaki "Buradasın · Ayrıl" cubugu
+            silme   -> akis/anilar kartinin uc nokta menusu
+          Buradan kalkmalarinin sebebi de bu: ikisi de artik baska
+          ekranlarda oldugu icin bu kart tek basina bir eylem yuzeyi
+          olmak zorunda degil. */}
       {kartMekani && (
         <View style={stiller.buradaKart}>
           <View style={stiller.buradaUst}>
@@ -585,46 +566,13 @@ export default function KesfetEkrani() {
             )}
           </View>
           {/* BU MEKANDA ZATEN CHECK-IN VARSA "Check-in yap" YOK
-              (kullanicinin istegi 2026-08-29). Yerine durum ve iki
-              eylem: Ayrıldım ve Sil. Baska bir mekan secilene kadar
-              boyle kaliyor. */}
+              (kullanicinin istegi 2026-08-29). Yerine yalnizca durum
+              seridi kaliyor. Baska bir mekan secilene kadar boyle. */}
           {kartCanli ? (
-            <>
-              <View style={stiller.canliSerit}>
-                <View style={stiller.buradaNokta} />
-                <Text style={stiller.canliYazi}>Şu an buradasın</Text>
-              </View>
-              <View style={stiller.canliEylemler}>
-                <Pressable
-                  style={stiller.ikincilButon}
-                  onPress={ayril}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.ikincilButonYazi}>Ayrıldım</Text>
-                </Pressable>
-                <Pressable
-                  style={stiller.ikincilButon}
-                  onPress={() => setSilOnayi(!silOnayi)}
-                  accessibilityRole="button"
-                >
-                  <Text style={stiller.silYazi}>Sil</Text>
-                </Pressable>
-              </View>
-
-              {/* SILME GERI ALINAMAZ; ayrilmaktan farki aciklamada
-                  yaziyor: ayrilma check-in'i aniya cevirir, silme
-                  satiri tamamen kaldirir. Onay ekranin ortasinda
-                  (kullanicinin istegi 2026-09-02), akistaki kartla
-                  ayni pencere. */}
-              <OnayPenceresi
-                acikMi={silOnayi}
-                baslik="Bu check-in kalıcı olarak silinsin mi?"
-                aciklama="Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz."
-                eylemEtiketi="Sil"
-                onOnay={canliyiSil}
-                onVazgec={() => setSilOnayi(false)}
-              />
-            </>
+            <View style={stiller.canliSerit}>
+              <View style={stiller.buradaNokta} />
+              <Text style={stiller.canliYazi}>Şu an buradasın</Text>
+            </View>
           ) : (
             <Pressable
               style={stiller.checkInButonu}
@@ -927,21 +875,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.turuncuYazi,
   },
-  canliEylemler: { flexDirection: 'row', gap: bosluk.s },
-  ikincilButon: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: yuvarlak.hap,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-  },
-  ikincilButonYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  silYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.yikici },
+
 
   buradaKart: {
     backgroundColor: renk.yuzey,

@@ -446,6 +446,44 @@ harfler kacis dizisine donuyor ve `grep` sifir dondurup "yayin
 gecmemis" yanilgisi uretiyor. Bu bir kez yasandi. ASCII bir testID ya
 da sinif adi ara.
 
+### AKTIF CHECK-IN KARTI EYLEMSIZ KALDI - 2026-09-07
+
+Kullanicinin istegi: "Ayrıldım sil kaldiriyoruz, konum ismi, su an
+buradasin, kac kisi bunlar kaliyor."
+
+Check-in ekranindaki (`src/app/mekanlar/index.tsx`) aktif check-in
+kartindan **"Ayrıldım" ve "Sil" butonlari KALDIRILDI**. Kart artik bir
+DURUM karti: mekan adi, ilce/il ve uzaklik, "Şu an buradasın" seridi,
+ve kac kisi bulundugu. Hicbir eylem tasimiyor.
+
+**ISLEV KAYBI YOK - onceden kontrol edildi.** Kodda duran yorum
+"check-in'i bitirmenin ve silmenin TEK YOLU bu" diyordu ve o ifade
+ESKIMISTI; iki eylem de baska ekranlara tasinmisti:
+
+    ayrilma -> mekan sayfasindaki "Buradasın · Ayrıl" cubugu
+               (`harita/[mekanId].tsx`, 2026-09-06'da eklendi)
+    silme   -> akis/anilar kartinin uc nokta menusu
+               (`CheckInKarti` + `SecimPenceresi`, 2026-09-02)
+
+Butonlar buradan kalkabildi cunku ikisi de zaten baska yerde vardi.
+**Yeni bir eylem kaldirilirken ayni kontrol yapilmali:** o eylemin
+baska bir girisi var mi.
+
+Birlikte temizlenenler: `silOnayi` state'i, `ayril` ve `canliyiSil`
+fonksiyonlari, `checkIndenAyril`/`checkIniSil`/`OnayPenceresi`
+importlari, ve dort stil (`canliEylemler`, `ikincilButon`,
+`ikincilButonYazi`, `silYazi`). Kullanilmayan kod birakilsaydi tsc
+uyarmazdi - bu projede `noUnusedLocals` acik degil.
+
+Ekran testindeki iddia TERSINE cevrildi: eskiden "Ayrıldım" ve "Sil"
+gorunuyor olmalıydi, artik GORUNMEMELI. Iddiayi silmek yerine tersine
+cevirmek onemli - boylece butonlar sessizce geri gelirse test kirilir.
+
+Ekran goruntusu: `tasarim/kart-eylemsiz.png`. NOT: konum satiri ve kisi
+sayisi o goruntude gorunmuyor, cunku ikisi de KOSULLU (mekan listede
+degilse konum satiri, `kisiSayisi === 0` ise sayi cizilmiyor) ve test
+hesabinda o kosullar saglanmiyor. Ikisinin de kodu degistirilmedi.
+
 ### DORDUENCUE TURUNCU JETONU: `turuncuSecili` - 2026-09-07
 
 Kullanicinin bildirdigi sey: "sabit sutundaki checkin dugmesine

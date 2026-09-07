@@ -268,9 +268,14 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
 
     expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
-    expect(screen.getByText('Ayrıldım')).toBeTruthy()
-    expect(screen.getByText('Sil')).toBeTruthy()
     expect(screen.queryByText('Check-in yap')).toBeNull()
+
+    // KART EYLEM TASIMIYOR (kullanicinin istegi 2026-09-07). Ayrilma
+    // mekan sayfasindaki "Buradasın · Ayrıl" cubugunda, silme ise
+    // akis kartinin uc nokta menusunde duruyor; bu kart yalnizca
+    // nerede oldugunu soyluyor.
+    expect(screen.queryByText('Ayrıldım')).toBeNull()
+    expect(screen.queryByText('Sil')).toBeNull()
   })
 
   it('check-in BASKA bir mekandaysa kart o mekani gosterir', async () => {
