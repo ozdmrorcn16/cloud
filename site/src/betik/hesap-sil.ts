@@ -50,14 +50,38 @@ form.addEventListener('submit', async (olay) => {
     await istemci.auth.signInWithPassword({ email: eposta, password: parola })
 
   if (girisHatasi || !oturum.session) {
-    // Parolasi olmayan hesaplar da buraya duesuer (kayit e-posta koduyla
-    // basliyor, parola profil olusturma adiminda belirleniyor). Mesaj
-    // bu ihtimali de soyluyor.
-    bildir(
-      'Giriş yapılamadı. E-posta ya da parola yanlış olabilir. ' +
-        'Hesabını hiç parola belirlemeden açtıysan destek@slooin.com adresine yaz.',
-      'hata',
-    )
+    // Uc dal ayriliyor - `hesap-sil` Edge Function'indaki "DUZELTME
+    // TURU 1" ile ayni gerekce: rate limit ya da ag/sunucu hatasinda
+    // "parolan yanlis" demek dogru parolayi yazan birini bile tekrar
+    // tekrar denemeye ve kilitlenmeyi derinlestirmeye iter. Yalnizca
+    // GERCEK bir gecersiz kimlik bilgisi (`code === 'invalid_credentials'`,
+    // `code` yoksa `status === 400`) "yanlis parola" diyor - sunucudaki
+    // ayni ayrimin birebir aynisi.
+    if (
+      girisHatasi &&
+      (girisHatasi.code === 'invalid_credentials' || girisHatasi.status === 400)
+    ) {
+      // Parolasi olmayan hesaplar da buraya duesuer (kayit e-posta
+      // koduyla basliyor, parola profil olusturma adiminda
+      // belirleniyor). Mesaj bu ihtimali de soyluyor.
+      bildir(
+        'Giriş yapılamadı. E-posta ya da parola yanlış olabilir. ' +
+          'Hesabını hiç parola belirlemeden açtıysan destek@slooin.com adresine yaz.',
+        'hata',
+      )
+    } else if (girisHatasi?.status === 429) {
+      bildir(
+        'Çok fazla deneme yapıldığı için bu girişim engellendi. Birkaç ' +
+          'dakika bekleyip tekrar dene.',
+        'hata',
+      )
+    } else {
+      bildir(
+        'Giriş şu anda tamamlanamadı. Birkaç dakika sonra tekrar dene; ' +
+          'sorun sürerse destek@slooin.com adresine yaz.',
+        'hata',
+      )
+    }
     dugme.disabled = false
     return
   }
