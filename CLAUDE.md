@@ -729,6 +729,46 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### PROFIL: SAYAC KUTULARI KALKTI, SEKME GOSTERGESI KAYIYOR - 2026-09-08
+
+Kullanicinin iki istegi: "Profil ekraninda ani fotograf arkadaslarin
+etrafindaki kare sutunu kaldir boyutlarini kucult" ve "Anilar ve en sik
+yazisina kaydirmali sutun getir".
+
+**SAYAC KUTULARI:** kenarlik, zemin ve golge kalkti; geriye ikon + sayi
++ etiket kaldi. Olculer de kucuIdue (ikon 38x34 -> 30x27, sayi 23 -> 20,
+dikey dolgu 12 -> 8). Uc kutu bandin altinda agir bir serit
+olusturuyordu ve bandin kendisi zaten bir yuzey.
+
+**SECIM ARTIK RENKTE.** Kutu kalkinca "hangi bolum acik" gostergesi de
+kalkiyordu - o kartlar 2026-09-05'ten beri sayac DEGIL BOLUM SECICI.
+Secili olanin sayisi turuncu, etiketi koyu ve kalin; otekiler notre
+duesuyor. Renk tek basina anlam tasimasin diye AGIRLIK da degisiyor.
+
+**SEKME GOSTERGESI KAYIYOR.** Aktif sekmenin `borderBottom`u kalkti;
+yerine cubugun cocugu olan mutlak konumlu bir `Animated.View` geldi.
+Gosterge sekmeye baglansaydi her sekmenin kendi cizgisi olurdu ve kayma
+diye bir sey olmazdi.
+
+Yay SERT ve SONMUS (`speed: 18, bounciness: 0`): iki sekme bitisik
+oldugu icin tasip geri donen bir hareket "yanlis sekme secildi" gibi
+okunuyor.
+
+**CANLI OLCULDU** (puppeteer, 40 ms araliklarla): gosterge
+x=16'dan x=195'e **11 ara konumdan gecerek** kayiyor ve tasma yapmadan
+duruyor. Genislik 179 = (390 - 2x16) / 2.
+
+**ORTAK KANCA: `src/tasarim/hareket.ts`.** "Hareketi azalt" ayarini
+okuyan mantik karsilama sahnesinde zaten vardi; ikinci kez yazmak
+yerine `useHareket()` olarak cikarildi. Ayar aciksa gosterge kaymiyor,
+`setValue` ile aninda geciyor.
+
+**TUZAK, ikinci kez yasandi:** gosterge genisligi `onLayout`tan
+geliyordu ve testte o olay hic tetiklenmedigi icin gosterge HIC
+cizilmiyordu. Baslangic degeri artik `Dimensions`tan turetiliyor -
+ayni cozum karsilama sahnesinde de kullanilmisti. Yan fayda: gercek
+kullanimda ilk kare de dogru.
+
 ### ACILIS EKRANI: METINLER VE KUCUK EKRAN TASMASI - 2026-09-08
 
 Kullanicinin uc istegi (sirayla geldi):

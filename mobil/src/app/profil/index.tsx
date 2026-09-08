@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Share,
   Modal,
   StyleSheet,
+  Animated,
+  Dimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native'
@@ -39,6 +41,7 @@ import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { useHareket } from '../../tasarim/hareket'
 
 /**
  * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
@@ -245,6 +248,18 @@ export default function ProfilEkrani() {
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
   // Cizim penceresi; kaydirdikca buyuyor.
   const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
+  // KAYAN SEKME GOSTERGESI (kullanicinin istegi 2026-09-08: "Anılar ve
+  // en sık yazısına kaydırmalı sütun getir"). Cizgi eskiden aktif
+  // sekmenin altina ANINDA ziplyordu; artik kayiyor.
+  // Baslangic degeri EKRANDAN turetiliyor, sifirdan degil: sifirla
+  // baslasa gosterge ilk karede hic cizilmez ve olcum gelince birden
+  // belirirdi. Ayrica testte `onLayout` tetiklenmedigi icin gosterge
+  // HIC gorunmuyordu - ayni tuzak karsilama sahnesinde de yasandi.
+  const [sekmeGenisligi, setSekmeGenisligi] = useState(
+    () => (Dimensions.get('window').width - bosluk.sayfa * 2) / 2
+  )
+  const gostergeKonumu = useRef(new Animated.Value(0)).current
+  const hareket = useHareket()
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
   // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
   // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
@@ -336,6 +351,27 @@ export default function ProfilEkrani() {
       )
     )
   }
+
+  // Gosterge, secili sekmenin altina kayar. Hareket azaltilmissa
+  // aninda gecer - uygulamanin erisilebilirlik tabani.
+  useEffect(() => {
+    const hedef = sekme === 'yerler' ? 1 : 0
+    if (!hareket) {
+      gostergeKonumu.setValue(hedef)
+      return
+    }
+    const animasyon = Animated.spring(gostergeKonumu, {
+      toValue: hedef,
+      useNativeDriver: true,
+      // Yay SERT ve sonmus: gosterge kayarken sekmeden tasip geri
+      // donmemeli, cunku iki sekme bitisik ve tasma "yanlis sekme
+      // secildi" gibi okunuyor.
+      speed: 18,
+      bounciness: 0,
+    })
+    animasyon.start()
+    return () => animasyon.stop()
+  }, [sekme, hareket, gostergeKonumu])
 
   // Ekran her odaklandiginda yeniden cekiliyor: kullanici check-in yapip
   // ya da bir aniyi silip buraya donunce sayilar ve canli serit eski
@@ -647,8 +683,12 @@ export default function ProfilEkrani() {
                       ) : (
                         <Text style={stiller.sayacIkonu}>{k.ikon}</Text>
                       )}
-                      <Text style={stiller.sayacSayisi}>{k.sayi}</Text>
-                      <Text style={stiller.sayacEtiketi}>{k.etiket}</Text>
+                      <Text style={[stiller.sayacSayisi, secili && stiller.sayacSayisiSecili]}>
+                        {k.sayi}
+                      </Text>
+                      <Text style={[stiller.sayacEtiketi, secili && stiller.sayacEtiketiSecili]}>
+                        {k.etiket}
+                      </Text>
                     </Pressable>
                   )
                 })}
@@ -666,19 +706,43 @@ export default function ProfilEkrani() {
                 Fotograf ve arkadas bolumlerinde bu cubuk YOK - orada
                 tek bir bakis var, ikinci bir sekme bos yer kaplardi. */}
             {(sekme === 'anilar' || sekme === 'yerler') && (
-              <View style={stiller.sekmeler}>
+              <View
+                style={stiller.sekmeler}
+                onLayout={(o) => setSekmeGenisligi(o.nativeEvent.layout.width / 2)}
+              >
                 {(['anilar', 'yerler'] as const).map((s) => (
                   <Pressable
                     key={s}
-                    style={[stiller.sekme, sekme === s && stiller.sekmeAktif]}
+                    style={stiller.sekme}
                     onPress={() => setSekme(s)}
                     accessibilityRole="button"
+                    accessibilityState={{ selected: sekme === s }}
                   >
                     <Text style={[stiller.sekmeYazi, sekme === s && stiller.sekmeYaziAktif]}>
                       {s === 'anilar' ? t('profil.sekmeAnilar') : t('profil.sekmeYerler')}
                     </Text>
                   </Pressable>
                 ))}
+                {sekmeGenisligi > 0 && (
+                  <Animated.View
+                    testID="sekme-gostergesi"
+                    pointerEvents="none"
+                    style={[
+                      stiller.sekmeGostergesi,
+                      {
+                        width: sekmeGenisligi,
+                        transform: [
+                          {
+                            translateX: gostergeKonumu.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, sekmeGenisligi],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                )}
               </View>
             )}
 
@@ -1117,26 +1181,28 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // UC KART (kullanicinin istegi 2026-09-05). Duz sayilarin yerini
   // aldilar; her biri kendi bolumunu aciyor.
   sayacKartlari: { flexDirection: 'row', gap: bosluk.s, alignSelf: 'stretch' },
+  // KUTU YOK (kullanicinin istegi 2026-09-08: "ani fotograf
+  // arkadaslarin etrafindaki kare sutunu kaldir boyutlarini kucult").
+  // Kenarlik, zemin ve golge kalkti; geriye ikon + sayi + etiket
+  // kaldi. Uc kutu bandin altinda agir bir serit olusturuyordu ve
+  // bandin kendisi zaten bir yuzey.
   sayacKarti: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: bosluk.m,
+    paddingVertical: bosluk.s,
     paddingHorizontal: bosluk.xs,
-    borderRadius: 18,
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    ...golge.kart,
   },
-  // Secili kart: turuncu kenarlik ve sicak zemin. Sayfadaki tek
-  // "hangisi acik" gostergesi bu - alt sekme yalnizca ani bolumunde
-  // var, otekilerde secimi kartin kendisi tasiyor.
-  sayacKartiSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncuZemin },
+  // SECIM ARTIK RENKTE. Kutu kalkinca "hangisi acik" gostergesi de
+  // kalkiyordu; secili olan sayiyi turuncu ve etiketi koyu tutuyor,
+  // otekiler notre duesuyor. Renk TEK BASINA anlam tasimasin diye
+  // etiket agirligi da degisiyor.
+  sayacKartiSecili: {},
   sayacIkonu: { fontSize: 26, marginBottom: bosluk.xs },
   // 34x30 -> 38x34 (kullanicinin istegi 2026-09-05: "ikonlari cok az
   // buyult"). Kaynak 240 piksel oldugu icin buyutme cozunurlukten
   // yemiyor; retina 3x'te hala iki kat pay var.
-  sayacGorseli: { width: 38, height: 34, marginBottom: bosluk.xs },
+  // 38x34 -> 30x27 (ayni istekteki "boyutlarini kucult").
+  sayacGorseli: { width: 30, height: 27, marginBottom: 2 },
   sayacSayisi: {
     fontFamily: yazi.ekranBasligi,
     // 26 (olcek.baslik) -> 23 (kullanicinin istegi 2026-09-05:
@@ -1144,16 +1210,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // arasinda bir deger yok; ikisinden biri "cok az" olmuyordu, o
     // yuzden burada ara bir deger yaziliyor. Kart ici bir gosterge,
     // metin olcegine bagli degil.
-    fontSize: 23,
-    color: renk.turuncuYazi,
+    // 23 -> 20 ("boyutlarini kucult").
+    fontSize: 20,
+    color: renk.metin,
     letterSpacing: -0.4,
   },
+  sayacSayisiSecili: { color: renk.turuncuYazi },
   sayacEtiketi: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
     marginTop: 1,
   },
+  sayacEtiketiSecili: { fontFamily: yazi.govdeKalin, color: renk.metinIkincil },
 
   // Arkadas satiri: bas harfli avatar + ad + kullanici adi.
   kisiSatiri: {
@@ -1202,7 +1271,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: bosluk.l,
   },
   sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.m },
-  sekmeAktif: { borderBottomWidth: 2, borderBottomColor: renk.metin, marginBottom: -1 },
+  // Gosterge SEKMENIN DEGIL cubugun cocugu: sekmeye baglansaydi her
+  // sekmenin kendi cizgisi olur ve kayma diye bir sey olmazdi.
+  sekmeGostergesi: {
+    position: 'absolute',
+    left: 0,
+    bottom: -1,
+    height: 2,
+    backgroundColor: renk.metin,
+  },
   sekmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
   sekmeYaziAktif: { color: renk.metin },
 

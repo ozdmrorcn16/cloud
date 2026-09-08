@@ -516,3 +516,55 @@ describe('ProfilEkrani anilar listesi', () => {
     expect(screen.getByText('Mekan 1')).toBeTruthy()
   })
 })
+
+/**
+ * SAYAC SATIRI VE SEKME GOSTERGESI - kullanicinin 2026-09-08 istekleri:
+ * "ani fotograf arkadaslarin etrafindaki kare sutunu kaldir
+ * boyutlarini kucult" ve "Anılar ve en sık yazısına kaydırmalı sütun
+ * getir".
+ */
+describe('ProfilEkrani sayac satiri ve sekmeler', () => {
+  it('sayaclarin etrafinda KUTU YOK: kenarlik da zemin de yok', async () => {
+    await render(<ProfilEkrani />)
+
+    const sayac = await screen.findByLabelText('0 Anı')
+    const stil = duzYazi(sayac as { props: { style?: unknown } })
+
+    expect(stil.borderWidth).toBeUndefined()
+    expect(stil.backgroundColor).toBeUndefined()
+    // Golge de kalkti; kutuyu geri getiren tek bir ozellik kalmamali.
+    expect(stil.shadowOpacity).toBeUndefined()
+  })
+
+  it('secim RENKTE tasiniyor: acik olan bolumun sayisi turuncu, digerleri notr', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
+    await render(<ProfilEkrani />)
+    await screen.findByText('Sahil Kafe')
+
+    // Acilista "Anılar" bolumu acik.
+    const aniSayisi = screen.getByText('1')
+    const bagSayisi = screen.getAllByText('0')[0]
+
+    expect(duzYazi(aniSayisi).color).toBe(acikRenk.turuncuYazi)
+    expect(duzYazi(bagSayisi).color).toBe(acikRenk.metin)
+  })
+
+  it('sekme gostergesi AYRI bir oge: sekmenin kendi alt cizgisi yok', async () => {
+    await render(<ProfilEkrani />)
+
+    // Gosterge cubugun cocugu; sekmeye baglansaydi kayamazdi.
+    expect(await screen.findByTestId('sekme-gostergesi')).toBeTruthy()
+
+    const sekmeYazisi = screen.getByText('Anılar')
+    expect(duzYazi(sekmeYazisi).borderBottomWidth).toBeUndefined()
+  })
+
+  it('"En sık"a basinca gosterge KAYBOLMUYOR, tek gosterge kaliyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
+    await render(<ProfilEkrani />)
+
+    fireEvent.press(await screen.findByText('En sık'))
+
+    expect(screen.getAllByTestId('sekme-gostergesi')).toHaveLength(1)
+  })
+})

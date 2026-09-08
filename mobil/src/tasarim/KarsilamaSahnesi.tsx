@@ -1,14 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  AccessibilityInfo,
-  Animated,
-  Dimensions,
-  Easing,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native'
+import { Animated, Dimensions, Easing, Image, StyleSheet, Text, View } from 'react-native'
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg'
 import {
   ANA_YOLLAR,
@@ -21,6 +12,7 @@ import {
 import { useDil } from '../../lib/dil'
 import { bosluk, yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { useHareket } from './hareket'
 
 /**
  * KARSILAMA SAHNESI - "disarida kim var".
@@ -379,7 +371,7 @@ export function KarsilamaSahnesi() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const { t } = useDil()
-  const [hareket, setHareket] = useState(true)
+  const hareket = useHareket()
   // Sahnenin genisligi: igne olculeri ona oranli. Baslangic degeri
   // EKRAN GENISLIGI, sifir degil - sahne zaten kenardan kenara. Sifirla
   // baslasaydi ilk kare bos bir harita cizer, olcum gelince igneler
@@ -387,19 +379,6 @@ export function KarsilamaSahnesi() {
   // igneler HIC gorunmuyordu.
   const [en, setEn] = useState(() => Dimensions.get('window').width)
 
-  useEffect(() => {
-    let gecerli = true
-    AccessibilityInfo.isReduceMotionEnabled().then((azalt) => {
-      if (gecerli) setHareket(!azalt)
-    })
-    const abone = AccessibilityInfo.addEventListener('reduceMotionChanged', (azalt) =>
-      setHareket(!azalt)
-    )
-    return () => {
-      gecerli = false
-      abone.remove()
-    }
-  }, [])
 
   return (
     <View
