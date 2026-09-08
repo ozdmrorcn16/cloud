@@ -780,6 +780,23 @@ yasardi. Bilesen bir `ErrorBoundary` ile sarildi: hata olursa duz bir
 **Yeni bir native derleme alinip zoom telefonda dogrulandiktan sonra o
 sinif kaldirilabilir.**
 
+**GENISLIGI SIFIRLAYAN TUZAK - yasandi ve olculdu.** Kullanici ilk
+gecuiste "zoom da calismiyor, fotografa basinca tam ekranda acilmiyor"
+dedi. Tarayicida olculdu:
+
+    kap  :  0 x 844     <- genislik SIFIR
+    foto :  0 x 591
+
+Sebep: modal `alignItems: 'center'` kullaniyor, dolayisiyla cocugun
+genisligi ICERIGE gore hesaplaniyor; icerik de `width: '100%'` istedigi
+icin sonuc sifir oluyordu. `flex: 1` yalnizca YUKSEKLIGI dolduruyor.
+`alignSelf: 'stretch'` ile duzeldi (390 x 844 / 390 x 591) ve testte
+kilitlendi.
+
+**DERS:** `alignItems: 'center'` olan bir kapsayicinin icinde yuzde
+genislik isteyen bir cocuk varsa, cocuga `alignSelf: 'stretch'`
+verilmeli - yoksa yuzde sifirin yuzdesi olur.
+
 ### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
 
 Kullanicinin istegi: "check-in yaparken fotograf eklemeye basilinca

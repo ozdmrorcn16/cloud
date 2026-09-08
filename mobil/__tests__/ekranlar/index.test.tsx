@@ -502,8 +502,19 @@ describe('AnaSayfa', () => {
     // icinde (kullanicinin istegi 2026-09-08). Zoom'un KENDISI
     // gesture-handler'in isi ve jest'te mock'lu; burada olculen sey
     // fotografin o kabin icine girmis olmasi.
-    expect(await screen.findByTestId('yakinlastirilabilir')).toBeTruthy()
+    const kap = await screen.findByTestId('yakinlastirilabilir')
     expect(screen.getByTestId('buyuk-fotograf')).toBeTruthy()
+
+    // GENISLIGI SIFIRLAYAN TUZAK (yasandi): modal `alignItems: center`
+    // kullaniyor, dolayisiyla `flex: 1` yalnizca YUKSEKLIGI dolduruyor
+    // ve genislik icerige gore hesaplaniyordu - icerik de `width: 100%`
+    // istedigi icin kutu 0 x 844 kaliyor, fotograf hic gorunmuyordu.
+    // `alignSelf: 'stretch'` bunu kapatiyor.
+    const kapStili = Object.assign(
+      {},
+      ...[kap.props.style].flat(Infinity).filter(Boolean)
+    ) as Record<string, unknown>
+    expect(kapStili.alignSelf).toBe('stretch')
   })
 
   it('buyuk gorunum kapatilabiliyor', async () => {

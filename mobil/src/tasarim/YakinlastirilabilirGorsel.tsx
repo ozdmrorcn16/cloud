@@ -191,5 +191,15 @@ export function YakinlastirilabilirGorsel({
 }
 
 const stiller = StyleSheet.create({
-  kok: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  /**
+   * `alignSelf: 'stretch'` SART, yoksa genislik SIFIR oluyor.
+   *
+   * Olculdu (kullanicinin bildirdigi kusur: "fotografa basinca tam
+   * ekranda acilmiyor"): kapsayici modal `alignItems: 'center'`
+   * kullaniyor, dolayisiyla cocugun genisligi ICERIGE gore
+   * hesaplaniyor; icerik de `width: '100%'` istedigi icin sonuc
+   * 0 x 844'luk bir kutu ve gorunmeyen bir fotograf oluyordu.
+   * `flex: 1` yalnizca YUKSEKLIGI dolduruyor.
+   */
+  kok: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
 })
