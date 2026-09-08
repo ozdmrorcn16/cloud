@@ -754,10 +754,31 @@ Secilen yol `ScrollView`in KENDI yakinlastirmasi: saf JavaScript, OTA
 ile gidiyor, testleri bozmuyor ve hareket sistemin geri kalaniyla ayni
 hissediyor.
 
-**BILINEN SINIR - kayda geciyor:** `ScrollView` yakinlastirmasi
-yalnizca iOS'ta var. **Android'de fotograf aciliyor ama
-yakinlastirilamiyor.** Iki platformda calisan surum gesture-handler +
-reanimated ister; o gun geldiginde jest kurulumu da yapilmali.
+**IKI PLATFORMA GECIRILDI (ayni gun, kullanicinin "simdi yap"
+talimati).** `ScrollView` yakinlastirmasi yalnizca iOS'ta calisiyordu;
+yerini `react-native-gesture-handler` + RN'IN KENDI `Animated`i aldi
+(`PinchGestureHandler` + `PanGestureHandler`).
+
+**REANIMATED YINE KULLANILMADI, sebebi olculdu:** projede
+`babel.config.js` HIC YOK, yani reanimated'in zorunlu babel eklentisi
+hicbir zaman yapilandirilmamis - worklet'ler o eklenti olmadan
+calismaz. Gesture-handler'in klasik API'si babel eklentisi istemiyor.
+
+**JEST KURULUMU SART CIKTI:** `GestureHandlerRootView` render
+edilirken "_RNGestureHandlerModule.default.install is not a function"
+ile cokuyordu; `jest.setup.js`'in basina
+`require('react-native-gesture-handler/jestSetup')` eklendi.
+
+**GUVENLIK AGI - onemli.** Gesture-handler NATIVE bir modul ve bugune
+kadar uygulamada HIC KULLANILMIYORDU. Bagimliliklarda oldugu icin
+autolinking ile derlemeye girmis olmasi gerekir, ama bunu mevcut
+TestFlight derlemesinde dogrulamanin yolu yok. Guncelleme OTA ile
+gittigi icin modul o derlemede yoksa fotografa basan herkes COKME
+yasardi. Bilesen bir `ErrorBoundary` ile sarildi: hata olursa duz bir
+`Image`e duesuyor - yakinlastirma calismaz ama fotograf acilir.
+
+**Yeni bir native derleme alinip zoom telefonda dogrulandiktan sonra o
+sinif kaldirilabilir.**
 
 ### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
 

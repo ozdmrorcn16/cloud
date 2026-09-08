@@ -1,3 +1,11 @@
+// GESTURE HANDLER (2026-09-08): buyuk gorunumdeki fotograf iki
+// parmakla yakinlastirilabiliyor ve bunun icin
+// `react-native-gesture-handler` kullaniliyor. Paketin kendi jest
+// kurulumu olmadan `GestureHandlerRootView` render edilirken
+// "_RNGestureHandlerModule.default.install is not a function" ile
+// coeuyor - native modul test ortaminda yok.
+require('react-native-gesture-handler/jestSetup')
+
 // Set environment variables for testing
 process.env.EXPO_PUBLIC_SUPABASE_URL =
   process.env.EXPO_PUBLIC_SUPABASE_URL ||
