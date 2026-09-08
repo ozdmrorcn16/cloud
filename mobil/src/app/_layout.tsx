@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { useFonts } from 'expo-font'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   InstrumentSans_400Regular,
@@ -213,12 +214,19 @@ export default function KokLayout() {
   if (!yaziHazir) return null
 
   return (
-    <SafeAreaProvider>
-      <DilSaglayici>
-        <OturumSaglayici>
-          <DilBekleyerek />
-        </OturumSaglayici>
-      </DilSaglayici>
-    </SafeAreaProvider>
+    // GESTURE KOKU EN DISTA (2026-09-08): akis kartindaki fotograf iki
+    // parmakla yakinlastirilabiliyor ve `react-native-gesture-handler`
+    // hareketleri ancak bir kok icinde calisiyor. Modal icindeki buyuk
+    // gorunum kendi kokunu tasimaya devam ediyor - modal agacin
+    // disinda kaldigi icin buradaki kok oraya ulasmiyor.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <DilSaglayici>
+          <OturumSaglayici>
+            <DilBekleyerek />
+          </OturumSaglayici>
+        </DilSaglayici>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }

@@ -797,6 +797,40 @@ kilitlendi.
 genislik isteyen bir cocuk varsa, cocuga `alignSelf: 'stretch'`
 verilmeli - yoksa yuzde sifirin yuzdesi olur.
 
+**ZOOM TELEFONDA DOGRULANDI** (kullanici, ayni gun): tam ekran
+gorunumde iki parmakla yakinlastirma calisiyor. Bu ayni zamanda
+gesture-handler'in NATIVE modulunun mevcut TestFlight derlemesinde
+BULUNDUGUNU kanitliyor.
+
+#### KART ICINDE ZOOM VE ODAK NOKTASI - ayni gun, iki ek istek
+
+**1. "Tam ekran acilmadan da zoom yapma ekle".** Akis kartindaki
+fotograf da yakinlastirilabiliyor. Kartta parmak kalkinca 1x'e DONUYOR
+(`birakincaSifirla`): kart sabit yukseklikte ve listenin icinde, kalici
+zoom komsu kartlarin uzerine tasar ve kullanici o karti bir daha
+duzeltemez. Tam ekranda ise zoom KALICI - inceledigin yerde
+kalabilmelisin.
+
+Kart icindeki hareketler icin kok duzene `GestureHandlerRootView`
+eklendi. Modal kendi kokunu tasimaya devam ediyor
+(`YakinlastirilabilirTamEkran`): modal agacin disinda kaldigi icin
+kokteki saglayici oraya ULASMIYOR.
+
+Kaydirma kartta IKI PARMAK istiyor (`minPointers={2}`): tek parmak
+listenin kaydirmasi olarak kalmali. Tek DOKUNUS hala tam ekrani
+aciyor - `Pressable` disarida, hareketler icerideki katmanda.
+
+**2. "Istedigim yere zoom yapabiliyim, sadece ortaya yaptiriyor".**
+Onceki surum yalnizca `scale` degerini buyutuyordu, dolayisiyla goruntu
+her zaman MERKEZDEN aciliyordu. Artik parmaklarin ORTA NOKTASI sabit
+kaliyor. Formul: bir P noktasi olcek s'ten s2'ye giderken yerinde
+kalsin isteniyorsa oteleme `t2 = P - (P - t) * (s2 / s)` olmali.
+
+**NATIVE SURUCU KAPATILDI** (`useNativeDriver: false`) ve bu bilincli:
+odak hesabi her karede JavaScript'te yapiliyor cunku olcek ve oteleme
+BIRLIKTE guncelleniyor. Native surucuyle yalnizca merkezden zoom
+yapilabilirdi - yani kullanicinin sikayet ettigi davranis.
+
 ### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
 
 Kullanicinin istegi: "check-in yaparken fotograf eklemeye basilinca

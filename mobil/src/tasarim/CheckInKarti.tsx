@@ -15,7 +15,10 @@ import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
-import { YakinlastirilabilirGorsel } from './YakinlastirilabilirGorsel'
+import {
+  YakinlastirilabilirGorsel,
+  YakinlastirilabilirTamEkran,
+} from './YakinlastirilabilirGorsel'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -482,10 +485,17 @@ export function CheckInKarti({
           // kusur (2026-09-08).
           style={stiller.fotografKabi}
         >
-          <Image
-            source={{ uri: oge.fotografUrl }}
-            style={stiller.fotograf}
-            resizeMode="cover"
+          {/* KART ICINDE DE ZOOM (kullanicinin istegi 2026-09-08: "tam
+              ekran acilmadan da zoom yapma ekle"). Parmak kalkinca 1x'e
+              donuyor - kart sabit yukseklikte ve listenin icinde, kalici
+              zoom komsu kartlarin uzerine tasardi.
+
+              TEK DOKUNUS hala tam ekrani aciyor: `Pressable` disarida,
+              hareketler icerideki katmanda. */}
+          <YakinlastirilabilirGorsel
+            uri={oge.fotografUrl}
+            stil={stiller.fotograf}
+            birakincaSifirla
           />
         </Pressable>
       )}
@@ -512,7 +522,7 @@ export function CheckInKarti({
           {/* IKI PARMAKLA YAKINLASTIRMA (kullanicinin istegi
               2026-09-08). Cift dokunus sifirliyor. */}
           {oge.fotografUrl && (
-            <YakinlastirilabilirGorsel uri={oge.fotografUrl} stil={stiller.buyukFotograf} />
+            <YakinlastirilabilirTamEkran uri={oge.fotografUrl} stil={stiller.buyukFotograf} />
           )}
         </View>
       </Modal>

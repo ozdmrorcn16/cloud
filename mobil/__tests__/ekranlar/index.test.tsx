@@ -492,29 +492,26 @@ describe('AnaSayfa', () => {
     expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
-  it('buyuk gorunumdeki fotograf YAKINLASTIRILABILIR', async () => {
+  it('fotograf hem kartta hem tam ekranda YAKINLASTIRILABILIR', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ fotografUrl: 'https://imzali/1.jpg' })])
     await render(<AnaSayfa />)
 
-    fireEvent.press(await screen.findByTestId('akis-fotografi'))
-
-    // Fotograf artik duz bir Image degil, yakinlastirilabilir bir kabin
-    // icinde (kullanicinin istegi 2026-09-08). Zoom'un KENDISI
-    // gesture-handler'in isi ve jest'te mock'lu; burada olculen sey
-    // fotografin o kabin icine girmis olmasi.
-    const kap = await screen.findByTestId('yakinlastirilabilir')
-    expect(screen.getByTestId('buyuk-fotograf')).toBeTruthy()
-
-    // GENISLIGI SIFIRLAYAN TUZAK (yasandi): modal `alignItems: center`
-    // kullaniyor, dolayisiyla `flex: 1` yalnizca YUKSEKLIGI dolduruyor
-    // ve genislik icerige gore hesaplaniyordu - icerik de `width: 100%`
+    // KARTIN ICINDE de zoom var (kullanicinin istegi 2026-09-08: "tam
+    // ekran acilmadan da zoom yapma ekle").
+    const kartKabi = await screen.findByTestId('yakinlastirilabilir')
+    // GENISLIGI SIFIRLAYAN TUZAK (yasandi): kapsayici `alignItems:
+    // center` kullaninca `flex: 1` yalnizca YUKSEKLIGI dolduruyor ve
+    // genislik icerige gore hesaplaniyordu - icerik de `width: 100%`
     // istedigi icin kutu 0 x 844 kaliyor, fotograf hic gorunmuyordu.
-    // `alignSelf: 'stretch'` bunu kapatiyor.
-    const kapStili = Object.assign(
+    const stil = Object.assign(
       {},
-      ...[kap.props.style].flat(Infinity).filter(Boolean)
+      ...[kartKabi.props.style].flat(Infinity).filter(Boolean)
     ) as Record<string, unknown>
-    expect(kapStili.alignSelf).toBe('stretch')
+    expect(stil.alignSelf).toBe('stretch')
+
+    // Tek dokunus HALA tam ekrani aciyor.
+    fireEvent.press(screen.getByTestId('akis-fotografi'))
+    expect(await screen.findByTestId('fotograf-gorunumu')).toBeTruthy()
   })
 
   it('buyuk gorunum kapatilabiliyor', async () => {
