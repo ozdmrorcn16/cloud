@@ -492,6 +492,20 @@ describe('AnaSayfa', () => {
     expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
+  it('buyuk gorunumdeki fotograf YAKINLASTIRILABILIR', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ fotografUrl: 'https://imzali/1.jpg' })])
+    await render(<AnaSayfa />)
+
+    fireEvent.press(await screen.findByTestId('akis-fotografi'))
+
+    // Fotograf artik duz bir Image degil, yakinlastirilabilir bir kabin
+    // icinde (kullanicinin istegi 2026-09-08).
+    const kap = await screen.findByTestId('yakinlastirilabilir')
+    expect(kap.props.maximumZoomScale).toBe(4)
+    expect(kap.props.minimumZoomScale).toBe(1)
+    expect(screen.getByTestId('buyuk-fotograf')).toBeTruthy()
+  })
+
   it('buyuk gorunum kapatilabiliyor', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([
       oge({ fotografUrl: 'https://imzali/foto.jpg' }),

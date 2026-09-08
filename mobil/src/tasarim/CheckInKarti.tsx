@@ -15,6 +15,7 @@ import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
+import { YakinlastirilabilirGorsel } from './YakinlastirilabilirGorsel'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -474,6 +475,12 @@ export function CheckInKarti({
           onPress={() => setBuyukAcik(true)}
           accessibilityRole="button"
           accessibilityLabel={t('anaSayfa.fotografiBuyut')}
+          // NEGATIF PAY SARMALAYICIDA, gorselde DEGIL. Gorselde
+          // oldugunda `Pressable` kartin ic genisliginde kaliyor ve
+          // gorsel yalnizca SOLA tasiyordu; sagda kartin dolgusu kadar
+          // (16 px) beyaz bir serit kaliyordu - kullanicinin bildirdigi
+          // kusur (2026-09-08).
+          style={stiller.fotografKabi}
         >
           <Image
             source={{ uri: oge.fotografUrl }}
@@ -502,12 +509,10 @@ export function CheckInKarti({
           >
             <Text style={stiller.buyukKapatYazi}>×</Text>
           </Pressable>
+          {/* IKI PARMAKLA YAKINLASTIRMA (kullanicinin istegi
+              2026-09-08). Cift dokunus sifirliyor. */}
           {oge.fotografUrl && (
-            <Image
-              source={{ uri: oge.fotografUrl }}
-              style={stiller.buyukFotograf}
-              resizeMode="contain"
-            />
+            <YakinlastirilabilirGorsel uri={oge.fotografUrl} stil={stiller.buyukFotograf} />
           )}
         </View>
       </Modal>
@@ -723,18 +728,23 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metin,
     marginTop: bosluk.m,
   },
-  fotograf: {
-    // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
-    // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif
-    // yatay margin, kartin kendi dolgusunu iptal ediyor - metin
-    // padding'li kaliyor, yalnizca gorsel kenara ulasiyor.
-    //
-    // Kose yuvarlamasi da kalkti: kenara yapisan bir gorselde yuvarlak
-    // kose, altindaki beyazi ucgen parcalar halinde gosteriyor.
-    width: undefined,
+  // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
+  // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif
+  // yatay margin kartin kendi dolgusunu iptal ediyor - metin padding'li
+  // kaliyor, yalnizca gorsel kenara ulasiyor.
+  //
+  // Pay SARMALAYICIDA: gorselde oldugunda `Pressable` kartin ic
+  // genisliginde kaliyor ve gorsel yalnizca sola tasiyor, sagda 16 px
+  // beyaz serit kaliyordu.
+  fotografKabi: {
     marginHorizontal: -bosluk.l,
-    aspectRatio: 4 / 5,
     marginTop: bosluk.m,
+  },
+  fotograf: {
+    // Kose yuvarlamasi YOK: kenara yapisan bir gorselde yuvarlak kose,
+    // altindaki beyazi ucgen parcalar halinde gosteriyor.
+    width: '100%',
+    aspectRatio: 4 / 5,
     backgroundColor: renk.cizgi,
   },
 })

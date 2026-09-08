@@ -729,6 +729,36 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### AKIS FOTOGRAFI: SAG BOSLUK GITTI, ZOOM GELDI - 2026-09-08
+
+**1. SAGDAKI BEYAZ SERIT.** Kullanicinin bildirdigi kusur: "fotograf
+sagdan bosluk var ekrana sigsin". Kok neden: tam genislik icin verilen
+negatif yatay pay GORSELIN kendisindeydi, sarmalayici `Pressable`
+kartin IC genisliginde kaliyordu. Sonuc: gorsel yalnizca SOLA tasiyor,
+sagda kartin dolgusu kadar (16 px) beyaz serit kaliyordu.
+
+Pay artik sarmalayicida, gorsel `width: '100%'`. Olculdu: fotograf
+satirinda hem sol (x=1) hem sag (x=388) kenar fotograf pikseli.
+
+**2. IKI PARMAKLA YAKINLASTIRMA.** Buyuk gorunumdeki fotograf artik
+yakinlastirilabilir (`src/tasarim/YakinlastirilabilirGorsel.tsx`).
+
+**REANIMATED + GESTURE-HANDLER DENENDI VE ELENDI.** Ikisi de zaten
+bagimliliklarda ve iki platformda calisirdi, ama reanimated 4 jest'te
+kurulu degil ve testler **komple cokuyordu** ("Cannot read properties
+of undefined (reading 'loadUnpackers')"); ustelik ikisi de uygulamada
+ilk kez devreye girecekti, yani mevcut TestFlight derlemesinde
+calisip calismadigi belirsizdi.
+
+Secilen yol `ScrollView`in KENDI yakinlastirmasi: saf JavaScript, OTA
+ile gidiyor, testleri bozmuyor ve hareket sistemin geri kalaniyla ayni
+hissediyor.
+
+**BILINEN SINIR - kayda geciyor:** `ScrollView` yakinlastirmasi
+yalnizca iOS'ta var. **Android'de fotograf aciliyor ama
+yakinlastirilamiyor.** Iki platformda calisan surum gesture-handler +
+reanimated ister; o gun geldiginde jest kurulumu da yapilmali.
+
 ### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
 
 Kullanicinin istegi: "check-in yaparken fotograf eklemeye basilinca
