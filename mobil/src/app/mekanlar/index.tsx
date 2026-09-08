@@ -1279,31 +1279,37 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
   /**
-   * LISTEDEKI CHECK-IN BUTONU HAYALET (2026-09-07 denetimi).
+   * LISTEDEKI CHECK-IN BUTONU: DOLU TURUNCU.
    *
-   * Onceden dolu turuncuydu ve ekranda AYNI ANDA DORT TANE
-   * gorunuyordu; yaninda segment, arama ikonu, suzgec, secili cip,
-   * "Tumunu gor" ve alt gezinmenin merkez dugmesi de turuncuydu.
-   * Kimligin kendi kurali "bir ekranda genelde TEK birincil turuncu
-   * eylem olur" diyor; dort ozdes dolu buton o kurali tuketiyordu -
-   * turuncu artik "asil eylem bu" demiyordu.
+   * 2026-09-07 tasarim denetiminde bu butonlar HAYALETE cevrilmisti
+   * (kenarlik + turuncu yazi); gerekce "bir ekranda tek birincil
+   * turuncu eylem olur" kuraliydi ve dort ozdes dolu buton o kurali
+   * tuketiyordu. Kullanici 2026-09-09'da GERI ALDI: "check-in
+   * butonlarinin icini dolu turuncu yap".
    *
-   * Dolu turuncu ekranda TEK kaldi: alt gezinmedeki merkez check-in
-   * dugmesi, cunku ekranin asil eylemi o. Buradaki butonlar hala
-   * turuncu (yani hala "eylem") ama kenarlikla.
+   * Karar kullanicinin ve savunulabilir: bu ekranin adi zaten
+   * "Check-in" ve listedeki her satirin TEK isi o eylem. Hayalet
+   * buton, asil eylemi ikincil gosteriyordu.
+   *
+   * Beyaz yazi marka turuncusu uzerinde 2,65:1 veriyor - BILINEN ve
+   * kabul edilmis odun (bkz. `marka-turuncusu-degistirilmez`); yazi
+   * `govdeKalin` oldugu icin kucuk puntoda da okunuyor.
    */
   kartCheckIn: {
-    borderWidth: 1.5,
-    borderColor: renk.turuncuYazi,
+    backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 8,
-    paddingHorizontal: 13,
+    // Kenarlik kalkinca dolgu 1,5 px daralmis oluyordu; dolgu
+    // buyutuIerek buton eski olcusunde tutuluyor.
+    paddingVertical: 9.5,
+    paddingHorizontal: 14.5,
   },
-  kartCheckInBasili: { backgroundColor: renk.turuncuZemin },
+  // Basili hal DOLGUYU KOYULASTIRIYOR: dolu bir butonda opaklik
+  // dusurmek "pasif" okunuyor.
+  kartCheckInBasili: { backgroundColor: renk.turuncuBasili },
   kartCheckInYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
-    color: renk.turuncuYazi,
+    color: '#FFFFFF',
   },
 
   sayfa: { flex: 1, backgroundColor: renk.zemin },

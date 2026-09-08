@@ -505,33 +505,24 @@ export default function MekanSayfasi() {
                 />
               </View>
 
-              {/* IKI yuvarlak dugme, referanstaki gibi. Ikisi FARKLI
-                  is yapiyor - ayni isi yapan iki dugme koymak yerine
-                  harita uygulamasinin iki ayri kipi kullanildi:
-                    ustteki  -> konumu haritada GOSTER (?q=)
-                    alttaki  -> YOL TARIFI ver (?daddr= / dir/) */}
-              <View style={stiller.haritaDugmeleri}>
-                <Pressable
-                  style={stiller.haritaDugmesi}
-                  onPress={() => haritayiAc('goster')}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('mekanSayfasi.haritadaGoster')}
-                  hitSlop={5}
-                  testID="harita-goster"
-                >
-                  <NisangahIkonu boyut={17} />
-                </Pressable>
-                <Pressable
-                  style={stiller.haritaDugmesi}
-                  onPress={haritayaDokunuldu}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('mekanSayfasi.yolTarifi')}
-                  hitSlop={5}
-                  testID="harita-yol-tarifi"
-                >
-                  <NavigasyonIkonu boyut={16} />
-                </Pressable>
-              </View>
+              {/* IKI YUVARLAK DUGME KALDIRILDI (kullanicinin istegi
+                  2026-09-09: "harita uzerinde sagda iki tane ikon var
+                  onlari kaldir").
+
+                  ISLEV KAYBI KONTROL EDILDI: "Yol tarifi" ayni ekranda
+                  baslik satirindaki butonda duruyor. "Haritada goster"
+                  icin ayri bir giris kalmadi, ama harita zaten ekranda
+                  ve etkilesimli - yakinlastirip kaydirilabiliyor.
+
+                  Yerlerine MESAFE GOSTERGESI geldi (ayni gun, "bulundugu
+                  adresten sectigi konuma mesafe gostergesi olsun").
+                  Konum okunamazsa hic cizilmiyor: bilmedigimiz bir seyi
+                  yazmak yerine sessiz kalmak dogru. */}
+              {uzaklik !== null && (
+                <View style={stiller.mesafeHapi} pointerEvents="none">
+                  <Text style={stiller.mesafeYazisi}>{mesafeYazisi(uzaklik)}</Text>
+                </View>
+              )}
             </View>
 
             <View style={stiller.baslikSatiri}>
@@ -922,20 +913,32 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Iki dugme dikey dizili, referanstaki gibi. Konteyner mutlak,
   // dugmelerin kendisi akista - boylece aralarindaki bosluk `gap` ile
   // veriliyor ve ikisini ayri ayri konumlandirmak gerekmiyor.
-  haritaDugmeleri: {
+  /**
+   * MESAFE GOSTERGESI - haritanin sag altinda kucuk bir hap.
+   *
+   * Konumun kendisi degil ARADAKI UZAKLIK yaziyor; kullanicinin
+   * sordugu soru "buraya ne kadar var". Beyaz zemin ve koyu yazi
+   * SABIT: harita iki modda da acik, dolayisiyla uzerindeki her sey
+   * acik zemine gore secilir (ayni kural igne etiketlerinde de var).
+   */
+  mesafeHapi: {
     position: 'absolute',
-    right: 10,
-    bottom: 10,
-    gap: 9,
+    right: bosluk.m,
+    bottom: bosluk.m,
+    backgroundColor: '#FFFFFF',
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.m,
+    paddingVertical: 6,
+    shadowColor: '#000000',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
-  haritaDugmesi: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: renk.yuzey,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...golge.yuzer,
+  mesafeYazisi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: '#17130F',
   },
 
   baslikSatiri: {

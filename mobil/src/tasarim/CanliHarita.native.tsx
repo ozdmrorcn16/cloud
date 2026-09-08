@@ -362,7 +362,17 @@ export function CanliHarita({
             merkezDurumu ? `Bu mekan, ${DURUM_ETIKETI[merkezDurumu]}` : 'Buradasın'
           }
         >
-          <Svg width={38} height={38} viewBox="0 0 24 24">
+          {/* OLCU MERKEZIN NE OLDUGUNA BAGLI (kullanicinin istegi
+              2026-09-09: "kullanicinin konum ignesi daha buyuk,
+              konumun adresinin ignesi daha kucuk olsun").
+              `merkezDurumu` varsa merkez BIR MEKANDIR (mekan sayfasi);
+              yoksa merkez KULLANICININ KENDISIDIR (kesfet ekrani) ve
+              orada kucultmek yanlis olurdu. */}
+          <Svg
+            width={merkezDurumu ? 30 : 38}
+            height={merkezDurumu ? 30 : 38}
+            viewBox="0 0 24 24"
+          >
             <Path
               d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
               fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
@@ -392,7 +402,7 @@ export function CanliHarita({
             accessibilityLabel="Buradasın"
           >
             <View style={stiller.kullaniciDaire}>
-              <Svg width={15} height={15} viewBox="0 0 24 24">
+              <Svg width={19} height={19} viewBox="0 0 24 24">
                 <Path
                   d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
                   fill="#FFFFFF"
@@ -441,9 +451,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   //
   // 18 -> 26 (kullanicinin istegi 2026-09-07: "cok az daha buyuk").
   kullaniciDaire: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    // 26 -> 34 (kullanicinin istegi 2026-09-09): kullanicinin kendi
+    // konumu mekan ignesinden BUYUK olmali - haritada once "ben
+    // neredeyim" okunuyor.
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: renk.turuncu,
     borderWidth: 2,
     borderColor: '#FFFFFF',

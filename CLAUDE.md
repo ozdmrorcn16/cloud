@@ -729,6 +729,41 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### BES KUCUK DEGISIKLIK - 2026-09-09
+
+**1. LISTEDEKI CHECK-IN BUTONLARI DOLU TURUNCU.** 2026-09-07
+denetiminde HAYALETE cevrilmislerdi ("bir ekranda tek birincil turuncu
+eylem olur"); kullanici geri aldi. Karar savunulabilir: ekranin adi
+zaten "Check-in" ve listedeki her satirin TEK isi o eylem - hayalet
+buton asil eylemi ikincil gosteriyordu. Test tersine cevrildi.
+
+**2. MEKAN SAYFASI HARITASI.** Kullanicinin ignesi BUYUDU (26 -> 34),
+mekanin ignesi KUCULDU (38 -> 30). Olcu `merkezDurumu`ya bagli: o alan
+doluysa merkez bir MEKANDIR (mekan sayfasi), bossa merkez KULLANICININ
+KENDISIDIR (kesfet ekrani) ve orada kucultmek yanlis olurdu.
+
+**3. HARITADAKI IKI YUVARLAK DUGME KALDIRILDI**, yerine MESAFE
+GOSTERGESI geldi. Islev kaybi kontrol edildi: "Yol tarifi" ayni ekranda
+baslik satirindaki butonda duruyor. Konum okunamazsa hap hic
+cizilmiyor - bilmedigimiz bir seyi yazmak yerine sessiz kalmak dogru.
+
+**4. AKIS KARTI: UC NOKTA KALKTI, YERINE KALEM.** Duzenleme artik eylem
+satirindaki kalem ikonundan. **Silme duzenleme alaninin icine tasindi**
+- uc nokta kalkinca silmenin baska girisi kalmiyordu. Yikici eylem
+"Kaydet"ten ayri bir satirda ve zeminsiz: yan yana olsaydi kaydetmek
+isteyen kazayla silebilirdi.
+
+**TEST BIR REGRESYON YAKALADI:** eylem satiri yalnizca `ozet` varken
+ciziliyordu ve profil ekrani begeni sayilarini gecmiyor - yani kalem
+oraya hic duesmuyordu ve profildeki duzenleme/silme TAMAMEN kayboldu.
+Kosul `ozet || menuVar` oldu.
+
+**5. ALT GEZINME BUTONLARI ONE CIKMIYOR.** Aktif sekmenin dairesi
+cubugun ustune tasiyordu (2026-09-07 animasyonu), merkez check-in
+dugmesi de 18 px yukaridaydi. Ikisi de sifirlandi; secili hal artik
+yalnizca RENK ve PARILTI ile anlatiliyor. `DAIRE_YUKSEK` sabiti
+korundu - yeniden yukselmesi istenirse tek satirlik is.
+
 ### AKIS FOTOGRAFI: SAG BOSLUK GITTI, ZOOM GELDI - 2026-09-08
 
 **1. SAGDAKI BEYAZ SERIT.** Kullanicinin bildirdigi kusur: "fotograf

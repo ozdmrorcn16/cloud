@@ -860,7 +860,7 @@ describe('MekanAramaEkrani', () => {
   // ekranda genelde TEK birincil turuncu eylem olur" diyor.
   // ------------------------------------------------------------------ //
 
-  it('listedeki check-in butonu HAYALET: dolu turuncu degil', async () => {
+  it('listedeki check-in butonu DOLU TURUNCU', async () => {
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
         id: 'mekan-1', ad: 'Sahil Kafe', tur: 'kafe', adres: null, osmId: 1,
@@ -873,22 +873,21 @@ describe('MekanAramaEkrani', () => {
     const buton = await screen.findByTestId('satir-checkin-mekan-1')
     const stil = StyleSheet.flatten(buton.props.style) as {
       backgroundColor?: string
-      borderColor?: string
       borderWidth?: number
     }
 
-    // Dolgu YOK - eylem kenarlikla anlatiliyor.
-    expect(stil.backgroundColor).toBeUndefined()
-    expect(stil.borderWidth).toBeGreaterThan(0)
-    expect(stil.borderColor).toBe(acikRenk.turuncuYazi)
+    // 2026-09-07 denetiminde HAYALETE cevrilmisti ("bir ekranda tek
+    // birincil turuncu eylem olur"); kullanici 2026-09-09'da geri aldi.
+    // Bu ekranin adi zaten "Check-in" ve listedeki her satirin tek isi
+    // o eylem - hayalet buton asil eylemi ikincil gosteriyordu.
+    expect(stil.backgroundColor).toBe(acikRenk.turuncu)
+    expect(stil.borderWidth).toBeUndefined()
 
-    // Etiket de dolu butondaki beyaz degil, okunabilir turuncu.
-    // "Check-in" metni sayfa basliginda ve alt gezinmede de var, bu
-    // yuzden etiket BUTONUN ICINDEN aliniyor.
-    const yaziStili = StyleSheet.flatten(
-      within(buton).getByText('Check-in').props.style
-    ) as { color?: string }
-    expect(yaziStili.color).toBe(acikRenk.turuncuYazi)
-    expect(yaziStili.color).not.toBe('#FFFFFF')
+    // "Check-in" ekranda birden fazla yerde geciyor (ust baslik, alt
+    // gezinme); etiket BUTONUN ICINDEN aliniyor.
+    const etiket = screen.getAllByText('Check-in').find(
+      (e) => StyleSheet.flatten(e.props.style)?.color === '#FFFFFF'
+    )
+    expect(etiket).toBeTruthy()
   })
 })

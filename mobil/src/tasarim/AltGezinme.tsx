@@ -95,16 +95,23 @@ const SATIR = 54
  * burada duruyor cunku artik bir animasyonun BASLANGIC degeri: dugme
  * secilince bundan biraz daha yukari cikiyor.
  */
-const MERKEZ_TASMA = -18
+// 2026-09-09: kullanicinin istegi "sabit sutundaki butonlar one dogru
+// cikmasin, basilinca oldugu yerde turuncu parlak halde olsun". Merkez
+// dugme artik cubuktan TASMIYOR; secili hali yalnizca renk ve parilti
+// ile anlatiliyor.
+const MERKEZ_TASMA = 0
 
 /** Aktif sekmeyi isaretleyen dairenin capi. */
 const DAIRE = 44
 /**
- * Dairenin yukari tasma miktari. Daire dinlenme halinde ikonlarla
- * ayni merkezden bu kadar YUKARIDA durur; dalis sirasinda 0'a inip
- * cubugun icine giriyor.
+ * Dairenin dikey konumu.
+ *
+ * 35 -> 0 (kullanicinin istegi 2026-09-09): aktif sekmenin dairesi
+ * cubugun USTUNE cikiyordu; artik ikonun yerinde, slotun icinde
+ * duruyor. Sabit korunuyor cunku animasyon hala bu degeri kullaniyor -
+ * ileride yeniden yukselmesi istenirse tek satirlik is.
  */
-const DAIRE_YUKSEK = 35
+const DAIRE_YUKSEK = 0
 
 type Sekme = {
   ad: string
@@ -646,7 +653,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     gap: 4,
-    marginTop: -18,
+    // TASMA YOK (2026-09-09): dugme artik cubugun icinde duruyor.
+    marginTop: 0,
   },
   merkezEtiket: {
     fontFamily: yazi.govdeKalin,
