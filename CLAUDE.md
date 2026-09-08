@@ -729,6 +729,35 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### PROFIL ZEMINI TAMAMEN BEYAZ - 2026-09-08
+
+Kullanicinin istegi: "Profil sayfasinin arka planini tamamen beyaz
+yap." **2026-09-03'te secilen seftaliden beyaza gecis KALDIRILDI** -
+asagidaki "PROFIL BANDI: DOLU TURUNCU -> YUMUSAK GECIS" bolumu artik
+tarihsel bir kayittir.
+
+`LinearGradient` ve `tepeGecisi` stili silindi; zemin kokten geliyor
+(`renk.zemin`), yani profil de uygulamanin geri kalaniyla ayni beyaz
+kuralina tabi. `expo-linear-gradient` importu da dustu - paket
+bagimliliklarda duruyor, baska bir ekran isterse hazir.
+
+Gecisle birlikte gelmis SICAK TONLU iki sabit de jetona cevrildi
+(`#F0DCC9` ayirici, `#E7D3C0` kenarlik): beyaz zeminde bunlar bir
+yerden arta kalmis gibi duruyordu, artik `renk.cizgi`.
+
+**PROFIL HALA KENDI UST PAYINI KOYUYOR** (`_layout.tsx` icindeki
+`kendiUstPayiniKoyar`). Gerekce degisti, sonuc ayni: eskiden gecis
+saatin ardina uzansin diyeydi, simdi kok duzenin verdigi pay ile
+ekranin kendi payi ust uste binmesin diye.
+
+**Testler yeni gercege cevrildi, silinmedi:** "band dolu turuncu degil,
+seftaliden beyaza gecis" -> "profil zemini TAM BEYAZ: renkli band YOK"
+ve gecisin konumunu olcen test -> "kimlik blogunun kendi zemini YOK".
+Ikincisi onemli: bloga bir renk geri konursa test kirilir.
+
+Iki modda da ekran goruntusuyle dogrulandi
+(`tasarim/profil-beyaz.png`, `profil-beyaz-dark.png`).
+
 ### PROFIL: SAYAC KUTULARI KALKTI, SEKME GOSTERGESI KAYIYOR - 2026-09-08
 
 Kullanicinin iki istegi: "Profil ekraninda ani fotograf arkadaslarin

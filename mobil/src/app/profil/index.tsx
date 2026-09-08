@@ -33,7 +33,6 @@ import type { BagKisi } from '../../../lib/bag'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
@@ -225,7 +224,6 @@ function SiraRozeti({ sira }: { sira: number }) {
  * turuncusu aynen duruyor. Bandin ICINDEKI metin renkleri degismek
  * ZORUNDAYDI: beyaz yazi acik bir gecisin uzerinde okunmuyor.
  */
-const bandGecisi = (renk: Renk) => [renk.bandUst, renk.bandOrta, renk.zemin] as const
 
 export default function ProfilEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -493,22 +491,17 @@ export default function ProfilEkrani() {
         scrollEventThrottle={160}
         onScroll={dibeYaklasinca}
       >
-        {/* GECIS EN TEPEDEN BASLAR (kullanicinin secimi 2026-09-03,
-            "A"): ust cubugun ve icerigin ust payinin ARDINDAN gecip
-            ekranin tepesine kadar uzaniyor, boylece rengin gorunur bir
-            baslangic kenari kalmiyor. Durum cubugunun ardindaki serit
-            bu agacin disinda kaliyor; onu kok duzen ayni renkle boyuyor
-            (bkz. _layout.tsx, `ust-serit`).
+        {/* ZEMIN TAMAMEN BEYAZ (kullanicinin istegi 2026-09-08:
+            "Profil sayfasinin arka planini tamamen beyaz yap").
+            Burada 2026-09-03'ten beri seftaliden beyaza bir gecis
+            duruyordu; kaldirildi. Zemin artik kokten geliyor
+            (`renk.zemin`), yani profil de uygulamanin geri kalaniyla
+            ayni beyaz kuralina tabi.
 
-            Sarmalayici DEGIL, arkada duran mutlak bir zemin: sarmalamak
-            ust cubugu ve kimlik blogunu ayni kosullu dalin icine
-            sokmayi gerektiriyordu. */}
-        <LinearGradient
-          testID="profil-bandi"
-          colors={bandGecisi(renk)}
-          style={stiller.tepeGecisi}
-          pointerEvents="none"
-        />
+            Profil kendi UST PAYINI koymaya devam ediyor
+            (`_layout.tsx` icindeki `kendiUstPayiniKoyar`): gerekce
+            degisti ama sonuc ayni - kok duzenin verdigi pay ile
+            ekranin kendi payi ust uste binmemeli. */}
 
         <View style={stiller.ustCubuk}>
           <Text style={stiller.kullaniciAdi} numberOfLines={1}>
@@ -1016,19 +1009,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
-  // Icerigin ust payini ve yan paylarini geri alarak kenardan kenara
-  // ve en tepeye uzaniyor. Yuksekligi kimlik blogunu kapsayacak kadar;
-  // son duragi beyaz oldugu icin nerede bittigi gorunmuyor.
-  tepeGecisi: {
-    position: 'absolute',
-    // Icerigin ust payi calisma aninda veriliyor (guvenli alan + 16),
-    // bu yuzden gecis ORANTISIZ derecede yukari cekiliyor: fazlasi
-    // kirpiliyor, eksigi beyaz serit birakiyordu.
-    top: -160,
-    left: -bosluk.xl,
-    right: -bosluk.xl,
-    height: 520,
-  },
 
   ustIkonlar: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
 
@@ -1081,7 +1061,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // Band KUCULDU (kullanicinin istegi 2026-08-29): ogeler arasi
     // bosluk 16 -> 12, ust pay 24 -> 16, alt pay 16 -> 12.
     gap: bosluk.m,
-    // Zemin YOK: gradyan `BAND_GECISI` ile LinearGradient'ten geliyor.
+    // Zemin YOK: sayfa zemini (beyaz) oldugu gibi gorunuyor.
     marginHorizontal: -bosluk.xl,
     paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.l,
@@ -1261,7 +1241,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E7D3C0',
+    borderColor: renk.cizgi,
   },
   bandDugmeDolu: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
   bandDugmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#8A6B4F' },
@@ -1375,7 +1355,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   sayiHucre: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s },
   // Acik zeminde beyaz ayirici gorunmuyordu; seftalinin koyu tonu.
-  sayiAyirici: { width: 1, height: 28, backgroundColor: '#F0DCC9' },
+  // Beyaz zeminde sicak bir ton yerine ayirici jetonu (gecis kalkti).
+  sayiAyirici: { width: 1, height: 28, backgroundColor: renk.cizgi },
   sayi: {
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,

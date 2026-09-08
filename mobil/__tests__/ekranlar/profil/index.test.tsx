@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import { processColor, Share, StyleSheet } from 'react-native'
+import { Share, StyleSheet } from 'react-native'
 import { acikRenk, koyuRenk, olcek } from '../../../src/tasarim/tema'
 import ProfilEkrani from '../../../src/app/profil/index'
 import { kendiProfilimiGetir, profilFotografiniKaldir } from '../../../lib/profil'
@@ -317,17 +317,13 @@ describe('ProfilEkrani', () => {
   // KIMLIK BANDI: YUMUSAK GECIS (kullanicinin secimi 2026-09-03, "B")
   // ---------------------------------------------------------------- //
 
-  it('band dolu turuncu degil, seftaliden beyaza gecis', async () => {
+  // ZEMIN TAM BEYAZ (kullanicinin istegi 2026-09-08). Burada
+  // 2026-09-03'ten beri seftaliden beyaza bir gecis vardi; kaldirildi.
+  it('profil zemini TAM BEYAZ: renkli band YOK', async () => {
     await render(<ProfilEkrani />)
     await screen.findByText('Orcun Ozdemir')
 
-    const band = screen.getByTestId('profil-bandi')
-    // Gradyan renkleri prop olarak veriliyor; ilki seftali, sonuncusu
-    // BEYAZ - bandin nerede bittigi gorunmesin diye. Bilesen renkleri
-    // sayiya cevirdigi icin iki taraf da ayni donusumden geciriliyor.
-    const renkler = band.props.colors as (string | number)[]
-    expect(renkler[0]).toBe(processColor('#FFE6D2'))
-    expect(renkler[renkler.length - 1]).toBe(processColor('#FFFFFF'))
+    expect(screen.queryByTestId('profil-bandi')).toBeNull()
   })
 
   it('band icindeki yazilar KOYU: acik gecis uzerinde beyaz okunmaz', async () => {
@@ -364,17 +360,14 @@ describe('ProfilEkrani', () => {
   // GECIS TEPEDEN BASLAR (kullanicinin secimi 2026-09-03, "A")
   // ---------------------------------------------------------------- //
 
-  it('gecis UST CUBUGUN ARDINDAN gecip tepeye uzaniyor', async () => {
+  it('kimlik blogunun kendi zemini YOK: sayfa beyazi gorunuyor', async () => {
     await render(<ProfilEkrani />)
     await screen.findByText('Orcun Ozdemir')
 
-    // "Rengi yukari kadar devam ettir, sonsuz dursun": gecis artik
-    // sarmalayici degil, arkada duran mutlak bir zemin. Ust cubugun
-    // ARDINDAN gecmesi icin icerigin ust ve yan paylarini geri aliyor.
-    const duz = duzYazi(screen.getByTestId('profil-bandi'))
-    expect(duz.position).toBe('absolute')
-    expect(Number(duz.top)).toBeLessThan(0)
-    expect(Number(duz.left)).toBeLessThan(0)
+    // Gecis kalkinca blogun kendi rengi de kalkti; zemin kokten
+    // (`renk.zemin`) geliyor. Buraya bir renk geri konursa test kirilir.
+    const blok = screen.getByText('Orcun Ozdemir').parent
+    expect(duzYazi(blok as { props: { style?: unknown } }).backgroundColor).toBeUndefined()
   })
 
   it('gecis dokunuslari YUTMUYOR: altindaki ayarlar ikonu calisiyor', async () => {
