@@ -831,6 +831,30 @@ odak hesabi her karede JavaScript'te yapiliyor cunku olcek ve oteleme
 BIRLIKTE guncelleniyor. Native surucuyle yalnizca merkezden zoom
 yapilabilirdi - yani kullanicinin sikayet ettigi davranis.
 
+**3. "Zoomlamis bir sekilde dururken saga sola kaydirabiliyim".** Iki
+eksik vardi:
+- `simultaneousHandlers` VERILMEMISTI. Gesture-handler o olmadan iki
+  hareketten birini secip otekini iptal ediyor; yani zoom yaparken
+  kaydirmak mumkun degildi. Pan ve pinch artik birbirini taniyor.
+- Tam ekranda kaydirma IKI PARMAK istiyordu. Orada altta kaydirilacak
+  bir liste yok, dolayisiyla tek parmagi esirgemenin sebebi de yok:
+  `kaydirmaParmagi` prop'u geldi (tam ekran 1, akis karti 2).
+
+**4. SAG-SOL SERIT** (kullanicinin bildirdigi kusur). Ortak bilesene
+gecerken `resizeMode` sabit `contain` yazilmisti; kartin kutusu 4:5 ve
+fotograf dikey oldugunda yanlarda kart zemini gorunuyordu. Kart artik
+`cover` (kirpar, doldurur), tam ekran `contain` (fotografin tamamini
+gosterir) - `oturma` prop'u ile.
+
+**5. EKRAN KAYDINDAKI DAVRANIS** (kullanici bir Instagram kaydi
+gonderdi): kart icinde zoom yapilinca goruntu kartin SINIRLARINI ASIP
+one cikiyor. Bizde `overflow: hidden` onu kirpiyordu. Artik hareket
+SURERKEN kirpma kalkiyor ve katman one aliniyor (`zIndex` + Android
+icin `elevation`); parmak kalkinca eski haline donuyor - yoksa her kart
+komsusunun uzerine binerdi. Kirpma, kucuIme animasyonu bittikten
+sonra geri geliyor (200 ms); hemen kapatilsaydi donuş kirpilmis
+gorunurdu.
+
 ### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
 
 Kullanicinin istegi: "check-in yaparken fotograf eklemeye basilinca

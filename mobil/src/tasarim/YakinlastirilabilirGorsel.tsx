@@ -1,4 +1,4 @@
-import { Component, useRef, type ReactNode } from 'react'
+import { Component, useRef, useState, type ReactNode } from 'react'
 import {
   Animated,
   Image,
@@ -86,6 +86,8 @@ export function YakinlastirilabilirGorsel({
   uri,
   stil,
   birakincaSifirla = false,
+  kaydirmaParmagi = 2,
+  oturma = 'cover',
 }: {
   uri: string
   stil?: StyleProp<ImageStyle>
@@ -98,6 +100,24 @@ export function YakinlastirilabilirGorsel({
    * kalabilmeli, cikis yolu kapatma dugmesi.
    */
   birakincaSifirla?: boolean
+  /**
+   * Kaydirma kac parmak istiyor?
+   *
+   * TAM EKRANDA 1: yakinlastirilmis bir fotografta tek parmakla
+   * gezinmek her goruntuleyicide boyle. AKIS KARTINDA 2: tek parmak
+   * LISTENIN kaydirmasi olarak kalmali, yoksa akista asagi inmek
+   * imkansizlasir.
+   */
+  kaydirmaParmagi?: number
+  /**
+   * Gorselin kutuya nasil oturacagi.
+   *
+   * AKIS KARTINDA 'cover': kutu 4:5 ve fotograf dikey de olabilir yatay
+   * da; `contain` secilirse yanlarda kart zemini gorunur serit birakir
+   * (kullanicinin bildirdigi kusur 2026-09-08). TAM EKRANDA 'contain':
+   * orada amac fotografin TAMAMINI gostermek, kirpmak degil.
+   */
+  oturma?: 'cover' | 'contain'
 }) {
   const olcek = useRef(new Animated.Value(1)).current
   const x = useRef(new Animated.Value(0)).current
@@ -109,6 +129,22 @@ export function YakinlastirilabilirGorsel({
   const pinchBasi = useRef({ olcek: 1, x: 0, y: 0, odakX: 0, odakY: 0 })
   const panBasi = useRef({ x: 0, y: 0 })
   const olcu = useRef({ en: 0, boy: 0 })
+  // Iki hareketin AYNI ANDA calismasi icin birbirlerini tanimalari
+  // gerekiyor. `simultaneousHandlers` verilmezse gesture-handler
+  // ikisinden birini secip otekini iptal ediyor - yani zoom yaparken
+  // kaydirmak (kullanicinin istegi) mumkun olmuyordu.
+  const panRef = useRef(null)
+  const pinchRef = useRef(null)
+  /**
+   * Yakinlastirma SURUYOR mu?
+   *
+   * Kullanicinin gonderdigi ekran kaydindaki davranis (Instagram):
+   * kart icinde zoom yapilinca goruntu kartin SINIRLARINI ASIP one
+   * cikiyor. Bizde `overflow: hidden` onu kirpiyordu. Artik hareket
+   * suerken kirpma kalkiyor ve katman one aliniyor; parmak kalkinca
+   * eski haline donuyor - yoksa her kart komsusunun uzerine binerdi.
+   */
+  const [hareketli, setHareketli] = useState(false)
 
   function yaz(o: number, tx: number, ty: number) {
     durum.current = { olcek: o, x: tx, y: ty }
@@ -132,6 +168,7 @@ export function YakinlastirilabilirGorsel({
 
   function yakinlastirmaBasladi(olay: PinchGestureHandlerStateChangeEvent) {
     if (olay.nativeEvent.state !== State.BEGAN) return
+    setHareketli(true)
     pinchBasi.current = {
       ...durum.current,
       odakX: olay.nativeEvent.focalX - olcu.current.en / 2,
@@ -148,6 +185,10 @@ export function YakinlastirilabilirGorsel({
 
   function yakinlastirmaBitti(olay: PinchGestureHandlerStateChangeEvent) {
     if (olay.nativeEvent.oldState !== State.ACTIVE) return
+    // Kirpma ancak goruntu yerine oturduktan SONRA geri geliyor;
+    // hemen kapatilsa kucuIme animasyonu kirpilmis gorunurdu.
+    if (birakincaSifirla) setTimeout(() => setHareketli(false), 200)
+    else setHareketli(false)
     if (birakincaSifirla || durum.current.olcek <= EN_AZ) {
       // Yay YOK, duz gecis: kart icinde yaylanan bir goruntu listeyi
       // titriyormus gibi gosteriyor.
@@ -186,14 +227,17 @@ export function YakinlastirilabilirGorsel({
 
   const govde = (
     <PanGestureHandler
+      ref={panRef}
+      simultaneousHandlers={pinchRef}
       onGestureEvent={kaydiriliyor}
       onHandlerStateChange={kaydirmaBasladi}
-      // Iki parmak: tek parmakla kaydirma listeye ait kalsin.
-      minPointers={2}
+      minPointers={kaydirmaParmagi}
       maxPointers={2}
     >
       <Animated.View style={stiller.kat}>
         <PinchGestureHandler
+          ref={pinchRef}
+          simultaneousHandlers={panRef}
           onGestureEvent={yakinlastiriliyor}
           onHandlerStateChange={(o) => {
             yakinlastirmaBasladi(o)
@@ -208,7 +252,7 @@ export function YakinlastirilabilirGorsel({
                 stil,
                 { transform: [{ translateX: x }, { translateY: y }, { scale: olcek }] },
               ]}
-              resizeMode="contain"
+              resizeMode={oturma}
             />
           </Animated.View>
         </PinchGestureHandler>
@@ -216,13 +260,16 @@ export function YakinlastirilabilirGorsel({
     </PanGestureHandler>
   )
 
-  const yedek = <Image testID="buyuk-fotograf" source={{ uri }} style={stil} resizeMode="contain" />
+  const yedek = <Image testID="buyuk-fotograf" source={{ uri }} style={stil} resizeMode={oturma} />
 
   return (
     <HareketSiniri yedek={yedek}>
       {/* Kart icinde kullanilirken `overflow: hidden` SART: zoom'lu
           goruntu yoksa komsu kartlarin uzerine tasar. */}
-      <View style={stiller.kok} testID="yakinlastirilabilir">
+      <View
+        style={[stiller.kok, hareketli ? stiller.oneCikan : stiller.kirpilmis]}
+        testID="yakinlastirilabilir"
+      >
         {govde}
       </View>
     </HareketSiniri>
@@ -239,7 +286,10 @@ export function YakinlastirilabilirTamEkran(
 ) {
   return (
     <GestureHandlerRootView style={stiller.kok}>
-      <YakinlastirilabilirGorsel {...ozellikler} />
+      {/* Tam ekranda TEK PARMAKLA gezinme: burada altta kaydirilacak
+          bir liste yok, dolayisiyla tek parmagi hareketten esirgemenin
+          sebebi de yok. */}
+      <YakinlastirilabilirGorsel kaydirmaParmagi={1} oturma="contain" {...ozellikler} />
     </GestureHandlerRootView>
   )
 }
@@ -260,7 +310,20 @@ const stiller = StyleSheet.create({
     alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
+  /**
+   * DURAGAN HAL: kirpiliyor. Kirpma olmadan, kucuk bir olcek
+   * yuvarlamasi bile fotografi komsu kartin uzerine tasirir.
+   */
+  kirpilmis: { overflow: 'hidden' },
+  /**
+   * HAREKET SURERKEN: kirpma YOK ve katman one aliniyor. Ekran
+   * kaydindaki davranis bu - goruntu kartin sinirlarini asip
+   * buyuyor.
+   *
+   * `elevation` Android icin: orada z sirasini `zIndex` degil o
+   * belirliyor.
+   */
+  oneCikan: { zIndex: 20, elevation: 20 },
   kat: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
 })
