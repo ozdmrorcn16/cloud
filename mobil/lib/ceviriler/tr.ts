@@ -492,7 +492,6 @@ export default {
     populer: 'Popüler',
     yakinindakiMekanlar: 'Yakınındaki Mekanlar',
     sonuclar: 'Sonuçlar',
-    tumunuGor: 'Tümünü gör',
     kisiBurada: '{{sayi}} kişi burada',
     checkIn: 'Check-in',
     konumuGor: 'Konumu gör',

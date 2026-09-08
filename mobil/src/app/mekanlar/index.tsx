@@ -887,17 +887,10 @@ export default function KesfetEkrani() {
               gelebiliyor - orada "Yakinindaki" yaniltici olurdu. */}
           {arama.trim().length === 0 ? t('kesfet.yakinindakiMekanlar') : t('kesfet.sonuclar')}
         </Text>
-        {gorunum === 'harita' && (
-          <Pressable
-            style={stiller.tumunuGor}
-            onPress={() => setGorunum('liste')}
-            accessibilityRole="button"
-            testID="tumunu-gor"
-          >
-            <Text style={stiller.tumunuGorYazi}>{t('kesfet.tumunuGor')}</Text>
-            <Text style={stiller.tumunuGorOk}>›</Text>
-          </Pressable>
-        )}
+        {/* "Tümünü gör" KALDIRILDI (kullanicinin istegi 2026-09-08).
+            Islev kaybi YOK: o baglanti yalnizca liste gorunumune
+            geciriyordu ve ayni is ust cubuktaki Harita/Liste
+            segmentinde zaten var. Ayni eylemin iki girisi vardi. */}
       </View>
       {sakinler.length === 0 ? (
         <Text style={stiller.bosDurum}>Bu filtreyle yakında mekan yok.</Text>
@@ -1230,17 +1223,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   // --- bolum basligi ---
   bolumSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
-  tumunuGor: { marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 3 },
-  tumunuGorYazi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  tumunuGorOk: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.metinSoluk,
-  },
 
   // --- mekan karti ---
   mekanKarti: {

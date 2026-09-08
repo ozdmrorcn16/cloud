@@ -729,6 +729,15 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### KESFET: "TUMUNU GOR" KALDIRILDI - 2026-09-08
+
+Kullanicinin istegi. **Islev kaybi YOK, once kontrol edildi:** o
+baglanti yalnizca `setGorunum('liste')` yapiyordu ve ayni is ust
+cubuktaki Harita/Liste segmentinde zaten var - yani ayni eylemin iki
+girisi vardi. Bolum basligi ("Yakinindaki Mekanlar") artik tek basina.
+
+Birlikte temizlenenler: uc stil ve `kesfet.tumunuGor` ceviri anahtari.
+
 ### TUR SUZGECI ZAMAN ASIMI VE BASKASININ PROFILI - 2026-09-08
 
 Kullanicinin bes istegi/hatasi bir arada ele alindi.
