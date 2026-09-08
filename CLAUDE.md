@@ -729,6 +729,50 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### ACILIS EKRANI: METINLER VE KUCUK EKRAN TASMASI - 2026-09-08
+
+Kullanicinin uc istegi (sirayla geldi):
+
+1. Baslik **"Dışarıda kim var, keşfet."** -> **"Yakınında kim var,
+   keşfet."**
+2. Alt yazi degisti: **"Check-in yap, yeni insanlarla tanış.
+Yakınındaki
+   popüler yerleri keşfet."** Satir sonu ELLE veriliyor - dogal sarmaya
+   birakilirsa kirilma cumlenin ortasina duesuyor.
+3. **"Harita verisi © OpenStreetMap katkicilari" ekrana sigmiyordu.**
+
+**TASMANIN KOK NEDENI OLCULEREK BULUNDU.** Ekran kaydirilamayan duz bir
+`View`di ve icerik telefonda ekrandan uzundu. Web'de gorunmuyordu cunku
+tarayicida guvenli alan insetleri SIFIR; telefonda ust ~59 + alt ~34 pt
+gidiyor. Ekran goruntusu araci artik viewport olcusunu argumanla
+aliyor ve **390x751** (844 eksi insetler) telefondaki tasmayi birebir
+uretiyor:
+
+    node araclar/ekran-goruntusu.mjs karsilama cikti.png 390 751
+
+Olculen: 751 px'te once "Hesabın var mı? Giriş yap" kesiliyordu, atif
+hic gorunmuyordu.
+
+**UC KATMANLI COZUM:**
+- Kok `View` -> **`ScrollView`** (`contentContainerStyle` icinde
+  `flexGrow: 1`). Icerik siginca kaydirma HIC olusmuyor; sigmayinca
+  geri getirilebiliyor. Onceki halde tasan sey kaybediliyordu.
+- **Alt guvenli alan payi** eklendi: `guvenliAlan.bottom` sabit bir
+  degerin yerine geciyor.
+- Dikey bosluklar kisildi (kart dolgusu, kartlar arasi bosluk, buton ve
+  ikincil eylem paylari, sahne alt siniri 230 -> 165).
+
+**IGNELERIN DIKEY ARALIGI DA DEGISTI** (%20/%52 -> %13/%55): sahne
+`flex` oldugu icin kisa telefonlarda 165 px'e iniyor ve o yukseklikte
+ust ignenin tur hapi ile alt ignenin kisi hapi CAKISIYORDU. Yuzde
+konumlar sabit oldugu icin aralik EN DAR sahneye gore secilmeli.
+
+**TUZAK, iki kez yasandi:** `tr.ts` ve test dosyasina Python'la `
+`
+yazarken kacis kayboluyor ve dosyaya GERCEK satir sonu giriyor; sonuc
+"unterminated string" ve jest'in dosyayi hic ayristiramamasi. Ters
+boluyu `chr(92)` ile kurmak gerekiyor.
+
 ### AYNI EKRAN, KULLANICININ UC DUZELTMESI - 2026-09-08
 
 Kullanici ilk gecuisi telefonda gorup uc sey istedi: "Ayni yerde 3

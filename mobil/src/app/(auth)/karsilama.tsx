@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle, G } from 'react-native-svg'
@@ -140,7 +140,28 @@ export default function KarsilamaEkrani() {
   return (
     // Guvenli alana bir TABAN veriliyor: web'de `insets.top` sifir
     // dondugu icin marka ekranin en tepesine yapisiyordu.
-    <View style={[stiller.sayfa, { paddingTop: Math.max(guvenliAlan.top, 26) + UST_PAY }]}>
+    // KAYDIRILABILIR, ama yalnizca GEREKIRSE: `flexGrow: 1` icerigi
+    // ekrana yayiyor, dolayisiyla sigan ekranlarda kaydirma hic
+    // olusmuyor. Kok duz bir `View` iken kucuk ekranlarda en alttaki
+    // ODbL atfi disarida kaliyordu ve geri getirmenin yolu yoktu
+    // (kullanicinin ekran goruntusu; 390x751'de olcuIerek dogrulandi).
+    <ScrollView
+      style={stiller.sayfa}
+      bounces={false}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[
+        stiller.icerik,
+        {
+          paddingTop: Math.max(guvenliAlan.top, 26) + UST_PAY,
+          // ALT GUVENLI ALAN: telefonda ana sayfa cubugu icin ~34 pt
+          // inset var, web'de 0. Sabit bir alt payla en alttaki ODbL
+          // atfi telefonda ekranin disinda kaliyordu (kullanicinin
+          // ekran goruntusu). Bu ekran kaydirilmiyor, yani tasan sey
+          // geri getirilemiyor.
+          paddingBottom: Math.max(guvenliAlan.bottom, bosluk.s) + bosluk.s,
+        },
+      ]}
+    >
       <MarkaYazisi genislik={148} style={stiller.marka} />
 
       {/* VAAT: tek cumle, vurgu kelimesi turuncu. Turuncunun mesru
@@ -186,7 +207,7 @@ export default function KarsilamaEkrani() {
       {/* ODbL ATFI - hukuken sart, tercih degil. Sahnedeki harita
           OpenStreetMap verisinden turetilmis bir eser. */}
       <Text style={stiller.atif}>{t('karsilama.haritaAtfi')}</Text>
-    </View>
+    </ScrollView>
   )
 }
 
@@ -196,8 +217,11 @@ const stilleriYap = (renk: Renk) =>
       flex: 1,
       // Karsilama, beyaz zemin kuralinin TEK istisnasi.
       backgroundColor: renk.karsilamaZemini,
+    },
+    icerik: {
+      // Icerik ekrani doldurur; sahne `flex: 1` ile kalan yeri alir.
+      flexGrow: 1,
       paddingHorizontal: bosluk.sayfa,
-      paddingBottom: bosluk.l,
     },
 
     marka: { alignSelf: 'center' },
@@ -227,16 +251,16 @@ const stilleriYap = (renk: Renk) =>
     // veriyor - referansta da harita kenardan kenara.
     sahne: {
       flex: 1,
-      minHeight: 230,
+      minHeight: 165,
       marginHorizontal: -bosluk.sayfa,
-      marginTop: bosluk.m,
+      marginTop: bosluk.s,
     },
 
     kartlar: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: bosluk.m,
-      marginTop: bosluk.l,
+      gap: bosluk.s,
+      marginTop: bosluk.m,
     },
     kart: {
       // Iki sutun: satirin yarisindan aradaki boslugun yarisi kadar az.
@@ -246,7 +270,7 @@ const stilleriYap = (renk: Renk) =>
       borderRadius: yuvarlak.kart,
       borderWidth: 1,
       borderColor: renk.cizgi,
-      padding: bosluk.l,
+      padding: bosluk.m,
       gap: bosluk.xs,
     },
     kartBaslik: {
@@ -270,8 +294,8 @@ const stilleriYap = (renk: Renk) =>
       gap: bosluk.m,
       backgroundColor: renk.turuncu,
       borderRadius: yuvarlak.hap,
-      paddingVertical: 17,
-      marginTop: bosluk.l,
+      paddingVertical: 16,
+      marginTop: bosluk.m,
       ...golge.yuzer,
     },
     birincilBasili: { backgroundColor: renk.turuncuBasili },
@@ -286,7 +310,7 @@ const stilleriYap = (renk: Renk) =>
       color: '#FFFFFF',
     },
 
-    ikincil: { alignItems: 'center', paddingVertical: bosluk.m },
+    ikincil: { alignItems: 'center', paddingVertical: bosluk.s },
     ikincilYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
     ikincilVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 

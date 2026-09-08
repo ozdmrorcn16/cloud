@@ -28,9 +28,9 @@ export default {
   karsilama: {
     // ACILIS EKRANI - kullanicinin 2026-09-08'de gonderdigi referans
     // gorsele gore yeniden yazildi.
-    baslik: 'Dışarıda kim var, ',
+    baslik: 'Yakınında kim var, ',
     baslikVurgu: 'keşfet.',
-    aciklama: 'Yakınındaki mekanlarda neler oluyor, gerçek insanlarla bağlantı kur.',
+    aciklama: 'Check-in yap, yeni insanlarla tanış.\nYakınındaki popüler yerleri keşfet.',
 
     // Sahnedeki igne etiketleri ve sayilari. Bunlar ORNEK bir sahnedir,
     // veri degildir - referans gorseldeki kompozisyonun parcasi.

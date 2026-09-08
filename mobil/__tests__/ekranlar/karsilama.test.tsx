@@ -16,10 +16,12 @@ describe('KarsilamaEkrani', () => {
   it('vaat cumlesini iki parca halinde gosterir (vurgu ayri)', async () => {
     await render(<KarsilamaEkrani />)
 
-    expect(await screen.findByText(/Dışarıda kim var,/)).toBeTruthy()
+    expect(await screen.findByText(/Yakınında kim var,/)).toBeTruthy()
     expect(screen.getByText('keşfet.')).toBeTruthy()
     expect(
-      screen.getByText('Yakınındaki mekanlarda neler oluyor, gerçek insanlarla bağlantı kur.')
+      screen.getByText(
+        'Check-in yap, yeni insanlarla tanış.\nYakınındaki popüler yerleri keşfet.'
+      )
     ).toBeTruthy()
   })
 

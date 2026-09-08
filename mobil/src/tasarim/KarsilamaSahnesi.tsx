@@ -103,6 +103,12 @@ type Igne = {
  * Dort igne - konum ve sayilar referans gorselden OLCULDU (853 px
  * genislikteki gorselde daire merkezleri).
  *
+ * DIKEY ARALIK ust/alt %13 ve %55: sahne EKRANA GORE esniyor ve kisa
+ * bir telefonda 165 px'e kadar iniyor. Once %20/%52 idi ve o
+ * yukseklikte ust ignenin tur hapi ile alt ignenin kisi hapi
+ * cakisiyordu (390x751'de olcuIdue). Yuzde konumlar sabit oldugu icin
+ * aralik EN DAR sahneye gore secilmeli.
+ *
  * CAPLAR ESITLENDI (2026-09-08, kullanicinin istegi "3 profil
  * gorunenleri teke duesuer"): referansta kalabalik iginler daha buyuk
  * bir daireydi cunku icinde UC yuzluk kolaj vardi. Tek yuze duesuence
@@ -117,10 +123,10 @@ type Igne = {
  * tahmin edilmedi.
  */
 const IGNELER: Igne[] = [
-  { ad: 'kafe', x: 22.5, y: 15, cap: 10.5, kisi: 8, turAnahtari: 'turKafe' },
-  { ad: 'restoran', x: 77, y: 20, cap: 10.5, kisi: 3, turAnahtari: 'turRestoran' },
-  { ad: 'bar', x: 14, y: 52, cap: 10.5, kisi: 2, turAnahtari: 'turBar' },
-  { ad: 'etkinlik', x: 71, y: 52, cap: 10.5, kisi: 5 },
+  { ad: 'kafe', x: 22.5, y: 13, cap: 10.5, kisi: 8, turAnahtari: 'turKafe' },
+  { ad: 'restoran', x: 77, y: 13, cap: 10.5, kisi: 3, turAnahtari: 'turRestoran' },
+  { ad: 'bar', x: 14, y: 55, cap: 10.5, kisi: 2, turAnahtari: 'turBar' },
+  { ad: 'etkinlik', x: 71, y: 55, cap: 10.5, kisi: 5 },
 ]
 
 /*
