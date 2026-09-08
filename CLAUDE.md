@@ -729,6 +729,35 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### CHECK-IN FOTOGRAFI: ONCE KAYNAK SORULUYOR - 2026-09-08
+
+Kullanicinin istegi: "check-in yaparken fotograf eklemeye basilinca
+canli fotograf cekmede olsun kamera acilsin".
+
+"Fotoğraf ekle" artik dogrudan galeriyi ACMIYOR; ortak `SecimPenceresi`
+ile kaynak soruluyor. **KAMERA ONCE**: check-in "su an buradayim"
+demek, dolayisiyla beklenen kaynak o; listede ilk sira en cok beklenen
+secim olmali.
+
+**YENI DERLEME GEREKMIYOR, kontrol edildi.** `expo-image-picker` zaten
+kurulu ve `app.json`daki config plugin **kamera izin metnini
+2026-08-23'ten beri tasiyor** ("Slooin, mekânda fotoğraf çekebilmen için
+kameranı kullanır"), yani TestFlight'taki build 7 o izinle uretildi.
+`launchCameraAsync` saf JavaScript cagrisi - OTA ile gidiyor.
+
+**IZIN REDDEDILIRSE SESSIZ KALINMIYOR:** kullanici dugmeye basip
+hicbir sey olmamasini "uygulama bozuk" diye okur. Uyari metni
+gosteriliyor ve kamera acilmiyor (testle kilitli).
+
+**BU EKRANIN METINLERI SOZLUKTE DEGIL**, bastan beri koda gomulu.
+Yeni metinler de ayni yerde tutuldu ki ekranin yarisi sozlukten yarisi
+gomuluden gelmesin; ekranin tamaminin i18n'e tasinmasi ayri bir is
+(acik borc).
+
+Uc yeni test: kaynak penceresi aciliyor ve galeri DOGRUDAN acilmiyor,
+"Fotoğraf çek" kamerayi aciyor (galeri acilmadan), izin reddedilince
+uyari cikiyor.
+
 ### KESFET: "TUMUNU GOR" KALDIRILDI - 2026-09-08
 
 Kullanicinin istegi. **Islev kaybi YOK, once kontrol edildi:** o

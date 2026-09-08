@@ -16,6 +16,8 @@ jest.mock('../../../lib/supabase', () => ({
 }))
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  requestCameraPermissionsAsync: jest.fn(),
 }))
 
 const mockRouterReplace = jest.fn()
@@ -79,8 +81,10 @@ describe('CheckInEkrani', () => {
     await render(<CheckInEkrani />)
     await fireEvent.changeText(screen.getByPlaceholderText('Bir not ekle (opsiyonel)'), 'not')
 
-    // Fotograf sec
+    // Fotograf: once KAYNAK penceresi aciliyor (2026-09-08), sonra
+    // galeri seciliyor.
     await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
+    await fireEvent.press(await screen.findByTestId('foto-galeri'))
 
     const buttons = screen.getAllByText('Check-in yap')
     await fireEvent.press(buttons[buttons.length - 1])
@@ -195,5 +199,51 @@ describe('CheckInEkrani', () => {
         'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli'
       )
     })
+  })
+})
+
+
+/**
+ * FOTOGRAF KAYNAGI - kullanicinin istegi 2026-09-08: "fotograf
+ * eklemeye basilinca canli fotograf cekmede olsun kamera acilsin".
+ */
+describe('CheckInEkrani fotograf kaynagi', () => {
+  it('"Fotoğraf ekle" DOGRUDAN galeriyi acmiyor, once kaynak soruyor', async () => {
+    await render(<CheckInEkrani />)
+
+    await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
+
+    expect(await screen.findByTestId('foto-kamera')).toBeTruthy()
+    expect(screen.getByTestId('foto-galeri')).toBeTruthy()
+    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled()
+  })
+
+  it('"Fotoğraf çek" izin isteyip KAMERAYI aciyor', async () => {
+    ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true })
+    ;(ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///local/cekilen.jpg' }],
+    })
+
+    await render(<CheckInEkrani />)
+    await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
+    await fireEvent.press(await screen.findByTestId('foto-kamera'))
+
+    await waitFor(() => expect(ImagePicker.launchCameraAsync).toHaveBeenCalled())
+    // Galeri ACILMIYOR: iki kaynak birbirinin yerine gecmiyor.
+    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled()
+  })
+
+  it('kamera izni REDDEDILIRSE sessiz kalmiyor, uyari gosteriyor', async () => {
+    ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false })
+
+    await render(<CheckInEkrani />)
+    await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
+    await fireEvent.press(await screen.findByTestId('foto-kamera'))
+
+    expect(
+      await screen.findByText('Fotoğraf çekmek için kamera izni gerekiyor.')
+    ).toBeTruthy()
+    expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled()
   })
 })

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
+import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
@@ -24,6 +25,8 @@ export default function CheckInEkrani() {
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [notMetni, setNotMetni] = useState('')
   const [yerelFotoUri, setYerelFotoUri] = useState<string | null>(null)
+  // Fotograf KAYNAGI penceresi: kamera mi galeri mi.
+  const [kaynakSecimi, setKaynakSecimi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
@@ -72,7 +75,30 @@ export default function CheckInEkrani() {
     await AsyncStorage.setItem(ILK_UYARI_ANAHTARI, 'true')
   }
 
-  async function fotografSec() {
+  /**
+   * FOTOGRAF: once KAYNAK sorulur (kullanicinin istegi 2026-09-08:
+   * "fotograf eklemeye basilinca canli fotograf cekmede olsun kamera
+   * acilsin"). Onceden dogrudan galeri aciliyordu; check-in "su an
+   * buradayim" demek oldugu icin asil beklenen kaynak KAMERA.
+   *
+   * Kamera SIRADA ONCE: listede ilk siradaki secim en cok beklenen
+   * olmali.
+   */
+  async function kameradanCek() {
+    setKaynakSecimi(false)
+    // Izin REDDEDILIRSE sessizce gecmiyoruz: kullanici dugmeye basip
+    // hicbir sey olmamasini "uygulama bozuk" diye okur.
+    const izin = await ImagePicker.requestCameraPermissionsAsync()
+    if (!izin.granted) {
+      setHata('Fotoğraf çekmek için kamera izni gerekiyor.')
+      return
+    }
+    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
+    if (!sonuc.canceled) setYerelFotoUri(sonuc.assets[0].uri)
+  }
+
+  async function galeridenSec() {
+    setKaynakSecimi(false)
     const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
     if (!sonuc.canceled) {
       setYerelFotoUri(sonuc.assets[0].uri)
@@ -224,7 +250,7 @@ export default function CheckInEkrani() {
         </View>
       )}
 
-      <Pressable style={stiller.fotoButonu} onPress={fotografSec}>
+      <Pressable style={stiller.fotoButonu} onPress={() => setKaynakSecimi(true)}>
         <Text style={stiller.fotoButonuYazi}>
           {yerelFotoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle (opsiyonel)'}
         </Text>
@@ -250,6 +276,19 @@ export default function CheckInEkrani() {
       >
         <Text style={stiller.butonYazi}>{gonderiliyor ? 'Check-in yapılıyor...' : 'Check-in yap'}</Text>
       </Pressable>
+      <SecimPenceresi
+        acikMi={kaynakSecimi}
+        secimler={[
+          // NOT: bu ekranin metinleri (bastan beri) sozlukte degil koda
+          // gomulu; yenileri de ayni yerde tutuluyor ki ekranin yarisi
+          // sozlukten yarisi gomuluden gelmesin. Ekranin tamaminin
+          // i18n'e tasinmasi ayri bir is.
+          { etiket: 'Fotoğraf çek', testID: 'foto-kamera', onSec: kameradanCek },
+          { etiket: 'Galeriden seç', testID: 'foto-galeri', onSec: galeridenSec },
+        ]}
+        onKapat={() => setKaynakSecimi(false)}
+      />
+
     </View>
   )
 }
