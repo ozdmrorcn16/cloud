@@ -90,7 +90,13 @@ type Igne = {
   /** Igne dairesinin capi, sahne genisliginin yuzdesi. */
   cap: number
   kisi: number
-  turAnahtari: 'turKafe' | 'turRestoran' | 'turBar' | 'turEtkinlik'
+  /**
+   * Tur etiketi. YOKSA hic cizilmiyor: "Etkinlik" etiketi kullanicinin
+   * istegiyle kaldirildi (2026-09-08) cunku uygulamada oyle bir tur
+   * YOK ve tanitim ekraninin olmayan bir ozelligi ima etmesi
+   * magazada yanlis beyan sayilir.
+   */
+  turAnahtari?: 'turKafe' | 'turRestoran' | 'turBar'
 }
 
 /**
@@ -114,7 +120,7 @@ const IGNELER: Igne[] = [
   { ad: 'kafe', x: 22.5, y: 15, cap: 10.5, kisi: 8, turAnahtari: 'turKafe' },
   { ad: 'restoran', x: 77, y: 20, cap: 10.5, kisi: 3, turAnahtari: 'turRestoran' },
   { ad: 'bar', x: 14, y: 52, cap: 10.5, kisi: 2, turAnahtari: 'turBar' },
-  { ad: 'etkinlik', x: 71, y: 52, cap: 10.5, kisi: 5, turAnahtari: 'turEtkinlik' },
+  { ad: 'etkinlik', x: 71, y: 52, cap: 10.5, kisi: 5 },
 ]
 
 /*
@@ -223,11 +229,26 @@ function KisilerIkonu({ boyut, renk: r }: { boyut: number; renk: string }) {
   )
 }
 
-/** Tur hapindaki kucuk ikonlar - referanstakilerle ayni dort sekil. */
-function TurIkonu({ ad, boyut, renk: r }: { ad: Igne['ad']; boyut: number; renk: string }) {
+/**
+ * Tur hapindaki kucuk ikonlar. Yalnizca ETIKETI OLAN turler icin -
+ * "Etkinlik" etiketi kaldirilinca (2026-09-08) onun nota ikonu da olu
+ * koda dondugu icin silindi.
+ */
+function TurIkonu({
+  tur,
+  boyut,
+  renk: r,
+}: {
+  // Ikon IGNENIN ADINA degil ETIKETE bagli: etiketi olmayan bir ignenin
+  // ikonu da yok. Ayni sey iki alandan turetilseydi biri kaldirilinca
+  // digeri olu kalirdi.
+  tur: NonNullable<Igne['turAnahtari']>
+  boyut: number
+  renk: string
+}) {
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
-      {ad === 'kafe' && (
+      {tur === 'turKafe' && (
         <>
           <Path
             d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"
@@ -239,24 +260,17 @@ function TurIkonu({ ad, boyut, renk: r }: { ad: Igne['ad']; boyut: number; renk:
           <Path d="M7 5.2V3.4M10.5 5.2V3.4M14 5.2V3.4" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
         </>
       )}
-      {ad === 'restoran' && (
+      {tur === 'turRestoran' && (
         <>
           <Path d="M6 3v8M9 3v8M7.5 11v10" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
           <Path d="M16.5 3c-1.6 0-2.5 2-2.5 4.5S15 12 16.5 12 19 9.5 19 7.5 18.1 3 16.5 3z" stroke={r} strokeWidth={1.8} fill="none" />
           <Path d="M16.5 12v9" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
         </>
       )}
-      {ad === 'bar' && (
+      {tur === 'turBar' && (
         <>
           <Path d="M4 4h16l-8 8z" stroke={r} strokeWidth={1.8} strokeLinejoin="round" fill="none" />
           <Path d="M12 12v8M8 20h8" stroke={r} strokeWidth={1.8} strokeLinecap="round" />
-        </>
-      )}
-      {ad === 'etkinlik' && (
-        <>
-          <Path d="M9 18V5.5l10-2V16" stroke={r} strokeWidth={1.8} strokeLinejoin="round" fill="none" />
-          <Circle cx={6.6} cy={18} r={2.6} fill={r} />
-          <Circle cx={16.6} cy={16} r={2.6} fill={r} />
         </>
       )}
     </Svg>
@@ -437,19 +451,22 @@ export function KarsilamaSahnesi() {
                   </Text>
                 </View>
 
-                {/* TUR - ignenin sivri ucunun altinda. */}
-                <View
-                  style={[
-                    stiller.turHapi,
-                    konum,
-                    { marginLeft: -cap * 0.4, marginTop: cap * 0.84 },
-                  ]}
-                >
-                  <TurIkonu ad={igne.ad} boyut={12} renk={HARITA.hapYazi} />
-                  <Text style={stiller.turYazi} numberOfLines={1}>
-                    {t(`karsilama.${igne.turAnahtari}`)}
-                  </Text>
-                </View>
+                {/* TUR - ignenin sivri ucunun altinda. Etiketi olmayan
+                    igne yalnizca fotograf ve kisi sayisi tasiyor. */}
+                {igne.turAnahtari && (
+                  <View
+                    style={[
+                      stiller.turHapi,
+                      konum,
+                      { marginLeft: -cap * 0.4, marginTop: cap * 0.84 },
+                    ]}
+                  >
+                    <TurIkonu tur={igne.turAnahtari} boyut={12} renk={HARITA.hapYazi} />
+                    <Text style={stiller.turYazi} numberOfLines={1}>
+                      {t(`karsilama.${igne.turAnahtari}`)}
+                    </Text>
+                  </View>
+                )}
               </View>
             )
           })}

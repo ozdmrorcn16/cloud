@@ -43,7 +43,12 @@ describe('KarsilamaEkrani', () => {
     expect(await screen.findByText('Kafe')).toBeTruthy()
     expect(screen.getByText('Restoran')).toBeTruthy()
     expect(screen.getByText('Bar')).toBeTruthy()
-    expect(screen.getByText('Etkinlik')).toBeTruthy()
+    // "Etkinlik" ETIKETI YOK (kullanicinin istegi 2026-09-08):
+    // uygulamada oyle bir tur bulunmuyor ve tanitim ekraninin olmayan
+    // bir ozelligi ima etmesi yanlis beyan olur. Igne duruyor, yalnizca
+    // etiketi cizilmiyor - "5 kişi" rozeti bunu kanitliyor.
+    expect(screen.queryByText('Etkinlik')).toBeNull()
+    expect(screen.getByText('5 kişi')).toBeTruthy()
     expect(screen.getByText('8 kişi')).toBeTruthy()
     // Serit, ignelerdeki sayilarin toplamini asan bir sayi soyluyor:
     // haritada gorunmeyen kucuk igneler de sayiliyor.

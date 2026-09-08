@@ -39,7 +39,6 @@ export default {
     turKafe: 'Kafe',
     turRestoran: 'Restoran',
     turBar: 'Bar',
-    turEtkinlik: 'Etkinlik',
 
     // Dort tanitim karti: baslik + tek satirlik aciklama.
     adim1Baslik: 'Check-in Yap',

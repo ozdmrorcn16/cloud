@@ -719,9 +719,15 @@ baslasa ilk kare bos bir harita cizer, olcum gelince igneler birden
 belirirdi. Ayrica testte `onLayout` hic tetiklenmedigi icin igneler HIC
 gorunmuyordu - bu, testin yakaladigi gercek bir kusurdu.
 
-**ACIK BORC:** "Etkinlik" turu uygulamada YOK - sahnedeki etiket bir
-ornek ve olmayan bir ozelligi ima ediyor. Magaza oncesi ya gercek bir
-tur ile degistirilmeli ya da o ozellik eklenmeli.
+**"ETKINLIK" ETIKETI KALDIRILDI** (kullanicinin istegi 2026-09-08,
+ayni gun): uygulamada oyle bir tur YOK ve bir tanitim ekraninin olmayan
+bir ozelligi ima etmesi magazada yanlis beyan sayilir. Igne DURUYOR -
+fotografi ve "5 kişi" rozetiyle; kalkan yalnizca alttaki tur hapi.
+`Igne.turAnahtari` artik opsiyonel, yoksa hap hic cizilmiyor.
+
+Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
+(`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
+digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
 ### AYNI EKRAN, KULLANICININ UC DUZELTMESI - 2026-09-08
 
