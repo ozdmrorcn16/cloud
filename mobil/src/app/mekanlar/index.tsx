@@ -6,6 +6,7 @@ import {
   Pressable,
   FlatList,
   ScrollView,
+  RefreshControl,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native'
@@ -164,6 +165,7 @@ export default function KesfetEkrani() {
   const [silOnayi, setSilOnayi] = useState(false)
   // Silme GERI ALINAMAZ: once onay satiri aciliyor.
   const [hata, setHata] = useState<string | null>(null)
+  const [yenileniyor, setYenileniyor] = useState(false)
   const [yukleniyor, setYukleniyor] = useState(true)
   // Ilk acilis bittikten sonra ekran duzeni bir daha tam ekran
   // durumlara gecmiyor; bkz. asagidaki not.
@@ -174,6 +176,23 @@ export default function KesfetEkrani() {
    * `aktifSekme` PARAMETRE, cunku `sekmeSec` hemen ardindan yukluyor ve
    * o an `sekme` state'i henuz eski degerinde olur.
    */
+  /**
+   * ASAGI CEKINCE YENILEME (kullanicinin istegi 2026-09-08: "sayfayi
+   * asagi dogru cekince sayfayi yenileme ekle bir aksilik oldugunda
+   * sayfayi yenileyip duzelebilsin").
+   *
+   * Ekran zaten odaklandiginda yeniliyor, ama ekrandan CIKMADAN takilan
+   * bir istegi (zaman asimi, ag kopmasi) kurtarmanin yolu yoktu.
+   */
+  async function yenile() {
+    setYenileniyor(true)
+    try {
+      await yukle()
+    } finally {
+      setYenileniyor(false)
+    }
+  }
+
   async function yukle(metin = arama, turler: string[] = seciliTurler) {
     // Yaris korumasi: hizli yazarken istekler sirayla degil paralel
     // doner. Sira numarasi olmadan eski ve yavas bir istek, yeni
@@ -565,7 +584,14 @@ export default function KesfetEkrani() {
       </View>
     </View>
 
-    <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.icerik}>
+    <ScrollView
+      style={stiller.sayfa}
+      contentContainerStyle={stiller.icerik}
+      testID="kesfet-kaydirma"
+      refreshControl={
+        <RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.turuncu} />
+      }
+    >
       {/* Liste DOLUYKEN olusan hata (ornegin arama sirasinda ag
           kopmasi) tam ekran hata ekranini tetiklemez; sessizce
           yutulmamasi icin ustte bir serit olarak gorunur. */}

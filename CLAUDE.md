@@ -729,6 +729,93 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### TUR SUZGECI ZAMAN ASIMI VE BASKASININ PROFILI - 2026-09-08
+
+Kullanicinin bes istegi/hatasi bir arada ele alindi.
+
+#### 1. TUR SUZGECINDE ZAMAN ASIMI - KOK NEDEN OLCULDU
+
+Kullanici: "filtrede bir tur sectim islem zaman asimina ugradi".
+
+Il, nokta-icinde-poligon testiyle bulunuyor ve BULUNAMAZSA suzgec
+uygulanmiyordu ("sinirsiz kalir" - 2026-09-01'de ARAMA icin alinmis bir
+karar). Arama tarafinda zararsiz (trigram indeksi var), TUR tarafinda
+felaket:
+
+    il suzgeci VAR : mekanlar_il_tur_idx, "Plaj" 1,1 sn / "Kafe" 36 ms
+    il suzgeci YOK : KNN taramasi, 40 saniyede BITMEDI
+
+Sebep secicilik: KNN en yakindan uzaga giderek 100 eslesme ariyor ve
+nadir bir turde milyonlarca satir geziyor. **Mesafe tavani COZMUYOR,
+olculdu:** 100 km'lik `ST_DWithin` BitmapAnd'i 1,66 milyon satira
+cikariyor, sure 27 saniye.
+
+**Cozum (migrasyon 20260908130000): tur suzgeci varken il ZORUNLU.**
+Poligon testi bos donerse EN YAKIN il seciliyor - 81 poligonda GIST ile
+4,4 ms. Denizde bir noktayla dogrulandi: "Çanakkale" secildi, 100 sonuc,
+**251 ms**.
+
+Bu, kullanicinin ayni gun netlestirdigi kurali da karsiliyor: "once
+bulundugu konumdaki il tespit edilecek ve filtredeki seceneklerden
+sectiklerine gore en yakin yerler listelenecek". Siralama zaten
+degismedi - sabit kural geregi en yakindan uzaga.
+
+#### 2. ASAGI CEKINCE YENILEME
+
+Kesfet ekranindaki kok `ScrollView`a `RefreshControl` eklendi. Ekran
+zaten odaklandiginda yeniliyordu ama ekrandan CIKMADAN takilan bir
+istegi (zaman asimi, ag kopmasi) kurtarmanin yolu yoktu.
+
+#### 3. KOYU MODDA HARITA ETIKETLERI
+
+Mekan adi sabit koyu bir tondaydi (`#1A1512`) ve harita koyu moda
+gecince okunmuyordu. Artik `renk.metin`; golge de temayla donuyor
+(`renk.zemin + 'F2'`, yani jetonun %95 opak hali) cunku golge yazinin
+TERSI olmali - beyaz yazinin arkasindaki beyaz golge onu
+bulaniklastirirdi.
+
+#### 4. BASKASININ PROFILI KENDI PROFIL DUZENINE TASINDI
+
+Kullanici: "baskasi baskasinin profilini boyle goruyor boyle olmamali,
+su an kullanicinin profili nasilsa aynisinin kapali halini gormeli".
+
+Ekran once yan yana kucuk bir kimlik satiri + duz bir ani listesiydi.
+Artik kendi profille AYNI duzen: ortali 88 px avatar, ad, biyografi, uc
+sayac, hap segment (Anilar / En sik), liste.
+
+**IKI ORTAK BILESEN CIKARILDI** - iki ekran ayni parcayi kullaniyor,
+yoksa biri degistiginde oteki geride kalirdi:
+
+| Bilesen | Ne |
+|---|---|
+| `src/tasarim/ProfilSayaclari.tsx` | Ani / Fotograf / Arkadas satiri. `onSec` verilmezse SALT OKUNUR - baskasinin profilinde sayaclar bolum secmiyor |
+| `src/tasarim/SekmeHapi.tsx` | Kayan butonlu hap segment |
+| `src/tasarim/hareket.ts` | "Hareketi azalt" ayarini okuyan kanca (uc yerde kullaniliyor) |
+
+**ARKADAS SAYISI SUNUCUDAN GELIYOR** (migrasyon 20260908120000):
+`baskasinin_profili` RPC'si artik `arkadas_sayisi` de donduruyor. Ani ve
+fotograf sayilari istemcide hesaplanabiliyor ama arkadas sayisi
+hesaplanamaz - bag listesi RLS'e tabi. **SAYI evet, LISTE hayir**; ayni
+ayrim mekan sayfasinda da var.
+
+**`profil_gizli` ARTIK OKUNUYOR.** Sunucu bu alani 2026-09-02'den beri
+donduruyordu ama istemci HIC okumuyordu - yani "profilim gizli" ayarinin
+baskasinin profil ekraninda hicbir karsiligi yoktu. Kapali profilde
+duzen AYNI kaliyor, yalnizca liste yerine "Bu profil kapalı" aciklamasi
+cikiyor. Bu bir GORUNUM karari, guvenlik siniri degil: anilarin gercek
+korumasi `check_inler` RLS'inde ve o zaten devrede.
+
+#### 5. "TAKIP ET" -> "ARKADAŞ EKLE", ISTEK GONDERILINCE "BEKLEMEDE"
+
+Kullanicinin istegi. Istek gonderildiginde birincil dugmenin yerini
+BEKLEMEDE durumu aliyor; basilabilir DEGIL cunku karar karsi tarafta.
+Dolgu notr - turuncu birakip yalnizca opaklik dusurmek "yukleniyor" gibi
+okunurdu (ayni ders mekan sayfasindaki uzak check-in dugmesinde
+ogrenilmisti). Geri cekmek isteyen altindaki ikincil eylemi kullaniyor.
+
+Dogrulama: jest 64 paket / 736 test, tsc uygulama kodunda 0 hata, ekran
+goruntusu `tasarim/baskasinin-profili.png`.
+
 ### PROFIL SAYAC ETIKETLERI: SILIKTEN OKUNURA - 2026-09-08
 
 Kullanicinin bildirdigi kusur: "Koyu modda ani fotograf arkadaslar

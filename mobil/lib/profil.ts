@@ -8,6 +8,17 @@ export type BaskaProfil = {
   ad: string
   biyografi: string | null
   fotograflar: string[]
+  /**
+   * Kisinin "profilim gizli" ayari. Sunucu bunu 2026-09-02'den beri
+   * donduruyordu ama istemci HIC okumuyordu; profil ekrani ayari yok
+   * sayiyordu. 2026-09-08'de baglandi.
+   */
+  profilGizli: boolean
+  /**
+   * Karsilikli arkadas sayisi. SAYI evet, LISTE hayir - kimlerin
+   * arkadas oldugu bag listesi RLS'e tabi ve bu RPC onu acmiyor.
+   */
+  arkadasSayisi: number
 }
 
 type SunucuProfili = {
@@ -16,6 +27,8 @@ type SunucuProfili = {
   ad: string
   biyografi: string | null
   fotograflar: string[]
+  profil_gizli: boolean | null
+  arkadas_sayisi: number | null
 }
 
 export async function baskasininProfiliniGetir(
@@ -36,6 +49,8 @@ export async function baskasininProfiliniGetir(
     ad: satir.ad,
     biyografi: satir.biyografi,
     fotograflar: satir.fotograflar,
+    profilGizli: satir.profil_gizli ?? false,
+    arkadasSayisi: satir.arkadas_sayisi ?? 0,
   }
 }
 

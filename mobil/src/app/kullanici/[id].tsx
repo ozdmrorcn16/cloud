@@ -10,6 +10,9 @@ import { useDil } from '../../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
+import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -75,6 +78,9 @@ export default function KullaniciProfiliEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
+  // Kendi profil ekranindaki gibi iki bakis: zaman sirasi ve en cok
+  // gidilen yerler.
+  const [sekme, setSekme] = useState<'anilar' | 'yerler'>('anilar')
 
   async function verileriYukle() {
     try {
@@ -184,6 +190,31 @@ export default function KullaniciProfiliEkrani() {
     bagDurum?.sohbet === 'kabul' ||
     bagDurum?.gelenSohbet === 'kabul'
 
+  // "En sik" gorunumu: ayni anilardan gruplaniyor, sunucuda yeni bir
+  // sorgu yok. Kendi profil ekranindaki desenin aynisi.
+  const yerler = (() => {
+    const sayac = new Map<string, { ad: string; semt: string | null; adet: number }>()
+    anilar.forEach((a) => {
+      const mevcut = sayac.get(a.mekanId)
+      if (mevcut) mevcut.adet += 1
+      else sayac.set(a.mekanId, { ad: a.mekanAdi, semt: a.mekanSemti, adet: 1 })
+    })
+    return [...sayac.entries()]
+      .map(([mekanId, v]) => ({ mekanId, ...v }))
+      .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
+  })()
+
+  /**
+   * KAPALI PROFIL. Kisi "profilim gizli" demis ve aranizda arkadaslik
+   * yok. Ekran duzeni AYNI kaliyor - kullanicinin istegi 2026-09-08:
+   * "su an kullanicinin profili nasilsa aynisinin kapali halini
+   * gormeli" - yalnizca liste yerine tek bir aciklama duruyor.
+   *
+   * Bu bir GORUNUM karari, guvenlik siniri degil: anilarin gercek
+   * korumasi `check_inler` RLS'inde ve o zaten devrede.
+   */
+  const kapali = (profil?.profilGizli ?? false) && !mesajAcik
+
   const ustCubuk = (
     <View style={stiller.ustCubuk}>
       <Pressable
@@ -218,6 +249,10 @@ export default function KullaniciProfiliEkrani() {
       {ustCubuk}
 
       <ScrollView contentContainerStyle={stiller.icerik} showsVerticalScrollIndicator={false}>
+        {/* KIMLIK BLOGU kendi profil ekraniyla AYNI duzende: ortali
+            buyuk avatar, altinda ad ve biyografi. Once yan yana kucuk
+            bir satirdi ve iki ekran arasinda gecerken ayni kisinin
+            profili baska bir uygulamaya aitmis gibi duruyordu. */}
         <View style={stiller.kimlik}>
           {fotografUrlleri.length > 0 ? (
             <Image
@@ -232,17 +267,15 @@ export default function KullaniciProfiliEkrani() {
               </Text>
             </View>
           )}
-          <View style={stiller.kimlikOrta}>
-            <Text style={stiller.ad}>{profil.ad}</Text>
-            <Text style={stiller.aniSayisi}>
-              {t('kullanici.aniSayisi', { sayi: anilar.length })}
-            </Text>
-          </View>
+          <Text style={stiller.ad}>{profil.ad}</Text>
+          {profil.biyografi ? <Text style={stiller.biyografi}>{profil.biyografi}</Text> : null}
         </View>
 
-        {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
-
-        {/* Ilk fotograf avatarda kullanildi; kalanlar serit halinde. */}
+        {/* FOTOGRAF SERIDI KALDI. Kendi profilinde fotograflar ayri bir
+            SEKME (izgara), burada sekmeler Anilar/En sik ile dolu; serit
+            kalkarsa sayac bir sayi soyluyor ama fotograflara ulasmanin
+            yolu kalmiyordu. Ilk fotograf avatarda kullanildi, kalanlar
+            burada. */}
         {fotografUrlleri.length > 1 && (
           <ScrollView
             horizontal
@@ -259,6 +292,17 @@ export default function KullaniciProfiliEkrani() {
             ))}
           </ScrollView>
         )}
+
+        {/* SAYACLAR SALT OKUNUR: kendi profilinde bunlar bir bolum
+            secici, burada yalnizca sayiyi soyluyorlar. `onSec`
+            verilmedigi icin dokunulabilir de degiller. */}
+        <ProfilSayaclari
+          sayilar={{
+            anilar: anilar.length,
+            fotograflar: fotografUrlleri.length,
+            arkadaslar: profil.arkadasSayisi,
+          }}
+        />
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -327,6 +371,17 @@ export default function KullaniciProfiliEkrani() {
           </Pressable>
         )}
 
+        {/* ISTEK GONDERILDI: birincil dugmenin yerini BEKLEMEDE durumu
+            aliyor (kullanicinin istegi 2026-09-08: "istek gonderdiginde
+            beklemede yazsin istek kabul edilene kadar"). Basilabilir
+            DEGIL - karar karsi tarafta; geri cekmek isteyen asagidaki
+            ikincil eylemi kullaniyor. */}
+        {bagDurum?.takip === 'beklemede' && !mesajAcik && (
+          <View style={stiller.beklemede}>
+            <Text style={stiller.beklemedeYazi}>{t('kullanici.istekBeklemede')}</Text>
+          </View>
+        )}
+
         <View style={stiller.ikincilSatir}>
           {bagDurum?.takip === 'beklemede' && (
             <Pressable onPress={takibiBirakEt} accessibilityRole="button" hitSlop={8}>
@@ -347,14 +402,7 @@ export default function KullaniciProfiliEkrani() {
               </Pressable>
             )}
           {/* GERI CEKME YOK (kullanicinin kurali 2026-09-01): gonderilen
-              sohbet/mesaj istegi geri alinamaz. Yerine yalnizca bilgi
-              veren bir etiket duruyor.
-
-              Sebep politika kadar OLCULMUS bir hataydi: geri cekme
-              istegi geri almiyor, ONAYLIYORDU - istek satirini silip
-              konusmayi birakiyordu ve konusma alicinin Mesajlar
-              kutusuna dusuyordu. Vazgecmenin tek yolu engellemek; o
-              yol konusmayi mesajlariyla birlikte siliyor. */}
+              sohbet/mesaj istegi geri alinamaz. */}
           {bagDurum?.sohbet === 'beklemede' && bagDurum?.gelenSohbet !== 'kabul' && (
             <Text style={stiller.durumEtiketi}>{t('kullanici.istekGonderildi')}</Text>
           )}
@@ -363,11 +411,46 @@ export default function KullaniciProfiliEkrani() {
           )}
         </View>
 
-        <Text style={stiller.bolumAd} accessibilityRole="header">
-          {t('kullanici.anilar')}
-        </Text>
+        <SekmeHapi
+          sekmeler={[
+            { anahtar: 'anilar' as const, etiket: t('kullanici.anilar') },
+            { anahtar: 'yerler' as const, etiket: t('kullanici.enSik') },
+          ]}
+          secili={sekme}
+          onSec={setSekme}
+        />
 
-        {anilar.length === 0 ? (
+        {kapali ? (
+          <View style={stiller.bosAlan}>
+            <Text style={stiller.bosBaslik}>{t('kullanici.profilKapali')}</Text>
+            <Text style={stiller.bosAciklama}>{t('kullanici.profilKapaliAciklama')}</Text>
+          </View>
+        ) : sekme === 'yerler' ? (
+          yerler.length === 0 ? (
+            <Text style={stiller.durum}>{t('kullanici.yerYok')}</Text>
+          ) : (
+            yerler.map((yer) => (
+              <Pressable
+                key={yer.mekanId}
+                style={stiller.aniSatiri}
+                onPress={() => router.push(`/harita/${yer.mekanId}` as never)}
+                accessibilityRole="button"
+              >
+                <View style={stiller.aniOrta}>
+                  <Text style={stiller.aniMekan} numberOfLines={1}>
+                    {yer.ad}
+                  </Text>
+                  {yer.semt ? (
+                    <Text style={stiller.aniAlt} numberOfLines={1}>
+                      {yer.semt}
+                    </Text>
+                  ) : null}
+                </View>
+                <Text style={stiller.kezSayisi}>{t('profil.kezSayisi', { sayi: yer.adet })}</Text>
+              </Pressable>
+            ))
+          )
+        ) : anilar.length === 0 ? (
           <Text style={stiller.durum}>{t('kullanici.aniYok')}</Text>
         ) : (
           anilar.map((ani) => (
@@ -401,45 +484,65 @@ export default function KullaniciProfiliEkrani() {
           ))
         )}
 
-        {/* Guvenlik eylemleri sessiz duruyor ama saklanmiyor: bir tacizi
-            bildirmek kolay olmali, kazayla engellemek zor. */}
+        {/* SIKAYET VE ENGELLEME en altta: yikici eylemler kompozisyonda
+            once gelmemeli. Engelleme iki adimli - geri alinamaz. */}
         <View style={stiller.guvenlikAlani}>
           <Pressable onPress={sikayetEt} accessibilityRole="button" hitSlop={8}>
             <Text style={stiller.guvenlikYazi}>{t('kullanici.sikayetEt')}</Text>
           </Pressable>
-          {!engelleOnayi ? (
-            <Pressable
-              onPress={() => setEngelleOnayi(true)}
-              accessibilityRole="button"
-              hitSlop={8}
-            >
-              <Text style={stiller.guvenlikYazi}>{t('kullanici.engelle')}</Text>
-            </Pressable>
-          ) : (
-            <View style={stiller.onayAlani}>
-              <Text style={stiller.onayMetni}>{t('kullanici.engelleOnayi')}</Text>
-              <View style={stiller.onayButonlari}>
-                <Pressable onPress={kullaniciyiEngelle} accessibilityRole="button" hitSlop={8}>
-                  <Text style={stiller.tehlikeliYazi}>{t('kullanici.engelleEvet')}</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setEngelleOnayi(false)}
-                  accessibilityRole="button"
-                  hitSlop={8}
-                >
-                  <Text style={stiller.guvenlikYazi}>{t('kullanici.vazgec')}</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
+          <Pressable onPress={() => setEngelleOnayi(true)} accessibilityRole="button" hitSlop={8}>
+            <Text style={stiller.guvenlikYazi}>{t('kullanici.engelle')}</Text>
+          </Pressable>
         </View>
       </ScrollView>
 
+      <OnayPenceresi
+        acikMi={engelleOnayi}
+        baslik={t('kullanici.engelle')}
+        aciklama={t('kullanici.engelleOnayi')}
+        eylemEtiketi={t('kullanici.engelleEvet')}
+        onOnay={kullaniciyiEngelle}
+        onVazgec={() => setEngelleOnayi(false)}
+      />
     </View>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
+  // ISTEK BEKLEMEDE: birincil dugmenin yerini alan DURUM kutusu.
+  // Dolgu notr, cunku basilabilir degil - turuncu birakip yalnizca
+  // opaklik dusurmek "yukleniyor" gibi okunurdu (ayni ders mekan
+  // sayfasindaki uzak check-in dugmesinde ogrenilmisti).
+  beklemede: {
+    backgroundColor: renk.cizgi,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: bosluk.m,
+  },
+  beklemedeYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
+  // KAPALI PROFIL ve bos listeler icin yon veren blok.
+  bosAlan: { alignItems: 'center', paddingVertical: bosluk.xxl, gap: bosluk.xs },
+  bosBaslik: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  bosAciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    textAlign: 'center',
+  },
+  kezSayisi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuYazi,
+  },
   kok: { flex: 1, backgroundColor: renk.zemin },
 
   ustCubuk: {
@@ -463,8 +566,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
-  kimlik: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l, marginTop: bosluk.s },
-  avatar: { width: 84, height: 84, borderRadius: 42 },
+  // ORTALI KIMLIK (kullanicinin istegi 2026-09-08): kendi profil
+  // ekraniyla ayni duzen - avatar ustte ve ortada, altinda ad ve
+  // biyografi. Once yan yana bir satirdi.
+  kimlik: { alignItems: 'center', gap: bosluk.s, marginTop: bosluk.m, marginBottom: bosluk.m },
+  // 84 -> 88: kendi profildeki avatarla ayni cap.
+  avatar: { width: 88, height: 88, borderRadius: 44 },
   avatarYok: {
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
@@ -473,23 +580,23 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   basHarf: { fontFamily: yazi.ekranBasligi, fontSize: 34, color: renk.turuncuYazi },
   kimlikOrta: { flex: 1 },
   ad: {
-    fontFamily: yazi.ekranBasligi,
+    fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: renk.metin,
-    letterSpacing: -0.3,
+    textAlign: 'center',
+  },
+  biyografi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    textAlign: 'center',
   },
   aniSayisi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
     marginTop: 2,
-  },
-  biyografi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    lineHeight: 21,
-    color: renk.metinIkincil,
-    marginTop: bosluk.l,
   },
 
   serit: { gap: bosluk.s, paddingVertical: bosluk.l },

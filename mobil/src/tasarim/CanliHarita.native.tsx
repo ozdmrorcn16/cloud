@@ -452,21 +452,27 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   igneEtiket: { maxWidth: 108 },
+  // MEKAN ADI TEMAYA BAGLI (kullanicinin bildirdigi kusur 2026-09-08:
+  // "koyu modda haritadaki gorunen yer isimleri beyaz renk olsun").
+  // Ad sabit koyu bir tondaydi; harita da koyu moda gecince yazi
+  // okunmaz oluyordu.
+  //
+  // Golge de temayla donuyor: yazinin TERSI renkte olmali, yoksa
+  // beyaz yazinin arkasindaki beyaz golge onu bulaniklastirir.
+  // `zemin + 'F2'` sekiz haneli hex, yani jetonun %95 opak hali.
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 10,
     lineHeight: 12,
-    color: '#1A1512',
-    // Harita zemini acik ama fotografli olabilir; ince beyaz golge
-    // yaziyi her zeminde okunur tutuyor.
-    textShadowColor: 'rgba(255,255,255,0.95)',
+    color: renk.metin,
+    textShadowColor: renk.zemin + 'F2',
     textShadowRadius: 3,
   },
   igneDurum: {
     fontFamily: yazi.govdeOrta,
     fontSize: 9,
     lineHeight: 11,
-    textShadowColor: 'rgba(255,255,255,0.95)',
+    textShadowColor: renk.zemin + 'F2',
     textShadowRadius: 3,
   },
   sakinIgne: {

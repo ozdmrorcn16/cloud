@@ -45,6 +45,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
     id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
+    profilGizli: false, arkadasSayisi: 4,
   })
   ;(engellediklerimiGetir as jest.Mock).mockResolvedValue([])
   ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
@@ -239,7 +240,7 @@ describe('KullaniciProfiliEkrani', () => {
   it('bag yokken iki istek butonunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
-    expect(await screen.findByText('Takip et')).toBeTruthy()
+    expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
     expect(screen.getByText('Sohbet iste')).toBeTruthy()
   })
 
@@ -248,7 +249,7 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takipIstegiGonder as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Takip et'))
+    await fireEvent.press(await screen.findByText('Arkadaş ekle'))
 
     await waitFor(() => expect(takipIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
@@ -267,7 +268,7 @@ describe('KullaniciProfiliEkrani', () => {
     )
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Takip et'))
+    await fireEvent.press(await screen.findByText('Arkadaş ekle'))
     expect(await screen.findByText('Bugunluk istek sinirina ulastin')).toBeTruthy()
   })
 
@@ -279,7 +280,7 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Takip et')).toBeTruthy()
+    expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
     expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
   })
 
@@ -328,7 +329,7 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('İsteği geri çek'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('Takip et')).toBeTruthy()
+    expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
   })
 
   it('gelen takip istegi icin kabul et ve reddet butonlarini ve aciklamayi gosterir', async () => {
@@ -483,7 +484,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
-    expect(screen.queryByText('Takip et')).toBeNull()
+    expect(screen.queryByText('Arkadaş ekle')).toBeNull()
   })
 
   it('sohbet istegi basarisiz olursa sunucu mesajini gosterir ve durumu degistirmez', async () => {
@@ -540,5 +541,70 @@ describe('KullaniciProfiliEkrani', () => {
     await waitFor(() => screen.getByText('Ada'))
 
     expect(screen.queryByText('Mesaj gönder')).toBeNull()
+  })
+})
+
+
+/**
+ * EKRAN KENDI PROFIL DUZENINE TASINDI - kullanicinin istegi
+ * 2026-09-08: "baskasi baskasinin profilini boyle goruyor boyle
+ * olmamali, su an kullanicinin profili nasilsa aynisinin kapali
+ * halini gormeli".
+ */
+describe('KullaniciProfiliEkrani duzen', () => {
+  it('uc sayaci gosterir: ani, fotograf ve ARKADAS (sunucudan gelen sayi)', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
+    await render(<KullaniciProfiliEkrani />)
+
+    // Arkadas sayisi istemcide hesaplanamaz - bag listesi RLS'e tabi -
+    // bu yuzden RPC'den geliyor.
+    expect(await screen.findByLabelText('4 Arkadaş')).toBeTruthy()
+    expect(screen.getByLabelText('0 Anı')).toBeTruthy()
+    expect(screen.getByLabelText('0 Fotoğraf')).toBeTruthy()
+  })
+
+  it('sekme hapi var: Anilar ve En sik', async () => {
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Anılar')).toBeTruthy()
+    expect(screen.getByText('En sık')).toBeTruthy()
+    expect(screen.getByTestId('sekme-gostergesi')).toBeTruthy()
+  })
+
+  it('istek gonderilmisse BEKLEMEDE yazar, "Arkadaş ekle" gostermez', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'beklemede', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
+    })
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Beklemede')).toBeTruthy()
+    expect(screen.queryByText('Arkadaş ekle')).toBeNull()
+  })
+
+  it('KAPALI PROFIL: duzen ayni kalir, liste yerine aciklama cikar', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Bu profil kapalı')).toBeTruthy()
+    // Duzen AYNI: sayaclar ve sekme hapi yerinde duruyor.
+    expect(screen.getByLabelText('2 Arkadaş')).toBeTruthy()
+    expect(screen.getByText('En sık')).toBeTruthy()
+  })
+
+  it('arkadaslik varsa kapali profil ACILIYOR', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
+    })
+    await render(<KullaniciProfiliEkrani />)
+
+    await screen.findByText('Mesaj gönder')
+    expect(screen.queryByText('Bu profil kapalı')).toBeNull()
   })
 })

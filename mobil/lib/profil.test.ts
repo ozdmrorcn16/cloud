@@ -17,7 +17,17 @@ beforeEach(() => {
 describe('baskasininProfiliniGetir', () => {
   it('profil bulunursa alanlarini doner', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({
-      data: [{ id: 'kullanici-2', kullanici_adi: 'ada123', ad: 'Ada', biyografi: 'merhaba', fotograflar: ['a.jpg'] }],
+      data: [
+        {
+          id: 'kullanici-2',
+          kullanici_adi: 'ada123',
+          ad: 'Ada',
+          biyografi: 'merhaba',
+          fotograflar: ['a.jpg'],
+          profil_gizli: true,
+          arkadas_sayisi: 7,
+        },
+      ],
       error: null,
     })
 
@@ -32,6 +42,10 @@ describe('baskasininProfiliniGetir', () => {
       ad: 'Ada',
       biyografi: 'merhaba',
       fotograflar: ['a.jpg'],
+      // 2026-09-08'de eklendi: gizlilik ayari sunucudan geliyordu ama
+      // istemci okumuyordu; arkadas sayisi ise yeni.
+      profilGizli: true,
+      arkadasSayisi: 7,
     })
   })
 

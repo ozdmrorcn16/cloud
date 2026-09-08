@@ -40,7 +40,8 @@ import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { useHareket } from '../../tasarim/hareket'
+import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
+import { SekmeHapi } from '../../tasarim/SekmeHapi'
 
 /**
  * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
@@ -56,8 +57,6 @@ import { useHareket } from '../../tasarim/hareket'
  * butun paylasimlar profilde durur, liste hep asagi kaydirilabilir.
  */
 const ILK_CIZIM_ADEDI = 10
-/** Sekme hapinin ic dolgusu; kayan butonun sinirlarini da bu belirliyor. */
-const HAP_DOLGUSU = 3
 /** Her kaydirmada pencere bu kadar buyur. */
 const CIZIM_ADIMI = 10
 
@@ -172,12 +171,6 @@ const EN_FAZLA_YER = 20
  * Henuz gelmemis olanlar `null`; o kartlarda gecici olarak emoji
  * gorunuyor. Gorsel gelince buraya bir satir eklemek yetiyor.
  */
-const KART_IKONLARI: Record<string, number | null> = {
-  anilar: require('../../../assets/images/profil-ikon-ani.png'),
-  fotograflar: require('../../../assets/images/profil-ikon-fotograf.png'),
-  arkadaslar: require('../../../assets/images/profil-ikon-arkadas.png'),
-}
-
 const MADALYA_GORSELLERI = [
   require('../../../assets/images/madalya-1.png'),
   require('../../../assets/images/madalya-2.png'),
@@ -248,18 +241,6 @@ export default function ProfilEkrani() {
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
   // Cizim penceresi; kaydirdikca buyuyor.
   const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
-  // KAYAN SEKME GOSTERGESI (kullanicinin istegi 2026-09-08: "Anılar ve
-  // en sık yazısına kaydırmalı sütun getir"). Cizgi eskiden aktif
-  // sekmenin altina ANINDA ziplyordu; artik kayiyor.
-  // Baslangic degeri EKRANDAN turetiliyor, sifirdan degil: sifirla
-  // baslasa gosterge ilk karede hic cizilmez ve olcum gelince birden
-  // belirirdi. Ayrica testte `onLayout` tetiklenmedigi icin gosterge
-  // HIC gorunmuyordu - ayni tuzak karsilama sahnesinde de yasandi.
-  const [sekmeGenisligi, setSekmeGenisligi] = useState(
-    () => (Dimensions.get('window').width - bosluk.sayfa * 2 - HAP_DOLGUSU * 2) / 2
-  )
-  const gostergeKonumu = useRef(new Animated.Value(0)).current
-  const hareket = useHareket()
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
   // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
   // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
@@ -351,27 +332,6 @@ export default function ProfilEkrani() {
       )
     )
   }
-
-  // Gosterge, secili sekmenin altina kayar. Hareket azaltilmissa
-  // aninda gecer - uygulamanin erisilebilirlik tabani.
-  useEffect(() => {
-    const hedef = sekme === 'yerler' ? 1 : 0
-    if (!hareket) {
-      gostergeKonumu.setValue(hedef)
-      return
-    }
-    const animasyon = Animated.spring(gostergeKonumu, {
-      toValue: hedef,
-      useNativeDriver: true,
-      // Yay SERT ve sonmus: gosterge kayarken sekmeden tasip geri
-      // donmemeli, cunku iki sekme bitisik ve tasma "yanlis sekme
-      // secildi" gibi okunuyor.
-      speed: 18,
-      bounciness: 0,
-    })
-    animasyon.start()
-    return () => animasyon.stop()
-  }, [sekme, hareket, gostergeKonumu])
 
   // Ekran her odaklandiginda yeniden cekiliyor: kullanici check-in yapip
   // ya da bir aniyi silip buraya donunce sayilar ve canli serit eski
@@ -624,70 +584,25 @@ export default function ProfilEkrani() {
               <Text style={stiller.ad}>{profil.ad}</Text>
               {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
 
-              {/* UC KART - sayac degil BOLUM SECICI (kullanicinin
-                  istegi 2026-09-05: "Ani'ya basinca anilar, fotografa
-                  basinca fotograflar, arkadaslarima basinca arkadaslar
-                  listesi gorunecek").
+              {/* SAYAC SATIRI ortak bilesende (`ProfilSayaclari`):
+                  baskasinin profili de ayni satiri kullaniyor
+                  (kullanicinin istegi 2026-09-08). Iki kopya olsaydi
+                  biri degistiginde oteki geride kalirdi.
 
-                  Onceden bunlar duz sayilardi ve yalnizca ikisi bir
-                  yere goturuyordu. Artik ucu de kendi bolumunu aciyor
-                  ve hangisinin acik oldugu kartin kendisinden
-                  okunuyor. */}
-              <View style={stiller.sayacKartlari}>
-                {(
-                  [
-                    {
-                      anahtar: 'anilar',
-                      ikon: '🗓️',
-                      sayi: anilar.length,
-                      etiket: t('profil.aniSayisi'),
-                    },
-                    {
-                      anahtar: 'fotograflar',
-                      ikon: '🖼️',
-                      sayi: fotograflar.length,
-                      etiket: t('profil.fotografSayisi'),
-                    },
-                    {
-                      anahtar: 'arkadaslar',
-                      ikon: '👥',
-                      sayi: baglar.length,
-                      etiket: t('profil.bagSayisi'),
-                    },
-                  ] as const
-                ).map((k) => {
-                  // "En sık" anilar bolumunun ALT SEKMESI oldugu icin
-                  // o acikken de Ani karti secili duruyor.
-                  const secili =
-                    sekme === k.anahtar || (k.anahtar === 'anilar' && sekme === 'yerler')
-                  return (
-                    <Pressable
-                      key={k.anahtar}
-                      style={[stiller.sayacKarti, secili && stiller.sayacKartiSecili]}
-                      onPress={() => setSekme(k.anahtar)}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: secili }}
-                      accessibilityLabel={`${k.sayi} ${k.etiket}`}
-                    >
-                      {KART_IKONLARI[k.anahtar] ? (
-                        <Image
-                          source={KART_IKONLARI[k.anahtar] as number}
-                          style={stiller.sayacGorseli}
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <Text style={stiller.sayacIkonu}>{k.ikon}</Text>
-                      )}
-                      <Text style={[stiller.sayacSayisi, secili && stiller.sayacSayisiSecili]}>
-                        {k.sayi}
-                      </Text>
-                      <Text style={[stiller.sayacEtiketi, secili && stiller.sayacEtiketiSecili]}>
-                        {k.etiket}
-                      </Text>
-                    </Pressable>
-                  )
-                })}
-              </View>
+                  Burada `onSec` VERILIYOR, yani satir bir BOLUM SECICI
+                  (kullanicinin karari 2026-09-05); baskasinin
+                  profilinde verilmiyor ve satir salt okunur oluyor. */}
+              <ProfilSayaclari
+                sayilar={{
+                  anilar: anilar.length,
+                  fotograflar: fotograflar.length,
+                  arkadaslar: baglar.length,
+                }}
+                // "En sık" anilar bolumunun ALT SEKMESI, o acikken de
+                // Ani sayaci secili duruyor.
+                secili={sekme === 'yerler' ? 'anilar' : sekme}
+                onSec={setSekme}
+              />
 
 
             </View>
@@ -701,46 +616,14 @@ export default function ProfilEkrani() {
                 Fotograf ve arkadas bolumlerinde bu cubuk YOK - orada
                 tek bir bakis var, ikinci bir sekme bos yer kaplardi. */}
             {(sekme === 'anilar' || sekme === 'yerler') && (
-              <View
-                style={stiller.sekmeler}
-                onLayout={(o) =>
-                  setSekmeGenisligi((o.nativeEvent.layout.width - HAP_DOLGUSU * 2) / 2)
-                }
-              >
-                {/* KAYAN DOLGU en altta: butonlar onun USTUNDE duruyor,
-                    yoksa dolgu yazilari ortuyor. */}
-                <Animated.View
-                  testID="sekme-gostergesi"
-                  pointerEvents="none"
-                  style={[
-                    stiller.sekmeGostergesi,
-                    {
-                      width: sekmeGenisligi,
-                      transform: [
-                        {
-                          translateX: gostergeKonumu.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, sekmeGenisligi],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                />
-                {(['anilar', 'yerler'] as const).map((s) => (
-                  <Pressable
-                    key={s}
-                    style={stiller.sekme}
-                    onPress={() => setSekme(s)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: sekme === s }}
-                  >
-                    <Text style={[stiller.sekmeYazi, sekme === s && stiller.sekmeYaziAktif]}>
-                      {s === 'anilar' ? t('profil.sekmeAnilar') : t('profil.sekmeYerler')}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <SekmeHapi
+                sekmeler={[
+                  { anahtar: 'anilar' as const, etiket: t('profil.sekmeAnilar') },
+                  { anahtar: 'yerler' as const, etiket: t('profil.sekmeYerler') },
+                ]}
+                secili={sekme === 'yerler' ? 'yerler' : 'anilar'}
+                onSec={setSekme}
+              />
             )}
 
             {sekme === 'arkadaslar' ? (
@@ -1162,69 +1045,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
 
-  // UC KART (kullanicinin istegi 2026-09-05). Duz sayilarin yerini
-  // aldilar; her biri kendi bolumunu aciyor.
-  sayacKartlari: { flexDirection: 'row', gap: bosluk.s, alignSelf: 'stretch' },
-  // KUTU YOK (kullanicinin istegi 2026-09-08: "ani fotograf
-  // arkadaslarin etrafindaki kare sutunu kaldir boyutlarini kucult").
-  // Kenarlik, zemin ve golge kalkti; geriye ikon + sayi + etiket
-  // kaldi. Uc kutu bandin altinda agir bir serit olusturuyordu ve
-  // bandin kendisi zaten bir yuzey.
-  sayacKarti: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: bosluk.s,
-    paddingHorizontal: bosluk.xs,
-  },
-  // SECIM ARTIK RENKTE. Kutu kalkinca "hangisi acik" gostergesi de
-  // kalkiyordu; secili olan sayiyi turuncu ve etiketi koyu tutuyor,
-  // otekiler notre duesuyor. Renk TEK BASINA anlam tasimasin diye
-  // etiket agirligi da degisiyor.
-  sayacKartiSecili: {},
-  sayacIkonu: { fontSize: 26, marginBottom: bosluk.xs },
-  // 34x30 -> 38x34 (kullanicinin istegi 2026-09-05: "ikonlari cok az
-  // buyult"). Kaynak 240 piksel oldugu icin buyutme cozunurlukten
-  // yemiyor; retina 3x'te hala iki kat pay var.
-  // 38x34 -> 30x27 (ayni istekteki "boyutlarini kucult").
-  sayacGorseli: { width: 30, height: 27, marginBottom: 2 },
-  sayacSayisi: {
-    fontFamily: yazi.ekranBasligi,
-    // 26 (olcek.baslik) -> 23 (kullanicinin istegi 2026-09-05:
-    // "rakamlari cok az kucult"). Olcek jetonlarinda 26 ile 19
-    // arasinda bir deger yok; ikisinden biri "cok az" olmuyordu, o
-    // yuzden burada ara bir deger yaziliyor. Kart ici bir gosterge,
-    // metin olcegine bagli degil.
-    // 23 -> 20 ("boyutlarini kucult").
-    fontSize: 20,
-    color: renk.metin,
-    letterSpacing: -0.4,
-  },
-  sayacSayisiSecili: { color: renk.turuncuYazi },
-  // ETIKET RENGI YUKSELTILDI (kullanicinin bildirdigi kusur 2026-09-08:
-  // "koyu modda ani fotograf arkadaslar yazisi silik kalmis").
-  // OLCULDU: `metinSoluk` zemine karsi acik modda 2,74:1, koyu modda
-  // 4,06:1 - ikisi de metin icin gereken 4,5 esiginin ALTINDA.
-  // `metinIkincil` 5,63 ve 7,96 veriyor.
-  sayacEtiketi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    color: renk.metinIkincil,
-    marginTop: 1,
-  },
-  // Secili olan bir kademe daha belirgin (18,48 / 16,63): secim farki
-  // korunuyor ama artik "soluk ve okunmaz" ile degil "koyu ve daha
-  // koyu" ile anlatiliyor.
-  sayacEtiketiSecili: { fontFamily: yazi.govdeKalin, color: renk.metin },
-
-  // Arkadas satiri: bas harfli avatar + ad + kullanici adi.
-  kisiSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
   kisiAvatar: {
     width: 42,
     height: 42,
@@ -1259,44 +1079,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // HAP SEKLINDE SEGMENT (kullanicinin istegi 2026-09-08: "hap sekilde
   // bastan sona icinde kaymali sutunlu butonlu"). Alt cizgi kalkti.
   //
-  // Dil KESFET EKRANINDAKI Harita/Liste segmentiyle ayni: turuncu tonlu
-  // kapsayici, secili buton beyaz + turuncu kenarlik, secili yazi
-  // turuncu. Ayni isi yapan iki bilesenin iki farkli gorunusu olmasin.
-  sekmeler: {
-    flexDirection: 'row',
-    alignSelf: 'stretch',
-    backgroundColor: renk.turuncuZemin,
-    borderRadius: yuvarlak.hap,
-    padding: HAP_DOLGUSU,
-    marginTop: bosluk.l,
-  },
-  sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s + 2 },
-  // Gosterge SEKMENIN DEGIL kapsayicinin cocugu: sekmeye baglansaydi
-  // her sekmenin kendi dolgusu olur ve kayma diye bir sey olmazdi.
-  // Dikeyde `top`/`bottom` ile geriliyor - sabit bir yukseklik
-  // yazilsaydi yazi puntosu degisince hap sekmeye oturmazdi.
-  sekmeGostergesi: {
-    position: 'absolute',
-    left: HAP_DOLGUSU,
-    top: HAP_DOLGUSU,
-    bottom: HAP_DOLGUSU,
-    borderRadius: yuvarlak.hap,
-    backgroundColor: renk.yuzey,
-    borderWidth: 1.2,
-    borderColor: renk.turuncu,
-  },
-  sekmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
-  sekmeYaziAktif: { color: renk.turuncuYazi },
-
-  // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
-  yerSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
   // Ilk bes: kurdeleli madalya. Genislik duz rakamla AYNI (34) ki
   // altinci satirdan itibaren metinler sola kaymasin.
   // Rozet 34x36 -> 44x46 -> 48x48 (kullanicinin istegi 2026-09-05:
@@ -1490,6 +1272,24 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: 2,
   },
 
+  // Arkadas satiri: bas harfli avatar + ad + kullanici adi.
+  kisiSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
+  // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
+  yerSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
   bosAlan: { paddingTop: bosluk.m },
   bosBaslik: {
     fontFamily: yazi.govdeKalin,

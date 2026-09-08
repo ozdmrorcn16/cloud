@@ -285,7 +285,12 @@ export default {
   kullanici: {
     bulunamadi: 'Bu profil bulunamadı',
     aniSayisi: '{{sayi}} anı',
-    takipEt: 'Takip et',
+    // "Takip et" -> "Arkadaş ekle" (kullanicinin istegi 2026-09-08).
+    // Ekran metninde iliski "takip" ya da "bag" degil ARKADASLIK.
+    takipEt: 'Arkadaş ekle',
+    // Istek gonderildikten sonra birincil dugmenin yerini alan DURUM.
+    // Basilamaz: karar karsi tarafta.
+    istekBeklemede: 'Beklemede',
     istegiGeriCek: 'İsteği geri çek',
     bagiKopar: 'Arkadaşlıktan çıkar',
     sohbetIste: 'Sohbet iste',
@@ -297,7 +302,13 @@ export default {
     kabulEt: 'Kabul et',
     reddet: 'Reddet',
     anilar: 'Anılar',
+    enSik: 'En sık',
     aniYok: 'Henüz bir anısı yok',
+    // KAPALI PROFIL: kisi "profilim gizli" demis ve aranizda arkadaslik
+    // yok. Ekran duzeni AYNI kaliyor, yalnizca icerik kapali.
+    profilKapali: 'Bu profil kapalı',
+    profilKapaliAciklama: 'Anılarını görmek için arkadaş olmalısın.',
+    yerYok: 'Henüz bir yeri yok',
     sikayetEt: 'Şikayet et',
     engelle: 'Engelle',
     engelleOnayi:
