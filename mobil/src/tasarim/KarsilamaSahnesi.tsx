@@ -94,8 +94,15 @@ type Igne = {
 }
 
 /**
- * Dort igne - konum, olcu ve sayilar referans gorselden OLCULDU
- * (853 px genislikteki gorselde daire merkezleri ve caplari).
+ * Dort igne - konum ve sayilar referans gorselden OLCULDU (853 px
+ * genislikteki gorselde daire merkezleri).
+ *
+ * CAPLAR ESITLENDI (2026-09-08, kullanicinin istegi "3 profil
+ * gorunenleri teke duesuer"): referansta kalabalik iginler daha buyuk
+ * bir daireydi cunku icinde UC yuzluk kolaj vardi. Tek yuze duesuence
+ * o buyukluk hem gereksiz kaldi hem de zararli oldu - kolajdan
+ * kirpilan yuz 40 px, tek kisilik ignelerinki 68 px, yani buyuk daire
+ * kucuk kaynagi daha cok gerdiriyordu.
  *
  * ETKINLIK IGNESI referanstan biraz YUKARI alindi (y 63 -> 50):
  * 390 px'lik bir telefonda alt serit ("Yakininda N kisi disarida")
@@ -104,22 +111,19 @@ type Igne = {
  * tahmin edilmedi.
  */
 const IGNELER: Igne[] = [
-  { ad: 'kafe', x: 22.5, y: 13, cap: 13.6, kisi: 8, turAnahtari: 'turKafe' },
-  { ad: 'restoran', x: 77, y: 18, cap: 8.9, kisi: 3, turAnahtari: 'turRestoran' },
-  { ad: 'bar', x: 14, y: 52, cap: 9.4, kisi: 2, turAnahtari: 'turBar' },
-  { ad: 'etkinlik', x: 71, y: 50, cap: 12.7, kisi: 5, turAnahtari: 'turEtkinlik' },
+  { ad: 'kafe', x: 22.5, y: 15, cap: 10.5, kisi: 8, turAnahtari: 'turKafe' },
+  { ad: 'restoran', x: 77, y: 20, cap: 10.5, kisi: 3, turAnahtari: 'turRestoran' },
+  { ad: 'bar', x: 14, y: 52, cap: 10.5, kisi: 2, turAnahtari: 'turBar' },
+  { ad: 'etkinlik', x: 71, y: 52, cap: 10.5, kisi: 5, turAnahtari: 'turEtkinlik' },
 ]
 
-/** Referanstaki kucuk bos igneler: "baska yerlerde de check-in var". */
-const BOS_IGNELER = [
-  { x: 39, y: 13 },
-  { x: 90, y: 3 },
-  { x: 70, y: 39 },
-  { x: 93, y: 47 },
-  { x: 35, y: 71 },
-  { x: 62, y: 76 },
-  { x: 8, y: 27 },
-]
+/*
+ * BOS IGNELER KALDIRILDI (kullanicinin istegi 2026-09-08: "bos check-in
+ * ignelerini de kaldir"). Referansta cevreye serpistirilmis, icinde
+ * kimse olmayan yedi kucuk igne vardi; hicbir sey anlatmiyorlardi -
+ * sahnenin soyledigi sey "su mekanda su kadar kisi var", bos bir igne
+ * ise ne mekani ne kisiyi gosteriyordu.
+ */
 
 /** Sahnedeki toplam kisi - alt seritte yaziyor. */
 const TOPLAM_KISI = IGNELER.reduce((t, i) => t + i.kisi, 0) + 6
@@ -388,57 +392,59 @@ export function KarsilamaSahnesi() {
 
       {en > 0 && (
         <>
-          {BOS_IGNELER.map((b, i) => {
-            const cap = en * 0.038
-            return (
-              <View
-                key={`bos${i}`}
-                style={[
-                  stiller.konum,
-                  { left: `${b.x}%`, top: `${b.y}%`, marginLeft: -cap / 2, marginTop: -cap / 2 },
-                ]}
-              >
-                <IgneGovdesi cap={cap} />
-              </View>
-            )
-          })}
-
           {IGNELER.map((igne) => {
             const cap = (en * igne.cap) / 100
             const foto = cap * 0.85
+            // HAPLAR IGNENIN COCUGU DEGIL, SAHNENIN. Once ignenin
+            // icinde duruyorlardi ve metin sarmasi ignenin genisligiyle
+            // (~40 px) sinirli kaliyordu: "Restoran" ekranda "Res..."
+            // diye kirpiliyordu (kullanicinin ekran goruntusunde
+            // gorulduegue gercek kusur). Sahnenin dogrudan cocugu olunca
+            // hap ihtiyaci kadar genisliyor.
+            const konum = { left: `${igne.x}%` as const, top: `${igne.y}%` as const }
             return (
-              <View
-                key={igne.ad}
-                style={[
-                  stiller.konum,
-                  { left: `${igne.x}%`, top: `${igne.y}%`, marginLeft: -cap / 2, marginTop: -cap / 2 },
-                ]}
-              >
-                <IgneGovdesi cap={cap}>
-                  <Image
-                    source={AVATARLAR[igne.ad]}
-                    style={{
-                      position: 'absolute',
-                      left: (cap - foto) / 2,
-                      top: (cap - foto) / 2,
-                      width: foto,
-                      height: foto,
-                      borderRadius: foto / 2,
-                    }}
-                  />
-                </IgneGovdesi>
+              <View key={igne.ad} style={StyleSheet.absoluteFill} pointerEvents="none">
+                <View
+                  style={[stiller.konum, konum, { marginLeft: -cap / 2, marginTop: -cap / 2 }]}
+                >
+                  <IgneGovdesi cap={cap}>
+                    <Image
+                      source={AVATARLAR[igne.ad]}
+                      style={{
+                        position: 'absolute',
+                        left: (cap - foto) / 2,
+                        top: (cap - foto) / 2,
+                        width: foto,
+                        height: foto,
+                        borderRadius: foto / 2,
+                      }}
+                    />
+                  </IgneGovdesi>
+                </View>
 
-                {/* KISI SAYISI - ignenin sagindan cikan hap. Dairenin
+                {/* KISI SAYISI - ignenin sagindan cikan hap, dairenin
                     dikey ortasina hizali. */}
-                <View style={[stiller.sayiHapi, { left: cap * 0.86, top: cap * 0.26 }]}>
+                <View
+                  style={[
+                    stiller.sayiHapi,
+                    konum,
+                    { marginLeft: cap * 0.36, marginTop: -cap * 0.24 },
+                  ]}
+                >
                   <KisilerIkonu boyut={12} renk={renk.turuncu} />
                   <Text style={stiller.sayiYazi} numberOfLines={1}>
                     {t('karsilama.kisiSayisi', { sayi: igne.kisi })}
                   </Text>
                 </View>
 
-                {/* TUR - ignenin ucunun altinda. */}
-                <View style={[stiller.turHapi, { top: cap * 1.34, left: cap * 0.1 }]}>
+                {/* TUR - ignenin sivri ucunun altinda. */}
+                <View
+                  style={[
+                    stiller.turHapi,
+                    konum,
+                    { marginLeft: -cap * 0.4, marginTop: cap * 0.84 },
+                  ]}
+                >
                   <TurIkonu ad={igne.ad} boyut={12} renk={HARITA.hapYazi} />
                   <Text style={stiller.turYazi} numberOfLines={1}>
                     {t(`karsilama.${igne.turAnahtari}`)}

@@ -1,12 +1,21 @@
-"""Karsilama ekranindaki igne fotograflarini referans gorselden cikarir.
+"""Karsilama ekranindaki igne fotograflarini uretir.
 
-Kaynak: kullanicinin 2026-09-08'de gonderdigi tasarim referansi
-(`tasarim/karsilama-referans.png`). Ekrandaki dort ignenin ICINDEKI
-fotograf daireleri kirpilip saydam kenarli PNG olarak kaydediliyor.
+Kaynak: `tasarim/karsilama-avatar-kaynak.png` - dort portrelik 2x2 bir
+izgara (2048x1152). Her hucreden yuz kirpilip dairesel maskeyle saydam
+kenarli PNG olarak kaydediliyor.
+
+NEDEN KAYNAK DEGISTI (2026-09-08): avatarlar once kullanicinin
+gonderdigi tasarim referansindan (`tasarim/karsilama-referans.png`)
+kirpiliyordu. Referanstaki igneler kucuk oldugu icin kirpilabilen alan
+yalnizca 32-40 px'di; 128 px'e buyutuIunce gozle gorulur sekilde
+bulaniklasiyor ve tek kisilik ignelerin net fotograflarinin yaninda
+belli oluyordu (olculdu, gercek ekran boyutunda karsilastirildi).
+Kullanicinin karari: "Kaynak degil de kendin bir yuz profili de
+ekleyebilirsin yenisini". Yeni izgara bu proje icin uretildi, yani
+kaynak cozunurlugu artik bir kisit degil (hucre basina 1024x576).
 
 Neden PNG: igne SEKLI kodda SVG olarak ciziliyor (renk temadan gelsin,
-olcu ekrana gore degissin), ama icindeki fotograf kolaji cizilemez -
-referansin kendisinden gelmesi gerekiyor.
+olcu ekrana gore degissin), fotograf ise varlik olarak duruyor.
 
 Yeniden uretmek icin:
     python araclar/karsilama-avatar-uret.py
@@ -19,7 +28,7 @@ import os
 from PIL import Image, ImageDraw
 
 KAYNAK = os.path.join(os.path.dirname(__file__), '..', 'tasarim',
-                      'karsilama-referans.png')
+                      'karsilama-avatar-kaynak.png')
 HEDEF = os.path.join(os.path.dirname(__file__), '..', 'mobil', 'assets',
                      'karsilama')
 
@@ -33,14 +42,24 @@ HEDEF = os.path.join(os.path.dirname(__file__), '..', 'mobil', 'assets',
 # genis satiri yalnizca UST %60'lik bolgede aramak. `ic` degeri de
 # olculuyor: halka kalinligi en genis satirda soldan sayiliyor.
 IGNELER = {
-    'kafe': {'cx': 192, 'cy': 420, 'ic': 50},
-    'restoran': {'cx': 660, 'cy': 452, 'ic': 32},
-    'bar': {'cx': 122, 'cy': 672, 'ic': 34},
-    'etkinlik': {'cx': 646, 'cy': 742, 'ic': 46},
+    # Kaynak izgaranin dort hucresi; deger, yuzun MERKEZI ve kirpilacak
+    # karenin yari kenari (piksel). Merkezler hucre ortasindan biraz
+    # YUKARIDA: portrelerde yuz ust yariya oturuyor, hucre merkezinden
+    # kirpilinca cene kesiliyordu.
+    #
+    # Yari kenar 270: daha buyugu ust hucrelerde kadrajin DISINA tasip
+    # avatarin tepesinde bos bir serit birakiyor (olculdu), daha kucugu
+    # yuzu fazla yakin plana aliyor.
+    'kafe': {'cx': 540, 'cy': 280, 'ic': 270},
+    'restoran': {'cx': 1560, 'cy': 280, 'ic': 270},
+    'bar': {'cx': 555, 'cy': 850, 'ic': 270},
+    'etkinlik': {'cx': 1545, 'cy': 850, 'ic': 270},
 }
 
-# Cikti capi. Ekranda en buyuk igne ~72 pt; 3x yeterli.
-CAP = 216
+# Cikti capi. Ignelerin ekrandaki capi ~41 pt; 3x ekranda 123 px eder.
+# Kaynak artik bol (520 px), yani hedefi buyutmenin maliyeti yalnizca
+# dosya boyutu.
+CAP = 160
 
 
 def main():
@@ -51,6 +70,10 @@ def main():
         r = o['ic']
         kutu = (o['cx'] - r, o['cy'] - r, o['cx'] + r, o['cy'] + r)
         parca = kaynak.crop(kutu).resize((CAP, CAP), Image.LANCZOS)
+        # KESKINLESTIRME YOK: kaynak 520 px'ten 128'e KUCULTUluyor, yani
+        # buyutmenin yumusatmasi diye bir sorun kalmadi. Eski kaynakta
+        # (32-68 px) bir unsharp maske vardi; burada uygulansa
+        # gozluklerin ve sac kenarlarinin cevresinde hale yapardi.
 
         # Dairesel maske: igne icindeki fotograf daire seklinde duruyor.
         # Maske 4x cizilip kucultuluyor - dogrudan cizilen daire

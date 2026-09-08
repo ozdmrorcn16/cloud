@@ -104,11 +104,17 @@ function OzellikIkonu({ ad }: { ad: IkonAdi }) {
 }
 
 /**
- * Dort tanitim karti. Referansta ilk kart turuncu tonlu, digerleri
- * notr - goz once check-in'e gidiyor, cunku uygulamanin ilk adimi o.
+ * Dort tanitim karti - DORDU DE AYNI.
+ *
+ * Referansta ilk kart turuncu tonlu bir zemin tasiyordu ve niyet "goz
+ * once check-in'e gitsin" idi. Kullanicinin duzeltmesi (2026-09-08):
+ * "check-in yap yazisi da sanki uzerine basilmis gibi obuerlerinden
+ * koyu, onu da obuerleriyle ayni yap". Tonlu zemin bir VURGU degil
+ * BASILI HAL gibi okunuyordu - uygulamanin geri kalaninda dolgunun
+ * koyulasmasi tam olarak "su an basiliyor" demek.
  */
-const KARTLAR: { no: 1 | 2 | 3 | 4; ikon: IkonAdi; vurgulu?: boolean }[] = [
-  { no: 1, ikon: 'konum', vurgulu: true },
+const KARTLAR: { no: 1 | 2 | 3 | 4; ikon: IkonAdi }[] = [
+  { no: 1, ikon: 'konum' },
   { no: 2, ikon: 'kisiler' },
   { no: 3, ikon: 'sohbet' },
   { no: 4, ikon: 'yogunluk' },
@@ -150,8 +156,8 @@ export default function KarsilamaEkrani() {
       </View>
 
       <View style={stiller.kartlar}>
-        {KARTLAR.map(({ no, ikon, vurgulu }) => (
-          <View key={no} style={[stiller.kart, vurgulu && stiller.kartVurgulu]}>
+        {KARTLAR.map(({ no, ikon }) => (
+          <View key={no} style={stiller.kart}>
             <OzellikIkonu ad={ikon} />
             <Text style={stiller.kartBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
             <Text style={stiller.kartAciklama}>{t(`karsilama.adim${no}Aciklama`)}</Text>
@@ -242,12 +248,6 @@ const stilleriYap = (renk: Renk) =>
       borderColor: renk.cizgi,
       padding: bosluk.l,
       gap: bosluk.xs,
-    },
-    // Ilk kart vurgulu: turuncu tonlu zemin ve kenarlik. Dolgu DEGIL -
-    // ekrandaki tek dolu turuncu birincil butondur.
-    kartVurgulu: {
-      backgroundColor: renk.turuncuZemin,
-      borderColor: '#F7DCC4',
     },
     kartBaslik: {
       fontFamily: yazi.govdeKalin,

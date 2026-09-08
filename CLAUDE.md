@@ -663,17 +663,30 @@ dışarıda".
    O kural GERCEK veriyle calisan ekranlar icin; buradaki yuzler
    referans gorselden gelen ornek gorsellerdir.
 
-**AVATARLAR REFERANSTAN CIKARILDI.** `araclar/karsilama-avatar-uret.py`
-dort ignenin ICINDEKI fotograf dairesini kirpip saydam PNG uretiyor
-(`mobil/assets/karsilama/*.png`). Igne SEKLI kodda SVG - renk temadan
-geliyor, olcu ekrana gore degisiyor; yalnizca fotograf kolaji
-referanstan.
+**AVATARLAR BU PROJE ICIN URETILDI.** Kaynak
+`tasarim/karsilama-avatar-kaynak.png`: dort portrelik 2x2 bir izgara
+(2048x1152, ElevenLabs / bytedance-seedream-5-pro ile uretildi, ~16
+sent). `araclar/karsilama-avatar-uret.py` her hucreden yuzu kirpip
+dairesel maskeyle 160 px PNG yaziyor. Igne SEKLI kodda SVG - renk
+temadan geliyor, olcu ekrana gore degisiyor.
 
-**OLCUM TUZAGI (yasandi):** ignenin turuncu maskesinde "en genis satir"
-dairenin capi SANILDI, ama bazi ignelerde sivri uc daha genis olcuIuyor
-ve daire 12 px yukari kayiyordu - kirpilan parcada turuncu cerceve
-gorunuyordu. Dogrusu en genis satiri yalnizca UST %60'lik bolgede
-aramak.
+**ONCE REFERANSTAN KIRPILIYORDU VE YETMEDI.** Referanstaki igneler
+kucuk oldugu icin kirpilabilen alan 32-40 px'di; buyutuIunce gozle
+gorulur sekilde bulaniklasiyor ve tek kisilik ignelerin net
+fotograflarinin yaninda belli oluyordu. Uc deneme de olcuIerek elendi:
+arkadaki yuz (34 px), ondeki yuz + keskinlestirme (40 px), igne capini
+kucultme. Kullanicinin karari bunun uzerine geldi: "Kaynak degil de
+kendin bir yuz profili de ekleyebilirsin yenisini". Yeni kaynakta
+hucre basina 1024x576 var, yani cozunurluk artik kisit degil.
+
+**Yan fayda: LISANS BORCU KAPANDI.** Sahnedeki yuzler artik referans
+gorselden gelmiyor, bu proje icin uretildi.
+
+**OLCUM TUZAGI (referanstan kirparken yasandi, kayda geciyor):**
+ignenin turuncu maskesinde "en genis satir" dairenin capi SANILDI, ama
+bazi ignelerde sivri uc daha genis olcuIuyor ve daire 12 px yukari
+kayiyordu - kirpilan parcada turuncu cerceve gorunuyordu. Dogrusu en
+genis satiri yalnizca UST %60'lik bolgede aramak.
 
 **HARITA VERISI GENISLETILDI.** `araclar/karsilama-yollari-uret.py`
 artik yol agina ek olarak YESIL ALANLARI ve suyu da cekiyor; cikti
@@ -706,12 +719,27 @@ baslasa ilk kare bos bir harita cizer, olcum gelince igneler birden
 belirirdi. Ayrica testte `onLayout` hic tetiklenmedigi icin igneler HIC
 gorunmuyordu - bu, testin yakaladigi gercek bir kusurdu.
 
-**ACIK BORC - magaza oncesi bakilmali:** sahnedeki yuzler referans
-gorselden geliyor ve kaynagi/lisansi bilinmiyor (gorseli kullanici
-uretti; yuzler AI uretimi gibi duruyor). Depo public. Magaza
-basvurusundan once ya lisansi netlesmis gorseller kullanilmali ya da
-yuzler kendi uretecegimiz cizimlerle degistirilmeli. Ayni sekilde
-"Etkinlik" turu uygulamada YOK - sahnedeki etiket bir ornek.
+**ACIK BORC:** "Etkinlik" turu uygulamada YOK - sahnedeki etiket bir
+ornek ve olmayan bir ozelligi ima ediyor. Magaza oncesi ya gercek bir
+tur ile degistirilmeli ya da o ozellik eklenmeli.
+
+### AYNI EKRAN, KULLANICININ UC DUZELTMESI - 2026-09-08
+
+Kullanici ilk gecuisi telefonda gorup uc sey istedi: "Ayni yerde 3
+profil gorunenleri teke duesuer tek resim olsun, bos check-in
+ignelerini de kaldir, check-in yap yazisi da sanki uzerine basilmis
+gibi obuerlerinden koyu, onu da obuerleriyle ayni yap."
+
+| Istek | Ne yapildi |
+|---|---|
+| Tek profil | Kafe ve Etkinlik ignelerindeki UC yuzluk kolaj kalkti; dort ignede de tek yuz. Caplar da esitlendi (%10,5) - buyuk daire kolaj icindi |
+| Bos igneler | Cevreye serpistirilmis yedi kucuk igne SILINDI. Hicbir sey anlatmiyorlardi: sahnenin soyledigi "su mekanda su kadar kisi var", bos igne ne mekani ne kisiyi gosteriyordu |
+| Kart vurgusu | Ilk karttaki turuncu tonlu zemin kalkti, dordu de ayni. Vurgu degil BASILI HAL gibi okunuyordu - uygulamanin geri kalaninda dolgunun koyulasmasi tam olarak "su an basiliyor" demek |
+
+**BONUS DUZELTME:** ayni ekran goruntusunde "Restoran" etiketi
+"Res..." diye kirpiliyordu. Sebep: haplar ignenin COCUGUYDU ve metin
+sarmasi ignenin genisligiyle (~40 px) sinirli kaliyordu. Haplar
+sahnenin dogrudan cocugu yapildi; artik ihtiyaci kadar genisliyorlar.
 
 Yeni test: `__tests__/ekranlar/karsilama.test.tsx` (6 test) - vaat
 cumlesi, dort kart, sahnedeki tur/sayi/serit, iki eylem ve ODbL atfi.
