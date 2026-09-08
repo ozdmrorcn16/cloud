@@ -729,6 +729,32 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### PROFIL SAYAC ETIKETLERI: SILIKTEN OKUNURA - 2026-09-08
+
+Kullanicinin bildirdigi kusur: "Koyu modda ani fotograf arkadaslar
+yazisi silik kalmis daha belirgin bir hale getirmeliyiz."
+
+**OLCULDU, gozle karar verilmedi.** Etiketler `metinSoluk`
+kullaniyordu; o jetonun sayfa zeminine karsi orani:
+
+    acik mod  #A39B93 / #FFFFFF  ->  2,74:1
+    koyu mod  #7C736A / #121110  ->  4,06:1
+
+Ikisi de metin icin gereken 4,5 esiginin ALTINDA - yani kusur yalnizca
+koyu modda degildi, acik modda daha da kotuydu ve fark edilmemisti.
+
+Yeni degerler: secili olmayan etiket `metinIkincil` (5,63 / 7,96),
+secili olan `metin` (18,48 / 16,63). Secim farki korunuyor ama artik
+"soluk ve okunmaz" ile degil "koyu ve daha koyu" ile anlatiliyor.
+
+Kontrast paketi bu jetonu ZATEN kilitliyordu
+(`metinIkincil` >= 4,5, her yuzeyde); yalnizca yorumu guncellendi ki
+etiketlerin de o iddiaya bagli oldugu gorunsun.
+
+**"Arkadaşlarım" -> "Arkadaş"** (ayni mesajdaki ikinci istek). Sayacin
+yanindaki etiket artik digerleriyle ayni bicimde: tekil ve sahipsiz
+(Anı / Fotoğraf / Arkadaş).
+
 ### PROFIL ZEMINI TAMAMEN BEYAZ - 2026-09-08
 
 Kullanicinin istegi: "Profil sayfasinin arka planini tamamen beyaz

@@ -421,7 +421,7 @@ export default {
     fotografKaldirOnay: 'Fotoğrafın kaldırılsın mı?',
     kapat: 'Kapat',
     aniSayisi: 'Anı',
-    bagSayisi: 'Arkadaşlarım',
+    bagSayisi: 'Arkadaş',
     canliEtiket: 'Şu an buradasın',
     ayril: 'Ayrıl',
     canliSil: 'Sil',

@@ -167,7 +167,9 @@ describe.each([
     })
 
     it('ikincil metin okunuyor', () => {
-      // Yer tutucular ve harita atfi da bu jetonu kullaniyor.
+      // Yer tutucular, harita atfi ve profildeki sayac etiketleri de
+      // bu jetonu kullaniyor - sonuncusu 2026-09-08'de `metinSoluk`'tan
+      // buraya tasindi (o jeton acik modda 2,74:1 veriyordu).
       expect(oran(renk.metinIkincil, yuzey)).toBeGreaterThanOrEqual(4.5)
     })
 

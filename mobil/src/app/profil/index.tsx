@@ -1200,13 +1200,21 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     letterSpacing: -0.4,
   },
   sayacSayisiSecili: { color: renk.turuncuYazi },
+  // ETIKET RENGI YUKSELTILDI (kullanicinin bildirdigi kusur 2026-09-08:
+  // "koyu modda ani fotograf arkadaslar yazisi silik kalmis").
+  // OLCULDU: `metinSoluk` zemine karsi acik modda 2,74:1, koyu modda
+  // 4,06:1 - ikisi de metin icin gereken 4,5 esiginin ALTINDA.
+  // `metinIkincil` 5,63 ve 7,96 veriyor.
   sayacEtiketi: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
-    color: renk.metinSoluk,
+    color: renk.metinIkincil,
     marginTop: 1,
   },
-  sayacEtiketiSecili: { fontFamily: yazi.govdeKalin, color: renk.metinIkincil },
+  // Secili olan bir kademe daha belirgin (18,48 / 16,63): secim farki
+  // korunuyor ama artik "soluk ve okunmaz" ile degil "koyu ve daha
+  // koyu" ile anlatiliyor.
+  sayacEtiketiSecili: { fontFamily: yazi.govdeKalin, color: renk.metin },
 
   // Arkadas satiri: bas harfli avatar + ad + kullanici adi.
   kisiSatiri: {

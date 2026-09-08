@@ -111,7 +111,7 @@ describe('ProfilEkrani', () => {
     // bolumunun "En sık" alt sekmesinde duruyor.
     expect(screen.queryByText('Yer')).toBeNull()
     expect(screen.getByText('Fotoğraf')).toBeTruthy()
-    expect(screen.getByText('Arkadaşlarım')).toBeTruthy()
+    expect(screen.getByText('Arkadaş')).toBeTruthy()
   })
 
   it('Yerler sekmesi en cok gidilen mekani kac kez gidildigiyle listeler', async () => {
