@@ -745,18 +745,30 @@ kalkiyordu - o kartlar 2026-09-05'ten beri sayac DEGIL BOLUM SECICI.
 Secili olanin sayisi turuncu, etiketi koyu ve kalin; otekiler notre
 duesuyor. Renk tek basina anlam tasimasin diye AGIRLIK da degisiyor.
 
-**SEKME GOSTERGESI KAYIYOR.** Aktif sekmenin `borderBottom`u kalkti;
-yerine cubugun cocugu olan mutlak konumlu bir `Animated.View` geldi.
-Gosterge sekmeye baglansaydi her sekmenin kendi cizgisi olurdu ve kayma
-diye bir sey olmazdi.
+**SEKME ARTIK HAP SEGMENT.** Ilk gecuiste alt cizgi kayan bir seride
+cevrilmisti; kullanici netlestirdi: "hap sekilde bastan sona icinde
+kaymali sutunlu butonlu". Simdi kapsayici bastan sona uzanan turuncu
+tonlu bir hap, icinde beyaz + turuncu kenarlikli bir BUTON kayiyor.
+
+**DIL KESFET EKRANINDAN ALINDI** (oradaki Harita/Liste segmenti):
+kapsayici `turuncuZemin`, secili buton `yuzey` + 1.2 turuncu kenarlik,
+secili yazi `turuncuYazi`, oteki `metinSoluk`. Ayni isi yapan iki
+bilesenin iki farkli gorunusu olmasin.
+
+Kayan dolgu SEKMENIN DEGIL kapsayicinin cocugu ve agacta EN ALTTA:
+sekmeye baglansaydi her sekmenin kendi dolgusu olur, kayma diye bir sey
+olmazdi; butonlardan sonra cizilseydi yazilari orterdi. Dikeyde
+`top`/`bottom` ile geriliyor - sabit yukseklik yazilsaydi punto
+degisince hap sekmeye oturmazdi.
 
 Yay SERT ve SONMUS (`speed: 18, bounciness: 0`): iki sekme bitisik
 oldugu icin tasip geri donen bir hareket "yanlis sekme secildi" gibi
 okunuyor.
 
-**CANLI OLCULDU** (puppeteer, 40 ms araliklarla): gosterge
-x=16'dan x=195'e **11 ara konumdan gecerek** kayiyor ve tasma yapmadan
-duruyor. Genislik 179 = (390 - 2x16) / 2.
+**CANLI OLCULDU** (puppeteer, 40 ms araliklarla): kayan buton x=19'dan
+x=195'e **10 ara konumdan gecerek** gidiyor ve tasma yapmadan duruyor.
+Genislik 176 = (390 - 2x16 - 2x3) / 2, yani sayfa payi ve hapin ic
+dolgusu duesuelmues hali.
 
 **ORTAK KANCA: `src/tasarim/hareket.ts`.** "Hareketi azalt" ayarini
 okuyan mantik karsilama sahnesinde zaten vardi; ikinci kez yazmak

@@ -57,6 +57,8 @@ import { useHareket } from '../../tasarim/hareket'
  * butun paylasimlar profilde durur, liste hep asagi kaydirilabilir.
  */
 const ILK_CIZIM_ADEDI = 10
+/** Sekme hapinin ic dolgusu; kayan butonun sinirlarini da bu belirliyor. */
+const HAP_DOLGUSU = 3
 /** Her kaydirmada pencere bu kadar buyur. */
 const CIZIM_ADIMI = 10
 
@@ -256,7 +258,7 @@ export default function ProfilEkrani() {
   // belirirdi. Ayrica testte `onLayout` tetiklenmedigi icin gosterge
   // HIC gorunmuyordu - ayni tuzak karsilama sahnesinde de yasandi.
   const [sekmeGenisligi, setSekmeGenisligi] = useState(
-    () => (Dimensions.get('window').width - bosluk.sayfa * 2) / 2
+    () => (Dimensions.get('window').width - bosluk.sayfa * 2 - HAP_DOLGUSU * 2) / 2
   )
   const gostergeKonumu = useRef(new Animated.Value(0)).current
   const hareket = useHareket()
@@ -708,8 +710,30 @@ export default function ProfilEkrani() {
             {(sekme === 'anilar' || sekme === 'yerler') && (
               <View
                 style={stiller.sekmeler}
-                onLayout={(o) => setSekmeGenisligi(o.nativeEvent.layout.width / 2)}
+                onLayout={(o) =>
+                  setSekmeGenisligi((o.nativeEvent.layout.width - HAP_DOLGUSU * 2) / 2)
+                }
               >
+                {/* KAYAN DOLGU en altta: butonlar onun USTUNDE duruyor,
+                    yoksa dolgu yazilari ortuyor. */}
+                <Animated.View
+                  testID="sekme-gostergesi"
+                  pointerEvents="none"
+                  style={[
+                    stiller.sekmeGostergesi,
+                    {
+                      width: sekmeGenisligi,
+                      transform: [
+                        {
+                          translateX: gostergeKonumu.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, sekmeGenisligi],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
                 {(['anilar', 'yerler'] as const).map((s) => (
                   <Pressable
                     key={s}
@@ -723,26 +747,6 @@ export default function ProfilEkrani() {
                     </Text>
                   </Pressable>
                 ))}
-                {sekmeGenisligi > 0 && (
-                  <Animated.View
-                    testID="sekme-gostergesi"
-                    pointerEvents="none"
-                    style={[
-                      stiller.sekmeGostergesi,
-                      {
-                        width: sekmeGenisligi,
-                        transform: [
-                          {
-                            translateX: gostergeKonumu.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, sekmeGenisligi],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  />
-                )}
               </View>
             )}
 
@@ -1264,24 +1268,37 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bandDugmeYaziDolu: { color: '#FFFFFF' },
 
   // Sekmeler: alt cizgi secili olani gosteriyor.
+  // HAP SEKLINDE SEGMENT (kullanicinin istegi 2026-09-08: "hap sekilde
+  // bastan sona icinde kaymali sutunlu butonlu"). Alt cizgi kalkti.
+  //
+  // Dil KESFET EKRANINDAKI Harita/Liste segmentiyle ayni: turuncu tonlu
+  // kapsayici, secili buton beyaz + turuncu kenarlik, secili yazi
+  // turuncu. Ayni isi yapan iki bilesenin iki farkli gorunusu olmasin.
   sekmeler: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
+    alignSelf: 'stretch',
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.hap,
+    padding: HAP_DOLGUSU,
     marginTop: bosluk.l,
   },
-  sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.m },
-  // Gosterge SEKMENIN DEGIL cubugun cocugu: sekmeye baglansaydi her
-  // sekmenin kendi cizgisi olur ve kayma diye bir sey olmazdi.
+  sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s + 2 },
+  // Gosterge SEKMENIN DEGIL kapsayicinin cocugu: sekmeye baglansaydi
+  // her sekmenin kendi dolgusu olur ve kayma diye bir sey olmazdi.
+  // Dikeyde `top`/`bottom` ile geriliyor - sabit bir yukseklik
+  // yazilsaydi yazi puntosu degisince hap sekmeye oturmazdi.
   sekmeGostergesi: {
     position: 'absolute',
-    left: 0,
-    bottom: -1,
-    height: 2,
-    backgroundColor: renk.metin,
+    left: HAP_DOLGUSU,
+    top: HAP_DOLGUSU,
+    bottom: HAP_DOLGUSU,
+    borderRadius: yuvarlak.hap,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1.2,
+    borderColor: renk.turuncu,
   },
   sekmeYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
-  sekmeYaziAktif: { color: renk.metin },
+  sekmeYaziAktif: { color: renk.turuncuYazi },
 
   // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
   yerSatiri: {
