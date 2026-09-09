@@ -1293,6 +1293,33 @@ testi mesafeyi mekana gore donduren bir govde kuruyor; `beforeEach`
 icinde varsayilan geri konmazsa sonraki testlerde her mekan 800 m
 cikiyor ve igneler sessizce kayboluyor.
 
+**HARITA ETIKETLERI BEYAZ VE KALIN** (kullanicinin istegi, ayni gun):
+"haritadaki konum isimlerini belirgin, anlasilir bir beyaz renk yap,
+biraz kalinlastirabilirsin de."
+
+**GOLGE DE TERS CEVRILDI ve bu sart:** onceden yazi KOYU, golge BEYAZDI
+(`renk.zemin + 'F2'`). Yalnizca yaziyi beyaz yapmak adi acik harita
+zemininde tamamen kaybederdi - golge her zaman yazinin TERSI olmali.
+Simdi yazi `#FFFFFF`, golge `rgba(0,0,0,0.85)` + 1 px kayma.
+
+**TEMADAN BAGIMSIZ:** harita zemini iki modda da acik (Apple Haritalar
+kendi paletini kullaniyor), dolayisiyla `renk.metin` gibi temayla donen
+bir jeton koyu modda beyaz olur ve koyu golgesiyle birlikte okunmaz
+hale gelirdi. Ayni gerekce karsilama sahnesindeki harita haplarinda da
+var. Punto 9,5 -> 11, kutu 84 -> 96 px (buyuyen punto ayni kutuda daha
+erken kirpilirdi).
+
+**YORUMDA AVATAR DA PROFILE GIDIYOR** (kullanicinin istegi, ayni gun:
+"yorumda profil resmine basincada o kisinin profiline gitsin").
+Onceden yalnizca AD basilabilirdi; fotograf uygulamanin geri kalaninda
+(akis karti, mekan sayfasi) zaten profile goturuyor ve burada
+gotermemesi tutarsizdi. Silinmis kullanicida basilabilir DEGIL -
+gidilecek profil yok, ayni kosul adda da var.
+
+Erisilebilirlik etiketi SARMALAYICIYA tasindi ("<ad> profilini gör");
+ic ice iki erisilebilirlik dugumu ekran okuyucuda tekrar uretirdi.
+Resmin kendisi artik `testID="yorum-avatari"` ile bulunuyor.
+
 **4. HER IGNEDE AD YAZIYOR.** Etiket elemesi TAMAMEN kaldirildi ve
 `lib/harita-etiket.ts` silindi. Kullanici bunu UC KEZ bildirmek zorunda
 kaldi ("İsimleri yazmıyor", "İsimsiz iğneler var hala", "İğneler bir

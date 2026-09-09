@@ -472,7 +472,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
   // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  igneEtiket: { maxWidth: 84 },
+  // Punto 9,5'ten 11'e cikinca ayni kutuda daha az harf siginiyor;
+  // kirpilma artmasin diye kutu da genisledi.
+  igneEtiket: { maxWidth: 96 },
   // MEKAN ADI TEMAYA BAGLI (kullanicinin bildirdigi kusur 2026-09-08:
   // "koyu modda haritadaki gorunen yer isimleri beyaz renk olsun").
   // Ad sabit koyu bir tondaydi; harita da koyu moda gecince yazi
@@ -481,13 +483,38 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Golge de temayla donuyor: yazinin TERSI renkte olmali, yoksa
   // beyaz yazinin arkasindaki beyaz golge onu bulaniklastirir.
   // `zemin + 'F2'` sekiz haneli hex, yani jetonun %95 opak hali.
+  /**
+   * MEKAN ADI: BEYAZ VE KALIN, KOYU GOLGELI.
+   *
+   * Kullanicinin istegi (2026-09-09): "haritadaki konum isimlerini
+   * belirgin, anlasilir bir beyaz renk yap, biraz kalinlastirabilirsin
+   * de."
+   *
+   * ROLLER TERS CEVRILDI ve bu sart: onceden yazi KOYU, golge BEYAZDI
+   * (`renk.zemin + 'F2'`). Yaziyi beyaz yapip golgeyi oldugu gibi
+   * birakmak adi acik harita zemininde tamamen kaybederdi - golge her
+   * zaman yazinin TERSI olmali. Simdi golge koyu ve yariciapi genis,
+   * yani beyaz yazi hem acik hem koyu harita dokusunun uzerinde
+   * okunuyor.
+   *
+   * TEMADAN BAGIMSIZ: harita zemini iki modda da acik (Apple Haritalar
+   * kendi paletini kullaniyor), dolayisiyla `renk.metin` gibi temayla
+   * donen bir jeton koyu modda beyaz olur ve golgesiyle birlikte
+   * okunmaz hale gelirdi. Ayni gerekce karsilama sahnesindeki harita
+   * haplarinda da var.
+   *
+   * Punto 9,5 -> 11 ve satir yuksekligi buyudu: "biraz
+   * kalinlastirabilirsin" istegi agirligi zaten en kalin jetona
+   * (`govdeKalin`) baglıyor, geri kalan belirginlik puntodan geliyor.
+   */
   igneAd: {
     fontFamily: yazi.govdeKalin,
-    fontSize: 9.5,
-    lineHeight: 12,
-    color: renk.metin,
-    textShadowColor: renk.zemin + 'F2',
-    textShadowRadius: 3,
+    fontSize: 11,
+    lineHeight: 14,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   sakinIgne: {
     width: 12,

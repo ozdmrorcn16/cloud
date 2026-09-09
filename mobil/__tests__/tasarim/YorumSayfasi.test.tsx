@@ -239,6 +239,42 @@ describe('YorumSayfasi', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kisi-2')
   })
 
+  /*
+   * AVATAR DA PROFILE GIDIYOR (kullanicinin istegi 2026-09-09).
+   * Onceden yalnizca ad basilabilirdi; fotograf uygulamanin geri
+   * kalaninda zaten profile goturuyor ve burada gotermemesi
+   * tutarsizdi.
+   */
+  it('profil resmine dokununca da onun profiline gidiyor', async () => {
+    ;(yorumlariGetir as jest.Mock).mockResolvedValue([yorum()])
+
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+    await screen.findByText('deniz.k')
+
+    await fireEvent.press(screen.getByLabelText('deniz.k profilini gör'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kisi-2')
+  })
+
+  /*
+   * SILINMIS KULLANICIDA basilabilir DEGIL - gidilecek bir profil yok.
+   * Ayni kosul ADDA da var; ikisi ayrilirsa avatar bos bir sayfaya
+   * goturur.
+   */
+  it('silinmis kullanicinin avatari profile GITMIYOR', async () => {
+    ;(yorumlariGetir as jest.Mock).mockResolvedValue([
+      { ...yorum(), kullaniciId: null, kullaniciAdi: null },
+    ])
+
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+    await screen.findByText('Buranın kahvesi gerçekten iyi mi?')
+
+    mockRouterPush.mockClear()
+    await fireEvent.press(screen.getByText('?'))
+
+    expect(mockRouterPush).not.toHaveBeenCalled()
+  })
+
   it('yorumlar yuklenemezse hata gosteriyor', async () => {
     ;(yorumlariGetir as jest.Mock).mockRejectedValue(new Error('ağ hatası'))
 
@@ -262,7 +298,10 @@ describe('YorumSayfasi avatarlari', () => {
 
     await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
 
-    const resim = await screen.findByLabelText('deniz.k')
+    // Erisilebilirlik etiketi artik SARMALAYICI Pressable'da
+    // ("deniz.k profilini gör"): avatar da profile gidiyor ve ic ice
+    // iki erisilebilirlik dugumu ekran okuyucuda tekrar uretirdi.
+    const resim = await screen.findByTestId('yorum-avatari')
     expect(resim.props.source).toEqual({ uri: 'https://ornek/deniz.jpg' })
     expect(avatarlariGetir).toHaveBeenCalledWith(['kisi-2'])
   })

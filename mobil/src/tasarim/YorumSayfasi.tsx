@@ -271,20 +271,40 @@ export function YorumSayfasi({
               keyboardShouldPersistTaps="handled"
               renderItem={({ item }) => (
                 <View style={stiller.satir}>
-                  {item.kullaniciId && avatarlar[item.kullaniciId] ? (
-                    <Image
-                      source={{ uri: avatarlar[item.kullaniciId] as string }}
-                      style={stiller.avatar}
-                      accessibilityRole="image"
-                      accessibilityLabel={item.kullaniciAdi ?? undefined}
-                    />
-                  ) : (
-                    <View style={stiller.avatar}>
-                      <Text style={stiller.basHarf}>
-                        {(item.kullaniciAdi ?? '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
-                      </Text>
-                    </View>
-                  )}
+                  {/* AVATAR DA PROFILE GIDIYOR (kullanicinin istegi
+                      2026-09-09: "yorumda profil resmine basincada o
+                      kisinin profiline gitsin"). Onceden yalnizca AD
+                      basilabilirdi; fotograf uygulamanin geri kalaninda
+                      (akis karti, mekan sayfasi) zaten profile
+                      goturuyor ve burada gotermemesi tutarsizdi.
+
+                      Silinmis kullanicida basilabilir DEGIL - gidilecek
+                      bir profil yok. Ayni kosul adda da var. */}
+                  <Pressable
+                    onPress={() =>
+                      item.kullaniciId && router.push(`/kullanici/${item.kullaniciId}` as never)
+                    }
+                    disabled={!item.kullaniciId}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      item.kullaniciAdi ? `${item.kullaniciAdi} profilini gör` : undefined
+                    }
+                    hitSlop={6}
+                  >
+                    {item.kullaniciId && avatarlar[item.kullaniciId] ? (
+                      <Image
+                        source={{ uri: avatarlar[item.kullaniciId] as string }}
+                        style={stiller.avatar}
+                        testID="yorum-avatari"
+                      />
+                    ) : (
+                      <View style={stiller.avatar}>
+                        <Text style={stiller.basHarf}>
+                          {(item.kullaniciAdi ?? '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
 
                   <View style={stiller.govde}>
                     <View style={stiller.satirUst}>
