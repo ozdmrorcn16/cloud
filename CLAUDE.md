@@ -747,6 +747,27 @@ Performans: her igne `tracksViewChanges={false}` ile ciziliyor - ozel
 gorunumlu bir igne bu bayrak olmadan her karede yeniden ciziliyor ve
 yuz igne haritayi takiyor.
 
+**ETIKET ELEMESI SONRA BIR KEZ DAHA DEGISTI** (kullanicinin
+bildirdigi hata: "isimleri yazmiyor"). Kural METRE cinsindendi ve
+esigi `max(50 m, cerceve * %22)` idi; birbirine yakin bir kumede on
+iki mekandan yalnizca IKISININ adi yaziliyordu - ekran goruntusuyle
+goruIdue.
+
+**DOGRU OLCU METRE DEGIL PIKSEL:** cakisan sey etiket KUTUSU. Iki
+etiket yatayda kutu genisligi (130 px) ya da dikeyde kutu yuksekligi
+(26 px) kadar ayriysa ust uste binmiyor - ayrik eksen testi. Boylece
+dikeyde siralanan mekanlarin HEPSININ adi yazilabiliyor; metre esigi
+onlari da eliyordu. Haritanin gercek piksel olcusu `onLayout` ile
+okunuyor, cunku derece->piksel donusumu onsuz yapilamaz.
+
+**KURAL ARTIK SAF BIR FONKSIYON VE TESTLI:**
+`lib/harita-etiket.ts` + `lib/harita-etiket.test.ts` (7 test). Bunu
+ayirmanin sebebi kayda deger: ayni kural AYNI GUN IKI KEZ kirildi ve
+ikisini de KULLANICI bildirdi - bilesenin icinde durdugu surece
+hicbir sey onu olcmuyordu. Testler iki hatayi da kilitliyor (dikeyde
+ayrik olanlarin hepsi etiketleniyor; ust uste binenlerden yalnizca
+biri).
+
 **WEB RADARI DA AYNI KURALA GECTI** (ayni gun): orada da 12'lik sayi
 siniri vardi. Piksel araligi kurali radarda DURUYOR - orada cizilen
 sey ad tasimayan kucuk bir daire ve tam ust uste binen iki nokta

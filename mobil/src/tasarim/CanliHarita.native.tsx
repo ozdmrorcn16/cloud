@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Platform, View, Text, StyleSheet } from 'react-native'
 import MapView, { Marker, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
@@ -7,6 +7,7 @@ import { yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { mekanDurumu, type MekanDurumu } from '../../lib/mekan'
 import type { HaritaMekani } from './CanliHarita'
+import { etiketlenecekler } from '../../lib/harita-etiket'
 
 export type { HaritaMekani } from './CanliHarita'
 
@@ -90,8 +91,6 @@ const EN_FAZLA_KAPSAMA_METRE = 25000
  * ust uste bindirmiyor: birbirine yakin adaylar zaten eleniyor, sinir
  * yalnizca "kac tanesi sigabilir" sorusunun tavani.
  */
-const EN_FAZLA_ETIKET = 9
-
 const KAYDIRMA_SURESI_MS = 350
 
 /**
@@ -194,6 +193,8 @@ export function CanliHarita({
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const haritaRef = useRef<MapView>(null)
+  /** Haritanin gercek piksel olcusu; etiket elemesi buna dayaniyor. */
+  const [olcu, setOlcu] = useState({ en: 0, boy: yukseklik })
 
   /**
    * Once kalabaliklar, sonra en yakinlar. Siralama ETIKET secimini
@@ -265,49 +266,45 @@ export function CanliHarita({
    * ekran goruntusu: "Gentaş Aspendos Evleri" ile "Hadim erikli
    * subesi").
    *
-   * Ikisi birden gerekiyordu: en cok DOKUZ etiket (390 px'lik bir
-   * haritada fazlasi sigmiyor) ve aralarinda EN AZ BIR MESAFE.
+   * ELEME PIKSEL GEOMETRISIYLE (2026-09-09, kullanicinin bildirdigi
+   * hata: "isimleri yazmiyor"). Onceki kural METRE cinsindendi ve
+   * yakin kumelerde neredeyse her adi eliyordu: esik `max(50 m, ...)`
+   * oldugu icin 100 m'lik bir alana sigan on iki mekandan yalnizca
+   * ikisinin adi yaziliyordu (ekran goruntusuyle goruIdue).
    *
-   * Mesafe kurali kullanicinin ekran goruntusunden cikti: bes igne
-   * secilmisti ama ikisi birbirine 40 m uzaktaydi ve etiketleri ust
-   * uste biniyordu ("Gentaş Aspendos Evleri" ile "Hadim erikli
-   * subesi" ic ice gecmisti). Igne KENDISI kucuk, cakisan sey ADI.
-   *
-   * Esik cerceveye ORANLI: yakinlastirilmis bir haritada 60 m bile
-   * ayri gorunur, genis bir cercevede 200 m bile bitisik. `gosterim`
-   * cerceve yaricapi oldugu icin onun %22'si iyi bir yaklasim.
+   * Dogru olcu METRE DEGIL PIKSEL: cakisan sey etiket KUTUSU. Iki
+   * etiket ya yatayda kutu genisligi kadar ya da dikeyde kutu
+   * yuksekligi kadar ayriysa ust uste binmiyor - ayrik eksen testi.
+   * Bu, dikeyde siralanan mekanlarin HEPSININ adini yazabiliyor;
+   * metre esigi onlari da eliyordu.
    */
-  const etiketliKimlikler = useMemo(() => {
-    if (!merkez) return new Set<string>()
-
-    const gosterim = bolge
-      ? (bolge.latitudeDelta * 110540) / 2
-      : EN_FAZLA_GOSTERIM_METRE
-    // ARALIK ESIGINE UST SINIR: cerceve kullanici ignesi yuzunden
-    // kilometrelerce acilabiliyor (2026-09-07) ve oransal esik o zaman
-    // saçma buyuyordu - 25 km'lik bir cercevede 5,5 km'lik aralik
-    // neredeyse butun igneleri eler. 300 m, etiketlerin ust uste
-    // binmedigi en dar degerin epey ustunde.
-    const enAzAralik = Math.min(300, Math.max(50, gosterim * 0.22))
-
-    const sirali = igneler.slice().sort((a, b) => {
-      const oncelik = (m: HaritaMekani) =>
-        m.kisiSayisi > 0 ? 2 : durumu(m) === 'populer' ? 1 : 0
-      return oncelik(b) - oncelik(a)
-    })
-
-    const secilen: HaritaMekani[] = []
-    for (const aday of sirali) {
-      if (secilen.length >= EN_FAZLA_ETIKET) break
-      const cakisiyor = secilen.some(
-        (s) =>
-          mesafeMetre(s.konum!.lat, s.konum!.lng, aday.konum!.lat, aday.konum!.lng) <
-          enAzAralik
-      )
-      if (!cakisiyor) secilen.push(aday)
-    }
-    return new Set(secilen.map((m) => m.id))
-  }, [igneler, bolge, merkez])
+  /**
+   * Adi yazilacak igneler. Kural `lib/harita-etiket.ts` icinde ve
+   * TESTLI: iki kez kirildi (once igneleri de eledi, sonra yakin
+   * kumelerde neredeyse butun adlari eledi) ve ikisini de kullanici
+   * bildirdi cunku hicbir sey olcmuyordu.
+   */
+  const etiketliKimlikler = useMemo(
+    () =>
+      etiketlenecekler(
+        igneler.map((m) => ({
+          id: m.id,
+          konum: m.konum ?? null,
+          kisiSayisi: m.kisiSayisi,
+          populer: durumu(m) === 'populer',
+        })),
+        merkez && bolge
+          ? {
+              merkez,
+              latitudeDelta: bolge.latitudeDelta,
+              longitudeDelta: bolge.longitudeDelta,
+              en: olcu.en,
+              boy: olcu.boy,
+            }
+          : null
+      ),
+    [igneler, bolge, merkez, olcu]
+  )
 
   // Merkez ya da mekanlar degisince harita yeni cerceveye kayar. Ilk
   // cizim initialRegion ile; bu efekt ilk cizimde de calisir ama
@@ -322,7 +319,15 @@ export function CanliHarita({
   }
 
   return (
-    <View style={[stiller.kok, { height: yukseklik }]} accessibilityLabel="Çevrendeki mekanlar">
+    <View
+      style={[stiller.kok, { height: yukseklik }]}
+      accessibilityLabel="Çevrendeki mekanlar"
+      // Etiket elemesi PIKSEL geometrisiyle yapiliyor; haritanin gercek
+      // genisligi olculmeden yapilamaz.
+      onLayout={(o) =>
+        setOlcu({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })
+      }
+    >
       <MapView
         ref={haritaRef}
         testID="canli-harita"
