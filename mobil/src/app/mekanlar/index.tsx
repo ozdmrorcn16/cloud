@@ -32,6 +32,7 @@ import {
   type YakinTur,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
+  HARITA_YARICAP_METRE,
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
@@ -559,11 +560,35 @@ export default function KesfetEkrani() {
 
   const sakinler = liste.filter(durumaUyan)
 
-  // Harita KART MEKANINI da gosteriyor: `liste` ondan arindirilmis
-  // (kart zaten onu ayrica cizdigi icin listede tekrar etmesin diye),
-  // ama haritada o mekanin ignesi durmali - kullanici nerede oldugunu
-  // haritada gormek istiyor.
-  const haritaMekanlari = suzulmus.filter(durumaUyan)
+  /**
+   * HARITA 500 M ILE SINIRLI - LISTE DEGIL.
+   *
+   * Kullanicinin kurali (2026-09-09): "sadece haritada gecerli
+   * soyleyecegim kural: haritada 500 m mesafeye kadar olan konumlar
+   * listelensin, en yakinlar."
+   *
+   * Sebep ekran goruntusuyle geldi: 1 km'de 1.764 mekan var ve hepsinin
+   * ignesi cizilince 390 px'lik haritada adlar ust uste biniyor,
+   * okunmaz oluyor. Liste ise 1 KM KALIYOR - orada kaydirma var, yer
+   * sorunu yok. Yani bu bir GOSTERIM kurali, veri kurali degil.
+   *
+   * Suzgec ISTEMCIDE: sunucudan zaten 1 km'lik sayfa geliyor ve mesafe
+   * istemcide `mesafeMetre` ile hesaplanabiliyor. Ikinci bir istek
+   * atmak ayni veriyi iki kez cekmek olurdu.
+   *
+   * Konum okunamazsa suzgec UYGULANMIYOR: mesafe bilinmiyorken igneleri
+   * elemek, haritayi sebepsiz bosaltmak olurdu.
+   *
+   * Harita KART MEKANINI da gosteriyor (`liste` ondan arindirilmis,
+   * kart onu ayrica ciziyor); o mekanin ignesi haritada durmali.
+   */
+  const haritaMekanlari = suzulmus.filter(durumaUyan).filter((m) => {
+    if (!cihazKonumu) return true
+    return (
+      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, m.konum.lat, m.konum.lng) <=
+      HARITA_YARICAP_METRE
+    )
+  })
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi

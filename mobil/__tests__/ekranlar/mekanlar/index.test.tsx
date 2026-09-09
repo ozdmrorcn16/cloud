@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { acikRenk } from '../../../src/tasarim/tema'
 import MekanAramaEkrani from '../../../src/app/mekanlar/index'
-import { cihazKonumunuAl } from '../../../lib/konum'
+import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import {
   yakinMekanlariYogunlukIleGetir,
   ildekiTurleriGetir,
@@ -46,6 +46,12 @@ jest.mock('expo-router', () => ({
 
 beforeEach(async () => {
   jest.clearAllMocks()
+  // TUZAK: `clearAllMocks` cagri kayitlarini siliyor ama
+  // `mockImplementation` ile verilen govdeyi SILMIYOR. Harita yaricapi
+  // testi mesafeyi mekana gore donduren bir govde kuruyor; geri
+  // konmazsa sonraki testlerde her mekan 800 m cikiyor ve haritadaki
+  // igneler sessizce kayboluyor. Bir kez yasandi.
+  ;(mesafeMetre as jest.Mock).mockReturnValue(240)
   // TUR SUZGECI ARTIK CIHAZDA SAKLANIYOR (2026-09-09). Depo testler
   // arasinda PAYLASILIYOR; temizlenmezse bir onceki testin kaydettigi
   // suzgec bir sonrakinde yukleniyor ve secim TERSINE donuyor (secili
@@ -1092,5 +1098,50 @@ describe('MekanAramaEkrani', () => {
     await dibeKaydir(screen.getByTestId('kesfet-kaydirma'))
 
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(oncekiSayi)
+  })
+  // ------------------------------------------------------------------ //
+  // HARITA 500 M, LISTE 1 KM (kullanicinin kurali 2026-09-09)
+  //
+  // "Sadece haritada gecerli soyleyecegim kural: haritada 500 m
+  // mesafeye kadar olan konumlar listelensin, en yakinlar."
+  //
+  // Sebep ekran goruntusuyle geldi: 1 km'lik kume 390 px'lik haritaya
+  // sigmiyor ve adlar ust uste biniyor. Listede boyle bir sorun yok -
+  // orada kaydirma var.
+  // ------------------------------------------------------------------ //
+
+  it('haritada 500 m UZERI mekan YOK, listede VAR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    // Mesafe mekanin ENLEMINDEN turetiliyor: yakin olan 300 m, uzak
+    // olan 800 m. Sabit bir deger dondurmek iki mekani ayirt edemezdi.
+    ;(mesafeMetre as jest.Mock).mockImplementation(
+      (_a: number, _b: number, lat: number) => (lat === 41.015 ? 300 : 800)
+    )
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'yakin', ad: 'Yakın Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0,
+      },
+      {
+        id: 'uzak', ad: 'Uzak Kafe', tur: 'Kafe', adres: null, osmId: 2,
+        konum: { lat: 41.02, lng: 28.979 }, kisiSayisi: 0,
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+
+    // HARITA: yalnizca 500 m icindeki igne. Kullanicinin KENDI ignesi
+    // ("Buradasın") ayni testID'yi tasiyor ve mekan degil - mesafe
+    // kuralinin disinda, bu yuzden sayimdan cikariliyor.
+    const hepsi = await screen.findAllByTestId('harita-ignesi')
+    const mekanIgneleri = hepsi.filter(
+      (i) => i.props.accessibilityLabel !== 'Buradasın'
+    )
+    expect(mekanIgneleri).toHaveLength(1)
+    expect(mekanIgneleri[0].props.accessibilityLabel).toContain('Yakın Kafe')
+
+    // LISTE: ikisi de duruyor - 1 km kurali degismedi.
+    expect(screen.getByText('Yakın Kafe')).toBeTruthy()
+    expect(screen.getByText('Uzak Kafe')).toBeTruthy()
   })
 })

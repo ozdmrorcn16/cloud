@@ -1273,6 +1273,26 @@ oldugu icin bu kabul edildi; "Tümü" secildiginde sinir yok.
 **3. HARITADA HER MEKANIN IGNESI VAR.** `EN_FAZLA_IGNE = 12` siniri
 kaldirildi, `tracksViewChanges={false}` eklendi.
 
+**HARITA 500 M, LISTE 1 KM** (kullanicinin kurali, ayni gun ekran
+goruntusuyle geldi): "sadece haritada gecerli soyleyecegim kural:
+haritada 500 m mesafeye kadar olan konumlar listelensin, en yakinlar."
+
+Sinir kaldirilinca 1 km'deki butun igneler cizildi ve 390 px'lik
+haritada adlar ust uste bindi - okunmaz oldu. **LISTE DEGISMEDI:**
+orada kaydirma var, yer sorunu yok. Yani bu bir GOSTERIM kurali, veri
+kurali degil - ayni ders `kurali-soylendigi-ekranda-birak` hafizasinda.
+
+Sabit `HARITA_YARICAP_METRE = 500` (`lib/mekan.ts`), suzgec ISTEMCIDE:
+sunucudan zaten 1 km'lik sayfa geliyor, ikinci istek atmak ayni veriyi
+iki kez cekmek olurdu. Konum okunamazsa suzgec UYGULANMIYOR - mesafe
+bilinmiyorken igneleri elemek haritayi sebepsiz bosaltirdi.
+
+**TEST TUZAGI, yasandi:** `jest.clearAllMocks()` cagri kayitlarini
+siliyor ama `mockImplementation` govdesini SILMIYOR. Harita yaricapi
+testi mesafeyi mekana gore donduren bir govde kuruyor; `beforeEach`
+icinde varsayilan geri konmazsa sonraki testlerde her mekan 800 m
+cikiyor ve igneler sessizce kayboluyor.
+
 **4. HER IGNEDE AD YAZIYOR.** Etiket elemesi TAMAMEN kaldirildi ve
 `lib/harita-etiket.ts` silindi. Kullanici bunu UC KEZ bildirmek zorunda
 kaldi ("İsimleri yazmıyor", "İsimsiz iğneler var hala", "İğneler bir
