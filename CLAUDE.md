@@ -729,6 +729,63 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### TUR SUZGECI KALICI, LISTE 1 KM ILE SINIRLI - 2026-09-09 (yedinci tur)
+
+**1. SUZGEC CIHAZDA KALICI.** Kullanicinin istegi: "check-in
+sayfasinda yaptigim filtreyi kaydet yapinca kayitli kalsin, baska
+sayfada gezsem de uygulamadan ciksam da kayitli dursun" ve **"filtreyi
+kaldir dersem ancak kaldirilsin"**.
+
+Onceden secim yalnizca ekranin state'indeydi: baska bir sekmeye gecip
+donmek bile sifirliyordu. Artik `lib/tur-suzgeci-depo.ts` (AsyncStorage)
+icinde. Cihazda, sunucuda DEGIL: bu bir hesap tercihi degil, o telefonda
+o an neye bakildigi. Ilk yuklemede once depo okunuyor, liste ONDAN
+SONRA tek seferde cekiliyor - once bossuz cekip sonra kayitliyla tekrar
+cekmek hem iki istek hem gorunur bir zipzip olurdu.
+
+Okurken deger BILINEN TURLERE suzuluyor: eski bir surumden kalmis ya da
+bozulmus bir tur sunucuya gidip bos liste dondururdu ve kullanici
+sebebini goremezdi.
+
+**TEST TUZAGI, yasandi:** AsyncStorage mock'u testler ARASINDA
+paylasiliyor. Bir onceki testin kaydettigi suzgec sonrakinde
+yukleniyor ve secim TERSINE donuyor (secili bir turu tiklamak onu
+kaldirir). `beforeEach` VE `afterEach` icinde `AsyncStorage.clear()`
+sart; ayrica yazma artik `void` degil AWAIT ediliyor.
+
+**Ikinci tuzak:** ayni testte ekrani `unmount()` edip yeniden render
+etmek RNTL'in `screen`ini bozdu ve SONRAKI testler elemanlari
+bulamadi. Kaliciligi olcmenin dogru yolu iki yonu AYRI AYRI olcmek:
+depoya elle yazip ekranin okudugunu, ve ekranda secip deponun
+yazildigini dogrulamak.
+
+**2. LISTE 1 KM ILE SINIRLI - TUR SUZGECI VARKEN DE.** Kullanicinin
+istegi: "yakinindaki mekanlar kisminda kullanicinin bulundugu konumdan
+1 km mesafe icerisindeki yerler sadece listelenecek, haritada da ayni
+sekilde listedeki yerler gorunecek."
+
+Yaricap zaten 1 km'ydi ama TUR SUZGECI VARKEN KALKIYORDU (2026-09-06
+karari: "filtrelemede km siniri yok, bulundugu sehirdeki kayitlara
+gore"). **O kural GERI ALINDI:** suzgec artik listeyi daraltiyor,
+sehre yaymiyor - "Yakinindaki Mekanlar" basligi bunu zaten soyluyordu.
+
+**PERFORMANS BEDELI DEGIL KAZANCI VAR, olculdu:**
+
+    tur suzgeci + 1 km yaricap : 27 ms (sicak) / 2.488 ms (soguk)
+    il bazli sinirsiz sorgu    : 946 ms (2026-09-06 olcumu)
+
+**IL SUZGECI DE KALKTI - yaricap varken.** O suzgec bir PERFORMANS
+KORUMASIYDI (sinirsiz KNN taramasi zaman asimina duesuyordu, 40 sn);
+yaricap verildiginde gereksiz. Ustelik ZARARLI olurdu: il sinirinda
+oturan birinin 300 m otesindeki mekani elerdi - ayni gerekce
+"Yakininda" listesinde bastan beri gecerliydi. Migrasyon
+`20260909140000`.
+
+**ARAMA DEGISMEDI:** orada yaricap yok (baska sehirdeki mekan
+aranabiliyor, 2026-09-01) ve il siniri o yolda DURUYOR.
+
+Dogrulama: jest 67 paket / 780 test, tsc uygulama kodunda 0 hata.
+
 ### HARITADA BUTUN IGNELER, MAHALLE/IL/ILCE, YENI SIMGE - 2026-09-09 (altinci tur)
 
 **1. HARITA LISTEDEKI HER MEKANI GOSTERIYOR.** Kullanicinin istegi:

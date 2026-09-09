@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { acikRenk } from '../../../src/tasarim/tema'
 import MekanAramaEkrani from '../../../src/app/mekanlar/index'
 import { cihazKonumunuAl } from '../../../lib/konum'
@@ -43,8 +44,19 @@ jest.mock('expo-router', () => ({
   },
 }))
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.clearAllMocks()
+  // TUR SUZGECI ARTIK CIHAZDA SAKLANIYOR (2026-09-09). Depo testler
+  // arasinda PAYLASILIYOR; temizlenmezse bir onceki testin kaydettigi
+  // suzgec bir sonrakinde yukleniyor ve secim TERSINE donuyor (secili
+  // bir turu tiklamak onu kaldirir). Bir kez yasandi.
+  await AsyncStorage.clear()
+})
+
+// Testin BITISINDE de temizleniyor: ekran suzgeci arka planda yaziyor
+// ve yazma bir sonraki testin baslangicindan sonra tamamlanabilir.
+afterEach(async () => {
+  await AsyncStorage.clear()
 })
 
 describe('MekanAramaEkrani', () => {
@@ -622,15 +634,16 @@ describe('MekanAramaEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('tur-kaydet'))
 
-    // TUR SUZGECI VARKEN YARICAP KALKIYOR (kullanicinin kurali
-    // 2026-09-06: "Filtrelemede km siniri yok, filtreleme yapan biri
-    // bulundugu sehirdeki kayitlara gore sonuclar bulur"). Il sinirini
-    // sunucu uyguluyor.
+    // TUR SUZGECI VARKEN DE YARICAP UYGULANIYOR (kullanicinin istegi
+    // 2026-09-09: "yakinindaki mekanlar kisminda 1 km mesafe
+    // icerisindeki yerler sadece listelenecek"). 2026-09-06'daki
+    // "filtrelemede km siniri yok" kurali GERI ALINDI; suzgec artik
+    // listeyi daraltiyor, sehre yaymiyor.
     await waitFor(() => {
       expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
         41.015,
         28.979,
-        null,
+        KESFET_YARICAP_METRE,
         undefined,
         ['Kafe'],
         KESFET_LIMIT
@@ -679,6 +692,74 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => expect(screen.getByText('Temizle')).toBeTruthy())
     // Kaydet sayisi da butun temel turleri gosteriyor.
     expect(screen.getByText(`Kaydet (${TEMEL_TURLER.length})`)).toBeTruthy()
+  })
+
+  /*
+   * SUZGEC CIHAZDA KALICI (kullanicinin istegi 2026-09-09): "kaydet
+   * yapinca kayitli kalsin, baska sayfada gezsem de uygulamadan
+   * ciksam da kayitli dursun" ve "filtreyi kaldir dersem ancak
+   * kaldirilsin".
+   *
+   * Iki yon ayri ayri olculuyor - AYNI TESTTE ekrani soekup yeniden
+   * kurmak denendi ve RNTL'in `screen`ini bozdu (sonraki testler
+   * elemanlari bulamadi). Yon 1: depoda kayitli deger EKRANA
+   * yansiyor. Yon 2: ekrandaki secim DEPOYA yaziliyor.
+   */
+  it('depoda kayitli suzgec acilista uygulaniyor', async () => {
+    await AsyncStorage.setItem('slooin.tur-suzgeci', JSON.stringify(['Kafe']))
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+
+    await waitFor(() => expect(screen.getByTestId('secili-tur-Kafe')).toBeTruthy())
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledWith(
+      41.015,
+      28.979,
+      // Tur suzgeci varken de 1 km yaricap uygulaniyor.
+      KESFET_YARICAP_METRE,
+      undefined,
+      ['Kafe'],
+      100
+    )
+  })
+
+  it('kaydedilen suzgec DEPOYA yaziliyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+    ;(ildekiTurleriGetir as jest.Mock).mockResolvedValue([{ tur: 'Kafe', adet: 12 }])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+
+    await fireEvent.press(screen.getByTestId('tur-suzgeci'))
+    await waitFor(() => expect(screen.getByTestId('tur-secici')).toBeTruthy())
+    await fireEvent.press(screen.getByTestId('tur-Kafe'))
+    await fireEvent.press(screen.getByTestId('tur-kaydet'))
+
+    await waitFor(async () =>
+      expect(await AsyncStorage.getItem('slooin.tur-suzgeci')).toBe(JSON.stringify(['Kafe']))
+    )
+  })
+
+  /*
+   * SUZGEC YALNIZCA KULLANICI KALDIRINCA KALKIYOR. "Filtreyi kaldır"
+   * depodaki anahtari da siliyor - yoksa bir sonraki acilista geri
+   * gelirdi.
+   */
+  it('"Filtreyi kaldır" depodaki kaydi da siliyor', async () => {
+    await AsyncStorage.setItem('slooin.tur-suzgeci', JSON.stringify(['Kafe']))
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(screen.getByTestId('secili-tur-Kafe')).toBeTruthy())
+
+    await fireEvent.press(screen.getByTestId('turleri-temizle'))
+
+    await waitFor(async () =>
+      expect(await AsyncStorage.getItem('slooin.tur-suzgeci')).toBeNull()
+    )
   })
 
   /** Disaridaki "Filtreyi kaldir" cipi secimi temizliyor. */

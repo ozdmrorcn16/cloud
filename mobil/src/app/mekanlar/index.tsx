@@ -50,6 +50,7 @@ import {
   GeriOkIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
+import { turSuzgeciniOku, turSuzgeciniYaz } from '../../../lib/tur-suzgeci-depo'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
 /** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
@@ -231,11 +232,24 @@ export default function KesfetEkrani() {
       const sonuc = await yakinMekanlariYogunlukIleGetir(
         konum.lat,
         konum.lng,
-        // YARICAP: arama ya da TUR SUZGECI varken kalkiyor.
-        // Kullanicinin kurali (2026-09-06): "Filtrelemede km siniri
-        // yok, filtreleme yapan biri bulundugu sehirdeki kayitlara
-        // gore sonuclar bulur." Il sinirini SUNUCU uyguluyor.
-        aramaVarMi || turSuzgeci ? null : KESFET_YARICAP_METRE,
+        // YARICAP YALNIZCA ARAMADA KALKIYOR.
+        //
+        // 2026-09-06'daki "filtrelemede km siniri yok, il bazli
+        // sonuclar" kurali GERI ALINDI (kullanicinin istegi
+        // 2026-09-09): "yakinindaki mekanlar kisminda kullanicinin
+        // bulundugu konumdan 1 km mesafe icerisindeki yerler sadece
+        // listelenecek, haritada da ayni sekilde listedeki yerler
+        // gorunecek." Tur suzgeci artik listeyi DARALTIYOR, sehre
+        // yaymiyor - "Yakinindaki Mekanlar" baslıgi bunu zaten
+        // soyluyordu.
+        //
+        // Performans bedeli DEGIL kazanci var, olculdu: tur suzgeci +
+        // 1 km yaricap 27 ms (sicak) / 2,5 sn (soguk); il bazli
+        // sinirsiz sorgu 946 ms idi.
+        //
+        // ARAMA baska bir sey: orada sinir yok ve kalmali - kullanici
+        // baska sehirdeki mekani arayabiliyor (2026-09-01 karari).
+        aramaVarMi ? null : KESFET_YARICAP_METRE,
         metin || undefined,
         turSuzgeci ? turler : null,
         aramaVarMi ? null : KESFET_LIMIT
@@ -262,9 +276,31 @@ export default function KesfetEkrani() {
     }
   }
 
+  /*
+   * ILK YUKLEME: once CIHAZDA KAYITLI tur suzgeci okunuyor, liste
+   * ondan sonra cekiliyor.
+   *
+   * Kullanicinin istegi (2026-09-09): "check-in sayfasinda yaptigim
+   * filtreyi kaydet yapinca kayitli kalsin, baska sayfada gezsem de
+   * uygulamadan ciksam da kayitli dursun" ve "filtreyi kaldir dersem
+   * ancak kaldirilsin". Onceden secim yalnizca ekranin state'indeydi;
+   * baska bir sekmeye gecip donmek bile sifirliyordu.
+   *
+   * Liste TEK KEZ cekiliyor: once bos suzgecle cekip sonra kayitliyla
+   * tekrar cekmek hem iki istek hem de goz onunde bir zipzip olurdu.
+   */
   useEffect(() => {
-    yukle()
+    let gecerli = true
+    turSuzgeciniOku().then((kayitli) => {
+      if (!gecerli) return
+      if (kayitli.length > 0) setSeciliTurler(kayitli)
+      yukle(arama, kayitli)
+    })
+    return () => {
+      gecerli = false
+    }
     // Ilk yukleme; sonrakiler kullanici etkilesimiyle tetikleniyor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Aktif check-in her odaklanmada tazeleniyor: kullanici check-in
@@ -328,10 +364,19 @@ export default function KesfetEkrani() {
    * calisiyor, yani metin dururken secim gorunur bir sey yapmazdi ve
    * kullanici sebebini goremezdi.
    */
-  function turleriUygula(yeni: string[]) {
+  async function turleriUygula(yeni: string[]) {
     setSeciliTurler(yeni)
     setTurSeciciAcik(false)
     setArama('')
+    // CIHAZA YAZILIYOR: secim ekran kapaninca ve uygulamadan cikinca
+    // da duruyor. Bos liste anahtari siliyor - "Filtreyi kaldır" ve
+    // ciplerdeki carpi da buradan geciyor, yani suzgec YALNIZCA
+    // kullanici kaldirdiginda kalkiyor.
+    //
+    // YAZMA BEKLENIYOR (fire-and-forget DEGIL): yarim kalan bir yazma
+    // bir sonraki acilista eski secimi geri getirebilir. Ekran
+    // beklemiyor - state zaten guncellendi, liste asagida cekiliyor.
+    await turSuzgeciniYaz(yeni)
     // Listeyi HEMEN tazele: `arama` zaten bossa metin degisikligine
     // bagli etki tetiklenmez, o yuzden acikca cagriliyor.
     yukle('', yeni)
