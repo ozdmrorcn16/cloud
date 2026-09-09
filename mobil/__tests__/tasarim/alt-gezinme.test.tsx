@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
 
 /**
  * AltGezinme `jest.setup.js` icinde GLOBAL mock'lu - butun ekran
@@ -22,6 +23,20 @@ jest.mock('../../lib/bag-listeleri', () => ({
 jest.mock('../../lib/etiket', () => ({
   bekleyenEtiketleriGetir: jest.fn(async () => []),
 }))
+
+/*
+ * "HAREKETI AZALT" ACIK KABUL EDILIYOR ve bu bilincli bir olcum
+ * karari. Acik oldugunda deger `setValue` ile ANINDA atanıyor; yay
+ * yolunda ise `Animated.spring` zaman aliyor ve `useNativeDriver`
+ * yuzunden JS tarafindaki deger jest'te hic ilerlemiyor - yani yay
+ * yolu bu ortamda OLCULEMEZ.
+ *
+ * Olculen sey degerlerin KENDISI (buyume ve yukari tasma), ki iki
+ * yolda da ayni; degisen tek sey oraya nasil gidildigi. Ustelik bu
+ * ayni zamanda gercek bir iddia: hareket azaltilmis olsa bile basili
+ * hal geri bildirimi KAYBOLMUYOR.
+ */
+jest.mock('../../src/tasarim/hareket', () => ({ useHareket: () => false }))
 
 import { AltGezinme } from '../../src/tasarim/AltGezinme'
 import { konusmalarimiGetir } from '../../lib/sohbet'
@@ -125,5 +140,75 @@ describe('AltGezinme - aktif sekme dairesi', () => {
 
     await cubugaGenislikVer()
     expect(screen.getByTestId('aktif-sekme-dairesi')).toBeTruthy()
+  })
+  /*
+   * BASILI HAL: BUYUYOR VE YUKARI CIKIYOR (kullanicinin istegi
+   * 2026-09-10: "checkin dugmesi basilinca biraz buyusun, yukari dogru
+   * ciksin, basildigi anlasilsin").
+   *
+   * SECILI hal ile KARISTIRILMAMALI: o hareket 2026-09-09'da
+   * kaldirilmisti ve secili hal hala yalnizca RENK. Buradaki hareket
+   * parmagin o an uzerinde olmasina bagli.
+   */
+  it('check-in dugmesi BASILINCA buyuyup yukari cikiyor (hareket azaltilmis olsa bile)', async () => {
+    await render(<AltGezinme />)
+    const daire = await screen.findByTestId('checkin-dugmesi-daire')
+
+    const once = StyleSheet.flatten(daire.props.style) as {
+      transform?: { scale?: number; translateY?: number }[]
+    }
+    const olcekOnce = once.transform?.find((d) => 'scale' in d)?.scale
+    const yOnce = once.transform?.find((d) => 'translateY' in d)?.translateY
+    expect(olcekOnce).toBe(1)
+    expect(yOnce).toBe(0)
+
+    const dugme = screen.getByLabelText('Check-in yap')
+    await fireEvent(dugme, 'pressIn')
+
+    const sonra = StyleSheet.flatten(
+      screen.getByTestId('checkin-dugmesi-daire').props.style
+    ) as { transform?: { scale?: number; translateY?: number }[] }
+    const olcekSonra = sonra.transform?.find((d) => 'scale' in d)?.scale
+    const ySonra = sonra.transform?.find((d) => 'translateY' in d)?.translateY
+
+    expect(olcekSonra).toBeGreaterThan(1)
+    // Negatif = YUKARI. Isaretin dogru olmasi onemli: pozitif deger
+    // dugmeyi cubugun icine gomerdi.
+    expect(ySonra).toBeLessThan(0)
+  })
+
+  /*
+   * TRANSFORM ICTEKI DAIREDE, PRESSABLE'DA DEGIL.
+   *
+   * Pressable'a verilseydi altindaki "Check-in" ETIKETI de yukari
+   * cikardi ve komsu etiketlerden ayrilirdi - tam bu hata
+   * 2026-09-07'de yasandi (etiket komsularindan 18 px yukarida
+   * kaliyordu).
+   */
+  it('basili halde ETIKET yerinde kaliyor', async () => {
+    await render(<AltGezinme />)
+    const dugme = await screen.findByLabelText('Check-in yap')
+    await fireEvent(dugme, 'pressIn')
+
+    const kap = StyleSheet.flatten(
+      screen.getByLabelText('Check-in yap').props.style
+    ) as { transform?: unknown }
+    expect(kap.transform).toBeUndefined()
+  })
+
+  /*
+   * NEON PARILTI KALDIRILDI (kullanicinin istegi 2026-09-10: "sabit
+   * sutundaki tuslarin altinda neon isigi olmasin").
+   *
+   * IDDIA silinmedi, tersine cevrildi: turuncu golge geri gelirse bu
+   * test kirilir. Golgenin KENDISI duruyor (dugmeyi cubuktan ayirmak
+   * onun isi), yalnizca RENGI notre dondu.
+   */
+  it('dugmelerin altinda TURUNCU parilti yok', async () => {
+    await render(<AltGezinme />)
+    const daire = await screen.findByTestId('checkin-dugmesi-daire')
+    const stil = StyleSheet.flatten(daire.props.style) as { shadowColor?: string }
+
+    expect(stil.shadowColor?.toUpperCase()).not.toBe('#FE7813')
   })
 })

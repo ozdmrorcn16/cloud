@@ -341,20 +341,6 @@ export async function yakinMekanlariYogunlukIleGetir(
 export const KESFET_YARICAP_METRE = 1000
 
 /**
- * HARITADAKI IGNELERIN YARICAPI. Listeden AYRI ve daha dar.
- *
- * Kullanicinin kurali (2026-09-09): "sadece haritada gecerli
- * soyleyecegim kural: haritada 500 m mesafeye kadar olan konumlar
- * listelensin, en yakinlar."
- *
- * Liste 1 km kaliyor (`KESFET_YARICAP_METRE`); orada kaydirma var,
- * yer sorunu yok. Haritada ise 1 km'lik kume 390 px'e sigmiyor ve
- * mekan adlari ust uste biniyor - kullanici ekran goruntusuyle
- * bildirdi. Yani ikisi ayni sayiyi paylasamaz.
- */
-export const HARITA_YARICAP_METRE = 500
-
-/**
  * Kesfet listesinin SAYFA BOYU - tavan degil.
  *
  * Kullanicinin istegi (2026-09-09): "1 km mesafe icerisindeki her tur

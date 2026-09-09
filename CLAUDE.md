@@ -1225,6 +1225,74 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### UC DUZELTME - 2026-09-10
+
+**1. HARITA YINE 1 KM.** Bir gun onceki 500 m siniri kullanicinin
+istegiyle GERI ALINDI: "haritada yine 1 km mesafeye kadar gosterelim,
+boyle sakin yerlerde cok bos kaliyor." Ekran goruntusuyle geldi ve
+hakliydi - seyrek bir cevrede liste 430/520/560 m'lik yerler
+gosterirken haritada TEK igne kaliyordu. Yani sinir, kalabalik cevredeki
+etiket cakismasini cozerken seyrek cevrede haritayi ise yaramaz hale
+getiriyordu ve ekranin iki yarisi birbirini tutmuyordu.
+
+Cakisma sorunu ayri bir yoldan hafifledi: etiketler ayni gun BEYAZ ve
+KOYU GOLGELI yapildi, yani ust uste binseler bile okunuyorlar.
+`HARITA_YARICAP_METRE` sabiti ve istemcideki mesafe suzgeci silindi;
+harita yine `suzulmus` kumesini ciziyor. Testteki iddia SILINMEDI,
+tersine cevrildi ("haritada UZAK mekan da var: liste ile ayni kume") -
+suzgec geri gelirse kirilir.
+
+**DERS: bir gosterim sinirini koymadan once SEYREK durumu da dusun.**
+500 m karari kalabalik bir cevrenin ekran goruntusune bakilarak
+verilmisti; ayni sayi seyrek cevrede tersine calisti.
+
+**2. CHECK-IN DUGMESI BASILINCA BUYUYOR VE YUKARI CIKIYOR**
+(kullanicinin istegi: "basilinca biraz buyusun yukari dogru ciksin
+basildigi anlasilsin").
+
+**BU, 2026-09-09'DA KALDIRILAN HAREKETIN GERI GELMESI DEGIL.** O
+hareket SECILI hale bagliydi ("o sekmedesin", kalici) ve kullanici onu
+kaldirtmisti. Buradaki hareket BASILI hale bagli: parmak su an
+uzerinde, ANLIK. Secili hal hala yalnizca RENK. Ayni ayrim
+`turuncuBasili` / `turuncuSecili` jetonlarinda da var (2026-09-07
+dersi) - iki hal ZIT yonde sinyal ister.
+
+Olculer kucuk: %8 buyume, 4 px tasma. Daire kendi ikon alanini (48 px)
+neredeyse tam dolduruyor, fazlasi cubuktan tasardi.
+
+**TRANSFORM ICTEKI DAIREDE, PRESSABLE'DA DEGIL.** Pressable'a
+verilseydi altindaki "Check-in" ETIKETI de yukari cikardi ve komsu
+etiketlerden ayrilirdi - tam bu hata 2026-09-07'de yasanmisti (etiket
+komsularindan 18 px yukarida kaliyordu). Dokunma alani da boylece
+yerinde kaliyor.
+
+**"Hareketi azalt" aciksa deger ANINDA atanıyor**, yani buyume ve tasma
+yine oluyor; kaybolan tek sey yay. Geri bildirimin kendisi
+erisilebilirlik ayarina feda edilmedi.
+
+**TEST TUZAGI - kayda geciyor:** yay yolu jest'te OLCULEMEZ.
+`Animated.spring` zaman aliyor ve `useNativeDriver: true` yuzunden JS
+tarafindaki deger hic ilerlemiyor; test degeri 1 okuyup kiriliyordu.
+Cozum: testte `useHareket` mock'lanip "hareketi azalt" ACIK kabul
+ediliyor - o yolda deger `setValue` ile aninda atanıyor ve olculen sey
+(buyume + tasma) iki yolda da ayni.
+
+**3. NEON PARILTI KALDIRILDI** (kullanicinin istegi: "sabit sutundaki
+tuslarin altinda neon isigi olmasin"). 2026-09-07'de eklenmisti; hem
+aktif sekme dairesinden hem check-in dugmesinden BIRLIKTE kaldirildi -
+degerleri paylasiyorlardi, biri kalsaydi cubukta iki farkli parilti
+dili olurdu.
+
+Check-in dugmesi GOLGESIZ BIRAKILMADI, notr `golge.yuzer`e dondu:
+golgenin isi dugmeyi cubuktan ayirmak ve parilti onun YERINE gecmisti,
+yanina degil. Aktif sekme dairesinde ise golge hic geri konmadi - orada
+ayirt ediciligi RENK tasiyor.
+
+Testteki iddia silinmedi, tersine cevrildi: "dugmelerin altinda TURUNCU
+parilti yok".
+
+Dogrulama: jest 66 paket / 787 test, tsc uygulama kodunda 0 hata.
+
 ### YAKININDAKI MEKANLAR: 1 KM, HER TUR, SONSUZ KAYDIRMA - 2026-09-09
 
 Kullanicinin istegi: "Yakinindaki mekanlar 1 km mesafe icerisindeki her

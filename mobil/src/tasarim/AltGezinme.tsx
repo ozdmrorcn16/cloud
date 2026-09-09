@@ -6,6 +6,7 @@ import { useSafeAreaInsets, initialWindowMetrics } from 'react-native-safe-area-
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { bekleyenEtiketleriGetir } from '../../lib/etiket'
+import { useHareket } from './hareket'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 
@@ -236,26 +237,79 @@ const SEKMELER: Sekme[] = [
 function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => void }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
+  const hareket = useHareket()
 
   /*
-   * SECILI HAL YALNIZCA RENK VE PARILTI (kullanicinin istegi
-   * 2026-09-09: "sabit sutundaki butonlar one dogru cikmasin,
-   * basilinca oldugu yerde turuncu parlak halde olsun").
+   * BASILI HAL: BUYUYOR VE YUKARI CIKIYOR - SECILI hal degil.
    *
-   * Onceki surumde secilince yay ile 8 px yukari kalkip %10
-   * buyuyordu; o hareket kaldirildi. Buyume ayrica dairenin
-   * altindaki etiketin uzerine tasiyordu - dugme kendi ikon alanini
-   * tam dolduruyor, buyudugunde tasacak yer yok.
+   * Kullanicinin istegi (2026-09-10): "sabit sutundaki checkin dugmesi
+   * basilinca biraz buyusun, yukari dogru ciksin, basildigi
+   * anlasilsin."
+   *
+   * BU, 2026-09-09'DA KALDIRILAN HAREKETIN GERI GELMESI DEGIL - o
+   * hareket SECILI hale bagliydi ("o sekmedesin", kalici) ve kullanici
+   * onu kaldirtmisti: "butonlar one dogru cikmasin, oldugu yerde
+   * turuncu parlak halde olsun". Secili hal hala yalnizca RENK ve
+   * PARILTI. Buradaki hareket BASILI hale bagli: parmak su an
+   * uzerinde, ANLIK. Ayni ayrim `turuncuBasili` / `turuncuSecili`
+   * jetonlarinda da var (2026-09-07 dersi).
+   *
+   * TRANSFORM ICTEKI DAIREYE, PRESSABLE'A DEGIL. Pressable'a
+   * verilseydi altindaki "Check-in" ETIKETI de yukari cikardi ve
+   * komsu etiketlerden ayrilirdi - tam bu hata 2026-09-07'de yasandi
+   * (etiket komsularindan 18 px yukarida kaliyordu). Dokunma alani da
+   * boylece yerinde kaliyor: parmak basiliyken kutu kaymiyor.
+   *
+   * Buyume KUCUK (%8) ve tasma 4 px: daire kendi ikon alanini (48 px)
+   * neredeyse tam dolduruyor, fazlasi cubuktan tasar.
    */
+  const basiliOlcek = useRef(new Animated.Value(1)).current
+  const basiliY = useRef(new Animated.Value(0)).current
+
+  function basiliyaGec(basili: boolean) {
+    const olcekHedef = basili ? 1.08 : 1
+    const yHedef = basili ? -4 : 0
+    // "Hareketi azalt" aciksa deger aninda gecıyor: buyume ve tasma
+    // yine oluyor, yalnizca yay yok. Boylece geri bildirim kaybolmuyor.
+    if (!hareket) {
+      basiliOlcek.setValue(olcekHedef)
+      basiliY.setValue(yHedef)
+      return
+    }
+    Animated.parallel([
+      Animated.spring(basiliOlcek, {
+        toValue: olcekHedef,
+        speed: 22,
+        bounciness: 6,
+        useNativeDriver: true,
+      }),
+      Animated.spring(basiliY, {
+        toValue: yHedef,
+        speed: 22,
+        bounciness: 6,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }
+
   return (
     <Pressable
       style={stiller.merkez}
       onPress={onPress}
+      onPressIn={() => basiliyaGec(true)}
+      onPressOut={() => basiliyaGec(false)}
       accessibilityRole="button"
       accessibilityState={{ selected: aktif }}
       accessibilityLabel="Check-in yap"
     >
-      <View style={[stiller.merkezDaire, aktif && stiller.merkezDaireAktif]}>
+      <Animated.View
+        testID="checkin-dugmesi-daire"
+        style={[
+          stiller.merkezDaire,
+          aktif && stiller.merkezDaireAktif,
+          { transform: [{ translateY: basiliY }, { scale: basiliOlcek }] },
+        ]}
+      >
         <Svg width={30} height={30} viewBox="0 0 24 24">
           <Path
             d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
@@ -263,7 +317,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
           />
           <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuSecili : renk.turuncu} />
         </Svg>
-      </View>
+      </Animated.View>
       <Text style={stiller.merkezEtiket} numberOfLines={1}>
         Check-in
       </Text>
@@ -620,16 +674,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     /*
-     * PARILTI: referanstaki dairenin altindaki yumusak renkli hale.
-     * Golgenin rengi marka turuncusu - notr bir golge orada gri bir
-     * leke birakiyor ve hale hic okunmuyor. Bu, `golge.yuzer`in
-     * yerine gecmiyor; ondan farkli olarak RENKLI ve daha genis.
+     * NEON PARILTI KALDIRILDI (kullanicinin istegi 2026-09-10: "sabit
+     * sutundaki tuslarin altinda neon isigi olmasin").
+     *
+     * 2026-09-07'de referans videodaki daireden alinmisti (turuncu
+     * shadow, opaklik 0,5, yaricap 12). Dairenin isi zaten RENKLE
+     * yapiliyor - dolu turuncu bir daire cubugun notr zemininde
+     * kendiliginden ayriliyor, hale olmadan da aktif sekme okunuyor.
      */
-    shadowColor: renk.turuncu,
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 10,
   },
 
   /*
@@ -669,21 +721,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // turuncunun etrafinda siyah bir hale olarak ortaya cikti.
     // Halkanin isi dugmeyi cubuktan ayirmakti; o isi golge yapiyor.
     //
-    // PARILTI, notr golge DEGIL (kullanicinin istegi 2026-09-07:
-    // "checkin dugmesinin altina da yanindaki sutunlar gibi parlak
-    // neon bir isik koy, yanlarindaki butonlardan referans al").
-    // Degerler aktif sekme dairesinden (`daireGovde`) BIREBIR
-    // alindi - referans acikca o oldugu icin ikisi ayni jetonlari
-    // paylasiyor; biri degistirilirse digeri de degismeli, yoksa
-    // cubukta iki farkli parilti dili olur.
+    // NEON PARILTI KALDIRILDI (kullanicinin istegi 2026-09-10: "sabit
+    // sutundaki tuslarin altinda neon isigi olmasin"). 2026-09-07'de
+    // eklenmisti ve degerleri aktif sekme dairesinden birebir
+    // aliyordu; ikisi birlikte kaldirildi, yoksa cubukta iki farkli
+    // parilti dili kalirdi.
     //
-    // `golge.yuzer`in yerini aliyor, yanina gelmiyor: RN'de tek bir
-    // golge var, iki tanim ust uste yazilir ve sonuncusu kazanirdi.
-    shadowColor: renk.turuncu,
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 10,
+    // Yerine NOTR yuzer golge geldi. Golgesiz birakilmadi: dugmenin
+    // cubuktan ayrilmasi gerekiyor ve o is bastan beri golgenindi -
+    // parilti onun YERINE gecmisti, yanina degil.
+    ...golge.yuzer,
   },
   /*
    * SECILI hal PARLAKLASIR, koyulasmaz (kullanicinin istegi

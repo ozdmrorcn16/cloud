@@ -1100,20 +1100,21 @@ describe('MekanAramaEkrani', () => {
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(oncekiSayi)
   })
   // ------------------------------------------------------------------ //
-  // HARITA 500 M, LISTE 1 KM (kullanicinin kurali 2026-09-09)
+  // HARITA LISTEYLE AYNI MEKANLARI GOSTERIYOR
   //
-  // "Sadece haritada gecerli soyleyecegim kural: haritada 500 m
-  // mesafeye kadar olan konumlar listelensin, en yakinlar."
+  // 2026-09-09'da haritaya 500 m'lik ayri bir sinir konmustu; kullanici
+  // ERTESI GUN geri aldirdi: "haritada yine 1 km mesafeye kadar
+  // gosterelim, boyle sakin yerlerde cok bos kaliyor." Seyrek bir
+  // cevrede liste 430/520/560 m gosterirken haritada tek igne
+  // kaliyordu.
   //
-  // Sebep ekran goruntusuyle geldi: 1 km'lik kume 390 px'lik haritaya
-  // sigmiyor ve adlar ust uste biniyor. Listede boyle bir sorun yok -
-  // orada kaydirma var.
+  // IDDIA SILINMEDI, TERSINE CEVRILDI: mesafe suzgeci geri gelirse bu
+  // test kirilir.
   // ------------------------------------------------------------------ //
 
-  it('haritada 500 m UZERI mekan YOK, listede VAR', async () => {
+  it('haritada UZAK mekan da var: liste ile ayni kume', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
-    // Mesafe mekanin ENLEMINDEN turetiliyor: yakin olan 300 m, uzak
-    // olan 800 m. Sabit bir deger dondurmek iki mekani ayirt edemezdi.
+    // Mesafe mekanin ENLEMINDEN turetiliyor: biri 300 m, oteki 800 m.
     ;(mesafeMetre as jest.Mock).mockImplementation(
       (_a: number, _b: number, lat: number) => (lat === 41.015 ? 300 : 800)
     )
@@ -1130,17 +1131,14 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    // HARITA: yalnizca 500 m icindeki igne. Kullanicinin KENDI ignesi
-    // ("Buradasın") ayni testID'yi tasiyor ve mekan degil - mesafe
-    // kuralinin disinda, bu yuzden sayimdan cikariliyor.
+    // Kullanicinin KENDI ignesi ("Buradasın") mekan degil, sayimdan
+    // cikariliyor.
     const hepsi = await screen.findAllByTestId('harita-ignesi')
     const mekanIgneleri = hepsi.filter(
       (i) => i.props.accessibilityLabel !== 'Buradasın'
     )
-    expect(mekanIgneleri).toHaveLength(1)
-    expect(mekanIgneleri[0].props.accessibilityLabel).toContain('Yakın Kafe')
+    expect(mekanIgneleri).toHaveLength(2)
 
-    // LISTE: ikisi de duruyor - 1 km kurali degismedi.
     expect(screen.getByText('Yakın Kafe')).toBeTruthy()
     expect(screen.getByText('Uzak Kafe')).toBeTruthy()
   })

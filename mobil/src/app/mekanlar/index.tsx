@@ -32,7 +32,6 @@ import {
   type YakinTur,
   KESFET_YARICAP_METRE,
   KESFET_LIMIT,
-  HARITA_YARICAP_METRE,
   type MekanYogunlukIle,
 } from '../../../lib/mekan'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
@@ -561,34 +560,26 @@ export default function KesfetEkrani() {
   const sakinler = liste.filter(durumaUyan)
 
   /**
-   * HARITA 500 M ILE SINIRLI - LISTE DEGIL.
+   * HARITA LISTEYLE AYNI MEKANLARI GOSTERIYOR - 1 km.
    *
-   * Kullanicinin kurali (2026-09-09): "sadece haritada gecerli
-   * soyleyecegim kural: haritada 500 m mesafeye kadar olan konumlar
-   * listelensin, en yakinlar."
+   * 2026-09-09'da haritaya 500 m'lik ayri bir sinir konmustu (1 km'lik
+   * kume 390 px'e sigmiyor, adlar ust uste biniyordu). Kullanici ERTESI
+   * GUN GERI ALDIRDI: "haritada yine 1 km mesafeye kadar gosterelim,
+   * boyle sakin yerlerde cok bos kaliyor."
    *
-   * Sebep ekran goruntusuyle geldi: 1 km'de 1.764 mekan var ve hepsinin
-   * ignesi cizilince 390 px'lik haritada adlar ust uste biniyor,
-   * okunmaz oluyor. Liste ise 1 KM KALIYOR - orada kaydirma var, yer
-   * sorunu yok. Yani bu bir GOSTERIM kurali, veri kurali degil.
+   * Gerekce ekran goruntusuyle geldi ve haklıydi: seyrek bir cevrede
+   * liste 430 m, 520 m, 560 m'lik yerler gosterirken haritada TEK igne
+   * kaliyordu. Yani sinir, kalabalik cevredeki cakismayi cozerken
+   * seyrek cevrede haritayi ise yaramaz hale getiriyordu - ve iki yarim
+   * ekran birbirini tutmuyordu.
    *
-   * Suzgec ISTEMCIDE: sunucudan zaten 1 km'lik sayfa geliyor ve mesafe
-   * istemcide `mesafeMetre` ile hesaplanabiliyor. Ikinci bir istek
-   * atmak ayni veriyi iki kez cekmek olurdu.
-   *
-   * Konum okunamazsa suzgec UYGULANMIYOR: mesafe bilinmiyorken igneleri
-   * elemek, haritayi sebepsiz bosaltmak olurdu.
+   * Cakisma sorunu ayri bir yoldan hafifledi: etiketler ayni gun beyaz
+   * ve golgeli yapildi, yani ust uste binseler bile okunuyorlar.
    *
    * Harita KART MEKANINI da gosteriyor (`liste` ondan arindirilmis,
    * kart onu ayrica ciziyor); o mekanin ignesi haritada durmali.
    */
-  const haritaMekanlari = suzulmus.filter(durumaUyan).filter((m) => {
-    if (!cihazKonumu) return true
-    return (
-      mesafeMetre(cihazKonumu.lat, cihazKonumu.lng, m.konum.lat, m.konum.lng) <=
-      HARITA_YARICAP_METRE
-    )
-  })
+  const haritaMekanlari = suzulmus.filter(durumaUyan)
   const toplamKisi = canlilar.reduce((t, m) => t + m.kisiSayisi, 0)
 
   // Ad'in altindaki satir. TUR YALNIZCA kullanicinin ekledigi
