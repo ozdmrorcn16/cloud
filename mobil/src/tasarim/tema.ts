@@ -168,18 +168,25 @@ export const acikRenk = {
   rozetZemin: '#17130F',
 
   /**
-   * Yuzer cubugun zemini: OPAK.
+   * Yuzer cubugun zemini: NEREDEYSE OPAK (%94).
    *
-   * Eskiden yari saydamdi (rgba(255,255,255,0.86)) ve Instagram'in ust
-   * cubugunu taklit ediyordu. Kaldirildi (2026-09-07 denetimi): saydamlik
-   * BULANIKLIK OLMADAN malzeme gibi degil cizim hatasi gibi okunuyordu -
-   * cubugun ardindan kirpilmis bir mekan adi ve tam bir turuncu buton
-   * hayalet gibi goruenuyordu (iki ekran goruntusunde de olculdu).
+   * Kullanicinin istegi (2026-09-09): "arkasini cok az seffaf yap."
+   * "Cok az" ifadesi bilerek harfiyen uygulandi - alfa F0, yani yalnizca
+   * %6 saydamlik.
    *
-   * Gercek buzlu cam `expo-blur` istiyor ve o NATIVE bir paket: yeni bir
-   * derleme gerektirir, OTA ile gitmez. Opak cozum bugun gidiyor.
+   * Bu, 2026-09-07 denetiminin gerekcesini KORUYOR. O gun cubuk %86
+   * opakligindan tam opaga cekilmisti, cunku saydamlik BULANIKLIK
+   * OLMADAN malzeme gibi degil cizim hatasi gibi okunuyordu: cubugun
+   * ardindan kirpilmis bir mekan adi ve tam bir turuncu buton hayalet
+   * gibi goruenuyordu (iki ekran goruntusunde olculdu). %6'da altta
+   * gecen sey okunacak kadar belirmiyor; yalnizca cubugun cam bir
+   * yuzey oldugu hissediliyor.
+   *
+   * Gercek buzlu cam `expo-blur` istiyor ve o NATIVE bir paket: yeni
+   * bir derleme gerektirir, OTA ile gitmez. Bu yuzden saydamlik dusuk
+   * tutuluyor.
    */
-  yuzerZemin: '#FFFFFF',
+  yuzerZemin: '#FFFFFFF0',
 
   /** Fotograf uzerindeki yazinin okunmasi icin karartma. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',
@@ -255,8 +262,8 @@ export const koyuRenk: Renk = {
 
   rozetZemin: '#FE7813',
 
-  /** Yuzer cubuk koyu modda da OPAK - acik modla ayni gerekce. */
-  yuzerZemin: '#1C1917',
+  /** Yuzer cubuk koyu modda da ayni saydamlikta - acik modla ayni gerekce. */
+  yuzerZemin: '#1C1917F0',
 
   /** Fotograf karartmasi ayni: fotograf iki modda da ayni fotograf. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',

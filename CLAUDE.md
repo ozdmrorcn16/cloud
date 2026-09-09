@@ -1309,6 +1309,30 @@ hale gelirdi. Ayni gerekce karsilama sahnesindeki harita haplarinda da
 var. Punto 9,5 -> 11, kutu 84 -> 96 px (buyuyen punto ayni kutuda daha
 erken kirpilirdi).
 
+**ALT GEZINME INCELDI VE HAFIF SAYDAMLASTI** (kullanicinin istegi
+2026-09-09: "sabit sutun birde cok kalin biraz incelt cok genis
+duruyor birde arkasini cok az seffaf yap").
+
+Ikon alani 54 -> 48, dikey dolgu 12 -> 8; satir 72 -> 66, cubuk
+98 -> 84 px, `ALT_GEZINME_PAYI` 122 -> 108. Kisalan sey yalnizca
+BOSLUK: etiketler, daire ve check-in dugmesi duruyor. **ALT SINIR
+aktif sekme dairesi:** `DAIRE` 44 px, yani 48 ona 2 px pay birakiyor -
+daha asagisi daireyi kirpardi. Check-in dugmesi hala en buyuk slot
+(48'e karsi 24 px ikonlar), yani "obur ikonlardan buyuk olsun" kurali
+(2026-08-26) bozulmadi.
+
+**SAYDAMLIK GERI GELDI ama %6.** `yuzerZemin` 2026-09-07 denetiminde
+opaga cekilmisti; o gun sorunu ureten deger **%86 opaklikti** -
+bulaniklik olmadan cubugun ardindan kirpilmis bir mekan adi ve yarim
+bir buton hayalet gibi goruenuyordu. Yeni deger `#FFFFFFF0` (%94), yani
+altta gecen sey okunacak kadar belirmiyor; yalnizca cam yuzey hissi
+kaliyor. Gercek buzlu cam hala `expo-blur` ister ve OTA ile gitmez.
+
+**KONTRAST TESTINDEKI IDDIA TERSINE CEVRILDI, SILINMEDI:** eskiden
+"cubuk TAM OPAK" (duz 6 haneli hex) diyordu; artik saydamligin
+OLCUSUNU kilitliyor - alfa >= %90. Biri ileride %86'ya geri donerse
+test kirilir ve karar yeniden onune gelir.
+
 **KENDI PROFILIM ARTIK `/kullanici/[id]` EKRANINDA ACILMIYOR.**
 Kullanicinin bildirdigi hata (2026-09-09): "yorumda kendi profilime
 basinca sanki baskasinin profiliymis gibi gosteriyor." Gercekten

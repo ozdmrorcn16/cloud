@@ -219,11 +219,27 @@ describe.each([
   // JETON ROLLERI
   // ---------------------------------------------------------------- //
 
-  it('yuzer cubuk OPAK: saydamlik bulaniklik olmadan kirlilik uretiyordu', () => {
-    // rgba(...) yerine duz bir hex bekleniyor. Saydam cubugun ardindan
-    // gecen icerik (kirpilmis mekan adi, yarim buton) malzeme gibi
-    // degil cizim hatasi gibi okunuyordu.
-    expect(renk.yuzerZemin).toMatch(/^#[0-9A-F]{6}$/i)
+  it('yuzer cubuk NEREDEYSE opak: saydamlik en fazla %10', () => {
+    /*
+     * IDDIA 2026-09-09'da TERSINE CEVRILDI, silinmedi. Onceden cubuk
+     * TAM OPAK olmali diyordu (duz 6 haneli hex); kullanici "arkasini
+     * cok az seffaf yap" dedi ve alfa geri geldi.
+     *
+     * Kilitlenen sey artik saydamligin OLCUSU. 2026-09-07 denetiminin
+     * gerekcesi hala gecerli: bulaniklik olmadan yuksek saydamlik
+     * malzeme gibi degil cizim hatasi gibi okunuyor - cubugun ardindan
+     * kirpilmis bir mekan adi ve yarim bir buton hayalet gibi
+     * goruenuyordu. O gun sorunu ureten deger %86 opaklikti.
+     *
+     * Alt sinir %90: biri ileride saydamligi o eski seviyeye geri
+     * cekerse bu test kirilir ve karar yeniden onune gelir.
+     */
+    const eslesme = /^#[0-9A-F]{6}([0-9A-F]{2})?$/i.exec(renk.yuzerZemin)
+    expect(eslesme).not.toBeNull()
+
+    const alfa = eslesme?.[1] ? parseInt(eslesme[1], 16) / 255 : 1
+    expect(alfa).toBeGreaterThanOrEqual(0.9)
+    expect(alfa).toBeLessThanOrEqual(1)
   })
 
   it('turuncu YAZI ile turuncu DOLGU ayri jetonlar', () => {

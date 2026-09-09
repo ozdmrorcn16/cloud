@@ -79,12 +79,22 @@ import { useRenk, useStiller } from './tema-baglami'
 /**
  * IKON ALANI - her slotta ikonun (ya da dairenin) oturdugu bolge.
  *
- * Olcusu ORTADAKI DUGMEDEN geliyor: check-in dairesi 54 px ve
- * slotlarin en buyugu o. Butun slotlarda ayni oldugu icin ETIKETLER
- * AYNI HIZADA duruyor - onceden merkezin icerigi daha uzundu ve
- * "Check-in" etiketi komsularindan 20 px asagida kaliyordu (olculdu).
+ * Olcusu ORTADAKI DUGMEDEN geliyor: check-in dairesi bu alani tam
+ * dolduruyor ve slotlarin en buyugu o. Butun slotlarda ayni oldugu
+ * icin ETIKETLER AYNI HIZADA duruyor - onceden merkezin icerigi daha
+ * uzundu ve "Check-in" etiketi komsularindan 20 px asagida kaliyordu
+ * (olculdu).
+ *
+ * 54 -> 48 (kullanicinin istegi 2026-09-09: "sabit sutun cok kalin,
+ * biraz incelt, cok genis duruyor"). ALT SINIR aktif sekme dairesi:
+ * `DAIRE` 44 px, yani 48 ona 2 px pay birakiyor. Daha asagisi daireyi
+ * kirpardi.
+ *
+ * Check-in dugmesi bu olcuye BAGLI ve hala en buyuk slot (48'e karsi
+ * 24 px'lik ikonlar), yani "obur ikonlardan buyuk olsun" kurali
+ * (2026-08-26) bozulmuyor.
  */
-const IKON_ALANI = 54
+const IKON_ALANI = 48
 
 /**
  * Cubugun ic satir yuksekligi = ikon alani + gap + etiket satiri.
@@ -101,6 +111,10 @@ const IKON_ALANI = 54
  * Cubuk boylece 80 -> 98 px. GORSEL AYAK IZI BUYUMUYOR: eskiden daire
  * cubuktan 17 px yukari tasiyordu, yani ekranda kapladigi alan zaten
  * bu kadardi - tasan parca artik cubugun icinde.
+ *
+ * SONRA INCELTILDI (kullanicinin istegi 2026-09-09): ikon alani 54 ->
+ * 48 ve dikey dolgu 12 -> 8, yani satir 72 -> 66 ve cubuk 98 -> 84 px.
+ * Etiketler ve daire duruyor; kisalan sey yalnizca bosluk.
  */
 const SATIR = IKON_ALANI + 4 + 14
 
@@ -508,15 +522,16 @@ export function AltGezinme() {
 /**
  * Cubugun altinda kalmamasi icin sayfa iceriginin birakmasi gereken pay.
  *
- * 104 -> 122 (2026-09-09): cubugun ic satiri 54'ten 72'ye cikinca
- * cubuk da 80'den 98 px'e cikti. Bu sayi 45 ekranda kullaniliyor;
- * cubugun yuksekligi degisirse BURASI DA degismeli, yoksa son satir
- * cubugun altinda kalir.
+ * 104 -> 122 -> 108 (2026-09-09, ayni gun iki kez). Once cubugun ic
+ * satiri 54'ten 72'ye cikti (daire etiketi ortuyordu), sonra kullanici
+ * "cubuk cok kalin, biraz incelt" deyince satir 66'ya, cubuk 84 px'e
+ * indi. Bu sayi 45 ekranda kullaniliyor; cubugun yuksekligi degisirse
+ * BURASI DA degismeli, yoksa son satir cubugun altinda kalir.
  * Icerik artik ekranin dibine kadar aktigi icin alt inset (ana ekran
  * gostergesi) da paya dahil; web'de sifir. Cihaz olcusu uygulama
  * acilirken bir kez okunuyor - donmeyle degismiyor.
  */
-export const ALT_GEZINME_PAYI = 122 + (initialWindowMetrics?.insets.bottom ?? 0)
+export const ALT_GEZINME_PAYI = 108 + (initialWindowMetrics?.insets.bottom ?? 0)
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
@@ -535,7 +550,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: yuvarlak.buyuk,
     borderWidth: 1,
     borderColor: renk.cizgi,
-    paddingVertical: bosluk.m,
+    // 12 -> 8 (kullanicinin istegi 2026-09-09: cubuk incelsin).
+    paddingVertical: bosluk.s,
     ...golge.yuzer,
   },
   sekme: {
