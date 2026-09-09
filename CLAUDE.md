@@ -747,6 +747,12 @@ Performans: her igne `tracksViewChanges={false}` ile ciziliyor - ozel
 gorunumlu bir igne bu bayrak olmadan her karede yeniden ciziliyor ve
 yuz igne haritayi takiyor.
 
+**WEB RADARI DA AYNI KURALA GECTI** (ayni gun): orada da 12'lik sayi
+siniri vardi. Piksel araligi kurali radarda DURUYOR - orada cizilen
+sey ad tasimayan kucuk bir daire ve tam ust uste binen iki nokta
+ikisini birden okunmaz yapiyor; native tarafta ayrim etiket uzerinden
+yapilabiliyor cunku igne adi tasiyor.
+
 **2. DUZENLEME TALEBINE MAHALLE, IL VE ILCE.** Kullanicinin istegi:
 "adres kismina mahalle yazisi da ekle basa, ayri bir de il ilce sutunu
 ekle."
@@ -771,6 +777,25 @@ getirirdi, moderator zaten her talebi goruyor.
 fonksiyon uretiyor; `grant`/`revoke` "function name is not unique"
 diye reddediliyor ve migrasyonun TAMAMI geri aliniyor. Once eski imza
 `drop function ... (uuid, text, text, text, text)` ile dusurulmeli.
+
+**ONAY YOLU CANLI DOGRULANDI: `araclar/mekan-duzenleme-onay-canli-test.py`,
+14/14.** Kardes betik yalnizca TALEP GONDERMEYI olcuyordu; bu betik
+gecici bir moderator hesabi (TOTP ile AAL2) acip ONAYIN kendisini
+olcuyor.
+
+En kritik iddia DENETIM IZI: `moderasyon.kaydet` yeni `hedef_tur =
+'mekan'` degerini kabul etmeseydi kisit ihlali ISLEMIN TAMAMINI geri
+alirdi ve onay HIC olmazdi - 2026-09-02'de yorum tarafinda tam olarak
+bu yasanmisti. Iz satirinin yazildigi dogrulandi.
+
+Ayrica olculdu: ALAN ALAN onay gercekten alan alan calisiyor (yalnizca
+mahalle ve ilce onaylandi; onerilmis olmasina ragmen ad, tur ve il
+DEGISMEDI), `elle_duzenlendi` isaretleniyor, karara baglanmis talep
+ikinci kez karara baglanamiyor, ve olmayan bir il reddediliyor.
+
+Betik gercek bir mekan kaydini degistirdigi icin BASLANGIC HALINI
+saklayip sonunda geri yukluyor; denetim izi satiri ise kaliyor -
+iz ekleme-only ve silinebilseydi izin kendisi anlamsiz olurdu.
 
 **3. UYGULAMA SIMGESI DENENDI VE GERI ALINDI.** Kullanici yeni bir
 simge gorseli verdi ("uygulamanin telefonda gorunen logosu bu

@@ -52,8 +52,17 @@ const EN_AZ_GOSTERIM_METRE = 200
  */
 const EN_FAZLA_GOSTERIM_METRE = 200
 
-/** Haritada en fazla kac mekan ignesi cizilir. */
-const EN_FAZLA_IGNE = 12
+/*
+ * SAYI SINIRI KALKTI (kullanicinin istegi 2026-09-09): "yakinindaki
+ * mekanlar listesinde gorunen butun yerler haritada o anlik
+ * gosterilsin". Native harita da ayni gun ayni kurala gecti - ayni
+ * sey iki platformda farkli gorunmemeli.
+ *
+ * Radarda PIKSEL ARALIGI kurali DURUYOR (`EN_AZ_ARALIK`): burada
+ * cizilen sey kucuk bir daire ve tam ust uste binen iki nokta ikisini
+ * birden okunmaz yapiyor. Native tarafta ayrim etiket uzerinden
+ * yapiliyor cunku orada igne ad tasiyor.
+ */
 
 /** Iki igne birbirine bundan yakinsa ikincisi cizilmez (px). */
 const EN_AZ_ARALIK = 34
@@ -200,7 +209,6 @@ export function CanliHarita({
       // Once kalabaliklar: harita "nerede insan var" sorusunu
       // cevapliyor, "en yakin ne var" sorusunu degil.
       .sort((a, b) => b.mekan.kisiSayisi - a.mekan.kisiSayisi || a.metre - b.metre)
-      .slice(0, EN_FAZLA_IGNE)
 
     if (mesafeli.length === 0) return { yerlesimler: [] as Yerlesim[], gosterimMetre: 0 }
 
