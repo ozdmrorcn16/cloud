@@ -63,17 +63,22 @@ describe('CanliHarita (native)', () => {
    * anlatmayan gri nokta" itirazi ortadan kalkti; sakin mekanlar da
    * yesil igneyle ciziliyor.
    *
-   * Bunun yerine EN COK BES igne kurali geldi: 390 px'lik bir haritada
-   * daha fazlasi etiketleri ust uste bindiriyor.
+   * 2026-09-09'DA BIR KEZ DAHA DEGISTI (kullanicinin istegi):
+   * "yakinindaki mekanlar listesinde gorunen butun yerler haritada o
+   * anlik gosterilsin". Sayi siniri ve aralik kurali artik IGNEYI
+   * degil yalnizca ADIN yazilip yazilmayacagini belirliyor - cakisan
+   * sey igne degil etiketti.
    */
-  it('en cok BES igne cizer (+ merkez)', async () => {
+  it('LISTEDEKI HER mekanin ignesini cizer (+ merkez)', async () => {
     const cok = Array.from({ length: 20 }, (_, i) => mekan(i + 1))
     cok[19] = { ...cok[19], kisiSayisi: 5 }
 
     await render(<CanliHarita merkez={MERKEZ} mekanlar={cok} />)
 
-    // 5 mekan ignesi + 1 merkez ignesi.
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(6)
+    // 20 mekan ignesi + 1 merkez ignesi. Etiketler yine eleniyor ama
+    // igneler eksiksiz: kullanici listede gordugu yeri haritada da
+    // gormek istiyor.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(21)
   })
 
   /**

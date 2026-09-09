@@ -55,6 +55,7 @@ const MEKAN = {
   osmId: null,
   konum: { lat: 40.2, lng: 28.9 },
   kapakFotograf: null,
+  mahalle: null,
 }
 
 beforeEach(() => {
@@ -96,10 +97,45 @@ describe('MekanDuzenleEkrani', () => {
     await waitFor(() =>
       expect(duzenlemeTalebiGonder).toHaveBeenCalledWith('mekan-1', {
         ad: 'Sahil Kahve',
+        mahalle: null,
         adres: null,
+        il: null,
+        ilce: null,
         tur: null,
         fotograf: null,
       })
+    )
+  })
+
+  /*
+   * MAHALLE VE IL/ILCE (kullanicinin istegi 2026-09-09). Mahalle
+   * adresin BASINDA; il ve ilce ayri bir satirda. Mekanin mevcut
+   * ilcesi `semt` sutunundan geliyor - o adin icerigi 2026-08-31'den
+   * beri ILCE.
+   */
+  it('mahalle, il ve ilce alanlari mevcut degerle dolu', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, mahalle: 'Alaaddinbey' })
+
+    await render(<MekanDuzenleEkrani />)
+
+    expect(await screen.findByDisplayValue('Alaaddinbey')).toBeTruthy()
+    expect(screen.getByDisplayValue('Bursa')).toBeTruthy()
+    expect(screen.getByDisplayValue('Nilüfer')).toBeTruthy()
+  })
+
+  it('mahalle ve ilce degisince ikisi de gonderiliyor', async () => {
+    await render(<MekanDuzenleEkrani />)
+    await screen.findByDisplayValue('Sahil Kafe')
+
+    await fireEvent.changeText(screen.getByTestId('duzenle-mahalle'), 'Alaaddinbey')
+    await fireEvent.changeText(screen.getByTestId('duzenle-ilce'), 'Osmangazi')
+    await fireEvent.press(screen.getByTestId('talebi-gonder'))
+
+    await waitFor(() =>
+      expect(duzenlemeTalebiGonder).toHaveBeenCalledWith(
+        'mekan-1',
+        expect.objectContaining({ mahalle: 'Alaaddinbey', ilce: 'Osmangazi' })
+      )
     )
   })
 

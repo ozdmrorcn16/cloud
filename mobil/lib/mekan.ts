@@ -26,6 +26,14 @@ export type Mekan = {
   osmId: number | null
   konum: { lat: number; lng: number }
   /**
+   * MAHALLE (2026-09-09'da GERI GELDI, yalnizca ONAYLI duzeltmeyle).
+   *
+   * 2026-08-31'de sutun dusuruIdue cunku TURETILMIS veriydi ve uc
+   * denemede de yanlis cikti. Buradaki mahalle orada bulunan kisinin
+   * beyani ve moderatorden gecmis - eski itiraz kapaniyor.
+   */
+  mahalle?: string | null
+  /**
    * ONAYLANMIS kapak fotografinin storage yolu (2026-09-09).
    *
    * Yalnizca moderatorden gecmis bir duzenleme talebiyle doluyor.
@@ -47,6 +55,7 @@ type MekanSatiri = {
   osm_id: number | null
   konum: string
   kapak_fotograf?: string | null
+  mahalle?: string | null
 }
 
 function satiriMekanaCevir(satir: MekanSatiri): Mekan {
@@ -63,6 +72,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     osmId: satir.osm_id,
     konum: noktayiCoz(satir.konum),
     kapakFotograf: satir.kapak_fotograf ?? null,
+    mahalle: satir.mahalle ?? null,
   }
 }
 
@@ -399,7 +409,7 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum, kapak_fotograf')
+    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum, kapak_fotograf, mahalle')
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))

@@ -26,6 +26,9 @@ type TalepSatiri = {
   onerilen_ad: string | null
   onerilen_adres: string | null
   onerilen_tur: string | null
+  onerilen_mahalle: string | null
+  onerilen_il: string | null
+  onerilen_ilce: string | null
   fotograf: string | null
   durum: string
   olusturuldu: string
@@ -36,11 +39,15 @@ type Detay = {
   mevcut_ad: string
   mevcut_adres: string | null
   mevcut_tur: string
+  mevcut_mahalle: string | null
   mevcut_semt: string | null
   mevcut_il: string | null
   onerilen_ad: string | null
   onerilen_adres: string | null
   onerilen_tur: string | null
+  onerilen_mahalle: string | null
+  onerilen_il: string | null
+  onerilen_ilce: string | null
   fotograf: string | null
   durum: string
   gonderen_adi: string | null
@@ -49,10 +56,15 @@ type Detay = {
 
 const ALANLAR = [
   { anahtar: 'ad', etiket: 'Ad' },
+  { anahtar: 'mahalle', etiket: 'Mahalle' },
   { anahtar: 'adres', etiket: 'Adres' },
+  { anahtar: 'il', etiket: 'İl' },
+  { anahtar: 'ilce', etiket: 'İlçe' },
   { anahtar: 'tur', etiket: 'Tür' },
   { anahtar: 'fotograf', etiket: 'Kapak fotoğrafı' },
 ]
+
+const TUM_ALANLAR = ALANLAR.map((a) => a.anahtar)
 
 export function DuzenlemeTalepleri() {
   const [satirlar, setSatirlar] = useState<TalepSatiri[]>([])
@@ -61,7 +73,7 @@ export function DuzenlemeTalepleri() {
   const [hata, setHata] = useState<string | null>(null)
   const [acik, setAcik] = useState<Detay | null>(null)
   const [fotoUrl, setFotoUrl] = useState<string | null>(null)
-  const [secili, setSecili] = useState<string[]>(['ad', 'adres', 'tur', 'fotograf'])
+  const [secili, setSecili] = useState<string[]>(TUM_ALANLAR)
   const [not, setNot] = useState('')
   const [isliyor, setIsliyor] = useState(false)
 
@@ -90,7 +102,7 @@ export function DuzenlemeTalepleri() {
   async function detayAc(id: string) {
     setFotoUrl(null)
     setNot('')
-    setSecili(['ad', 'adres', 'tur', 'fotograf'])
+    setSecili(TUM_ALANLAR)
     const { data, error } = await supabase.rpc('moderasyon_duzenleme_talebi_detayi', {
       p_id: id,
     })
@@ -170,7 +182,10 @@ export function DuzenlemeTalepleri() {
                 <td>
                   {[
                     s.onerilen_ad && `Ad: ${s.onerilen_ad}`,
+                    s.onerilen_mahalle && `Mahalle: ${s.onerilen_mahalle}`,
                     s.onerilen_adres && `Adres: ${s.onerilen_adres}`,
+                    s.onerilen_il && `İl: ${s.onerilen_il}`,
+                    s.onerilen_ilce && `İlçe: ${s.onerilen_ilce}`,
                     s.onerilen_tur && `Tür: ${s.onerilen_tur}`,
                     s.fotograf && 'Kapak fotoğrafı',
                   ]
@@ -207,9 +222,24 @@ export function DuzenlemeTalepleri() {
                 <td>{acik.onerilen_ad ?? '—'}</td>
               </tr>
               <tr>
+                <th>Mahalle</th>
+                <td>{acik.mevcut_mahalle ?? '—'}</td>
+                <td>{acik.onerilen_mahalle ?? '—'}</td>
+              </tr>
+              <tr>
                 <th>Adres</th>
                 <td>{acik.mevcut_adres ?? '—'}</td>
                 <td>{acik.onerilen_adres ?? '—'}</td>
+              </tr>
+              <tr>
+                <th>İl</th>
+                <td>{acik.mevcut_il ?? '—'}</td>
+                <td>{acik.onerilen_il ?? '—'}</td>
+              </tr>
+              <tr>
+                <th>İlçe</th>
+                <td>{acik.mevcut_semt ?? '—'}</td>
+                <td>{acik.onerilen_ilce ?? '—'}</td>
               </tr>
               <tr>
                 <th>Tür</th>

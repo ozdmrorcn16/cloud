@@ -31,8 +31,19 @@ export type { HaritaMekani } from './CanliHarita'
  * uygulamalarindaki kart haritalar da boyle.
  */
 
-/** Haritada en fazla kac mekan ignesi cizilir. */
-const EN_FAZLA_IGNE = 12
+/**
+ * IGNE SAYISI SINIRI KALKTI (kullanicinin istegi 2026-09-09:
+ * "yakinindaki mekanlar listesinde gorunen butun yerler haritada o
+ * anlik gosterilsin").
+ *
+ * Once 12'ydi ve listedeki mekanlarin bir kismi haritada hic
+ * gorunmuyordu - ekranin iki yarisi farkli seyler soyluyordu. Ust sinir
+ * artik listenin kendi siniri (`KESFET_LIMIT` = 100, sunucuda).
+ *
+ * PERFORMANS: her igne `tracksViewChanges={false}` ile ciziliyor, yani
+ * ozel gorunum bir kez bitmap'e aliniyor. Bu bayrak olmadan yuz igne
+ * her karede yeniden cizilir ve harita takilir.
+ */
 
 /** Cerceve yaricapi bundan kucuk olmasin - her sey bir noktaya toplanmasin. */
 const EN_AZ_GOSTERIM_METRE = 100
@@ -185,8 +196,9 @@ export function CanliHarita({
   const haritaRef = useRef<MapView>(null)
 
   /**
-   * Igne secimi web'deki kuralin aynisi: once kalabaliklar, sonra en
-   * yakinlar, en fazla 12. Cerceve en uzak igneye gore.
+   * Once kalabaliklar, sonra en yakinlar. Siralama ETIKET secimini
+   * besliyor (adi yazilacak olanlar bastan seciliyor); igneler artik
+   * eksiksiz ciziliyor. Cerceve en uzak igneye gore.
    */
   const { igneler, bolge } = useMemo(() => {
     if (!merkez) return { igneler: [] as HaritaMekani[], bolge: null as Region | null }
@@ -199,7 +211,6 @@ export function CanliHarita({
       }))
       .filter((m) => Number.isFinite(m.metre))
       .sort((a, b) => b.mekan.kisiSayisi - a.mekan.kisiSayisi || a.metre - b.metre)
-      .slice(0, EN_FAZLA_IGNE)
 
     // CERCEVE IGNELERI KAPSAR.
     //
@@ -240,10 +251,22 @@ export function CanliHarita({
   }, [merkez, mekanlar, kullaniciKonumu])
 
   /**
-   * HARITADA ETIKETLI GOSTERILECEK IGNELER.
+   * HANGI IGNELERIN ADI YAZILACAK.
    *
-   * Ikisi birden gerekiyordu: en cok BES igne (390 px'lik bir haritada
-   * fazlasi sigmiyor) ve aralarinda EN AZ BIR MESAFE.
+   * 2026-09-09'a kadar bu kural IGNENIN KENDISINI de eliyordu ve
+   * kullanici bunu bildirdi: "yakinindaki mekanlar listesinde gorunen
+   * butun yerler haritada o anlik gosterilsin". Artik LISTEDEKI HER
+   * MEKANIN IGNESI CIZILIYOR; asagidaki eleme yalnizca ADIN yazilip
+   * yazilmayacagini belirliyor.
+   *
+   * Ayrim onemli: cakisan sey igne degil ETIKET. Igneler kucuk ve renk
+   * tasiyor, ust uste binseler bile harita okunur kaliyor; adlar ise
+   * ic ice gecince ikisi de okunmaz oluyor (kullanicinin 2026-09-06
+   * ekran goruntusu: "Gentaş Aspendos Evleri" ile "Hadim erikli
+   * subesi").
+   *
+   * Ikisi birden gerekiyordu: en cok DOKUZ etiket (390 px'lik bir
+   * haritada fazlasi sigmiyor) ve aralarinda EN AZ BIR MESAFE.
    *
    * Mesafe kurali kullanicinin ekran goruntusunden cikti: bes igne
    * secilmisti ama ikisi birbirine 40 m uzaktaydi ve etiketleri ust
@@ -254,8 +277,8 @@ export function CanliHarita({
    * ayri gorunur, genis bir cercevede 200 m bile bitisik. `gosterim`
    * cerceve yaricapi oldugu icin onun %22'si iyi bir yaklasim.
    */
-  const etiketliIgneler = useMemo(() => {
-    if (!merkez) return [] as HaritaMekani[]
+  const etiketliKimlikler = useMemo(() => {
+    if (!merkez) return new Set<string>()
 
     const gosterim = bolge
       ? (bolge.latitudeDelta * 110540) / 2
@@ -283,7 +306,7 @@ export function CanliHarita({
       )
       if (!cakisiyor) secilen.push(aday)
     }
-    return secilen
+    return new Set(secilen.map((m) => m.id))
   }, [igneler, bolge, merkez])
 
   // Merkez ya da mekanlar degisince harita yeni cerceveye kayar. Ilk
@@ -338,13 +361,17 @@ export function CanliHarita({
             bindiriyor. Once POPULER ve YOGUN olanlar seciliyor -
             haritanin cevaplamasi gereken soru "su an nerede hareket
             var". */}
-        {etiketliIgneler.map((mekan) => {
+        {igneler.map((mekan) => {
             const d = durumu(mekan)
+            const etiketli = etiketliKimlikler.has(mekan.id)
             return (
               <Marker
                 key={mekan.id}
                 coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
                 anchor={{ x: 0.5, y: 1 }}
+                // Ozel gorunumlu igne her karede yeniden cizilmesin:
+                // sinir kalkinca sayi yuze cikabiliyor.
+                tracksViewChanges={false}
                 onPress={() => onMekanSec?.(mekan.id)}
                 accessibilityLabel={
                   mekan.kisiSayisi > 0
@@ -362,14 +389,21 @@ export function CanliHarita({
                     />
                     <Circle cx={12} cy={9.4} r={2.8} fill="#FFFFFF" />
                   </Svg>
-                  <View style={stiller.igneEtiket}>
-                    <Text style={stiller.igneAd} numberOfLines={2}>
-                      {mekan.ad}
-                    </Text>
-                    <Text style={[stiller.igneDurum, { color: DURUM_RENGI[d] }]}>
-                      {DURUM_ETIKETI[d]}
-                    </Text>
-                  </View>
+                  {/* AD YALNIZCA SIGDIGINDA. Igne her zaman ciziliyor;
+                      etiket komsusuyla cakisacaksa yazilmiyor. Bilgi
+                      kaybolmuyor: igneye basmak mekan sayfasini aciyor
+                      ve erisilebilirlik etiketi adi tasimaya devam
+                      ediyor. */}
+                  {etiketli && (
+                    <View style={stiller.igneEtiket}>
+                      <Text style={stiller.igneAd} numberOfLines={2}>
+                        {mekan.ad}
+                      </Text>
+                      <Text style={[stiller.igneDurum, { color: DURUM_RENGI[d] }]}>
+                        {DURUM_ETIKETI[d]}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </Marker>
             )

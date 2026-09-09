@@ -22,10 +22,20 @@ import { supabase } from './supabase'
 /** Bir alanin en fazla uzunlugu; sunucudaki kisitlarla AYNI olmali. */
 export const AD_EN_FAZLA = 120
 export const ADRES_EN_FAZLA = 200
+export const MAHALLE_EN_FAZLA = 80
+export const IL_ILCE_EN_FAZLA = 40
 
 export type DuzenlemeTalebi = {
   ad?: string | null
+  /**
+   * MAHALLE (2026-09-09). `mekanlar.mahalle` sutunu 2026-08-31'de
+   * TURETILMIS veri oldugu icin dusuruImustu; buradaki mahalle
+   * turetilmiyor - orada bulunan kisi yaziyor, moderator onayliyor.
+   */
+  mahalle?: string | null
   adres?: string | null
+  il?: string | null
+  ilce?: string | null
   tur?: string | null
   /** Storage yolu; `mekanFotografiYukle` donduruyor. */
   fotograf?: string | null
@@ -76,6 +86,9 @@ export async function duzenlemeTalebiGonder(
     p_adres: talep.adres?.slice(0, ADRES_EN_FAZLA) ?? null,
     p_tur: talep.tur ?? null,
     p_fotograf: talep.fotograf ?? null,
+    p_mahalle: talep.mahalle?.slice(0, MAHALLE_EN_FAZLA) ?? null,
+    p_il: talep.il?.slice(0, IL_ILCE_EN_FAZLA) ?? null,
+    p_ilce: talep.ilce?.slice(0, IL_ILCE_EN_FAZLA) ?? null,
   })
   if (error) throw new Error(hataMetni(error))
   return data as string

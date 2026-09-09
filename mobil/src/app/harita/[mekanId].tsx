@@ -422,11 +422,19 @@ export default function MekanSayfasi() {
   }
 
   /**
-   * YALNIZCA ilce ve il. Kullanicinin karari (2026-08-31): "Mahalle
-   * adres bilgisi aktarimini durdur ve sil, sadece konumlarin ilce ve
-   * il bilgisini gosterecegiz TAM DOGRULUK ADINA."
+   * Ilce ve il. Kullanicinin karari (2026-08-31): "Mahalle adres
+   * bilgisi aktarimini durdur ve sil, sadece konumlarin ilce ve il
+   * bilgisini gosterecegiz TAM DOGRULUK ADINA."
+   *
+   * MAHALLE 2026-09-09'da GERI GELDI ama yalnizca ONAYLI DUZELTMEDEN
+   * gelenler: o karar TURETILMIS mahalleye karsiydi (en yakin OSM
+   * noktasi, komsuluga yayma, kirli adres kaydi - ucu de yanlis
+   * sonuc vermisti). Onaylanmis bir beyan turetilmis veri degil,
+   * dolayisiyla gosterilmesinde sakinca yok. Dolu degilse satir
+   * eskisi gibi "ilce, il".
    */
-  const adresSatiri = [mekan?.semt, mekan?.il].filter(Boolean).join(', ') || null
+  const adresSatiri =
+    [mekan?.mahalle, mekan?.semt, mekan?.il].filter(Boolean).join(', ') || null
 
   // Avatar seridinde en fazla ALTI kisi; gerisi "+N" rozetine giriyor.
   // Sayi ustteki istatistikten geliyor, listeden DEGIL - liste RLS ile

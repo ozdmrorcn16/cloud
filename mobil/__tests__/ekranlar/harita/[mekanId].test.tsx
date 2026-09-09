@@ -115,17 +115,35 @@ describe('CheckInHaritasiEkrani', () => {
    * kirliydi ("Bursa Erik mah." gibi alanlari karisik girilmis
    * kayitlar). Ilce ve il ise poligon testiyle atandigi icin kesin.
    */
-  it('adres ve mahalle dolu OLSA BILE yalnizca ILCE + IL gosterir', async () => {
+  /*
+   * SERBEST ADRES HALA GOSTERILMIYOR (2026-08-31 karari): kaynaktaki
+   * adres kaydi kirli cikmisti.
+   *
+   * MAHALLE ISE 2026-09-09'da GERI GELDI - ama yalnizca ONAYLI
+   * duzeltmeden geleni. O karar TURETILMIS mahalleye karsiydi; bir
+   * insanin beyani ve moderator onayi turetilmis veri degil.
+   */
+  it('mahalle doluysa ilce ve ille birlikte gosteriliyor', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue({
       ...MEKAN,
-      mahalle: 'Ertuğrul',
+      mahalle: 'Alaaddinbey',
       adres: 'Alaaddinbey Mah. 613. Sk No:9',
     })
 
     await render(<CheckInHaritasiEkrani />)
 
-    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Alaaddinbey, Nilüfer, Bursa')).toBeTruthy())
+    // Serbest adres metni HALA gosterilmiyor.
     expect(screen.queryByText('Alaaddinbey Mah. 613. Sk No:9')).toBeNull()
+    await cevreOturana()
+  })
+
+  it('mahalle yoksa satir eskisi gibi ILCE + IL', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, mahalle: null })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy())
     await cevreOturana()
   })
 

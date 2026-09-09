@@ -729,6 +729,74 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### HARITADA BUTUN IGNELER, MAHALLE/IL/ILCE, YENI SIMGE - 2026-09-09 (altinci tur)
+
+**1. HARITA LISTEDEKI HER MEKANI GOSTERIYOR.** Kullanicinin istegi:
+"yakinindaki mekanlar listesinde gorunen butun yerler haritada o anlik
+gosterilsin". Iki sinir vardi ve ikisi de IGNEYI eliyordu:
+`EN_FAZLA_IGNE = 12` ve etiket araligi kurali. Sonuc: listede gorunen
+mekan haritada yoktu, ekranin iki yarisi farkli sey soyluyordu.
+
+**AYRIM: cakisan sey IGNE DEGIL ETIKET.** Igne kucuk ve renk tasiyor,
+ust uste binse bile harita okunur kaliyor; ADLAR ic ice gecince ikisi
+de okunmaz oluyor (2026-09-06'daki ekran goruntusu). Artik LISTEDEKI
+HER MEKANIN IGNESI ciziliyor, aralik ve sayi kurali yalnizca ADIN
+yazilip yazilmayacagini belirliyor.
+
+Performans: her igne `tracksViewChanges={false}` ile ciziliyor - ozel
+gorunumlu bir igne bu bayrak olmadan her karede yeniden ciziliyor ve
+yuz igne haritayi takiyor.
+
+**2. DUZENLEME TALEBINE MAHALLE, IL VE ILCE.** Kullanicinin istegi:
+"adres kismina mahalle yazisi da ekle basa, ayri bir de il ilce sutunu
+ekle."
+
+**MAHALLE GERI GELDI ama BASKA BIR YOLDAN.** `mekanlar.mahalle` sutunu
+2026-08-31'de dusuruImustu ve gerekce DOGRULUKTU: mahalle uc kez
+TURETILMEYE calisildi (en yakin OSM yerlesim noktasi, komsuluga yayma,
+kirli adres kaydi) ve ucu de yanlis sonuc verdi. Buradaki mahalle
+turetilmiyor - orada bulunan kisi yaziyor, moderator onayliyor. Yani
+"turetilmis veri degil gercek kayit" kurali korunuyor.
+
+Mekan sayfasindaki adres satiri artik `mahalle, ilce, il`; mahalle
+yoksa eskisi gibi `ilce, il`.
+
+**IL SERBEST METIN DEGIL:** 81 ilin listesi zaten `public.iller`
+tablosunda duruyor ve sunucu onu dogruluyor - uydurma bir il, il bazli
+aramayi ve tur suzgecini bozardi. ILCE icin ayni kontrol YOK: 945
+ilcenin adini ikinci bir yerde tutmak onlari guncel tutma yukumlulugu
+getirirdi, moderator zaten her talebi goruyor.
+
+**TUZAK, yasandi:** RPC'ye yeni parametre eklemek ayni adla IKINCI bir
+fonksiyon uretiyor; `grant`/`revoke` "function name is not unique"
+diye reddediliyor ve migrasyonun TAMAMI geri aliniyor. Once eski imza
+`drop function ... (uuid, text, text, text, text)` ile dusurulmeli.
+
+**3. UYGULAMA SIMGESI DEGISTI.** Kullanicinin verdigi yeni gorsel
+(turuncu gradyan uzerinde beyaz S ve iki nokta).
+Uretici: `araclar/uygulama-simgesi-uret.py`, kaynak
+`tasarim/slooin-simge-3-kaynak.png`.
+
+**SIMGE SIFIRDAN KURULUYOR, kaynak kirpilmiyor.** iOS ve Android
+simgeyi kendi maskeliyor; hazir yuvarlatilmis bir gorselde koselerde
+beyaz ucgenler kaliyor. Iki yaklasim GORSEL DOGRULAMADA ELENDI:
+(a) koseleri en yakin ic pikselle doldurmak - koselerde surtuk izleri
+birakti; (b) yalnizca renkle isaret maskesi - kaynagin PARLAK RIMI de
+acik ve doygunlugu dusuk oldugu icin simgenin ustune hayalet bir
+cerceve cizdi. Calisan yol: zemini OLCUP yeniden uretmek (doygun ic
+piksellere kanal basina dogrusal model) ve isaret maskesinden HALKA
+bicimli bileseni BICIMLE elemek (sinir kutusu gorselin %90'ini asan
+bilesen atiliyor).
+
+**PWA SIMGELERININ ADINDA SURUM VAR: v2 -> v3.** iOS ana ekran
+kisayolunun simgesini ADRESE gore onbellege aliyor; ayni adla yeni
+gorsel yayinlaninca telefonda eski logo gorunmeye devam ediyor.
+
+**SIMGE OTA ILE GITMEZ - kullaniciya soylendi.** Uygulama simgesi
+native pakete gomulu; telefondaki simgenin degismesi icin YENI BIR
+DERLEME gerekiyor (`eas build --platform ios --profile production`).
+Web ve PWA tarafi yayinla birlikte guncelleniyor.
+
 ### MEKAN DUZENLEME TALEPLERI - 2026-09-09 (besinci tur)
 
 Kullanicinin istegi: "konumlara duzenleme talebi gonder ekle; talebe

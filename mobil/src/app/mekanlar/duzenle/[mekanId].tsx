@@ -17,6 +17,8 @@ import {
   bekleyenTalebimVarMi,
   AD_EN_FAZLA,
   ADRES_EN_FAZLA,
+  MAHALLE_EN_FAZLA,
+  IL_ILCE_EN_FAZLA,
 } from '../../../../lib/mekan-duzenleme'
 import { supabase } from '../../../../lib/supabase'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from '../../../tasarim/tema'
@@ -47,7 +49,10 @@ export default function MekanDuzenleEkrani() {
 
   const [mekan, setMekan] = useState<Mekan | null>(null)
   const [ad, setAd] = useState('')
+  const [mahalle, setMahalle] = useState('')
   const [adres, setAdres] = useState('')
+  const [il, setIl] = useState('')
+  const [ilce, setIlce] = useState('')
   const [tur, setTur] = useState<string | null>(null)
   const [yerelFoto, setYerelFoto] = useState<string | null>(null)
   const [kaynakSecimi, setKaynakSecimi] = useState(false)
@@ -71,7 +76,12 @@ export default function MekanDuzenleEkrani() {
         if (!bulunan) return
         setMekan(bulunan)
         setAd(bulunan.ad)
+        setMahalle(bulunan.mahalle ?? '')
         setAdres(bulunan.adres ?? '')
+        setIl(bulunan.il ?? '')
+        // `semt` sutununun adi tarihsel; icerigi 2026-08-31'den beri
+        // ILCE (poligon testiyle atanmis).
+        setIlce(bulunan.semt ?? '')
         setTur(bulunan.tur ?? null)
       })
       .catch((e) => {
@@ -132,9 +142,15 @@ export default function MekanDuzenleEkrani() {
   }
 
   const degisenAd = mekan && ad.trim() !== mekan.ad ? ad.trim() : null
+  const degisenMahalle =
+    mekan && mahalle.trim() !== (mekan.mahalle ?? '') ? mahalle.trim() : null
   const degisenAdres = mekan && adres.trim() !== (mekan.adres ?? '') ? adres.trim() : null
+  const degisenIl = mekan && il.trim() !== (mekan.il ?? '') ? il.trim() : null
+  const degisenIlce = mekan && ilce.trim() !== (mekan.semt ?? '') ? ilce.trim() : null
   const degisenTur = mekan && tur && tur !== mekan.tur ? tur : null
-  const degisiklikVar = Boolean(degisenAd || degisenAdres || degisenTur || yerelFoto)
+  const degisiklikVar = Boolean(
+    degisenAd || degisenMahalle || degisenAdres || degisenIl || degisenIlce || degisenTur || yerelFoto
+  )
 
   async function gonder() {
     if (!degisiklikVar || gonderiliyor) return
@@ -150,7 +166,10 @@ export default function MekanDuzenleEkrani() {
       }
       await duzenlemeTalebiGonder(mekanId, {
         ad: degisenAd,
+        mahalle: degisenMahalle,
         adres: degisenAdres,
+        il: degisenIl,
+        ilce: degisenIlce,
         tur: degisenTur,
         fotograf: fotografYolu,
       })
@@ -215,6 +234,20 @@ export default function MekanDuzenleEkrani() {
               testID="duzenle-ad"
             />
 
+            {/* MAHALLE ADRESIN BASINDA (kullanicinin istegi
+                2026-09-09). Turkiye'de adres mahalleyle basliyor;
+                ayri bir alan olmasi hem yazmayi kolaylastiriyor hem de
+                veriyi aranabilir tutuyor - adres serbest metin, mahalle
+                ise tek basina bir alan. */}
+            <Text style={stiller.etiket}>Mahalle</Text>
+            <TextInput
+              style={stiller.alan}
+              value={mahalle}
+              onChangeText={(d) => setMahalle(d.slice(0, MAHALLE_EN_FAZLA))}
+              placeholder="Örnek: Alaaddinbey"
+              testID="duzenle-mahalle"
+            />
+
             <Text style={stiller.etiket}>Adres</Text>
             <TextInput
               style={[stiller.alan, stiller.cokSatirli]}
@@ -224,6 +257,31 @@ export default function MekanDuzenleEkrani() {
               multiline
               testID="duzenle-adres"
             />
+
+            {/* IL VE ILCE AYRI SATIRDA, yan yana: ikisi de kisa ve
+                birlikte okunuyor. */}
+            <View style={stiller.ikili}>
+              <View style={stiller.yariAlan}>
+                <Text style={stiller.etiket}>İl</Text>
+                <TextInput
+                  style={stiller.alan}
+                  value={il}
+                  onChangeText={(d) => setIl(d.slice(0, IL_ILCE_EN_FAZLA))}
+                  placeholder="Bursa"
+                  testID="duzenle-il"
+                />
+              </View>
+              <View style={stiller.yariAlan}>
+                <Text style={stiller.etiket}>İlçe</Text>
+                <TextInput
+                  style={stiller.alan}
+                  value={ilce}
+                  onChangeText={(d) => setIlce(d.slice(0, IL_ILCE_EN_FAZLA))}
+                  placeholder="Nilüfer"
+                  testID="duzenle-ilce"
+                />
+              </View>
+            </View>
 
             <Text style={stiller.etiket}>Tür</Text>
             {/* TUR SERBEST METIN DEGIL: onay verildiginde deger dogrudan
@@ -329,6 +387,8 @@ const stilleriYap = (renk: Renk) =>
       color: renk.metin,
     },
     cokSatirli: { minHeight: 66, textAlignVertical: 'top' },
+    ikili: { flexDirection: 'row', gap: bosluk.m },
+    yariAlan: { flex: 1 },
     grup: { marginTop: bosluk.s, gap: bosluk.xs },
     grupBaslik: { fontFamily: yazi.govde, fontSize: olcek.minik, color: renk.metinIkincil },
     cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s },
