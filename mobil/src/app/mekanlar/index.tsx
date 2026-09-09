@@ -11,6 +11,7 @@ import {
   type NativeSyntheticEvent,
   ActivityIndicator,
   StyleSheet,
+  Keyboard,
 } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
@@ -111,6 +112,15 @@ const DURUM_RENGI: Record<MekanDurumu, string> = {
   populer: '#F5A623',
 }
 
+/**
+ * Oneri panelinde en fazla kac satir.
+ *
+ * Alti, kutunun altini kaplamadan secim yapmaya yetiyor. Daha uzun bir
+ * panel altindaki durum ciplerini ve listeyi ekrandan itiyor - panel
+ * bir kisayol, ekranin kendisi degil.
+ */
+const ONERI_ADEDI = 6
+
 const DURUM_ZEMINI: Record<MekanDurumu, string> = {
   sakin: 'rgba(47, 191, 91, 0.12)',
   yogun: 'rgba(229, 72, 77, 0.12)',
@@ -124,6 +134,12 @@ export default function KesfetEkrani() {
   const { t } = useDil()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [arama, setArama] = useState('')
+  /*
+   * ONERI PANELI ACIK MI. Bir oneriye dokununca kapaniyor; yeni bir
+   * harf yazilinca yeniden aciliyor. Bayrak olmadan panel, kullanici
+   * secimini yaptiktan sonra da ekranda kalirdi.
+   */
+  const [oneriGizli, setOneriGizli] = useState(false)
   /**
    * Haritanin altindaki iki sekme (kullanicinin karari 2026-08-31).
    *
@@ -483,6 +499,15 @@ export default function KesfetEkrani() {
     // bekletmeli etki atiyor. Yazma ile ag istegini ayirmak, yazi
     // kutusunun her tusta yeniden olusmasini engelliyor.
     setArama(metin)
+    // Yazmaya devam etmek oneri panelini yeniden aciyor.
+    setOneriGizli(false)
+  }
+
+  /** Oneriden secim: mekan sayfasi acilir, panel ve klavye kapanir. */
+  function oneriyeGit(mekanId: string) {
+    setOneriGizli(true)
+    Keyboard.dismiss()
+    router.push(`/harita/${mekanId}` as never)
   }
 
   // Kesfet akisi "su an nereye gidip birileriyle karsilasabilirim"
@@ -498,6 +523,26 @@ export default function KesfetEkrani() {
   // Tur cipleri KALDIRILDI (karar 2026-08-24): tur artik dis kaynakli
   // mekanlarda gosterilmedigi icin ona gore suzmek de anlamsiz.
   const suzulmus = kesfetListesi
+
+  /**
+   * ARAMA ONERILERI - kutunun hemen altinda acilan kisa liste.
+   *
+   * Kullanicinin istegi (2026-09-10): "mekan arada kelimeler yazmaya
+   * baslar baslamaz, mekan ara sutunun hemen altinda yazmaya
+   * calistigim kelimenin benzerlerini bana oneren bir sey ciksin."
+   *
+   * AYRI BIR ISTEK ATILMIYOR: oneriler ZATEN gelmis arama sonucunun
+   * ilk birkacindan turetiliyor. Ikinci bir RPC her tusta iki ag
+   * istegi demekti ve ayni veriyi iki kez cekerdi. Sonuc yakinlik
+   * sirasinda geldigi icin oneriler de en yakindan basliyor.
+   *
+   * PANELIN ISI LISTEDEN FARKLI: liste bir CHECK-IN yuzeyi (kart,
+   * rozet, buton), panel ise bir GEZINME kisayolu - tek satir, dokunun
+   * ve mekan sayfasi acilsin. Bu yuzden ayni kayitlari gostermeleri
+   * tekrar degil.
+   */
+  const oneriler =
+    arama.trim().length > 0 && !oneriGizli ? suzulmus.slice(0, ONERI_ADEDI) : []
 
   /**
    * Haritanin altindaki kart YALNIZCA AKTIF CHECK-IN varken cikiyor.
@@ -918,6 +963,49 @@ export default function KesfetEkrani() {
         </Pressable>
       </View>
 
+      {/* ARAMA ONERILERI - kutunun HEMEN ALTINDA.
+
+          AKIS ICINDE, ustte yuzen bir katman DEGIL: ekran bir
+          ScrollView ve mutlak konumlu bir panel kaydirmayla birlikte
+          kayar, ayrica altindaki ogelerin dokunuslarini yutar.
+          Kullanicinin istegi de zaten "kutunun hemen altinda" idi.
+
+          Panel acikken altindaki liste DURUYOR - orasi check-in
+          yuzeyi, burasi gezinme kisayolu. */}
+      {oneriler.length > 0 && (
+        <View style={stiller.oneriPaneli} testID="arama-onerileri">
+          {oneriler.map((m, sira) => (
+            <Pressable
+              key={m.id}
+              style={({ pressed }) => [
+                stiller.oneriSatiri,
+                sira > 0 && stiller.oneriAyirici,
+                pressed && stiller.oneriBasili,
+              ]}
+              onPress={() => oneriyeGit(m.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${m.ad} konumunu gör`}
+              testID={`arama-onerisi-${m.id}`}
+            >
+              <BuyutecIkonu renk={renk.metinSoluk} />
+              <View style={stiller.oneriGovde}>
+                <Text style={stiller.oneriAd} numberOfLines={1}>
+                  {m.ad}
+                </Text>
+                {/* Ayni adi tasiyan iki mekan olabiliyor; ilce ve il
+                    onlari ayirt eden tek bilgi. Bossa satir hic
+                    cizilmiyor - bos bir alt satir yer kaplardi. */}
+                {konumYazisi(m) ? (
+                  <Text style={stiller.oneriKonum} numberOfLines={1}>
+                    {konumYazisi(m)}
+                  </Text>
+                ) : null}
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       {/* SECILI TURLER GORUNUR DURUYOR. Suzgec bir pencerenin icinde
           kalirsa kullanici listenin neden kisa oldugunu goremez;
           buradaki cipler hem sebebi soyluyor hem tek dokunusla
@@ -1292,6 +1380,44 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   // --- arama satiri ---
   aramaSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+
+  /*
+   * ONERI PANELI. Kart gibi duruyor - sayfa zemini de yuzey de beyaz
+   * oldugu icin ayrimi KENARLIK ve GOLGE tasiyor (2026-08-27 kurali:
+   * kenarliksiz ve golgesiz bir kart beyaz zeminde gorunmez olur).
+   */
+  oneriPaneli: {
+    marginTop: bosluk.s,
+    backgroundColor: renk.yuzey,
+    borderRadius: yuvarlak.kart,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    overflow: 'hidden',
+    ...golge.kart,
+  },
+  oneriSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.s,
+    paddingHorizontal: bosluk.m,
+    // 44 pt dokunma esigi: iki satirli icerikte zaten asiliyor, tek
+    // satirlikta dikey dolgu tamamliyor.
+    paddingVertical: 10,
+    minHeight: 44,
+  },
+  oneriAyirici: { borderTopWidth: 1, borderTopColor: renk.cizgi },
+  oneriBasili: { backgroundColor: renk.turuncuZemin },
+  oneriGovde: { flex: 1 },
+  oneriAd: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  oneriKonum: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
   aramaKutusu: {
     flex: 1,
     flexDirection: 'row',

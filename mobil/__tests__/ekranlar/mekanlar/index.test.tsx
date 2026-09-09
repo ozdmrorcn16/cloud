@@ -1142,4 +1142,113 @@ describe('MekanAramaEkrani', () => {
     expect(screen.getByText('Yakın Kafe')).toBeTruthy()
     expect(screen.getByText('Uzak Kafe')).toBeTruthy()
   })
+  // ------------------------------------------------------------------ //
+  // ARAMA ONERILERI (kullanicinin istegi 2026-09-10)
+  //
+  // "Mekan arada kelimeler yazmaya baslar baslamaz, mekan ara sutunun
+  // hemen altinda yazmaya calistigim kelimenin benzerlerini bana
+  // oneren bir sey ciksin."
+  // ------------------------------------------------------------------ //
+
+  it('arama bosken oneri paneli YOK', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await screen.findAllByText('Sahil Kafe')
+
+    expect(screen.queryByTestId('arama-onerileri')).toBeNull()
+  })
+
+  it('yazmaya baslayinca oneri paneli aciliyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kaf')
+
+    const panel = await screen.findByTestId('arama-onerileri')
+    expect(within(panel).getByText('Sahil Kafe')).toBeTruthy()
+    // Ayni adi tasiyan iki mekani ayirt eden tek bilgi ilce ve il.
+    expect(within(panel).getByText('Nilüfer, Bursa')).toBeTruthy()
+  })
+
+  it('oneriye dokununca MEKAN SAYFASI aciliyor ve panel kapaniyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kaf')
+    await screen.findByTestId('arama-onerileri')
+
+    mockRouterPush.mockClear()
+    await fireEvent.press(screen.getByTestId('arama-onerisi-mekan-1'))
+
+    // Check-in ekrani DEGIL: panel bir gezinme kisayolu.
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+    expect(screen.queryByTestId('arama-onerileri')).toBeNull()
+  })
+
+  /*
+   * Secimden sonra yazmaya devam etmek paneli GERI aciyor. Bayrak
+   * kalici olsaydi kullanici aramasini duzeltirken oneri alamazdi.
+   */
+  it('secimden sonra yeni harf paneli YENIDEN aciyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kaf')
+    await screen.findByTestId('arama-onerileri')
+    await fireEvent.press(screen.getByTestId('arama-onerisi-mekan-1'))
+    expect(screen.queryByTestId('arama-onerileri')).toBeNull()
+
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kafe')
+
+    expect(await screen.findByTestId('arama-onerileri')).toBeTruthy()
+  })
+
+  /*
+   * ONERI AYRI BIR ISTEK ATMIYOR: eldeki arama sonucundan
+   * turetiliyor. Ikinci bir RPC her tusta iki ag istegi demekti.
+   */
+  it('oneri paneli EK ISTEK atmiyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(1))
+
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kaf')
+    await screen.findByTestId('arama-onerileri')
+
+    // Yalnizca aramanin KENDI istegi: bekletmeli etki bir kez atiyor.
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2))
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2)
+  })
 })

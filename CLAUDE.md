@@ -1225,6 +1225,54 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### ARAMA ONERILERI VE COK SATIRLI ADRES - 2026-09-10
+
+**1. ARAMA ONERI PANELI.** Kullanicinin istegi: "mekan arada kelimeler
+yazmaya baslar baslamaz, mekan ara sutunun hemen altinda yazmaya
+calistigim kelimenin benzerlerini bana oneren bir sey ciksin."
+
+Kutunun HEMEN ALTINDA, en fazla alti satirlik bir kart. Her satir tek
+dokunusla mekan sayfasini aciyor.
+
+**AYRI BIR ISTEK ATILMIYOR - en onemli karar.** Oneriler ZATEN gelmis
+arama sonucunun ilk altisindan turetiliyor. Ikinci bir RPC her tusta
+IKI ag istegi demekti ve ayni veriyi iki kez cekerdi; sonuc zaten
+yakinlik sirasinda geldigi icin oneriler de en yakindan basliyor. Bir
+testle kilitli ("oneri paneli EK ISTEK atmiyor").
+
+**PANELIN ISI LISTEDEN FARKLI, o yuzden tekrar degil:** liste bir
+CHECK-IN yuzeyi (kart, durum rozeti, buton), panel bir GEZINME
+kisayolu (tek satir, dokun ve mekan sayfasi acilsin). Panel acikken
+alttaki liste duruyor.
+
+**AKIS ICINDE, YUZEN KATMAN DEGIL.** Ekran bir `ScrollView`; mutlak
+konumlu bir panel kaydirmayla birlikte kayar ve altindaki ogelerin
+dokunuslarini yutar. Kullanicinin istegi de "kutunun hemen altinda"
+idi.
+
+`oneriGizli` bayragi: bir oneriye dokununca panel kapaniyor, YENI BIR
+HARF yazilinca geri aciliyor. Bayrak kalici olsaydi kullanici
+aramasini duzeltirken oneri alamazdi - testle kilitli.
+
+**2. ADRES ALANI COK SATIRLI.** Kullanicinin bildirdigi kusur:
+"otomatik adresin yazildigi sutunda yazi uzun olunca kaydirmasi zor
+oluyor, adresin devamini gormek icin ona bir yol bul."
+
+Tek satirlik bir `TextInput`ta uzun metin YATAY kayiyor ve telefonda o
+kaydirmayi yakalamak zor - ekran goruntusunde adres "Şehit Çavuş Er…"
+diye kirpilmisti. **Cozum kaydirmayi kolaylastirmak degil, IHTIYACI
+ORTADAN KALDIRMAK:** alan `multiline`, metin sariyor, devami alt
+satirda kendiliginden gorunuyor.
+
+`minHeight: 76` kutu birden buyuyup formu zipzip oynatmasin diye;
+`maxHeight: 140` cunku sinirsiz buyuyen bir alan "Ekle" dugmesini
+ekrandan cikarabilir - o noktadan sonra alan kendi icinde DIKEY
+kayiyor, ki telefonda dogal olan hareket odur.
+`textAlignVertical: 'top'` Android icin sart: onsuz metin dikeyde
+ortalaniyor ve iki satirli alanda ilk satir asagi kaciyor.
+
+Dogrulama: jest 66 paket / 793 test, tsc uygulama kodunda 0 hata.
+
 ### UC DUZELTME - 2026-09-10
 
 **1. HARITA YINE 1 KM.** Bir gun onceki 500 m siniri kullanicinin

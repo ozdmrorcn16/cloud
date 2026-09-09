@@ -158,11 +158,33 @@ export default function MekanEkleEkrani() {
           )
         })}
       </View>
+      {/* ADRES ALANI COK SATIRLI.
+          
+          Kullanicinin bildirdigi kusur (2026-09-10): "otomatik adresin
+          yazildigi sutunda yazi uzun olunca kaydirmasi zor oluyor,
+          adresin devamini gormek icin ona bir yol bul."
+          
+          Tek satirlik bir `TextInput`ta uzun metin YATAY kayiyor ve
+          telefonda o kaydirmayi yakalamak zor - ekran goruntusunde
+          adres "Şehit Çavuş Er…" diye kirpilmisti. Cozum kaydirmayi
+          kolaylastirmak DEGIL, ihtiyaci ortadan kaldirmak: metin artik
+          SARIYOR, yani devami alt satirda kendiliginden gorunuyor.
+          
+          `maxHeight` var cunku sinirsiz buyuyen bir alan formu asagi
+          itip "Ekle" dugmesini ekrandan cikarabilir; o noktadan sonra
+          alan kendi icinde dikey kayiyor - dikey kaydirma telefonda
+          dogal olan hareket.
+          
+          `textAlignVertical: 'top'` Android icin: onsuz metin dikeyde
+          ortalaniyor ve iki satirli bir alanda ilk satir asagi
+          kaciyor. */}
       <TextInput
-        style={stiller.girdi}
+        style={[stiller.girdi, stiller.adresGirdisi]}
         placeholder="Adres (opsiyonel)"
         value={adres}
         onChangeText={adresDegisti}
+        multiline
+        textAlignVertical="top"
         testID="adres-girdisi"
       />
 
@@ -294,6 +316,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metin,
   },
+  /*
+   * Adres alani cok satirli: en az iki satirlik yuksekligi bastan
+   * ayirir (kutu birden buyuyup formu zipzip oynatmasin), en fazla
+   * bes satira kadar buyur.
+   */
+  adresGirdisi: { minHeight: 76, maxHeight: 140 },
   buton: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,

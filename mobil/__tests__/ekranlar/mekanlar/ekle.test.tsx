@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import { Keyboard } from 'react-native'
+import { Keyboard, StyleSheet } from 'react-native'
 import MekanEkleEkrani from '../../../src/app/mekanlar/ekle'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir, mekanEkle } from '../../../lib/mekan'
@@ -187,5 +187,29 @@ describe('MekanEkleEkrani - klavye', () => {
 
     expect(kapat).toHaveBeenCalled()
     kapat.mockRestore()
+  })
+  /*
+   * ADRES ALANI COK SATIRLI (kullanicinin bildirdigi kusur
+   * 2026-09-10: "adresin yazildigi sutunda yazi uzun olunca
+   * kaydirmasi zor oluyor, adresin devamini gormek icin bir yol bul").
+   *
+   * Tek satirlik bir alanda uzun metin YATAY kayiyordu ve telefonda o
+   * kaydirmayi yakalamak zordu. Cozum kaydirmayi kolaylastirmak degil,
+   * ihtiyaci ortadan kaldirmak: metin sariyor.
+   */
+  it('adres alani COK SATIRLI: uzun adres sariyor', async () => {
+    await render(<MekanEkleEkrani />)
+
+    const alan = await screen.findByTestId('adres-girdisi')
+    expect(alan.props.multiline).toBe(true)
+
+    // Sinirsiz buyuyen bir alan "Ekle" dugmesini ekrandan cikarirdi;
+    // tavandan sonra alan kendi icinde dikey kayiyor.
+    const stil = StyleSheet.flatten(alan.props.style) as {
+      minHeight?: number
+      maxHeight?: number
+    }
+    expect(stil.maxHeight).toBeGreaterThan(0)
+    expect(stil.minHeight).toBeGreaterThan(0)
   })
 })
