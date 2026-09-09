@@ -77,29 +77,32 @@ import { useRenk, useStiller } from './tema-baglami'
  */
 
 /**
- * Cubugun ic satir yuksekligi.
+ * IKON ALANI - her slotta ikonun (ya da dairenin) oturdugu bolge.
  *
- * Etiketler kalkinca cubuk kendiliginden 62 px'e duesmustu (olculdu);
- * kullanicinin istegi uzerine (2026-09-07: "cubuk kisalmasin boyutu
- * onceki gibi olsun") eski olcusune SABITLENDI. Eski yukseklik ayni
- * sayidan geliyordu: ortadaki dugme 54 px ve satirin boyunu o
- * belirliyordu. Cubuk = 12 + 54 + 12 + 2 kenarlik = 80 px.
- *
- * Sabit olmasi ayrica ALT_GEZINME_PAYI'ni koruyor - o pay 45 ekranda
- * kullaniliyor ve cubuk kisalsaydi hepsinde alt bosluk buyurdu.
+ * Olcusu ORTADAKI DUGMEDEN geliyor: check-in dairesi 54 px ve
+ * slotlarin en buyugu o. Butun slotlarda ayni oldugu icin ETIKETLER
+ * AYNI HIZADA duruyor - onceden merkezin icerigi daha uzundu ve
+ * "Check-in" etiketi komsularindan 20 px asagida kaliyordu (olculdu).
  */
-const SATIR = 54
+const IKON_ALANI = 54
 
 /**
- * Ortadaki check-in dugmesinin cubuktan yukari tasmasi. Stilde degil
- * burada duruyor cunku artik bir animasyonun BASLANGIC degeri: dugme
- * secilince bundan biraz daha yukari cikiyor.
+ * Cubugun ic satir yuksekligi = ikon alani + gap + etiket satiri.
+ *
+ * 54 -> 72 (2026-09-09). Dugmeler cubuktan TASMAYI birakinca 54'luk
+ * satira 54'luk daire + etiket sigmiyordu: aktif sekmenin dairesi
+ * etiketin uzerine biniyordu (kullanicinin bildirdigi hata; olculdu -
+ * daire 754-798, "Bildirimler" etiketi 785-799).
+ *
+ * SECILEN COZUM BUYUTMEK, KUCULTMEK DEGIL: daireleri kucultmek
+ * check-in dugmesini 54'ten ~34'e indirirdi ve o dugmenin "obur
+ * ikonlardan buyuk" olmasi kullanicinin karari (2026-08-26).
+ *
+ * Cubuk boylece 80 -> 98 px. GORSEL AYAK IZI BUYUMUYOR: eskiden daire
+ * cubuktan 17 px yukari tasiyordu, yani ekranda kapladigi alan zaten
+ * bu kadardi - tasan parca artik cubugun icinde.
  */
-// 2026-09-09: kullanicinin istegi "sabit sutundaki butonlar one dogru
-// cikmasin, basilinca oldugu yerde turuncu parlak halde olsun". Merkez
-// dugme artik cubuktan TASMIYOR; secili hali yalnizca renk ve parilti
-// ile anlatiliyor.
-const MERKEZ_TASMA = 0
+const SATIR = IKON_ALANI + 4 + 14
 
 /** Aktif sekmeyi isaretleyen dairenin capi. */
 const DAIRE = 44
@@ -220,20 +223,16 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
 
-  // 0 pasif, 1 secili. TEK bir deger iki ozelligi birden suruyor
-  // (yukselme ve buyume), boylece ikisi asla birbirinden ayri
-  // duesmuyor.
-  const vurgu = useRef(new Animated.Value(aktif ? 1 : 0)).current
-  useEffect(() => {
-    Animated.spring(vurgu, {
-      toValue: aktif ? 1 : 0,
-      useNativeDriver: true,
-      damping: 12,
-      stiffness: 190,
-      mass: 0.65,
-    }).start()
-  }, [aktif, vurgu])
-
+  /*
+   * SECILI HAL YALNIZCA RENK VE PARILTI (kullanicinin istegi
+   * 2026-09-09: "sabit sutundaki butonlar one dogru cikmasin,
+   * basilinca oldugu yerde turuncu parlak halde olsun").
+   *
+   * Onceki surumde secilince yay ile 8 px yukari kalkip %10
+   * buyuyordu; o hareket kaldirildi. Buyume ayrica dairenin
+   * altindaki etiketin uzerine tasiyordu - dugme kendi ikon alanini
+   * tam dolduruyor, buyudugunde tasacak yer yok.
+   */
   return (
     <Pressable
       style={stiller.merkez}
@@ -241,33 +240,8 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
       accessibilityRole="button"
       accessibilityState={{ selected: aktif }}
       accessibilityLabel="Check-in yap"
-      /*
-       * Daire secilince 8 px daha yukari cikiyor ve transform layout'u
-       * etkilemedigi icin Pressable'in alani onunla birlikte
-       * TASINMIYOR. Ust paya ek dokunma alani veriliyor ki dairenin
-       * gorunen tepesi de basilabilir kalsin.
-       */
-      hitSlop={{ top: 12, bottom: 0, left: 0, right: 0 }}
     >
-      {/*
-        TRANSFORM ICTEKI DAIREDE, Pressable'da DEGIL. Pressable'a
-        verilseydi ETIKET de onunla birlikte oynar ve komsu
-        etiketlerden yukarida kalirdi; etiketler geri gelince bu ortaya
-        cikti. Statik tasma zaten `merkez` stilindeki `marginTop`ta,
-        buradaki animasyon yalnizca secili haldeki EK hareketi tasiyor.
-      */}
-      <Animated.View
-        style={[
-          stiller.merkezDaire,
-          aktif && stiller.merkezDaireAktif,
-          {
-            transform: [
-              { translateY: vurgu.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
-              { scale: vurgu.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
-            ],
-          },
-        ]}
-      >
+      <View style={[stiller.merkezDaire, aktif && stiller.merkezDaireAktif]}>
         <Svg width={30} height={30} viewBox="0 0 24 24">
           <Path
             d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
@@ -275,7 +249,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
           />
           <Circle cx={12} cy={9.6} r={2.8} fill={aktif ? renk.turuncuSecili : renk.turuncu} />
         </Svg>
-      </Animated.View>
+      </View>
       <Text style={stiller.merkezEtiket} numberOfLines={1}>
         Check-in
       </Text>
@@ -475,16 +449,21 @@ export function AltGezinme() {
                 gizleniyor; zaten o sekmedeysen sayaci gostermenin
                 anlami yok.
               */}
-              <View
-                testID={`sekme-ikonu${s.yol}`}
-                style={daireIkonSira === sira && daireGorunur ? stiller.gizliIkon : null}
-              >
-                {s.ikon(renk.metinIkincil, 'none')}
-                {rozet > 0 && (
-                  <View style={stiller.rozet}>
-                    <Text style={stiller.rozetYazi}>{rozet > 9 ? '9+' : rozet}</Text>
-                  </View>
-                )}
+              <View style={stiller.ikonAlani}>
+                {/* Ic sarmalayici KUCUK kaliyor (ikon kadar): ROZET ona
+                    gore konumlaniyor, disa alinsaydi 54 px'lik alanin
+                    kosesine kacardi. */}
+                <View
+                  testID={`sekme-ikonu${s.yol}`}
+                  style={daireIkonSira === sira && daireGorunur ? stiller.gizliIkon : null}
+                >
+                  {s.ikon(renk.metinIkincil, 'none')}
+                  {rozet > 0 && (
+                    <View style={stiller.rozet}>
+                      <Text style={stiller.rozetYazi}>{rozet > 9 ? '9+' : rozet}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
               {/*
                 Etiket GIZLENMIYOR - ikonun aksine. Aktif sekmede ikonun
@@ -528,11 +507,16 @@ export function AltGezinme() {
 
 /**
  * Cubugun altinda kalmamasi icin sayfa iceriginin birakmasi gereken pay.
+ *
+ * 104 -> 122 (2026-09-09): cubugun ic satiri 54'ten 72'ye cikinca
+ * cubuk da 80'den 98 px'e cikti. Bu sayi 45 ekranda kullaniliyor;
+ * cubugun yuksekligi degisirse BURASI DA degismeli, yoksa son satir
+ * cubugun altinda kalir.
  * Icerik artik ekranin dibine kadar aktigi icin alt inset (ana ekran
  * gostergesi) da paya dahil; web'de sifir. Cihaz olcusu uygulama
  * acilirken bir kez okunuyor - donmeyle degismiyor.
  */
-export const ALT_GEZINME_PAYI = 104 + (initialWindowMetrics?.insets.bottom ?? 0)
+export const ALT_GEZINME_PAYI = 122 + (initialWindowMetrics?.insets.bottom ?? 0)
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
@@ -558,10 +542,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flex: 1,
     height: SATIR,
     alignItems: 'center',
-    justifyContent: 'center',
+    // ORTALAMA YOK: icerik yukaridan basliyor ki ikon alani her
+    // slotta ayni yeri kaplasin ve etiketler ayni hizaya duessun.
     gap: 4,
     paddingHorizontal: 2,
   },
+  /** Ikonun oturdugu bolge; merkez dugmenin dairesiyle ayni olcude. */
+  ikonAlani: { height: IKON_ALANI, alignItems: 'center', justifyContent: 'center' },
   etiket: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
@@ -629,48 +616,34 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     elevation: 10,
   },
 
-  // Merkez dugme cubugun USTUNE tasiyor: buyuklugu ancak boyle
-  // gorunuyor, yoksa cubugun ic yuksekligi onu diger ikonlarla ayni
-  // hizaya sikistiriyor.
   /*
-   * TASMA `marginTop` ILE, transform ile DEGIL - ve bu bilincli bir
-   * geri donue.
+   * Merkez dugme artik cubuktan TASMIYOR (kullanicinin istegi
+   * 2026-09-09). Dairesi ikon alanini tam dolduruyor, yani slotun
+   * icerigi diger sekmelerle birebir ayni yuksekligi kapliyor:
+   * 54 + gap 4 + etiket 14.
    *
-   * Etiketler yokken tasma transform'daydi cunku transform layout'u
-   * etkilemiyor ve satirin boyunu kisaltmiyordu. Etiketler gelince o
-   * cozum bozuldu: transform PRESSABLE'a uygulandigi icin etiketi de
-   * yukari tasiyor ve komsu etiketlerden 18 px yukarida birakiyordu.
-   *
-   * `marginTop` yalnizca dugmeyi kaldiriyor, etiket kendi akisinda
-   * kaliyor. Satirin boyunu `sekme` (height: SATIR) belirledigi icin
-   * cubuk yine 80 px.
-   *
-   * Secili haldeki ek hareket (yukselme + buyume) hala ANIMASYONDA,
-   * ama artik Pressable'a degil ICTEKI DAIREYE uygulaniyor - ayni
-   * sebeple: etiket onunla birlikte oynamasin.
+   * Eski surumde tasma once `transform`, sonra `marginTop` ile
+   * yapiliyordu; ikisi de kalkti. Tarihsel gerekce: transform
+   * layout'u etkilemedigi icin satiri kisaltmiyordu ama etiketi de
+   * birlikte tasiyordu.
    */
   merkez: {
     flex: 1,
     alignItems: 'center',
     gap: 4,
-    // TASMA YOK (2026-09-09): dugme artik cubugun icinde duruyor.
-    marginTop: 0,
   },
   merkezEtiket: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.minik,
     color: renk.turuncuYazi,
-    /*
-     * Daire diger ikonlardan 30 px buyuk ve 18 px yukarida; etiket
-     * aksi halde komsu etiketlerden asagida kalir. -4 hem daireyle
-     * cakismiyor hem komsu etiketlere yakin duruyor (olculdu).
-     */
-    marginTop: -4,
+    // TELAFI YOK: daire artik butun slotlarla ayni ikon alanini
+    // kapliyor, dolayisiyla etiket kendiliginden komsulariyla ayni
+    // hizada duruyor.
   },
   merkezDaire: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: IKON_ALANI,
+    height: IKON_ALANI,
+    borderRadius: IKON_ALANI / 2,
     backgroundColor: renk.turuncu,
     alignItems: 'center',
     justifyContent: 'center',

@@ -239,7 +239,7 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    expect(screen.queryByTestId('kart-duzenle')).toBeNull()
+    expect(screen.queryByLabelText('Paylaşım seçenekleri')).toBeNull()
   })
 
   it('kendi check-in\'inde silme ONAY ISTIYOR, tek dokunusla silmiyor', async () => {
@@ -248,8 +248,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
-    await fireEvent.press(screen.getByTestId('duzenle-sil'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
 
     // Onay penceresi acildi; silme HENUZ yapilmadi.
     expect(screen.getByText('Bu check-in kalıcı olarak silinsin mi?')).toBeTruthy()
@@ -263,8 +263,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
-    await fireEvent.press(screen.getByTestId('duzenle-sil'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
     await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     expect(checkIniSil).toHaveBeenCalledWith('checkin-1')
@@ -279,11 +279,9 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
-    await fireEvent.press(screen.getByTestId('duzenle-sil'))
-    // "Vazgeç" iki yerde: duzenleme alaninda ve onay penceresinde.
-    // Onay penceresindeki olan aranıyor.
-    await fireEvent.press(screen.getByTestId('onay-zemini'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-sil'))
+    await fireEvent.press(screen.getByText('Vazgeç'))
 
     expect(checkIniSil).not.toHaveBeenCalled()
     expect(screen.getByText('Sahil Kafe')).toBeTruthy()
@@ -299,7 +297,7 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    expect(screen.queryByTestId('kart-duzenle')).toBeNull()
+    expect(screen.queryByLabelText('Paylaşım seçenekleri')).toBeNull()
   })
 
   it('menudeki Duzenle notu MEVCUT haliyle aciyor', async () => {
@@ -308,7 +306,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
 
     // AYRI PENCERE YOK (kullanicinin istegi 2026-09-05): duzenleme
     // kartin kendi icinde aciliyor.
@@ -331,7 +330,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
 
     expect(screen.queryByText('Mekan ve zaman değişmez')).toBeNull()
     // Mekan adi pencerenin basliginda: neyin degismedigi yine belli.
@@ -345,7 +345,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -360,7 +361,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), '')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -374,7 +376,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yazdim ama vazgectim')
     await fireEvent.press(screen.getByText('Vazgeç'))
 
@@ -392,7 +395,8 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
     expect(screen.getByText('Deniz')).toBeTruthy()
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.press(screen.getByLabelText('Deniz etiketini kaldır'))
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -409,7 +413,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -428,7 +433,8 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
 
-    await fireEvent.press(screen.getByTestId('kart-duzenle'))
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'a'.repeat(600))
     await fireEvent.press(screen.getByText('Kaydet'))
 

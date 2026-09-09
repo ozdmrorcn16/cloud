@@ -447,6 +447,24 @@ describe('MekanSayfasi - sekmeler', () => {
     await cevreOturana()
   })
 
+  /*
+   * ILK UC SIRA, PROFILDEKI "En sik" listesiyle AYNI ROZETI kullaniyor
+   * (kullanicinin istegi 2026-09-09). Rozet bir gorsel oldugu icin
+   * erisilebilirlik etiketinden olcuIuyor; duz SVG dairelere donuIurse
+   * bu iddia kirilir.
+   */
+  it('liderlikte ilk sira MADALYA ROZETI tasiyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([
+      { kullaniciId: 'k1', kullaniciAdi: 'Orçun', checkInSayisi: 18 },
+    ])
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByLabelText('1. sıra')).toBeTruthy())
+    await cevreOturana()
+  })
+
   /**
    * Bos durum metni SEBEBINI soylemiyor. Iki sebep var ve ayirt
    * edilemez: gercekten kimse gelmemis olabilir, ya da gorunurluk
@@ -554,6 +572,43 @@ describe('MekanSayfasi - igne durumu ve kullanici konumu', () => {
 
     await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
     expect(screen.queryByLabelText('Buradasın')).toBeNull()
+  })
+
+  /*
+   * KULLANICI ILE MEKAN ARASINDAKI CIZGI (kullanicinin istegi
+   * 2026-09-09). Konum okunamadiginda cizilecek iki nokta yok - cizgi
+   * de hic cizilmiyor. Ikinci iddia sart: onsuz "her zaman ciziliyor"
+   * hali de yesil gecerdi.
+   */
+  it('konum okunabiliyorsa mekana giden cizgi ciziliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2117, lng: 28.9213 })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByTestId('harita-cizgisi')).toBeTruthy())
+  })
+
+  it('konum okunamazsa cizgi HIC cizilmiyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
+    expect(screen.queryByTestId('harita-cizgisi')).toBeNull()
+  })
+
+  /*
+   * UC NOKTA KALKTI (kullanicinin istegi 2026-09-09). Iddia tersine
+   * cevrildi, silinmedi: menu sessizce geri gelirse test kirilir.
+   */
+  it('ust cubukta UC NOKTA menusu YOK', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+    await screen.findByText(MEKAN.ad)
+
+    expect(screen.queryByTestId('mekan-menu')).toBeNull()
   })
 })
 

@@ -729,6 +729,106 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### GEZINME, KART VE HARITA DUZELTMELERI - 2026-09-09 (ikinci tur)
+
+Kullanicinin arka arkaya verdigi yedi duzeltme. Ilki bir onceki turun
+YAN ETKISI, ikincisi ise o turun GERI ALINMASI.
+
+**1. ALT GEZINME: DAIRELER ETIKETLERIN UZERINE BINIYORDU.**
+Bir onceki turda dugmeler "one cikmasin" diye tasma sifirlanmisti; o
+degisiklik 54 px'lik satira 54 px'lik daireyi + etiketi birlikte
+sokusturdu ve daire etiketi ortuyordu (kullanicinin ekran goruntusu).
+
+**OLCULDU** (canli, puppeteer): daire 754-798, "Bildirimler" etiketi
+785-799 - yani etiketin tamami dairenin altinda. Ayrica cubuk sessizce
+80 -> 94 px'e cikmisti ve "Check-in" etiketi komsularindan **20 px
+asagida** duruyordu.
+
+**COZUM BUYUTMEK, KUCULTMEK DEGIL.** Yeni `IKON_ALANI = 54` sabiti her
+slotta ayni: ikon (ya da daire) o alanin ortasinda, etiket altinda.
+Satir 54 -> 72, cubuk 80 -> 98, `ALT_GEZINME_PAYI` 104 -> 122.
+Daireleri kucultmek check-in dugmesini 54'ten ~34'e indirirdi ve o
+dugmenin "obur ikonlardan buyuk" olmasi kullanicinin karari
+(2026-08-26).
+
+**GORSEL AYAK IZI BUYUMEDI:** eskiden daire cubuktan 17 px yukari
+tasiyordu, yani ekranda kapladigi alan zaten buydu - tasan parca artik
+cubugun icinde.
+
+Ayrica merkez dugmenin secilince YAY ILE 8 px YUKSELIP %10 BUYUMESI
+kaldirildi. Bir onceki turda atlanmisti; kullanicinin kurali "one dogru
+cikmasin, oldugu yerde turuncu parlak halde olsun" onu da kapsiyor.
+Secili hal artik yalnizca `turuncuSecili` + parilti.
+
+**SONRA OLCULDU:** cubuk 98, BES ETIKETIN BESI DE y=805 (ayni hiza),
+daire 752-796, etiket 805 - 9 px acikta.
+
+Rozet (okunmamis sayaci) ikonun KENDI kutusunda kaldi: ikon 54'luk
+alanin ortasinda duruyor ama rozet 24'luk ikona gore konumlaniyor,
+yoksa alanin kosesine kacardi.
+
+**2. KALEM GERI ALINDI: PAYLAS VE UC NOKTA GERI GELDI.** Ayni gun
+sabah yapilan degisiklik (uc nokta -> kalem, silme duzenleme alanina)
+kullanicinin istegiyle TAMAMEN geri alindi: "paylasma ikonunu geri
+getir uc noktayi geri getir kalemi sil". `git apply -R` ile commit'in
+kart ve test parcalari tersine uygulandi. Yani akis kartinda yine
+begeni / yorum / PAYLAS ve baslikta UC NOKTA menusu (Duzenle + Sil)
+var.
+
+**3. MEKAN SAYFASINDAKI UC NOKTA KALDIRILDI.** Islev kaybi YOK ve
+bu once kontrol edildi: menude tek secim vardi ("Haritada ac") ve o
+secim `haritayaDokunuldu` cagiriyordu - baslik satirindaki "Yol tarifi
+al" dugmesinin CAGIRDIGI FONKSIYONUN AYNISI. Ayni eylemin iki girisi
+vardi. Iddia testte TERSINE cevrildi (menu YOK), silinmedi.
+
+**4. MADALYA ROZETI ORTAK BILESEN OLDU: `src/tasarim/SiraRozeti.tsx`.**
+Profildeki "En sik" listesi kurdeleli madalya GORSELLERINI kullaniyordu,
+mekan sayfasindaki liderlik tablosu ise duz SVG daireler ciziyordu -
+ayni sira iki ekranda iki turlu gorunuyordu. Kullanicinin istegi:
+"bu ayni ikonlarin ilk ucunu liderlik tablosunun ilk ucunun ikonu yap".
+Artik tek bilesen; liderlikte 34 px, profilde 44 px.
+
+Profildeki olcu 48 -> 44 (kullanicinin istegi: "bu bes ikonun cok az
+boyutunu kucult"). `SiraMadalyasi` (SVG) artik kullanilmiyor ama
+`mekan-ikonlari.tsx` icinde duruyor.
+
+**5. KULLANICI IGNESI IKI EKRANDA AYNI OLDU.** Kesfet ekraninda
+kullanici haritanin MERKEZI ve turuncu bir IGNE olarak ciziliyordu;
+mekan sayfasinda ise ayri bir marker ve turuncu bir DAIRE idi. Yani
+"ben neredeyim" iki ekranda iki bicimde okunuyordu. Kullanicinin
+istegi: "konumun icine girincede turuncu kullanicinin ikonu ayni
+gorunsun".
+
+Yeni `KullaniciIgnesi` bileseni iki yerde de ayni: 38 px turuncu igne,
+beyaz konturlu, icinde beyaz daire. **2026-09-09 sabahki "kullanici
+DAIRE, mekan IGNE" ayrimi boylece GECERSIZ** - ayrimi artik RENK ve
+OLCU tasiyor (kullanici turuncu 38, mekan durum renginde 30).
+
+**6. KULLANICI ILE MEKAN ARASINDA CIZGI.** Kullanicinin istegi:
+"secilen konumla kullanicinin o anki konumu arasinda bir yol cizilsin".
+
+**DUZ VE KESIKLI CIZGI, GERCEK ROTA DEGIL - bilincli.** Surus rotasi
+bir yol tarifi servisi ister (Apple/Google Directions): ek anahtar,
+kota, lisans; ustelik Google'in verisi saklanamiyor (2026-08-31
+arastirmasi). Ayrica ekrandaki mesafe hapi ZATEN kus ucusu mesafeyi
+yaziyor - egri bir rota cizip yanina kus ucusu mesafe yazmak ikisini
+celiskiye duesuerurdu. Kesik cizgi "yaklasik/dogrudan bag" diyor, duz
+kalin bir cizgi ise surulecek bir yol gibi okunurdu.
+
+`Polyline` markerlardan ONCE ciziliyor (ignelerin altinda kaliyor) ve
+yalnizca kullanicinin konumu okunabildiginde var; kesfet ekraninda
+kullanici zaten merkez oldugu icin hic cizilmiyor. Iki testle kilitli
+(konum varken cizgi VAR, yokken YOK).
+
+**HARITA DEGISIKLIKLERI WEB'DE DOGRULANAMAZ** - orada radar cizimi
+var, gercek harita yalnizca telefonda. Jest tarafi `react-native-maps`
+mock'una eklenen `Polyline` ile olcuIuyor.
+
+Dogrulama: jest 64 paket / 744 test, tsc uygulama kodunda 0 hata,
+gezinme geometrisi canli olcuIdu, ekran goruntuleri
+`tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
+`mekan-sayfasi-son.png`.
+
 ### BES KUCUK DEGISIKLIK - 2026-09-09
 
 **1. LISTEDEKI CHECK-IN BUTONLARI DOLU TURUNCU.** 2026-09-07

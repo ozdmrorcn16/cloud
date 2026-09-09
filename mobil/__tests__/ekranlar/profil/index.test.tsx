@@ -492,17 +492,15 @@ describe('ProfilEkrani anilar listesi', () => {
     expect(await screen.findByText('Mekan 11')).toBeTruthy()
   })
 
-  it('ani PROFILDEN silinebiliyor (kalem -> sil -> onay)', async () => {
+  it('ani PROFILDEN silinebiliyor (menu -> sil -> onay)', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(2))
     ;(checkIniSil as jest.Mock).mockResolvedValue(undefined)
 
     await render(<ProfilEkrani />)
     await screen.findByText('Mekan 0')
 
-    // Uc nokta 2026-09-09'da kalkti; duzenleme kalem ikonundan,
-    // silme de duzenleme alaninin icinden yapiliyor.
-    fireEvent.press(screen.getAllByTestId('kart-duzenle')[0])
-    fireEvent.press(await screen.findByTestId('duzenle-sil'))
+    fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
+    fireEvent.press(await screen.findByTestId('menu-sil'))
     fireEvent.press(await screen.findByTestId('onay-eylemi'))
 
     await waitFor(() => expect(checkIniSil).toHaveBeenCalledWith('ani-0'))

@@ -274,10 +274,17 @@ export function CheckInKarti({
           </Text>
         </View>
 
-        {/* UC NOKTA KALDIRILDI (kullanicinin istegi 2026-09-09).
-            Duzenleme artik eylem satirindaki KALEM ikonundan; silme de
-            duzenleme penceresinin icinde. Ayni islemin iki girisi
-            kalmasin diye menu tamamen kalkti. */}
+        {menuVar && (
+          <Pressable
+            onPress={() => setMenuAcik(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('anaSayfa.secenekler')}
+            hitSlop={10}
+            style={stiller.silDugmesi}
+          >
+            <UcNoktaIkonu />
+          </Pressable>
+        )}
 
         {/* "Şu an burada" yalnizca canlilik penceresinde (30 dk); sonra
             gorece zaman. Turuncunun mesru kullanimi: "su an oluyor".
@@ -407,26 +414,6 @@ export function CheckInKarti({
               <Text style={stiller.duzenleBirincilYazi}>{t('ortak.kaydet')}</Text>
             </Pressable>
           </View>
-
-          {/* SILME BURAYA TASINDI. Uc nokta menusu kalkinca silmenin
-              baska bir girisi kalmiyordu; bir islemi kaldirmadan once
-              baska girisi var mi diye BAKMAK gerekiyor (ayni tuzak
-              2026-09-03'te ayarlardaki "Profilini duzenle" satirinda
-              yasanmisti).
-
-              Yikici eylem KAYDET'TEN AYRI bir satirda ve zeminsiz:
-              yan yana olsaydi kaydetmek isteyen kazayla silebilirdi.
-              Silme yine iki adimli - onay penceresi aciliyor. */}
-          {onSilOnayi && (
-            <Pressable
-              testID="duzenle-sil"
-              style={stiller.duzenleSil}
-              onPress={() => onSilOnayi(oge.id)}
-              accessibilityRole="button"
-            >
-              <Text style={stiller.duzenleSilYazi}>{t('ortak.sil')}</Text>
-            </Pressable>
-          )}
         </View>
       ) : (
         oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>
@@ -444,15 +431,8 @@ export function CheckInKarti({
           daha da bos gosteriyor. Ikonlar notr, yalnizca BEGENILMIS kalp
           turuncu - Slooin'de turuncu "eylem ya da su an oluyor" demek,
           uc ikonu birden turuncu yapmak o anlami tuketirdi. */}
-      {/* SATIR `ozet` YOKKEN DE cizilebiliyor: profil ekrani begeni
-          sayilarini gecmiyor ama kartlar orada da duzenlenebilir olmali.
-          Kalem uc nokta menusunun yerini aldiginda (2026-09-09) bu
-          kosul atlanmisti ve profildeki silme/duzenleme TAMAMEN
-          kayboldu - test yakaladi. */}
-      {(ozet || menuVar) && (
+      {ozet && (
         <View style={stiller.eylemler}>
-          {ozet && (
-          <>
           <Pressable
             style={stiller.eylem}
             onPress={() => onBegen?.(oge.id)}
@@ -479,27 +459,16 @@ export function CheckInKarti({
             <YorumIkonu />
             {ozet.yorum > 0 && <Text style={stiller.sayac}>{ozet.yorum}</Text>}
           </Pressable>
-          </>
-          )}
 
-          {/* PAYLAS YERINE KALEM (kullanicinin istegi 2026-09-09:
-              "paylasma ikonunu kaldir yerine kalem ikonu getir, uc
-              noktayi kaldir, kalem ikonundan duzenleme yapilsin").
-
-              Yalnizca KENDI paylasiminda: baskasinin check-in'ini
-              duzenlemek diye bir sey yok, orada slot bos kaliyor. */}
-          {menuVar && (
-            <Pressable
-              style={stiller.eylem}
-              onPress={duzenlemeyiAc}
-              accessibilityRole="button"
-              accessibilityLabel={t('anaSayfa.duzenle')}
-              hitSlop={8}
-              testID="kart-duzenle"
-            >
-              <KalemIkonu />
-            </Pressable>
-          )}
+          <Pressable
+            style={stiller.eylem}
+            onPress={() => onPaylas?.(oge.id)}
+            accessibilityRole="button"
+            accessibilityLabel={t('etkilesim.paylas')}
+            hitSlop={8}
+          >
+            <PaylasIkonu />
+          </Pressable>
         </View>
       )}
 
@@ -695,13 +664,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, right: bosluk.xl, zIndex: 1 },
   buyukKapatYazi: { fontFamily: yazi.govde, fontSize: 34, color: '#FFFFFF', lineHeight: 38 },
   buyukFotograf: { width: '100%', height: '70%' },
-
-  duzenleSil: { alignItems: 'center', paddingTop: bosluk.m },
-  duzenleSilYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.yikici,
-  },
 
   kart: {
     // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik

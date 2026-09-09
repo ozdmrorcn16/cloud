@@ -36,7 +36,7 @@ import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { UstCubuk } from '../../tasarim/UstCubuk'
-import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   KisilerIkonu,
@@ -49,8 +49,6 @@ import {
   NisangahIkonu,
   TacIkonu,
   OkIkonu,
-  DikeyUcNoktaIkonu,
-  SiraMadalyasi,
 } from '../../tasarim/mekan-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
@@ -201,7 +199,6 @@ export default function MekanSayfasi() {
   const [sekme, setSekme] = useState<Sekme>('liderlik')
   const [hata, setHata] = useState<string | null>(null)
   const [secimAcik, setSecimAcik] = useState(false)
-  const [menuAcik, setMenuAcik] = useState(false)
   const [sayfaKayabilir, setSayfaKayabilir] = useState(true)
 
   // ALT BUTONUN UC HALI (kullanicinin sectigi tasarim B, 2026-09-06).
@@ -435,23 +432,15 @@ export default function MekanSayfasi() {
           ustte ayrica gostermek hem tekrar hem de uzun adlarda
           kirpiliyordu ("Nilüfer Tüvtürk Araç ..."). Baslik bos
           kalinca cubuk da kompaktlasiyor ve sayfa yukari geliyor. */}
-      <UstCubuk
-        baslik=""
-        geriEtiketi={t('checkInHaritasi.geri')}
-        sag={
-          mekan ? (
-            <Pressable
-              onPress={() => setMenuAcik(true)}
-              accessibilityRole="button"
-              accessibilityLabel={t('mekanSayfasi.menu')}
-              testID="mekan-menu"
-              hitSlop={10}
-            >
-              <DikeyUcNoktaIkonu />
-            </Pressable>
-          ) : undefined
-        }
-      />
+      {/* UC NOKTA KALDIRILDI (kullanicinin istegi 2026-09-09: "en
+          ustte sagda uc nokta var onu kaldir").
+
+          ISLEV KAYBI YOK, once kontrol edildi: menude tek bir secim
+          vardi ("Haritada ac") ve o secim `haritayaDokunuldu`
+          cagiriyordu - baslik satirindaki "Yol tarifi al" dugmesinin
+          CAGIRDIGI FONKSIYONUN AYNISI. Yani ayni eylemin iki girisi
+          vardi; biri kalkti. */}
+      <UstCubuk baslik="" geriEtiketi={t('checkInHaritasi.geri')} />
 
       {/* HARITA KAYDIRILIRKEN SAYFA KILITLENIYOR. Ikisi de dikey
           kayabildigi icin tek parmak hareketi ikisini birden
@@ -698,7 +687,11 @@ export default function MekanSayfasi() {
                       onPress={() => router.push(`/kullanici/${satir.kullaniciId}` as never)}
                       accessibilityRole="button"
                     >
-                      <SiraMadalyasi sira={sira + 1} boyut={26} />
+                      {/* PROFILDEKI "En sik" listesiyle AYNI ROZET
+                          (kullanicinin istegi 2026-09-09). Onceden
+                          burada duz SVG daireler vardi ve ayni sira
+                          iki ekranda iki turlu gorunuyordu. */}
+                      <SiraRozeti sira={sira + 1} boyut={34} />
                       <View style={stiller.kucukAvatar}>
                         {avatarlar[satir.kullaniciId] ? (
                           <Image
@@ -824,21 +817,6 @@ export default function MekanSayfasi() {
           )}
         </View>
       )}
-
-      <SecimPenceresi
-        acikMi={menuAcik}
-        onKapat={() => setMenuAcik(false)}
-        secimler={[
-          {
-            etiket: t('checkInHaritasi.haritadaAc'),
-            onSec: () => {
-              setMenuAcik(false)
-              haritayaDokunuldu()
-            },
-            testID: 'menu-haritada-ac',
-          },
-        ]}
-      />
 
       {/* Harita secim penceresi ekranin ALTINDAN geliyor.
           `Alert.alert` kullanilmadi: react-native-web'de calismiyor ve

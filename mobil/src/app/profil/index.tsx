@@ -42,6 +42,7 @@ import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { SiraRozeti } from '../../tasarim/SiraRozeti'
 
 /**
  * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
@@ -124,34 +125,6 @@ function AyarlarIkonu() {
  * check-in ekranindaki kartta duruyor.
  */
 /**
- * YERLER SEKMESINDEKI SIRA ROZETI.
- *
- * Kullanicinin istegi (2026-08-29): ilk bes sira digerlerinden ayri
- * gorunsun, "altin bronz gumus gibi".
- *
- * Ilk uc madalya renginde; 4 ve 5 madalya DEGIL ama yine de dolu bir
- * rozet - "ilk bese girdi" demek icin. Altisi ve sonrasi duz rakam.
- *
- * KIMLIK NOTU: bunlar turuncu DEGIL. Kural geregi turuncu eylem ve
- * canlilik demek; sira bilgisi ikisi de degil. Madalya renkleri
- * anlam tasiyor (birincilik/ikincilik), dekorasyon degil.
- */
-/**
- * Sira madalyalari GORSEL (kullanicinin istegi 2026-09-05: "Direk
- * attigim gorseldeki gibi gorunmesini saglayamaz misin").
- *
- * Onceden SVG ile CIZILIYORLARDI ve referansa yakindi ama ayni degildi;
- * artik referansin kendisi kullaniliyor. Varliklar
- * `araclar/madalya-kirp.py` ile o gorselden cikarildi: bes satir
- * kirpildi, zemin kenardan tasma yontemiyle saydama cevrildi.
- *
- * RAKAM GORSELIN ICINDE - ayri bir metin katmani YOK. Onceden rakam
- * SVG'nin ustunde duran bir RN metniydi.
- *
- * `require` DIZI ICINDE ve SABIT: Metro paketleyici require yolunu
- * derleme aninda cozuyor, `require(\`...${sira}.png\`)` calismiyor.
- */
-/**
  * "En sik" listesinde gosterilecek en fazla mekan (kullanicinin karari
  * 2026-09-05: "En fazla 20'ye kadar sinirli olucak").
  *
@@ -171,35 +144,6 @@ const EN_FAZLA_YER = 20
  * Henuz gelmemis olanlar `null`; o kartlarda gecici olarak emoji
  * gorunuyor. Gorsel gelince buraya bir satir eklemek yetiyor.
  */
-const MADALYA_GORSELLERI = [
-  require('../../../assets/images/madalya-1.png'),
-  require('../../../assets/images/madalya-2.png'),
-  require('../../../assets/images/madalya-3.png'),
-  require('../../../assets/images/madalya-4.png'),
-  require('../../../assets/images/madalya-5.png'),
-] as const
-
-function SiraRozeti({ sira }: { sira: number }) {
-  const stiller = useStiller(stilleriYap)
-  const gorsel = MADALYA_GORSELLERI[sira - 1]
-  if (!gorsel) {
-    return <Text style={stiller.yerSiraDuz}>{sira}</Text>
-  }
-
-  return (
-    <Image
-      source={gorsel}
-      style={stiller.yerSiraAlan}
-      // Madalyalarin en/boy orani birbirinden biraz farkli (kirpma
-      // her birini kendi sinirina oturtuyor); `contain` hepsini ayni
-      // kutuda ortaliyor, hicbiri ezilmiyor.
-      resizeMode="contain"
-      accessibilityRole="image"
-      accessibilityLabel={`${sira}. sıra`}
-    />
-  )
-}
-
 /**
  * KIMLIK BANDININ ZEMINI (kullanicinin secimi 2026-09-03, secenek "B").
  *
@@ -1079,38 +1023,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // HAP SEKLINDE SEGMENT (kullanicinin istegi 2026-09-08: "hap sekilde
   // bastan sona icinde kaymali sutunlu butonlu"). Alt cizgi kalkti.
   //
-  // Ilk bes: kurdeleli madalya. Genislik duz rakamla AYNI (34) ki
-  // altinci satirdan itibaren metinler sola kaymasin.
-  // Rozet 34x36 -> 44x46 -> 48x48 (kullanicinin istegi 2026-09-05:
-  // "cok az boyutlarini buyut"). Madalya gorselleri kareye yakin;
-  // `contain` ile bu kutuda ortalaniyorlar ve cember caplari kaynakta
-  // esitlendigi icin bes rozet ayni buyuklukte gorunuyor.
-  yerSiraAlan: { width: 48, height: 48 },
-  // ARTIK KULLANILMIYOR ama duruyor: 6 ve sonrasi icin duz rakam
-  // stiliyle ayni olcegi paylasiyor.
-  yerSiraRozetYazi: {
-    position: 'absolute',
-    top: 13,
-    width: 48,
-    textAlign: 'center',
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.kucuk,
-  },
-  // 6 VE SONRASI: madalya yok, duz rakam. Kullanicinin bildirdigi
-  // hata 2026-09-05: "6-7 diye devam eden sayilar cok silik". Iki
-  // sebebi vardi - punto 13'tu (madalyalarin yanibasinda kayboluyordu)
-  // ve renk `metinSoluk`tu, yani ekranin en acik metin tonu.
-  // Punto 19'a cikti, renk bir kademe koyuya (`metinIkincil`) alindi.
-  //
-  // TAM KOYU YAPILMADI: bu satirlar madalyali ilk bes kadar one
-  // cikmamali; sira bilgisi orada bir odul, burada yalnizca bir sayi.
-  yerSiraDuz: {
-    width: 48,
-    textAlign: 'center',
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.metinIkincil,
-  },
   // FOTOGRAF IZGARASI: uc sutun. Sayfa yan payini geri aliyor ki
   // izgara kenardan kenara olsun.
   izgara: {

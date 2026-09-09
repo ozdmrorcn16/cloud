@@ -90,5 +90,9 @@ jest.mock('react-native-maps', () => {
       onPress: props.onPress,
       accessibilityLabel: props.accessibilityLabel,
     })
-  return { __esModule: true, default: MapView, Marker, PROVIDER_GOOGLE: 'google' }
+  // Polyline: kullanici ile mekan arasindaki cizgi. Ciziyor bir sey
+  // yok, testler yalnizca VAR MI diye bakiyor.
+  const Polyline = (props) =>
+    React.createElement(View, { testID: 'harita-cizgisi', accessibilityLabel: props.accessibilityLabel })
+  return { __esModule: true, default: MapView, Marker, Polyline, PROVIDER_GOOGLE: 'google' }
 })

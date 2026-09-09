@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Platform, View, Text, StyleSheet } from 'react-native'
-import MapView, { Marker, type Region } from 'react-native-maps'
+import MapView, { Marker, Polyline, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
 import { yazi, olcek, yuvarlak, type Renk } from './tema'
@@ -125,6 +125,31 @@ const DURUM_ETIKETI: Record<MekanDurumu, string> = {
   sakin: 'Sakin',
   yogun: 'Yoğun',
   populer: 'Popüler',
+}
+
+/**
+ * KULLANICININ KONUM IGNESI - uygulamada TEK bir "ben buradayim"
+ * bicimi olsun diye ayri bir bilesen.
+ *
+ * Kesfet ekraninda kullanici haritanin MERKEZI, mekan sayfasinda ise
+ * ayri bir igne; ikisi ayri ayri cizildigi surece farklilasiyorlardi
+ * (kullanicinin bildirdigi kusur 2026-09-09). Artik ayni bilesen.
+ *
+ * Beyaz kontur SART: harita zemini bej/yesil ve kontursuz turuncu
+ * zemine yapisiyor.
+ */
+function KullaniciIgnesi({ renk }: { renk: string }) {
+  return (
+    <Svg width={38} height={38} viewBox="0 0 24 24">
+      <Path
+        d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
+        fill={renk}
+        stroke="#FFFFFF"
+        strokeWidth={1.4}
+      />
+      <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+    </Svg>
+  )
 }
 
 export function CanliHarita({
@@ -350,6 +375,38 @@ export function CanliHarita({
             )
         })}
 
+        {/* KULLANICI ILE SECILEN YER ARASINDAKI CIZGI (kullanicinin
+            istegi 2026-09-09: "secilen konumla kullanicinin o anki
+            konumu arasinda bir yol cizilsin haritada gorunen").
+
+            DUZ CIZGI, YOL DEGIL - ve bu bilincli. Gercek bir sürüş
+            rotasi bir yol tarifi servisi ister (Apple/Google
+            Directions): ek anahtar, kota ve lisans demek, ustelik
+            Google'in verisi saklanamiyor (2026-08-31 arastirmasi).
+            Ayrica ekrandaki mesafe hapi ZATEN kus ucusu mesafeyi
+            yaziyor; egri bir rota cizip yanina kus ucusu mesafe
+            yazmak ikisini birbiriyle celisir hale getirirdi.
+
+            Kesikli cizilmesi de ayni sebeple: kesik cizgi "yaklasik/
+            dogrudan bag" demek, duz kalin bir cizgi ise surulecek bir
+            yol gibi okunurdu.
+
+            Markerlardan ONCE ciziliyor, yani ignelerin ALTINDA kaliyor.
+            Yalnizca kullanicinin konumu okunabildiginde var; kesfet
+            ekraninda kullanici zaten merkez oldugu icin hic cizilmiyor. */}
+        {kullaniciKonumu && (
+          <Polyline
+            coordinates={[
+              { latitude: kullaniciKonumu.lat, longitude: kullaniciKonumu.lng },
+              { latitude: merkez.lat, longitude: merkez.lng },
+            ]}
+            strokeColor={renk.turuncu}
+            strokeWidth={3}
+            lineDashPattern={[6, 6]}
+            geodesic
+          />
+        )}
+
         {/* MERKEZ IGNESI. Ucu tam koordinata basiyor.
             Rengi `merkezDurumu` ile geliyor; verilmezse turuncu kaliyor
             (kesfet ekraninda merkez kullanicinin kendisi, orada durum
@@ -368,48 +425,41 @@ export function CanliHarita({
               `merkezDurumu` varsa merkez BIR MEKANDIR (mekan sayfasi);
               yoksa merkez KULLANICININ KENDISIDIR (kesfet ekrani) ve
               orada kucultmek yanlis olurdu. */}
-          <Svg
-            width={merkezDurumu ? 30 : 38}
-            height={merkezDurumu ? 30 : 38}
-            viewBox="0 0 24 24"
-          >
-            <Path
-              d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-              fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
-              stroke="#FFFFFF"
-              strokeWidth={1.4}
-            />
-            <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
-          </Svg>
+          {merkezDurumu ? (
+            <Svg width={30} height={30} viewBox="0 0 24 24">
+              <Path
+                d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
+                fill={DURUM_RENGI[merkezDurumu]}
+                stroke="#FFFFFF"
+                strokeWidth={1.4}
+              />
+              <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+            </Svg>
+          ) : (
+            <KullaniciIgnesi renk={renk.turuncu} />
+          )}
         </Marker>
 
-        {/* KULLANICININ KONUMU - alt gezinme cubugundaki CHECK-IN
-            ikonunun aynisi (kullanicinin istegi 2026-09-07: "turuncu
-            checkin ikonu olucak"). Duz bir turuncu noktaydi ve neyi
-            anlattigi belli degildi; check-in ikonu "sen buradasin, buraya
-            check-in yapabilirsin" demeyi tek bicimle yapiyor.
+        {/* KULLANICININ KONUMU - KESFET EKRANINDAKIYLE BIREBIR AYNI
+            IGNE (kullanicinin istegi 2026-09-09: "konumun icine
+            girincede turuncu kullanicinin ikonu ayni gorunsun").
 
-            Mekan ignesi durum rengi tasidigi icin ikisi karismiyor:
-            mekan RENKLI BIR IGNE, kullanici TURUNCU BIR DAIRE. */}
+            Onceden burada TURUNCU BIR DAIRE, kesfet ekraninda ise
+            TURUNCU BIR IGNE ciziliyordu; yani "ben neredeyim" iki
+            ekranda iki bicimde okunuyordu. Artik tek bicim var ve
+            `KullaniciIgnesi` iki yerde de ayni bileseni kullaniyor -
+            biri degistirilirse oteki de degisir. */}
         {kullaniciKonumu && (
           <Marker
             coordinate={{
               latitude: kullaniciKonumu.lat,
               longitude: kullaniciKonumu.lng,
             }}
-            anchor={{ x: 0.5, y: 0.5 }}
+            anchor={{ x: 0.5, y: 1 }}
             tracksViewChanges={false}
             accessibilityLabel="Buradasın"
           >
-            <View style={stiller.kullaniciDaire}>
-              <Svg width={19} height={19} viewBox="0 0 24 24">
-                <Path
-                  d="M12 2.4a7.3 7.3 0 0 0-7.3 7.3c0 5.5 7.3 11.9 7.3 11.9s7.3-6.4 7.3-11.9A7.3 7.3 0 0 0 12 2.4z"
-                  fill="#FFFFFF"
-                />
-                <Circle cx={12} cy={9.6} r={2.8} fill={renk.turuncu} />
-              </Svg>
-            </View>
+            <KullaniciIgnesi renk={renk.turuncu} />
           </Marker>
         )}
       </MapView>
@@ -444,25 +494,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
   // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
-  // Kullanici: alt gezinmedeki check-in dugmesinin kucuk hali - turuncu
-  // dolu daire, icinde beyaz igne. Beyaz halka alt gezinmede YOK ama
-  // burada sart: harita zemini bej/gri ve halka olmadan daire zemine
-  // yapisiyor.
-  //
-  // 18 -> 26 (kullanicinin istegi 2026-09-07: "cok az daha buyuk").
-  kullaniciDaire: {
-    // 26 -> 34 (kullanicinin istegi 2026-09-09): kullanicinin kendi
-    // konumu mekan ignesinden BUYUK olmali - haritada once "ben
-    // neredeyim" okunuyor.
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: renk.turuncu,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   igneEtiket: { maxWidth: 108 },
   // MEKAN ADI TEMAYA BAGLI (kullanicinin bildirdigi kusur 2026-09-08:
