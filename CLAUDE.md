@@ -781,8 +781,24 @@ oturan birinin 300 m otesindeki mekani elerdi - ayni gerekce
 "Yakininda" listesinde bastan beri gecerliydi. Migrasyon
 `20260909140000`.
 
-**ARAMA DEGISMEDI:** orada yaricap yok (baska sehirdeki mekan
-aranabiliyor, 2026-09-01) ve il siniri o yolda DURUYOR.
+**ARAMADA YARICAP YOK, IL SINIRI VAR** ve bu kural ayni gun
+KESINLESTIRILDI (kullanicinin ifadesi: "mekan aramada kullanicinin o an
+bulundugu konum hangi ile bagliysa o ile bagli arama sonuclari
+gosterilecek, km siniri bulundugu ille sinirli olacak").
+
+Kural 2026-09-01'den beri zaten calisiyordu ve CANLI OLCUELDUE:
+Bursa'dan "kafe" -> yalnizca Bursa (470 ms), Bursa'dan "kadikoy" ->
+yine yalnizca Bursa, Istanbul'dan "kafe" -> yalnizca Istanbul.
+
+**DEGISEN TEK SEY: IL BULUNAMADIGINDA.** Nokta-icinde-poligon testi
+denizde, sinirda ya da yurt disinda bos donuyor ve arama o durumda
+SINIRSIZ kaliyordu ("ekran sebebi gorunmeden bombos kalmasin"). Artik
+EN YAKIN IL uygulanıyor - sonuc yine geliyor ama bir ile bagli.
+Sinirsiz arama ayrica bir performans riskiydi: nadir bir terimde KNN
+taramasi 47 saniyeye cikiyor (2026-08-28) ve PostgREST'in 8 saniyelik
+sinirini asiyordu. Migrasyon `20260909150000`; canli dogrulama
+`araclar/il-sinirli-arama-test.py` **8/8** (Ege Denizi'nden arama artik
+yalnizca Izmir donduruyor).
 
 Dogrulama: jest 67 paket / 780 test, tsc uygulama kodunda 0 hata.
 

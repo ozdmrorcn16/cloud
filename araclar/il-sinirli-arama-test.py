@@ -47,10 +47,18 @@ iller3 = {m['il'] for m in sonuc3}
 print(f'Istanbul/Kadikoy -> "kafe": {len(sonuc3)} sonuc, {sure3:.0f} ms, iller={iller3}')
 kontrol('Istanbul aramasi yalnizca Istanbul donduruyor', iller3 <= {'İstanbul'}, str(iller3))
 
-# 4) Il poligonu disi (Ege Denizi) -> sinirsiz, yani sonuc gelmeli
+# 4) Il poligonu disi (Ege Denizi) -> EN YAKIN IL
+#
+# 2026-09-09'a kadar bu durumda arama SINIRSIZ kaliyordu. Kullanicinin
+# kurali degisti: "kullanicinin o an bulundugu konum hangi ile
+# bagliysa o ile bagli arama sonuclari gosterilecek, km siniri
+# bulundugu ille sinirli olacak." Sinirsiz arama ayrica bir performans
+# riskiydi (nadir terimde 47 sn, 2026-08-28 olcumu).
 sonuc4, _ = ara(38.0, 25.0, 'kafe', 20)
-print(f'Ege Denizi -> "kafe": {len(sonuc4)} sonuc, iller={{{len({m["il"] for m in sonuc4})} farkli}}')
-kontrol('il bulunamayinca arama SINIRSIZ (sonuc geliyor)', len(sonuc4) > 0)
+iller4 = {m['il'] for m in sonuc4}
+print(f'Ege Denizi -> "kafe": {len(sonuc4)} sonuc, iller={iller4}')
+kontrol('il bulunamayinca EN YAKIN il uygulaniyor', len(iller4) == 1, str(iller4))
+kontrol('sonuc yine geliyor (ekran bos kalmiyor)', len(sonuc4) > 0)
 
 # 5) ARAMASIZ liste il sinirindan ETKILENMIYOR
 liste = sb.rpc('yakin_mekanlar_yogunluk', {
