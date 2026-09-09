@@ -111,6 +111,20 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   hangi veri = gorunen harita bolgesi; dayanak = konum izni ve
   aydinlatma; sure = uygulama tarafinda saklama yok, saglayicinin
   politikasi; kim gorur = Apple (iOS) / Google (Android).
+- **OSRM yol tarifi servisi** (2026-09-09, yalnizca iOS ve Android
+  uygulamalarinda; web'de yok). Bir mekanin sayfasinda kullanicidan
+  mekana giden yolu haritada cizmek icin IKI KOORDINAT gonderiliyor:
+  kullanicinin konumu ve mekanin konumu. Servis acik kaynakli ve
+  OpenStreetMap verisiyle calisiyor; istek kimlik, hesap ya da
+  check-in TASIMIYOR. Gizlilik metni madde 5'e yazildi. Dort soru:
+  hangi veri = iki koordinat (biri kullanicinin anlik konumu);
+  dayanak = konum izni ve aydinlatma, sozlesmenin ifasi (yol tarifi
+  ekranin islevi); sure = uygulama tarafinda saklama yok, servisin
+  kendi gunlukleri disinda kayit tutulmuyor; kim gorur = OSRM'in genel
+  sunucusunu isleten taraf.
+  ACIK BORC: kullanilan sunucu "demo" niteliginde. Magaza oncesi ya
+  kendi ornegimiz kurulmali ya da anahtarli bir saglayiciya gecilmeli;
+  sozlesme `mobil/lib/rota.ts` icinde tek yerde duruyor.
 - **Adres cozumu** (2026-08-31'de EKLENDI, ayni gun KALDIRILDI).
   Bir mekanin konum ekrani acilinca koordinati Apple/Google'a gonderip
   tam adrese cevirmeyi denedik. Kaldirilma sebebi gizlilik degil

@@ -159,6 +159,7 @@ export function CanliHarita({
   onMekanSec,
   merkezDurumu,
   kullaniciKonumu,
+  rota,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
@@ -179,6 +180,12 @@ export function CanliHarita({
    * 2026-09-07).
    */
   kullaniciKonumu?: { lat: number; lng: number } | null
+  /**
+   * Kullanicidan mekana giden YOLUN kirilma noktalari. Verilmezse
+   * cizgi hic cizilmiyor - duz bir cizgiyle doldurmak yanlis bir yol
+   * gostermek olurdu.
+   */
+  rota?: { lat: number; lng: number }[] | null
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -375,35 +382,27 @@ export function CanliHarita({
             )
         })}
 
-        {/* KULLANICI ILE SECILEN YER ARASINDAKI CIZGI (kullanicinin
-            istegi 2026-09-09: "secilen konumla kullanicinin o anki
-            konumu arasinda bir yol cizilsin haritada gorunen").
+        {/* YOLDAN GIDEN ROTA (kullanicinin istegi 2026-09-09:
+            "boyle kesik cizgi olmaz, yol tarifi al dendiginde en kisa
+            yol nerden gosteriyorsa gercek haritanin cizdigi gibi yol
+            ciz yoldan").
 
-            DUZ CIZGI, YOL DEGIL - ve bu bilincli. Gercek bir sürüş
-            rotasi bir yol tarifi servisi ister (Apple/Google
-            Directions): ek anahtar, kota ve lisans demek, ustelik
-            Google'in verisi saklanamiyor (2026-08-31 arastirmasi).
-            Ayrica ekrandaki mesafe hapi ZATEN kus ucusu mesafeyi
-            yaziyor; egri bir rota cizip yanina kus ucusu mesafe
-            yazmak ikisini birbiriyle celisir hale getirirdi.
+            ONCEKI HAL DUZ VE KESIKLI BIR CIZGIYDI ve kullanici geri
+            aldirdi. Noktalar `lib/rota.ts` icinden geliyor (OSRM,
+            OpenStreetMap verisi); rota gelmediyse hicbir sey
+            cizilmiyor - yanlis bir yol gostermektense hic gostermemek
+            dogru.
 
-            Kesikli cizilmesi de ayni sebeple: kesik cizgi "yaklasik/
-            dogrudan bag" demek, duz kalin bir cizgi ise surulecek bir
-            yol gibi okunurdu.
-
-            Markerlardan ONCE ciziliyor, yani ignelerin ALTINDA kaliyor.
-            Yalnizca kullanicinin konumu okunabildiginde var; kesfet
-            ekraninda kullanici zaten merkez oldugu icin hic cizilmiyor. */}
-        {kullaniciKonumu && (
+            Markerlardan ONCE ciziliyor, yani ignelerin ALTINDA
+            kaliyor. Uclari ve donusleri YUVARLAK: keskin birlesimler
+            dar sokak donuslerinde sivri cikintilar uretiyor. */}
+        {rota && rota.length > 1 && (
           <Polyline
-            coordinates={[
-              { latitude: kullaniciKonumu.lat, longitude: kullaniciKonumu.lng },
-              { latitude: merkez.lat, longitude: merkez.lng },
-            ]}
+            coordinates={rota.map((n) => ({ latitude: n.lat, longitude: n.lng }))}
             strokeColor={renk.turuncu}
-            strokeWidth={3}
-            lineDashPattern={[6, 6]}
-            geodesic
+            strokeWidth={5}
+            lineCap="round"
+            lineJoin="round"
           />
         )}
 

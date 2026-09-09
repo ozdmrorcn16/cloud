@@ -38,6 +38,13 @@ import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/t
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { anidanAkisOgesi } from '../../../lib/akis'
+import {
+  etkilesimOzetleriniGetir,
+  begen,
+  begeniyiKaldir,
+  paylas,
+  type EtkilesimOzeti,
+} from '../../../lib/etkilesim'
 import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
@@ -185,6 +192,17 @@ export default function ProfilEkrani() {
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
   // Cizim penceresi; kaydirdikca buyuyor.
   const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
+  /*
+   * BEGENI / YORUM SAYILARI (kullanicinin istegi 2026-09-09:
+   * "profildeki paylasimlarda ana sayfadaki gibi begen paylas yorum
+   * yapma ikonu ekle").
+   *
+   * Kart bu ozet gelmeden eylem satirini CIZMIYOR, yani ikonlar
+   * profilde hic gorunmuyordu.
+   */
+  const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
+  /** Sunucuya SORULMUS kimlikler; ayni istegi iki kez atmamak icin. */
+  const istenenOzetler = useRef<Set<string>>(new Set())
   const [fotografYukleniyor, setFotografYukleniyor] = useState(false)
   // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
   // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
@@ -222,6 +240,78 @@ export default function ProfilEkrani() {
     } finally {
       setYukleniyor(false)
     }
+  }
+
+  /*
+   * OZETLER CIZIM PENCERESINE GORE CEKILIYOR, hepsi icin degil.
+   *
+   * Anilarin tamami zaten elde (sayaclar ve "En sik" listesi ondan
+   * besleniyor) ama yuzlerce kimligi tek istekte sormanin anlami yok;
+   * ekranda cizilmeyen kartin sayacina da ihtiyac yok. Pencere
+   * buyudukce yalnizca YENI kimlikler soruluyor.
+   *
+   * SORULAN KIMLIKLER BIR REF'TE TUTULUYOR ve cevap gelmeyenler SIFIR
+   * ozetle dolduruluyor. Ikisi de SONSUZ DONGUYU onluyor: hic
+   * begenisi ve yorumu olmayan bir check-in icin sunucu satir
+   * dondurmuyor, dolayisiyla "eksik" listesi hic bosalmiyor ve etki
+   * kendi kendini tetikliyordu (testte yakalandi - kosum takildi).
+   */
+  useEffect(() => {
+    const eksikler = anilar
+      .slice(0, gorunenAdet)
+      .map((a) => a.id)
+      .filter((id) => !istenenOzetler.current.has(id))
+    if (eksikler.length === 0) return
+
+    eksikler.forEach((id) => istenenOzetler.current.add(id))
+    let gecerli = true
+    etkilesimOzetleriniGetir(eksikler)
+      .then((gelen) => {
+        if (!gecerli) return
+        const tam: Record<string, EtkilesimOzeti> = { ...gelen }
+        // Sunucudan satir gelmeyen check-in'in etkilesimi YOKTUR;
+        // ikonlar yine cizilsin diye sifirla dolduruluyor.
+        for (const id of eksikler) {
+          if (!tam[id]) tam[id] = { begeni: 0, yorum: 0, begendim: false }
+        }
+        setOzetler((mevcut) => ({ ...mevcut, ...tam }))
+      })
+      // Sayac gelmezse kart yine ciziliyor; yalnizca o kartta eylem
+      // satiri gorunmuyor. Kimlikler ref'te kaldigi icin istek
+      // kendini tekrarlamiyor.
+      .catch(() => {})
+    return () => {
+      gecerli = false
+    }
+  }, [anilar, gorunenAdet])
+
+  /**
+   * Iyimser guncelleme: kalp aninda doluyor, sunucu reddederse geri
+   * aliniyor. Ana sayfadaki desenin AYNISI - iki ekran ayni etkilesim
+   * satirini tasidigi icin davranislari da ayni olmali.
+   */
+  async function begeniDegistir(checkInId: string) {
+    const onceki = ozetler[checkInId]
+    if (!onceki) return
+
+    const yeni = {
+      ...onceki,
+      begendim: !onceki.begendim,
+      begeni: onceki.begeni + (onceki.begendim ? -1 : 1),
+    }
+    setOzetler((o) => ({ ...o, [checkInId]: yeni }))
+    try {
+      if (onceki.begendim) await begeniyiKaldir(checkInId)
+      else await begen(checkInId)
+    } catch {
+      setOzetler((o) => ({ ...o, [checkInId]: onceki }))
+    }
+  }
+
+  async function aniyiPaylas(checkInId: string) {
+    const ani = anilar.find((a) => a.id === checkInId)
+    if (!ani || !profil) return
+    await paylas(ani.mekanAdi, profil.kullaniciAdi).catch(() => {})
   }
 
   /**
@@ -683,6 +773,16 @@ export default function ProfilEkrani() {
                       rumuz: profil.kullaniciAdi,
                     })}
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
+                    ozet={ozetler[ani.id]}
+                    onBegen={begeniDegistir}
+                    // Yorumlar kartin ICINDE alttan aciliyor; ekranin
+                    // tek isi sayaci tazelemek.
+                    onYorumSayisi={(id, sayi) =>
+                      setOzetler((mevcut) =>
+                        mevcut[id] ? { ...mevcut, [id]: { ...mevcut[id], yorum: sayi } } : mevcut
+                      )
+                    }
+                    onPaylas={aniyiPaylas}
                     silOnayiAcik={silOnayi === ani.id}
                     onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
                     onSil={aniyiSil}

@@ -169,6 +169,12 @@ export function CanliHarita({
    * yalnizca imzayi native surumle ayni tutmak icin duruyor.
    */
   kullaniciKonumu?: { lat: number; lng: number } | null
+  /**
+   * Yol rotasi - web'de cizilmiyor. Radar gercek bir harita degil,
+   * uzerine sokak takip eden bir cizgi koymanin karsiligi yok. Prop
+   * imzayi native surumle ayni tutuyor.
+   */
+  rota?: { lat: number; lng: number }[] | null
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)

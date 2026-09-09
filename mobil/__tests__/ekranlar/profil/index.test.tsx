@@ -11,6 +11,7 @@ import {
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { checkIniSil } from '../../../lib/checkin'
+import { etkilesimOzetleriniGetir, begen, paylas } from '../../../lib/etkilesim'
 
 jest.mock('../../../lib/profil', () => ({
   kendiProfilimiGetir: jest.fn(),
@@ -32,6 +33,16 @@ jest.mock('../../../lib/checkin', () => ({
   checkInNotunuGuncelle: jest.fn(),
 }))
 jest.mock('../../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
+// Sabitler GERCEK kaliyor, yalnizca ag cagrilari degistiriliyor: eksik
+// bir sabit hata vermiyor, sessizce undefined donuyor (2026-09-02'de
+// yasandi).
+jest.mock('../../../lib/etkilesim', () => ({
+  ...jest.requireActual('../../../lib/etkilesim'),
+  etkilesimOzetleriniGetir: jest.fn(),
+  begen: jest.fn(),
+  begeniyiKaldir: jest.fn(),
+  paylas: jest.fn(),
+}))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
@@ -68,6 +79,9 @@ function duzYazi(oge: { props: { style?: unknown } }): Record<string, unknown> {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // Varsayilan: sayac yok. Kart eylem satirini ancak ozet gelince
+  // ciziyor, yani bu deger verilmezse eski davranis olculur.
+  ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({})
   ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
     id: 'kullanici-1',
     kullaniciAdi: 'orcun',
@@ -507,6 +521,58 @@ describe('ProfilEkrani anilar listesi', () => {
     await waitFor(() => expect(screen.queryByText('Mekan 0')).toBeNull())
     // Digeri YERINDE: silme tek tek.
     expect(screen.getByText('Mekan 1')).toBeTruthy()
+  })
+
+  /*
+   * ETKILESIM SATIRI (kullanicinin istegi 2026-09-09: "profildeki
+   * paylasimlarda ana sayfadaki gibi begen paylas yorum yapma ikonu
+   * ekle"). Kart bu satiri ancak `ozet` gelince ciziyor ve profil
+   * ozetleri HIC cekmiyordu.
+   */
+  it('kartlarda begen / yorum / paylas satiri var', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(1))
+    ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({
+      'ani-0': { begeni: 4, yorum: 2, begendim: false },
+    })
+
+    await render(<ProfilEkrani />)
+
+    expect(await screen.findByLabelText('Beğen')).toBeTruthy()
+    expect(screen.getByLabelText('Yorumlar')).toBeTruthy()
+    // "Paylaş" IKI YERDE: ust cubukta profili paylasma dugmesi ve
+    // kartin eylem satiri. Sonuncusu kartinki.
+    expect(screen.getAllByLabelText('Paylaş')).toHaveLength(2)
+    expect(screen.getByText('4')).toBeTruthy()
+  })
+
+  it('kalbe basinca begeni gonderiliyor ve sayi ANINDA artiyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(1))
+    ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({
+      'ani-0': { begeni: 4, yorum: 0, begendim: false },
+    })
+    ;(begen as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<ProfilEkrani />)
+    fireEvent.press(await screen.findByLabelText('Beğen'))
+
+    expect(await screen.findByText('5')).toBeTruthy()
+    await waitFor(() => expect(begen).toHaveBeenCalledWith('ani-0'))
+  })
+
+  it('paylas ikonu paylasim penceresini aciyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar(1))
+    ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({
+      'ani-0': { begeni: 0, yorum: 0, begendim: false },
+    })
+    ;(paylas as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<ProfilEkrani />)
+    await screen.findByLabelText('Beğen')
+    // Ust cubuktaki profil paylasma dugmesi degil, KARTINKI.
+    const dugmeler = screen.getAllByLabelText('Paylaş')
+    fireEvent.press(dugmeler[dugmeler.length - 1])
+
+    await waitFor(() => expect(paylas).toHaveBeenCalledWith('Mekan 0', 'orcun'))
   })
 })
 

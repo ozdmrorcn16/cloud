@@ -729,6 +729,75 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### PROFILDE ETKILESIM SATIRI + GERCEK YOL ROTASI - 2026-09-09 (ucuncu tur)
+
+**1. PROFIL KARTLARINDA BEGEN / YORUM / PAYLAS.** Kullanicinin istegi:
+"profildeki paylasimlarda ana sayfadaki gibi begen paylas yorum yapma
+ikonu ekle".
+
+Kart bu satiri ancak `ozet` (begeni/yorum sayilari) verilince ciziyor
+ve **profil ekrani ozetleri hic cekmiyordu** - yani ikonlar orada
+gorunmuyordu. Artik `etkilesimOzetleriniGetir` cagriliyor; begenme
+ana sayfadaki gibi IYIMSER (kalp aninda doluyor, sunucu reddederse
+geri aliniyor), yorumlar kartin icinde alttan aciliyor, paylas
+`Share`i aciyor.
+
+**OZETLER CIZIM PENCERESINE GORE cekiliyor**, hepsi icin degil:
+ekranda cizilmeyen kartin sayacina ihtiyac yok ve yuzlerce kimligi tek
+istekte sormanin anlami yok.
+
+**SONSUZ DONGU TESTTE YAKALANDI - kayda geciyor.** Ilk yazimda etki
+`ozetler`e bagliydi ve eksik kimlikleri her seferinde yeniden
+soruyordu; hic begenisi/yorumu olmayan bir check-in icin sunucu SATIR
+DONDURMUYOR, dolayisiyla "eksik" listesi hic bosalmiyor ve etki kendi
+kendini tetikliyordu. Jest kosumu takildi (300 sn'de bitmedi). Iki
+katmanli cozum: sorulan kimlikler bir REF'te tutuluyor ve cevap
+gelmeyenler SIFIR ozetle dolduruluyor.
+
+**2. HARITADA GERCEK YOL ROTASI.** Bir onceki turda cizilen duz kesikli
+cizgiyi kullanici reddetti: "boyle kesik cizgi olmaz, yol tarifi al
+dendiginde en kisa yol nerden gosteriyorsa gercek haritanin cizdigi
+gibi yol ciz yoldan" (ornek olarak Google Haritalar'in mavi rotasini
+gosterdi). **Yani bir onceki turun 6. maddesindeki "duz cizgi bilincli"
+gerekcesi GECERSIZ.**
+
+Yeni modul `mobil/lib/rota.ts`: **OSRM** (Open Source Routing Machine)
+genel sunucusu, OpenStreetMap verisiyle. Anahtar ve hesap istemiyor.
+Canli dogrulandi: Bursa'da iki nokta arasi `code: Ok`, 6.919 m,
+193 nokta.
+
+**ELENEN SECENEKLER, tekrar arastirilmasin:**
+
+| Secenek | Neden olmadi |
+|---|---|
+| Google Directions | Ucretli; sonucu SAKLAMAK yasak ve gosterirken GOOGLE HARITASI sarti var - biz iOS'ta Apple Haritalar kullaniyoruz |
+| Apple MKDirections | Yerel olarak var ama `react-native-maps` disari acmiyor; native modul yeni derleme demek, OTA ile gitmez |
+| Mapbox / OpenRouteService | Ucretsiz katmanlari var ama HESAP ve ANAHTAR gerektiriyor |
+
+**ROTA GELMEZSE HICBIR SEY CIZILMIYOR.** Duz cizgi yedegi bilerek yok:
+kullanici tam olarak onu reddetti ve yanlis bir yol gostermektense hic
+gostermemek dogru (`guvenilmeyen-veriyi-gosterme` kurali).
+
+**TUZAK: OSRM koordinati BOYLAM,ENLEM sirasiyla istiyor** - alisilmis
+sirann tersi. Ters yazilirsa sunucu hata VERMIYOR, denizin ortasindan
+bir rota deniyor. Bir testle kilitli.
+
+**ACIK BORC - MAGAZA ONCESI:** OSRM'in genel sunucusu "demo"
+niteliginde, agir kullanim icin verilmis bir soz yok. Yayina cikmadan
+once kendi ornegimiz ya da anahtarli bir saglayici baglanmali;
+sozlesme tek dosyada (`lib/rota.ts`) oldugu icin degisiklik oraya
+sinirli.
+
+**KVKK - ATLANMADI:** cagri kullanicinin koordinatini UCUNCU BIR
+TARAFA gonderiyor. Uygulama ici gizlilik metni (madde 5),
+`docs/gizlilik-metni.md` ve `docs/kvkk-uyum-listesi.md` guncellendi;
+harita saglayicisiyla ayni sinifa yazildi ve dort soru cevaplandi.
+Istek kimlik tasimiyor - yalnizca iki koordinat.
+
+Dogrulama: jest 65 paket / 754 test, tsc uygulama kodunda 0 hata,
+OSRM canli cagriyla dogrulandi. Harita cizimi WEB'DE GORUNMEZ (orada
+radar var), telefonda bakilmali.
+
 ### GEZINME, KART VE HARITA DUZELTMELERI - 2026-09-09 (ikinci tur)
 
 Kullanicinin arka arkaya verdigi yedi duzeltme. Ilki bir onceki turun

@@ -35,6 +35,7 @@ import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { CanliHarita } from '../../tasarim/CanliHarita'
+import { rotaGetir, type Rota } from '../../../lib/rota'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -209,6 +210,15 @@ export default function MekanSayfasi() {
   // Haritada TURUNCU noktayla ciziliyor: kullanici secilen mekana
   // olan mesafesini gorsel olarak da gorsun (istegi 2026-09-07).
   const [benimKonumum, setBenimKonumum] = useState<{ lat: number; lng: number } | null>(null)
+  /*
+   * YOLDAN GIDEN ROTA (kullanicinin istegi 2026-09-09: "yol tarifi al
+   * dendiginde en kisa yol nerden gosteriyorsa gercek haritanin
+   * cizdigi gibi yol ciz yoldan").
+   *
+   * Gelmezse (ag yok, servis cevap vermedi) HICBIR SEY cizilmiyor -
+   * duz cizgi yedegi bilerek yok, kullanici tam olarak onu reddetti.
+   */
+  const [rota, setRota] = useState<Rota | null>(null)
   const [ayriliyor, setAyriliyor] = useState(false)
 
   useEffect(() => {
@@ -296,6 +306,11 @@ export default function MekanSayfasi() {
         if (!gecerli) return
         setBenimKonumum(k)
         setUzaklik(mesafeMetre(k.lat, k.lng, mekan.konum.lat, mekan.konum.lng))
+        // Rota konumdan SONRA isteniyor - iki uc noktasi da olmadan
+        // sorulacak bir sey yok.
+        return rotaGetir(k, mekan.konum).then((bulunan) => {
+          if (gecerli) setRota(bulunan)
+        })
       })
       .catch(() => {})
     return () => {
@@ -491,6 +506,7 @@ export default function MekanSayfasi() {
                     toplamCheckIn: istatistik?.toplamCheckIn ?? 0,
                   })}
                   kullaniciKonumu={benimKonumum}
+                  rota={rota?.noktalar ?? null}
                 />
               </View>
 
