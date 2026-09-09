@@ -772,30 +772,25 @@ fonksiyon uretiyor; `grant`/`revoke` "function name is not unique"
 diye reddediliyor ve migrasyonun TAMAMI geri aliniyor. Once eski imza
 `drop function ... (uuid, text, text, text, text)` ile dusurulmeli.
 
-**3. UYGULAMA SIMGESI DEGISTI.** Kullanicinin verdigi yeni gorsel
-(turuncu gradyan uzerinde beyaz S ve iki nokta).
-Uretici: `araclar/uygulama-simgesi-uret.py`, kaynak
-`tasarim/slooin-simge-3-kaynak.png`.
+**3. UYGULAMA SIMGESI DENENDI VE GERI ALINDI.** Kullanici yeni bir
+simge gorseli verdi ("uygulamanin telefonda gorunen logosu bu
+olucak"); gorsel yuvarlatilmis kare ve cevresinde beyaz pay tasidigi
+icin - iOS ve Android simgeyi kendi maskeledigi icin koselerde beyaz
+ucgen kalirdi - simge SIFIRDAN kuruldu: zemin olcuIup yeniden
+uretildi, isaret ustune bindirildi.
 
-**SIMGE SIFIRDAN KURULUYOR, kaynak kirpilmiyor.** iOS ve Android
-simgeyi kendi maskeliyor; hazir yuvarlatilmis bir gorselde koselerde
-beyaz ucgenler kaliyor. Iki yaklasim GORSEL DOGRULAMADA ELENDI:
-(a) koseleri en yakin ic pikselle doldurmak - koselerde surtuk izleri
-birakti; (b) yalnizca renkle isaret maskesi - kaynagin PARLAK RIMI de
-acik ve doygunlugu dusuk oldugu icin simgenin ustune hayalet bir
-cerceve cizdi. Calisan yol: zemini OLCUP yeniden uretmek (doygun ic
-piksellere kanal basina dogrusal model) ve isaret maskesinden HALKA
-bicimli bileseni BICIMLE elemek (sinir kutusu gorselin %90'ini asan
-bilesen atiliyor).
+**KULLANICI SONUCU BEGENMEDI ve HEPSI GERI ALINDI** (ayni gun):
+"olmamis logoyla alakali ne yaptiysan en son geri al, eski hali
+dursun". Uretici betik, kaynak gorsel ve uretilen butun varliklar
+(icon, favicon, Android katmanlari, PWA v3 dosyalari) silindi;
+`index.html` ve `manifest.json` v2 adlarina dondu. Depoda simgeyle
+ilgili hicbir degisiklik kalmadi.
 
-**PWA SIMGELERININ ADINDA SURUM VAR: v2 -> v3.** iOS ana ekran
-kisayolunun simgesini ADRESE gore onbellege aliyor; ayni adla yeni
-gorsel yayinlaninca telefonda eski logo gorunmeye devam ediyor.
-
-**SIMGE OTA ILE GITMEZ - kullaniciya soylendi.** Uygulama simgesi
-native pakete gomulu; telefondaki simgenin degismesi icin YENI BIR
-DERLEME gerekiyor (`eas build --platform ios --profile production`).
-Web ve PWA tarafi yayinla birlikte guncelleniyor.
+**DERS:** kullanici BITMIS bir varlik verdiginde onu yeniden
+kurmaya calisma. Teknik bir kisit (iOS maskesi) gercekten vardi ama
+dogru davranis kisiti SOYLEYIP karari kullaniciya birakmakti; ayni
+ders 2026-09-06'da araba ikonunda da ogrenilmisti ("bu attigimi
+direk kullan").
 
 ### MEKAN DUZENLEME TALEPLERI - 2026-09-09 (besinci tur)
 
