@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   Image,
-  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -83,8 +82,30 @@ export default function MekanDuzenleEkrani() {
     }
   }, [mekanId])
 
-  async function kameradanCek() {
+  /**
+   * Secici, KAYNAK PENCERESI KAPANDIKTAN SONRA aciliyor.
+   *
+   * Kullanicinin bildirdigi hata (2026-09-09): "galeriden sec diyince
+   * galeriden secme acilmiyor". Sebep: iOS bir modal kapanirken uzerine
+   * ikinci bir native ekran SUNAMIYOR; cagri sessizce hicbir sey
+   * yapmadan donuyor. Pencereyi kapatip bir sonraki kareyi beklemek
+   * yetiyor.
+   *
+   * Hatalar da YUTULMUYOR: dugmeye basip hicbir sey olmamasi
+   * "uygulama bozuk" diye okunur - tam da bu hatada oldugu gibi.
+   */
+  function kaynakSec(kaynak: 'kamera' | 'galeri') {
     setKaynakSecimi(false)
+    setTimeout(() => {
+      const cagri = kaynak === 'kamera' ? kameradanCek : galeridenSec
+      cagri().catch((e) =>
+        setHata(e instanceof Error ? e.message : 'Fotoğraf seçilemedi.')
+      )
+    }, 350)
+  }
+
+  async function kameradanCek() {
+    // Izin REDDEDILIRSE sessizce gecmiyoruz.
     const izin = await ImagePicker.requestCameraPermissionsAsync()
     if (!izin.granted) {
       setHata('Fotoğraf çekmek için kamera izni gerekiyor.')
@@ -95,7 +116,14 @@ export default function MekanDuzenleEkrani() {
   }
 
   async function galeridenSec() {
-    setKaynakSecimi(false)
+    // GALERI IZNI DE ACIKCA ISTENIYOR. iOS'ta izin verilmemisse
+    // `launchImageLibraryAsync` hicbir sey gostermeden donuyor; ekranda
+    // sebep gorunmuyordu.
+    const izin = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!izin.granted) {
+      setHata('Galeriden seçmek için fotoğraf izni gerekiyor.')
+      return
+    }
     const sonuc = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.7,
@@ -135,10 +163,20 @@ export default function MekanDuzenleEkrani() {
   }
 
   return (
-    <Pressable style={stiller.kok} onPress={Keyboard.dismiss} accessible={false}>
+    <View style={stiller.kok}>
       <UstCubuk baslik="Bilgileri düzelt" geriEtiketi="Geri" />
 
-      <ScrollView contentContainerStyle={stiller.icerik} keyboardShouldPersistTaps="handled">
+      {/* KLAVYE KAYDIRINCA KAPANIYOR, kok bir Pressable ILE DEGIL.
+          Ilk halde ekranin koku `Pressable`di (bos yere basinca klavye
+          kapansin diye) ve o Pressable dokunma yanitini kapiyordu:
+          parmak surukleyince liste HIC kaymiyordu - kullanicinin
+          bildirdigi hata. `keyboardDismissMode` ayni isi kaydirma
+          hareketinin kendisiyle yapiyor. */}
+      <ScrollView
+        contentContainerStyle={stiller.icerik}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         {gonderildi ? (
@@ -250,12 +288,12 @@ export default function MekanDuzenleEkrani() {
       <SecimPenceresi
         acikMi={kaynakSecimi}
         secimler={[
-          { etiket: 'Fotoğraf çek', testID: 'foto-kamera', onSec: kameradanCek },
-          { etiket: 'Galeriden seç', testID: 'foto-galeri', onSec: galeridenSec },
+          { etiket: 'Fotoğraf çek', testID: 'foto-kamera', onSec: () => kaynakSec('kamera') },
+          { etiket: 'Galeriden seç', testID: 'foto-galeri', onSec: () => kaynakSec('galeri') },
         ]}
         onKapat={() => setKaynakSecimi(false)}
       />
-    </Pressable>
+    </View>
   )
 }
 

@@ -154,13 +154,13 @@ export const TEMEL_TUR_GRUPLARI: { baslik: string; turler: string[] }[] = [
   {
     baslik: 'Yeme içme',
     turler: [
+      // "Hizli ve tatli" grubu bunun ICINE tasindi (kullanicinin
+      // istegi 2026-09-09): ikisi de yeme icme ve ayri baslik listeyi
+      // uzatmaktan baska bir sey yapmiyordu.
       'Kafe', 'Kahveci', 'Çay evi', 'Restoran', 'Lokanta', 'Türk mutfağı',
       'Kebapçı', 'Balık restoranı', 'Ocakbaşı', 'Kahvaltı salonu', 'Fırın',
+      'Fast food', 'Burgerci', 'Pizzacı', 'Tatlıcı', 'Dondurmacı',
     ],
-  },
-  {
-    baslik: 'Hızlı ve tatlı',
-    turler: ['Fast food', 'Burgerci', 'Pizzacı', 'Tatlıcı', 'Dondurmacı'],
   },
   {
     baslik: 'Gece',

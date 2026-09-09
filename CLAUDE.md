@@ -791,6 +791,30 @@ talep reddediliyor; **onay olmadan mekan kaydi degismiyor**; uc
 moderator RPC'si de siradan kullaniciyi reddediyor; kisi kendi talebini
 goruyor. Betik idempotent, actigi satiri siliyor.
 
+**AYNI GUN UC DUZELTME** (kullanicinin bildirdikleri):
+
+1. **EKRAN KAYDIRILMIYORDU.** Kokte `Pressable` vardi (bos yere basinca
+   klavye kapansin diye) ve o Pressable DOKUNMA YANITINI KAPIYORDU:
+   parmak surukleyince liste hic kaymiyordu. Kok duz bir `View` oldu;
+   klavyeyi artik `keyboardDismissMode="on-drag"` kapatiyor - ayni isi
+   kaydirma hareketinin kendisi yapiyor.
+
+   **Kural: kaydirilabilir bir alanin ustune kok `Pressable` KOYMA.**
+   Mekan ekleme ekranindaki desen (2026-09-07) orada calisiyor cunku o
+   ekranda kaydirma yok.
+
+2. **"Galeriden seç" GALERIYI ACMIYORDU.** Iki katmanli duzeltme:
+   secici artik kaynak penceresi KAPANDIKTAN SONRA aciliyor (iOS bir
+   modal kapanirken uzerine ikinci bir native ekran sunamiyor, cagri
+   sessizce donuyor) ve galeri izni artik ACIKCA isteniyor - izin
+   yokken `launchImageLibraryAsync` hicbir sey gostermeden donuyordu.
+   Hatalar da yutulmuyor, ekranda yaziyor.
+
+3. **"Hızlı ve tatlı" grubu "Yeme içme" icine tasindi** (kullanicinin
+   istegi): ikisi de yeme icme, ayri baslik listeyi uzatmaktan baska
+   bir sey yapmiyordu. Degisiklik `TEMEL_TUR_GRUPLARI` icinde, yani
+   kesfet suzgecinde de gecerli.
+
 **TEST ORTAMI TUZAGI - kayda geciyor:** bu ortamda (React 19 + RNTL)
 bir `setState` AYNI TURDA ekrana yansimiyor. `fireEvent.changeText`ten
 hemen sonra `fireEvent.press` yapilinca dugme ESKI kapanisi calistiriyor
@@ -799,7 +823,7 @@ ve "degisiklik yok" dali isliyordu; alanin degeri olcuIdue ve girilen
 cagrilarini **await** etmek (depoda zaten bu desen vardi). Belirtisi
 yaniltici - ilk test geciyor, sonrakiler zaman asimina duesuyor.
 
-Dogrulama: jest 65 paket / 760 test, tsc uygulama kodunda 0 hata,
+Dogrulama: jest 65 paket / 761 test, tsc uygulama kodunda 0 hata,
 panel derlemesi temiz, canli 14/14, ekran goruntuleri
 `tasarim/duzenleme-talebi.png` ve `mekan-duzelt-girisi.png`.
 

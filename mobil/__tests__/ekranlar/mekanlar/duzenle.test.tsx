@@ -36,8 +36,10 @@ jest.mock('expo-router', () => ({
 
 const mockKamera = jest.fn()
 const mockGaleri = jest.fn()
+const mockGaleriIzni = jest.fn()
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: (...a: unknown[]) => mockKamera(...a),
+  requestMediaLibraryPermissionsAsync: (...a: unknown[]) => mockGaleriIzni(...a),
   launchCameraAsync: jest.fn().mockResolvedValue({ canceled: true }),
   launchImageLibraryAsync: (...a: unknown[]) => mockGaleri(...a),
 }))
@@ -61,6 +63,11 @@ beforeEach(() => {
   ;(bekleyenTalebimVarMi as jest.Mock).mockResolvedValue(false)
   ;(duzenlemeTalebiGonder as jest.Mock).mockResolvedValue('talep-1')
   mockGaleri.mockResolvedValue({ canceled: false, assets: [{ uri: 'file://foto.jpg' }] })
+  mockGaleriIzni.mockResolvedValue({ granted: true })
+  mockKamera.mockResolvedValue({ granted: true })
+  // Secici, kaynak penceresi kapandiktan SONRA aciliyor (iOS modal
+  // yarisi); testte o gecikmeyi ilerletmek icin sahte zamanlayici yok -
+  // gercek zamanli bekleniyor.
 })
 
 describe('MekanDuzenleEkrani', () => {
@@ -172,6 +179,26 @@ describe('MekanDuzenleEkrani', () => {
 
     expect(await screen.findByTestId('bekleyen-talep')).toBeTruthy()
     expect(screen.queryByTestId('duzenle-ad')).toBeNull()
+  })
+
+  /*
+   * GALERI IZNI de acikca isteniyor. Onceden istenmiyordu ve izin
+   * yokken `launchImageLibraryAsync` hicbir sey gostermeden donuyordu;
+   * kullanici "galeriden sec diyince acilmiyor" diye bildirdi.
+   */
+  it('galeri izni reddedilirse uyari cikiyor ve galeri acilmiyor', async () => {
+    mockGaleriIzni.mockResolvedValue({ granted: false })
+
+    await render(<MekanDuzenleEkrani />)
+    await screen.findByDisplayValue('Sahil Kafe')
+
+    await fireEvent.press(screen.getByTestId('fotograf-ekle'))
+    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+
+    expect(
+      await screen.findByText('Galeriden seçmek için fotoğraf izni gerekiyor.')
+    ).toBeTruthy()
+    expect(mockGaleri).not.toHaveBeenCalled()
   })
 
   it('kamera izni reddedilirse uyari cikiyor ve kamera acilmiyor', async () => {
