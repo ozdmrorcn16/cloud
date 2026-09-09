@@ -31,6 +31,26 @@ type SunucuProfili = {
   arkadas_sayisi: number | null
 }
 
+/**
+ * Oturumdaki kisinin kimligi; oturum yoksa null.
+ *
+ * "Bu profil benim mi" sorusunun TEK KAYNAGI. Kural onceden her giris
+ * noktasinda elle yaziliyordu (`kisi.benimMi ? '/profil' : ...`) ve on
+ * uc yerin yalnizca ikisinde vardi - yorumdan kendi profiline basan
+ * kullanici "Arkadaş ekle" dugmesi goruyordu (2026-09-09'da bildirildi).
+ *
+ * Atmiyor: cagiran taraf cogunlukla "bilmiyorsam eski davranisa duş"
+ * istiyor, hata firlatmak calisan bir ekrani bozardi.
+ */
+export async function kendiKullaniciIdim(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getUser()
+    return data.user?.id ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function baskasininProfiliniGetir(
   kullaniciId: string
 ): Promise<BaskaProfil | null> {

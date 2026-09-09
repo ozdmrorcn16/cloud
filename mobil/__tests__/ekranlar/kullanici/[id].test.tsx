@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
-import { baskasininProfiliniGetir } from '../../../lib/profil'
+import { baskasininProfiliniGetir, kendiKullaniciIdim } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir } from '../../../lib/checkin'
 import { profilFotograflariUrl, checkInFotografiUrl } from '../../../lib/fotograf-url'
@@ -13,7 +13,10 @@ import {
   sohbetIsteginiYanitla,
 } from '../../../lib/bag'
 
-jest.mock('../../../lib/profil', () => ({ baskasininProfiliniGetir: jest.fn() }))
+jest.mock('../../../lib/profil', () => ({
+  baskasininProfiliniGetir: jest.fn(),
+  kendiKullaniciIdim: jest.fn(),
+}))
 jest.mock('../../../lib/engelleme', () => ({
   engelle: jest.fn(),
   engeliKaldir: jest.fn(),
@@ -36,13 +39,21 @@ jest.mock('../../../lib/bag', () => ({
 
 const mockRouterPush = jest.fn()
 const mockRouterBack = jest.fn()
+const mockRouterReplace = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush, back: mockRouterBack }),
+  useRouter: () => ({
+    push: mockRouterPush,
+    back: mockRouterBack,
+    replace: mockRouterReplace,
+  }),
   useLocalSearchParams: () => ({ id: 'kullanici-2' }),
 }))
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // Varsayilan: baktigim profil BENIM DEGIL. Kendi profilim senaryosu
+  // bunu kendi testinde degistiriyor.
+  ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('ben')
   ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
     id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
     profilGizli: false, arkadasSayisi: 4,
@@ -606,5 +617,48 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     await screen.findByText('Mesaj gönder')
     expect(screen.queryByText('Bu profil kapalı')).toBeNull()
+  })
+  // ------------------------------------------------------------------ //
+  // KENDI PROFILIM BU EKRANDA ACILMAZ (kullanicinin bildirdigi hata
+  // 2026-09-09: "yorumda kendi profilime basinca sanki baskasinin
+  // profiliymis gibi gosteriyor").
+  //
+  // Kural GIRIS NOKTALARINDA degil BURADA: on uc ayri yerden bu ekrana
+  // giriliyor ve `benimMi` kontrolu yalnizca ikisinde vardi.
+  // ------------------------------------------------------------------ //
+
+  it('kendi profilime basinca /profil ekranina yonlendiriliyor', async () => {
+    ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('kullanici-2')
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => expect(mockRouterReplace).toHaveBeenCalledWith('/profil'))
+    // `push` DEGIL `replace`: geri tusu kullaniciyi geldigi yere
+    // dondurmeli, arada olu bir ekran kalmamali.
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/profil')
+  })
+
+  it('kendi profilimde BOSA ISTEK atilmiyor', async () => {
+    ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('kullanici-2')
+
+    await render(<KullaniciProfiliEkrani />)
+    await waitFor(() => expect(mockRouterReplace).toHaveBeenCalled())
+
+    expect(baskasininProfiliniGetir).not.toHaveBeenCalled()
+    expect(kullanicininAnilariniGetir).not.toHaveBeenCalled()
+    expect(bagDurumunuGetir).not.toHaveBeenCalled()
+  })
+
+  /*
+   * Kimlik okunamazsa (oturum yok, ag hatasi) ESKI DAVRANIS surer.
+   * Bilmedigimiz bir sey yuzunden ekrani bos birakmak yanlis olurdu.
+   */
+  it('kendi kimligim okunamazsa ekran normal aciliyor', async () => {
+    ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue(null)
+
+    await render(<KullaniciProfiliEkrani />)
+
+    await waitFor(() => expect(baskasininProfiliniGetir).toHaveBeenCalledWith('kullanici-2'))
+    expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 })

@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
-import { baskasininProfiliniGetir, type BaskaProfil } from '../../../lib/profil'
+import {
+  baskasininProfiliniGetir,
+  kendiKullaniciIdim,
+  type BaskaProfil,
+} from '../../../lib/profil'
 import { engelle } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir, type AniGorunumu } from '../../../lib/checkin'
 import { profilFotograflariUrl, checkInFotografiUrl } from '../../../lib/fotograf-url'
@@ -108,8 +112,42 @@ export default function KullaniciProfiliEkrani() {
     }
   }
 
+  /**
+   * KENDI PROFILIM BU EKRANDA ACILMAZ - `/profil`e yonlendiriliyor.
+   *
+   * Kullanicinin bildirdigi hata (2026-09-09): "yorumda kendi profilime
+   * basinca sanki baskasinin profiliymis gibi gosteriyor." Gercekten
+   * oyleydi: ekran kendi kimligini tanimadigi icin kisiye KENDISI icin
+   * "Arkadaş ekle" ve "Sohbet iste" gosteriyordu.
+   *
+   * KURAL BURADA, GIRIS NOKTALARINDA DEGIL. Onceden her cagiran taraf
+   * `kisi.benimMi ? '/profil' : ...` diye kendi kontrolunu yapiyordu ve
+   * ON UC yerin yalnizca IKISINDE vardi (akis karti ve "Su an
+   * disarida" seridi). Kontrolu buraya almak hepsini birden duzeltiyor
+   * ve yarin eklenecek yeni bir giris de kendiliginden dogru olur.
+   *
+   * `replace`, `push` DEGIL: geri tusu kullaniciyi geldigi yere
+   * dondurmeli, arada olu bir ekran kalmamali.
+   *
+   * VERI CEKME YONLENDIRMEDEN SONRAYA BIRAKILIYOR: kimlik eslesirse
+   * uc istek de bosa giderdi ("bosa is yaptirma" kurali).
+   *
+   * Kimlik okunamazsa (oturum yok, ag hatasi) eski davranisa duesuluyor
+   * - bilmedigimiz bir sey yuzunden ekrani bos birakmak yanlis olurdu.
+   */
   useEffect(() => {
-    verileriYukle()
+    let gecerli = true
+    kendiKullaniciIdim().then((benimId) => {
+      if (!gecerli) return
+      if (benimId && benimId === id) {
+        router.replace('/profil')
+        return
+      }
+      verileriYukle()
+    })
+    return () => {
+      gecerli = false
+    }
   }, [id])
 
   async function kullaniciyiEngelle() {

@@ -1309,6 +1309,30 @@ hale gelirdi. Ayni gerekce karsilama sahnesindeki harita haplarinda da
 var. Punto 9,5 -> 11, kutu 84 -> 96 px (buyuyen punto ayni kutuda daha
 erken kirpilirdi).
 
+**KENDI PROFILIM ARTIK `/kullanici/[id]` EKRANINDA ACILMIYOR.**
+Kullanicinin bildirdigi hata (2026-09-09): "yorumda kendi profilime
+basinca sanki baskasinin profiliymis gibi gosteriyor." Gercekten
+oyleydi - ekran kendi kimligini tanimadigi icin kisiye KENDISI icin
+"Arkadaş ekle" ve "Sohbet iste" gosteriyordu.
+
+**KURAL EKRANDA, GIRIS NOKTALARINDA DEGIL.** Kok neden bir
+TEKRARDI: `kisi.benimMi ? '/profil' : '/kullanici/<id>'` kontrolu her
+cagiran tarafta elle yaziliyordu ve **on uc yerin yalnizca IKISINDE**
+vardi (`CheckInKarti`, `SuAnDisarida`). Yorum sayfasi, bildirimler,
+mekan sayfasi, kisi arama ve profildeki arkadas listesi kontrolsuzdu.
+Kontrol artik `kullanici/[id].tsx` icinde: kimlik eslesirse
+`router.replace('/profil')`. Boylece hepsi birden duzeldi ve yarin
+eklenecek yeni bir giris de kendiliginden dogru olur.
+
+`replace`, `push` DEGIL: geri tusu kullaniciyi geldigi yere
+dondurmeli. Veri cekme yonlendirmeden SONRAYA birakildi - kimlik
+eslesirse uc istek de bosa giderdi. Kimlik okunamazsa (oturum yok, ag
+hatasi) eski davranis suruyor.
+
+Yeni yardimci: `kendiKullaniciIdim()` (`lib/profil.ts`). ATMIYOR,
+null donuyor - cagiran taraf "bilmiyorsam eski davranisa duş" istiyor
+ve hata firlatmak calisan bir ekrani bozardi.
+
 **YORUMDA AVATAR DA PROFILE GIDIYOR** (kullanicinin istegi, ayni gun:
 "yorumda profil resmine basincada o kisinin profiline gitsin").
 Onceden yalnizca AD basilabilirdi; fotograf uygulamanin geri kalaninda
