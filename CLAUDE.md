@@ -729,6 +729,80 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### MEKAN DUZENLEME TALEPLERI - 2026-09-09 (besinci tur)
+
+Kullanicinin istegi: "konumlara duzenleme talebi gonder ekle; talebe
+basan kisi konum ismi, adresi, kapak fotografi, turunu secebilsin,
+moderatore talebini gondersin."
+
+**NEDEN BU IS TUR SORUNUNUN CEVABI.** Ayni gun olcuIdue: dis kaynakli
+mekanlarin turu guvenilir degil ve kok neden BIZDE DEGIL - Bursa'daki
+6.105 "Kafe" kaydinin **5.992'si Foursquare'in tek bir genel "Café"
+kategorisinden** geliyor; ayni kategoride pub, yurt kantini, waffle'ci,
+hatta bir dernek var. Kullanicinin uyarisi da yerindeydi: "sadece ada
+gore yapmak da yanlis olabilir" (ayni tuzak 2026-08-23 denetiminde de
+yasandi: "Cafe Bar~Ça" adinda "Bar" geciyor ama bar degil). Orada
+bulunan insan hepsinden iyi biliyor.
+
+**AKIS:** kisi mekan sayfasindaki "Bilgileri düzelt" baglantisina
+basiyor -> ad / adres / tur / kapak fotografi -> talep moderatore
+gidiyor -> onaylanana kadar **mekan kaydi DEGISMIYOR**.
+
+| Parca | Yeri |
+|---|---|
+| Tablo | `mekan_duzenleme_talepleri` (RLS: yalnizca kendi talebini gorursun) |
+| Gonderme | `mekan_duzenleme_talebi_gonder` RPC |
+| Moderator | `moderasyon_duzenleme_talepleri` / `..._detayi` / `..._karara_bagla` |
+| Kova | `mekan-fotograflari` (private) |
+| Ekran | `src/app/mekanlar/duzenle/[mekanId].tsx` |
+| Panel | `panel/src/ekranlar/DuzenlemeTalepleri.tsx` |
+
+**"MEKANLARIN FOTOGRAFI YOK" KURALI BU YOLLA DEGISTI.** 2026-08-24'teki
+o karar DIS KAYNAKTAN gorsel cekmeyi reddediyordu (telif, kapsam, API
+bagimliligi); buradaki gorsel kullanicinin kendi cektigi ve
+MODERATORDEN GECMIS bir fotograf. `mekanlar.kapak_fotograf` sutunu
+yalnizca onayla doluyor ve mekan sayfasinin basinda ciziliyor.
+
+**ALAN ALAN ONAY.** Moderator talebin yalnizca dogru bulduğu alanlarini
+uyguluyor (`p_alanlar`): ucunden ikisi dogru biri yanlis olabilir,
+hepsini birden reddetmek dogru duzeltmeyi de coepe atardi.
+
+**SUNUCUDA ZORLANAN KURALLAR** (istemci atlayamaz): kimlik, hesap
+aktifligi, en az bir alan dolu, **tur yalnizca veritabaninda ZATEN VAR
+OLAN bir tur** (onayda deger dogrudan `mekanlar.tur`a yaziliyor -
+uydurma bir tur butun suzgecleri kirletirdi), fotograf yalnizca KENDI
+klasorunden, gunde 5 talep, ayni mekana ikinci bekleyen talep yok.
+
+**`elle_duzenlendi` SUTUNU:** onaylanmis bir duzeltme toplu veri
+yuklemesinde ezilmemeli. Mevcut `fsq_aktar` zaten `on conflict do
+nothing` kullaniyor (yani ezmiyor) ama `fsq-semt-doldur` gibi
+DOGRUDAN upsert yapan betikler var - yeni bir toplu yukleme yazilirken
+bu sutun kontrol edilmeli.
+
+**DENETIM IZI GENISLETILDI:** `hedef_tur` kisitina `'mekan'` eklendi ve
+canli dogrulandi. Bu adim atlansaydi onay HIC calismazdi - iz
+yazilamayinca kisit ihlali islemin tamamini geri aliyor (2026-09-02'de
+yasandi).
+
+**CANLI DOGRULANDI:** `araclar/mekan-duzenleme-canli-test.py`, **14/14**.
+Olculenler: kimliksiz cagri, bos talep, olmayan tur, baskasinin
+fotografi REDDEDILIYOR; gecerli talep kabul ediliyor; ikinci bekleyen
+talep reddediliyor; **onay olmadan mekan kaydi degismiyor**; uc
+moderator RPC'si de siradan kullaniciyi reddediyor; kisi kendi talebini
+goruyor. Betik idempotent, actigi satiri siliyor.
+
+**TEST ORTAMI TUZAGI - kayda geciyor:** bu ortamda (React 19 + RNTL)
+bir `setState` AYNI TURDA ekrana yansimiyor. `fireEvent.changeText`ten
+hemen sonra `fireEvent.press` yapilinca dugme ESKI kapanisi calistiriyor
+ve "degisiklik yok" dali isliyordu; alanin degeri olcuIdue ve girilen
+'Sahil Kahve' iken hala 'Sahil Kafe' gorunuyordu. Cozum: `fireEvent`
+cagrilarini **await** etmek (depoda zaten bu desen vardi). Belirtisi
+yaniltici - ilk test geciyor, sonrakiler zaman asimina duesuyor.
+
+Dogrulama: jest 65 paket / 760 test, tsc uygulama kodunda 0 hata,
+panel derlemesi temiz, canli 14/14, ekran goruntuleri
+`tasarim/duzenleme-talebi.png` ve `mekan-duzelt-girisi.png`.
+
 ### ROTA CIZGISI KALDIRILDI, YORUMLARA AVATAR - 2026-09-09 (dorduencue tur)
 
 **1. HARITADAKI ROTA CIZGISI TAMAMEN KALKTI - kullanicinin karari.**

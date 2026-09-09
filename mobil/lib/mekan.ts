@@ -25,6 +25,15 @@ export type Mekan = {
   adres: string | null
   osmId: number | null
   konum: { lat: number; lng: number }
+  /**
+   * ONAYLANMIS kapak fotografinin storage yolu (2026-09-09).
+   *
+   * Yalnizca moderatorden gecmis bir duzenleme talebiyle doluyor.
+   * 2026-08-24'teki "mekanlarin fotografi yok" kurali DIS KAYNAKTAN
+   * gorsel cekmeyi reddediyordu (telif, kapsam, API bagimliligi);
+   * buradaki gorsel kullanicinin kendi cektigi ve onaydan gecmis.
+   */
+  kapakFotograf?: string | null
 }
 
 type MekanSatiri = {
@@ -37,6 +46,7 @@ type MekanSatiri = {
   adres: string | null
   osm_id: number | null
   konum: string
+  kapak_fotograf?: string | null
 }
 
 function satiriMekanaCevir(satir: MekanSatiri): Mekan {
@@ -52,6 +62,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     adres: satir.adres,
     osmId: satir.osm_id,
     konum: noktayiCoz(satir.konum),
+    kapakFotograf: satir.kapak_fotograf ?? null,
   }
 }
 
@@ -388,7 +399,7 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum')
+    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum, kapak_fotograf')
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))

@@ -8,6 +8,7 @@ import { Kullanicilar } from './ekranlar/Kullanicilar'
 import { KullaniciDetayi } from './ekranlar/KullaniciDetayi'
 import { Konusma } from './ekranlar/Konusma'
 import { DenetimIzi } from './ekranlar/DenetimIzi'
+import { DuzenlemeTalepleri } from './ekranlar/DuzenlemeTalepleri'
 import { Yukleniyor } from './ortak/Durum'
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
         <nav>
           <Link to="/sikayetler">Şikayetler</Link>
           <Link to="/kullanicilar">Kullanıcılar</Link>
+          <Link to="/talepler">Düzenleme talepleri</Link>
           <Link to="/iz">Denetim izi</Link>
         </nav>
         <button
@@ -67,6 +69,7 @@ export default function App() {
           <Route path="/kullanicilar" element={<Kullanicilar />} />
           <Route path="/kullanicilar/:id" element={<KullaniciDetayi />} />
           <Route path="/konusma/:id" element={<Konusma />} />
+          <Route path="/talepler" element={<DuzenlemeTalepleri />} />
           <Route path="/iz" element={<DenetimIzi />} />
         </Routes>
       </main>

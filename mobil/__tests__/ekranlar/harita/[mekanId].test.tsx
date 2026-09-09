@@ -13,6 +13,7 @@ import {
   checkIndenAyril,
 } from '../../../lib/checkin'
 import { cihazKonumunuAl } from '../../../lib/konum'
+import { mekanFotografiUrl } from '../../../lib/mekan-duzenleme'
 
 // `mekanDurumu` GERCEK kaliyor: harita ignesi onu cagiriyor ve saf bir
 // hesap - mock'lamak testin kendi varsayimini dogrulamasina yol acardi.
@@ -38,13 +39,15 @@ jest.mock('../../../lib/checkin', () => ({
 }))
 // `mesafeMetre` GERCEK kaliyor: buton hali bu hesaba dayaniyor ve
 // mock'lansaydi test kendi varsayimini dogrulardi.
+const mockPush = jest.fn()
+jest.mock('../../../lib/mekan-duzenleme', () => ({ mekanFotografiUrl: jest.fn() }))
 jest.mock('../../../lib/konum', () => ({
   ...jest.requireActual('../../../lib/konum'),
   cihazKonumunuAl: jest.fn(),
 }))
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ mekanId: 'mekan-1' }),
-  useRouter: () => ({ back: jest.fn(), replace: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({ back: jest.fn(), replace: jest.fn(), push: mockPush }),
 }))
 
 const MEKAN = {
@@ -61,6 +64,7 @@ const MEKAN = {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  ;(mekanFotografiUrl as jest.Mock).mockResolvedValue(null)
   // Komsu KALABALIK: 2026-09-01'den beri haritada yalnizca kalabalik
   // mekanlarin ignesi ciziliyor, sakinler cizilmiyor. Asagidaki
   // `cevreOturana` beklemesi ikinci ignenin cikmasina dayaniyor.
@@ -604,6 +608,46 @@ describe('MekanSayfasi - igne durumu ve kullanici konumu', () => {
    * UC NOKTA KALKTI (kullanicinin istegi 2026-09-09). Iddia tersine
    * cevrildi, silinmedi: menu sessizce geri gelirse test kirilir.
    */
+  /*
+   * DUZENLEME TALEBI GIRISI (kullanicinin istegi 2026-09-09).
+   * Ust cubuktaki uc nokta ayni gun kaldirildigi icin giris,
+   * duzeltilecek bilginin YANINA - adin altina - kondu.
+   */
+  it('"Bilgileri düzelt" duzenleme ekranini aciyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+    await screen.findByText(MEKAN.ad)
+
+    await fireEvent.press(screen.getByTestId('duzenleme-talebi'))
+
+    expect(mockPush).toHaveBeenCalledWith(`/mekanlar/duzenle/${MEKAN.id}`)
+  })
+
+  /*
+   * KAPAK FOTOGRAFI yalnizca ONAYLANMIS bir talepten geliyor; yoksa
+   * hic cizilmiyor - bos bir gorsel kutusu sayfayi uzatmaktan baska
+   * bir sey yapmaz.
+   */
+  it('kapak fotografi yoksa gorsel HIC cizilmiyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+
+    await render(<CheckInHaritasiEkrani />)
+    await screen.findByText(MEKAN.ad)
+
+    expect(screen.queryByTestId('mekan-kapak')).toBeNull()
+  })
+
+  it('onaylanmis kapak fotografi varsa ciziliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, kapakFotograf: 'kisi/1.jpg' })
+    ;(mekanFotografiUrl as jest.Mock).mockResolvedValue('https://ornek/kapak.jpg')
+
+    await render(<CheckInHaritasiEkrani />)
+
+    const gorsel = await screen.findByTestId('mekan-kapak')
+    expect(gorsel.props.source).toEqual({ uri: 'https://ornek/kapak.jpg' })
+  })
+
   it('ust cubukta UC NOKTA menusu YOK', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
 

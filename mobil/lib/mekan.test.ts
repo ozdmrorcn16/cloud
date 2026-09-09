@@ -45,6 +45,9 @@ describe('yakinMekanlariGetir', () => {
         adres: null,
         osmId: 123,
         konum: { lat: 41.015, lng: 28.979 },
+        // Kapak fotografi ONAYLANMIS bir duzenleme talebiyle doluyor
+        // (2026-09-09); listeleme RPC'si onu gondermiyor, yani null.
+        kapakFotograf: null,
       },
     ])
   })

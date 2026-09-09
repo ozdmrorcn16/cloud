@@ -36,6 +36,7 @@ import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { UstCubuk } from '../../tasarim/UstCubuk'
+import { mekanFotografiUrl } from '../../../lib/mekan-duzenleme'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
@@ -209,6 +210,12 @@ export default function MekanSayfasi() {
   // Haritada TURUNCU noktayla ciziliyor: kullanici secilen mekana
   // olan mesafesini gorsel olarak da gorsun (istegi 2026-09-07).
   const [benimKonumum, setBenimKonumum] = useState<{ lat: number; lng: number } | null>(null)
+  /*
+   * ONAYLANMIS KAPAK FOTOGRAFI (2026-09-09). Kova private oldugu icin
+   * imzali adres gerekiyor; gelmezse ekran fotografsiz ciziliyor -
+   * kirik resim gostermektense hic gostermemek dogru.
+   */
+  const [kapakUrl, setKapakUrl] = useState<string | null>(null)
   const [ayriliyor, setAyriliyor] = useState(false)
 
   useEffect(() => {
@@ -219,6 +226,11 @@ export default function MekanSayfasi() {
     // istek bosa gidiyordu.
     mekaniGetir(mekanId)
       .then((bulunan) => {
+        if (bulunan?.kapakFotograf) {
+          mekanFotografiUrl(bulunan.kapakFotograf).then((url) => {
+            if (gecerli) setKapakUrl(url)
+          })
+        }
         if (gecerli) setMekan(bulunan)
       })
       .catch((e) => {
@@ -514,10 +526,37 @@ export default function MekanSayfasi() {
               )}
             </View>
 
+            {/* KAPAK FOTOGRAFI - onaylanmis bir duzenleme talebinden
+                geliyor (2026-09-09). Yoksa hic cizilmiyor: bos bir
+                gorsel kutusu sayfayi uzatmaktan baska bir sey yapmaz. */}
+            {kapakUrl && (
+              <Image
+                source={{ uri: kapakUrl }}
+                style={stiller.kapak}
+                resizeMode="cover"
+                accessibilityRole="image"
+                accessibilityLabel={`${mekan.ad} fotoğrafı`}
+                testID="mekan-kapak"
+              />
+            )}
+
             <View style={stiller.baslikSatiri}>
               <View style={stiller.bilgi}>
                 <Text style={stiller.ad}>{mekan.ad}</Text>
                 {adresSatiri && <Text style={stiller.adres}>{adresSatiri}</Text>}
+                {/* DUZENLEME TALEBI GIRISI (kullanicinin istegi
+                    2026-09-09). Ikincil ve kucuk: sayfanin asil eylemi
+                    check-in, bu bir duzeltme kapisi. Ust cubuktaki uc
+                    nokta ayni gun kaldirildigi icin giris buraya,
+                    duzeltilecek bilginin YANINA kondu. */}
+                <Pressable
+                  onPress={() => router.push(`/mekanlar/duzenle/${mekanId}` as never)}
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  testID="duzenleme-talebi"
+                >
+                  <Text style={stiller.duzeltYazi}>Bilgileri düzelt</Text>
+                </Pressable>
               </View>
               <Pressable
                 style={stiller.tarifDugmesi}
@@ -919,6 +958,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: '#17130F',
   },
 
+  kapak: {
+    width: '100%',
+    height: 150,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.cizgi,
+    marginBottom: bosluk.m,
+  },
+  duzeltYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.minik,
+    color: renk.turuncuYazi,
+    marginTop: 2,
+  },
   baslikSatiri: {
     flexDirection: 'row',
     alignItems: 'center',

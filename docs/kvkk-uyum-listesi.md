@@ -111,6 +111,20 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   hangi veri = gorunen harita bolgesi; dayanak = konum izni ve
   aydinlatma; sure = uygulama tarafinda saklama yok, saglayicinin
   politikasi; kim gorur = Apple (iOS) / Google (Android).
+- **Mekan duzenleme talepleri** (2026-09-09). Kullanici bir mekanin
+  adini, adresini, turunu ve kapak fotografini duzeltmek icin talep
+  gonderiyor; moderator onaylayinca mekan kaydi guncelleniyor.
+  Dort soru: hangi veri = talebi gonderenin KIMLIGI, onerdigi metinler
+  ve varsa YUKLEDIGI FOTOGRAF; dayanak = kullanicinin kendi eylemi
+  (sozlesmenin ifasi) ve icerik denetimi icin mesru menfaat;
+  sure = talep kaydi suresiz (moderasyon gecmisi), hesap silinirse
+  kullanici_id NULL'a duesuyor yani talep anonimlesiyor; kim gorur =
+  yalnizca talebi gonderen ve moderator - baskasinin talebi hic
+  gorunmuyor (RLS `kullanici_id = auth.uid()`).
+  FOTOGRAF ONAYA KADAR GIZLI: kova private, okuma politikasi yalnizca
+  yukleyene, moderatore ve ONAYLANMIS kapak fotografina aciliyor.
+  Onaylanmamis bir gorselin yayinda beklemesi kabul edilemezdi.
+  Karar denetim izine yaziliyor (`hedef_tur = 'mekan'`).
 - **OSRM yol tarifi servisi** (2026-09-09'da EKLENDI, ayni gun
   KALDIRILDI). Mekan sayfasinda kullanicidan mekana giden yolu haritada
   cizmek icin iki koordinat (kullanicinin anlik konumu ve mekanin
