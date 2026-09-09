@@ -274,7 +274,17 @@ export async function yakinMekanlariYogunlukIleGetir(
    * Yani liste dolu bir cevrede bile neredeyse bos gorunuyordu.
    */
   turler?: string[] | null,
-  limit?: number | null
+  limit?: number | null,
+  /**
+   * Kacinci kayittan baslanacak. Sayfalama icin.
+   *
+   * NEDEN OFSET, IMLEC DEGIL: siralama KNN mesafesine gore
+   * (`konum <-> nokta`) ve mesafe istemciye hic donmuyor, yani bir
+   * imlec degeri elimizde yok. Ayrica kullanicinin konumu sabit
+   * kaldigi surece siralama da sabit - akistaki gibi araya yeni kayit
+   * girmiyor, dolayisiyla ofsetin kaydirma riski yok.
+   */
+  ofset?: number | null
 ): Promise<MekanYogunlukIle[]> {
   const { data, error } = await supabase.rpc('yakin_mekanlar_yogunluk', {
     p_lat: lat,
@@ -283,6 +293,7 @@ export async function yakinMekanlariYogunlukIleGetir(
     p_arama: arama ?? null,
     p_turler: turler ?? null,
     p_limit: limit ?? null,
+    p_ofset: ofset ?? 0,
   })
   if (error) throw new Error(hataMetni(error))
   return (data as MekanYogunlukSatiri[]).map((satir) => ({
@@ -330,10 +341,15 @@ export async function yakinMekanlariYogunlukIleGetir(
 export const KESFET_YARICAP_METRE = 1000
 
 /**
- * Kesfet listesinde en fazla kac mekan. Siralama en yakindan oldugu
- * icin bu "en yakin 100" demek. Yogun yerlerde 500 m'ye binlerce sosyal
- * mekan sigiyor (olculdu: Kadikoy 5.363, Taksim 4.045); hepsini
- * gondermek agi ve listeyi bosuna sisirir.
+ * Kesfet listesinin SAYFA BOYU - tavan degil.
+ *
+ * Kullanicinin istegi (2026-09-09): "1 km mesafe icerisindeki her tur
+ * listelenecek, HEPSI asagi dogru kaydirilinca gorunecek." Yani liste
+ * artik 100'de bitmiyor; dibe yaklasildikca sonraki sayfa iniyor.
+ *
+ * Sayfa boyu neden 100: 1 km icinde 1.764 mekan olculdu (Bursa/Nilufer).
+ * Hepsini tek istekte cekmek hem agi hem ilk cizimi sisirirdi; sunucu
+ * zaten tek istekte en fazla 200 satir donduruyor.
  */
 export const KESFET_LIMIT = 100
 

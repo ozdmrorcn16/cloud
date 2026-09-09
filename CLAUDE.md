@@ -1225,6 +1225,94 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### YAKININDAKI MEKANLAR: 1 KM, HER TUR, SONSUZ KAYDIRMA - 2026-09-09
+
+Kullanicinin istegi: "Yakinindaki mekanlar 1 km mesafe icerisindeki her
+tur listelenecek, hepsi asagi dogru kaydirilinca gorunecek; filtreden
+secilen ture gore de 1 km mesafedeki tur secili yerler listelenecek ve
+haritada da ayni sekilde listelenen yerler gorunecek; haritadaki
+ignelerde yerlerin isimleri gorunecek."
+
+Dort maddenin dordu de uygulandi.
+
+**1. YARICAP ARTIK YALNIZCA ARAMADA KALKIYOR.** 2026-09-06'daki
+"filtrelemede km siniri yok, il bazli sonuclar" kurali GERI ALINDI. Tur
+suzgeci artik listeyi DARALTIYOR, sehre yaymiyor - "Yakinindaki
+Mekanlar" basligi bunu zaten soyluyordu. Performans bedeli degil KAZANCI
+var, olculdu: tur suzgeci + 1 km yaricap 27 ms (sicak) / 2.488 ms
+(soguk); il bazli sinirsiz sorgu 946 ms idi.
+
+**2. SAYFALAMA GELDI** (migrasyon 20260909160000). `KESFET_LIMIT = 100`
+artik TAVAN degil SAYFA BOYU; dibe bir ekran boyu kala sonraki sayfa
+iniyor. Sart oldu, cunku olculdu: **1 km icinde 1.764 mekan var**
+(Bursa/Nilufer; Kafe 23). Yani eski 100'luk liste "hepsi" degildi.
+
+`yakin_mekanlar_yogunluk` yeni bir `p_ofset` parametresi aliyor.
+**OFSET, IMLEC DEGIL:** siralama KNN mesafesine gore
+(`konum <-> nokta`) ve mesafe istemciye hic donmuyor, yani elde bir
+imlec degeri yok. Kullanicinin konumu sabit kaldigi surece siralama da
+sabit - akistaki gibi araya yeni kayit girmedigi icin pencere kaymiyor.
+(Ana sayfa akisinda tam tersi gecerli ve orada IMLEC kullaniliyor.)
+
+**TUZAK, yasandi:** RPC'ye parametre eklerken once
+`drop function ... (uuid, text, ...)` gerekiyor; yoksa ayni adla ikinci
+bir fonksiyon olusuyor ve `grant`/`revoke` "function name is not unique"
+diye reddediliyor. Drop yetkileri de siliyor, `grant execute` hemen
+altinda yeniden veriliyor.
+
+`dahaVar` sunucudan TAM SAYFA geldigi surece acik: eksik sayfa "son
+sayfa" demek. Ayri bir toplam sayisi istemek gereksiz ikinci bir sorgu
+olurdu. **Aramada sayfalama YOK** - orada limit hic gonderilmiyor
+(sunucu kendi 200'luk tavaniyla donuyor), dolayisiyla olcut de yok.
+
+**KABUL EDILEN SINIR:** durum cipleriyle (Sakin / Yoğun / Popüler)
+daraltilmis bir listede bir sayfa hic eslesme getirmeyebilir; sayfa
+uzamadigi icin sonraki sayfa tetiklenmez. Cipler bilincli bir daraltma
+oldugu icin bu kabul edildi; "Tümü" secildiginde sinir yok.
+
+**3. HARITADA HER MEKANIN IGNESI VAR.** `EN_FAZLA_IGNE = 12` siniri
+kaldirildi, `tracksViewChanges={false}` eklendi.
+
+**4. HER IGNEDE AD YAZIYOR.** Etiket elemesi TAMAMEN kaldirildi ve
+`lib/harita-etiket.ts` silindi. Kullanici bunu UC KEZ bildirmek zorunda
+kaldi ("İsimleri yazmıyor", "İsimsiz iğneler var hala", "İğneler bir
+konumu gösteriyor, isimleri olması gerek") ve her seferinde eleme
+kuralinin baska bir katmani suclu cikti:
+  (1) sayi siniri + metre araligi igneleri de eliyordu,
+  (2) metre esigi yakin kumede 12 mekandan 2'sini birakiyordu,
+  (3) piksel kutusu (130x26) 1 km'lik cercevede ~730 m demekti.
+Ders: kullanici ayni sikayeti ikinci kez bildiriyorsa esik ayarlamayi
+birak, KURALI KALDIR. Etiket artik tek satir, `maxWidth: 84`,
+`fontSize: 9.5`; durum satiri silindi (renk zaten durumu soyluyor).
+
+**BOS DURUM SEBEBINI SOYLUYOR.** Uc ayri sebep var ve tek metin ucunu
+de aciklayamiyordu: arama yaptin o ilde eslesen yok / suzgec sectin
+1 km'de o turden yok / cevrede mekan yok.
+
+**IL BULUNAMAZSA ARAMA BOS DONUYOR** (migrasyon 20260909150000).
+Onceden sinirsiz kaliyordu; bu, "bulundugun ille sinirli" kuralini
+denizde ve yurt disinda sessizce deliyordu. Kullanicinin karari: "ekran
+oyle yerlerde bos kalabilir".
+
+**TUR SUZGECI ARTIK CIHAZDA KALICI** (`lib/tur-suzgeci-depo.ts`,
+AsyncStorage, anahtar `slooin.tur-suzgeci`). Kullanicinin istegi:
+"filtreyi kaydet yapinca kayitli kalsin, baska sayfada gezsem de
+uygulamadan ciksam da kayitli dursun" ve "filtreyi kaldir dersem ancak
+kaldirilsin". Sunucuda degil cihazda, cunku bu bir tercih degil bir
+GORUNUM AYARI. Okurken `TEMEL_TURLER`e suzuluyor: depodaki deger eski
+bir surumden kalmis olabilir ve tanimadigimiz bir tur sunucuya gidip
+bos liste dondururdu.
+
+**TEST TUZAGI, yasandi:** AsyncStorage mock'u testler arasinda
+PAYLASILIYOR; temizlenmezse onceki testin suzgeci sonrakinde yukleniyor
+ve secim TERSINE donuyor. `beforeEach` VE `afterEach` icinde
+`AsyncStorage.clear()` gerekiyor (yazma bir sonraki testin
+baslangicindan sonra tamamlanabiliyor).
+
+Dogrulama: jest 66 paket / 778 test, tsc uygulama kodunda 0 hata, canli
+`araclar/kesfet-sayfalama-canli-test.py` 6/6 ve
+`araclar/il-sinirli-arama-test.py` 7/7.
+
 ### BES KUCUK DEGISIKLIK - 2026-09-09
 
 **1. LISTEDEKI CHECK-IN BUTONLARI DOLU TURUNCU.** 2026-09-07

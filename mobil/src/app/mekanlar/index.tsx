@@ -7,6 +7,8 @@ import {
   FlatList,
   ScrollView,
   RefreshControl,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native'
@@ -173,6 +175,22 @@ export default function KesfetEkrani() {
   const [ilkYuklemeBitti, setIlkYuklemeBitti] = useState(false)
   const istekSirasi = useRef(0)
 
+  /*
+   * SAYFALAMA (kullanicinin istegi 2026-09-09): "1 km mesafe
+   * icerisindeki her tur listelenecek, HEPSI asagi dogru kaydirilinca
+   * gorunecek."
+   *
+   * Onceden liste sunucudan gelen tek sayfada (100 kayit) bitiyordu.
+   * Olculdu: 1 km icinde 1.764 mekan var, yani "hepsi" tek istekle
+   * gelmiyor.
+   *
+   * `dahaVar` sunucudan TAM SAYFA geldigi surece acik kaliyor; eksik
+   * bir sayfa "son sayfa" demek. Ayri bir toplam sayisi istemek
+   * gereksiz ikinci bir sorgu olurdu.
+   */
+  const [dahaVar, setDahaVar] = useState(false)
+  const [sonrakiYukleniyor, setSonrakiYukleniyor] = useState(false)
+
   /**
    * `aktifSekme` PARAMETRE, cunku `sekmeSec` hemen ardindan yukluyor ve
    * o an `sekme` state'i henuz eski degerinde olur.
@@ -265,6 +283,9 @@ export default function KesfetEkrani() {
        */
       if (sira !== istekSirasi.current) return
       setMekanlar(sonuc)
+      // ARAMADA SAYFALAMA YOK: orada limit hic gonderilmiyor, sunucu
+      // kendi tavaniyla (200) donuyor ve ikinci sayfa istemek anlamsiz.
+      setDahaVar(!aramaVarMi && sonuc.length === KESFET_LIMIT)
     } catch (e) {
       if (sira !== istekSirasi.current) return
       setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
@@ -274,6 +295,59 @@ export default function KesfetEkrani() {
         setIlkYuklemeBitti(true)
       }
     }
+  }
+
+  /**
+   * SONRAKI SAYFA - dibe yaklasilinca cagriliyor.
+   *
+   * ONEMLI: yaris korumasindaki sira numarasi BURADA DA okunuyor.
+   * Kullanici kaydirirken arama yazar ya da suzgec degistirirse
+   * `yukle` yeni bir sira acar; bu istek donduegunde eski listenin
+   * devami olarak eklenirse ekranda iki ayri sorgunun sonucu birbirine
+   * karisir.
+   */
+  async function sonrakiSayfa() {
+    if (sonrakiYukleniyor || !dahaVar || yukleniyor) return
+    const konum = cihazKonumu
+    // Konum okunamadiysa ilk sayfa da gelmemistir; yeniden konum
+    // istemek yerine sessiz kalmak dogru.
+    if (!konum) return
+    const sira = istekSirasi.current
+    const ofset = mekanlar.length
+    setSonrakiYukleniyor(true)
+    try {
+      const sonuc = await yakinMekanlariYogunlukIleGetir(
+        konum.lat,
+        konum.lng,
+        KESFET_YARICAP_METRE,
+        undefined,
+        seciliTurler.length > 0 ? seciliTurler : null,
+        KESFET_LIMIT,
+        ofset
+      )
+      if (sira !== istekSirasi.current) return
+      setMekanlar((mevcut) => [...mevcut, ...sonuc])
+      setDahaVar(sonuc.length === KESFET_LIMIT)
+    } catch {
+      // Sayfalama hatasi listeyi bozmuyor: eldeki kayitlar duruyor,
+      // yalnizca devami gelmiyor. Ust seride hata basmak, calisan bir
+      // listenin uzerine gereksiz bir uyari koyardi.
+      setDahaVar(false)
+    } finally {
+      if (sira === istekSirasi.current) setSonrakiYukleniyor(false)
+    }
+  }
+
+  /**
+   * "Sona geldim" olayi ScrollView'de hazir gelmiyor; dibe BIR EKRAN
+   * BOYU kala tetikleniyor ki kullanici beklemeden okumaya devam
+   * etsin. Ayni desen profil ekraninda da var.
+   */
+  function dibeYaklasinca(olay: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = olay.nativeEvent
+    const dibeUzaklik = contentSize.height - (contentOffset.y + layoutMeasurement.height)
+    if (dibeUzaklik > layoutMeasurement.height) return
+    void sonrakiSayfa()
   }
 
   /*
@@ -633,6 +707,8 @@ export default function KesfetEkrani() {
       style={stiller.sayfa}
       contentContainerStyle={stiller.icerik}
       testID="kesfet-kaydirma"
+      onScroll={dibeYaklasinca}
+      scrollEventThrottle={160}
       refreshControl={
         <RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.turuncu} />
       }
@@ -938,7 +1014,22 @@ export default function KesfetEkrani() {
             segmentinde zaten var. Ayni eylemin iki girisi vardi. */}
       </View>
       {sakinler.length === 0 ? (
-        <Text style={stiller.bosDurum}>Bu filtreyle yakında mekan yok.</Text>
+        /* BOS DURUM SEBEBINI SOYLUYOR. Uc ayri sebep var ve tek bir
+           metin ucunu de aciklayamiyordu:
+             - arama yaptin, o ilde eslesen yok
+             - suzgec sectin, 1 km'de o turden yok
+             - hicbiri, cevrede mekan yok
+           Ucuncusu ayrica bir ihtimal daha tasiyor: konum hicbir il
+           sinirinin icinde degilse arama SONUC DONDURMUYOR
+           (kullanicinin karari 2026-09-09: "ekran oyle yerlerde bos
+           kalabilir") - o zaman da bu metin gorunuyor. */
+        <Text style={stiller.bosDurum}>
+          {arama.trim()
+            ? `"${arama.trim()}" için bu ilde sonuç yok.`
+            : seciliTurler.length > 0
+              ? 'Bu filtreyle 1 km içinde mekân yok.'
+              : 'Yakınında mekân yok.'}
+        </Text>
       ) : (
         sakinler.map((item) => {
           const d = mekanDurumu(item)
@@ -1021,6 +1112,21 @@ export default function KesfetEkrani() {
           </View>
           )
         })
+      )}
+
+      {/* SAYFA GOSTERGESI. Kullanici dibe geldiginde listenin bittigini
+          mi yoksa devaminin geldigini mi bilmiyordu; bos bir bekleme
+          "hepsi bu kadar" gibi okunur.
+
+          NOT: durum cipleriyle (Sakin / Yoğun / Popüler) daraltilmis
+          bir listede bir sayfa hic eslesme getirmeyebilir; o zaman
+          sayfa uzamadigi icin sonraki sayfa da tetiklenmez. Cipler
+          bilincli bir daraltma oldugu icin bu kabul edildi - "Tümü"
+          secildiginde sinir yok. */}
+      {sonrakiYukleniyor && (
+        <View style={stiller.sayfaGostergesi}>
+          <ActivityIndicator size="small" color={renk.turuncu} />
+        </View>
       )}
 
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
@@ -1586,6 +1692,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingVertical: bosluk.m,
   },
 
+  sayfaGostergesi: { alignItems: 'center', paddingVertical: bosluk.l },
   ekleButonu: { alignItems: 'center', paddingVertical: bosluk.l, marginTop: bosluk.s },
   ekleButonuYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi },
   atif: {

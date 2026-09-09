@@ -131,6 +131,7 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
       p_arama: 'kafe',
       p_turler: null,
       p_limit: null,
+      p_ofset: 0,
     })
     expect(sonuc[0].kisiSayisi).toBe(8)
     expect(sonuc[0].konum).toEqual({ lat: 41.015, lng: 28.979 })
@@ -152,6 +153,7 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
       p_arama: null,
       p_turler: ['Kafe', 'Bar'],
       p_limit: 100,
+      p_ofset: 0,
     })
   })
 
@@ -167,6 +169,7 @@ describe('yakinMekanlariYogunlukIleGetir', () => {
       p_arama: 'kafe',
       p_turler: null,
       p_limit: null,
+      p_ofset: 0,
     })
   })
 

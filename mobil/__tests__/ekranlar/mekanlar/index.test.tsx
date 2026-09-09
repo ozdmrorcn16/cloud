@@ -695,6 +695,34 @@ describe('MekanAramaEkrani', () => {
   })
 
   /*
+   * BOS DURUM SEBEBINI SOYLUYOR. Tek bir metin uc ayri sebebi birden
+   * aciklayamiyordu; ozellikle arama sonucu bosken "bu filtreyle"
+   * demek yanlisti. Konum hicbir il sinirinin icinde degilse arama
+   * hic sonuc dondurmuyor (kullanicinin karari: "ekran oyle yerlerde
+   * bos kalabilir") ve o durumda da bu metin gorunuyor.
+   */
+  it('arama sonucu bossa sebebini ARAMA olarak soyluyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalled())
+
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'zeytin')
+
+    expect(await screen.findByText('"zeytin" için bu ilde sonuç yok.')).toBeTruthy()
+  })
+
+  it('arama da suzgec de yokken sebep YAKINDA MEKAN YOK', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+
+    expect(await screen.findByText('Yakınında mekân yok.')).toBeTruthy()
+  })
+
+  /*
    * SUZGEC CIHAZDA KALICI (kullanicinin istegi 2026-09-09): "kaydet
    * yapinca kayitli kalsin, baska sayfada gezsem de uygulamadan
    * ciksam da kayitli dursun" ve "filtreyi kaldir dersem ancak
@@ -970,5 +998,99 @@ describe('MekanAramaEkrani', () => {
       (e) => StyleSheet.flatten(e.props.style)?.color === '#FFFFFF'
     )
     expect(etiket).toBeTruthy()
+  })
+  // ------------------------------------------------------------------ //
+  // SAYFALAMA (kullanicinin istegi 2026-09-09)
+  //
+  // "1 km mesafe icerisindeki her tur listelenecek, HEPSI asagi dogru
+  // kaydirilinca gorunecek." Olculdu: 1 km icinde 1.764 mekan var, yani
+  // tek sayfa (100) "hepsi" degil.
+  // ------------------------------------------------------------------ //
+
+  /** Sunucudan gelmis gibi N kayit uretir. */
+  function sayfa(baslangic: number, adet: number) {
+    return Array.from({ length: adet }, (_, i) => ({
+      id: `mekan-${baslangic + i}`,
+      ad: `Mekan ${baslangic + i}`,
+      tur: 'Kafe',
+      adres: null,
+      osmId: baslangic + i,
+      konum: { lat: 41.015, lng: 28.979 },
+      kisiSayisi: 0,
+    }))
+  }
+
+  function dibeKaydir(liste: ReturnType<typeof screen.getByTestId>) {
+    fireEvent.scroll(liste, {
+      nativeEvent: {
+        contentOffset: { y: 4000 },
+        contentSize: { height: 4800, width: 390 },
+        layoutMeasurement: { height: 800, width: 390 },
+      },
+    })
+  }
+
+  it('dibe yaklasinca SONRAKI SAYFA cekiliyor ve listeye EKLENIYOR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock)
+      .mockResolvedValueOnce(sayfa(0, KESFET_LIMIT))
+      .mockResolvedValueOnce(sayfa(KESFET_LIMIT, 5))
+
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('Mekan 0')
+
+    await dibeKaydir(screen.getByTestId('kesfet-kaydirma'))
+
+    // Ikinci istek OFSET tasiyor: kacinci kayittan devam edecegi.
+    await waitFor(() =>
+      expect(yakinMekanlariYogunlukIleGetir).toHaveBeenLastCalledWith(
+        41.015,
+        28.979,
+        KESFET_YARICAP_METRE,
+        undefined,
+        null,
+        KESFET_LIMIT,
+        KESFET_LIMIT
+      )
+    )
+
+    // ONCEKI SAYFA SILINMIYOR: yeni kayitlar eskilerin ALTINA ekleniyor.
+    expect(await screen.findByText(`Mekan ${KESFET_LIMIT}`)).toBeTruthy()
+    expect(screen.getByText('Mekan 0')).toBeTruthy()
+  })
+
+  it('EKSIK sayfa geldiyse daha fazla istenmiyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    // Ilk sayfa TAM DEGIL: 3 kayit. Sunucuda daha fazlasi yok demek.
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue(sayfa(0, 3))
+
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('Mekan 0')
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(1)
+
+    await dibeKaydir(screen.getByTestId('kesfet-kaydirma'))
+
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(1)
+  })
+
+  /*
+   * ARAMADA SAYFALAMA YOK. Arama yolunda limit hic gonderilmiyor
+   * (sunucu kendi tavaniyla donuyor), dolayisiyla "tam sayfa geldi mi"
+   * olcusu de yok. Sayfa istenseydi ayni kayitlar tekrar gelirdi.
+   */
+  it('arama sonucunda dibe kaydirmak yeni istek ACMIYOR', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue(sayfa(0, KESFET_LIMIT))
+
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('Mekan 0')
+
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kafe')
+    await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2))
+
+    const oncekiSayi = (yakinMekanlariYogunlukIleGetir as jest.Mock).mock.calls.length
+    await dibeKaydir(screen.getByTestId('kesfet-kaydirma'))
+
+    expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(oncekiSayi)
   })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Platform, View, Text, StyleSheet } from 'react-native'
 import MapView, { Marker, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
@@ -7,7 +7,6 @@ import { yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { mekanDurumu, type MekanDurumu } from '../../lib/mekan'
 import type { HaritaMekani } from './CanliHarita'
-import { etiketlenecekler } from '../../lib/harita-etiket'
 
 export type { HaritaMekani } from './CanliHarita'
 
@@ -193,8 +192,6 @@ export function CanliHarita({
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const haritaRef = useRef<MapView>(null)
-  /** Haritanin gercek piksel olcusu; etiket elemesi buna dayaniyor. */
-  const [olcu, setOlcu] = useState({ en: 0, boy: yukseklik })
 
   /**
    * Once kalabaliklar, sonra en yakinlar. Siralama ETIKET secimini
@@ -251,60 +248,20 @@ export function CanliHarita({
     return { igneler: mesafeli.map((m) => m.mekan), bolge: bolgeUret(merkez, gosterim) }
   }, [merkez, mekanlar, kullaniciKonumu])
 
-  /**
-   * HANGI IGNELERIN ADI YAZILACAK.
+  /*
+   * ETIKET ELEMESI YOK - TARIHSEL NOT.
    *
-   * 2026-09-09'a kadar bu kural IGNENIN KENDISINI de eliyordu ve
-   * kullanici bunu bildirdi: "yakinindaki mekanlar listesinde gorunen
-   * butun yerler haritada o anlik gosterilsin". Artik LISTEDEKI HER
-   * MEKANIN IGNESI CIZILIYOR; asagidaki eleme yalnizca ADIN yazilip
-   * yazilmayacagini belirliyor.
+   * Adlarin bir kismini gizleyen kural UC KEZ denendi ve ucuende de
+   * kullanici "isimsiz igneler var" diye bildirdi:
+   *   1) en cok 5/9 etiket + metre araligi
+   *   2) yalnizca metre araligi (yakin kumelerde 12 mekandan 2'si)
+   *   3) piksel kutusu (130x26; 1 km cercevede 130 px ~730 m demek)
    *
-   * Ayrim onemli: cakisan sey igne degil ETIKET. Igneler kucuk ve renk
-   * tasiyor, ust uste binseler bile harita okunur kaliyor; adlar ise
-   * ic ice gecince ikisi de okunmaz oluyor (kullanicinin 2026-09-06
-   * ekran goruntusu: "Gentaş Aspendos Evleri" ile "Hadim erikli
-   * subesi").
-   *
-   * ELEME PIKSEL GEOMETRISIYLE (2026-09-09, kullanicinin bildirdigi
-   * hata: "isimleri yazmiyor"). Onceki kural METRE cinsindendi ve
-   * yakin kumelerde neredeyse her adi eliyordu: esik `max(50 m, ...)`
-   * oldugu icin 100 m'lik bir alana sigan on iki mekandan yalnizca
-   * ikisinin adi yaziliyordu (ekran goruntusuyle goruIdue).
-   *
-   * Dogru olcu METRE DEGIL PIKSEL: cakisan sey etiket KUTUSU. Iki
-   * etiket ya yatayda kutu genisligi kadar ya da dikeyde kutu
-   * yuksekligi kadar ayriysa ust uste binmiyor - ayrik eksen testi.
-   * Bu, dikeyde siralanan mekanlarin HEPSININ adini yazabiliyor;
-   * metre esigi onlari da eliyordu.
+   * Son karar kullanicinin: "igneler bir konumu gosteriyor, isimleri
+   * olmasi gerek". Artik HER IGNEDE AD VAR; cakisma riski kabul
+   * edildi ve adin tek satir + dar olmasiyla azaltildi. Harita
+   * etkilesimli oldugu icin yakinlastirmak adlari ayiriyor.
    */
-  /**
-   * Adi yazilacak igneler. Kural `lib/harita-etiket.ts` icinde ve
-   * TESTLI: iki kez kirildi (once igneleri de eledi, sonra yakin
-   * kumelerde neredeyse butun adlari eledi) ve ikisini de kullanici
-   * bildirdi cunku hicbir sey olcmuyordu.
-   */
-  const etiketliKimlikler = useMemo(
-    () =>
-      etiketlenecekler(
-        igneler.map((m) => ({
-          id: m.id,
-          konum: m.konum ?? null,
-          kisiSayisi: m.kisiSayisi,
-          populer: durumu(m) === 'populer',
-        })),
-        merkez && bolge
-          ? {
-              merkez,
-              latitudeDelta: bolge.latitudeDelta,
-              longitudeDelta: bolge.longitudeDelta,
-              en: olcu.en,
-              boy: olcu.boy,
-            }
-          : null
-      ),
-    [igneler, bolge, merkez, olcu]
-  )
 
   // Merkez ya da mekanlar degisince harita yeni cerceveye kayar. Ilk
   // cizim initialRegion ile; bu efekt ilk cizimde de calisir ama
@@ -322,11 +279,6 @@ export function CanliHarita({
     <View
       style={[stiller.kok, { height: yukseklik }]}
       accessibilityLabel="Çevrendeki mekanlar"
-      // Etiket elemesi PIKSEL geometrisiyle yapiliyor; haritanin gercek
-      // genisligi olculmeden yapilamaz.
-      onLayout={(o) =>
-        setOlcu({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })
-      }
     >
       <MapView
         ref={haritaRef}
@@ -368,7 +320,6 @@ export function CanliHarita({
             var". */}
         {igneler.map((mekan) => {
             const d = durumu(mekan)
-            const etiketli = etiketliKimlikler.has(mekan.id)
             return (
               <Marker
                 key={mekan.id}
@@ -394,21 +345,40 @@ export function CanliHarita({
                     />
                     <Circle cx={12} cy={9.4} r={2.8} fill="#FFFFFF" />
                   </Svg>
-                  {/* AD YALNIZCA SIGDIGINDA. Igne her zaman ciziliyor;
-                      etiket komsusuyla cakisacaksa yazilmiyor. Bilgi
-                      kaybolmuyor: igneye basmak mekan sayfasini aciyor
-                      ve erisilebilirlik etiketi adi tasimaya devam
-                      ediyor. */}
-                  {etiketli && (
-                    <View style={stiller.igneEtiket}>
-                      <Text style={stiller.igneAd} numberOfLines={2}>
-                        {mekan.ad}
-                      </Text>
-                      <Text style={[stiller.igneDurum, { color: DURUM_RENGI[d] }]}>
-                        {DURUM_ETIKETI[d]}
-                      </Text>
-                    </View>
-                  )}
+                  {/* HER IGNEDE AD VAR (kullanicinin kurali 2026-09-09:
+                      "igneler bir konumu gosteriyor, isimleri olmasi
+                      gerek").
+
+                      Eleme kurali TAMAMEN KALKTI. Once sayi siniri,
+                      sonra metre esigi, sonra piksel kutusu denendi;
+                      ucunde de bazi igneler adsiz kaliyordu ve
+                      kullanici uc kez bildirdi. Adsiz bir igne
+                      haritada "burada bir sey var ama ne oldugunu
+                      soylemiyorum" demek - bu, ignenin var olma
+                      sebebine aykiri.
+
+                      Cakisma riski KABUL EDILDI ve azaltildi: ad tek
+                      satir, en fazla 84 px, arkasinda zemin renginde
+                      halo var; harita etkilesimli oldugu icin
+                      yakinlastirinca adlar birbirinden ayriliyor. */}
+                  <View style={stiller.igneEtiket}>
+                      {/* DURUM SATIRI KALDIRILDI (kullanicinin
+                          bildirdigi hata 2026-09-09: "isimsiz igneler
+                          var hala"). Etiket iki satirdi ve kutusu
+                          130x26 px'e cikiyordu; 1 km'lik bir cercevede
+                          130 px ~730 metre demek, yani neredeyse butun
+                          adlar birbirini eliyordu - otuz igneden
+                          yalnizca dordu adliydi.
+
+                          Bilgi KAYBOLMUYOR: durumu IGNENIN RENGI zaten
+                          soyluyor (yesil sakin / kirmizi yogun / sari
+                          populer) ve haritanin hemen altindaki cipler
+                          o rengi ogretiyor. Ayni seyi iki kez yazmak
+                          adlarin yerini yiyordu. */}
+                    <Text style={stiller.igneAd} numberOfLines={1}>
+                      {mekan.ad}
+                    </Text>
+                  </View>
                 </View>
               </Marker>
             )
@@ -502,7 +472,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Igne + yanindaki etiket tek bir Marker icinde: `Marker` cocugunu
   // oldugu gibi ciziyor, yani etiketi ayri bir katman yapmaya gerek yok.
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  igneEtiket: { maxWidth: 108 },
+  igneEtiket: { maxWidth: 84 },
   // MEKAN ADI TEMAYA BAGLI (kullanicinin bildirdigi kusur 2026-09-08:
   // "koyu modda haritadaki gorunen yer isimleri beyaz renk olsun").
   // Ad sabit koyu bir tondaydi; harita da koyu moda gecince yazi
@@ -513,16 +483,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // `zemin + 'F2'` sekiz haneli hex, yani jetonun %95 opak hali.
   igneAd: {
     fontFamily: yazi.govdeKalin,
-    fontSize: 10,
+    fontSize: 9.5,
     lineHeight: 12,
     color: renk.metin,
-    textShadowColor: renk.zemin + 'F2',
-    textShadowRadius: 3,
-  },
-  igneDurum: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: 9,
-    lineHeight: 11,
     textShadowColor: renk.zemin + 'F2',
     textShadowRadius: 3,
   },
