@@ -7,6 +7,7 @@ import {
   yorumuSikayetEt,
   type Yorum,
 } from '../../lib/etkilesim'
+import { avatarlariGetir } from '../../lib/akis'
 
 // requireActual: mock yalnizca AG CAGRILARINI degistiriyor, modulun
 // sabitleri (YORUM_EN_FAZLA) gercek kalsin. Mock'lanmis bir sabit
@@ -19,6 +20,8 @@ jest.mock('../../lib/etkilesim', () => ({
   yorumSil: jest.fn(),
   yorumuSikayetEt: jest.fn(),
 }))
+
+jest.mock('../../lib/akis', () => ({ avatarlariGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -41,6 +44,8 @@ function yorum(ustune: Partial<Yorum> = {}): Yorum {
 beforeEach(() => {
   jest.clearAllMocks()
   ;(yorumlariGetir as jest.Mock).mockResolvedValue([])
+  // Varsayilan: avatar yok. Fotografsiz kisi bas harfe duesuyor.
+  ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
 })
 
 describe('YorumSayfasi', () => {
@@ -240,5 +245,47 @@ describe('YorumSayfasi', () => {
     await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
 
     expect(await screen.findByText('ağ hatası')).toBeTruthy()
+  })
+})
+
+/*
+ * PROFIL FOTOGRAFI (kullanicinin istegi 2026-09-09: "yorumlarda
+ * kullanicilarin profil resmide gorunsun"). Onceden yalnizca bas
+ * harfli daire ciziliyordu.
+ */
+describe('YorumSayfasi avatarlari', () => {
+  it('fotografi olan yorumcunun RESMI ciziliyor', async () => {
+    ;(yorumlariGetir as jest.Mock).mockResolvedValue([yorum()])
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({
+      'kisi-2': 'https://ornek/deniz.jpg',
+    })
+
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+
+    const resim = await screen.findByLabelText('deniz.k')
+    expect(resim.props.source).toEqual({ uri: 'https://ornek/deniz.jpg' })
+    expect(avatarlariGetir).toHaveBeenCalledWith(['kisi-2'])
+  })
+
+  it('fotografi olmayan yorumcu BAS HARFE duesuyor', async () => {
+    ;(yorumlariGetir as jest.Mock).mockResolvedValue([yorum()])
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ 'kisi-2': null })
+
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+
+    expect(await screen.findByText('D')).toBeTruthy()
+  })
+
+  /*
+   * Avatar cagrisi patlarsa yorumlar YINE ciziliyor: liste asil icerik,
+   * fotograf suesleme. Ayni ilke akista da gecerli.
+   */
+  it('avatar cagrisi patlasa da yorumlar ciziliyor', async () => {
+    ;(yorumlariGetir as jest.Mock).mockResolvedValue([yorum()])
+    ;(avatarlariGetir as jest.Mock).mockRejectedValue(new Error('ag yok'))
+
+    await render(<YorumSayfasi acikMi checkInId="checkin-1" onKapat={jest.fn()} />)
+
+    expect(await screen.findByText('Buranın kahvesi gerçekten iyi mi?')).toBeTruthy()
   })
 })

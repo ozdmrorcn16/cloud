@@ -13,7 +13,6 @@ import {
   checkIndenAyril,
 } from '../../../lib/checkin'
 import { cihazKonumunuAl } from '../../../lib/konum'
-import { rotaGetir } from '../../../lib/rota'
 
 // `mekanDurumu` GERCEK kaliyor: harita ignesi onu cagiriyor ve saf bir
 // hesap - mock'lamak testin kendi varsayimini dogrulamasina yol acardi.
@@ -39,7 +38,6 @@ jest.mock('../../../lib/checkin', () => ({
 }))
 // `mesafeMetre` GERCEK kaliyor: buton hali bu hesaba dayaniyor ve
 // mock'lansaydi test kendi varsayimini dogrulardi.
-jest.mock('../../../lib/rota', () => ({ rotaGetir: jest.fn() }))
 jest.mock('../../../lib/konum', () => ({
   ...jest.requireActual('../../../lib/konum'),
   cihazKonumunuAl: jest.fn(),
@@ -63,8 +61,6 @@ const MEKAN = {
 
 beforeEach(() => {
   jest.clearAllMocks()
-  // Varsayilan: rota YOK. Cizgi ancak gercek bir yol gelince ciziliyor.
-  ;(rotaGetir as jest.Mock).mockResolvedValue(null)
   // Komsu KALABALIK: 2026-09-01'den beri haritada yalnizca kalabalik
   // mekanlarin ignesi ciziliyor, sakinler cizilmiyor. Asagidaki
   // `cevreOturana` beklemesi ikinci ignenin cikmasina dayaniyor.
@@ -584,50 +580,23 @@ describe('MekanSayfasi - igne durumu ve kullanici konumu', () => {
    * de hic cizilmiyor. Ikinci iddia sart: onsuz "her zaman ciziliyor"
    * hali de yesil gecerdi.
    */
-  it('rota gelince YOLDAN giden cizgi ciziliyor', async () => {
-    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
-    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2117, lng: 28.9213 })
-    ;(rotaGetir as jest.Mock).mockResolvedValue({
-      noktalar: [
-        { lat: 40.2117, lng: 28.9213 },
-        { lat: 40.2125, lng: 28.922 },
-        { lat: 40.2261, lng: 28.8656 },
-      ],
-      metre: 480,
-    })
-
-    await render(<CheckInHaritasiEkrani />)
-
-    await waitFor(() => expect(screen.getByTestId('harita-cizgisi')).toBeTruthy())
-    expect(rotaGetir).toHaveBeenCalledWith(
-      { lat: 40.2117, lng: 28.9213 },
-      MEKAN.konum
-    )
-  })
-
   /*
-   * ROTA GELMEZSE DUZ CIZGIYE DUESUELMUEYOR (kullanicinin istegi
-   * 2026-09-09: "boyle kesik cizgi olmaz"). Yanlis bir yol
-   * gostermektense hicbir sey gostermemek dogru.
+   * HARITADA ROTA CIZGISI YOK (kullanicinin karari 2026-09-09).
+   * Once duz kesikli bir cizgi, sonra OSRM'den gercek yol cizilmisti;
+   * gercek yol icin kendi sunucumuz gerekiyordu ve kullanici o
+   * maliyeti almak yerine cizgiyi kaldirmayi secti. Yol tarifi
+   * telefonun kendi harita uygulamasinda calismaya devam ediyor.
+   *
+   * Iddia SILINMEDI, tersine cevrildi: cizgi sessizce geri gelirse
+   * test kirilir.
    */
-  it('rota gelmezse cizgi HIC cizilmiyor', async () => {
+  it('haritada rota cizgisi YOK', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 40.2117, lng: 28.9213 })
-    ;(rotaGetir as jest.Mock).mockResolvedValue(null)
 
     await render(<CheckInHaritasiEkrani />)
 
     await waitFor(() => expect(screen.getByLabelText('Buradasın')).toBeTruthy())
-    expect(screen.queryByTestId('harita-cizgisi')).toBeNull()
-  })
-
-  it('konum okunamazsa rota HIC istenmiyor', async () => {
-    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
-
-    await render(<CheckInHaritasiEkrani />)
-
-    await waitFor(() => expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(1))
-    expect(rotaGetir).not.toHaveBeenCalled()
     expect(screen.queryByTestId('harita-cizgisi')).toBeNull()
   })
 

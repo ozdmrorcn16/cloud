@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -19,6 +20,7 @@ import {
   YORUM_EN_FAZLA,
   type Yorum,
 } from '../../lib/etkilesim'
+import { avatarlariGetir } from '../../lib/akis'
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
@@ -76,6 +78,20 @@ export function YorumSayfasi({
   const { t } = useDil()
 
   const [yorumlar, setYorumlar] = useState<Yorum[]>([])
+  /*
+   * YORUM YAZANIN PROFIL FOTOGRAFI (kullanicinin istegi 2026-09-09:
+   * "yorumlarda kullanicilarin profil resmide gorunsun").
+   *
+   * Fotograf `yorumlari_getir` RPC'sinden GELMIYOR; ayri bir
+   * yardimciyla cekiliyor. Sebep sunucuyu degistirmemek degil, "kim
+   * gorunur" kuralinin tek yerde kalmasi: `akis_profilleri` RPC'si
+   * engellenen ve askidaki kisiyi zaten eliyor ve akis, bildirimler,
+   * mekan sayfasi da avatarlarini oradan aliyor.
+   *
+   * Fotografi olmayan ya da gorunmeyen kisi ADININ BAS HARFINE
+   * duesuyor - eski davranis yedek olarak duruyor.
+   */
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   const [metin, setMetin] = useState('')
   // Yazma kutusunun kendisi: emoji seridine basildiginda odak
   // kaybolmasin diye geri veriliyor.
@@ -100,6 +116,18 @@ export function YorumSayfasi({
         setYorumlar(gelen)
         setHata(null)
         onSayiDegisti?.(gelen.length)
+        // Avatarlar YORUMLARDAN SONRA: yorumlar bunu beklemiyor,
+        // gelmezse liste yine ciziliyor (bas harfle).
+        const kimlikler = [...new Set(gelen.map((y) => y.kullaniciId).filter(Boolean))] as string[]
+        if (kimlikler.length > 0) {
+          avatarlariGetir(kimlikler)
+            .then((bulunan) => {
+              if (!iptal) setAvatarlar(bulunan)
+            })
+            // Avatar gelmezse liste YINE ciziliyor, bas harfe duesuyor:
+            // yorum asil icerik, fotograf suesleme.
+            .catch(() => {})
+        }
       })
       .catch((e) => {
         if (!iptal) setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -243,11 +271,20 @@ export function YorumSayfasi({
               keyboardShouldPersistTaps="handled"
               renderItem={({ item }) => (
                 <View style={stiller.satir}>
-                  <View style={stiller.avatar}>
-                    <Text style={stiller.basHarf}>
-                      {(item.kullaniciAdi ?? '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
-                    </Text>
-                  </View>
+                  {item.kullaniciId && avatarlar[item.kullaniciId] ? (
+                    <Image
+                      source={{ uri: avatarlar[item.kullaniciId] as string }}
+                      style={stiller.avatar}
+                      accessibilityRole="image"
+                      accessibilityLabel={item.kullaniciAdi ?? undefined}
+                    />
+                  ) : (
+                    <View style={stiller.avatar}>
+                      <Text style={stiller.basHarf}>
+                        {(item.kullaniciAdi ?? '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
+                      </Text>
+                    </View>
+                  )}
 
                   <View style={stiller.govde}>
                     <View style={stiller.satirUst}>

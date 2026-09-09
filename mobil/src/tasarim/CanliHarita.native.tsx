@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Platform, View, Text, StyleSheet } from 'react-native'
-import MapView, { Marker, Polyline, type Region } from 'react-native-maps'
+import MapView, { Marker, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { mesafeMetre } from '../../lib/konum'
 import { yazi, olcek, yuvarlak, type Renk } from './tema'
@@ -159,7 +159,6 @@ export function CanliHarita({
   onMekanSec,
   merkezDurumu,
   kullaniciKonumu,
-  rota,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
@@ -180,12 +179,6 @@ export function CanliHarita({
    * 2026-09-07).
    */
   kullaniciKonumu?: { lat: number; lng: number } | null
-  /**
-   * Kullanicidan mekana giden YOLUN kirilma noktalari. Verilmezse
-   * cizgi hic cizilmiyor - duz bir cizgiyle doldurmak yanlis bir yol
-   * gostermek olurdu.
-   */
-  rota?: { lat: number; lng: number }[] | null
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -381,30 +374,6 @@ export function CanliHarita({
               </Marker>
             )
         })}
-
-        {/* YOLDAN GIDEN ROTA (kullanicinin istegi 2026-09-09:
-            "boyle kesik cizgi olmaz, yol tarifi al dendiginde en kisa
-            yol nerden gosteriyorsa gercek haritanin cizdigi gibi yol
-            ciz yoldan").
-
-            ONCEKI HAL DUZ VE KESIKLI BIR CIZGIYDI ve kullanici geri
-            aldirdi. Noktalar `lib/rota.ts` icinden geliyor (OSRM,
-            OpenStreetMap verisi); rota gelmediyse hicbir sey
-            cizilmiyor - yanlis bir yol gostermektense hic gostermemek
-            dogru.
-
-            Markerlardan ONCE ciziliyor, yani ignelerin ALTINDA
-            kaliyor. Uclari ve donusleri YUVARLAK: keskin birlesimler
-            dar sokak donuslerinde sivri cikintilar uretiyor. */}
-        {rota && rota.length > 1 && (
-          <Polyline
-            coordinates={rota.map((n) => ({ latitude: n.lat, longitude: n.lng }))}
-            strokeColor={renk.turuncu}
-            strokeWidth={5}
-            lineCap="round"
-            lineJoin="round"
-          />
-        )}
 
         {/* MERKEZ IGNESI. Ucu tam koordinata basiyor.
             Rengi `merkezDurumu` ile geliyor; verilmezse turuncu kaliyor

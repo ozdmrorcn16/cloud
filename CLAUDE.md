@@ -729,6 +729,53 @@ Yan temizlik: `TurIkonu` artik ignenin ADINA degil ETIKETE bagli
 (`tur` prop'u). Ayni sey iki alandan turetilseydi biri kaldirilinca
 digeri olu kalirdi - nitekim nota ikonu tam oyle oldu ve silindi.
 
+### ROTA CIZGISI KALDIRILDI, YORUMLARA AVATAR - 2026-09-09 (dorduencue tur)
+
+**1. HARITADAKI ROTA CIZGISI TAMAMEN KALKTI - kullanicinin karari.**
+Ayni gun once duz kesikli cizgi, sonra OSRM'den gercek yol cizilmisti.
+Kullanici once gercek yolu istedi, sonra maliyeti sorup **cizgiden
+vazgecti**: "rota cizilmesin".
+
+**KARARIN DAYANAGI MALIYET.** Kullaniciya sunulan tablo:
+
+| Secenek | Ucret | Neden |
+|---|---|---|
+| OSRM demo sunucusu | 0 | AMA "makul, ticari olmayan kullanim", saniyede 1 istek, uptime garantisi yok - magazadaki bir uygulama buradan gecemez |
+| Kendi OSRM sunucumuz | ~7 EUR/ay | Turkiye grafigi ~3 GB RAM istiyor ve makine surekli acik kalmali; istek basina ucret yok |
+| OpenRouteService / Mapbox | 0'dan baslayip artan | Ucretsiz katman (2.000/gun, 100 bin/ay) agir kullanimda kesiliyor ya da faturaya donuyor |
+| Cizgiyi hic cizmemek | 0 | "Yol tarifi al" ZATEN telefonun kendi harita uygulamasini aciyor; rotayi orada Apple/Google kendi hesabindan ciziyor |
+
+Kullanici sonuncuyu secti. **YOL TARIFI ISLEVI KAYBOLMADI** - yalnizca
+rota bizim ekranimizda cizilmiyor.
+
+Silinenler: `lib/rota.ts`, `lib/rota.test.ts`, `CanliHarita`in `rota`
+prop'u ve `Polyline`, mekan sayfasindaki rota istegi, jest'teki
+`Polyline` mock'u. Testteki iddia SILINMEDI tersine cevrildi
+("haritada rota cizgisi YOK") - cizgi sessizce geri gelirse kirilir.
+
+**KVKK - YAN FAYDA:** rota istegi kullanicinin koordinatini ucuncu bir
+tarafa gonderiyordu ve gizlilik metnine yazilmisti. Cizgi kalkinca o
+aktarim da kalkti; metinlerden cikarildi ve `kvkk-uyum-listesi.md`
+icinde "eklendi, ayni gun kaldirildi" kaydi birakildi (adres
+cozumunde de ayni desen). Yurt disina aktarim yeniden UC kalem.
+
+**2. YORUMLARDA PROFIL FOTOGRAFI.** Kullanicinin istegi: "yorumlarda
+kullanicilarin profil resmide gorunsun". Onceden yalnizca bas harfli
+turuncu daire vardi.
+
+Fotograf `yorumlari_getir` RPC'sinden GELMIYOR; `avatarlariGetir`
+(yani `akis_profilleri` RPC'si) ile ayrica cekiliyor. Sebep migrasyon
+kacinmak degil, **"kim gorunur" kuralinin tek yerde kalmasi**: o RPC
+engellenen ve askidaki kisiyi zaten eliyor, ve akis, bildirimler ve
+mekan sayfasi da avatarlarini oradan aliyor.
+
+Avatar cagrisi yorumlardan SONRA ve BEKLETMEDEN yapiliyor; gelmezse ya
+da patlarsa liste yine ciziliyor ve kisi bas harfe duesuyor. Uc testle
+kilitli (resim ciziliyor / fotografsiz kisi bas harfe duesuyor / cagri
+patlasa da yorumlar duruyor).
+
+Dogrulama: jest 64 paket / 749 test, tsc uygulama kodunda 0 hata.
+
 ### PROFILDE ETKILESIM SATIRI + GERCEK YOL ROTASI - 2026-09-09 (ucuncu tur)
 
 **1. PROFIL KARTLARINDA BEGEN / YORUM / PAYLAS.** Kullanicinin istegi:

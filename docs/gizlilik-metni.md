@@ -189,15 +189,7 @@ Verilerin uc ayri yerde islenir:
   Haritalar**. Harita cizilirken ekranda gorunen bolgenin koordinatlari
   saglayiciya gider; kimligin, hesabin ya da check-in'lerin gitmez.
   Web surumunde gercek harita yoktur, bu aktarim da olmaz.
-- **Yol tarifi cizgisi** (2026-09-09'dan itibaren, yalnizca iOS ve
-  Android uygulamalarinda): bir mekanin sayfasinda, bulundugun yerden
-  o mekana giden yolu haritada cizerken **iki koordinat** (senin
-  konumun ve mekanin konumu) **OSRM** adli acik kaynakli yol tarifi
-  servisine gonderilir; servis OpenStreetMap verisiyle calisir.
-  Istek kimligini, hesabini ya da check-in'lerini TASIMAZ. Yol tarifi
-  alinamazsa haritada cizgi gosterilmez.
-
-**Aktarimin hukuki sebebi:** dort aktarim da hizmetin verilebilmesi icin
+**Aktarimin hukuki sebebi:** uc aktarim da hizmetin verilebilmesi icin
 zorunludur, yani madde 2'deki dayanaklarin aynisina - **sozlesmenin
 ifasina** - dayanir; bildirim gonderimi ayrica mesru menfaat
 kapsamindadir.

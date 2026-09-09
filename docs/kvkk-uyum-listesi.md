@@ -111,20 +111,19 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   hangi veri = gorunen harita bolgesi; dayanak = konum izni ve
   aydinlatma; sure = uygulama tarafinda saklama yok, saglayicinin
   politikasi; kim gorur = Apple (iOS) / Google (Android).
-- **OSRM yol tarifi servisi** (2026-09-09, yalnizca iOS ve Android
-  uygulamalarinda; web'de yok). Bir mekanin sayfasinda kullanicidan
-  mekana giden yolu haritada cizmek icin IKI KOORDINAT gonderiliyor:
-  kullanicinin konumu ve mekanin konumu. Servis acik kaynakli ve
-  OpenStreetMap verisiyle calisiyor; istek kimlik, hesap ya da
-  check-in TASIMIYOR. Gizlilik metni madde 5'e yazildi. Dort soru:
-  hangi veri = iki koordinat (biri kullanicinin anlik konumu);
-  dayanak = konum izni ve aydinlatma, sozlesmenin ifasi (yol tarifi
-  ekranin islevi); sure = uygulama tarafinda saklama yok, servisin
-  kendi gunlukleri disinda kayit tutulmuyor; kim gorur = OSRM'in genel
-  sunucusunu isleten taraf.
-  ACIK BORC: kullanilan sunucu "demo" niteliginde. Magaza oncesi ya
-  kendi ornegimiz kurulmali ya da anahtarli bir saglayiciya gecilmeli;
-  sozlesme `mobil/lib/rota.ts` icinde tek yerde duruyor.
+- **OSRM yol tarifi servisi** (2026-09-09'da EKLENDI, ayni gun
+  KALDIRILDI). Mekan sayfasinda kullanicidan mekana giden yolu haritada
+  cizmek icin iki koordinat (kullanicinin anlik konumu ve mekanin
+  konumu) acik kaynakli bir yol tarifi servisine gonderiliyordu.
+  Kaldirilma sebebi gizlilik degil MALIYET: gercek rota ancak kendi
+  OSRM sunucumuzla agir kullanima uygun olurdu (~7 EUR/ay) ve kullanici
+  bu gideri almak yerine haritadaki cizgiden vazgecti. Yol tarifi
+  islevi duruyor - telefonun KENDI harita uygulamasinda calisiyor, yani
+  hesabi Apple/Google kendi uygulamasinda yapiyor ve bizim
+  gonderdigimiz bir veri yok.
+  YAN FAYDA: yurt disina aktarim listesinden bir kalem duestue.
+  Cizgi geri istenirse aktarim da geri gelir ve gizlilik metnine
+  yeniden yazilmasi gerekir.
 - **Adres cozumu** (2026-08-31'de EKLENDI, ayni gun KALDIRILDI).
   Bir mekanin konum ekrani acilinca koordinati Apple/Google'a gonderip
   tam adrese cevirmeyi denedik. Kaldirilma sebebi gizlilik degil
