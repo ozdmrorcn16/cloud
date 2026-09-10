@@ -1250,6 +1250,24 @@ olusmuyor.
 Bos durum metni de guncellendi: "Bu filtreyle 500 m içinde mekân yok."
 Test `toBe(1000)` yerine `toBe(500)` iddiasini tasiyor.
 
+**KURAL YALNIZCA LISTELEMEYE AIT - CHECK-IN 1 KM KALIYOR.** Kullanici
+bunu ayrica vurguladi (2026-09-10): "bu kural sadece bu dedigim icin
+gecerli; bir konuma check-in yapabilmek icin 1 km icinde olman gerek
+kurali ayni devam."
+
+Teyit edildi, varsayilmadi:
+
+    istemci  lib/checkin.ts   CHECK_IN_YARICAP_METRE = 1000
+    sunucu   check_in_yap()   ST_DWithin(..., 1000)
+                              'Mekana cok uzaksin (~1 km icinde olmalisin)'
+
+Iki sayi AYRI YERDE ve ayri sey anlatiyor: `KESFET_YARICAP_METRE`
+"listede neyi gosterelim", `CHECK_IN_YARICAP_METRE` "nereye check-in
+yapilabilir". Pratik sonucu: 700 m otedeki bir mekan listede
+GORUNMEZ ama arama ya da harita uzerinden sayfasina gidilip check-in
+YAPILABILIR. Biri degistirilirken otekine dokunulmamali - ayni ders
+`kurali-soylendigi-ekranda-birak` hafizasinda.
+
 ### KAYITLI ADRES ARTIK GOSTERILIYOR - 2026-09-10
 
 Kullanicinin karari. `mekanlar.adres` **2.311.583 kayitta (%39,6) dolu
