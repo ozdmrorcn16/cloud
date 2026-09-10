@@ -1225,6 +1225,66 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### MAGAZADAN INEN KULLANICI EN SON HALI GORECEK - 2026-09-10
+
+Kullanicinin karari: **"magazaya ciktiginda en sonki halini kullanici
+gormeli."**
+
+**SORUN GERCEK BIR CIHAZDA YASANDI.** Test uygulamasi ikinci bir
+telefona indirildi ve GUNCEL HALI GORUNMEDI. Once sunucu tarafi
+olculdu ve TEMIZ cikti:
+
+    build 7 : runtime 01a04fbb-f5e4-723c-abba-d04ebdf2f0d8 (1.0.0),
+              kanal production
+    son OTA : AYNI runtime kimligi, AYNI kanal
+
+Yani guncelleme o derlemeye INIYOR. Sebep baskaydi ve VARSAYILAN
+DAVRANISTI: `fallbackToCacheTimeout` tanimsizken 0 sayiliyor, uygulama
+acilista guncellemeyi BEKLEMIYOR - arka planda indirip **bir sonraki
+acilista** uyguluyor. Sonucu: yeni kuran herkes ilk acilista DERLEME
+ANINDAKI surumu goruyor (build 7 = 7 Eylul hali).
+
+**COZUM (app.json):**
+
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 8000
+
+8 sn secildi: yavas bir baglantida paketin inmesine yetiyor ama acilis
+"donmus" hissi vermiyor. Ust sinir da testle kilitli (<= 10 sn) -
+sinirsiz buyutmek "hiz ve akicilik" kuralini bozardi. Ag yoksa istek
+hizlica basarisiz oluyor, timeout dolmuyor.
+
+**BU DEGISIKLIK OTA ILE GITMEZ - YENI DERLEME SART.** Native bir ayar.
+Yani mevcut build 7'deki sorun bununla DUZELMEZ; duzelme bir sonraki
+iOS derlemesinden sonra baslar. Ayni derleme zaten gerekiyordu (Apple
+girisi entitlement'i magaza oncesi geri acilmali).
+
+**IKI ALTERNATIF DE ELENDI, ayni sebeple:** `Updates.checkForUpdateAsync`
++ `reloadAsync` deseni JavaScript ama ILK ACILISTA ESKI JS calisiyor -
+derlemenin icinde o kod yoksa devreye giremez. Yani hicbir yol mevcut
+derlemenin ilk acilisini duzeltemiyor.
+
+**YENI TEST PAKETI: `__tests__/yayin-ayarlari.test.ts`** (5 iddia).
+Ayarin sessizce kaldirilmasi ya da sinirsiz buyutulmesi artik testi
+kirar. Bunu yazmanin sebebi: buradaki bir hata OTA ile duzeltilemiyor,
+yani en pahali hata sinifina giriyor.
+
+**AYRICA: magaza derlemesi mumkun oldugunca GEC alinmali** - gomulu JS
+derleme anindaki koddur ve `fallbackToCacheTimeout` yalnizca aradaki
+farki kapatir.
+
+**TEST TUZAGI - kayda geciyor:** uc sayfalama testi jest'in 5 sn
+varsayilanini asti ve tam paket kosumunda KIRILDI (dosya tek basina
+kosulunca geciyordu). Sebep kod degil YAVASLIK: her biri 100 kart
+render edip aramanin 300 ms'lik bekletmesini gercek zamanda bekliyor.
+Kayit sayisi azaltilamaz - `dahaVar` kosulu "gelen sayfa TAM MI" diye
+soruyor ve tam sayfa tam olarak `KESFET_LIMIT` kadar kayit demek. Ucune
+de acik timeout (20 sn) verildi.
+
+Dogrulama: jest 67 paket / 798 test, tsc uygulama kodunda 0 hata,
+`npx expo config --type introspect` ayarin gercekten uygulandigini
+gosterdi.
+
 ### ARAMA ONERILERI VE COK SATIRLI ADRES - 2026-09-10
 
 **1. ARAMA ONERI PANELI.** Kullanicinin istegi: "mekan arada kelimeler

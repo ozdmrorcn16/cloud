@@ -1013,6 +1013,19 @@ describe('MekanAramaEkrani', () => {
   // tek sayfa (100) "hepsi" degil.
   // ------------------------------------------------------------------ //
 
+  /*
+   * SAYFALAMA TESTLERINE ACIK TIMEOUT (20 sn) VERILDI.
+   *
+   * Jest'in 5 sn varsayilani bu ucu icin yetmiyor: her biri KESFET_LIMIT
+   * (100) kart render ediyor ve aramanin 300 ms'lik bekletmesini gercek
+   * zamanda bekliyor. Dosya tek basina kosulunca 3-4 sn'de bitiyor, tam
+   * pakette makine yuklu oldugu icin siniri asiyor - yani test KIRIK
+   * DEGIL, YAVAS. Bir kez yasandi (2026-09-10).
+   *
+   * Kayit sayisi azaltilamaz: `dahaVar` kosulu "gelen sayfa TAM MI"
+   * diye soruyor ve tam sayfa demek tam olarak KESFET_LIMIT kadar
+   * kayit demek.
+   */
   /** Sunucudan gelmis gibi N kayit uretir. */
   function sayfa(baslangic: number, adet: number) {
     return Array.from({ length: adet }, (_, i) => ({
@@ -1063,7 +1076,7 @@ describe('MekanAramaEkrani', () => {
     // ONCEKI SAYFA SILINMIYOR: yeni kayitlar eskilerin ALTINA ekleniyor.
     expect(await screen.findByText(`Mekan ${KESFET_LIMIT}`)).toBeTruthy()
     expect(screen.getByText('Mekan 0')).toBeTruthy()
-  })
+  }, 20000)
 
   it('EKSIK sayfa geldiyse daha fazla istenmiyor', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
@@ -1098,7 +1111,7 @@ describe('MekanAramaEkrani', () => {
     await dibeKaydir(screen.getByTestId('kesfet-kaydirma'))
 
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(oncekiSayi)
-  })
+  }, 20000)
   // ------------------------------------------------------------------ //
   // HARITA LISTEYLE AYNI MEKANLARI GOSTERIYOR
   //
@@ -1250,5 +1263,5 @@ describe('MekanAramaEkrani', () => {
     // Yalnizca aramanin KENDI istegi: bekletmeli etki bir kez atiyor.
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2))
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2)
-  })
+  }, 20000)
 })
