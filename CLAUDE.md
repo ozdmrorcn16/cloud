@@ -23,19 +23,34 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - Kalici bir karar alindiginda (teknoloji secimi, kapsam, isim, mimari) bu
   dosyayi veya konusma gunlugunu guncelle ve commit'le.
 - Konteyner gecicidir: push edilmeyen hicbir sey kalmaz. Onemli her seyi
-  `claude/uygulama-fikri-o3tuda` dalina push et.
+  `claude/jolly-fermi-pthav7` dalina push et.
 - Kullaniciyla Turkce konus.
 
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/uygulama-fikri-o3tuda`
-- **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
+- **Calisma dali:** `claude/jolly-fermi-pthav7`
+- **Asama:** Fikir netlesti, gelistirme basliyor. Uygulama kodu `vpn-uygulamasi/`
+  klasorunde, ayri bir oturumda gelistirilecek.
 
 ## Uygulama fikri
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+**VPN uygulamasi.** Kullanicinin internet trafigini yurt disindaki kendi
+sunucumuzdan gecirir.
+
+- **Platform:** Once Android. iOS sonraya birakildi (Apple onayi daha zor).
+- **Protokol:** WireGuard.
+- **Trafik sunucusu:** Yurt disinda (Almanya/Hollanda) kiralik VPS, aylik ~5$.
+  Supabase bu isi yapamaz; yalnizca arka uc olarak kullanilir.
+- **Arka uc (Supabase):** kullanici girisi, abonelik kaydi, sunucu listesi,
+  WireGuard anahtar dagitimi (Edge Function).
+- **Mimari:** Uygulama Supabase'e giris yapar -> sunucu adresi ve anahtari
+  alir -> dogrudan VPS'teki WireGuard'a baglanir. Trafik Supabase'e ugramaz.
+- **Alan adi:** Baslangicta gerekmiyor; sunucu adresleri Supabase'de tutulur.
+  Magazaya yuklemeye yakin alinacak.
+- **Bilinen zorluklar:** magaza gizlilik politikasi, Apple Network Extension
+  izni, Turkiye'de IP engelleme (yurt disi sunucu + yedek adres listesi).
+- **Kullanicinin yapacaklari:** gelistirici hesaplari, VPS kiralama, alan adi.
 
 ## Eklentiler
 
@@ -44,6 +59,11 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   proje kapsaminda tanimli, yani yeni konteynerde kendiliginden geri gelir.
 
 ## Kararlar
+
+- 2026-09-10 — Uygulama fikri VPN olarak netlesti (ayrintilar yukarida).
+- 2026-09-10 — Ayri GitHub deposu acilamadi (entegrasyon yetkisi yok). Kod
+  bu depoda `vpn-uygulamasi/` klasorunde gelistirilecek; kullanici ayri depo
+  isterse GitHub'da kendisi acacak.
 
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
