@@ -1225,6 +1225,96 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### KAYITLI ADRES ARTIK GOSTERILIYOR - 2026-09-10
+
+Kullanicinin karari. `mekanlar.adres` **2.311.583 kayitta (%39,6) dolu
+ve bugune kadar HICBIR EKRANDA kullanilmiyordu.**
+
+**NEDEN KULLANILMIYORDU:** 2026-08-31'deki "yalnizca ilce ve il, TAM
+DOGRULUK ADINA" karari bu alani da kullanim disi birakmisti. Ama o
+kararin gerekcesi TURETILMIS mahalleydi - en yakin OSM noktasi,
+komsuluga yayma, kirli kaynak; ucu de yanlis sonuc vermisti. Bu alan
+turetilmis DEGIL.
+
+**KULLANICI ISRAR ETTI VE OLCTURDU** ("tahmini degil gercek kayitli
+adresler"). Dort bagimsiz kanit:
+
+1. **Kaynak zinciri:** `fsq-indir.py` Foursquare'in `address` sutununu
+   DOGRUDAN `SELECT` ediyor. Depoda ters cografi kodlama yapan tek yer
+   `lib/adres.ts` ve o YALNIZCA yeni mekan ekleme ekraninda, kullanici
+   onayiyla calisiyor; 5,8 milyonluk kayda hic dokunmuyor.
+2. **Doluluk %35,6** (ham veri). Koordinattan turetilseydi **%100**
+   olurdu - her kaydin koordinati var. 3.853.360 kayit adressiz cunku
+   kimse girmemis.
+3. **Ayni koordinat, farkli adres:** ayni noktada birden fazla kayit
+   olan 5.823 yerin **%63'unde** adresler farkli. Makine turetseydi
+   ayni olurdu.
+4. **Yazim bicimleri insan izi:** 'Mahallesi' 257.394, 'Mah.' 208.632,
+   'mahallesi' 78.122, 'Mh.' 44.838, 'mah.' 37.043, 'Mah ' 29.748...
+   Tek bir makine sekiz farkli yazim uretmez.
+
+**IKI SATIR, cunku ikisi FARKLI SEY soyluyor:** ustte kayitli adres
+(bir BEYAN, serbest metin, kisa ya da eksik olabilir), altta ilce/il
+(koordinatin hangi resmi sinir poligonuna duestuegue - kesin hesap).
+Adres "Ada Sk. No:1" gibi kisa oldugunda ikinci satir olmasa kullanici
+hangi sehirde oldugunu bilemezdi. Alt satir daha soluk: ayni tonda
+olsalardi iki satir tek bir adres bloguymus gibi okunurdu.
+
+**TEKRAR ONLENIYOR:** bazi adresler ilceyi zaten iceriyor ("... Merkez
+Osmangazi -Bursa/Türkiye"); o durumda idari satir hic cizilmiyor.
+
+Eski test iddiasi ("serbest adres metni HALA gosterilmiyor") silinmedi,
+TERSINE cevrildi. Uc yeni test: kisa adres + idari satir birlikte,
+tekrar onleme, adressiz kayitta yalnizca ilce/il.
+
+#### ADRES ICIN ARASTIRILAN VE ELENEN YOLLAR (tekrar denenmesin)
+
+**OSM'DEN ADRES BIRLESTIRME - OLCULDU, DEGMEZ.** Bursa'nin TAMAMINDA
+yeme icme kategorisinde OSM'in Foursquare'e kattigi adres sayisi **5**.
+
+    OSM Bursa yeme icme          : 689     (Foursquare 5.911 - 9x fark)
+    OSM mekani FSQ ile eslesti   : 355
+    OSM adresli / FSQ ADRESSIZ   :   5     <- asil kazanc
+    ikisinde de adres var        :  34
+    FSQ da hic yok + OSM adresli :  22
+
+Eslestirme 60 m + ad benzerligi >= 0,60 ile yapildi. Esik gevsetilirse
+YANLIS MEKANA YANLIS ADRES yazilir - tam olarak mahallede uc kez
+yasanan hata. Karsiliginda gereken is: 644 MB PBF isleme, GDAL kurulumu,
+eslestirme boru hatti, ODbL atfi genisletme. **Emek kazancin kat kat
+ustunde.**
+
+OSM'in tek ustunlugu adresi AYRI ALANLARDA tutmasi (`addr:street`,
+`addr:housenumber`, `addr:neighbourhood`) - ama Bursa'da kapsamasi
+yalnizca %8,9.
+
+**FOURSQUARE'DEN IL/ILCE ALMA - OLCULDU, GEREKSIZ.**
+
+    alan            Foursquare    Bizim (poligon testi)
+    ilce/semt       %34,8         %99,65
+    il              %20,4         %99,99
+    admin_region    %0,0 (bos)    -
+
+Bizde ilcesiz kalan 20.457 kayit (%0,35) KARADA DEGIL - "Antalya Kaş
+Açıkları", Marmara'daki tekneler, kiyi noktalari. Bu kayitlarin 12
+ornegi kontrol edildi: **12'sinde de** FSQ'nun `locality` ve `region`
+alanlari BOS. Yani bosluk doldurulamaz, ilce gercekten yok.
+
+Ayrica FSQ'nun `region` alani kirli: il yerine ilce yaziyor
+("Aliaga/Aliaga", "Cukurova/cukurova").
+
+**ACIK KALAN, DAHA KUCUK IS:** `postcode` ham veride %36,3 dolu,
+yapisal ve `mekanlar` tablosuna hic aktarilmamis.
+
+**TEST TUZAGI - kayda geciyor:** mekan sayfasi testleri jest'in 5 sn
+varsayilanina cok yakin (tek basina ~4 sn) cunku her biri mekan
+bilgisini, istatistikleri, liderligi, son check-inleri ve cevre
+listesini birden bekliyor. Tam paket kosumunda makine yuklu oldugu icin
+siniri astilar. Dosya geneline `jest.setTimeout(20000)` kondu; testler
+kirik degil YAVAS.
+
+Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata.
+
 ### "EN SIK" BASKASININ PROFILINDE ILK BES - 2026-09-10
 
 Kullanicinin karari: "baskasi baskasinin profiline baktiginda en sik

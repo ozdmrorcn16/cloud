@@ -422,19 +422,50 @@ export default function MekanSayfasi() {
   }
 
   /**
-   * Ilce ve il. Kullanicinin karari (2026-08-31): "Mahalle adres
-   * bilgisi aktarimini durdur ve sil, sadece konumlarin ilce ve il
-   * bilgisini gosterecegiz TAM DOGRULUK ADINA."
+   * KAYITLI ADRES - varsa gosteriliyor (kullanicinin karari
+   * 2026-09-10).
    *
-   * MAHALLE 2026-09-09'da GERI GELDI ama yalnizca ONAYLI DUZELTMEDEN
-   * gelenler: o karar TURETILMIS mahalleye karsiydi (en yakin OSM
-   * noktasi, komsuluga yayma, kirli adres kaydi - ucu de yanlis
-   * sonuc vermisti). Onaylanmis bir beyan turetilmis veri degil,
-   * dolayisiyla gosterilmesinde sakinca yok. Dolu degilse satir
-   * eskisi gibi "ilce, il".
+   * `mekanlar.adres` 2.311.583 kayitta (%39,6) dolu ve bugune kadar
+   * HICBIR EKRANDA kullanilmiyordu. 2026-08-31'deki "yalnizca ilce ve
+   * il, TAM DOGRULUK ADINA" karari bu alani da kullanim disi
+   * birakmisti - ama o kararin gerekcesi TURETILMIS mahalleydi
+   * (en yakin OSM noktasi, komsuluga yayma, kirli kaynak; ucu de
+   * yanlis sonuc vermisti).
+   *
+   * BU ALAN TURETILMIS DEGIL ve dort ayri olcumle dogrulandi
+   * (2026-09-10):
+   *   1. `fsq-indir.py` Foursquare'in `address` sutununu DOGRUDAN
+   *      aliyor; depoda ters cografi kodlama yalnizca yeni mekan
+   *      EKLEME ekraninda ve orada kullanici onayliyor.
+   *   2. Doluluk %35,6 - koordinattan turetilseydi %100 olurdu,
+   *      cunku her kaydin koordinati var.
+   *   3. Ayni koordinatta birden fazla kayit olan 5.823 noktanin
+   *      %63'unde adresler FARKLI - makine ureten olsa ayni olurdu.
+   *   4. Yazim bicimleri insan izi tasiyor: 'Mahallesi' 257.394,
+   *      'Mah.' 208.632, 'mahallesi' 78.122, 'Mh.' 44.838...
+   *
+   * IKI SATIR, cunku ikisi FARKLI SEY soyluyor: adres bir BEYAN
+   * (serbest metin, eksik ya da kisa olabilir), ilce/il ise
+   * koordinatin hangi resmi sinir poligonuna duestuegue - kesin.
+   * Adres "Ada Sk. No:1" gibi kisa oldugunda ikinci satir olmasa
+   * kullanici hangi sehirde oldugunu bilemezdi.
    */
-  const adresSatiri =
+  const kayitliAdres = mekan?.adres?.trim() || null
+  const idariSatir =
     [mekan?.mahalle, mekan?.semt, mekan?.il].filter(Boolean).join(', ') || null
+
+  /*
+   * TEKRARI ONLE: bazi adresler ilceyi zaten iceriyor ("... Merkez
+   * Osmangazi -Bursa/Türkiye"). O durumda ikinci satir ayni bilgiyi
+   * ikinci kez yazardi.
+   */
+  const idariGoster =
+    idariSatir !== null &&
+    !(
+      kayitliAdres !== null &&
+      mekan?.semt != null &&
+      kayitliAdres.toLocaleLowerCase('tr').includes(mekan.semt.toLocaleLowerCase('tr'))
+    )
 
   // Avatar seridinde en fazla ALTI kisi; gerisi "+N" rozetine giriyor.
   // Sayi ustteki istatistikten geliyor, listeden DEGIL - liste RLS ile
@@ -551,7 +582,19 @@ export default function MekanSayfasi() {
             <View style={stiller.baslikSatiri}>
               <View style={stiller.bilgi}>
                 <Text style={stiller.ad}>{mekan.ad}</Text>
-                {adresSatiri && <Text style={stiller.adres}>{adresSatiri}</Text>}
+                {kayitliAdres && (
+                  <Text style={stiller.adres} testID="mekan-adresi">
+                    {kayitliAdres}
+                  </Text>
+                )}
+                {idariGoster && (
+                  <Text
+                    style={[stiller.adres, kayitliAdres != null && stiller.adresIdari]}
+                    testID="mekan-idari"
+                  >
+                    {idariSatir}
+                  </Text>
+                )}
                 {/* DUZENLEME TALEBI GIRISI (kullanicinin istegi
                     2026-09-09). Ikincil ve kucuk: sayfanin asil eylemi
                     check-in, bu bir duzeltme kapisi. Ust cubuktaki uc
@@ -997,6 +1040,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 17,
     color: renk.metinIkincil,
   },
+  /*
+   * Ilce/il satiri, KAYITLI ADRESIN ALTINDA daha soluk.
+   *
+   * Ikisi ayni tonda olsaydi iki satir tek bir adres bloguymus gibi
+   * okunurdu; oysa ustteki bir BEYAN, alttaki kesin bir hesap.
+   * Hiyerarsi tonla anlatiliyor - adres yokken satir tek basina
+   * kaliyor ve normal tonunu koruyor.
+   */
+  adresIdari: { color: renk.metinSoluk },
   // Turuncu KENARLIKLI, dolu degil: sayfadaki tek dolu turuncu alt
   // gezinmedeki check-in dugmesi ve o baska bir eylem. Ikisi de dolu
   // olsaydi hangisinin asil eylem oldugu belirsizlesirdi.

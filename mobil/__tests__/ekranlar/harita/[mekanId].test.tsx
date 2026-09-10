@@ -1,4 +1,16 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react-native'
+
+/*
+ * DOSYA GENELINDE ACIK TIMEOUT (20 sn).
+ *
+ * Bu ekranin testleri agir: her biri mekan bilgisini, istatistikleri,
+ * liderligi, son check-inleri ve cevre listesini birden bekliyor. Tek
+ * basina kosuldugunda ~4 sn suruyorlar - jest'in 5 sn varsayilanina
+ * cok yakin - ve TAM PAKET kosumunda makine yuklu oldugu icin siniri
+ * asiyorlar. Yani testler KIRIK DEGIL, YAVAS. Bir kez yasandi
+ * (2026-09-10).
+ */
+jest.setTimeout(20000)
 import { ActionSheetIOS, Linking } from 'react-native'
 import CheckInHaritasiEkrani from '../../../src/app/harita/[mekanId]'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'
@@ -133,8 +145,64 @@ describe('CheckInHaritasiEkrani', () => {
     await render(<CheckInHaritasiEkrani />)
 
     await waitFor(() => expect(screen.getByText('Alaaddinbey, Nilüfer, Bursa')).toBeTruthy())
-    // Serbest adres metni HALA gosterilmiyor.
-    expect(screen.queryByText('Alaaddinbey Mah. 613. Sk No:9')).toBeNull()
+    /*
+     * IDDIA TERSINE CEVRILDI, SILINMEDI (2026-09-10). Eskiden "serbest
+     * adres metni HALA gosterilmiyor" diyordu; kullanicinin karariyla
+     * KAYITLI ADRES artik gosteriliyor. Alan turetilmis degil - dort
+     * ayri olcumle dogrulandi (kaynak zinciri, %35,6 doluluk, ayni
+     * koordinatta farkli adresler, insan yazim izleri).
+     */
+    expect(screen.getByText('Alaaddinbey Mah. 613. Sk No:9')).toBeTruthy()
+    await cevreOturana()
+  })
+
+  /*
+   * KAYITLI ADRES VE IDARI SATIR IKI FARKLI SEY SOYLUYOR:
+   * adres bir BEYAN (serbest metin), ilce/il ise koordinatin hangi
+   * resmi sinir poligonuna duestuegue - kesin hesap.
+   */
+  it('kayitli adres varsa ILCE + IL ile BIRLIKTE gosteriliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({
+      ...MEKAN,
+      mahalle: null,
+      adres: 'Ada Sk. No:1',
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    // Kisa bir adres tek basina birakilsaydi kullanici hangi sehirde
+    // oldugunu bilemezdi.
+    expect(await screen.findByTestId('mekan-adresi')).toHaveTextContent('Ada Sk. No:1')
+    expect(screen.getByTestId('mekan-idari')).toHaveTextContent('Nilüfer, Bursa')
+    await cevreOturana()
+  })
+
+  /*
+   * TEKRAR ONLENIYOR: bazi kayitli adresler ilceyi zaten iceriyor
+   * ("... Merkez Osmangazi -Bursa/Türkiye"). O durumda ikinci satir
+   * ayni bilgiyi ikinci kez yazardi.
+   */
+  it('adres ILCEYI zaten iceriyorsa idari satir TEKRAR EDILMIYOR', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({
+      ...MEKAN,
+      mahalle: null,
+      adres: 'Dr.Sadık Ahmet Cad. No:412/B Nilüfer Bursa',
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await screen.findByTestId('mekan-adresi')
+    expect(screen.queryByTestId('mekan-idari')).toBeNull()
+    await cevreOturana()
+  })
+
+  it('adres YOKSA yalnizca ILCE + IL kaliyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, mahalle: null, adres: null })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    expect(await screen.findByTestId('mekan-idari')).toHaveTextContent('Nilüfer, Bursa')
+    expect(screen.queryByTestId('mekan-adresi')).toBeNull()
     await cevreOturana()
   })
 
