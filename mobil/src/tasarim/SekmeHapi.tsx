@@ -1,26 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
 import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
-import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
+import { bosluk, olcek, yazi, type Renk } from './tema'
 import { useStiller } from './tema-baglami'
 import { useHareket } from './hareket'
 
 /**
- * HAP SEKLINDE SEKME CUBUGU - icinde secili buton KAYIYOR.
+ * SEKME CUBUGU - secili sekmenin ALTINDA kayan turuncu cizgi.
  *
- * Kullanicinin istegi (2026-09-08): "hap sekilde bastan sona icinde
- * kaymali sutunlu butonlu". Alt cizgili sekme deseninin yerini aldi.
+ * DOSYA ADI TARIHSEL: bilesen 2026-09-08'de HAP seklindeydi
+ * ("hap sekilde bastan sona icinde kaymali sutunlu butonlu") ve adini
+ * oradan aliyor. 2026-09-10'da kullanicinin gonderdigi referansla ALT
+ * CIZGIYE donduruIdue; ad degistirilmedi cunku iki ekran onu bu adla
+ * cagiriyor ve isim degisikligi bu isin kapsami disinda.
  *
- * DIL KESFET EKRANINDAKI Harita/Liste segmentiyle ayni: kapsayici
- * turuncu tonlu, secili buton beyaz + turuncu kenarlik, secili yazi
- * turuncu, oteki soluk.
- *
- * Kayan dolgu SEKMENIN DEGIL kapsayicinin cocugu ve agacta EN ALTTA:
- * sekmeye baglansaydi her sekmenin kendi dolgusu olur, kayma diye bir
- * sey olmazdi; butonlardan sonra cizilseydi yazilari orterdi.
+ * KAYMA KORUNDU: gosterge hala yay ile kayiyor, yalnizca sekli
+ * degisti - dolu bir buton yerine ince bir cizgi. Kayan oge
+ * SEKMENIN DEGIL kapsayicinin cocugu: sekmeye baglansaydi her
+ * sekmenin kendi cizgisi olur, kayma diye bir sey olmazdi.
  */
 
-/** Hapin ic dolgusu; kayan butonun sinirlarini da bu belirliyor. */
-const HAP_DOLGUSU = 3
+/**
+ * Gostergenin sekme genisligine gore payi.
+ *
+ * Cizgi sekmenin TAMAMI kadar degil: referansta metnin altinda daha
+ * dar duruyor ve iki sekme arasindaki sinir boylece yumusak kaliyor.
+ */
+const GOSTERGE_ORANI = 0.56
 
 export function SekmeHapi<T extends string>({
   sekmeler,
@@ -40,7 +45,7 @@ export function SekmeHapi<T extends string>({
   // baslasa gosterge ilk karede hic cizilmez ve olcum gelince birden
   // belirirdi. Testte de `onLayout` tetiklenmiyor.
   const [butonGenisligi, setButonGenisligi] = useState(
-    () => (Dimensions.get('window').width - yanPay * 2 - HAP_DOLGUSU * 2) / sekmeler.length
+    () => (Dimensions.get('window').width - yanPay * 2) / sekmeler.length
   )
   const konum = useRef(new Animated.Value(0)).current
   const sira = Math.max(
@@ -68,11 +73,7 @@ export function SekmeHapi<T extends string>({
   return (
     <View
       style={stiller.hap}
-      onLayout={(o) =>
-        setButonGenisligi(
-          (o.nativeEvent.layout.width - HAP_DOLGUSU * 2) / sekmeler.length
-        )
-      }
+      onLayout={(o) => setButonGenisligi(o.nativeEvent.layout.width / sekmeler.length)}
     >
       <Animated.View
         testID="sekme-gostergesi"
@@ -80,12 +81,16 @@ export function SekmeHapi<T extends string>({
         style={[
           stiller.kayanButon,
           {
-            width: butonGenisligi,
+            width: butonGenisligi * GOSTERGE_ORANI,
             transform: [
               {
                 translateX: konum.interpolate({
                   inputRange: sekmeler.map((_, i) => i),
-                  outputRange: sekmeler.map((_, i) => i * butonGenisligi),
+                  // Cizgi sekmenin ORTASINDA duruyor: sol kenara
+                  // hizalansaydi dar cizgi metnin altindan kacardi.
+                  outputRange: sekmeler.map(
+                    (_, i) => i * butonGenisligi + (butonGenisligi * (1 - GOSTERGE_ORANI)) / 2
+                  ),
                 }),
               },
             ],
@@ -109,27 +114,25 @@ export function SekmeHapi<T extends string>({
 
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
+    /* Zemin YOK; tabandaki ince cizgi sekmeleri icerikten ayiriyor. */
     hap: {
       flexDirection: 'row',
       alignSelf: 'stretch',
-      backgroundColor: renk.turuncuZemin,
-      borderRadius: yuvarlak.hap,
-      padding: HAP_DOLGUSU,
       marginTop: bosluk.l,
+      borderBottomWidth: 1,
+      borderBottomColor: renk.cizgi,
     },
-    sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.s + 2 },
-    // Dikeyde `top`/`bottom` ile geriliyor: sabit bir yukseklik
-    // yazilsaydi yazi puntosu degisince hap sekmeye oturmazdi.
+    sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.m },
+    /* Gosterge tabandaki gri cizginin UZERINE biniyor (`bottom: -1`),
+       yoksa ikisi alt alta iki cizgi gibi gorunurdu. */
     kayanButon: {
       position: 'absolute',
-      left: HAP_DOLGUSU,
-      top: HAP_DOLGUSU,
-      bottom: HAP_DOLGUSU,
-      borderRadius: yuvarlak.hap,
-      backgroundColor: renk.yuzey,
-      borderWidth: 1.2,
-      borderColor: renk.turuncu,
+      left: 0,
+      bottom: -1,
+      height: 3,
+      borderRadius: 2,
+      backgroundColor: renk.turuncu,
     },
-    yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.metinSoluk },
+    yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metinSoluk },
     yaziAktif: { color: renk.turuncuYazi },
   })

@@ -49,6 +49,7 @@ import { gorecelZaman } from '../../../lib/zaman'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 
 /**
@@ -139,6 +140,17 @@ function AyarlarIkonu() {
  * kesiyor. Bir kez gidilmis onlarca mekan listeyi uzatmaktan baska
  * bir sey yapmiyordu.
  */
+/**
+ * Ust blogun arkasindaki harita dokusunun yuksekligi.
+ *
+ * Kullanicinin siniri (2026-09-10): "profili duzenle yazisina kadar
+ * olsun yeter." Deger avatar satirinin (78) ust/alt paylariyla
+ * toplamindan geliyor; eylem satirina ULASMIYOR. Avatar boyu ya da
+ * paylar degisirse BURASI DA degismeli, yoksa doku ya butonun altina
+ * tasar ya da erken biter.
+ */
+const HARITA_YUKSEKLIGI = 152
+
 const EN_FAZLA_YER = 20
 
 /**
@@ -497,43 +509,24 @@ export default function ProfilEkrani() {
             degisti ama sonuc ayni - kok duzenin verdigi pay ile
             ekranin kendi payi ust uste binmemeli. */}
 
+        {/* UST CUBUK: sol "Profil" basligi + sag ayarlar.
+            
+            Kullanicinin karari (2026-09-10, referans gorselle):
+            kullanici adi buradan KALKTI ve avatarin yanina, adin
+            altina indi (@byorcun). Paylas ikonu da kalkti - eylem
+            satirindaki kare butona tasindi, "Profili düzenle"nin
+            yanina. Boylece ust cubuk tek isi yapiyor: sayfanin adini
+            soylemek ve ayarlara gecis vermek. */}
         <View style={stiller.ustCubuk}>
-          <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-            {/* @ ISARETI VAR (kullanicinin istegi 2026-08-30:
-                "kullanıcı adları profilde @kullanıcı adı olarak
-                görünsün"). 2026-08-29'da bir kez KALDIRILMISTI (o gun
-                "sus kaliyor" denmisti); yeni istek onun yerine geciyor.
-                Uygulamanin geri kalani zaten @ ile gosteriyor:
-                baskasinin profili, ayarlar, profil duzenleme. */}
-            {/* @ ISARETI KALKTI (kullanicinin karari 2026-09-03).
-                Uygulamanin geri kalani zaten @'siz gosteriyordu:
-                akis kartlari, arama, mesajlar. Bu degisiklik profili
-                onlarla ayni dile getirdi. */}
-            {profil ? profil.kullaniciAdi : ''}
-          </Text>
-          {/* PAYLAS IKONU AYARLARIN SOLUNDA (kullanicinin secimi
-              2026-09-03): banttaki "Paylaş" butonunun yerini aldi. Ikon
-              akis kartlarindakiyle AYNI (kagit ucak) - uygulamada tek
-              bir paylas dili olsun diye; iOS'un kendi paylas ikonu daha
-              taniidk ama iki farkli ikon olurdu. */}
-          <View style={stiller.ustIkonlar}>
-            <Pressable
-              onPress={profiliPaylas}
-              accessibilityRole="button"
-              accessibilityLabel={t('profil.paylas')}
-              hitSlop={12}
-            >
-              <PaylasIkonu />
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/profil/ayarlar')}
-              accessibilityRole="button"
-              accessibilityLabel={t('profil.ayarlar')}
-              hitSlop={12}
-            >
-              <AyarlarIkonu />
-            </Pressable>
-          </View>
+          <Text style={stiller.sayfaBasligi}>{t('profil.baslik')}</Text>
+          <Pressable
+            onPress={() => router.push('/profil/ayarlar')}
+            accessibilityRole="button"
+            accessibilityLabel={t('profil.ayarlar')}
+            hitSlop={12}
+          >
+            <AyarlarIkonu />
+          </Pressable>
         </View>
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -564,60 +557,121 @@ export default function ProfilEkrani() {
                 yalnizca + rozeti fotograf secer; fotografin kendisine
                 basinca buyuk gorunum acilir, orada "Kaldir" var.
                 Fotograf yokken bas harfe basmak bir sey yapmiyor. */}
-            <View style={stiller.kimlik}>
-              <View style={stiller.avatarBasilir}>
-                {fotografUrl ? (
+            {/* KIMLIK: AVATAR SOLDA, BILGILER SAGINDA.
+            
+                Kullanicinin karari (2026-09-10, referans gorselle):
+                onceden avatar ORTALI ve bilgiler altindaydi. Yatay
+                duzen ust blogu kisaltiyor - ekranin ilk goruntusunde
+                anilara daha cok yer kaliyor.
+                
+                Arkada ISIMSIZ harita dokusu var; yuksekligi eylem
+                satirinin ustunde bitiyor ("profili duzenle yazisina
+                kadar olsun yeter"). */}
+            <View style={stiller.kimlikKap}>
+              <ProfilHaritaZemini yukseklik={HARITA_YUKSEKLIGI} />
+
+              <View style={stiller.kimlik}>
+                <View style={stiller.avatarBasilir}>
+                  {fotografUrl ? (
+                    <Pressable
+                      onPress={() => setBuyukAcik(true)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('profil.fotografiBuyut')}
+                    >
+                      <Image
+                        testID="profil-fotografi"
+                        source={{ uri: fotografUrl }}
+                        style={stiller.avatar}
+                      />
+                    </Pressable>
+                  ) : (
+                    // Fotografi olmayanda bos daire birakmak profili
+                    // eksik gosteriyor; bas harf kimligi tasiyor.
+                    <View style={[stiller.avatar, stiller.avatarYok]}>
+                      <Text style={stiller.basHarf}>
+                        {(profil.ad || profil.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  {/* Rozet TURUNCU (referans): avatarin sag altinda,
+                      beyaz halkayla fotograftan ayriliyor. */}
                   <Pressable
-                    onPress={() => setBuyukAcik(true)}
+                    style={stiller.fotografRozeti}
+                    onPress={fotografDegistir}
+                    disabled={fotografYukleniyor}
                     accessibilityRole="button"
-                    accessibilityLabel={t('profil.fotografiBuyut')}
+                    accessibilityLabel={t('profil.fotografEkle')}
+                    hitSlop={8}
                   >
-                    <Image
-                      testID="profil-fotografi"
-                      source={{ uri: fotografUrl }}
-                      style={stiller.avatar}
-                    />
+                    <Svg width={14} height={14} viewBox="0 0 24 24">
+                      <Path
+                        d="M12 5v14M5 12h14"
+                        stroke="#FFFFFF"
+                        strokeWidth={2.6}
+                        strokeLinecap="round"
+                      />
+                    </Svg>
                   </Pressable>
-                ) : (
-                  // Fotografi olmayanda bos daire birakmak profili eksik
-                  // gosteriyor; bas harf kimligi tasiyor.
-                  <View style={[stiller.avatar, stiller.avatarYok]}>
-                    <Text style={stiller.basHarf}>
-                      {(profil.ad || profil.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
+                </View>
+
+                <View style={stiller.kimlikBilgi}>
+                  <Text style={stiller.ad} numberOfLines={1}>
+                    {profil.ad}
+                  </Text>
+                  {/* @ ISARETI GERI GELDI (2026-09-10, referans
+                      gorselde var). 2026-09-03'te kaldirilmisti;
+                      kullanici referansla birlikte geri istedi. */}
+                  <Text style={stiller.kullaniciAdi} numberOfLines={1}>
+                    @{profil.kullaniciAdi}
+                  </Text>
+                  {profil.biyografi && (
+                    <Text style={stiller.biyografi} numberOfLines={2}>
+                      {profil.biyografi}
                     </Text>
-                  </View>
-                )}
-                {/* Rozet KOYU, turuncu degil: ekrandaki turuncu eylem
-                    canli check-in seridi. */}
-                <Pressable
-                  style={stiller.fotografRozeti}
-                  onPress={fotografDegistir}
-                  disabled={fotografYukleniyor}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('profil.fotografEkle')}
-                  hitSlop={8}
-                >
-                  <Svg width={14} height={14} viewBox="0 0 24 24">
-                    <Path
-                      d="M12 5v14M5 12h14"
-                      stroke="#FFFFFF"
-                      strokeWidth={2.6}
-                      strokeLinecap="round"
-                    />
-                  </Svg>
-                </Pressable>
+                  )}
+                </View>
               </View>
 
               {fotografYukleniyor && (
                 <Text style={stiller.fotografDurumu}>Yükleniyor…</Text>
               )}
 
-              {/* Ad ve biyografi AVATARIN HEMEN ALTINDA ve ortali
-                  (kullanicinin istegi 2026-08-27). Onceden sayilarin
-                  altinda ve sola dayaliydi. */}
-              <Text style={stiller.ad}>{profil.ad}</Text>
-              {profil.biyografi && <Text style={stiller.biyografi}>{profil.biyografi}</Text>}
+              {/* EYLEM SATIRI: genis "Profili düzenle" + kare paylas.
+              
+                  "Profili düzenle" 2026-09-03'te kullanicinin
+                  istegiyle KALDIRILMISTI ve giris ayarlara tasinmisti;
+                  2026-09-10'da referans gorselle geri geldi. Ayarlardaki
+                  satir DURUYOR - iki giris olmasi zarar vermiyor,
+                  kaldirmak ise o ekrani yine oksuz birakma riski
+                  tasiyordu. */}
+              <View style={stiller.eylemler}>
+                <Pressable
+                  style={({ pressed }) => [
+                    stiller.duzenleButonu,
+                    pressed && stiller.eylemBasili,
+                  ]}
+                  onPress={() => router.push('/profil/duzenle')}
+                  accessibilityRole="button"
+                  testID="profili-duzenle"
+                >
+                  <Text style={stiller.duzenleYazi}>{t('profil.duzenle')}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [
+                    stiller.paylasButonu,
+                    pressed && stiller.eylemBasili,
+                  ]}
+                  onPress={profiliPaylas}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('profil.paylas')}
+                  testID="profili-paylas"
+                >
+                  <PaylasIkonu />
+                </Pressable>
+              </View>
+            </View>
 
+            <View>
               {/* SAYAC SATIRI ortak bilesende (`ProfilSayaclari`):
                   baskasinin profili de ayni satiri kullaniyor
                   (kullanicinin istegi 2026-09-08). Iki kopya olsaydi
@@ -946,15 +1000,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.m,
     marginBottom: bosluk.m,
   },
+  /*
+   * @KULLANICIADI - artik UST CUBUKTA degil, ADIN ALTINDA
+   * (2026-09-10). Ikincil bir kimlik satiri oldugu icin `metinSoluk`:
+   * ad koyu ve kalin, kullanici adi onun altinda sessiz duruyor.
+   */
   kullaniciAdi: {
-    flexShrink: 1,
-    fontFamily: yazi.ekranBasligi,
-    // Iki kez kucultuldu (2026-08-27 ve 2026-08-29): baslik boyutunda
-    // sayfanin en agir ogesiydi ve profil fotografiyla yarisiyordu.
-    // Olcegin disina cikilmadi: 19 -> 15.
-    fontSize: olcek.govde,
-    color: renk.metin,
-    letterSpacing: -0.3,
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinSoluk,
+    marginTop: 1,
   },
 
   hata: {
@@ -983,23 +1038,63 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
    * doygun turuncu bandin icinde yalnizca "Profili duzenle" butonunda
    * kaldi - yani yeniden EYLEM oldu.
    */
+  /*
+   * KIMLIK KABI: harita dokusunun capasi.
+   *
+   * `position: relative` SART - doku mutlak konumlu ve bu kabin
+   * icinde kalmali; olmasaydi sayfanin tepesine yapisirdi.
+   */
+  kimlikKap: { position: 'relative' as const },
+  /*
+   * AVATAR SOLDA, BILGI SAGDA (kullanicinin karari 2026-09-10).
+   * Onceden dikey ve ortaliydi.
+   */
   kimlik: {
-    alignItems: 'center',
-    // Band KUCULDU (kullanicinin istegi 2026-08-29): ogeler arasi
-    // bosluk 16 -> 12, ust pay 24 -> 16, alt pay 16 -> 12.
-    gap: bosluk.m,
-    // Zemin YOK: sayfa zemini (beyaz) oldugu gibi gorunuyor.
-    marginHorizontal: -bosluk.xl,
-    paddingHorizontal: bosluk.sayfa,
-    paddingTop: bosluk.l,
-    paddingBottom: bosluk.m,
-    // Bandin altindaki bosluk DARALTILDI (kullanicinin istegi
-    // 2026-08-28): band ile "Anilar" arasinda genis bir beyaz aralik
-    // kaliyordu. Alt pay bolum basliginin kendi ust payiyla toplaniyor,
-    // bu yuzden buradan tamamen kaldirildi.
-    marginBottom: 0,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: bosluk.l,
+    paddingTop: bosluk.s,
+    paddingBottom: bosluk.l,
   },
-  avatarBasilir: { marginBottom: bosluk.xs },
+  /* `flex: 1` + `minWidth: 0`: uzun bir ad avatari sikistirmasin,
+     kendisi kirpilsin. */
+  kimlikBilgi: { flex: 1, minWidth: 0 },
+  avatarBasilir: { position: 'relative' as const },
+
+  /* EYLEM SATIRI: genis duzenle + kare paylas. */
+  eylemler: { flexDirection: 'row' as const, gap: bosluk.s },
+  duzenleButonu: {
+    flex: 1,
+    height: 46,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  duzenleYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  paylasButonu: {
+    width: 56,
+    height: 46,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  /* Basili hal: dolgu koyulasiyor. Opaklik dusurmek "yukleniyor" gibi
+     okunuyordu (2026-09-07 dersi). */
+  eylemBasili: { backgroundColor: renk.cizgi },
+
+  /* Ust cubuktaki sayfa adi. */
+  sayfaBasligi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.baslik,
+    color: renk.metin,
+    letterSpacing: -0.4,
+  },
 
   // Buyuk gorunum
   buyukZemin: {
@@ -1051,10 +1146,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: renk.rozetZemin,
+    /* ROZET TURUNCU (2026-09-10, referans gorsel). `rozetZemin`
+       jetonu acik modda KOYU idi - referansta turuncu ve kurala da
+       uyuyor: rozet bir EYLEM (fotograf degistir). */
+    backgroundColor: renk.turuncu,
     borderWidth: 2.5,
-    // Kenarlik bandin turuncusuna gore ayarliydi; band acilinca beyaza
-    // gecti - avatarin halkasiyla ayni.
+    // Beyaz halka avatarin uzerinde rozeti ayiriyor.
     borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1173,19 +1270,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   // Band artik ACIK: beyaz yazi okunmaz, metinler koyu tona gecti.
+  /* Yatay duzende metinler SOLA yasli; ortalamak avatarla arasindaki
+     bagi koparıyordu. */
   ad: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: renk.metin,
-    textAlign: 'center',
+    letterSpacing: -0.3,
   },
   biyografi: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 20,
     color: renk.metinIkincil,
-    textAlign: 'center',
-    marginTop: 2,
+    marginTop: 4,
   },
 
   // Canli serit: ekranin imza ogesi. Turuncu nokta "su an oluyor" der.

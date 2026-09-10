@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useDil } from '../../lib/dil'
-import { bosluk, olcek, yazi, type Renk } from './tema'
+import { bosluk, golge, olcek, yazi, yuvarlak, type Renk } from './tema'
 import { useStiller } from './tema-baglami'
 
 /**
@@ -11,8 +11,13 @@ import { useStiller } from './tema-baglami'
  * aynisinin kapali halini gormeli"). Ayni satirin iki kopyasi olsaydi
  * biri degistiginde oteki geride kalirdi.
  *
- * KUTU YOK (kullanicinin istegi 2026-09-08): kenarlik, zemin ve golge
- * kaldirildi; geriye ikon + sayi + etiket kaldi.
+ * KART ICINDE (kullanicinin karari 2026-09-10, referans gorselle).
+ * 2026-09-08'de kutular KALDIRILMISTI ("etrafindaki kare sutunu
+ * kaldir"); referans onlari geri getirdi - ama tek tek kutu degil,
+ * ucunu birden saran TEK kart ve aralarinda ince ayiricilar.
+ *
+ * Kenarlik ve golge SART: sayfa zemini de kart da beyaz, ayrimi renk
+ * tasiyamiyor (2026-08-27 kurali).
  *
  * SECIM RENKTE: secili olanin sayisi turuncu, etiketi koyu ve kalin.
  * Renk tek basina anlam tasimasin diye AGIRLIK da degisiyor. Etiket
@@ -52,7 +57,7 @@ export function ProfilSayaclari({
 
   return (
     <View style={stiller.satir}>
-      {kalemler.map((k) => {
+      {kalemler.map((k, sira) => {
         const acik = secili === k.anahtar
         return (
           <Pressable
@@ -65,6 +70,10 @@ export function ProfilSayaclari({
             accessibilityState={onSec ? { selected: acik } : undefined}
             accessibilityLabel={`${sayilar[k.anahtar]} ${k.etiket}`}
           >
+            {/* AYIRICI, kabin degil SAYACIN cocugu: `gap` ile
+                cizilseydi kenarlarda da bosluk kalirdi. Ilk sayacta
+                cizilmiyor. */}
+            {sira > 0 && <View style={stiller.ayirici} />}
             <Image source={IKONLAR[k.anahtar]} style={stiller.gorsel} resizeMode="contain" />
             <Text style={[stiller.sayi, acik && stiller.sayiSecili]}>{sayilar[k.anahtar]}</Text>
             <Text style={[stiller.etiket, acik && stiller.etiketSecili]}>{k.etiket}</Text>
@@ -77,14 +86,30 @@ export function ProfilSayaclari({
 
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
-    satir: { flexDirection: 'row', gap: bosluk.s, alignSelf: 'stretch' },
+    satir: {
+      flexDirection: 'row',
+      alignSelf: 'stretch',
+      backgroundColor: renk.yuzey,
+      borderRadius: yuvarlak.kart,
+      borderWidth: 1,
+      borderColor: renk.cizgi,
+      paddingVertical: bosluk.m,
+      ...golge.kart,
+    },
     sayac: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: bosluk.s,
       paddingHorizontal: bosluk.xs,
     },
-    gorsel: { width: 30, height: 27, marginBottom: 2 },
+    ayirici: {
+      position: 'absolute',
+      left: 0,
+      top: 4,
+      bottom: 4,
+      width: 1,
+      backgroundColor: renk.cizgi,
+    },
+    gorsel: { width: 30, height: 27, marginBottom: 3 },
     sayi: {
       fontFamily: yazi.ekranBasligi,
       fontSize: 20,

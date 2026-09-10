@@ -1225,6 +1225,64 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### PROFIL UST BLOGU REFERANSA GORE YENIDEN DUZENLENDI - 2026-09-10
+
+Kullanici bir referans gorsel gonderip "profil sayfasinin ust kismini
+boyle yap, ornek gorsel olustur once" dedi. Mockup
+`tasarim/profil-yeni-dizilim.html` + `.png`; onaydan SONRA kod yazildi.
+
+**DEGISENLER:**
+
+| Blok | Onceki | Simdi |
+|---|---|---|
+| Ust cubuk | kullanici adi + paylas + ayarlar | **"Profil"** basligi + ayarlar |
+| Kimlik | avatar ORTALI, bilgiler altinda | avatar **SOLDA**, bilgiler saginda |
+| Kullanici adi | ust cubukta, @'siz | **adin altinda, @ ile** |
+| Eylemler | yok (2026-09-03'te kaldirilmisti) | **"Profili düzenle" + kare paylas** |
+| Sayaclar | kutusuz, duz satir | **tek KART**, aralarinda ayirici |
+| Sekmeler | HAP + kayan buton | **ALT CIZGI** + kayan cizgi |
+| Fotograf rozeti | acik modda koyu | **iki modda da turuncu** |
+| Arka plan | duz beyaz | ust blokta **isimsiz harita dokusu** |
+
+**UC ESKI KARAR BILINCLI OLARAK GERI ALINDI** - kullanici referansla
+birlikte istedi:
+- "Profili düzenle / Paylaş butonlarini kaldir" (2026-09-03)
+- "@ isaretini kaldiralim" (2026-09-03)
+- "sayac kutularini kaldir" ve "hap sekilde kaymali sekme" (2026-09-08)
+
+Ayarlardaki "Profilini düzenle" satiri DURUYOR. Iki giris zarar
+vermiyor; kaldirmak o ekrani yine oksuz birakma riski tasiyordu (ayni
+tuzak 2026-09-03'te yasanmisti).
+
+**HARITA DOKUSU: YENI VERI CEKILMEDI.** `ProfilHaritaZemini` bileseni
+karsilama ekraninin `karsilama-harita.ts` dosyasini kullaniyor -
+Bursa/Nilufer'in gercek yol agi (9 ana + 24 orta + 141 ince yol, 49
+yesil alan), OSM'den bir kez cekilmis. **Hazir harita dosemesi
+KULLANILMADI** cunku onlarda sokak adlari gomulu geliyor ve kullanici
+"hicbiryerin ismi yazmayan" dedi; ayrica vektor cizim ag istegi
+yapmiyor.
+
+Doku `opacity: 0.18` ve yuksekligi `HARITA_YUKSEKLIGI = 152` -
+kullanicinin siniri: "profili duzenle yazisina kadar olsun yeter."
+**Avatar boyu ya da paylar degisirse o sabit de degismeli**, yoksa doku
+ya butonun altina tasar ya da erken biter.
+
+Renkler TEMADAN BAGIMSIZ: doku iki modda da acik bir harita gibi
+okunmali; temayla donen jetonlar koyu modda yollari beyaza cevirir ve
+doku bir agacik gibi gorunurdu.
+
+**SEKME BILESENININ ADI YANILTICI KALDI:** `SekmeHapi` artik hap degil
+alt cizgi, ama iki ekran onu bu adla cagiriyor ve yeniden adlandirma bu
+isin kapsami disindaydi. Dosyanin basindaki yorum durumu acikliyor.
+Kayma KORUNDU - yalnizca sekli degisti (dolu buton -> ince cizgi).
+
+**BES TEST IDDIASI TERSINE CEVRILDI, SILINMEDI:** "butonlar YOK" ->
+"VAR", "@ YOK" -> "@ VAR", rozet koyu -> turuncu. Iddialari silmek
+"bu hic test edilmedi" izlenimi birakirdi; tersine cevirmek eski
+davranis sessizce geri gelirse testi kiriyor.
+
+Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata.
+
 ### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
 
 Kullanicinin karari: "yakindaki mekanlar da 500 m mesafedeki yerler

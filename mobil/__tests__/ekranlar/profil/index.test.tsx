@@ -99,9 +99,9 @@ describe('ProfilEkrani', () => {
   it('kullanici adini, adi ve biyografiyi gosterir', async () => {
     await render(<ProfilEkrani />)
 
-    // Baslikta @ isareti VAR (kullanicinin istegi 2026-08-30). Bir gun
-    // once kaldirilmisti; yeni istek onun yerine gecti.
-    expect(await screen.findByText('orcun')).toBeTruthy()
+    // @ ISARETI GERI GELDI (2026-09-10, referans gorselle) ve artik
+    // ust cubukta degil ADIN ALTINDA duruyor.
+    expect(await screen.findByText('@orcun')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
     expect(screen.getByText('İzmir')).toBeTruthy()
   })
@@ -398,17 +398,25 @@ describe('ProfilEkrani', () => {
   // BANT SADELESTI, PAYLASMA IKONA GECTI (kullanicinin secimi 2026-09-03)
   // ---------------------------------------------------------------- //
 
-  it('bantta Profili duzenle / Paylas BUTONLARI YOK', async () => {
+  /*
+   * IDDIA TERSINE CEVRILDI, SILINMEDI (2026-09-10).
+   *
+   * "Profili düzenle" 2026-09-03'te kullanicinin istegiyle
+   * KALDIRILMISTI ve giris ayarlara tasinmisti; referans gorselle geri
+   * geldi. Paylas da ust cubuktan eylem satirindaki kare butona indi.
+   * Ayarlardaki "Profilini düzenle" satiri DURUYOR - iki giris zarar
+   * vermiyor, kaldirmak o ekrani yine oksuz birakma riski tasiyordu.
+   */
+  it('eylem satirinda Profili duzenle ve paylas butonu VAR', async () => {
     await render(<ProfilEkrani />)
     await screen.findByText('Orcun Ozdemir')
 
-    // Ikisi de kalkti: duzenleme ayarlara dondu, paylasma ust cubukta
-    // ikon oldu.
-    expect(screen.queryByText('Profili düzenle')).toBeNull()
-    expect(screen.queryByText('Paylaş')).toBeNull()
+    expect(screen.getByTestId('profili-duzenle')).toBeTruthy()
+    expect(screen.getByText('Profili düzenle')).toBeTruthy()
+    expect(screen.getByTestId('profili-paylas')).toBeTruthy()
   })
 
-  it('ust cubuktaki paylas ikonu profili paylasiyor', async () => {
+  it('eylem satirindaki paylas butonu profili paylasiyor', async () => {
     const paylas = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never)
     await render(<ProfilEkrani />)
     await screen.findByText('Orcun Ozdemir')
@@ -419,23 +427,28 @@ describe('ProfilEkrani', () => {
     paylas.mockRestore()
   })
 
-  it('kullanici adinda @ ISARETI YOK', async () => {
+  /*
+   * IDDIA TERSINE CEVRILDI, SILINMEDI. 2026-09-03'te @ kaldirilmisti
+   * ("uygulamanin geri kalani zaten @'siz gosteriyor"); 2026-09-10'da
+   * kullanicinin gonderdigi referansta @ var ve geri kondu.
+   */
+  it('kullanici adi @ ISARETIYLE, adin altinda', async () => {
     await render(<ProfilEkrani />)
 
-    // Kullanicinin karari 2026-09-03. Uygulamanin geri kalani (akis
-    // kartlari, arama) zaten @'siz gosteriyordu.
-    expect(await screen.findByText('orcun')).toBeTruthy()
-    expect(screen.queryByText('@orcun')).toBeNull()
+    expect(await screen.findByText('@orcun')).toBeTruthy()
   })
 
-  it('fotograf rozeti KOYU MODDA TURUNCU, acik modda koyu', async () => {
-    // Kullanicinin istegi 2026-09-03: koyu modda "+" turuncuya donsun.
-    // Palet karsilastirmasi: ekran testinde sema degistirilemedigi icin
-    // iddia jetonun kendisine.
-    expect(acikRenk.rozetZemin).toBe('#17130F')
-    // Rozet bir DOLGU, yani dolgu turuncusunu takip ediyor. Deger
-    // 2026-09-07'de #FE7813'ten #F66A01'e indi (bkz. tema.ts).
-    expect(koyuRenk.rozetZemin).toBe(koyuRenk.turuncu)
+  /*
+   * FOTOGRAF ROZETI ARTIK IKI MODDA DA TURUNCU (2026-09-10, referans
+   * gorsel). Onceden acik modda KOYU idi (`rozetZemin`); referansta
+   * turuncu ve kurala da uyuyor - rozet bir EYLEM (fotograf degistir).
+   *
+   * `rozetZemin` jetonu SILINMEDI: baska bir yerde gerekirse duruyor,
+   * yalnizca profil rozeti onu kullanmiyor.
+   */
+  it('fotograf rozeti IKI MODDA DA turuncu', async () => {
+    expect(acikRenk.turuncu).toBe('#FE7813')
+    expect(koyuRenk.turuncu).toBe(acikRenk.turuncu)
   })
 })
 
