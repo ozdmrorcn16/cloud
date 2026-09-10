@@ -708,4 +708,47 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.getByText('En sık')).toBeTruthy()
     expect(screen.queryByTestId('profil-kilitli')).toBeNull()
   })
+  /*
+   * "EN SIK" BASKASININ PROFILINDE ILK BESLE SINIRLI (kullanicinin
+   * karari 2026-09-10: "baskasi baskasinin profiline baktiginda en sik
+   * ilk 5'i gorebilsin sadece").
+   *
+   * Kendi profil ekraninda boyle bir sinir YOK - orasi kisinin kendi
+   * gecmisi. Buradaki liste bir TANITIM: "bu kisi genelde nereye
+   * gidiyor" sorusunu cevapliyor, tam bir ziyaret dokumu vermiyor.
+   */
+  it('EN SIK listesinde en fazla BES yer gorunuyor', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+    })
+    // Yedi FARKLI mekan; en cok gidilen ustte olacak sekilde azalan
+    // sayida ani uretiliyor.
+    const anilar: unknown[] = []
+    for (let m = 0; m < 7; m += 1) {
+      for (let k = 0; k < 7 - m; k += 1) {
+        anilar.push({
+          id: `ani-${m}-${k}`,
+          mekanId: `mekan-${m}`,
+          mekanAdi: `Mekan ${m}`,
+          mekanSemti: 'Nilüfer',
+          olusturuldu: new Date().toISOString(),
+          notMetni: null,
+          fotograf: null,
+        })
+      }
+    }
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('En sık'))
+
+    // Ilk bes: en cok gidilenden az gidilene.
+    for (let m = 0; m < 5; m += 1) {
+      expect(await screen.findByText(`Mekan ${m}`)).toBeTruthy()
+    }
+    // Altinci ve yedinci KESILIYOR.
+    expect(screen.queryByText('Mekan 5')).toBeNull()
+    expect(screen.queryByText('Mekan 6')).toBeNull()
+  })
 })

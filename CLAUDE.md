@@ -1225,6 +1225,25 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### "EN SIK" BASKASININ PROFILINDE ILK BES - 2026-09-10
+
+Kullanicinin karari: "baskasi baskasinin profiline baktiginda en sik
+ilk 5'i gorebilsin sadece."
+
+**KENDI profilinde sinir YOK** - orasi kisinin kendi gecmisi.
+Baskasinin profilindeki liste ise bir TANITIM: "bu kisi genelde nereye
+gidiyor" sorusunu bes satirda cevapliyor, tam bir ziyaret dokumu
+vermiyor.
+
+**SINIR ISTEMCIDE ve bu bir GIZLILIK SINIRI DEGIL.** Anilarin gercek
+korumasi `check_inler` RLS'inde ve o zaten devrede; ekrana gelen
+kayitlarin hepsi zaten gorulmesine izin verilmis kayitlar. Sunucuya
+ayri bir sinir koymak ayni veriyi iki kez kisitlamak olurdu.
+
+Sabit `EN_SIK_GORUNEN = 5`, liste `slice` ile kesiliyor. Test yedi
+farkli mekan uretip ilk besin gorundugunu, altinci ve yedincinin
+kesildigini olcuyor.
+
 ### UC DUZELTME - 2026-09-10 (ikinci tur)
 
 **1. BOLUM BASLIGI KARTLARLA HIZALANDI.** Kullanicinin bildirdigi

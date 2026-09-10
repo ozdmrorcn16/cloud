@@ -49,6 +49,15 @@ function GeriIkonu() {
  * bildirimi, pasif bir suesleme degil - kullanicinin neden bos bir
  * liste gordugunu anlatan tek isaret.
  */
+/**
+ * Baskasinin profilinde "En sik" listesinde gosterilen yer sayisi.
+ *
+ * Bes, kisinin aliskanligini anlatmaya yetiyor ama tam bir ziyaret
+ * dokumu vermiyor - iki sey arasindaki dogru denge kullanicinin karari
+ * (2026-09-10). KENDI profilinde boyle bir sinir YOK.
+ */
+const EN_SIK_GORUNEN = 5
+
 function KilitIkonu() {
   const renk = useRenk()
   return (
@@ -257,8 +266,23 @@ export default function KullaniciProfiliEkrani() {
     bagDurum?.sohbet === 'kabul' ||
     bagDurum?.gelenSohbet === 'kabul'
 
-  // "En sik" gorunumu: ayni anilardan gruplaniyor, sunucuda yeni bir
-  // sorgu yok. Kendi profil ekranindaki desenin aynisi.
+  /**
+   * "En sik" gorunumu: ayni anilardan gruplaniyor, sunucuda yeni bir
+   * sorgu yok. Kendi profil ekranindaki desenin aynisi.
+   *
+   * BASKASININ PROFILINDE YALNIZCA ILK BES (kullanicinin karari
+   * 2026-09-10: "baskasi baskasinin profiline baktiginda en sik ilk
+   * 5'i gorebilsin sadece").
+   *
+   * Kendi profil ekraninda sinir YOK - orasi kisinin kendi gecmisi.
+   * Buradaki liste ise bir TANITIM: "bu kisi genelde nereye gidiyor"
+   * sorusunu bes satirda cevapliyor, tam bir ziyaret dokumu vermiyor.
+   *
+   * SINIR ISTEMCIDE ve bu bir GIZLILIK SINIRI DEGIL - anilarin gercek
+   * korumasi `check_inler` RLS'inde ve o zaten devrede; buraya gelen
+   * kayitlarin hepsi zaten gorulmesine izin verilmis kayitlar. Sunucuya
+   * ayri bir sinir koymak, ayni veriyi iki kez kisitlamak olurdu.
+   */
   const yerler = (() => {
     const sayac = new Map<string, { ad: string; semt: string | null; adet: number }>()
     anilar.forEach((a) => {
@@ -269,6 +293,7 @@ export default function KullaniciProfiliEkrani() {
     return [...sayac.entries()]
       .map(([mekanId, v]) => ({ mekanId, ...v }))
       .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
+      .slice(0, EN_SIK_GORUNEN)
   })()
 
   /**
