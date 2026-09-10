@@ -42,3 +42,12 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+
+- **2026-09-10** — VPN projesinin iskeleti `claude/vpn` dalinda kuruldu:
+  Supabase semasi + RLS, `issue-config` Edge Function'i ve VPS icin
+  `kur.sh` / `istemci-ekle.sh` / `esitle.sh`. Android tarafinda yalnizca
+  Gradle katmani var; kaldigi yer `vpn/android/DURUM.md` icinde yazili.
+  Oturum, kullanicinin kendi bilgisayarinda "vpn projesi" adiyla acilan
+  oturumdan devam edilmesi icin burada durduruldu.
+- **2026-09-10** — Supabase'de ayri `vpn` projesi acilmadi: ikinci proje
+  aylik 10$. Kullanici onaylamadi, hicbir ucret olusmadi.

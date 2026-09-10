@@ -23,15 +23,28 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - Kalici bir karar alindiginda (teknoloji secimi, kapsam, isim, mimari) bu
   dosyayi veya konusma gunlugunu guncelle ve commit'le.
 - Konteyner gecicidir: push edilmeyen hicbir sey kalmaz. Onemli her seyi
-  `claude/jolly-fermi-pthav7` dalina push et.
+  calisma dalina push et (VPN calismasi icin `claude/vpn`).
 - Kullaniciyla Turkce konus.
 
 ## Proje durumu
 
 - **Depo:** `ozdmrorcn16/cloud`
-- **Calisma dali:** `claude/jolly-fermi-pthav7`
-- **Asama:** Fikir netlesti, gelistirme basliyor. Uygulama kodu `vpn/`
-  klasorunde, ayri bir oturumda gelistirilecek.
+- **Hafiza dali:** `claude/jolly-fermi-pthav7`
+- **VPN calisma dali:** `claude/vpn`
+- **Asama:** Iskelet kuruldu. Arka uc ve sunucu tarafi hazir; Android
+  tarafinin yalnizca Gradle katmani var.
+
+### `vpn/` klasorunun durumu
+
+| Bolum | Durum |
+|---|---|
+| `vpn/README.md` | Hazir — mimari, akis, klasor yapisi |
+| `vpn/supabase/migrations/` | Hazir — `profiles`, `subscriptions`, `servers`, `peers` + RLS |
+| `vpn/supabase/functions/issue-config/` | Hazir — WireGuard yapilandirmasi ureten Edge Function |
+| `vpn/sunucu/` | Hazir — `kur.sh`, `istemci-ekle.sh`, `esitle.sh` |
+| `vpn/android/` | **Yarim** — sadece Gradle iskeleti. Devami: `vpn/android/DURUM.md` |
+
+Hicbiri uzak bir Supabase projesine uygulanmadi; hepsi repoda duruyor.
 
 ## Uygulama fikri
 
@@ -60,6 +73,20 @@ sunucumuzdan gecirir.
 
 ## Kararlar
 
+- 2026-09-10 — Supabase'de ayri bir `vpn` projesi **acilmadi**. `uygulama`
+  organizasyonunda ikinci proje aylik 10$ cikiyor (`konum-sosyal` ucretsiz
+  kotayi kullaniyor). Kullanici "simdilik olusturma" dedi. SQL ve Edge
+  Function repoda hazir; ucretsiz bir proje acildiginda
+  `supabase link` + `db push` + `functions deploy` ile uygulanacak.
+- 2026-09-10 — Android tarafinda Supabase Kotlin SDK yerine OkHttp +
+  kotlinx.serialization ile dogrudan REST kullanilacak (SDK'nin modul
+  adlari surumler arasi degisiyor, REST uclari sabit).
+- 2026-09-10 — Kendi `VpnService` sinifimiz yazilmayacak;
+  `com.wireguard.android:tunnel` kutuphanesi `GoBackend$VpnService`'i zaten
+  tanimliyor. Uygulama `VpnService.prepare()` izin akisini ve
+  `GoBackend.setState(...)` cagrisini yazacak.
+- 2026-09-10 — Istemcinin ozel anahtari hicbir asamada sunucuya gitmez;
+  cihazda uretilir, `EncryptedSharedPreferences` icinde saklanir.
 - 2026-09-10 — Uygulama fikri VPN olarak netlesti (ayrintilar yukarida).
 - 2026-09-10 — Ayri GitHub deposu acilamadi (entegrasyon yetkisi yok). Kod
   bu depoda `vpn/` klasorunde gelistirilecek; kullanici ayri depo
