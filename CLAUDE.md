@@ -1281,7 +1281,31 @@ Kayma KORUNDU - yalnizca sekli degisti (dolu buton -> ince cizgi).
 "bu hic test edilmedi" izlenimi birakirdi; tersine cevirmek eski
 davranis sessizce geri gelirse testi kiriyor.
 
-Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata.
+**CANLI OLCUM BIR HATA YAKALADI - harita dokusu KOYU MODDA PARLIYORDU.**
+Ilk yazimda renkler SABITTI ve gerekce "harita her modda acik gorunsun"
+diye yazilmisti. Ekran goruntusu tersini gosterdi: acik gri yollar siyah
+zeminde beyaz gibi parliyordu. Dogru olcut sabit renk degil, ZEMINE
+GORE HAFIF kalmak. Dort yeni jeton eklendi (`haritaYolInce/Orta/Ana`,
+`haritaYesil`) ve iki palette ayri degerler tasiyorlar.
+
+**DERS: "temadan bagimsiz olsun" karari her doku icin dogru degil.**
+Harita ETIKETLERINDE dogruydu (2026-09-10) cunku Apple Haritalar iki
+modda da acik zemin veriyor; ama bu doku UYGULAMANIN kendi zemininin
+uzerinde duruyor ve o zemin temayla donuyor.
+
+**HARITA TAMAMEN DEKORATIF** (kullanicinin teyidi): `pointerEvents="none"`,
+dokunma almiyor, hicbir islevi yok - yalnizca arka plan dokusu.
+
+**JEST GENEL TIMEOUT'U 20 SN'YE CIKARILDI** (`package.json` icindeki
+`jest.testTimeout`). Bugun DORT KEZ ayni sey yasandi: testler tek
+basina 3-5 sn suruyor, tam paket kosumunda makine yuklu oldugu icin 5
+sn'lik varsayilani asiyor ve KOD DEGISMEDIGI HALDE kiriliyorlar.
+Dosya dosya `jest.setTimeout` eklemek yerine tek yerden cozuldu;
+`harita/[mekanId].test.tsx` icindeki dosya bazli tekrar kaldirildi.
+
+Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata,
+canli ekran goruntusu IKI MODDA da alindi
+(`tasarim/profil-canli.png`, `profil-canli-light.png`).
 
 ### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
 

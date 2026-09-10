@@ -188,6 +188,22 @@ export const acikRenk = {
    */
   yuzerZemin: '#FFFFFFF0',
 
+  /**
+   * PROFIL UST BLOGUNDAKI HARITA DOKUSU.
+   *
+   * Uc yol kalinligi + yesil alan. Degerler TEMAYLA DONUYOR ve bu bir
+   * duzeltme: ilk yazimda "harita her modda acik gorunsun" diye sabit
+   * acik tonlar kullanildi, koyu modda doku siyah zeminde PARLADI ve
+   * ekran goruntusuyle yakalandi (2026-09-10).
+   *
+   * Dogru olcut sabit renk degil, ZEMINE GORE HAFIF kalmak: acik modda
+   * beyazdan bir tik koyu, koyu modda siyahtan bir tik acik.
+   */
+  haritaYolInce: '#E6DFD6',
+  haritaYolOrta: '#DED5C9',
+  haritaYolAna: '#D5C9BA',
+  haritaYesil: '#E9EFE4',
+
   /** Fotograf uzerindeki yazinin okunmasi icin karartma. */
   kapakKarartma: 'rgba(23, 19, 15, 0.45)',
   /** Cam (blur) rozet zemini - fotograf uzerinde. */
@@ -261,6 +277,12 @@ export const koyuRenk: Renk = {
   bandOrta: '#221A15',
 
   rozetZemin: '#FE7813',
+
+  /** Harita dokusu koyu modda KOYU tonlarda - bkz. acik paletteki not. */
+  haritaYolInce: '#221F1C',
+  haritaYolOrta: '#2A2622',
+  haritaYolAna: '#332E29',
+  haritaYesil: '#1B231A',
 
   /** Yuzer cubuk koyu modda da ayni saydamlikta - acik modla ayni gerekce. */
   yuzerZemin: '#1C1917F0',

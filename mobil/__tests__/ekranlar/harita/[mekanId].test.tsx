@@ -1,16 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react-native'
 
-/*
- * DOSYA GENELINDE ACIK TIMEOUT (20 sn).
- *
- * Bu ekranin testleri agir: her biri mekan bilgisini, istatistikleri,
- * liderligi, son check-inleri ve cevre listesini birden bekliyor. Tek
- * basina kosuldugunda ~4 sn suruyorlar - jest'in 5 sn varsayilanina
- * cok yakin - ve TAM PAKET kosumunda makine yuklu oldugu icin siniri
- * asiyorlar. Yani testler KIRIK DEGIL, YAVAS. Bir kez yasandi
- * (2026-09-10).
- */
-jest.setTimeout(20000)
 import { ActionSheetIOS, Linking } from 'react-native'
 import CheckInHaritasiEkrani from '../../../src/app/harita/[mekanId]'
 import { mekaniGetir, yakinMekanlariYogunlukIleGetir } from '../../../lib/mekan'

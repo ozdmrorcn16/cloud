@@ -1,6 +1,7 @@
 import { View, StyleSheet } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 import { ANA_YOLLAR, ORTA_YOLLAR, INCE_YOLLAR, YESIL_ALANLAR } from './karsilama-harita'
+import { useRenk } from './tema-baglami'
 
 /**
  * PROFIL UST BLOGUNUN ARKASINDAKI HARITA DOKUSU.
@@ -29,6 +30,7 @@ import { ANA_YOLLAR, ORTA_YOLLAR, INCE_YOLLAR, YESIL_ALANLAR } from './karsilama
  * "profili duzenle yazisina kadar olsun yeter" dedi.
  */
 export function ProfilHaritaZemini({ yukseklik }: { yukseklik: number }) {
+  const renk = useRenk()
   return (
     <View style={[stiller.kap, { height: yukseklik }]} pointerEvents="none">
       <Svg
@@ -38,16 +40,16 @@ export function ProfilHaritaZemini({ yukseklik }: { yukseklik: number }) {
         preserveAspectRatio="xMidYMid slice"
       >
         {YESIL_ALANLAR.map((d, i) => (
-          <Path key={`y${i}`} d={d} fill="#E9EFE4" />
+          <Path key={`y${i}`} d={d} fill={renk.haritaYesil} />
         ))}
         {INCE_YOLLAR.map((d, i) => (
-          <Path key={`i${i}`} d={d} stroke="#E6DFD6" strokeWidth={1.6} fill="none" />
+          <Path key={`i${i}`} d={d} stroke={renk.haritaYolInce} strokeWidth={1.6} fill="none" />
         ))}
         {ORTA_YOLLAR.map((d, i) => (
-          <Path key={`o${i}`} d={d} stroke="#DED5C9" strokeWidth={3.4} fill="none" />
+          <Path key={`o${i}`} d={d} stroke={renk.haritaYolOrta} strokeWidth={3.4} fill="none" />
         ))}
         {ANA_YOLLAR.map((d, i) => (
-          <Path key={`a${i}`} d={d} stroke="#D5C9BA" strokeWidth={6.5} fill="none" />
+          <Path key={`a${i}`} d={d} stroke={renk.haritaYolAna} strokeWidth={6.5} fill="none" />
         ))}
       </Svg>
     </View>
@@ -56,9 +58,12 @@ export function ProfilHaritaZemini({ yukseklik }: { yukseklik: number }) {
 
 const stiller = StyleSheet.create({
   /*
-   * TEMADAN BAGIMSIZ RENKLER ve bu bilincli: doku her iki modda da
-   * ACIK bir harita gibi okunmali. Temayla donen jetonlar koyu modda
-   * yollari beyaza cevirir ve doku bir agacik gibi gorunurdu.
+   * RENKLER TEMAYLA DONUYOR (`haritaYol*` jetonlari).
+   *
+   * ILK YAZIMDA SABITTILER ve bu bir HATAYDI: "harita her modda acik
+   * gorunsun" diye acik gri tonlar yazilmisti, koyu modda doku siyah
+   * zeminde PARLADI. Canli ekran goruntusuyle yakalandi (2026-09-10).
+   * Dogru olcut sabit renk degil, ZEMINE GORE HAFIF kalmak.
    *
    * Opaklik burada, cizgilerde degil: tek yerden ayarlanabilsin.
    */
