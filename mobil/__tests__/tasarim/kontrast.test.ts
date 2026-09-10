@@ -277,4 +277,54 @@ describe('kontrast: marka tonu', () => {
     // onceki deger (#EFEAE5) 1,20:1 veriyordu.
     expect(oran(acikRenk.cizgi, acikRenk.zemin)).toBeGreaterThan(1.3)
   })
+  // ---------------------------------------------------------------- //
+  // HARITA ETIKETLERI
+  //
+  // Bu kusur UC KEZ geri geldi (2026-09-08 koyu mod, 2026-09-09 beyaz
+  // yazi, 2026-09-10 "yine zor gorunuyor"). Sebep her seferinde ayniydi:
+  // renk GOZLE seciliyordu ve harita zemini olculmuyordu. Degerler artik
+  // burada kilitli.
+  // ---------------------------------------------------------------- //
+
+  describe('harita etiketi', () => {
+    /*
+     * Apple Haritalar'in ACIK zemini - 2026-09-10'da kullanicinin
+     * gonderdigi ekran goruntusundeki GERCEK pikseller. Harita iki
+     * modda da acik geliyor, bu yuzden degerler temadan bagimsiz.
+     */
+    const HARITA_ZEMINLERI = {
+      binaBloklari: '#EAE9E8',
+      bejZemin: '#F6F2E7',
+      yollar: '#FFFFFF',
+    }
+
+    // Bilesende sabit yazili degerler (`CanliHarita.native.tsx`).
+    const HAP = '#FFFFFF'
+    const HAP_YAZI = '#17130F'
+
+    it('etiket yazisi HAP uzerinde govde esigini geciyor', () => {
+      expect(oran(HAP_YAZI, HAP)).toBeGreaterThanOrEqual(4.5)
+    })
+
+    /*
+     * ASIL OLCUM BU: hap KALDIRILIRSA yazi hala okunur mu? Beyaz yazi
+     * bu zeminlerde 1,00-1,29 veriyordu - yani okunurlugu tamamen
+     * golge tasiyordu ve golge yumusak bir hale. Koyu yazi hapsiz bile
+     * 15:1 uzerinde.
+     */
+    it('etiket yazisi HAPSIZ da harita zeminlerinde okunuyor', () => {
+      for (const zemin of Object.values(HARITA_ZEMINLERI)) {
+        expect(oran(HAP_YAZI, zemin)).toBeGreaterThanOrEqual(4.5)
+      }
+    })
+
+    /*
+     * BEYAZ YAZI BIR DAHA KONMASIN. Olcum kaydi olarak duruyor: biri
+     * "haritada beyaz yazi" derse bu satir neden olmadigini gosterir.
+     */
+    it('OLCUM KAYDI: beyaz yazi harita zemininde okunmuyor', () => {
+      expect(oran('#FFFFFF', HARITA_ZEMINLERI.yollar)).toBe(1)
+      expect(oran('#FFFFFF', HARITA_ZEMINLERI.bejZemin)).toBeLessThan(1.2)
+    })
+  })
 })

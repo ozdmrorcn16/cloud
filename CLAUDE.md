@@ -1225,6 +1225,55 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### HARITA ETIKETLERI: BEYAZ HAP + KOYU YAZI - 2026-09-10
+
+Kullanicinin bildirdigi kusur: "haritada konumlarin isimleri yine zor
+gorunuyor, daha gorunur bir hale getir" - ardindan "ona gore rengini
+ayarla".
+
+**BU KUSUR UC KEZ GERI GELDI** (2026-09-08 koyu mod, 2026-09-09 beyaz
+yazi, 2026-09-10 "yine zor gorunuyor") ve sebep her seferinde AYNIYDI:
+renk GOZLE seciliyordu, harita zemini hic olcuIemedi.
+
+**BU KEZ OLCULDU** - kullanicinin gonderdigi ekran goruntusunun gercek
+pikselleri:
+
+    harita zemini        beyaz yazi   koyu yazi
+    bina bloklari        1,21         15,24
+    bej zemin            1,12         16,52
+    yollar (beyaz)       1,00         18,48
+
+Yani beyaz yazi harita zeminine karsi **PRATIKTE GORUNMEZ**;
+okunurlugu tamamen GOLGE tasiyordu ve golge yumusak bir hale, keskin
+bir kenar degil. 2026-09-09'daki "beyaz yap" istegi koyu bir harita
+varsayiyordu - ama **Apple Haritalar iki modda da ACIK zemin veriyor**.
+
+**COZUM IKI KATMANLI:** yazi KOYU (`#17130F`, 18:1) ve arkasinda
+NEREDEYSE OPAK BEYAZ HAP (`#FFFFFFF2`). Hap yalnizca kontrast icin
+degil - haritanin karmasik dokusundan (yol cizgileri, bina bloklari,
+sokak adlari) ayiriyor ve ust uste binen iki etiketin nerede bittigini
+gosteriyor. Hapin kendisi de hafif golgeli: beyaz yollarin uzerinde
+kenari kayboluyordu.
+
+**DEGERLER KARSILAMA SAHNESINDEN ALINDI** (`HARITA.hap` / `hapYazi`,
+ayni ikili). Ayni isi yapan iki yuzeyin iki farkli gorunusu olmasin.
+
+**TEMADAN BAGIMSIZ ve bu SART:** harita iki modda da acik, dolayisiyla
+temayla donen bir jeton koyu modda hapi siyaha yaziyi beyaza cevirir ve
+okunurluk yine kaybolurdu. `renk.metin` gibi jetonlar burada YANLIS.
+
+**KONTRAST PAKETINE UC IDDIA EKLENDI** (`__tests__/tasarim/kontrast.test.ts`,
+`harita etiketi` blogu): yazi hap uzerinde esigi geciyor, yazi HAPSIZ
+da harita zeminlerinde okunuyor, ve bir OLCUM KAYDI - beyaz yazinin
+beyaz yolda tam 1,00 verdigi sabitlendi. Sonuncusu "haritada beyaz
+yazi" fikri geri gelirse neden olmadigini gosteriyor.
+
+**DERS: harita gibi RESIM uzerindeki metinde renk gozle secilmez.**
+Zemin uygulamanin jetonlarindan gelmiyor, ucuncu tarafin cizdigi bir
+goruntuden geliyor; tek dogru yol o goruntunun pikselini olcmek.
+
+Dogrulama: jest 67 paket / 801 test, tsc uygulama kodunda 0 hata.
+
 ### MAGAZADAN INEN KULLANICI EN SON HALI GORECEK - 2026-09-10
 
 Kullanicinin karari: **"magazaya ciktiginda en sonki halini kullanici

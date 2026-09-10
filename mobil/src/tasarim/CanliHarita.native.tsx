@@ -474,47 +474,58 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   igneKutu: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   // Punto 9,5'ten 11'e cikinca ayni kutuda daha az harf siginiyor;
   // kirpilma artmasin diye kutu da genisledi.
-  igneEtiket: { maxWidth: 96 },
-  // MEKAN ADI TEMAYA BAGLI (kullanicinin bildirdigi kusur 2026-09-08:
-  // "koyu modda haritadaki gorunen yer isimleri beyaz renk olsun").
-  // Ad sabit koyu bir tondaydi; harita da koyu moda gecince yazi
-  // okunmaz oluyordu.
-  //
-  // Golge de temayla donuyor: yazinin TERSI renkte olmali, yoksa
-  // beyaz yazinin arkasindaki beyaz golge onu bulaniklastirir.
-  // `zemin + 'F2'` sekiz haneli hex, yani jetonun %95 opak hali.
   /**
-   * MEKAN ADI: BEYAZ VE KALIN, KOYU GOLGELI.
+   * MEKAN ADI BEYAZ HAPIN ICINDE, KOYU YAZIYLA.
    *
-   * Kullanicinin istegi (2026-09-09): "haritadaki konum isimlerini
-   * belirgin, anlasilir bir beyaz renk yap, biraz kalinlastirabilirsin
-   * de."
+   * Kullanicinin bildirdigi kusur (2026-09-10): "haritada konumlarin
+   * isimleri yine zor gorunuyor, daha gorunur bir hale getir" -
+   * ardindan "ona gore rengini ayarla".
    *
-   * ROLLER TERS CEVRILDI ve bu sart: onceden yazi KOYU, golge BEYAZDI
-   * (`renk.zemin + 'F2'`). Yaziyi beyaz yapip golgeyi oldugu gibi
-   * birakmak adi acik harita zemininde tamamen kaybederdi - golge her
-   * zaman yazinin TERSI olmali. Simdi golge koyu ve yariciapi genis,
-   * yani beyaz yazi hem acik hem koyu harita dokusunun uzerinde
-   * okunuyor.
+   * ONCEKI HAL BEYAZ YAZI + KOYU GOLGEYDI ve ekran goruntusundeki
+   * GERCEK PIKSELLER olcuIdue - sonuc carpiciydi:
    *
-   * TEMADAN BAGIMSIZ: harita zemini iki modda da acik (Apple Haritalar
-   * kendi paletini kullaniyor), dolayisiyla `renk.metin` gibi temayla
-   * donen bir jeton koyu modda beyaz olur ve golgesiyle birlikte
-   * okunmaz hale gelirdi. Ayni gerekce karsilama sahnesindeki harita
-   * haplarinda da var.
+   *     harita zemini       beyaz yazi   koyu yazi
+   *     bina bloklari       1,21         15,24
+   *     bej zemin           1,12         16,52
+   *     yollar (beyaz)      1,00         18,48
    *
-   * Punto 9,5 -> 11 ve satir yuksekligi buyudu: "biraz
-   * kalinlastirabilirsin" istegi agirligi zaten en kalin jetona
-   * (`govdeKalin`) baglıyor, geri kalan belirginlik puntodan geliyor.
+   * Yani beyaz yazi harita zeminine karsi PRATIKTE GORUNMEZ; okunurlugu
+   * tamamen golge tasiyordu ve golge yumusak bir hale, keskin bir kenar
+   * degil. 2026-09-09'daki "beyaz yap" istegi koyu bir harita
+   * varsayiyordu, ama Apple Haritalar iki modda da ACIK zemin veriyor.
+   *
+   * Cozum iki katmanli: yazi KOYU (18:1) ve arkasinda NEREDEYSE OPAK
+   * BEYAZ HAP. Hap yalnizca kontrast icin degil - haritanin karmasik
+   * dokusundan (yol cizgileri, bina bloklari, sokak adlari) ayiriyor ve
+   * ust uste binen iki etiketin hangisinin nerede bittigini gosteriyor.
+   *
+   * DEGERLER KARSILAMA SAHNESINDEN: orada da harita uzerindeki haplar
+   * `#FFFFFF` zemin + `#17130F` yazi (`HARITA.hap` / `hapYazi`). Ayni
+   * isi yapan iki yuzeyin iki farkli gorunusu olmasin.
+   *
+   * TEMADAN BAGIMSIZ ve bu SART: harita iki modda da acik, dolayisiyla
+   * temayla donen bir jeton koyu modda hapi siyaha, yaziyi beyaza
+   * cevirir ve okunurluk yine kaybolurdu.
    */
+  igneEtiket: {
+    maxWidth: 104,
+    backgroundColor: '#FFFFFFF2',
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    // Hapin kendisi de harita zemininden ayrilmali: beyaz yollarin
+    // uzerinde kenari kayboluyordu.
+    shadowColor: '#000000',
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
+  },
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 11,
     lineHeight: 14,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.85)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    color: '#17130F',
   },
   sakinIgne: {
     width: 12,
