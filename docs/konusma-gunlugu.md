@@ -30,6 +30,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-10 — [2026-09-10-a6f6d148.md](oturumlar/2026-09-10-a6f6d148.md) — vpn uygulaması kurmak ücretlimi kurulabilirmi
 - 2026-09-09 — [2026-09-09-a6f6d148.md](oturumlar/2026-09-09-a6f6d148.md) — vpn uygulaması kurmak ücretlimi kurulabilirmi
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
