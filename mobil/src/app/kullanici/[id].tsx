@@ -42,6 +42,35 @@ function GeriIkonu() {
   )
 }
 
+/**
+ * KAPALI PROFIL KILIDI.
+ *
+ * Ikon `renk.metinSoluk` degil `metinIkincil`: bu bir SEBEP
+ * bildirimi, pasif bir suesleme degil - kullanicinin neden bos bir
+ * liste gordugunu anlatan tek isaret.
+ */
+function KilitIkonu() {
+  const renk = useRenk()
+  return (
+    <Svg width={34} height={34} viewBox="0 0 24 24">
+      <Path
+        d="M7 10V7a5 5 0 0 1 10 0v3"
+        stroke={renk.metinIkincil}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path
+        d="M5 10h14v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"
+        stroke={renk.metinIkincil}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  )
+}
+
 function tarihiBicimlendir(zaman: string): string {
   const tarih = new Date(zaman)
   if (isNaN(tarih.getTime())) return ''
@@ -449,17 +478,35 @@ export default function KullaniciProfiliEkrani() {
           )}
         </View>
 
-        <SekmeHapi
-          sekmeler={[
-            { anahtar: 'anilar' as const, etiket: t('kullanici.anilar') },
-            { anahtar: 'yerler' as const, etiket: t('kullanici.enSik') },
-          ]}
-          secili={sekme}
-          onSec={setSekme}
-        />
+        {/* SEKME HAPI KAPALI PROFILDE CIZILMIYOR.
+        
+            Kullanicinin netlestirmesi (2026-09-10): "profili gizliyse
+            asagida kitli oldugunu gosteren bir ifade olucak; profili
+            herkese aciksa profili normalde nasil gorunuyorsa oyle
+            gorunecek."
+        
+            Onceden sekmeler kapali profilde de duruyordu: "Anılar" ve
+            "En sık" gorunuyor, basildiginda HICBIR SEY degismiyordu -
+            secim yapilabilir gorunen ama sonucu olmayan bir kontrol.
+            Secilecek bir sey yoksa secici de olmamali. */}
+        {!kapali && (
+          <SekmeHapi
+            sekmeler={[
+              { anahtar: 'anilar' as const, etiket: t('kullanici.anilar') },
+              { anahtar: 'yerler' as const, etiket: t('kullanici.enSik') },
+            ]}
+            secili={sekme}
+            onSec={setSekme}
+          />
+        )}
 
         {kapali ? (
-          <View style={stiller.bosAlan}>
+          <View style={stiller.bosAlan} testID="profil-kilitli">
+            {/* KILIT IKONU: "kapali" oldugunu tek bakista soyluyor.
+                Duz metin, listenin bos oldugu durumdan ayirt
+                edilemiyordu - ikisi de sayfanin ortasinda gri bir
+                cumleydi. */}
+            <KilitIkonu />
             <Text style={stiller.bosBaslik}>{t('kullanici.profilKapali')}</Text>
             <Text style={stiller.bosAciklama}>{t('kullanici.profilKapaliAciklama')}</Text>
           </View>
@@ -564,7 +611,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
   },
   // KAPALI PROFIL ve bos listeler icin yon veren blok.
-  bosAlan: { alignItems: 'center', paddingVertical: bosluk.xxl, gap: bosluk.xs },
+  // `gap.s`: ikon ile baslik arasi `xs` (4) ile fazla sikisikti.
+  bosAlan: { alignItems: 'center', paddingVertical: bosluk.xxl, gap: bosluk.s },
   bosBaslik: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,

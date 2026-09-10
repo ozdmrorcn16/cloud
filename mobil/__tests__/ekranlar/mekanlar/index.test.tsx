@@ -1264,4 +1264,36 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2))
     expect(yakinMekanlariYogunlukIleGetir).toHaveBeenCalledTimes(2)
   }, 20000)
+  /*
+   * BOLUM BASLIGI KARTLARLA AYNI HIZADA.
+   *
+   * Kullanicinin bildirdigi kusur (2026-09-10): "Yakınındaki Mekanlar
+   * yazisini sol basa hizala." Baslik KENDI yan payini koyuyordu ve o
+   * pay sayfanin payiyla TOPLANIYORDU - baslik 32 px iceride, arama
+   * kutusu ve kartlar 16 px'te.
+   *
+   * Ayni tuzak 2026-09-06'da da yasandi; `bosluk.sayfa` jetonu tam
+   * bunu bitirmek icin cikarilmisti. Bu test tekrarini yakalar.
+   */
+  it('bolum basligi KENDI yan payini koymuyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<MekanAramaEkrani />)
+
+    const baslik = await screen.findByText('Yakınındaki Mekanlar')
+    const stil = StyleSheet.flatten(baslik.props.style) as {
+      paddingHorizontal?: number
+      paddingLeft?: number
+      marginHorizontal?: number
+      marginLeft?: number
+    }
+
+    // Sayfa payi TEK YERDE (`icerik.paddingHorizontal`); baslikta
+    // hicbir yatay pay olmamali.
+    expect(stil.paddingHorizontal).toBeUndefined()
+    expect(stil.paddingLeft).toBeUndefined()
+    expect(stil.marginHorizontal).toBeUndefined()
+    expect(stil.marginLeft).toBeUndefined()
+  })
 })

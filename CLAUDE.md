@@ -1225,6 +1225,70 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### UC DUZELTME - 2026-09-10 (ikinci tur)
+
+**1. BOLUM BASLIGI KARTLARLA HIZALANDI.** Kullanicinin bildirdigi
+kusur: "Yakınındaki Mekanlar yazisini sol basa hizala." Baslik KENDI
+yan payini koyuyordu (`paddingHorizontal: bosluk.sayfa`) ve o pay
+sayfanin payiyla TOPLANIYORDU - baslik 32 px iceride, arama kutusu ve
+kartlar 16 px'teydi. Yani ekrandaki tek hizasiz oge oydu.
+
+**AYNI TUZAK IKINCI KEZ:** 2026-09-06'da yan pay her ogede ayri ayri
+veriliyordu ve `bosluk.sayfa` jetonu tam bunu bitirmek icin
+cikarilmisti; bu satir o temizlikten arta kalmis. Artik bir testle
+kilitli ("bolum basligi KENDI yan payini koymuyor").
+
+**2. ARAMADA KISI KENDINI DE GORUYOR** (migrasyon 20260910120000).
+Kullanicinin bildirdigi kusur: "aramaya kendi kullanici adimi
+yazdigimda kendi profilim cikmiyor, cikmasi gerek."
+
+`kisi_ara` icindeki `p.id <> auth.uid()` kosulu kaldirildi. O kosul
+"kendine arkadaslik istegi gonderemezsin" mantigindan geliyordu, ama
+arama bir EYLEM listesi degil bir BULMA yuzeyi. Kendi profiline
+dokununca ekran zaten `/profil`e yonlendiriyor (ayni gun eklendi), yani
+akis kendiliginden dogru.
+
+**`aramada_gorunsun` KENDIM ICIN UYGULANMIYOR:** o ayar BASKALARINA
+gorunmekle ilgili; uygulansaydi ayari kapatan kisi kendi profilini de
+bulamaz ve sebebini goremezdi. Siralamada kendim EN USTTE - kendi adini
+yazan kisi kendini ariyordur.
+
+**ESKI TEST IDDIASI KURALI HIC OLCMUYORMUS:** "arama kullanicinin
+kendisini sonuclara koymaz" diyordu ama B'nin adini arayip A'nin
+cikmadigina bakiyordu - A'nin adi eslesmedigi icin zaten cikmazdi.
+Dogru olcum A'nin KENDI adini aramasi; senaryo o sekilde yeniden
+yazildi.
+
+Canli dogrulandi (6/6): kendi adimla cikiyorum, en ustteyim, ismimle de
+cikiyorum, ayar KAPALIYKEN de kendimi goruyorum ama BASKASI beni
+gormuyor.
+
+**3. KAPALI PROFILDE SEKME SECICI CIZILMIYOR, KILIT IKONU GELDI.**
+Kullanicinin netlestirmesi: "arkadas olmadigim birinin profiline
+baktigimda profili gizliyse asagida kitli oldugunu gosteren bir ifade
+olucak; profili herkese aciksa normalde nasil gorunuyorsa oyle
+gorunecek."
+
+Onceden sekmeler ("Anılar" / "En sık") kapali profilde de duruyordu ve
+basildiginda HICBIR SEY degismiyordu - secilecek bir sey yokken secici
+gostermek bozuk bir kontrol sunuyordu. Ayrica kilit durumu duz bir
+metindi ve listenin BOS oldugu durumdan ayirt edilemiyordu; ikisi de
+sayfanin ortasinda gri bir cumleydi. Artik bir kilit ikonu var.
+
+ACIK profilde HICBIR SEY DEGISMEDI ve bu ayri bir testle kilitli -
+onsuz "sekmeyi herkese kapat" hali de yesil gecerdi. Eski iddia
+silinmedi, tersine cevrildi.
+
+**GORUNURLUK PAKETINDE 10 KIRIK DOGRULAMA VAR ve benim degisikliklerimle
+ILGISIZ.** Hepsi ETIKET ONAYI senaryolarinda (61-64) ve sebep
+2026-09-06'daki karar: etiket onayi artik bir AYAR ve varsayilan DIREK
+(onaysiz). Testler hala "her etiket onay bekler" davranisini oleuyor,
+yani o gunden beri kirikilar ve fark edilmemis. Arama senaryolari (14,
+15) TEMIZ gecti.
+
+Dogrulama: jest 67 paket / 804 test, tsc uygulama kodunda 0 hata,
+`kisi_ara` canli 6/6.
+
 ### HARITA ETIKETLERI: BEYAZ HAP + KOYU YAZI - 2026-09-10
 
 Kullanicinin bildirdigi kusur: "haritada konumlarin isimleri yine zor

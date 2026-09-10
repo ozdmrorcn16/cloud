@@ -600,9 +600,16 @@ describe('KullaniciProfiliEkrani duzen', () => {
     await render(<KullaniciProfiliEkrani />)
 
     expect(await screen.findByText('Bu profil kapalı')).toBeTruthy()
-    // Duzen AYNI: sayaclar ve sekme hapi yerinde duruyor.
+    // KIMLIK BLOGU AYNI kaliyor: sayaclar yerinde.
     expect(screen.getByLabelText('2 Arkadaş')).toBeTruthy()
-    expect(screen.getByText('En sık')).toBeTruthy()
+    /*
+     * SEKME HAPI ARTIK YOK (kullanicinin netlestirmesi 2026-09-10).
+     * Bu satir eskiden `getByText('En sık')` idi: sekmeler kapali
+     * profilde de duruyordu ve basildiginda hicbir sey degismiyordu.
+     * Iddia silinmedi, TERSINE cevrildi - sekmeler sessizce geri
+     * gelirse burasi kirilir.
+     */
+    expect(screen.queryByText('En sık')).toBeNull()
   })
 
   it('arkadaslik varsa kapali profil ACILIYOR', async () => {
@@ -660,5 +667,45 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     await waitFor(() => expect(baskasininProfiliniGetir).toHaveBeenCalledWith('kullanici-2'))
     expect(mockRouterReplace).not.toHaveBeenCalled()
+  })
+  /*
+   * KAPALI PROFILDE SEKME YOK (kullanicinin netlestirmesi 2026-09-10:
+   * "profili gizliyse asagida kitli oldugunu gosteren bir ifade
+   * olucak; profili herkese aciksa normalde nasil gorunuyorsa oyle
+   * gorunecek").
+   *
+   * Onceden sekmeler kapali profilde de duruyordu ve basildiginda
+   * hicbir sey degismiyordu - secilecek bir sey yokken secici
+   * gostermek kullaniciya bozuk bir kontrol sunuyordu.
+   */
+  it('KAPALI profilde sekme secici CIZILMIYOR', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByTestId('profil-kilitli')
+
+    expect(screen.queryByText('Anılar')).toBeNull()
+    expect(screen.queryByText('En sık')).toBeNull()
+  })
+
+  /*
+   * ACIK PROFILDE HICBIR SEY DEGISMEDI: sekmeler duruyor, liste
+   * normal. Bu test sart - onsuz "sekmeyi herkese kapat" hali de
+   * yesil gecerdi.
+   */
+  it('ACIK profilde sekme secici DURUYOR', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Anılar')
+
+    expect(screen.getByText('En sık')).toBeTruthy()
+    expect(screen.queryByTestId('profil-kilitli')).toBeNull()
   })
 })

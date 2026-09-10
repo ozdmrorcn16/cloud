@@ -1781,7 +1781,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
-    paddingHorizontal: bosluk.sayfa,
+    /*
+     * YAN PAY YOK - `icerik` onu ZATEN veriyor.
+     *
+     * Kullanicinin bildirdigi kusur (2026-09-10): "Yakınındaki
+     * Mekanlar yazisini sol basa hizala." Burada ayrica
+     * `paddingHorizontal: bosluk.sayfa` duruyordu ve sayfanin kendi
+     * payiyla TOPLANIYORDU: baslik 32 px iceride, arama kutusu ve
+     * kartlar 16 px'te - yani ekranda tek hizasiz oge oydu.
+     *
+     * Ayni tuzak 2026-09-06'da da yasanmisti: yan pay her ogede ayri
+     * ayri veriliyordu ve `bosluk.sayfa` jetonu tam bunu bitirmek icin
+     * cikarilmisti. Bu satir o temizlikten arta kalmis.
+     */
     marginTop: bosluk.xl,
     marginBottom: bosluk.xs,
   },

@@ -567,11 +567,28 @@ async function main() {
     const { data: kisa } = await a.rpc('kisi_ara', { p_metin: 'b' })
     esitMi((kisa ?? []).length, 0, 'tek karakterlik arama bos doner')
 
-    const { data: kendisi } = await a.rpc('kisi_ara', { p_metin: bAdi })
+    /*
+     * KISI KENDINI DE BULUR (kullanicinin bildirdigi kusur
+     * 2026-09-10: "aramaya kendi kullanici adimi yazdigimda kendi
+     * profilim cikmiyor, cikmasi gerek").
+     *
+     * ESKI IDDIA TERSINE CEVRILDI - ve o iddia zaten KURALI
+     * OLCMUYORDU: B'nin adini arayip A'nin cikmadigina bakiyordu,
+     * oysa A'nin adi eslesmedigi icin zaten cikmazdi. Dogru olcum
+     * A'nin KENDI adini aramasi.
+     */
+    const { data: aProfil } = await a.from('profiller').select('kullanici_adi').single()
+    const aAdi = (aProfil as { kullanici_adi: string }).kullanici_adi
+    const { data: kendisi } = await a.rpc('kisi_ara', { p_metin: aAdi })
     esitMi(
       ((kendisi ?? []) as { id: string }[]).some((s) => s.id === aId),
-      false,
-      'arama kullanicinin kendisini sonuclara koymaz'
+      true,
+      'kisi kendi kullanici adini arayinca KENDINI bulur'
+    )
+    esitMi(
+      ((kendisi ?? []) as { id: string }[])[0]?.id === aId,
+      true,
+      'kendisi sonuclarin EN USTUNDE'
     )
   })
 
