@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=vpn - Claude Code
+Comment=vpn projesini terminalde Claude Code ile acar
+Path=%h/Desktop/vpn
+Exec=bash -c 'cd "$HOME/Desktop/vpn" 2>/dev/null || { echo "Proje klasoru yok: ~/Desktop/vpn"; read; exit 1; }; claude'
+Terminal=true
+Icon=utilities-terminal
+Categories=Development;
