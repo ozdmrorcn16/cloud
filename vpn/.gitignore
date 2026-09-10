@@ -1,0 +1,21 @@
+# Android / Gradle
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/
+android/.idea/
+android/.cxx/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# Gizli degerler
+.env
+*.env
+!*.env.ornek

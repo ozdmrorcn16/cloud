@@ -1,0 +1,33 @@
+# Supabase CLI yapilandirmasi.
+#
+# project_id yalnizca yerel gelistirme (supabase start) icin bir etikettir.
+# Uzak projeye baglanmak icin: supabase link --project-ref <PROJE_REF>
+
+project_id = "vpn"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+# Android istemcisi e-posta + sifre ile giriyor.
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# Gelistirme sirasinda dogrulama e-postasi beklemeyelim.
+# Yayina cikmadan once TRUE yap.
+enable_confirmations = false
+
+[functions.issue-config]
+# JWT dogrulamasi ayrica fonksiyon icinde de yapiliyor; bu ilk savunma hatti.
+verify_jwt = true
