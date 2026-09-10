@@ -1225,6 +1225,31 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
+
+Kullanicinin karari: "yakindaki mekanlar da 500 m mesafedeki yerler
+gosterilsin, haritada da 500 m mesafe gosterilsin."
+
+`KESFET_YARICAP_METRE` 1000 -> **500**. Harita AYRI bir sayi tasimiyor:
+listeyle ayni kumeyi ciziyor, dolayisiyla tek sabit yetiyor.
+
+**GECMISI: 500 -> 200 (2026-08-31) -> 500 -> 1000 (2026-09-01) -> 500.**
+
+**ONCEKI 500 M DENEMESI NEDEN GERI ALINMISTI:** 2026-09-09'da yalnizca
+HARITAYA 500 m konmustu, liste 1 km kalmisti. Seyrek bir cevrede liste
+430/520/560 m'lik yerler gosterirken haritada TEK igne kaliyordu -
+ekranin iki yarisi birbirini tutmuyordu. Kullanici ertesi gun geri
+aldirdi ("sakin yerlerde cok bos kaliyor").
+
+**BU KEZ FARKLI:** ikisi birden 500 m, yani o tutarsizlik bastan
+olusmuyor.
+
+**OLCULDU** (Bursa/Nilufer): 1 km'de 1.764 mekan, 500 m'de **466**
+(Kafe 23 -> 6). Liste kisaliyor ama yakinlik vaadi guclesiyor.
+
+Bos durum metni de guncellendi: "Bu filtreyle 500 m içinde mekân yok."
+Test `toBe(1000)` yerine `toBe(500)` iddiasini tasiyor.
+
 ### KAYITLI ADRES ARTIK GOSTERILIYOR - 2026-09-10
 
 Kullanicinin karari. `mekanlar.adres` **2.311.583 kayitta (%39,6) dolu

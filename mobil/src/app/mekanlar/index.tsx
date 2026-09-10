@@ -605,18 +605,17 @@ export default function KesfetEkrani() {
   const sakinler = liste.filter(durumaUyan)
 
   /**
-   * HARITA LISTEYLE AYNI MEKANLARI GOSTERIYOR - 1 km.
+   * HARITA LISTEYLE AYNI MEKANLARI GOSTERIYOR - 500 m.
    *
-   * 2026-09-09'da haritaya 500 m'lik ayri bir sinir konmustu (1 km'lik
-   * kume 390 px'e sigmiyor, adlar ust uste biniyordu). Kullanici ERTESI
-   * GUN GERI ALDIRDI: "haritada yine 1 km mesafeye kadar gosterelim,
-   * boyle sakin yerlerde cok bos kaliyor."
+   * 2026-09-09'da haritaya AYRI bir 500 m siniri konmus ve ertesi gun
+   * geri alinmisti ("sakin yerlerde cok bos kaliyor"): o zaman LISTE
+   * 1 km'ydi, yani liste 430/520/560 m'lik yerler gosterirken haritada
+   * tek igne kaliyordu ve ekranin iki yarisi birbirini tutmuyordu.
    *
-   * Gerekce ekran goruntusuyle geldi ve haklıydi: seyrek bir cevrede
-   * liste 430 m, 520 m, 560 m'lik yerler gosterirken haritada TEK igne
-   * kaliyordu. Yani sinir, kalabalik cevredeki cakismayi cozerken
-   * seyrek cevrede haritayi ise yaramaz hale getiriyordu - ve iki yarim
-   * ekran birbirini tutmuyordu.
+   * 2026-09-10'da kullanici IKISINI BIRDEN 500 m'ye cekti ("yakindaki
+   * mekanlar da 500 m mesafedeki yerler gosterilsin, haritada da 500 m
+   * mesafe gosterilsin"). Tutarsizlik artik bastan olusmuyor - tek
+   * sayi var ve harita listenin aynisini ciziyor.
    *
    * Cakisma sorunu ayri bir yoldan hafifledi: etiketler ayni gun beyaz
    * ve golgeli yapildi, yani ust uste binseler bile okunuyorlar.
@@ -1121,7 +1120,7 @@ export default function KesfetEkrani() {
         /* BOS DURUM SEBEBINI SOYLUYOR. Uc ayri sebep var ve tek bir
            metin ucunu de aciklayamiyordu:
              - arama yaptin, o ilde eslesen yok
-             - suzgec sectin, 1 km'de o turden yok
+             - suzgec sectin, 500 m'de o turden yok
              - hicbiri, cevrede mekan yok
            Ucuncusu ayrica bir ihtimal daha tasiyor: konum hicbir il
            sinirinin icinde degilse arama SONUC DONDURMUYOR
@@ -1131,7 +1130,7 @@ export default function KesfetEkrani() {
           {arama.trim()
             ? `"${arama.trim()}" için bu ilde sonuç yok.`
             : seciliTurler.length > 0
-              ? 'Bu filtreyle 1 km içinde mekân yok.'
+              ? 'Bu filtreyle 500 m içinde mekân yok.'
               : 'Yakınında mekân yok.'}
         </Text>
       ) : (

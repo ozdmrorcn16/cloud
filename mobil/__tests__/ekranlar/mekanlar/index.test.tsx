@@ -851,8 +851,18 @@ describe('MekanAramaEkrani', () => {
     )
   })
 
-  it('kesfet listesi yaricapi 1 km', () => {
-    expect(KESFET_YARICAP_METRE).toBe(1000)
+  /*
+   * YARICAP 500 M - LISTE VE HARITA AYNI (kullanicinin karari
+   * 2026-09-10: "yakindaki mekanlar da 500 m mesafedeki yerler
+   * gosterilsin, haritada da 500 m mesafe gosterilsin").
+   *
+   * Gecmisi: 500 -> 200 -> 500 -> 1000 -> 500. Harita icin AYRI bir
+   * 500 m siniri ayni gun denenmis ve geri alinmisti; o zaman liste
+   * 1 km'ydi ve ekranin iki yarisi birbirini tutmuyordu. Artik tek
+   * sayi var.
+   */
+  it('kesfet yaricapi 500 m: liste ve harita ayni', () => {
+    expect(KESFET_YARICAP_METRE).toBe(500)
   })
 
 

@@ -327,10 +327,19 @@ export async function yakinMekanlariYogunlukIleGetir(
  * ARAMADA UYGULANMAZ: arama butun veritabanini kapsamali, kullanici
  * baska sehirdeki bir mekani arayabilir.
  *
- * Gecmisi: 500 -> 200 (2026-08-31) -> 500 -> **1000** (2026-09-01).
- * Son karar kullanicinin: "Liste 500 m sinirini kaldiralim, 1 km olarak
- * guncelleyelim; en yakindan uzaga siralama kurali devam, her zaman
- * bulundugum konuma gore."
+ * Gecmisi: 500 -> 200 (2026-08-31) -> 500 -> 1000 (2026-09-01) ->
+ * **500** (2026-09-10). Son karar kullanicinin: "yakindaki mekanlar da
+ * 500 m mesafedeki yerler gosterilsin, haritada da 500 m mesafe
+ * gosterilsin."
+ *
+ * HARITA AYRI BIR SAYI TASIMIYOR: ayni gun harita icin 500 m'lik ayri
+ * bir sinir denenmis ve GERI ALINMISTI ("sakin yerlerde cok bos
+ * kaliyor") - o zaman liste 1 km'ydi ve iki yari birbirini tutmuyordu.
+ * Simdi ikisi de 500 m, yani harita listenin aynisini ciziyor ve o
+ * tutarsizlik bastan olusmuyor.
+ *
+ * OLCULDU (Bursa/Nilufer): 1 km'de 1.764 mekan, 500 m'de 466 (Kafe
+ * 23 -> 6). Liste kisaliyor ama yakinlik vaadi guclesiyor.
  *
  * SINIR KESIN: yaricap icinde sonuc cikmazsa ekran ESKIDEN sinirsiz
  * ikinci bir istek atiyordu ve liste siniri asan mekanlar gosteriyordu
@@ -338,7 +347,7 @@ export async function yakinMekanlariYogunlukIleGetir(
  * m kayitlar vardi). O kacis yolu KALDIRILDI; cevrede mekan yoksa liste
  * bos kalir.
  */
-export const KESFET_YARICAP_METRE = 1000
+export const KESFET_YARICAP_METRE = 500
 
 /**
  * Kesfet listesinin SAYFA BOYU - tavan degil.
