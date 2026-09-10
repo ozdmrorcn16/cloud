@@ -1303,8 +1303,10 @@ alanlari BOS. Yani bosluk doldurulamaz, ilce gercekten yok.
 Ayrica FSQ'nun `region` alani kirli: il yerine ilce yaziyor
 ("Aliaga/Aliaga", "Cukurova/cukurova").
 
-**ACIK KALAN, DAHA KUCUK IS:** `postcode` ham veride %36,3 dolu,
-yapisal ve `mekanlar` tablosuna hic aktarilmamis.
+**POSTA KODU ISTENMIYOR - KAPANDI.** `postcode` ham veride %36,3 dolu
+ve `mekanlar` tablosuna hic aktarilmadi; aktarilmasi bir is kalemi
+olarak onerildi ve kullanici REDDETTI (2026-09-10: "posta koduna gerek
+yok"). Tekrar onerme.
 
 **TEST TUZAGI - kayda geciyor:** mekan sayfasi testleri jest'in 5 sn
 varsayilanina cok yakin (tek basina ~4 sn) cunku her biri mekan
