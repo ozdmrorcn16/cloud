@@ -30,7 +30,7 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 - **Depo:** `ozdmrorcn16/cloud`
 - **Calisma dali:** `claude/jolly-fermi-pthav7`
-- **Asama:** Fikir netlesti, gelistirme basliyor. Uygulama kodu `vpn-uygulamasi/`
+- **Asama:** Fikir netlesti, gelistirme basliyor. Uygulama kodu `vpn/`
   klasorunde, ayri bir oturumda gelistirilecek.
 
 ## Uygulama fikri
@@ -62,8 +62,9 @@ sunucumuzdan gecirir.
 
 - 2026-09-10 — Uygulama fikri VPN olarak netlesti (ayrintilar yukarida).
 - 2026-09-10 — Ayri GitHub deposu acilamadi (entegrasyon yetkisi yok). Kod
-  bu depoda `vpn-uygulamasi/` klasorunde gelistirilecek; kullanici ayri depo
+  bu depoda `vpn/` klasorunde gelistirilecek; kullanici ayri depo
   isterse GitHub'da kendisi acacak.
+- 2026-09-10 — Proje adi `vpn`. Gelistirme oturumu Opus 5 ile calisacak.
 
 - 2026-08-09 — Butun konusmalar repoya otomatik kaydedilecek; hafiza katmani
   olarak `CLAUDE.md` + `docs/konusma-gunlugu.md` + otomatik oturum dokumleri
