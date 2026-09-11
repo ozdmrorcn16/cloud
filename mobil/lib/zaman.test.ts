@@ -1,4 +1,4 @@
-import { gorecelZaman, suAnBuradaMi, tamZaman, goreceZamanGosterilir, saatYazisi } from './zaman'
+import { gorecelZaman, suAnBuradaMi, tamZaman, saatYazisi } from './zaman'
 
 const DAKIKA = 60 * 1000
 const SAAT = 60 * DAKIKA
@@ -68,20 +68,6 @@ describe('tamZaman', () => {
   it('gun.ay.yil saat:dakika bicimini verir', () => {
     // Yerel saat dilimine gore uretiliyor; bicim dogrulaniyor.
     expect(tamZaman(new Date(2026, 7, 27, 9, 5).toISOString())).toBe('27.08.2026 09:05')
-  })
-})
-
-describe('goreceZamanGosterilir', () => {
-  it('bir saate kadar gorece zaman gosterilir', () => {
-    expect(goreceZamanGosterilir(oncesi(35 * DAKIKA))).toBe(true)
-    expect(goreceZamanGosterilir(oncesi(SAAT - DAKIKA))).toBe(true)
-  })
-
-  it('bir saati GECINCE gorece zaman kalkar, geriye saat kalir', () => {
-    // Kullanicinin karari: "1 saat sonrasinda ibare kalkicak sadece
-    // tarih saat bilgileri kalmaya devam edicek".
-    expect(goreceZamanGosterilir(oncesi(SAAT + DAKIKA))).toBe(false)
-    expect(goreceZamanGosterilir(oncesi(5 * SAAT))).toBe(false)
   })
 })
 

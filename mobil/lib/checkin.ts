@@ -100,16 +100,6 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
 }
 
-export async function mekanAnilariniGetir(mekanId: string): Promise<CheckInGorunumu[]> {
-  const { data, error } = await supabase
-    .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
-    .is('konum', null)
-    .eq('mekan_id', mekanId)
-  if (error) throw new Error(hataMetni(error))
-  return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
-}
-
 export type AniGorunumu = CheckIn & {
   mekanAdi: string
   /** Mekanin semti; bilinmiyorsa null. */

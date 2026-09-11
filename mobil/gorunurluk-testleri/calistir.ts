@@ -3106,10 +3106,21 @@ async function main() {
   // (bkz. docs/plan2-takip-isleri.md).
   // ---------------------------------------------------------------- //
 
-  await senaryo('63 - Etiket onay bekler, onaylanana kadar ucuncu kisi goremez', async () => {
-    // On kosul 1: A ile B karsilikli bagli olmali - etiketlemenin sarti.
-    // Senaryo 61 bu bagi kurup birakiyor, ama ona SESSIZCE guvenilmiyor:
-    // bag yoksa burada kuruluyor, boylece senaryo tek basina da kosar.
+  await senaryo('63 - Etiket onayi AYARA bagli; varsayilan DIREKT', async () => {
+    // 2026-09-06'DA KURAL DEGISTI ve bu senaryo 2026-09-11'de ona gore
+    // YENIDEN YAZILDI. Eski hali "HER etiket onay bekler" diyordu;
+    // kural artik bir AYAR (`profiller.etiket_onayi_gerekli`) ve
+    // VARSAYILAN DIREKT - karsilikli arkadasin seni onaysiz
+    // etiketliyor. Testler o gunden beri kirikti: paket kurali degil,
+    // artik var olmayan bir davranisi olcuyordu.
+    //
+    // DURUMU ISTEMCI DEGIL SUNUCU YAZIYOR: `etiket_durumu` adli BEFORE
+    // INSERT tetikleyicisi hedefin ayarina bakip `durum` alanini
+    // kendisi belirliyor ve istemciden geleni EZIYOR. Asagidaki iki
+    // bolum tam olarak bunu olcuyor - istemci degeri IKI YONDE de
+    // zorlamaya calisiyor ve ikisinde de basaramiyor. Tek yon test
+    // edilseydi tetikleyicinin degeri gercekten belirledigi degil,
+    // rastlantiyla ayni sonucu verdigi de dogru olabilirdi.
     let bag = await ikiYonTakipSatirlari(a, aId, bId)
     if (bag.length !== 2) {
       await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
@@ -3119,10 +3130,9 @@ async function main() {
     }
     esitMi(bag.length, 2, 'on kosul: A ile B karsilikli bagli')
 
-    // On kosul 2: C, A'nin check-in'ini GERCEKTEN gorebiliyor olmali.
-    // Bu satir olmadan asagidaki "C bekleyen etiketi goremez"
-    // dogrulamasi vakumda gecerdi - C zaten hicbir seyi goremiyor
-    // olabilirdi.
+    // On kosul: C, A'nin check-in'ini GERCEKTEN gorebiliyor olmali.
+    // Bu satir olmadan "C bekleyen etiketi goremez" dogrulamasi
+    // vakumda gecerdi - C zaten hicbir seyi goremiyor olabilirdi.
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
     t.checkInler.push({ istemci: a, id: aCi })
     const cCi = await checkInYap(c, mekan1, MEKAN_1.lat, MEKAN_1.lng)
@@ -3133,39 +3143,64 @@ async function main() {
       'on kosul: C, ayni mekanda A nin check-in ini goruyor'
     )
 
-    // Etiketleyen kendi etiketini onaylanmis yazamaz: durum kilidi
-    // insert politikasinda. Bu once deneniyor cunku birincil anahtar
-    // (check_in_id, kullanici_id) ayni cifti ikinci kez kabul etmiyor.
-    const { error: hazirOnayHatasi } = await a.from('check_in_etiketleri').insert({
-      check_in_id: aCi,
-      kullanici_id: bId,
-      durum: 'onaylandi',
-    })
-    esitMi(
-      hazirOnayHatasi !== null,
-      true,
-      'etiketleyen, etiketi dogrudan onaylanmis olarak yazamaz'
-    )
-
-    // Bagsiz kisi etiketlenemez: C ile A arasinda bag yok.
+    // Bu iki kural 2026-09-06'da DEGISMEDI - degisen yalnizca onayin
+    // gerekip gerekmedigi.
     const { error: bagsizHata } = await a.from('check_in_etiketleri').insert({
       check_in_id: aCi,
       kullanici_id: cId,
     })
     esitMi(bagsizHata !== null, true, 'bagli olmayan kisi etiketlenemez')
 
-    // Kendini etiketleme de kapali (kullanici_id <> auth.uid()).
     const { error: kendiHata } = await a.from('check_in_etiketleri').insert({
       check_in_id: aCi,
       kullanici_id: aId,
     })
     esitMi(kendiHata !== null, true, 'kisi kendini etiketleyemez')
 
-    // Asil yol: A, bagli oldugu B'yi etiketliyor.
+    // ---- BOLUM 1: AYAR KAPALI (varsayilan) ----
+    await b.from('profiller').update({ etiket_onayi_gerekli: false }).eq('id', bId)
+
+    const { error: direkHata } = await a
+      .from('check_in_etiketleri')
+      .insert({ check_in_id: aCi, kullanici_id: bId, durum: 'bekliyor' })
+    esitMi(direkHata, null, 'ayar kapaliyken arkadas etiketlenebiliyor')
+
+    const { data: direkDurum } = await a
+      .from('check_in_etiketleri')
+      .select('durum')
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+    esitMi(
+      ((direkDurum ?? []) as { durum: string }[]).map((r) => r.durum),
+      ['onaylandi'],
+      'ayar KAPALIYKEN etiket dogrudan onaylandi (istemcinin bekliyor degeri EZILDI)'
+    )
+
+    const { data: cDirek } = await c
+      .from('check_in_etiketleri')
+      .select('kullanici_id')
+      .eq('check_in_id', aCi)
+    esitMi(
+      ((cDirek ?? []) as { kullanici_id: string }[]).map((r) => r.kullanici_id),
+      [bId],
+      'ayar kapaliyken etiket ucuncu kisiye HEMEN gorunuyor'
+    )
+
+    // Ikinci bolum ayni cifti yeniden kullaniyor; birincil anahtar
+    // (check_in_id, kullanici_id) oldugu icin satir once silinmeli.
+    await b
+      .from('check_in_etiketleri')
+      .delete()
+      .eq('check_in_id', aCi)
+      .eq('kullanici_id', bId)
+
+    // ---- BOLUM 2: AYAR ACIK ----
+    await b.from('profiller').update({ etiket_onayi_gerekli: true }).eq('id', bId)
+
     const { error: etiketHata } = await a
       .from('check_in_etiketleri')
-      .insert({ check_in_id: aCi, kullanici_id: bId })
-    esitMi(etiketHata, null, 'A, bagli oldugu B yi etiketleyebiliyor')
+      .insert({ check_in_id: aCi, kullanici_id: bId, durum: 'onaylandi' })
+    esitMi(etiketHata, null, 'ayar acikken de etiket gonderilebiliyor')
 
     const { data: aGorunum } = await a
       .from('check_in_etiketleri')
@@ -3175,7 +3210,7 @@ async function main() {
     esitMi(
       ((aGorunum ?? []) as { durum: string }[]).map((r) => r.durum),
       ['bekliyor'],
-      'yeni etiket bekliyor durumunda giriyor'
+      'ayar ACIKKEN etiket bekliyor durumunda giriyor (istemcinin onaylandi degeri EZILDI)'
     )
 
     // GIZLILIGIN CEKIRDEGI: bekleyen etiket ucuncu kisiye gorunmuyor.
@@ -3203,7 +3238,6 @@ async function main() {
     )
     esitMi(bekleyen?.mekan_adi, MEKAN_1.ad, 'listede mekan adi donuyor')
 
-    // Etiketleyen kendi gonderdigi istegi kendi listesinde gormez.
     const { data: aBekleyenler } = await a.rpc('bekleyen_etiketlerim')
     esitMi(
       ((aBekleyenler ?? []) as { check_in_id: string }[]).some((s) => s.check_in_id === aCi),
@@ -3213,8 +3247,7 @@ async function main() {
 
     // Karari YALNIZCA etiketlenen verir: check-in'in sahibi olsa bile A
     // onaylayamaz. Politika satiri hic eslemedigi icin hata donmez,
-    // GUNCELLENEN SATIR SAYISI sifir olur - iddia bu yuzden donen
-    // satirlar uzerinden kuruluyor.
+    // GUNCELLENEN SATIR SAYISI sifir olur.
     const { data: aOnayi } = await a
       .from('check_in_etiketleri')
       .update({ durum: 'onaylandi' })
@@ -3223,7 +3256,6 @@ async function main() {
       .select()
     esitMi(aOnayi ?? [], [], 'check-in sahibi kendi etiketini onaylayamaz')
 
-    // B onayliyor.
     const { error: onayHata } = await b
       .from('check_in_etiketleri')
       .update({ durum: 'onaylandi' })
@@ -3242,7 +3274,6 @@ async function main() {
       'onay veritabaninda gerceklesti'
     )
 
-    // Onaydan sonra ucuncu kisi goruyor.
     const { data: cOnaySonrasi } = await c
       .from('check_in_etiketleri')
       .select('kullanici_id')
@@ -3253,7 +3284,6 @@ async function main() {
       'onaylanan etiketi ucuncu kisi de goruyor'
     )
 
-    // Karar verilince istek listeden dusuyor.
     const { data: sonrakiBekleyenler } = await b.rpc('bekleyen_etiketlerim')
     esitMi(
       ((sonrakiBekleyenler ?? []) as { check_in_id: string }[]).some((s) => s.check_in_id === aCi),
@@ -3261,7 +3291,6 @@ async function main() {
       'onaylanan etiket bekleyenler listesinden dusuyor'
     )
 
-    // Etiketlenen kisi fikrini degistirip etiketi kaldirabiliyor.
     const { error: kaldirHata } = await b
       .from('check_in_etiketleri')
       .delete()
@@ -3277,9 +3306,19 @@ async function main() {
     const anonim = anonIstemciOlustur()
     const { error: anonHata } = await anonim.rpc('bekleyen_etiketlerim')
     esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
+
+    // AYAR VARSAYILANA DONDURULUYOR: burasi kirli birakilsaydi paketin
+    // geri kalani "varsayilan direkt" varsayimiyla celisirdi.
+    await b.from('profiller').update({ etiket_onayi_gerekli: false }).eq('id', bId)
   })
 
   await senaryo('64 - Reddedilen etiket duruyor ve tekrar etiketlemeyi engelliyor', async () => {
+    // AYAR ACIK OLMALI: "reddetme" diye bir adim ancak etiket BEKLEYEN
+    // durumda girerse var. Varsayilan (direkt) akista satir zaten
+    // onayli giriyor ve reddedilecek bir sey olmuyor - bu senaryo
+    // 2026-09-06'dan 2026-09-11'e kadar tam bu yuzden kirikti.
+    await b.from('profiller').update({ etiket_onayi_gerekli: true }).eq('id', bId)
+
     // Yeni bir check-in: check_in_yap oncekini kendiliginden kapatiyor.
     const aCi = await checkInYap(a, mekan1, MEKAN_1.lat, MEKAN_1.lng)
     t.checkInler.push({ istemci: a, id: aCi })
@@ -3342,6 +3381,10 @@ async function main() {
       .eq('check_in_id', aCi)
       .eq('kullanici_id', bId)
     esitMi(sahipSilmeHatasi, null, 'check-in sahibi de etiketi kaldirabiliyor')
+
+    // Ayar VARSAYILANA donduruluyor; paketin geri kalani "varsayilan
+    // direkt" varsayimiyla calisiyor.
+    await b.from('profiller').update({ etiket_onayi_gerekli: false }).eq('id', bId)
   })
 
   await senaryo('65 - Notu yalnizca sahibi degistirir, mekan ve zaman kilitli', async () => {

@@ -102,10 +102,24 @@ async function main() {
     p_metin: kendiAd.slice(0, 4),
   })
   esitMi(uzunHata, null, 'iki karakterden uzun arama hata vermiyor')
+  // KENDISI DE CIKIYOR (kullanicinin karari 2026-09-10: "kendi
+  // kullanici adimi yazdigimda kendi profilim cikmiyor, cikmasi
+  // gerek"). Migrasyon 20260910120000 `p.id <> auth.uid()` kosulunu
+  // kaldirdi ve kisiyi siralamada EN USTE koydu.
+  //
+  // BU IDDIA O GUN TERS CEVRILMELIYDI ama yalnizca gorunurluk
+  // paketindeki kardesi guncellendi; buradaki kopya atlandi ve paket
+  // 2026-09-10'dan 2026-09-11'e kadar kirmizi kaldi. Ders: ayni kurali
+  // iki paket olcuyorsa kural degisince IKISI de aranmali.
   esitMi(
     ((uzunSonuc ?? []) as { id: string }[]).some((s) => s.id === aId),
-    false,
-    'arama cagiranin kendisini sonuclara koymaz'
+    true,
+    'arama cagiranin KENDISINI de donduruyor'
+  )
+  esitMi(
+    ((uzunSonuc ?? []) as { id: string }[])[0]?.id,
+    aId,
+    'kisi kendi aramasinda EN USTTE'
   )
 
   // Alt cizgi kullanici adinda gecerli bir karakter; kacirilmazsa `like`
@@ -1105,17 +1119,24 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   // ureten bir yol olmamali (karar 49). Ozet artik tabloya gore degil
   // FONKSIYONA gore (tgfoid) suzuyor, yani public semasindaki HERHANGI
   // bir tabloya eklenecek altinci bir tetikleyici de bu listeye duser.
+  //
+  // ALTINCI TETIKLEYICI 2026-09-06'DA EKLENDI (`etiket_bildirimi`,
+  // kullanicinin "push bildirimine ekle" istegi) ama bu liste
+  // guncellenmedi ve paket o gunden 2026-09-11'e kadar kirmizi kaldi.
+  // Iddianin KENDISI dogru kurulmus: yeni bir bildirim yolu acilinca
+  // burasi kiriliyor - amaci da bu.
   const bildirimTetikleyicileri = Object.keys(tetikleyiciler).sort()
   esitMi(
     bildirimTetikleyicileri,
     [
+      'etiket_bildirimi',
       'mesaj_bildirimi',
       'sohbet_istegi_bildirimi',
       'sohbet_kabul_bildirimi',
       'takip_istegi_bildirimi',
       'takip_kabul_bildirimi',
     ],
-    'tam olarak bes bildirim tetikleyicisi kayitli'
+    'tam olarak alti bildirim tetikleyicisi kayitli'
   )
 }
 

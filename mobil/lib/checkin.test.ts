@@ -1,5 +1,5 @@
 import { YORUM_EN_FAZLA } from './etkilesim'
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanAnilariniGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil, NOT_EN_FAZLA } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil, NOT_EN_FAZLA } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -130,30 +130,6 @@ describe('suAnBurdakileriGetir', () => {
     expect(sonuc[0].kullaniciId).toBe('kullanici-2')
     expect(sonuc[0].canliMi).toBe(true)
     expect(sonuc[0].bulunurluk).toBe('herkese_acik')
-  })
-})
-
-describe('mekanAnilariniGetir', () => {
-  it('mekana gore filtreler ve yalnizca aniya donusmus satirlari ister', async () => {
-    const mockEq = jest.fn().mockResolvedValue({
-      data: [
-        {
-          id: 'checkin-2', mekan_id: 'mekan-1', kullanici_id: 'kullanici-3', not_metni: 'guzel', fotograf: null,
-          olusturma_zamani: '2026-08-10T10:00:00Z', bitis_zamani: '2026-08-10T14:00:00Z',
-          konum: null, kullanici_adi: 'Berk', bulunurluk: 'gizli',
-        },
-      ],
-      error: null,
-    })
-    const mockIs = jest.fn().mockReturnValue({ eq: mockEq })
-    const mockSelect = jest.fn().mockReturnValue({ is: mockIs })
-    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select: mockSelect })
-
-    const sonuc = await mekanAnilariniGetir('mekan-1')
-
-    expect(sonuc[0].kullaniciAdi).toBe('Berk')
-    expect(sonuc[0].canliMi).toBe(false)
-    expect(sonuc[0].bulunurluk).toBe('gizli')
   })
 })
 

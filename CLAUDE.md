@@ -1305,6 +1305,84 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### YARIM KALAN ISLER KAPATILDI - 2026-09-11
+
+Kullanicinin istegi: "yarim kalan islerimizi tamamlayalim." Acik borc
+listeleri tarandi; bulunanlarin bir kismi ZATEN KAPANMISTI (liste
+bayatlamis), bir kismi da gercekten aciktı.
+
+**1. IKI CANLI TEST PAKETI DE KIRMIZIYDI ve kimse gormuyordu.**
+
+`test:gorunurluk` **10 dogrulama**, `test:sema` **2 dogrulama** ile
+basarisiz kosuyordu. Ucu de ayni sinif: KURAL DEGISTI, IDDIA
+GUNCELLENMEDI. Yani paketler bir seyi korumuyor, artik var olmayan bir
+davranisi olcuyordu.
+
+| Iddia | Ne zamandan beri kirik | Gercek kural |
+|---|---|---|
+| "HER etiket onay bekler" (senaryo 63, 64) | 2026-09-06 | Onay bir AYAR, varsayilan DIREKT |
+| "arama cagiranin kendisini koymaz" (sema) | 2026-09-10 | Kisi kendi aramasinda EN USTTE cikiyor |
+| "tam olarak BES bildirim tetikleyicisi" (sema) | 2026-09-06 | ALTI - `etiket_bildirimi` eklendi |
+
+**SENARYO 63 YENIDEN YAZILDI ve artik ASIL KURALI olcuyor:** durumu
+istemci degil SUNUCU yaziyor (`etiket_durumu` BEFORE INSERT
+tetikleyicisi). Iki bolum var ve ikisi de istemcinin degeri
+ZORLAMASINI deniyor:
+
+    ayar KAPALI + istemci 'bekliyor' gonderir  -> 'onaylandi'  (ezildi)
+    ayar ACIK   + istemci 'onaylandi' gonderir -> 'bekliyor'   (ezildi)
+
+Tek yon test edilseydi tetikleyicinin degeri gercekten BELIRLEDIGI
+degil, rastlantiyla ayni sonucu verdigi de dogru olabilirdi. Bu
+davranis 2026-09-06'da elle bir kez olculmustu ama pakete hic
+girmemisti; artik girdi.
+
+Senaryo 64 (reddedilen etiket) ayari ACIYOR, cunku "reddetme" diye bir
+adim ancak etiket BEKLEYEN girerse var. Iki senaryo da ayari
+varsayilana geri donduruyor - kirli birakilsaydi paketin geri kalani
+"varsayilan direkt" varsayimiyla celisirdi.
+
+**DERS: ayni kurali iki paket olcuyorsa kural degisince IKISI de
+aranmali.** Arama kurali 2026-09-10'da degistirildiginde yalnizca
+gorunurluk paketindeki kardesi guncellendi, sema paketindeki kopya
+atlandi. Ayni gun "eski test iddiasi kurali hic olcmuyormus" diye bir
+ders yazilmisti; bu onun kardesi.
+
+**2. OLU KOD SILINDI** - her biri once grep ile tarandi ve yalnizca
+kendi tanimindan (ve varsa kendi testinden) referans aldigi
+dogrulandi:
+
+    src/tasarim/MekanIkonu.tsx      2026-08-24'te tur gosterimi kalkinca
+    src/tasarim/MekanGorseli.tsx    oksuz kaldi (821 satirin 448'i)
+    SiraMadalyasi                   2026-09-09'da ortak SiraRozeti geldi
+    mekanAnilariniGetir             2026-08-29'da mekan detayi silindi
+    goreceZamanGosterilir           uygulamada hic cagrilmiyordu
+
+Son ikisinin TESTLERI de silindi: olu kodu test etmek kapsamayi
+sisirip hicbir sey korumuyordu.
+
+**BILEREK BIRAKILANLAR** (CLAUDE.md'de zaten gerekceli): `SOSYAL_TURLER`
+ve `DAIRE_YUKSEK`. Ikisi de olu ama kayitli birer "geri istenirse tek
+satirlik is" notu tasiyor.
+
+**3. BAYAT CIKAN BORCLAR - listeler guncellendi, is yoktu:**
+
+- Gizlilik metnindeki "telefon numaran" ifadesi ZATEN e-postaya
+  gore yeniden yazilmis (hem `gizlilik.tsx` hem `docs/gizlilik-metni.md`).
+- `gizlilik-metni.md`deki "gunluk calisan" yanlis kelimesi ZATEN
+  duzeltilmis; metin "10 dakikada bir" diyor.
+
+**4. KAPATILAMAYANLAR ve sebebi** - hicbiri koda bagli degil:
+
+| Borc | Neden bekliyor |
+|---|---|
+| Gizlilik metnindeki basvuru kanali | Gercek bir destek e-postasi gerekiyor, uydurulamaz |
+| Erisim/tasinabilirlik akisi (KVKK m.11) | Yeni bir ozellik; bugun talep elle karsilaniyor |
+| Elle tarayici gezintileri (Faz 2b-3b, Plan 1) | Etkilesimli, insan gerektiriyor |
+| Apple/Google girisi, SMTP, alan adi, native derleme | Kullanicinin panel/magaza isleri |
+| Cok dillilik (i18n) | Ertelenmis faz, tasarim bitince |
+| `mahalle_hazirlik` (5,98M satir) dusurulebilir | Yikici; `ilceler` artik ondan kopyalandi, dusurmek serbest ama karar kullanicinin |
+
 ### KULLANICI ADI SATIR ICINDE, YASADIGIN BOLGE - 2026-09-11
 
 **1. KULLANICI ADI ARTIK PROFIL DUZENLEMEDE SATIR ICINDE.**

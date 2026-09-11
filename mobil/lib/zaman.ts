@@ -69,11 +69,6 @@ export function suAnBuradaMi(iso: string, canliMi: boolean): boolean {
   return Date.now() - new Date(iso).getTime() < CANLI_ETIKET_SURESI
 }
 
-/** Gorece zaman ("35 dk önce") hala anlamli mi? */
-export function goreceZamanGosterilir(iso: string): boolean {
-  return Date.now() - new Date(iso).getTime() <= GORECE_SINIRI
-}
-
 /** Yalnizca saat: "09:52". Bir saatten eski kayitlarda kullaniliyor. */
 export function saatYazisi(iso: string): string {
   const t = new Date(iso)
