@@ -1098,7 +1098,17 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
    */
   kimlik: {
     flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    /*
+     * USTTEN HIZALI, ORTALI DEGIL (kullanicinin bildirdigi kusur
+     * 2026-09-11: "isim kismi bu sefer yukari dogru kayiyor, yeri
+     * sabit olmali").
+     *
+     * `center` iken sutun biyografi uzadikca BUYUEYUP yukari
+     * tasiyordu: iki satirlik bir biyografide ad bir yerde, dort
+     * satirlikta 20-30 px yukarida duruyordu. Ustten hizalayinca adin
+     * yeri biyografiden BAGIMSIZ - blok yalnizca asagi dogru buyuyor.
+     */
+    alignItems: 'flex-start' as const,
     gap: bosluk.l,
     // Ust pay KALDIRILDI (8 -> 0): kullanicinin istegi 2026-09-11,
     // "profil resmi, isim, kullanici adi ve biyografiyi beraber biraz
@@ -1343,6 +1353,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 20,
     color: renk.metinIkincil,
     marginTop: 4,
+    /*
+     * UC SATIRLIK ALAN AYRILIYOR (kullanicinin istegi 2026-09-11:
+     * "yazilacaginca gorunecegi alt alta birkac satirlik alan
+     * yarat"). 3 x lineHeight(20) = 60.
+     *
+     * `minHeight`, sabit `height` DEGIL: alan 160 karakterle kapali
+     * ama bu dort-bes satir edebiliyor ve o durumda metnin kirpilmasi
+     * kullanicinin AYNI GUN bildirdigi kusurun ta kendisi olurdu.
+     * Yani ucten azsa yer ayrilir, fazlaysa asagi buyur.
+     *
+     * Biyografi YOKSA hic cizilmiyor, dolayisiyla bos yer de
+     * ayrilmiyor - bos bir profilde 60 px bosluk sebepsiz olurdu.
+     */
+    minHeight: 60,
   },
 
   // Canli serit: ekranin imza ogesi. Turuncu nokta "su an oluyor" der.

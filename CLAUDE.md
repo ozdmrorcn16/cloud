@@ -1497,6 +1497,29 @@ once cok parlak (acik paletten alinmisti), sonra cok sonuk. Dogru
 olcut mutlak ton degil ZEMINE GORE FARK - ve o fark opakligi de
 hesaba katmali.
 
+**ADIN YERI SABITLENDI, BIYOGRAFIYE UC SATIRLIK ALAN AYRILDI -
+2026-09-11 (biyografi kirpmasinin YAN ETKISI).**
+
+Kirpma kalkinca yeni bir kusur dogdu ve kullanici bildirdi: "isim kismi
+bu sefer yukari dogru kayiyor, yeri sabit olmali." Sebep
+`kimlik.alignItems: 'center'` idi - sutun biyografi uzadikca buyuyor
+ve ORTALANDIGI icin ad yukari tasiyordu. `flex-start` ile ad artik
+satirin tepesine sabit; blok yalnizca ASAGI dogru buyuyor.
+
+`biyografi.minHeight = 60` (3 x lineHeight 20): kullanicinin istegi
+"yazilacaginca gorunecegi alt alta birkac satirlik alan yarat".
+`minHeight`, sabit `height` DEGIL - 160 karakter dort-bes satir
+edebiliyor ve orada kirpmak ayni gun duzeltilen kusurun ta kendisi
+olurdu. Biyografi yoksa alan da ayrilmiyor.
+
+**OLCULEREK dogrulandi:** dort satirlik biyografisi olan hesapla tek
+satirlik olan yan yana kondu; `@kullaniciadi` satiri ikisinde de
+y=147, biyografinin ilk satiri ikisinde de y=191. **Olcuemde tuzak:**
+once ADIN ust kenari karsilastirildi ve 100 vs 108 cikti - fark
+yerlesimden degil GLIFTEN geliyordu (buyuk "O" kucuk "o"dan yukari
+uzaniyor). Iki profilde AYNI stille cizilen bir satiri (`@`) olcut
+almak gerekiyor.
+
 ### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
 
 Kullanicinin karari: "yakindaki mekanlar da 500 m mesafedeki yerler
