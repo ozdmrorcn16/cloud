@@ -1343,6 +1343,11 @@ cagrisi ve ayarlardaki importu, `KalemIkonu` ve `KisiIkonu` importlari.
 `kullaniciAdiDurumunuGetir` LIB'DE DURUYOR - `profil/duzenle` onu hala
 kullaniyor.
 
+Dogrulama: jest 71 paket / 852 test (bir paket silindigi icin 72'den
+dustu), tsc uygulama kodunda 0 hata, canli ekran goruntusu
+`tasarim/ayarlar-sade.png`. Yayin: web `slooin.expo.app`, OTA grup
+`9724759b-a565-4d07-b33a-00754db52d69`.
+
 **BIR TEST YORUMU DA BAYATTI ve duzeltildi:** profil ekrani testinde
 "Ayarlardaki 'Profilini düzenle' satiri DURUYOR" yaziyordu; artik
 durmuyor.
