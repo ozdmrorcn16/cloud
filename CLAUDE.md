@@ -37,6 +37,23 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 > Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
 > ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
 
+## Proje: kriptobot
+
+Onceki "uygulama fikri" konusundan bagimsiz, ayri bir proje.
+
+- **Klasor:** `kriptobot/`
+- **Dal:** `claude/admiring-gates-p4reeo`
+- **Ne:** Gercek parayla calisacak kripto al-sat botu. Anlik fiyat takibi,
+  teknik analiz, kurallara dayali otomatik emir gonderimi ve izleme paneli.
+- **Asama:** Tasarim. Kod yok, gercek emir yok.
+- **Tasarim belgesi:** `kriptobot/docs/mimari.md`
+- **Bekleyen kararlar:** hangi borsa, spot mu vadeli mi, strateji turu,
+  nerede calisacagi.
+
+Pazarlik disi iki kural: API anahtarinda para cekme yetkisi asla acilmaz;
+gercek para yol haritasinin son asamasidir (once okuma, backtest, kagit
+uzerinde al-sat, testnet).
+
 ## Eklentiler
 
 - `frontend-design@claude-code-plugins` — arayuz gelistirmede kullanilacak
@@ -51,3 +68,10 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+- 2026-09-11 — Yeni ve bagimsiz bir proje acildi: `kriptobot`. Gercek parayla
+  calisacak kripto al-sat botu. `kriptobot/` klasoru, tasarim belgesi ve
+  guvenlik kurallari olusturuldu; kod henuz yazilmadi.
+- 2026-09-11 — kriptobot icin asamali yol haritasi benimsendi: once sadece
+  okuma, sonra backtest, sonra kagit uzerinde al-sat, sonra testnet, en son
+  kucuk gercek para. API anahtarinda para cekme yetkisi hicbir asamada
+  acilmayacak.

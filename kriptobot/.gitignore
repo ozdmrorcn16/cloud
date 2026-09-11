@@ -1,0 +1,21 @@
+# Gizli degerler - asla commit'lenmez
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Veri ve kayitlar
+*.db
+*.sqlite3
+data/
+logs/
