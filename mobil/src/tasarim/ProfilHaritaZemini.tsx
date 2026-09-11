@@ -44,11 +44,19 @@ export function ProfilHaritaZemini({
       style={[stiller.kap, { height: yukseklik + ustTasma, top: -ustTasma }]}
       pointerEvents="none"
     >
+      {/* OPAKLIK SVG'DE, KAPTA DEGIL.
+      
+          Ilk yazimda `kap` stilindeydi ve alttaki sonme gradyanini da
+          soldurunca gradyan dokuyu HIC tam sondueremiyordu: %18 opak
+          bir beyaz, %18 opak bir dokuyu ancak %18 kadar beyazlatir.
+          Sonuc alt kenarda keskin bir cizgiydi - ust blok yukari
+          alininca (2026-09-11) acikta kaldi ve gorunur oldu. */}
       <Svg
         width="100%"
         height="100%"
         viewBox="0 60 320 200"
         preserveAspectRatio="xMidYMid slice"
+        opacity={0.18}
       >
         {YESIL_ALANLAR.map((d, i) => (
           <Path key={`y${i}`} d={d} fill={renk.haritaYesil} />
@@ -95,14 +103,14 @@ const stiller = StyleSheet.create({
    * zeminde PARLADI. Canli ekran goruntusuyle yakalandi (2026-09-10).
    * Dogru olcut sabit renk degil, ZEMINE GORE HAFIF kalmak.
    *
-   * Opaklik burada, cizgilerde degil: tek yerden ayarlanabilsin.
+   * Opaklik KAPTA DEGIL, SVG'de: kaba uygulaninca alttaki sonme
+   * gradyanini da solduruyor ve gradyan dokuyu tam sondueremiyordu.
    */
   kap: {
     position: 'absolute',
     left: 0,
     right: 0,
     overflow: 'hidden',
-    opacity: 0.18,
   },
   /* Sonme dokunun ALT UCTE BIRINI kapliyor: daha kisa olsaydi gecis
      ani, daha uzun olsaydi doku ortasindan sonmeye baslardi. */

@@ -252,6 +252,19 @@ describe('ProfilEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/ayarlar')
   })
 
+  /*
+   * UST CUBUKTA "Profil" BASLIGI YOK (kullanicinin istegi 2026-09-11).
+   * Baslik 2026-09-10'da referans gorselle gelmisti; cubukta artik
+   * yalnizca ayarlar duruyor. Tam eslesme araniyor - "Profili düzenle"
+   * butonu bu iddiayi tetiklemiyor.
+   */
+  it('ust cubukta sayfa basligi YOK, yalnizca ayarlar var', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByLabelText('Ayarlar')
+
+    expect(screen.queryByText('Profil')).toBeNull()
+  })
+
   it('profil satiri yoksa profil olusturmaya yonlendirir', async () => {
     ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue(null)
 

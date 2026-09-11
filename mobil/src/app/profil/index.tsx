@@ -148,8 +148,13 @@ function AyarlarIkonu() {
  * toplamindan geliyor; eylem satirina ULASMIYOR. Avatar boyu ya da
  * paylar degisirse BURASI DA degismeli, yoksa doku ya butonun altina
  * tasar ya da erken biter.
+ *
+ * 152 -> 144 (2026-09-11): kimlik blogunun ust payi 8 px kisaldi
+ * (kullanicinin "biraz daha yukari tasi" istegi), yani dugme dokuya
+ * gore 8 px yukari geldi. Doku da ayni kadar kisalmasa butonun
+ * altina tasardi.
  */
-const HARITA_YUKSEKLIGI = 152
+const HARITA_YUKSEKLIGI = 144
 
 /**
  * Dokunun UST CUBUGUN ARKASINA tasma miktari.
@@ -520,16 +525,19 @@ export default function ProfilEkrani() {
             degisti ama sonuc ayni - kok duzenin verdigi pay ile
             ekranin kendi payi ust uste binmemeli. */}
 
-        {/* UST CUBUK: sol "Profil" basligi + sag ayarlar.
-            
+        {/* UST CUBUK: yalnizca sagda ayarlar.
+
             Kullanicinin karari (2026-09-10, referans gorselle):
             kullanici adi buradan KALKTI ve avatarin yanina, adin
             altina indi (@byorcun). Paylas ikonu da kalkti - eylem
             satirindaki kare butona tasindi, "Profili düzenle"nin
-            yanina. Boylece ust cubuk tek isi yapiyor: sayfanin adini
-            soylemek ve ayarlara gecis vermek. */}
+            yanina.
+
+            "Profil" BASLIGI DA KALKTI (kullanicinin istegi
+            2026-09-11). Cubukta tek oge kaldigi icin hizalama
+            `space-between` degil `flex-end`: tek cocukla
+            `space-between` disliyi SOLA yapistirirdi. */}
         <View style={stiller.ustCubuk}>
-          <Text style={stiller.sayfaBasligi}>{t('profil.baslik')}</Text>
           <Pressable
             onPress={() => router.push('/profil/ayarlar')}
             accessibilityRole="button"
@@ -1010,9 +1018,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ustCubuk: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    // Tek oge (ayarlar) kaldi: `space-between` onu SOLA yapistirirdi.
+    justifyContent: 'flex-end',
     gap: bosluk.m,
-    marginBottom: bosluk.m,
+    // Kimlik blogu yukari alindi (kullanicinin istegi 2026-09-11):
+    // 12 -> 4.
+    marginBottom: bosluk.xs,
   },
   /*
    * @KULLANICIADI - artik UST CUBUKTA degil, ADIN ALTINDA
@@ -1067,7 +1078,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: bosluk.l,
-    paddingTop: bosluk.s,
+    // Ust pay KALDIRILDI (8 -> 0): kullanicinin istegi 2026-09-11,
+    // "profil resmi, isim, kullanici adi ve biyografiyi beraber biraz
+    // daha yukari tasi". Cubuk payiyla birlikte blok 16 px yukari
+    // geldi.
+    paddingTop: 0,
     paddingBottom: bosluk.l,
   },
   /* `flex: 1` + `minWidth: 0`: uzun bir ad avatari sikistirmasin,
@@ -1107,14 +1122,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   /* Basili hal: dolgu koyulasiyor. Opaklik dusurmek "yukleniyor" gibi
      okunuyordu (2026-09-07 dersi). */
   eylemBasili: { backgroundColor: renk.cizgi },
-
-  /* Ust cubuktaki sayfa adi. */
-  sayfaBasligi: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-  },
 
   // Buyuk gorunum
   buyukZemin: {

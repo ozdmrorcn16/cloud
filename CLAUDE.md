@@ -1416,6 +1416,40 @@ Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata,
 canli ekran goruntusu IKI MODDA da alindi
 (`tasarim/profil-canli.png`, `profil-canli-light.png`).
 
+**UST CUBUKTAKI "Profil" BASLIGI KALDIRILDI ve BLOK YUKARI ALINDI -
+2026-09-11 (kullanicinin iki istegi).**
+
+Baslik 2026-09-10'da referans gorselle gelmisti; kullanici kaldirtti.
+Cubukta artik yalnizca ayarlar var, dolayisiyla hizalama
+`space-between` degil **`flex-end`**: tek cocukla `space-between`
+disliyi SOLA yapistirirdi. `profil.baslik` ceviri anahtari ve
+`sayfaBasligi` stili de silindi - ikisi de tek kullanimliydi ve olu
+kalirdi.
+
+Ikinci istek: "profil resmi, isim, kullanici adi, biyografi kismini
+bunlari beraber biraz daha yukari tasi." Iki yerden 16 px kisildi:
+`ustCubuk.marginBottom` 12 -> 4 ve `kimlik.paddingTop` 8 -> 0.
+`HARITA_YUKSEKLIGI` de 152 -> 144, cunku ikinci degisiklik dugmeyi
+dokuya GORE 8 px yukari cekiyor - doku kisalmasa butonun altina
+tasardi.
+
+**BU IS ESKI BIR KUSURU ACIGA CIKARDI: sonme gradyani hic calismiyormus.**
+`ProfilHaritaZemini` icindeki `opacity: 0.18` KABA uygulaniyordu ve
+alttaki `LinearGradient`i de solduruyordu - %18 opak bir beyaz, %18
+opak bir dokuyu ancak %18 kadar beyazlatir, yani doku hicbir zaman tam
+sonmuyordu. Blok yukari alininca o kenar acikta kaldi ve gorunur oldu.
+Opaklik artik SVG'de; gradyan tam opak calisiyor.
+
+**OLCULEREK dogrulandi, gozle degil:** dokunun sapmasi 240. satirda
+11,5 iken 288-298 araliginda 1-3'e iniyor ve buton (300) baslamadan
+sifirlaniyor - yani keskin kenar YOK. Ilk bakista "cizgi" sanilan sey
+dokunun kendi yol cizgisiydi; ayni tuzak 2026-09-03'te "karanlik
+ekran" sikayetinde de yasanmisti.
+
+Yeni test: "ust cubukta sayfa basligi YOK, yalnizca ayarlar var"
+(`queryByText('Profil')` null). Baslik sessizce geri gelirse kirilir;
+tam eslesme oldugu icin "Profili düzenle" butonu iddiayi tetiklemiyor.
+
 ### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
 
 Kullanicinin karari: "yakindaki mekanlar da 500 m mesafedeki yerler

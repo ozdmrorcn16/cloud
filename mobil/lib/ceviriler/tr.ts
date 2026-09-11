@@ -406,8 +406,6 @@ export default {
   },
 
   profil: {
-    /* Ust cubuktaki sayfa adi (2026-09-10). */
-    baslik: 'Profil',
     yerSayisi: 'Yer',
     duzenle: 'Profili düzenle',
     paylas: 'Paylaş',
