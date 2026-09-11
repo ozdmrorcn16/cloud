@@ -319,7 +319,10 @@ export default {
   },
 
   profilDuzenle: {
-    baslik: 'Profilini düzenle',
+    // "Profilini" -> "Profili" (kullanicinin istegi 2026-09-11).
+    // Profil ekranindaki dugme zaten "Profili düzenle" diyor; ayni
+    // eylemin iki farkli adi olmasin.
+    baslik: 'Profili düzenle',
     adEtiket: 'Ad ve soyad',
     adYerTutucu: 'Adın ve soyadın',
     adHata: 'Adını ve soyadını yaz.',

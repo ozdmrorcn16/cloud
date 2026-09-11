@@ -80,14 +80,27 @@ describe('AyarlarEkrani', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/check-in-gorunurlugu')
   })
 
-  it('Profilini duzenle ve Gecmis anilarim satirlari ARTIK YOK', async () => {
-    // Kullanicinin karari 2026-08-30. Profil duzenleme artik profil
-    // bandindaki dugmede; ani gorunurlugu menuden kaldirildi.
+  /*
+   * BU IDDIA BAYATTI ve 2026-09-11'de duzeltildi.
+   *
+   * Test 2026-08-30'da "Profilini duzenle satiri ARTIK YOK" diye
+   * yazilmisti. Satir 2026-09-03'te GERI KONDU (o gun profil
+   * bandindaki dugme kaldirilinca `/profil/duzenle` ekrani oksuz
+   * kaliyordu) ve asagida, 'Profili düzenle' metniyle ayrica
+   * kilitlendi. Eski iddia yine de YESIL GECIYORDU cunku metni
+   * "Profilini" diye ariyordu - yani kurali hic olcmuyor, yalnizca
+   * bulunmayan bir dizeyi soruyordu. Ayni sinif bayat iddia
+   * 2026-09-10'da kisi aramasinda da yakalanmisti.
+   *
+   * Geriye gecerli olan tek sey "Gecmis anilarim" satirinin
+   * kalkmis olmasi.
+   */
+  it('Gecmis anilarim satiri ARTIK YOK, profil duzenleme satiri VAR', async () => {
     await render(<AyarlarEkrani />)
 
     expect(await screen.findByText('Kullanıcı adı')).toBeTruthy()
-    expect(screen.queryByText('Profilini düzenle')).toBeNull()
     expect(screen.queryByText('Geçmiş anılarım')).toBeNull()
+    expect(screen.getByText('Profili düzenle')).toBeTruthy()
   })
 
   it('engellenenler satiri listeye goturur', async () => {
