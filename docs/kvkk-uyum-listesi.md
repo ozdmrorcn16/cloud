@@ -227,10 +227,32 @@ EDILMEZ (karar 70 geri alindi): silinen ad aninda serbest kalir.
 Denetim izi (`moderasyon_kayitlari`) silinmez, `moderator_id` alani
 `set null` olur: izin butunlugu korunur, kisiyle bagi kopar.
 
-### 6. Erisim ve tasinabilirlik hakki (KVKK m.11) - EKSIK
+### 6. Erisim hakki (KVKK m.11) - KAPANDI (2026-09-11)
 
-Kullanici kendi verisinin kopyasini alamiyor. Silme kadar acil degil ama
-ayni maddeden dogan bir hak.
+Ayarlar > "Verilerimi indir". `verilerimi_disa_aktar` RPC'si (security
+definer, yalnizca `auth.uid()` satirlarini okur) JSON uretiyor; istemci
+onu gizli `veri-disa-aktarim` kovasina yukleyip 24 saatlik imzali
+baglantiyi aciyor. Kova gunluk budaniyor ve kisi basina en fazla BIR
+dosya kaliyor (yeni disa aktarim oncekini siliyor).
+
+**KAPSAM UC KARARLA BELIRLENDI** (kullanicinin karari 2026-09-11) -
+ucu de baskasinin verisiyle kesistigi icin:
+
+- **Mesajlar:** kendi yazdiklari tam metinle; karsi tarafinkiler
+  METINSIZ (kiminle, kac mesaj, son tarih). Bir konusma iki kisiye ait.
+- **Hakkindaki sikayetler:** HIC GIRMIYOR. Sikayet kaydi sikayet
+  edenin kimligini tasiyor. Kendi gonderdikleri tam giriyor.
+- **Moderasyon denetim izi:** girmiyor (denetim aracinin kendisi).
+  Hesap durumu (aski/yasak, gerekce) giriyor - kisiyi dogrudan
+  etkiliyor ve zaten ekranda goruyor.
+
+Ayrica **kendisini engelleyenler ASLA girmiyor**: uygulamanin sessizlik
+ilkesi (engelli, engellendigini silinmis hesaptan ayirt edemiyor) tek
+hamlede yikilirdi.
+
+TASINABILIRLIK (GDPR m.20) AYRI BIR HAK ve KVKK'da karsiligi yok;
+uretilen dosya makine-okunur JSON oldugu icin pratikte o ihtiyaci da
+karsiliyor.
 
 ### 7. Veri guvenligi (KVKK m.12) - TAMAM, projenin en guclu tarafi
 

@@ -363,6 +363,11 @@ export default {
     profilGizli: 'Profilim gizli',
     profilGizliAciklama:
       'Açıkken anıların ve check-in’lerin yalnızca arkadaşlarına görünür. Adın, kullanıcı adın ve fotoğrafın herkese açık kalır; böylece seni bulup arkadaşlık isteği gönderebilirler.',
+    // ERISIM HAKKI (KVKK m.11, 2026-09-11). Gizlilik metninin hemen
+    // yaninda duruyor: ikisi de "verim ne oluyor" sorusunun cevabi.
+    verilerimiIndir: 'Verilerimi indir',
+    verilerimiIndirHazirlaniyor: 'Hazırlanıyor…',
+    verilerimiIndirHata: 'Veriler hazırlanamadı. Tekrar dene.',
     gizlilikMetni: 'Gizlilik metni',
 
     bolumGorunurluk: 'Seni kimler görebilir?',

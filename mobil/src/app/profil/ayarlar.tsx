@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
-import { View, Switch, ScrollView, StyleSheet, Text } from 'react-native'
+import { View, Switch, ScrollView, StyleSheet, Text, Linking } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
+import { verilerimiDisaAktar } from '../../../lib/veri-disa-aktar'
 import {
   varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
@@ -52,6 +53,31 @@ import {
 export default function AyarlarEkrani() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
+
+  /*
+   * VERILERIMI INDIR. Sunucu JSON'u uretiyor, istemci onu kovaya
+   * yukleyip IMZALI BAGLANTIYI aciyor.
+   *
+   * CIFT DOKUNUS KORUNUYOR (`disaAktariliyor`): islem birkac saniye
+   * surebiliyor ve ikinci dokunus ikinci bir dosya uretirdi.
+   */
+  async function verilerimiIndir() {
+    if (disaAktariliyor) return
+    setDisaAktariliyor(true)
+    setDisaAktarimHatasi(false)
+    try {
+      const adres = await verilerimiDisaAktar()
+      await Linking.openURL(adres)
+    } catch {
+      // Hata SATIRIN ALTINDA gosteriliyor: `Alert` react-native-web'de
+      // sessizce hicbir sey yapmiyor ve uygulama tarayicidan da
+      // aciliyor (ayni gerekce OnayPenceresi'nde de var).
+      setDisaAktarimHatasi(true)
+    } finally {
+      setDisaAktariliyor(false)
+    }
+  }
+
   const { t } = useDil()
   const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
@@ -60,6 +86,8 @@ export default function AyarlarEkrani() {
   const [kullaniciAdi, setKullaniciAdi] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
+  const [disaAktariliyor, setDisaAktariliyor] = useState(false)
+  const [disaAktarimHatasi, setDisaAktarimHatasi] = useState(false)
 
   const BULUNURLUK_ETIKETI: Record<Bulunurluk, string> = {
     herkese_acik: t('ayarlar.bulunurlukHerkeseAcik'),
@@ -187,8 +215,26 @@ export default function AyarlarEkrani() {
           <Satir
             ikon={<BelgeIkonu />}
             etiket={t('ayarlar.gizlilikMetni')}
-            sonuncu
             onPress={() => router.push('/gizlilik')}
+          />
+          {/* VERILERIMI INDIR (KVKK m.11 erisim hakki, 2026-09-11).
+              Gizlilik metninin hemen altinda: ikisi de "verim ne
+              oluyor" sorusunun cevabi.
+
+              Dosya bir KOVAYA yuklenip IMZALI BAGLANTI aciliyor.
+              `expo-sharing` secilmedi: yeni bir native modul ve OTA
+              ile gitmez; RN'in kendi dosya paylasimi da yalnizca
+              iOS'ta calisiyor. Ayrinti `lib/veri-disa-aktar.ts`. */}
+          <Satir
+            ikon={<BelgeIkonu />}
+            etiket={
+              disaAktariliyor
+                ? t('ayarlar.verilerimiIndirHazirlaniyor')
+                : t('ayarlar.verilerimiIndir')
+            }
+            aciklama={disaAktarimHatasi ? t('ayarlar.verilerimiIndirHata') : undefined}
+            sonuncu
+            onPress={verilerimiIndir}
           />
         </Bolum>
 

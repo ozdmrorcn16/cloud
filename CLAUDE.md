@@ -1305,6 +1305,69 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### ERISIM HAKKI: "VERILERIMI INDIR" - 2026-09-11
+
+KVKK m.11 kisiye kendi verisinin bir KOPYASINI isteme hakki veriyor.
+Silme hakki 2026-08-22'de kapanmisti; erisim tarafi acikti ve bir
+talep gelse ELLE SQL yazmak gerekiyordu.
+
+Ayarlar > "Verilerimi indir". `verilerimi_disa_aktar` RPC'si (security
+definer, yalnizca `auth.uid()` satirlarini okur) JSON uretiyor; istemci
+onu gizli `veri-disa-aktarim` kovasina yukleyip 24 saatlik IMZALI
+BAGLANTIYI aciyor.
+
+**KAPSAM UC KARARLA BELIRLENDI** - ucu de baskasinin verisiyle
+kesistigi icin kullaniciya soruldu:
+
+| Alan | Karar |
+|---|---|
+| Mesajlar | Kendi yazdiklari TAM METINLE; karsi tarafinkiler METINSIZ (kiminle, kac mesaj, son tarih) |
+| Hakkindaki sikayetler | **HIC GIRMIYOR** (kullanicinin acik karari). Kendi gonderdikleri tam giriyor |
+| Moderasyon denetim izi | Girmiyor. Hesap durumu (aski/yasak, gerekce) giriyor |
+
+Kullanici once onerilen orta yolu ("varligi ve sonucu girsin, kimlik
+girmesin") REDDETTI ve hakkindaki sikayetlerin tamamen disarida
+kalmasini secti.
+
+**KENDISINI ENGELLEYENLER ASLA GIRMIYOR** - bu bir tasarim karari
+degil, mevcut bir ilkenin korunmasi: uygulamanin SESSIZLIK ILKESI
+engellenenin engellendigini anlamamasi uzerine kurulu (2026-09-01,
+engelli "Bu kullanici bulunamadi" aliyor ve engelleme silinmis
+hesaptan ayirt edilemiyor). Dosyaya koymak o ilkeyi tek hamlede
+yikardi.
+
+**TESLIMAT: KOVA + IMZALI BAGLANTI. Elenen yollar ve sebepleri:**
+
+| Yol | Neden olmadi |
+|---|---|
+| `expo-sharing` | YENI NATIVE MODUL - yeni derleme ister, OTA ile GITMEZ, ozellik bugun calismazdi |
+| RN'in `Share.share({ url })` | Dosya paylasimi yalnizca iOS'ta; Android'de yalnizca metin. Iki magazaya da cikiliyor |
+| JSON'u metin olarak paylasmak | 9 KB'lik blob kullanilabilir bir teslimat degil |
+
+**DOSYA KUCUK, OLCULDU:** gercek bir hesapta (22 check-in) **9,3 KB**.
+Bu yuzden "hazirlaniyor, bildirim gonderecegiz" akisi KURULMADI -
+indirme aninda yapiliyor.
+
+**SAKLAMA:** kisi basina EN FAZLA BIR dosya (yeni disa aktarim
+oncekini siliyor, ayni desen profil fotografinda da var) ve gunluk
+cron 24 saatten eskileri budanıyor. Icinde konum gecmisi olan bir
+dosyanin kovada beklemesi kabul edilemezdi.
+
+**FOTOGRAFLAR GOMULMUYOR**, imzali baglanti veriliyor: gomulu gorsel
+dosyayi megabaytlara cikarirdi. Baglanti uretilemezse yol oldugu gibi
+kaliyor - kisi en azindan neyin var oldugunu goruyor.
+
+**CANLI DOGRULANDI: `araclar/veri-disa-aktarim-canli-test.py`, 15/15.**
+Jest Supabase'i mock'ladigi icin bu kurallarin hicbiri jest'te
+gorulemiyor. Betik iki test hesabi arasina mesaj, sikayet ve KARSILIKLI
+engelleme ekiyor, sonra A'nin dosyasinda karsi tarafin mesaj metninin,
+hakkindaki sikayetin ve kendisini engelleyenin GECMEDIGINI olcuyor.
+Actigi butun satirlari siliyor.
+
+Gizlilik metni de guncellendi: hak artik "talep edebilirsin" degil
+"indirebilirsin" diyor, dosyada NELER OLMADIGI tek tek yaziyor ve
+"indirdigin dosyayi sen korursun" uyarisi var.
+
 ### YARIM KALAN ISLER KAPATILDI - 2026-09-11
 
 Kullanicinin istegi: "yarim kalan islerimizi tamamlayalim." Acik borc

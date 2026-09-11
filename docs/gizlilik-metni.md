@@ -254,8 +254,16 @@ bir silme isi YOKTUR.
 - **Hesabini kalici olarak silebilirsin.** Geri donusu yoktur; yeniden
   gelmek istersen sifirdan hesap acman gerekir. Ne sildigin ve ne
   kaldigi madde 6'da yazili.
-- **Verilerinin bir kopyasini talep edebilirsin.** Bu talep icin bugun
-  uygulama icinde otomatik bir akis yok; bize ulasarak talep
-  edebilirsin (asagidaki basvuru yolu).
+- **Verilerinin bir kopyasini indirebilirsin.** Ayarlar > "Verilerimi
+  indir". Dosya JSON biciminde hazirlanir ve 24 saat gecerli bir
+  baglantiyla verilir; sure dolunca dosya erisilemez olur ve yeniden
+  indirebilirsin.
+  **Dosyada NELER YOK:** hakkinda acilan sikayetler (sikayet edenin
+  kimligini tasidiklari icin), moderasyon denetim izi, seni kimin
+  engelledigi ve sana gelen mesajlarin METINLERI. Sana gelen mesajlar
+  icin yalnizca kiminle, kac mesaj ve en son ne zaman bilgisi yer alir -
+  bir konusmanin karsi tarafindaki cumleler o kisinin verisidir.
+  **Indirdigin dosyayi sen korursun:** icinde konum gecmisin de dahil
+  olmak uzere hesabindaki her sey vardir.
 - **Basvuru yolu:** basvurularini destek@slooin.com adresine
   gonderebilirsin; basvurun en gec 30 gun icinde yanitlanir.

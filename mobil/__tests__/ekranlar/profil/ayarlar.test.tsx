@@ -23,6 +23,9 @@ jest.mock('../../../lib/ayarlar', () => ({
   etiketOnayiGerekliAyarla: jest.fn(),
 }))
 
+jest.mock('../../../lib/veri-disa-aktar', () => ({
+  verilerimiDisaAktar: jest.fn(),
+}))
 jest.mock('../../../lib/hesap', () => ({ hesabiDondur: jest.fn() }))
 jest.mock('../../../lib/bildirim', () => ({ bildirimJetonunuSil: jest.fn() }))
 jest.mock('../../../lib/supabase', () => ({
@@ -215,5 +218,42 @@ describe('AyarlarEkrani', () => {
     await fireEvent.press(await screen.findByText('Profili düzenle'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
+  })
+})
+
+/**
+ * VERILERIMI INDIR (KVKK m.11 erisim hakki, 2026-09-11).
+ *
+ * Dosyanin ICERIGI sunucuda belirleniyor ve orada canli olarak
+ * olculuyor; buradaki testler ekranin davranisini kilitliyor.
+ */
+describe('AyarlarEkrani - verilerimi indir', () => {
+  it('satira basinca imzali adres aciliyor', async () => {
+    const { verilerimiDisaAktar } = require('../../../lib/veri-disa-aktar')
+    ;(verilerimiDisaAktar as jest.Mock).mockResolvedValue('https://imzali/dosya.json')
+    const ac = jest
+      .spyOn(require('react-native').Linking, 'openURL')
+      .mockResolvedValue(undefined as never)
+
+    await render(<AyarlarEkrani />)
+    await fireEvent.press(await screen.findByText('Verilerimi indir'))
+
+    await waitFor(() => expect(ac).toHaveBeenCalledWith('https://imzali/dosya.json'))
+    ac.mockRestore()
+  })
+
+  /*
+   * HATA SATIRIN ALTINDA gosteriliyor, `Alert` ile DEGIL: Alert
+   * react-native-web'de sessizce hicbir sey yapmiyor ve uygulama
+   * tarayicidan da aciliyor (ayni gerekce OnayPenceresi'nde de var).
+   */
+  it('hazirlanamazsa sebebini satirin altinda soyluyor', async () => {
+    const { verilerimiDisaAktar } = require('../../../lib/veri-disa-aktar')
+    ;(verilerimiDisaAktar as jest.Mock).mockRejectedValue(new Error('olmadi'))
+
+    await render(<AyarlarEkrani />)
+    await fireEvent.press(await screen.findByText('Verilerimi indir'))
+
+    expect(await screen.findByText('Veriler hazırlanamadı. Tekrar dene.')).toBeTruthy()
   })
 })

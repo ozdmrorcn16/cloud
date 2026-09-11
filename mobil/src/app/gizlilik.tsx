@@ -103,7 +103,9 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
     paragraflar: [
       'Hesabını dondurabilirsin. Verilerin silinmez, görünmez hale gelirsin; tekrar giriş yaptığında hesabın kendiliğinden aktif olur.',
       'Hesabını kalıcı olarak silebilirsin. Geri dönüşü yoktur; yeniden gelmek istersen sıfırdan hesap açman gerekir.',
-      'Verilerinin bir kopyasını talep edebilirsin. Bu talep için bugün uygulama içinde otomatik bir akış yok; aşağıdaki başvuru yolundan talep edebilirsin.',
+      'Verilerinin bir kopyasını indirebilirsin: Ayarlar > Verilerimi indir. Dosya JSON biçiminde hazırlanır ve 24 saat geçerli bir bağlantıyla verilir; süre dolunca dosya erişilemez olur ve yeniden indirebilirsin.',
+      'Dosyada NELER YOK: hakkında açılan şikâyetler (şikâyet edenin kimliğini taşıdıkları için), moderasyon denetim izi, seni kimin engellediği ve sana gelen mesajların metinleri. Sana gelen mesajlar için yalnızca kiminle, kaç mesaj ve en son ne zaman bilgisi yer alır - bir konuşmanın karşı tarafındaki cümleler o kişinin verisidir.',
+      'İNDİRDİĞİN DOSYAYI SEN KORURSUN. İçinde konum geçmişin de dahil olmak üzere hesabındaki her şey vardır; paylaştığın kişi bunların tamamını görür.',
       'Başvuru yolu: başvurularını destek@slooin.com adresine gönderebilirsin; başvurun en geç 30 gün içinde yanıtlanır.',
     ],
   },
