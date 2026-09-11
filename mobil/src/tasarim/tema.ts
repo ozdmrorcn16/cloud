@@ -279,10 +279,20 @@ export const koyuRenk: Renk = {
   rozetZemin: '#FE7813',
 
   /** Harita dokusu koyu modda KOYU tonlarda - bkz. acik paletteki not. */
-  haritaYolInce: '#221F1C',
-  haritaYolOrta: '#2A2622',
-  haritaYolAna: '#332E29',
-  haritaYesil: '#1B231A',
+  // KOYU MODDA TONLAR ACILDI (2026-09-11, kullanicinin bildirdigi
+  // kusur: "karanlik modda profildeki arka plandaki harita
+  // gorunmuyor"). Eski degerler zeminle (#121110) neredeyse ayniydi ve
+  // doku %18 opaklikla cizildigi icin fark 3-6 seviyeye duesueyordu -
+  // pratikte gorunmez.
+  //
+  // OLCULEREK secildi: `zemin + 0,18 * (ton - zemin)` formuluyle acik
+  // moddaki farka (~12 seviye) esitlendi. Daha da acmak 2026-09-10'da
+  // yasanan PARLAMA kusurunu geri getirirdi (o gun degerler acik
+  // paletten alinmisti ve fark 38 seviyeydi).
+  haritaYolInce: '#3E3933',
+  haritaYolOrta: '#4A453F',
+  haritaYolAna: '#55504A',
+  haritaYesil: '#333D31',
 
   /** Yuzer cubuk koyu modda da ayni saydamlikta - acik modla ayni gerekce. */
   yuzerZemin: '#1C1917F0',

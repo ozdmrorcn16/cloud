@@ -141,20 +141,29 @@ function AyarlarIkonu() {
  * bir sey yapmiyordu.
  */
 /**
- * Ust blogun arkasindaki harita dokusunun yuksekligi.
+ * Ust blogun arkasindaki harita dokusu, KIMLIK BLOGUNUN OLCUELEN
+ * yuksekligine gore uzuyor.
  *
  * Kullanicinin siniri (2026-09-10): "profili duzenle yazisina kadar
- * olsun yeter." Deger avatar satirinin (78) ust/alt paylariyla
- * toplamindan geliyor; eylem satirina ULASMIYOR. Avatar boyu ya da
- * paylar degisirse BURASI DA degismeli, yoksa doku ya butonun altina
- * tasar ya da erken biter.
+ * olsun yeter." Deger uzun sure SABITTI (152, sonra 144) ve avatar
+ * satirinin paylarindan elle hesaplanmisti. Bu, biyografinin
+ * KIRPILMASINA dayanan bir varsayimdi: iki satirla sinirliyken blogun
+ * yuksekligi de sabitti. Biyografi kirpmasi kalkinca (2026-09-11)
+ * blok artik 1-5 satir arasi degisiyor, yani sabit bir sayi ya erken
+ * biter ya da butonun altina tasar.
  *
- * 152 -> 144 (2026-09-11): kimlik blogunun ust payi 8 px kisaldi
- * (kullanicinin "biraz daha yukari tasi" istegi), yani dugme dokuya
- * gore 8 px yukari geldi. Doku da ayni kadar kisalmasa butonun
- * altina tasardi.
+ * `HARITA_KUYRUGU` blogun ALTINDA kalan pay: doku tam blogun bittigi
+ * yerde kesilmiyor, sonme gradyani bu kuyrukta eriyip kayboluyor.
  */
-const HARITA_YUKSEKLIGI = 144
+const HARITA_KUYRUGU = 50
+
+/**
+ * Olcuem gelmeden onceki yuksekligi: tek satirlik biyografisi olan bir
+ * blogun boyu. Sifirdan baslamak ilk karede dokuyu HIC cizmez ve olcum
+ * gelince birden belirirdi - ayni tuzak `SekmeHapi` ve karsilama
+ * sahnesinde de yasanmisti.
+ */
+const KIMLIK_VARSAYILAN = 94
 
 /**
  * Dokunun UST CUBUGUN ARKASINA tasma miktari.
@@ -235,6 +244,12 @@ export default function ProfilEkrani() {
   // Buyuk gorunum: fotografa basinca acilir (kullanicinin istegi
   // 2026-08-30). Kaldirma iki adimli: once dugme, sonra onay.
   const [buyukAcik, setBuyukAcik] = useState(false)
+  /*
+   * Kimlik blogunun OLCUELEN yuksekligi - arkadaki harita dokusu buna
+   * gore uzuyor. Biyografi 1-5 satir arasi degisebildigi icin sabit
+   * bir sayi ya erken biterdi ya butonun altina tasardi.
+   */
+  const [kimlikYuksekligi, setKimlikYuksekligi] = useState(KIMLIK_VARSAYILAN)
   const [kaldirOnayi, setKaldirOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
@@ -588,11 +603,14 @@ export default function ProfilEkrani() {
                 kadar olsun yeter"). */}
             <View style={stiller.kimlikKap}>
               <ProfilHaritaZemini
-                yukseklik={HARITA_YUKSEKLIGI}
+                yukseklik={kimlikYuksekligi + HARITA_KUYRUGU}
                 ustTasma={HARITA_UST_TASMA}
               />
 
-              <View style={stiller.kimlik}>
+              <View
+                style={stiller.kimlik}
+                onLayout={(o) => setKimlikYuksekligi(o.nativeEvent.layout.height)}
+              >
                 <View style={stiller.avatarBasilir}>
                   {fotografUrl ? (
                     <Pressable
@@ -646,10 +664,14 @@ export default function ProfilEkrani() {
                   <Text style={stiller.kullaniciAdi} numberOfLines={1}>
                     @{profil.kullaniciAdi}
                   </Text>
+                  {/* BIYOGRAFI KIRPILMIYOR (kullanicinin bildirdigi
+                      kusur 2026-09-11: "biyografi satirina alt alta
+                      2-3 tane sey yazinca hepsi gorunmuyor").
+                      Onceden `numberOfLines={2}` vardi. Sinirsiz
+                      buyume riski YOK: alan sunucuda 160 karakterle
+                      kapali, yani en fazla dort-bes satir. */}
                   {profil.biyografi && (
-                    <Text style={stiller.biyografi} numberOfLines={2}>
-                      {profil.biyografi}
-                    </Text>
+                    <Text style={stiller.biyografi}>{profil.biyografi}</Text>
                   )}
                 </View>
               </View>
@@ -1091,7 +1113,17 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   avatarBasilir: { position: 'relative' as const },
 
   /* EYLEM SATIRI: genis duzenle + kare paylas. */
-  eylemler: { flexDirection: 'row' as const, gap: bosluk.s },
+  /*
+   * EYLEM SATIRI VE ALTI BIRAZ DAHA ASAGIDA (kullanicinin istegi
+   * 2026-09-11: "profili duzenle butonundan itibaren islevleri biraz
+   * daha asagiya cekebilirsin"). Kimlik blogunun kendi alt payiyla
+   * (16) birlikte aradaki bosluk 28 px.
+   *
+   * Pay BURADA, `kimlik.paddingBottom`da DEGIL: doku kimlik blogunun
+   * olcuelen yuksekligine gore uzuyor, yani o paya eklenen her piksel
+   * dokuyu da uzatirdi. Boslugun dokunun disinda kalmasi gerekiyor.
+   */
+  eylemler: { flexDirection: 'row' as const, gap: bosluk.s, marginTop: bosluk.m },
   duzenleButonu: {
     flex: 1,
     // 46 -> 40 (kullanicinin istegi 2026-09-11: "profili duzenle

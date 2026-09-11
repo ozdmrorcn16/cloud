@@ -106,6 +106,27 @@ describe('ProfilEkrani', () => {
     expect(screen.getByText('İzmir')).toBeTruthy()
   })
 
+  /*
+   * BIYOGRAFI KIRPILMIYOR (kullanicinin bildirdigi kusur 2026-09-11:
+   * "alt alta 2-3 tane sey yazinca hepsi gorunmuyor"). Onceden
+   * `numberOfLines={2}` vardi. Sinirsiz buyume riski yok - alan 160
+   * karakterle kapali.
+   */
+  it('biyografi satir sayisiyla kirpilmiyor', async () => {
+    ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-1',
+      kullaniciAdi: 'orcun',
+      ad: 'Orcun Ozdemir',
+      biyografi: 'Birinci satır\nİkinci satır\nÜçüncü satır',
+      fotograflar: [],
+    })
+
+    await render(<ProfilEkrani />)
+
+    const metin = await screen.findByText('Birinci satır\nİkinci satır\nÜçüncü satır')
+    expect(metin.props.numberOfLines).toBeUndefined()
+  })
+
   it('fotografi olmayanda bas harfi gosterir', async () => {
     await render(<ProfilEkrani />)
     expect(await screen.findByText('O')).toBeTruthy()

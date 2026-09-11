@@ -1450,6 +1450,53 @@ Yeni test: "ust cubukta sayfa basligi YOK, yalnizca ayarlar var"
 (`queryByText('Profil')` null). Baslik sessizce geri gelirse kirilir;
 tam eslesme oldugu icin "Profili düzenle" butonu iddiayi tetiklemiyor.
 
+**BIYOGRAFI KIRPMASI KALKTI, DOKU ARTIK OLCUELEN YUKSEKLIGE BAGLI -
+2026-09-11 (kullanicinin bildirdigi kusur).**
+
+"Biyografi satirina alt alta 2-3 tane sey yazinca hepsi gorunmuyor."
+Sebep `numberOfLines={2}` idi. Kaldirildi; SINIRSIZ BUYUME RISKI YOK
+cunku alan duzenleme ekraninda 160 karakterle kapali, yani en fazla
+dort-bes satir.
+
+**BU, SABIT `HARITA_YUKSEKLIGI` SAYISINI GECERSIZ KILDI.** O sabit
+(152, sonra 144) avatar satirinin paylarindan ELLE hesaplanmisti ve
+sessiz bir varsayima dayaniyordu: biyografi iki satirda kirpildigi
+icin blogun boyu da sabitti. Kirpma kalkinca blok 1-5 satir arasi
+degisiyor; sabit sayi ya erken biter ya butonun altina tasardi.
+Artik `kimlik` blogunun yuksekligi `onLayout` ile OLCUELUEYOR ve doku
+`olculen + HARITA_KUYRUGU (50)` kadar uzuyor - kuyruk, sonme
+gradyaninin eriyip kaybolmasi icin gereken pay.
+
+**Ders: elle hesaplanmis bir yerlesim sabiti, hesabin dayandigi
+varsayim degistiginde sessizce yanlis olur.** Burada varsayim bir
+KIRPMAYDI ve kaldirildigi anda sabit anlamsizlasti. Icerik boyu
+degisken olabiliyorsa olcum sabitten iyidir.
+
+Ayrica eylem satiri ve altindakiler biraz asagi alindi (kullanicinin
+ayni mesajdaki istegi): `eylemler.marginTop = 12`, yani kimlik
+blogunun kendi alt payiyla birlikte aradaki bosluk 28 px. Pay
+`eylemler`de, `kimlik.paddingBottom`da DEGIL - doku artik kimlik
+blogunun olcuelen yuksekligine gore uzadigi icin o paya eklenen her
+piksel dokuyu da uzatirdi.
+
+**KOYU MODDA DOKU GORUNMUYORDU** (kullanicinin ayni turdaki ikinci
+bildirimi). Jetonlar (`haritaYol*`, `haritaYesil`) zeminle (#121110)
+neredeyse ayniydi ve doku %18 opaklikla cizildigi icin fark 3-6
+seviyeye duesueyordu - pratikte gorunmez.
+
+Yeni degerler OLCULEREK secildi, gozle degil:
+
+    efektif = zemin + 0,18 * (ton - zemin)
+
+    eski  #332E29 -> fark  6 seviye   (gorunmuyor)
+    YENI  #55504A -> fark 12 seviye   (acik moddaki farkla ayni)
+    2026-09-10'da parlayan deger #D5C9BA -> fark 38 (cok fazla)
+
+Yani bu jetonlar iki kez yanlis ayarlandi ve iki hata ZIT yondeydi:
+once cok parlak (acik paletten alinmisti), sonra cok sonuk. Dogru
+olcut mutlak ton degil ZEMINE GORE FARK - ve o fark opakligi de
+hesaba katmali.
+
 ### YARICAP 500 M: LISTE VE HARITA AYNI - 2026-09-10
 
 Kullanicinin karari: "yakindaki mekanlar da 500 m mesafedeki yerler
