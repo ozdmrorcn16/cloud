@@ -358,8 +358,6 @@ export default {
     geri: 'Geri',
 
     bolumHesap: 'Hesabın',
-    profiliDuzenle: 'Profili düzenle',
-    kullaniciAdi: 'Kullanıcı adı',
     profilGizli: 'Profilim gizli',
     profilGizliAciklama:
       'Açıkken anıların ve check-in’lerin yalnızca arkadaşlarına görünür. Adın, kullanıcı adın ve fotoğrafın herkese açık kalır; böylece seni bulup arkadaşlık isteği gönderebilirler.',
@@ -402,13 +400,15 @@ export default {
     secilmedi: 'Seçilmedi',
   },
 
+  // ADI YANILTICI KALDI: ortada bir EKRAN yok. `/profil/kullanici-adi`
+  // 2026-09-12'de silindi (ayarlardaki tek girisi kaldirilinca oksuz
+  // kaldi) ve kullanici adi duzenlemesi `profil/duzenle` icinde SATIR
+  // ICI yapiliyor. Kalan iki anahtari o ekran kullaniyor; ekrana ait
+  // bes anahtar (baslik, geri, mevcut, kaydet, guncellendi) silindi.
+  // Yeniden adlandirma bu isin kapsami disindaydi - ayni durum
+  // `SekmeHapi` bileseninde de var.
   kullaniciAdiEkrani: {
-    baslik: 'Kullanıcı adı',
-    geri: 'Geri',
-    mevcut: 'Şu anki kullanıcı adın',
     yerTutucu: 'Yeni kullanıcı adı',
-    kaydet: 'Kullanıcı adını değiştir',
-    guncellendi: 'Kullanıcı adın güncellendi.',
     sonrakiDegisim: 'Tekrar değiştirebileceğin tarih: {{tarih}}',
   },
 

@@ -497,8 +497,13 @@ describe('ProfilEkrani', () => {
    * "Profili düzenle" 2026-09-03'te kullanicinin istegiyle
    * KALDIRILMISTI ve giris ayarlara tasinmisti; referans gorselle geri
    * geldi. Paylas da ust cubuktan eylem satirindaki kare butona indi.
-   * Ayarlardaki "Profilini düzenle" satiri DURUYOR - iki giris zarar
-   * vermiyor, kaldirmak o ekrani yine oksuz birakma riski tasiyordu.
+   *
+   * 2026-09-11: ayarlardaki "Profili düzenle" satiri kullanicinin
+   * istegiyle KALDIRILDI, yani bu buton artik `/profil/duzenle`
+   * ekraninin TEK girisi. Bu yuzden asagida butonun VARLIGI degil
+   * NEREYE GITTIGI de olculuyor - yonlendirme koparsa o ekran hicbir
+   * yerden acilamaz ve eskiden bunu hicbir test yakalamazdi.
+   * Ayni sinif hata 2026-09-03'te bir kez yasanmisti.
    */
   it('eylem satirinda Profili duzenle ve paylas butonu VAR', async () => {
     await render(<ProfilEkrani />)
@@ -507,6 +512,15 @@ describe('ProfilEkrani', () => {
     expect(screen.getByTestId('profili-duzenle')).toBeTruthy()
     expect(screen.getByText('Profili düzenle')).toBeTruthy()
     expect(screen.getByTestId('profili-paylas')).toBeTruthy()
+  })
+
+  it('Profili duzenle butonu duzenleme ekranini aciyor (TEK giris)', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('Orcun Ozdemir')
+
+    await fireEvent.press(screen.getByTestId('profili-duzenle'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
   })
 
   it('eylem satirindaki paylas butonu profili paylasiyor', async () => {

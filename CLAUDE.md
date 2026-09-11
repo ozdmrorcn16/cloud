@@ -1305,6 +1305,48 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### AYARLAR SADELESTI: IKI SATIR KALKTI, BIR EKRAN SILINDI - 2026-09-12
+
+Kullanicinin istegi: "Ayarlardan profili duzenle ve kullanici adi
+kismini kaldir."
+
+**ONCE KONTROL EDILDI** - bu projede defalarca yasanmis bir tuzak var:
+bir girisi kaldirmadan once o islemin BASKA girisi var mi diye
+bakilmali. Iki satirin durumu FARKLI cikti:
+
+| Satir | Baska giris | Sonuc |
+|---|---|---|
+| Profili duzenle | VAR - profil ekranindaki "Profili düzenle" butonu | Satir guvenle kalkti |
+| Kullanici adi | YOK - tek giris buydu | Satir kalkti, EKRAN SILINDI |
+
+**`/profil/kullanici-adi` EKRANI SILINDI ve islev KAYBOLMADI:** kullanici
+adi duzenlemesi 2026-09-11'de `profil/duzenle` ekranina SATIR ICI
+tasinmisti, yani ayri ekran zaten ikinci bir yoldu. Satir kalkinca
+oksuz kaliyordu - ayni karar 2026-09-07'de `profil/anilar.tsx` icin de
+verilmisti.
+
+**BU IS ESKI BIR TEST BOSLUGUNU ACIGA CIKARDI.** "Profili düzenle"
+butonu artik `/profil/duzenle` ekraninin TEK girisi, ama profil ekrani
+testi yalnizca butonun GORUNDUGUNU olcuyordu - nereye gittigini DEGIL.
+Yani bir yonlendirme kopmasi o ekrani tamamen ulasilamaz yapar ve
+hicbir test yakalamazdi. Yeni test o iddiayi kilitliyor.
+
+**DORT TEST IDDIASI TERSINE CEVRILDI, SILINMEDI** (depoda yerlesik
+kural): "kullanici adini gosterir" -> "satir ARTIK YOK", "kendi
+ekranina goturur" -> "o adrese hicbir yonlendirme yok", ve iki
+"Profili düzenle VAR" iddiasi -> "YOK". Silmek "bu hic test edilmedi"
+izlenimi birakirdi; tersine cevirmek satirlar sessizce geri gelirse
+testi kiriyor.
+
+Birlikte temizlenenler: `kullaniciAdi` state'i, `kullaniciAdiDurumunuGetir`
+cagrisi ve ayarlardaki importu, `KalemIkonu` ve `KisiIkonu` importlari.
+`kullaniciAdiDurumunuGetir` LIB'DE DURUYOR - `profil/duzenle` onu hala
+kullaniyor.
+
+**BIR TEST YORUMU DA BAYATTI ve duzeltildi:** profil ekrani testinde
+"Ayarlardaki 'Profilini düzenle' satiri DURUYOR" yaziyordu; artik
+durmuyor.
+
 ### ERISIM HAKKI: "VERILERIMI INDIR" - 2026-09-11
 
 KVKK m.11 kisiye kendi verisinin bir KOPYASINI isteme hakki veriyor.

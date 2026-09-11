@@ -10,7 +10,6 @@ import {
   profilGizliAyarla,
   etiketOnayiGerekliGetir,
   etiketOnayiGerekliAyarla,
-  kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import type { Bulunurluk } from '../../../lib/checkin'
 import { hesabiDondur } from '../../../lib/hesap'
@@ -21,10 +20,8 @@ import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
-import { KalemIkonu } from '../../tasarim/SecimPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
-  KisiIkonu,
   BelgeIkonu,
   EngelIkonu,
   KonumIkonu,
@@ -83,7 +80,6 @@ export default function AyarlarEkrani() {
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
   const [profilGizli, setProfilGizli] = useState(false)
   const [etiketOnayi, setEtiketOnayi] = useState(false)
-  const [kullaniciAdi, setKullaniciAdi] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
   const [disaAktariliyor, setDisaAktariliyor] = useState(false)
@@ -101,7 +97,6 @@ export default function AyarlarEkrani() {
       setAramadaGorunsun(await aramadaGorunsunGetir())
       setProfilGizli(await profilGizliGetir())
       setEtiketOnayi(await etiketOnayiGerekliGetir())
-      setKullaniciAdi((await kullaniciAdiDurumunuGetir()).kullaniciAdi)
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -197,21 +192,21 @@ export default function AyarlarEkrani() {
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
         <Bolum baslik={t('ayarlar.bolumHesap')}>
-          {/* "Profili duzenle" satiri GERI GELDI (2026-09-03).
-              2026-08-30'da kaldirilmisti cunku ayni islem profil
-              bandindaki dugmedeydi; o dugme kullanicinin istegiyle
-              kalkinca burasi duzenleme ekranina giden TEK kapi oldu. */}
-          <Satir
-            ikon={<KalemIkonu />}
-            etiket={t('ayarlar.profiliDuzenle')}
-            onPress={() => router.push('/profil/duzenle')}
-          />
-          <Satir
-            ikon={<KisiIkonu />}
-            etiket={t('ayarlar.kullaniciAdi')}
-            deger={kullaniciAdi ?? undefined}
-            onPress={() => router.push('/profil/kullanici-adi')}
-          />
+          {/* "Profili duzenle" ve "Kullanici adi" satirlari
+              KALDIRILDI (kullanicinin istegi 2026-09-11).
+
+              ONCE KONTROL EDILDI - bir girisi kaldirmadan once o
+              islemin baska girisi var mi:
+                /profil/duzenle       -> VAR, profil ekranindaki
+                                         "Profili düzenle" butonu.
+                /profil/kullanici-adi -> tek giris buydu; ama islev
+                                         kaybolmuyor, kullanici adi
+                                         ayni gun profil duzenleme
+                                         ekranina SATIR ICI tasindi.
+                                         Ekran oksuz kaldigi icin
+                                         SILINDI.
+              Ayni kontrol 2026-09-03'te ATLANMIS ve `/profil/duzenle`
+              bir sure ulasilamaz kalmisti. */}
           <Satir
             ikon={<BelgeIkonu />}
             etiket={t('ayarlar.gizlilikMetni')}

@@ -6,7 +6,6 @@ import {
   profilGizliGetir,
   etiketOnayiGerekliGetir,
   aramadaGorunsunAyarla,
-  kullaniciAdiDurumunuGetir,
 } from '../../../lib/ayarlar'
 import { hesabiDondur } from '../../../lib/hesap'
 import { bildirimJetonunuSil } from '../../../lib/bildirim'
@@ -51,19 +50,23 @@ beforeEach(() => {
   ;(profilGizliGetir as jest.Mock).mockResolvedValue(false)
     ;(etiketOnayiGerekliGetir as jest.Mock).mockResolvedValue(false)
   ;(aramadaGorunsunAyarla as jest.Mock).mockResolvedValue(undefined)
-  ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
-    kullaniciAdi: 'orcun',
-    sonrakiDegisimTarihi: null,
-  })
   ;(bildirimJetonunuSil as jest.Mock).mockResolvedValue(undefined)
   sahteDondur.mockResolvedValue(undefined)
   sahteCikis.mockResolvedValue(undefined)
 })
 
 describe('AyarlarEkrani', () => {
-  it('kullanici adini satirin degeri olarak gosterir', async () => {
+  /*
+   * KULLANICI ADI SATIRI KALDIRILDI (kullanicinin istegi 2026-09-11).
+   * Iddia silinmedi TERSINE cevrildi: satir sessizce geri gelirse bu
+   * test kirilir. Islev kaybolmuyor - kullanici adi ayni gun profil
+   * duzenleme ekranina SATIR ICI tasindi.
+   */
+  it('kullanici adi satiri ARTIK YOK', async () => {
     await render(<AyarlarEkrani />)
-    expect(await screen.findByText('orcun')).toBeTruthy()
+
+    await screen.findByText('Gizlilik metni')
+    expect(screen.queryByText('Kullanıcı adı')).toBeNull()
   })
 
   it('check-in gorunurlugunun mevcut degerini satirda gosterir', async () => {
@@ -71,10 +74,17 @@ describe('AyarlarEkrani', () => {
     expect(await screen.findByText('Herkese açık')).toBeTruthy()
   })
 
-  it('kullanici adi satiri kendi ekranina goturur', async () => {
+  /*
+   * `/profil/kullanici-adi` EKRANI SILINDI. Tek girisi ayarlardaki
+   * satirdi; satir kalkinca ekran oksuz kalirdi (ayni karar
+   * 2026-09-07'de `profil/anilar.tsx` icin de verilmisti). Bu test
+   * artik hicbir yonlendirmenin o adrese GITMEDIGINI olcuyor.
+   */
+  it('hicbir satir silinmis kullanici adi ekranina gitmiyor', async () => {
     await render(<AyarlarEkrani />)
-    fireEvent.press(await screen.findByText('Kullanıcı adı'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/profil/kullanici-adi')
+
+    fireEvent.press(await screen.findByText('Gizlilik metni'))
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/profil/kullanici-adi')
   })
 
   it('check-in gorunurlugu satiri kendi ekranina goturur', async () => {
@@ -84,26 +94,23 @@ describe('AyarlarEkrani', () => {
   })
 
   /*
-   * BU IDDIA BAYATTI ve 2026-09-11'de duzeltildi.
+   * HESAP BOLUMU SADELESTI. "Gecmis anilarim" 2026-08-30'da,
+   * "Profili duzenle" ve "Kullanici adi" 2026-09-11'de kalkti.
+   * Bolumde artik yalnizca gizlilik metni, verilerimi indir ve
+   * hesap islemleri var.
    *
-   * Test 2026-08-30'da "Profilini duzenle satiri ARTIK YOK" diye
-   * yazilmisti. Satir 2026-09-03'te GERI KONDU (o gun profil
-   * bandindaki dugme kaldirilinca `/profil/duzenle` ekrani oksuz
-   * kaliyordu) ve asagida, 'Profili düzenle' metniyle ayrica
-   * kilitlendi. Eski iddia yine de YESIL GECIYORDU cunku metni
-   * "Profilini" diye ariyordu - yani kurali hic olcmuyor, yalnizca
-   * bulunmayan bir dizeyi soruyordu. Ayni sinif bayat iddia
-   * 2026-09-10'da kisi aramasinda da yakalanmisti.
-   *
-   * Geriye gecerli olan tek sey "Gecmis anilarim" satirinin
-   * kalkmis olmasi.
+   * Eski iddia BIR KEZ BAYATLAMISTI: metni "Profilini" diye ariyordu
+   * ve satir "Profili düzenle" oldugu icin kurali hic olcmeden yesil
+   * geciyordu. Bu yuzden asagidaki iddialar EKRANDA GERCEKTEN OLAN
+   * bir satiri de bekliyor - yoksa "her sey yok" hali de gecerdi.
    */
-  it('Gecmis anilarim satiri ARTIK YOK, profil duzenleme satiri VAR', async () => {
+  it('Hesap bolumunde duzenleme ve kullanici adi satirlari ARTIK YOK', async () => {
     await render(<AyarlarEkrani />)
 
-    expect(await screen.findByText('Kullanıcı adı')).toBeTruthy()
+    expect(await screen.findByText('Gizlilik metni')).toBeTruthy()
     expect(screen.queryByText('Geçmiş anılarım')).toBeNull()
-    expect(screen.getByText('Profili düzenle')).toBeTruthy()
+    expect(screen.queryByText('Profili düzenle')).toBeNull()
+    expect(screen.queryByText('Kullanıcı adı')).toBeNull()
   })
 
   it('engellenenler satiri listeye goturur', async () => {
@@ -209,15 +216,21 @@ describe('AyarlarEkrani', () => {
     ).toBeTruthy()
   })
 
-  it('Profili duzenle satiri GERI GELDI ve duzenleme ekranini aciyor', async () => {
-    // 2026-08-30'da kaldirilmisti cunku ayni islem profil bandindaki
-    // butondaydi. 2026-09-03'te o buton kalkinca satir geri kondu:
-    // aksi halde /profil/duzenle ekranina hicbir yerden gidilemezdi.
+  /*
+   * "Profili duzenle" satiri 2026-09-11'de kullanicinin istegiyle
+   * KALDIRILDI. Kaldirmak bu kez guvenli: ayni islemin BASKA bir
+   * girisi var - profil ekranindaki "Profili düzenle" butonu
+   * (`src/app/profil/index.tsx`). Ayni kontrol 2026-09-03'te
+   * ATLANMIS ve ekran bir sure ulasilamaz kalmisti; o yuzden
+   * duzenleme ekranina gidebilmek AYRICA profil ekrani testinde
+   * kilitli.
+   */
+  it('ayarlardan duzenleme ekranina yonlendirme YOK', async () => {
     await render(<AyarlarEkrani />)
 
-    await fireEvent.press(await screen.findByText('Profili düzenle'))
+    await fireEvent.press(await screen.findByText('Gizlilik metni'))
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/profil/duzenle')
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/profil/duzenle')
   })
 })
 
