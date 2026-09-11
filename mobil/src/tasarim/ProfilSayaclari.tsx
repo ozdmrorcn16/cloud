@@ -93,7 +93,16 @@ const stilleriYap = (renk: Renk) =>
       borderRadius: yuvarlak.kart,
       borderWidth: 1,
       borderColor: renk.cizgi,
-      paddingVertical: bosluk.m,
+      /*
+       * UST BOSLUK SART: kart ustundeki eylem satirina (kendi
+       * profilde "Profili düzenle", baskasininkinde "Arkadaş ekle")
+       * YAPISIKTI ve kullanici "ust uste binmis" diye bildirdi.
+       * Olculdu: buton 218pt'de bitiyor, kart tam 218pt'de basliyordu
+       * - aralarinda SIFIR bosluk vardi (2026-09-11).
+       */
+      marginTop: bosluk.m,
+      // Dikey dolgu 12 -> 8: kullanicinin istegi "bu kismi kucult".
+      paddingVertical: bosluk.s,
       ...golge.kart,
     },
     sayac: {
@@ -109,10 +118,10 @@ const stilleriYap = (renk: Renk) =>
       width: 1,
       backgroundColor: renk.cizgi,
     },
-    gorsel: { width: 30, height: 27, marginBottom: 3 },
+    gorsel: { width: 26, height: 23, marginBottom: 2 },
     sayi: {
       fontFamily: yazi.ekranBasligi,
-      fontSize: 20,
+      fontSize: 18,
       color: renk.metin,
       letterSpacing: -0.4,
     },

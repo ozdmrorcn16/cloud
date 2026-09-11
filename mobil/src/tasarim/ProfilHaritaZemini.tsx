@@ -1,4 +1,5 @@
 import { View, StyleSheet } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Path } from 'react-native-svg'
 import { ANA_YOLLAR, ORTA_YOLLAR, INCE_YOLLAR, YESIL_ALANLAR } from './karsilama-harita'
 import { useRenk } from './tema-baglami'
@@ -29,10 +30,20 @@ import { useRenk } from './tema-baglami'
  * disaridan geliyor cunku sinir bir TASARIM karari - kullanici
  * "profili duzenle yazisina kadar olsun yeter" dedi.
  */
-export function ProfilHaritaZemini({ yukseklik }: { yukseklik: number }) {
+export function ProfilHaritaZemini({
+  yukseklik,
+  ustTasma = 0,
+}: {
+  yukseklik: number
+  /** Dokunun kabin USTUNE tasma miktari; kenari ekran disinda kalsin. */
+  ustTasma?: number
+}) {
   const renk = useRenk()
   return (
-    <View style={[stiller.kap, { height: yukseklik }]} pointerEvents="none">
+    <View
+      style={[stiller.kap, { height: yukseklik + ustTasma, top: -ustTasma }]}
+      pointerEvents="none"
+    >
       <Svg
         width="100%"
         height="100%"
@@ -52,6 +63,25 @@ export function ProfilHaritaZemini({ yukseklik }: { yukseklik: number }) {
           <Path key={`a${i}`} d={d} stroke={renk.haritaYolAna} strokeWidth={6.5} fill="none" />
         ))}
       </Svg>
+
+      {/* ALT KENARDA SONME.
+      
+          Kullanicinin istegi (2026-09-11): "bitisi gorunmesin". Yalnizca
+          `overflow: hidden` ile kesmek alt kenarda KESKIN bir cizgi
+          birakiyordu - doku yarim kalmis bir gorsel gibi okunuyordu.
+          
+          Gradyan zeminin KENDI rengiyle basliyor: seffaftan zemine
+          gitmek yerine zeminden seffafa gitmek gerekiyor ki doku
+          sayfanin icinde eriyip kaybolsun.
+          
+          `expo-linear-gradient` zaten bagimliliklarda (2026-09-03'ten
+          beri), yeni paket eklenmedi. */}
+      <LinearGradient
+        colors={[renk.zemin + '00', renk.zemin]}
+        locations={[0, 1]}
+        style={stiller.sonme}
+        pointerEvents="none"
+      />
     </View>
   )
 }
@@ -71,8 +101,10 @@ const stiller = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 0,
     overflow: 'hidden',
     opacity: 0.18,
   },
+  /* Sonme dokunun ALT UCTE BIRINI kapliyor: daha kisa olsaydi gecis
+     ani, daha uzun olsaydi doku ortasindan sonmeye baslardi. */
+  sonme: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 56 },
 })

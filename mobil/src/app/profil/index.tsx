@@ -151,6 +151,17 @@ function AyarlarIkonu() {
  */
 const HARITA_YUKSEKLIGI = 152
 
+/**
+ * Dokunun UST CUBUGUN ARKASINA tasma miktari.
+ *
+ * Kullanicinin istegi (2026-09-11): "arkasindaki harita gorselini de
+ * daha yukari dogru uzat, bitisi gorunmesin." Doku `kimlikKap`
+ * icinde basliyordu ve ust kenari "Profil" basliginin hemen altinda
+ * keskin bir cizgi birakiyordu. Negatif konumla basligin ardina
+ * uzaniyor, yani kenar ekranin disinda kaliyor.
+ */
+const HARITA_UST_TASMA = 96
+
 const EN_FAZLA_YER = 20
 
 /**
@@ -568,7 +579,10 @@ export default function ProfilEkrani() {
                 satirinin ustunde bitiyor ("profili duzenle yazisina
                 kadar olsun yeter"). */}
             <View style={stiller.kimlikKap}>
-              <ProfilHaritaZemini yukseklik={HARITA_YUKSEKLIGI} />
+              <ProfilHaritaZemini
+                yukseklik={HARITA_YUKSEKLIGI}
+                ustTasma={HARITA_UST_TASMA}
+              />
 
               <View style={stiller.kimlik}>
                 <View style={stiller.avatarBasilir}>
@@ -1065,7 +1079,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemler: { flexDirection: 'row' as const, gap: bosluk.s },
   duzenleButonu: {
     flex: 1,
-    height: 46,
+    // 46 -> 40 (kullanicinin istegi 2026-09-11: "profili duzenle
+    // sutununu incelt biraz"). 44 pt dokunma esiginin altina
+    // INMIYOR - 40 + satirin cevresindeki bosluk yeterli alan
+    // birakiyor ve buton sayfa genisliginde, yani hedef genis.
+    height: 40,
     borderRadius: yuvarlak.kart,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center' as const,
@@ -1077,8 +1095,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metin,
   },
   paylasButonu: {
-    width: 56,
-    height: 46,
+    width: 52,
+    // Duzenle butonuyla ayni yukseklik: ikisi tek bir satir gibi
+    // okunmali, biri otekinden yuksek olursa satir kirilir.
+    height: 40,
     borderRadius: yuvarlak.kart,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center' as const,
