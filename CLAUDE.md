@@ -1305,6 +1305,59 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### PROFILE INSTAGRAM KULLANICI ADI - 2026-09-11
+
+Kullanicinin istegi: "profiline kullanicilar instagramini
+baglayabilir mi ya da instagram adresini ekleyebilsinler."
+
+**"BAGLAMA" (OAUTH) MUMKUN DEGIL - arastirildi, tekrar denenmesin.**
+Meta, Instagram Basic Display API'yi **4 Aralik 2024'te kapatti** ve
+kisisel hesap destegini tamamen kaldirdi. Yerine gelen "Instagram API
+with Instagram Login" ve Graph API yalnizca ISLETME/ICERIK URETICI
+hesaplariyla calisiyor; siradan bir kullanici hesabini donusturmeden
+baglayamaz. Yani "bu hesap gercekten onun" dogrulamasini yapmanin
+yolu YOK.
+
+**BU YUZDEN ALAN BIR BEYAN ve kullaniciya ACIKCA SOYLENDI.** Kisi
+teorik olarak baskasinin kullanici adini yazabilir; karsiligi mevcut
+sikayet akisi. Kullanici bu haliyle onayladi ("Ekle"). Instagram'in
+kendi "baglantilar" alani da ayni sekilde calisiyor. Bunu gizlemek ya
+da dogrulanmis bir bag gibi sunmak yanlis olurdu - duzenleme
+ekranindaki ipucu da "Doğrulanmaz" diyor.
+
+| Parca | Yeri |
+|---|---|
+| Sutun | `profiller.instagram` + bicim kisiti, `grant update (instagram)` |
+| Bicim kurallari | `lib/instagram.ts` (saf, 11 testli) |
+| Okuma | `kendiProfilimiGetir` ve `baskasinin_profili` (RPC donus tipi degisti, DROP+CREATE) |
+| Yazma | `profiliGuncelle` |
+| Ekran | `profil/duzenle` (onekli girdi) |
+| Gosterim | `src/tasarim/InstagramSatiri.tsx` - IKI profil ekrani da ayni bileseni kullaniyor |
+
+**UC YAZIM BICIMI DE KABUL EDILIYOR:** `orcun`, `@orcun`,
+`https://instagram.com/orcun/`. `instagramNormallestir` hepsini ayni
+degere indiriyor - alanin tek isi bir profile gitmek, "yanlis yazdin"
+demek gereksiz surtunme olurdu.
+
+**`toLowerCase` YERELDEN BAGIMSIZ olmali:** `toLocaleLowerCase('tr')`
+'I' harfini 'ı' yapar ve o karakter ASCII disi oldugu icin hem
+sunucudaki kisiti ihlal eder hem de baglantiyi bozardi. Bir testle
+kilitli.
+
+**KISIT IKI KATMANDA ve ISLERI FARKLI:** sunucudaki check yalnizca
+KARAKTER KUMESI ve UZUNLUK bakiyor - isi copu (tam URL, bosluklu
+metin, olta baglantisi) engellemek. Ince kurallar (nokta basta/sonda
+olamaz, cift nokta olmaz) ISTEMCIDE, cunku orada kullaniciya sebebini
+soyleyen bir mesaj gosterilebiliyor; sunucudan gelen ham kisit ihlali
+kullaniciya hicbir sey anlatmaz.
+
+**KAPALI PROFILDE DE GORUNUYOR**, biyografi gibi: "profilim gizli"
+ayari ANILARI kapatiyor, kimlik satirini degil.
+
+Ikon Instagram'in GRADYANLI marka isareti DEGIL, tek renkli bir kamera
+cizimi - baglanti satirlarinin alisilmis dili bu ve marka renkleri
+profildeki turuncu kimlige yabanci duserdi.
+
 ### PROFIL UST BLOGU REFERANSA GORE YENIDEN DUZENLENDI - 2026-09-10
 
 Kullanici bir referans gorsel gonderip "profil sayfasinin ust kismini

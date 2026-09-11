@@ -7,6 +7,12 @@ export type BaskaProfil = {
   kullaniciAdi: string
   ad: string
   biyografi: string | null
+  /**
+   * BEYAN EDILEN Instagram kullanici adi (2026-09-11). Dogrulanmis
+   * DEGIL - Meta kisisel hesaplar icin OAuth yolunu 2024-12-04'te
+   * kapatti; ayrinti `lib/instagram.ts` basinda.
+   */
+  instagram: string | null
   fotograflar: string[]
   /**
    * Kisinin "profilim gizli" ayari. Sunucu bunu 2026-09-02'den beri
@@ -26,6 +32,7 @@ type SunucuProfili = {
   kullanici_adi: string
   ad: string
   biyografi: string | null
+  instagram: string | null
   fotograflar: string[]
   profil_gizli: boolean | null
   arkadas_sayisi: number | null
@@ -68,6 +75,7 @@ export async function baskasininProfiliniGetir(
     kullaniciAdi: satir.kullanici_adi,
     ad: satir.ad,
     biyografi: satir.biyografi,
+    instagram: satir.instagram ?? null,
     fotograflar: satir.fotograflar,
     profilGizli: satir.profil_gizli ?? false,
     arkadasSayisi: satir.arkadas_sayisi ?? 0,
@@ -79,6 +87,7 @@ export type KendiProfil = {
   kullaniciAdi: string
   ad: string
   biyografi: string | null
+  instagram: string | null
   fotograflar: string[]
 }
 
@@ -99,7 +108,7 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
 
   const { data, error } = await supabase
     .from('profiller')
-    .select('id, kullanici_adi, ad, biyografi, fotograflar')
+    .select('id, kullanici_adi, ad, biyografi, instagram, fotograflar')
     .eq('id', kullaniciId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
@@ -111,6 +120,7 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
     kullaniciAdi: satir.kullanici_adi,
     ad: satir.ad,
     biyografi: satir.biyografi,
+    instagram: satir.instagram ?? null,
     fotograflar: satir.fotograflar,
   }
 }
@@ -223,6 +233,11 @@ async function klasoruTemizle(kullaniciId: string, korunacakYol: string | null):
 export async function profiliGuncelle(alanlar: {
   ad: string
   biyografi: string | null
+  /**
+   * Instagram kullanici adi. `null` alani TEMIZLIYOR - kisi
+   * baglantisini kaldirabilmeli.
+   */
+  instagram?: string | null
 }): Promise<void> {
   const { data: kullaniciVerisi } = await supabase.auth.getUser()
   const kullaniciId = kullaniciVerisi.user?.id
@@ -230,7 +245,11 @@ export async function profiliGuncelle(alanlar: {
 
   const { error } = await supabase
     .from('profiller')
-    .update({ ad: alanlar.ad, biyografi: alanlar.biyografi })
+    .update({
+      ad: alanlar.ad,
+      biyografi: alanlar.biyografi,
+      instagram: alanlar.instagram ?? null,
+    })
     .eq('id', kullaniciId)
   if (error) throw new Error(hataMetni(error))
 }

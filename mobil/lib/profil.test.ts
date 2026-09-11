@@ -41,6 +41,10 @@ describe('baskasininProfiliniGetir', () => {
       kullaniciAdi: 'ada123',
       ad: 'Ada',
       biyografi: 'merhaba',
+      // BEYAN EDILEN Instagram (2026-09-11). Sunucu gondermezse null -
+      // guvenli taraf bu: olmayan bir hesaba baglanti cizmektense hic
+      // cizmemek dogru.
+      instagram: null,
       fotograflar: ['a.jpg'],
       // 2026-09-08'de eklendi: gizlilik ayari sunucudan geliyordu ama
       // istemci okumuyordu; arkadas sayisi ise yeni.
@@ -99,6 +103,7 @@ describe('kendiProfilimiGetir', () => {
       kullaniciAdi: 'orcun',
       ad: 'Orcun',
       biyografi: 'merhaba',
+      instagram: null,
       fotograflar: ['a.jpg'],
     })
   })

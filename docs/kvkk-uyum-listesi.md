@@ -133,6 +133,24 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   bilgi. Geri alinabilir olmasi ayrica onemli: moderator karari
   `moderasyon_mekani_geri_ac` ile donuyor ve iki islem de denetim izine
   yaziliyor.
+- **Profildeki Instagram kullanici adi** (2026-09-11). Kisi profiline
+  Instagram kullanici adini yaziyor; profilinde tiklanabilir bir
+  baglanti olarak herkese gorunuyor. Dort soru: hangi veri = kisinin
+  KENDI BEYAN ETTIGI bir hesap adi (baska bir platformdaki acik
+  profiline isaret ediyor); dayanak = kullanicinin kendi eylemi, alan
+  tamamen istege bagli ve bos birakilabiliyor; sure = kisi silene ya
+  da hesabini kapatana kadar, hesap silinince profil satiriyla
+  birlikte gidiyor; kim gorur = profili gorebilen herkes -
+  BIYOGRAFIYLE AYNI gorunurlukte, "profilim gizli" ayari anilari
+  kapatiyor kimlik satirini degil.
+  **DOGRULAMA YOK ve bu bilerek kabul edildi.** Meta, Instagram Basic
+  Display API'yi 2024-12-04'te kapatti; kisisel hesaplar icin OAuth
+  ile "bu hesap gercekten benim" dogrulamasi artik mumkun degil.
+  Sonucu: kisi teorik olarak baskasinin kullanici adini yazabilir.
+  Kullaniciya acikca soylendi ve bu haliyle onaylandi; karsiligi
+  mevcut sikayet akisi. Alan uygulama DISINA baglanti veriyor ama
+  bizden Instagram'a hicbir veri GITMIYOR - baglantiya basan kisinin
+  tarayicisi aciliyor, yani yurt disina aktarim listesine girmiyor.
 - **OSRM yol tarifi servisi** (2026-09-09'da EKLENDI, ayni gun
   KALDIRILDI). Mekan sayfasinda kullanicidan mekana giden yolu haritada
   cizmek icin iki koordinat (kullanicinin anlik konumu ve mekanin

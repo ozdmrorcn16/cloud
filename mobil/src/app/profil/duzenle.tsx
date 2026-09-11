@@ -3,6 +3,11 @@ import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import { kendiProfilimiGetir, profiliGuncelle } from '../../../lib/profil'
+import {
+  instagramNormallestir,
+  instagramGecerliMi,
+  INSTAGRAM_EN_FAZLA,
+} from '../../../lib/instagram'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { UstCubuk } from '../../tasarim/UstCubuk'
@@ -38,6 +43,7 @@ export default function ProfilDuzenleEkrani() {
 
   const [ad, setAd] = useState('')
   const [biyografi, setBiyografi] = useState('')
+  const [instagram, setInstagram] = useState('')
   const [kullaniciAdi, setKullaniciAdi] = useState('')
   const [odakli, setOdakli] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
@@ -51,6 +57,7 @@ export default function ProfilDuzenleEkrani() {
         if (!gecerli || !profil) return
         setAd(profil.ad)
         setBiyografi(profil.biyografi ?? '')
+        setInstagram(profil.instagram ?? '')
         setKullaniciAdi(profil.kullaniciAdi)
       })
       .catch((e) => {
@@ -70,9 +77,28 @@ export default function ProfilDuzenleEkrani() {
       return
     }
 
+    /*
+     * INSTAGRAM ONCE NORMALLESTIRILIYOR, sonra dogrulaniyor. Insanlar
+     * bu alana `@orcun` ya da yapistirilmis bir adres yaziyor; ucunu
+     * de kabul edip ayni degere indirmek "yanlis yazdin" demekten iyi.
+     * Bos birakmak alani TEMIZLIYOR - kisi baglantisini kaldirabilmeli.
+     */
+    const instagramSade = instagramNormallestir(instagram)
+    if (instagramSade.length > 0 && !instagramGecerliMi(instagramSade)) {
+      setHata(t('profilDuzenle.instagramHata'))
+      return
+    }
+
     setKaydediliyor(true)
     try {
-      await profiliGuncelle({ ad: ad.trim(), biyografi: biyografi.trim() || null })
+      await profiliGuncelle({
+        ad: ad.trim(),
+        biyografi: biyografi.trim() || null,
+        instagram: instagramSade || null,
+      })
+      // Normallesmis hali ekrana yaziliyor: kisi ne kaydedildigini
+      // gorsun, "@" ile yazdiysa onun duestuegunu anlasin.
+      setInstagram(instagramSade)
       setBilgi(t('profilDuzenle.kaydedildi'))
     } catch (e) {
       setHata(hataMetni(e))
@@ -145,6 +171,33 @@ export default function ProfilDuzenleEkrani() {
           multiline
           maxLength={EN_FAZLA_BIYOGRAFI}
         />
+        <Text style={stiller.etiket}>{t('profilDuzenle.instagramEtiket')}</Text>
+        <View style={[stiller.girdi, stiller.onekli, odakli === 'ig' && stiller.girdiOdakli]}>
+          {/* "@" ALANIN ICINDE, SABIT: kullanicinin onu yazmasi
+              gerekmiyor ve alanin ne bekledigi bakar bakmaz anlasiliyor.
+              Yine de yazan olursa normallestirme onu atiyor. */}
+          <Text style={stiller.onek}>@</Text>
+          <TextInput
+            style={stiller.oneksizGirdi}
+            placeholder={t('profilDuzenle.instagramYerTutucu')}
+            placeholderTextColor={renk.metinIkincil}
+            value={instagram}
+            onChangeText={(y) => {
+              setInstagram(y)
+              setBilgi(null)
+            }}
+            onFocus={() => setOdakli('ig')}
+            onBlur={() => setOdakli(null)}
+            autoCapitalize="none"
+            autoCorrect={false}
+            // Yapistirilan bir adres 30 karakteri asabiliyor; sinir
+            // normallestirmeden SONRA dogrulaniyor, girdide degil.
+            maxLength={INSTAGRAM_EN_FAZLA + 40}
+            testID="instagram-girdisi"
+          />
+        </View>
+        <Text style={stiller.ipucu}>{t('profilDuzenle.instagramIpucu')}</Text>
+
         <Pressable
           style={stiller.birincil}
           onPress={kaydet}
@@ -194,6 +247,32 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   girdiOdakli: { borderColor: renk.turuncu },
   cokSatirli: { height: 96, textAlignVertical: 'top', paddingTop: 14 },
+  /*
+   * ONEKLI GIRDI: "@" alanin icinde sabit duruyor, yazi onun sagindan
+   * basliyor. Dikey dolgu SIFIRLANIYOR cunku artik yuksekligi iceride
+   * duran `TextInput` belirliyor; `girdi`nin 15'lik dolgusu ustune
+   * binseydi alan digerlerinden uzun olurdu.
+   */
+  onekli: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingVertical: 0,
+  },
+  onek: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
+  oneksizGirdi: {
+    flex: 1,
+    paddingVertical: 15,
+    paddingLeft: 2,
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  ipucu: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+    marginTop: bosluk.xs,
+  },
 
   satir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   satirYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metin },

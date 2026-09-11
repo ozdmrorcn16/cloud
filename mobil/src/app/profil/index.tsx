@@ -50,6 +50,7 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
+import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 
 /**
@@ -673,6 +674,11 @@ export default function ProfilEkrani() {
                   {profil.biyografi && (
                     <Text style={stiller.biyografi}>{profil.biyografi}</Text>
                   )}
+                  {/* INSTAGRAM BEYANI (2026-09-11) - biyografinin
+                      altinda, cunku ikisi de "bu kisi kim" bilgisi.
+                      Ortak bilesen: baskasinin profili ayni satiri
+                      kullaniyor. */}
+                  {profil.instagram && <InstagramSatiri kullaniciAdi={profil.instagram} />}
                 </View>
               </View>
 

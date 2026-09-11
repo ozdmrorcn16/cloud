@@ -326,6 +326,16 @@ export default {
     kullaniciAdiEtiket: 'Kullanıcı adı',
     biyografiEtiket: 'Biyografi',
     biyografiYerTutucu: 'Kendinden kısaca bahset',
+    // INSTAGRAM BEYAN, DOGRULAMA DEGIL (2026-09-11). Ipucu bunu ACIKCA
+    // soyluyor: Meta kisisel hesaplar icin OAuth yolunu kapatti, yani
+    // "bu gercekten onun hesabi" garantisini veremiyoruz. Kullaniciya
+    // dogrulanmis bir bag izlenimi vermek yanlis olurdu.
+    instagramEtiket: 'Instagram',
+    instagramYerTutucu: 'kullanıcı adın',
+    instagramIpucu:
+      'Bağlantı da yapıştırabilirsin. Doğrulanmaz; profilinde bağlantı olarak görünür.',
+    instagramHata:
+      'Instagram kullanıcı adı harf, rakam, nokta ve alt çizgiden oluşur; nokta ile başlayamaz ya da bitemez.',
     kaydediliyor: 'Kaydediliyor…',
     kaydedildi: 'Profilin güncellendi.',
   },

@@ -15,6 +15,7 @@ import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/t
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
+import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import {
@@ -361,6 +362,11 @@ export default function KullaniciProfiliEkrani() {
           )}
           <Text style={stiller.ad}>{profil.ad}</Text>
           {profil.biyografi ? <Text style={stiller.biyografi}>{profil.biyografi}</Text> : null}
+          {/* INSTAGRAM BEYANI (2026-09-11), kendi profille AYNI
+              bilesen. KAPALI PROFILDE DE gorunuyor: biyografi gibi
+              kisinin kendi yayinladigi bir bilgi ve gizlilik ayari
+              ANILARI kapatiyor, kimlik satirini degil. */}
+          {profil.instagram ? <InstagramSatiri kullaniciAdi={profil.instagram} /> : null}
         </View>
 
         {/* FOTOGRAF SERIDI KALDI. Kendi profilinde fotograflar ayri bir

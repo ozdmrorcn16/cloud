@@ -107,6 +107,35 @@ describe('ProfilEkrani', () => {
   })
 
   /*
+   * INSTAGRAM BEYANI (kullanicinin istegi 2026-09-11). DOGRULANMIS
+   * DEGIL - Meta kisisel hesaplar icin OAuth yolunu 2024-12-04'te
+   * kapatti. Satir yalnizca deger VARSA ciziliyor: bos bir baglanti
+   * satiri profilde sebepsiz dururdu.
+   */
+  it('instagram varsa tiklanabilir satir ciziyor', async () => {
+    ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-1',
+      kullaniciAdi: 'orcun',
+      ad: 'Orcun Ozdemir',
+      biyografi: 'İzmir',
+      instagram: 'orcun.ozdemir',
+      fotograflar: [],
+    })
+
+    await render(<ProfilEkrani />)
+
+    expect(await screen.findByTestId('instagram-baglantisi')).toBeTruthy()
+    expect(screen.getByText('orcun.ozdemir')).toBeTruthy()
+  })
+
+  it('instagram yoksa satir hic cizilmiyor', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('@orcun')
+
+    expect(screen.queryByTestId('instagram-baglantisi')).toBeNull()
+  })
+
+  /*
    * BIYOGRAFI KIRPILMIYOR (kullanicinin bildirdigi kusur 2026-09-11:
    * "alt alta 2-3 tane sey yazinca hepsi gorunmuyor"). Onceden
    * `numberOfLines={2}` vardi. Sinirsiz buyume riski yok - alan 160
