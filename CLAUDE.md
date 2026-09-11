@@ -1296,6 +1296,35 @@ uzerinde duruyor ve o zemin temayla donuyor.
 **HARITA TAMAMEN DEKORATIF** (kullanicinin teyidi): `pointerEvents="none"`,
 dokunma almiyor, hicbir islevi yok - yalnizca arka plan dokusu.
 
+**UC DUZELTME - 2026-09-11 (kullanicinin bildirdikleri, hepsi yayinda).**
+
+1. **"Bu kismi kucult, profili duzenleyle ust uste binmis."** Olculdu ve
+   sebep tam olarak buydu: "Profili düzenle" butonu 218pt'de bitiyor,
+   sayac karti **TAM 218pt'de** basliyordu - aralarinda SIFIR bosluk
+   vardi. `ProfilSayaclari`a `marginTop: bosluk.m` eklendi; kart ayrica
+   kisaldi (dikey dolgu 12 -> 8, ikon 30x27 -> 26x23, sayi 20 -> 18).
+   **Gozle "bitisik duruyor" demek yerine iki ogenin alt/ust
+   koordinatini olcmek dogru yol** - fark bir margin eksikligiydi, bir
+   olcu hatasi degil.
+
+2. **"Arkasindaki harita gorselini de daha yukari dogru uzat, bitisi
+   gorunmesin."** `ProfilHaritaZemini` artik `ustTasma` prop'u aliyor
+   (`HARITA_UST_TASMA = 96`) ve `top: -ustTasma` ile ust cubugun
+   ARKASINA uzaniyor, yani ust kenari ekran disinda kaliyor. Alt kenar
+   icin `overflow: hidden` YETMEDI - keskin bir cizgi birakiyor ve doku
+   "yarim kalmis gorsel" gibi okunuyordu; `LinearGradient` ile
+   seffaftan `renk.zemin`e sonen 56 px'lik bir kapanis eklendi.
+   Gradyan zeminin KENDI rengiyle bitiyor, yoksa doku sayfanin icinde
+   erimezdi.
+
+3. **"Profili duzenle sutununu incelt biraz."** `duzenleButonu`
+   yuksekligi 46 -> 40, `paylasButonu` 56x46 -> 52x40.
+
+Dogrulama: jest 67 paket / 808 test, tsc uygulama kodunda 0 hata, IKI
+MODDA da canli ekran goruntusu (`tasarim/profil-canli-light.png`,
+`profil-canli-dark.png`). Yayin: web `slooin--f43grktb7l.expo.app`,
+OTA grup `20568225-d146-4f86-b481-14f671ad06a3`.
+
 **JEST GENEL TIMEOUT'U 20 SN'YE CIKARILDI** (`package.json` icindeki
 `jest.testTimeout`). Bugun DORT KEZ ayni sey yasandi: testler tek
 basina 3-5 sn suruyor, tam paket kosumunda makine yuklu oldugu icin 5
