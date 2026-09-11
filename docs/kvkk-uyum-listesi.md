@@ -133,6 +133,20 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   bilgi. Geri alinabilir olmasi ayrica onemli: moderator karari
   `moderasyon_mekani_geri_ac` ile donuyor ve iki islem de denetim izine
   yaziliyor.
+- **Profildeki "yasadigin bolge"** (2026-09-11). Kisi profiline il ve
+  ilce secebiliyor; secerse biyografisinin altinda gorunuyor. Dort
+  soru: hangi veri = KABA KONUM (ilce duzeyinde, adres ya da koordinat
+  DEGIL); dayanak = kullanicinin kendi eylemi, alan TAMAMEN OPSIYONEL
+  ve bos birakilabiliyor - ekranda da "İsteğe bağlı" yaziyor; sure =
+  kisi kaldirana ya da hesabini silene kadar; kim gorur = profili
+  gorebilen herkes, biyografiyle ayni gorunurlukte.
+  **CHECK-IN KONUMUYLA KARISTIRILMAMALI:** bu alan kisinin BEYAN
+  ETTIGI yerlesim bolgesi, o anki konumu degil; cihazdan hicbir sey
+  okunmuyor ve secim yalnizca elle yapiliyor. Check-in koordinati
+  bambaska bir yolda ve 1 saatte siliniyor.
+  Deger serbest metin DEGIL, `public.ilceler` listesinden seciliyor
+  (OSM idari sinir poligonlarindan uretilmis 968 il/ilce cifti); yani
+  profilde uydurma bir yer adi gorunemiyor.
 - **Profildeki Instagram kullanici adi** (2026-09-11). Kisi profiline
   Instagram kullanici adini yaziyor; profilinde tiklanabilir bir
   baglanti olarak herkese gorunuyor. Dort soru: hangi veri = kisinin

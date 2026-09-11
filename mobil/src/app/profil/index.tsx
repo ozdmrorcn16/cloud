@@ -51,6 +51,7 @@ import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
+import { bolgeMetni } from '../../../lib/bolge'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 
 /**
@@ -674,6 +675,14 @@ export default function ProfilEkrani() {
                   {profil.biyografi && (
                     <Text style={stiller.biyografi}>{profil.biyografi}</Text>
                   )}
+                  {/* YASADIGI BOLGE (2026-09-11) - biyografinin hemen
+                      altinda, kullanicinin istegi uzerine. Opsiyonel:
+                      secilmemisse satir HIC cizilmiyor. */}
+                  {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce) && (
+                    <Text style={stiller.bolge} testID="profil-bolgesi">
+                      {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce)}
+                    </Text>
+                  )}
                   {/* INSTAGRAM BEYANI (2026-09-11) - biyografinin
                       altinda, cunku ikisi de "bu kisi kim" bilgisi.
                       Ortak bilesen: baskasinin profili ayni satiri
@@ -1058,11 +1067,32 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
    * (2026-09-10). Ikincil bir kimlik satiri oldugu icin `metinSoluk`:
    * ad koyu ve kalin, kullanici adi onun altinda sessiz duruyor.
    */
+  /*
+   * KULLANICI ADI DAHA BELIRGIN (kullanicinin istegi 2026-09-11:
+   * "profilde kullanici adi biraz daha belirgin bir yazi olsun").
+   *
+   * `metinSoluk` -> `metinIkincil` ayni zamanda bir KONTRAST
+   * DUZELTMESI: soluk jeton beyaz zeminde 2,74:1 veriyordu ve metin
+   * icin gereken 4,5 esiginin altindaydi (2026-09-08 olcumu);
+   * `metinIkincil` 5,63. Punto da 13 -> 15.
+   *
+   * ADIN ONUNE GECMIYOR: ad `ekranBasligi` ile 22 punto ve kalin,
+   * kullanici adi hala govde agirliginda - hiyerarsi korunuyor.
+   */
   kullaniciAdi: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinSoluk,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
     marginTop: 1,
+  },
+  /* Bolge satiri biyografiyle AYNI dilde: ikisi de "bu kisi kim"
+     bilgisi ve ikisi de ikincil. */
+  bolge: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    marginTop: 2,
   },
 
   hata: {
@@ -1360,19 +1390,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
     marginTop: 4,
     /*
-     * UC SATIRLIK ALAN AYRILIYOR (kullanicinin istegi 2026-09-11:
-     * "yazilacaginca gorunecegi alt alta birkac satirlik alan
-     * yarat"). 3 x lineHeight(20) = 60.
+     * REZERVE EDILMIS UC SATIRLIK ALAN KALDIRILDI (2026-09-11, ayni
+     * gun eklenip ayni gun geri alindi).
      *
-     * `minHeight`, sabit `height` DEGIL: alan 160 karakterle kapali
-     * ama bu dort-bes satir edebiliyor ve o durumda metnin kirpilmasi
-     * kullanicinin AYNI GUN bildirdigi kusurun ta kendisi olurdu.
-     * Yani ucten azsa yer ayrilir, fazlaysa asagi buyur.
+     * Amaci adin yerini sabitlemekti ama asil isi yapan sey o degil,
+     * `kimlik.alignItems: 'flex-start'`. Altina BOLGE satiri gelince
+     * kusuru gorundu: tek satirlik bir biyografide 40 px'lik bos
+     * rezerv, biyografi ile bolge satirinin ARASINDA bir delik
+     * birakiyordu - canli ekran goruntusunde olculdu.
      *
-     * Biyografi YOKSA hic cizilmiyor, dolayisiyla bos yer de
-     * ayrilmiyor - bos bir profilde 60 px bosluk sebepsiz olurdu.
+     * Kirpma da geri gelmedi: `numberOfLines` yok, metin kac satirsa
+     * o kadar yer kapliyor.
      */
-    minHeight: 60,
   },
 
   // Canli serit: ekranin imza ogesi. Turuncu nokta "su an oluyor" der.

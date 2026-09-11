@@ -16,6 +16,7 @@ import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
+import { bolgeMetni } from '../../../lib/bolge'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import {
@@ -362,6 +363,13 @@ export default function KullaniciProfiliEkrani() {
           )}
           <Text style={stiller.ad}>{profil.ad}</Text>
           {profil.biyografi ? <Text style={stiller.biyografi}>{profil.biyografi}</Text> : null}
+          {/* YASADIGI BOLGE (2026-09-11), kendi profille ayni yerde:
+              biyografinin hemen altinda. */}
+          {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce) ? (
+            <Text style={stiller.bolge} testID="profil-bolgesi">
+              {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce)}
+            </Text>
+          ) : null}
           {/* INSTAGRAM BEYANI (2026-09-11), kendi profille AYNI
               bilesen. KAPALI PROFILDE DE gorunuyor: biyografi gibi
               kisinin kendi yayinladigi bir bilgi ve gizlilik ayari
@@ -708,6 +716,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 20,
     color: renk.metinIkincil,
     textAlign: 'center',
+  },
+  /* Bolge satiri kendi profildekiyle AYNI dilde; buradaki tek fark
+     ekranin ortali duzeni. */
+  bolge: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.metinIkincil,
+    textAlign: 'center',
+    marginTop: 2,
   },
   aniSayisi: {
     fontFamily: yazi.govde,

@@ -23,6 +23,8 @@ export default {
     vazgec: 'Vazgeç',
     geri: 'Geri',
     kapat: 'Kapat',
+    ara: 'Ara',
+    sonucYok: 'Sonuç yok.',
   },
 
   karsilama: {
@@ -337,6 +339,14 @@ export default {
     instagramYerTutucu: 'kullanıcı adın',
     instagramIpucu:
       'Bağlantı da yapıştırabilirsin. Doğrulanmaz; profilinde bağlantı olarak görünür.',
+    // YASADIGIN BOLGE (2026-09-11). OPSIYONEL ve bu ekranda da
+    // yaziyor: kisi konumunu paylasmak zorunda degil.
+    bolgeEtiket: 'Yaşadığın bölge',
+    bolgeSecilmedi: 'Seçilmedi',
+    bolgeIpucu: 'İsteğe bağlı. Seçersen profilinde görünür.',
+    bolgeIlSec: 'İl seç',
+    bolgeIlceSec: 'İlçe seç',
+    bolgeKaldir: 'Bölgeyi kaldır',
     instagramHata:
       'Instagram kullanıcı adı harf, rakam, nokta ve alt çizgiden oluşur; nokta ile başlayamaz ya da bitemez.',
     kaydediliyor: 'Kaydediliyor…',

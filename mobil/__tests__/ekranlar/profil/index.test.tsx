@@ -128,6 +128,36 @@ describe('ProfilEkrani', () => {
     expect(screen.getByText('orcun.ozdemir')).toBeTruthy()
   })
 
+  /*
+   * YASADIGI BOLGE (kullanicinin istegi 2026-09-11): "secerse
+   * profilinde biyografi kisimlarinin orada gorunur". Opsiyonel -
+   * secilmemisse satir HIC cizilmiyor.
+   */
+  it('bolge secilmisse biyografinin altinda gosteriliyor', async () => {
+    ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-1',
+      kullaniciAdi: 'orcun',
+      ad: 'Orcun Ozdemir',
+      biyografi: 'İzmir',
+      instagram: null,
+      yasadigiIl: 'Bursa',
+      yasadigiIlce: 'Nilüfer',
+      fotograflar: [],
+    })
+
+    await render(<ProfilEkrani />)
+
+    expect(await screen.findByTestId('profil-bolgesi')).toBeTruthy()
+    expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy()
+  })
+
+  it('bolge secilmemisse satir hic cizilmiyor', async () => {
+    await render(<ProfilEkrani />)
+    await screen.findByText('@orcun')
+
+    expect(screen.queryByTestId('profil-bolgesi')).toBeNull()
+  })
+
   it('instagram yoksa satir hic cizilmiyor', async () => {
     await render(<ProfilEkrani />)
     await screen.findByText('@orcun')

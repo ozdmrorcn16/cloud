@@ -1305,6 +1305,75 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### KULLANICI ADI SATIR ICINDE, YASADIGIN BOLGE - 2026-09-11
+
+**1. KULLANICI ADI ARTIK PROFIL DUZENLEMEDE SATIR ICINDE.**
+Kullanicinin istegi: "kullanici adi satirina basinca baska sayfaya
+geciyor, onu iptal et; bu attigim kendi satirinda duzenleme
+yapilacak." Onceden satir `/profil/kullanici-adi` ekranina gidiyordu.
+
+**O EKRAN SILINMEDI ve bu bilincli:** ayarlardaki "Kullanıcı adı"
+satiri hala oraya gidiyor, yani ikinci bir girisi var. Bir girisi
+kaldirmadan once o islemin baska girisi var mi diye BAKMAK gerekiyor -
+ayni tuzak 2026-09-03'te ayarlardaki "Profili düzenle" satirinda ve
+2026-09-07'de "Anılarım" ekraninda yasandi.
+
+Mantik iki kez yazilmadi: bicim kurallari ve degistirme cagrisi
+`lib/kullanici-adi.ts` icinde, iki ekran da onu kullaniyor.
+
+**SIRA ONEMLI - kaydetmede kullanici adi ONCE deneniyor.** O islem
+reddedilebilir (30 gun kurali, ad alinmis); sonra yapilsaydi ad ve
+biyografi kaydedilir, kullanici adi reddedilirdi ve kisi neyin
+kaydedilip neyin kaydedilmedigini anlamazdi.
+
+**DEGISMEDIYSE RPC HIC CAGRILMIYOR:** 30 gun sayaci yalnizca ad
+gercekten degistiginde harcanmali. Kisi biyografisini duzeltip
+kaydettiginde kullanici adi hakkini kaybetmemeli. Bir testle kilitli.
+
+**2. YASADIGIN BOLGE (il + ilce), OPSIYONEL.**
+Kullanicinin istegi: "profili duzenlemeye yasadigin bolge diye bir sey
+ekleyelim, il ilce secilsin, sadece opsiyonel; secerse profilinde
+biyografi kisimlarinin orada gorunur."
+
+**ILCE LISTESI TURETILMIS DEGIL - bu isin en onemli karari.**
+Kullanicinin kurali (`turetilmis-veri-degil-gercek-kayit`) geregi liste
+`mekanlar.semt` sutunundan CIKARILMADI. O sutun KARMA bir kaynak
+(poligon testi + Foursquare `locality`) ve olculdu: Bursa'da 17 gercek
+ilcenin yaninda **33 cop kayit** var - "Avustralya", "Bilinmez",
+"Marmara Bölgesi", "Bırsa", "Burda".
+
+Liste `mahalle_hazirlik` tablosundan geldi: o tablo 2026-08-31'de OSM
+IDARI SINIR POLIGONLARIYLA nokta-icinde-poligon testiyle uretilmisti,
+yani her satir "bu koordinat su ilcenin SINIRLARI ICINDE" diyor.
+Sonuc `public.ilceler`: **968 (il, ilce) cifti, 81 il**; Turkiye'de 973
+ilce var ve Bursa kontrol edildiginde TAM 17 ilce, sifir cop.
+
+**DEGER SERBEST METIN DEGIL:** `profiller(yasadigi_il, yasadigi_ilce)`
+uzerinde `ilceler`e BILESIK YABANCI ANAHTAR var. Uydurma bir yer adi
+profilde gercek bilgi gibi dururdu.
+
+**IKISI BIRDEN YA DA HICBIRI:** `check ((yasadigi_il is null) =
+(yasadigi_ilce is null))`. Yalnizca ilce secilmis bir profil anlamsiz
+olurdu ("Nilüfer" hangi ilde?). Yabanci anahtar MATCH SIMPLE oldugu
+icin ikisi de null'ken kisit saglanmis sayiliyor, yani alan bos
+kalabiliyor.
+
+**YENI BILESEN `ListeSecici`:** alttan acilan, ARANABILIR liste.
+Mevcut `SecimPenceresi` uc bes secimlik bir eylem menusu - kaydirilmiyor
+ve arama kutusu yok. 81 il icin arama sart: alfabetik bir listede
+"Zonguldak"a kaydirarak inmek iki harf yazmaktan cok daha yorucu.
+
+**3. PROFILDE KULLANICI ADI DAHA BELIRGIN.** `metinSoluk` ->
+`metinIkincil`, punto 13 -> 15. Bu ayni zamanda bir KONTRAST
+DUZELTMESI: soluk jeton beyaz zeminde 2,74:1 veriyordu ve metin icin
+gereken 4,5 esiginin ALTINDAYDI (2026-09-08 olcumu); `metinIkincil`
+5,63. Ad hala `ekranBasligi` ve kalin, yani hiyerarsi korunuyor.
+
+**KVKK:** bolge alani icin listeye madde eklendi. Kritik ayrim orada
+yaziyor - bu KABA KONUM bir BEYAN (ilce duzeyi, adres ya da koordinat
+degil) ve check-in konumuyla hicbir ilgisi yok: cihazdan hicbir sey
+okunmuyor, secim elle yapiliyor.
+
 ### PROFILE INSTAGRAM KULLANICI ADI - 2026-09-11
 
 Kullanicinin istegi: "profiline kullanicilar instagramini
