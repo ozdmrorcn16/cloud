@@ -30,6 +30,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-11 — [2026-09-11-7a72e763.md](oturumlar/2026-09-11-7a72e763.md) — kripto borsası hakkında bilgin nasıl
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
