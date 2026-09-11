@@ -50,6 +50,10 @@ describe('yakinMekanlariGetir', () => {
         // gondermiyor, yani null.
         kapakFotograf: null,
         mahalle: null,
+        // KAPALI BAYRAGI SUNUCU GONDERMEZSE false (2026-09-11).
+        // Guvenli taraf bu: eksik bir alan yuzunden mekani kapali
+        // saymak, acik bir yeri butun listelerden duesuerurdue.
+        kapali: false,
       },
     ])
   })

@@ -42,6 +42,16 @@ export type Mekan = {
    * buradaki gorsel kullanicinin kendi cektigi ve onaydan gecmis.
    */
   kapakFotograf?: string | null
+  /**
+   * KALICI OLARAK KAPANDI (2026-09-11).
+   *
+   * Moderator onayli bir bildirimle doluyor. Kayit SILINMIYOR -
+   * `check_inler.mekan_id` cascade oldugu icin silmek insanlarin
+   * anilarini da goturur. Kapali mekan listelerden ve aramadan
+   * duesueyor (sunucuda, `yakin_mekanlar_yogunluk` icinde) ama sayfasi
+   * aciliyor: eski bir check-in kartindan oraya gidilebilir.
+   */
+  kapali?: boolean
 }
 
 type MekanSatiri = {
@@ -56,6 +66,7 @@ type MekanSatiri = {
   konum: string
   kapak_fotograf?: string | null
   mahalle?: string | null
+  kapali?: boolean | null
 }
 
 function satiriMekanaCevir(satir: MekanSatiri): Mekan {
@@ -73,6 +84,7 @@ function satiriMekanaCevir(satir: MekanSatiri): Mekan {
     konum: noktayiCoz(satir.konum),
     kapakFotograf: satir.kapak_fotograf ?? null,
     mahalle: satir.mahalle ?? null,
+    kapali: satir.kapali ?? false,
   }
 }
 
@@ -434,7 +446,9 @@ export function turuGosterilir(mekan: { kaynak?: string }): boolean {
 export async function mekaniGetir(mekanId: string): Promise<Mekan | null> {
   const { data, error } = await supabase
     .from('mekanlar')
-    .select('id, ad, tur, semt, il, kaynak, adres, osm_id, konum, kapak_fotograf, mahalle')
+    .select(
+      'id, ad, tur, semt, il, kaynak, adres, osm_id, konum, kapak_fotograf, mahalle, kapali'
+    )
     .eq('id', mekanId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))

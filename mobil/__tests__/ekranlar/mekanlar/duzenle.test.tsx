@@ -56,6 +56,7 @@ const MEKAN = {
   konum: { lat: 40.2, lng: 28.9 },
   kapakFotograf: null,
   mahalle: null,
+  kapali: false,
 }
 
 beforeEach(() => {
@@ -103,6 +104,7 @@ describe('MekanDuzenleEkrani', () => {
         ilce: null,
         tur: null,
         fotograf: null,
+        kapali: false,
       })
     )
   })
@@ -235,6 +237,47 @@ describe('MekanDuzenleEkrani', () => {
       await screen.findByText('Galeriden seçmek için fotoğraf izni gerekiyor.')
     ).toBeTruthy()
     expect(mockGaleri).not.toHaveBeenCalled()
+  })
+
+  /*
+   * KAPANDI BILDIRIMI (2026-09-11). Kullanicinin sorusu "kapali,
+   * gercekte olmayan yerler var, bunlari tespit etmek mumkun mu?" idi;
+   * otomatik tespit olcuIerek elendi (Foursquare'in `date_closed`
+   * alani indirmede filtrelenmis, `date_refreshed` ise zayif bir
+   * sinyal) ve kaynak orada bulunan insan oldu.
+   *
+   * TEK BASINA GONDERILEBILIYOR: baska hicbir alan degismeden de
+   * gecerli bir talep. Bu test onu kilitliyor - "en az bir alan" sarti
+   * bu bayragi saymazsa dugme bosa basilir.
+   */
+  it('yalnizca kapandi isaretlenince talep gonderilebiliyor', async () => {
+    await render(<MekanDuzenleEkrani />)
+    await screen.findByDisplayValue('Sahil Kafe')
+
+    await fireEvent(screen.getByTestId('kapali-anahtari'), 'valueChange', true)
+    await fireEvent.press(screen.getByTestId('talebi-gonder'))
+
+    await waitFor(() =>
+      expect(duzenlemeTalebiGonder).toHaveBeenCalledWith(
+        'mekan-1',
+        expect.objectContaining({ kapali: true, ad: null })
+      )
+    )
+  })
+
+  /*
+   * ZATEN KAPALI BIR MEKANDA ANAHTAR HIC CIZILMIYOR: sunucu ikinci
+   * bildirimi reddediyor ("Bu mekan zaten kapali olarak isaretli"),
+   * yani isaretletip sonunda hata gostermek "bosa is yaptirma"
+   * kuralina aykiri olurdu.
+   */
+  it('mekan zaten kapaliysa anahtar yerine bilgi gosteriyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, kapali: true })
+
+    await render(<MekanDuzenleEkrani />)
+
+    expect(await screen.findByTestId('zaten-kapali')).toBeTruthy()
+    expect(screen.queryByTestId('kapali-anahtari')).toBeNull()
   })
 
   it('kamera izni reddedilirse uyari cikiyor ve kamera acilmiyor', async () => {

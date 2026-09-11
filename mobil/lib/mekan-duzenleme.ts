@@ -39,6 +39,20 @@ export type DuzenlemeTalebi = {
   tur?: string | null
   /** Storage yolu; `mekanFotografiYukle` donduruyor. */
   fotograf?: string | null
+  /**
+   * "BURASI KALICI OLARAK KAPANDI" (2026-09-11).
+   *
+   * Kullanicinin sorusu: "kapali, gercekte olmayan yerler var, bunlari
+   * tespit etmek mumkun mu?" OTOMATIK tespit olculdu ve elendi -
+   * Foursquare'in `date_closed` alani indirme sirasinda zaten
+   * filtrelenmis, elimizdeki tek dolayli sinyal olan `date_refreshed`
+   * ise zayif (%61'i 2020 oncesi; "guncellenmemis" ile "kapandi" ayni
+   * sey degil). Orada bulunan kisi bunu her sinyalden iyi biliyor.
+   *
+   * Tek basina da gonderilebiliyor: digerleri gibi "en az bir alan"
+   * sartini karsiliyor.
+   */
+  kapali?: boolean
 }
 
 /**
@@ -89,6 +103,7 @@ export async function duzenlemeTalebiGonder(
     p_mahalle: talep.mahalle?.slice(0, MAHALLE_EN_FAZLA) ?? null,
     p_il: talep.il?.slice(0, IL_ILCE_EN_FAZLA) ?? null,
     p_ilce: talep.ilce?.slice(0, IL_ILCE_EN_FAZLA) ?? null,
+    p_kapali: talep.kapali ?? false,
   })
   if (error) throw new Error(hataMetni(error))
   return data as string

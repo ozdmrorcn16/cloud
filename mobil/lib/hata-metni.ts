@@ -34,6 +34,22 @@ const VERITABANI: Record<string, string> = {
   'Bu kisiye su an mesaj gonderemezsin': 'Bu kişiye şu an mesaj gönderemezsin.',
   'Bu kullanici adi alinmis': 'Bu kullanıcı adı alınmış, başka bir tane dene.',
   'Bu kullanici bulunamadi': 'Bu kullanıcı bulunamadı.',
+  // MEKAN DUZENLEME TALEBI AILESI (2026-09-09'da eklenmis, karsiliklari
+  // 2026-09-11'de kondu). Eksik oldugu surece bu ekranin hatalari
+  // kullaniciya HAM ASCII olarak cikiyordu - "ekran metinleri duzgun
+  // Turkce" kurali sessizce deliniyordu.
+  'Bu fotograf sana ait degil': 'Bu fotoğraf sana ait değil.',
+  'Bu il listemizde yok': 'Bu il listemizde yok.',
+  'Bu mekan bulunamadi': 'Bu mekân bulunamadı.',
+  'Bu mekan icin bekleyen bir talebin zaten var':
+    'Bu mekân için gönderdiğin talep hâlâ inceleniyor.',
+  'Bu mekan kalici olarak kapandi': 'Bu mekân kalıcı olarak kapandı.',
+  'Bu mekan zaten kapali olarak isaretli': 'Bu mekân zaten kapalı olarak işaretli.',
+  'Bu tur listemizde yok': 'Bu tür listemizde yok.',
+  'En az bir alan doldurulmali': 'En az bir bilgiyi değiştirmelisin.',
+  'Gunluk duzenleme talebi sinirina ulastin':
+    'Günlük düzeltme sınırına ulaştın (5). Yarın tekrar deneyebilirsin.',
+  'Hesabin su an bu islemi yapamaz': 'Hesabın şu an bu işlemi yapamaz.',
   'Bu paylasim bulunamadi': 'Bu paylaşım bulunamadı.',
   'Not en fazla 500 karakter olabilir': 'Not en fazla 500 karakter olabilir.',
   'Bu mesaji sikayet edemezsin': 'Bu mesajı şikayet edemezsin.',
@@ -66,8 +82,12 @@ const VERITABANI: Record<string, string> = {
   'Kullanici adi kurallara uymuyor': 'Kullanıcı adı kurallara uymuyor.',
   'Kullanici belirtilmeli': 'Kullanıcı belirtilmeli.',
   'Mekan bulunamadi': 'Mekan bulunamadı.',
-  'Mekana cok uzaksin (~500 m icinde olmalisin)':
-    'Mekana çok uzaksın. Check-in yapmak için yaklaşık 500 metre içinde olmalısın.',
+  // ESKI ANAHTAR "(~500 m icinde olmalisin)" IDI VE HIC ESLESMIYORDU:
+  // sunucudaki yaricap 2026-08-28'de 1 km'ye cikarilmis ama buradaki
+  // karsilik guncellenmemisti, yani kullanici ham ASCII mesaji
+  // goruyordu. Bu satir SUNUCUDAKI METINLE BIREBIR AYNI olmali.
+  'Mekana cok uzaksin (~1 km icinde olmalisin)':
+    'Mekana çok uzaksın. Check-in yapmak için yaklaşık 1 kilometre içinde olmalısın.',
   'Mekana yakin olmalisin (~200 m icinde)':
     'Mekan eklemek için ona yaklaşık 200 metre kadar yakın olmalısın.',
   'Mesaj bos olamaz': 'Mesaj boş olamaz.',

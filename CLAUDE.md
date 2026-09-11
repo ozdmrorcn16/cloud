@@ -1225,6 +1225,86 @@ gezinme geometrisi canli olcuIdu, ekran goruntuleri
 `tasarim/gezinme-duzeltme.png`, `profil-madalya.png`,
 `mekan-sayfasi-son.png`.
 
+### KAPALI MEKAN BILDIRIMI - 2026-09-11
+
+Kullanicinin sorusu (2026-09-10): "Konum verilerimizde kapali, gercekte
+olmayan yerler var, bunlari tespit etmek mumkun mu?" Ayni gun onayiyla
+uygulandi.
+
+**OTOMATIK TESPIT OLCULDU VE ELENDI - tekrar arastirilmasin:**
+
+    Foursquare `date_closed`  : INDIRME SIRASINDA zaten filtrelenmis.
+                                Elimizdeki 5,98M kaydin hepsi kaynaga
+                                gore "acik"; kapalilar bize hic gelmiyor.
+    `date_refreshed`          : kayitlarin %61'i 2020 oncesi (barlarda
+                                %66). "Alti yildir dokunulmamis" ile
+                                "kapandi" AYNI SEY DEGIL - on bes yillik
+                                bir esnaf da guncellenmemis olabilir.
+
+Yani elimizde kapaliligi soyleyen bir sinyal YOK; `date_refreshed`e
+bakip kayit gizlemek ACIK yerleri de silerdi. Kaynak makine degil
+INSAN oldu - ayni gerekce tur duzeltmesinde de gecerliydi (2026-09-09)
+ve altyapinin tamami zaten oradaydi.
+
+**AKIS:** mekan sayfasi -> "Bilgileri düzelt" -> en altta **"Burası
+kalıcı olarak kapandı"** anahtari -> moderator onaylarsa
+`mekanlar.kapali = true`.
+
+**NEDEN AYRI SUTUN, `tur = 'yer-degil'` DEGIL.** 2026-08-23'te mekan
+olmayan ~15 bin kayit (yol parcasi, koy adi, SEO ilani) o degere
+cevrilerek gizlenmisti. Kapali bir kafe BASKA BIR SEY: o bir mekandi,
+kapandi. Ikisini ayni degere yikmak (a) asil `tur` verisini geri
+alinamaz sekilde silerdi, (b) "hic mekan degildi" ile "artik yok"u
+ayirt edilemez yapardi. Ayri bayrak tek satirda geri alinabiliyor.
+
+**KAPATMA VARSAYILAN ONAYDA YOK - en onemli guvenlik karari.**
+`moderasyon_duzenleme_talebini_karara_bagla`'nin varsayilan `p_alanlar`
+listesi 'kapali' TASIMIYOR; panel de o kutuyu isaretsiz aciyor ve
+yalnizca bildirim varsa cizyor. Sebep: sonucu en agir olan alan bu -
+"hepsini onayla" refleksiyle bir mekanin kazara kapanmasi en pahali
+hata olurdu. Canli testte ayrica olculuyor.
+
+**KAYIT SILINMIYOR, GIZLENIYOR.** `check_inler.mekan_id` cascade; mekani
+silmek insanlarin anilarini, begenilerini ve yorumlarini goturur.
+
+**UC GIZLEME YOLU (hepsi sunucuda):**
+
+| Yer | Ne |
+|---|---|
+| `yakin_mekanlar_yogunluk` | `and not m.kapali` - liste ve arama |
+| `mekan_turleri` matview | kapali sayilmiyor; yoksa "Kafe 23" yazip 22 sonuc gelirdi |
+| `check_in_yap` | kapali mekana check-in REDDEDILIYOR |
+
+Check-in kontrolu MESAFE KONTROLUNDEN ONCE: canli testte kasitli olarak
+(0,0) koordinatiyla cagriliyor ve mesafe hatasi degil kapali hatasi
+bekleniyor - yoksa kural kapaliliga degil konuma baglanmis olurdu.
+
+**SAYFA ACIK KALIYOR.** Mekan listelerden duesueyor ama sayfasina eski
+bir check-in kartindan gidilebiliyor; orada "Bu mekân kalıcı olarak
+kapandı" seridi var ve check-in cubugu HIC cizilmiyor. **Tek istisna:**
+kisi su an oradaysa "Ayrıl" duruyor, yoksa check-in'ini bitirmenin yolu
+kalmazdi.
+
+**GERI ALINABILIR:** `moderasyon_mekani_geri_ac` RPC'si + panelde
+"Mekânı geri aç" dugmesi. Geri alinamayan bir moderasyon eylemi
+birakmak tek bir hatali onayi kalici yapardi (ayni gerekce yorum
+gizlemede de var, 2026-09-02).
+
+**CANLI DOGRULANDI: `araclar/kapali-mekan-canli-test.py`, 13/13.** Jest
+Supabase'i mock'ladigi icin bu kurallarin HICBIRI jest'te gorulemiyor.
+Betik gecici bir moderator hesabi (TOTP ile AAL2) aciyor, mekani
+LISTENIN KENDISINDEN seciyor (kullanicinin gercekten gordugu liste
+uzerinde olcmek icin), sonunda mekani eski haline donduruyor.
+
+**YAN DUZELTME - ESKI BIR SESSIZ HATA.** `lib/hata-metni.ts` icindeki
+`'Mekana cok uzaksin (~500 m icinde olmalisin)'` anahtari HIC
+ESLESMIYORDU: sunucudaki yaricap 2026-08-28'de 1 km'ye cikarilmis ama
+karsilik guncellenmemisti, yani kullanici ham ASCII mesaji goruyordu.
+Ayrica mekan duzenleme talebi ailesinin ON hata metni (2026-09-09'da
+eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
+**Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
+anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
+
 ### PROFIL UST BLOGU REFERANSA GORE YENIDEN DUZENLENDI - 2026-09-10
 
 Kullanici bir referans gorsel gonderip "profil sayfasinin ust kismini

@@ -2,7 +2,10 @@ import { hataMetni } from './hata-metni'
 
 describe('hataMetni', () => {
   it('veritabanindaki aksansiz metni duzgun Turkce ile degistirir', () => {
-    expect(hataMetni({ message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' })).toContain(
+    // ANAHTAR SUNUCUDAKI METINLE BIREBIR AYNI OLMALI. Bir zamanlar
+    // "(~500 m ...)" yaziyordu ve sunucu 1 km'ye gecince eslesme
+    // sessizce koptu; kullanici ham ASCII mesaji goruyordu (2026-09-11).
+    expect(hataMetni({ message: 'Mekana cok uzaksin (~1 km icinde olmalisin)' })).toContain(
       'Mekana çok uzaksın'
     )
     expect(hataMetni({ message: 'Yetkisiz' })).toBe('Bu işlem için yetkin yok.')

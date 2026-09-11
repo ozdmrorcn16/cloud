@@ -125,6 +125,14 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   yukleyene, moderatore ve ONAYLANMIS kapak fotografina aciliyor.
   Onaylanmamis bir gorselin yayinda beklemesi kabul edilemezdi.
   Karar denetim izine yaziliyor (`hedef_tur = 'mekan'`).
+  **GENISLETILDI (2026-09-11): "burasi kalici olarak kapandi"
+  bildirimi.** Yeni bir KISISEL VERI TURU GIRMIYOR - tasidigi tek sey
+  bir boolean ve zaten kaydedilen gonderen kimligi; dayanak, sure ve
+  gorunurluk yukaridakiyle ayni. Bildirimin sonucu MEKAN kaydinda
+  (`mekanlar.kapali`), yani bir kisi hakkinda degil bir yer hakkinda
+  bilgi. Geri alinabilir olmasi ayrica onemli: moderator karari
+  `moderasyon_mekani_geri_ac` ile donuyor ve iki islem de denetim izine
+  yaziliyor.
 - **OSRM yol tarifi servisi** (2026-09-09'da EKLENDI, ayni gun
   KALDIRILDI). Mekan sayfasinda kullanicidan mekana giden yolu haritada
   cizmek icin iki koordinat (kullanicinin anlik konumu ve mekanin

@@ -29,6 +29,7 @@ type TalepSatiri = {
   onerilen_mahalle: string | null
   onerilen_il: string | null
   onerilen_ilce: string | null
+  kapali_bildirimi: boolean
   fotograf: string | null
   durum: string
   olusturuldu: string
@@ -36,18 +37,21 @@ type TalepSatiri = {
 
 type Detay = {
   id: string
+  mekan_id: string
   mevcut_ad: string
   mevcut_adres: string | null
   mevcut_tur: string
   mevcut_mahalle: string | null
   mevcut_semt: string | null
   mevcut_il: string | null
+  mevcut_kapali: boolean
   onerilen_ad: string | null
   onerilen_adres: string | null
   onerilen_tur: string | null
   onerilen_mahalle: string | null
   onerilen_il: string | null
   onerilen_ilce: string | null
+  kapali_bildirimi: boolean
   fotograf: string | null
   durum: string
   gonderen_adi: string | null
@@ -62,9 +66,16 @@ const ALANLAR = [
   { anahtar: 'ilce', etiket: 'İlçe' },
   { anahtar: 'tur', etiket: 'Tür' },
   { anahtar: 'fotograf', etiket: 'Kapak fotoğrafı' },
+  // KAPATMA VARSAYILAN OLARAK SECILI DEGIL: sonucu en agir olan alan
+  // bu - onaylanirsa mekan butun listelerden ve aramadan duesueyor.
+  // Moderator onu ayrica isaretlemek zorunda kalsin; "hepsini onayla"
+  // refleksiyle bir mekanin kazara kapanmasi en pahali hata olurdu.
+  // Ayni kural SUNUCUDA da var: RPC'nin varsayilan `p_alanlar` listesi
+  // 'kapali' tasimiyor.
+  { anahtar: 'kapali', etiket: 'Kapandı olarak işaretle', varsayilan: false },
 ]
 
-const TUM_ALANLAR = ALANLAR.map((a) => a.anahtar)
+const TUM_ALANLAR = ALANLAR.filter((a) => a.varsayilan !== false).map((a) => a.anahtar)
 
 export function DuzenlemeTalepleri() {
   const [satirlar, setSatirlar] = useState<TalepSatiri[]>([])
@@ -142,6 +153,23 @@ export function DuzenlemeTalepleri() {
     }
   }
 
+  async function geriAc() {
+    if (!acik || isliyor) return
+    setIsliyor(true)
+    try {
+      const { error } = await supabase.rpc('moderasyon_mekani_geri_ac', {
+        p_mekan_id: acik.mekan_id,
+      })
+      if (error) throw error
+      setAcik(null)
+      await yukle()
+    } catch (e) {
+      setHata(hataMetni(e))
+    } finally {
+      setIsliyor(false)
+    }
+  }
+
   if (yukleniyor) return <Yukleniyor ne="Talepler" />
 
   return (
@@ -187,6 +215,7 @@ export function DuzenlemeTalepleri() {
                     s.onerilen_il && `İl: ${s.onerilen_il}`,
                     s.onerilen_ilce && `İlçe: ${s.onerilen_ilce}`,
                     s.onerilen_tur && `Tür: ${s.onerilen_tur}`,
+                    s.kapali_bildirimi && 'KAPANDI bildirimi',
                     s.fotograf && 'Kapak fotoğrafı',
                   ]
                     .filter(Boolean)
@@ -246,6 +275,11 @@ export function DuzenlemeTalepleri() {
                 <td>{acik.mevcut_tur}</td>
                 <td>{acik.onerilen_tur ?? '—'}</td>
               </tr>
+              <tr>
+                <th>Durum</th>
+                <td>{acik.mevcut_kapali ? 'Kapalı' : 'Açık'}</td>
+                <td>{acik.kapali_bildirimi ? 'Kapandı bildirimi' : '—'}</td>
+              </tr>
             </tbody>
           </table>
 
@@ -253,7 +287,7 @@ export function DuzenlemeTalepleri() {
 
           <fieldset>
             <legend>Onaylanacak alanlar</legend>
-            {ALANLAR.map((a) => (
+            {ALANLAR.filter((a) => a.anahtar !== 'kapali' || acik.kapali_bildirimi).map((a) => (
               <label key={a.anahtar}>
                 <input
                   type="checkbox"
@@ -282,6 +316,15 @@ export function DuzenlemeTalepleri() {
             <button onClick={() => kararVer('reddedildi')} disabled={isliyor}>
               Reddet
             </button>
+            {/* KAPATMA GERI ALINABILIR. Yanlis bir bildirim mekani
+                butun listelerden duesueruyor; geri alinamayan bir
+                moderasyon eylemi birakmak tek bir hatali onayi kalici
+                yapardi (ayni gerekce yorum gizlemede de var). */}
+            {acik.mevcut_kapali && (
+              <button onClick={geriAc} disabled={isliyor}>
+                Mekânı geri aç
+              </button>
+            )}
             <button onClick={() => setAcik(null)}>Kapat</button>
           </div>
         </div>

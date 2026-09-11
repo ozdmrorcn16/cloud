@@ -825,4 +825,41 @@ describe('MekanSayfasi - check-in cubugu', () => {
     await waitFor(() => expect(checkIndenAyril).toHaveBeenCalledWith('c1'))
     await cevreOturana()
   })
+
+  /*
+   * KAPANMIS MEKAN (2026-09-11).
+   *
+   * Kayit listelerden ve aramadan duesueyor ama SAYFASI aciliyor: eski
+   * bir check-in kartindan buraya gelinebilir ve o ani silinmemeli
+   * (`check_inler.mekan_id` cascade - mekani silmek insanlarin
+   * gecmisini goturur).
+   */
+  it('mekan kapandiysa sebebini yaziyor ve check-in cubugu cizilmiyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, kapali: true })
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
+
+    await render(<CheckInHaritasiEkrani />)
+
+    expect(await screen.findByTestId('mekan-kapandi')).toBeTruthy()
+    expect(screen.queryByTestId('checkin-cubugu')).toBeNull()
+    await cevreOturana()
+  })
+
+  /*
+   * TEK ISTISNA: kisi SU AN oradaysa "Ayril" duruyor. Yoksa mekan
+   * kapatildigi anda o kisinin check-in'ini bitirmenin yolu kalmazdi.
+   */
+  it('kapali mekanda bile aktif check-in varsa "Ayrıl" duruyor', async () => {
+    ;(mekaniGetir as jest.Mock).mockResolvedValue({ ...MEKAN, kapali: true })
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      mekanId: 'mekan-1',
+      mekanAdi: MEKAN.ad,
+    })
+
+    await render(<CheckInHaritasiEkrani />)
+
+    await waitFor(() => expect(screen.getByText('Buradasın · Ayrıl')).toBeTruthy())
+    await cevreOturana()
+  })
 })

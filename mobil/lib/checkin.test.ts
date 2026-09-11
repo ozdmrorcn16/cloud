@@ -47,7 +47,7 @@ describe('checkInYap', () => {
   it('mekana uzaksa sunucu hatasini firlatir', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({
       data: null,
-      error: { message: 'Mekana cok uzaksin (~500 m icinde olmalisin)' },
+      error: { message: 'Mekana cok uzaksin (~1 km icinde olmalisin)' },
     })
     await expect(checkInYap('mekan-1', 41.5, 29.5)).rejects.toThrow('Mekana çok uzaksın')
   })

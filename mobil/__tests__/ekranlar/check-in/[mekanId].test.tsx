@@ -56,14 +56,14 @@ describe('CheckInEkrani', () => {
   })
 
   it('sunucu mesafe hatasi donerse gosterir', async () => {
-    ;(checkInYap as jest.Mock).mockRejectedValue(new Error('Mekana cok uzaksin (~500 m icinde olmalisin)'))
+    ;(checkInYap as jest.Mock).mockRejectedValue(new Error('Mekana cok uzaksin (~1 km icinde olmalisin)'))
 
     await render(<CheckInEkrani />)
     const buttons = screen.getAllByText('Check-in yap')
     await fireEvent.press(buttons[buttons.length - 1]) // Press the button, not the title
 
     await waitFor(() => {
-      expect(screen.getByText('Mekana cok uzaksin (~500 m icinde olmalisin)')).toBeTruthy()
+      expect(screen.getByText('Mekana cok uzaksin (~1 km icinde olmalisin)')).toBeTruthy()
     })
   })
 

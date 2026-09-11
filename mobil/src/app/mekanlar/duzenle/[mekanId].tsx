@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -22,7 +23,7 @@ import {
 } from '../../../../lib/mekan-duzenleme'
 import { supabase } from '../../../../lib/supabase'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from '../../../tasarim/tema'
-import { useStiller } from '../../../tasarim/tema-baglami'
+import { useRenk, useStiller } from '../../../tasarim/tema-baglami'
 import { UstCubuk } from '../../../tasarim/UstCubuk'
 import { SecimPenceresi } from '../../../tasarim/SecimPenceresi'
 import { ALT_GEZINME_PAYI } from '../../../tasarim/AltGezinme'
@@ -46,6 +47,7 @@ export default function MekanDuzenleEkrani() {
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const router = useRouter()
   const stiller = useStiller(stilleriYap)
+  const renk = useRenk()
 
   const [mekan, setMekan] = useState<Mekan | null>(null)
   const [ad, setAd] = useState('')
@@ -55,6 +57,7 @@ export default function MekanDuzenleEkrani() {
   const [ilce, setIlce] = useState('')
   const [tur, setTur] = useState<string | null>(null)
   const [yerelFoto, setYerelFoto] = useState<string | null>(null)
+  const [kapali, setKapali] = useState(false)
   const [kaynakSecimi, setKaynakSecimi] = useState(false)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [bekleyenVar, setBekleyenVar] = useState(false)
@@ -149,7 +152,14 @@ export default function MekanDuzenleEkrani() {
   const degisenIlce = mekan && ilce.trim() !== (mekan.semt ?? '') ? ilce.trim() : null
   const degisenTur = mekan && tur && tur !== mekan.tur ? tur : null
   const degisiklikVar = Boolean(
-    degisenAd || degisenMahalle || degisenAdres || degisenIl || degisenIlce || degisenTur || yerelFoto
+    degisenAd ||
+      degisenMahalle ||
+      degisenAdres ||
+      degisenIl ||
+      degisenIlce ||
+      degisenTur ||
+      yerelFoto ||
+      kapali
   )
 
   async function gonder() {
@@ -172,6 +182,7 @@ export default function MekanDuzenleEkrani() {
         ilce: degisenIlce,
         tur: degisenTur,
         fotograf: fotografYolu,
+        kapali,
       })
       setGonderildi(true)
     } catch (e) {
@@ -325,6 +336,48 @@ export default function MekanDuzenleEkrani() {
               </Pressable>
             )}
 
+            {/* KAPANDI BILDIRIMI (kullanicinin sorusu 2026-09-10:
+                "kapali, gercekte olmayan yerler var, bunlari tespit
+                etmek mumkun mu?").
+
+                OTOMATIK TESPIT OLCULDU VE ELENDI: Foursquare'in
+                `date_closed` alani indirme sirasinda zaten
+                filtrelenmis, elimizdeki tek dolayli sinyal olan
+                `date_refreshed` ise zayif - kayitlarin %61'i 2020
+                oncesi ve "guncellenmemis" ile "kapandi" ayni sey
+                degil. Orada bulunan kisi bunu her sinyalden iyi
+                biliyor.
+
+                EN ALTTA ve DIGER ALANLARDAN AYRI: en agir sonucu olan
+                secim bu - onaylanirsa mekan butun listelerden duesueyor.
+                Yanlislikla acilmasin diye adres/tur alanlarinin arasina
+                karistirilmadi. */}
+            <View style={stiller.ayirici} />
+            {mekan?.kapali ? (
+              <Text style={stiller.kapaliNot} testID="zaten-kapali">
+                Bu mekân kalıcı olarak kapandı olarak işaretli.
+              </Text>
+            ) : (
+              <View style={stiller.kapaliSatir}>
+                <View style={stiller.kapaliMetin}>
+                  <Text style={stiller.kapaliBaslik}>Burası kalıcı olarak kapandı</Text>
+                  <Text style={stiller.kapaliAciklama}>
+                    Onaylanırsa bu mekân listelerden ve aramadan kaldırılır. Buraya yapılmış
+                    check-in&apos;ler silinmez.
+                  </Text>
+                </View>
+                <Switch
+                  accessibilityLabel="Burası kalıcı olarak kapandı"
+                  value={kapali}
+                  onValueChange={setKapali}
+                  trackColor={{ true: renk.turuncu, false: renk.cizgi }}
+                  thumbColor={renk.yuzey}
+                  {...({ activeThumbColor: renk.yuzey } as object)}
+                  testID="kapali-anahtari"
+                />
+              </View>
+            )}
+
             {/* Dugme DEGISIKLIK YOKKEN de basilabilir kaliyor ve sebebini
                 soyluyor: tamamen devre disi birakmak kisiyi "neden
                 calismiyor" sorusuyla bas basa birakiyordu (ayni ders
@@ -413,6 +466,30 @@ const stilleriYap = (renk: Renk) =>
       fontSize: olcek.kucuk,
       color: renk.yikici,
       marginTop: bosluk.s,
+    },
+    ayirici: {
+      height: 1,
+      backgroundColor: renk.cizgi,
+      marginTop: bosluk.xl,
+    },
+    kapaliSatir: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: bosluk.m,
+      marginTop: bosluk.m,
+    },
+    kapaliMetin: { flex: 1, gap: bosluk.xs },
+    kapaliBaslik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+    kapaliAciklama: {
+      fontFamily: yazi.govde,
+      fontSize: olcek.kucuk,
+      color: renk.metinIkincil,
+    },
+    kapaliNot: {
+      fontFamily: yazi.govde,
+      fontSize: olcek.kucuk,
+      color: renk.metinIkincil,
+      marginTop: bosluk.m,
     },
     ikincil: {
       borderWidth: 1.5,

@@ -620,6 +620,23 @@ export default function MekanSayfasi() {
               </Pressable>
             </View>
 
+            {/* KAPANDI SERIDI (2026-09-11).
+
+                Mekan listelerden ve aramadan duesueyor ama SAYFASI
+                aciliyor: eski bir check-in kartindan buraya gelinebilir
+                ve o ani silinmemeli (`check_inler.mekan_id` cascade -
+                mekani silmek insanlarin gecmisini goturur).
+
+                SEBEBI YAZIYOR: alttaki cubuk sessizce calismasaydi
+                kullanici "uygulama bozuk" diye okurdu (ayni ders
+                2026-09-08'de galeri izninde ogrenildi). */}
+            {mekan.kapali && (
+              <View style={stiller.kapandiSerit} testID="mekan-kapandi">
+                <Text style={stiller.kapandiBaslik}>{t('mekanSayfasi.kapandi')}</Text>
+                <Text style={stiller.kapandiMetin}>{t('mekanSayfasi.kapandiAciklama')}</Text>
+              </View>
+            )}
+
             {/* UC SAYI. Sayfanin tek amaci bu serit: "burasi canli mi,
                 bugun hareket var mi, cevrede ne kadar one cikiyor".
 
@@ -872,8 +889,15 @@ export default function MekanSayfasi() {
 
           Uzaklik BILINMIYORSA (konum izni yok, web'de reddedildi)
           buton normal gorunuyor - bilmedigimiz bir sey yuzunden
-          engellemek yerine kurali sunucuya birakiyoruz. */}
-      {mekan && (
+          engellemek yerine kurali sunucuya birakiyoruz.
+
+          KAPANMIS MEKANDA CUBUK HIC CIZILMIYOR (2026-09-11) - sebep
+          zaten yukaridaki seritte yaziyor, basilamayan bir buton
+          gostermek tekrar olurdu. TEK ISTISNA: kisi SU AN oradaysa
+          "Ayril" duruyor, yoksa check-in'ini bitirmenin yolu kalmazdi.
+          Kural ayrica SUNUCUDA: `check_in_yap` kapali mekani
+          reddediyor. */}
+      {mekan && (buradayim || !mekan.kapali) && (
         <View style={stiller.sabitCubuk} pointerEvents="box-none">
           {buradayim ? (
             <Pressable
@@ -1026,6 +1050,28 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
+  },
+  /* KAPANDI SERIDI notr bir yuzey, turuncu DEGIL: turuncu bu uygulamada
+     "eylem ya da su an oluyor" demek (kimlik kurali) ve burada
+     anlatilan sey tam tersi - artik hicbir sey olmuyor. */
+  kapandiSerit: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.m,
+    marginTop: bosluk.m,
+    gap: bosluk.xs,
+  },
+  kapandiBaslik: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  kapandiMetin: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
   },
   bilgi: { flex: 1, gap: 2 },
   ad: {

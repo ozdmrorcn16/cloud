@@ -524,6 +524,13 @@ export default {
     // anlatiyor.
     yaklas: 'Check-in için yaklaş · {{mesafe}}',
     buradasinAyril: 'Buradasın · Ayrıl',
+    // KAPANMIS MEKAN (2026-09-11). Kayit listelerden duesueyor ama
+    // sayfasi aciliyor: eski bir check-in kartindan buraya gelinebilir
+    // ve o ani silinmemeli. Sayfa sebebini SOYLUYOR - sessizce
+    // calismayan bir buton "uygulama bozuk" diye okunurdu.
+    kapandi: 'Bu mekân kalıcı olarak kapandı',
+    kapandiAciklama:
+      'Buraya artık check-in yapılamıyor ve mekân listelerde görünmüyor. Geçmiş anıların duruyor.',
     kisiBurada: 'kişi burada',
     bugun: 'Bugün',
     haritadaGoster: 'Konumu haritada göster',
