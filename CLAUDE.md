@@ -1305,6 +1305,58 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### "SIFRENI MI UNUTTUN?" - SIFRE SIFIRLAMA - 2026-09-12
+
+Kullanicinin istegi: "hesabi olan kullanicinin giris yapma sayfasina
+sifreni unuttun mu ekle." Giris ekraninda butonun altinda duz metin
+baglanti (`giris.sifremiUnuttum`), yeni ekran
+`src/app/(auth)/sifre-sifirla.tsx`: **uc asama tek ekranda** -
+e-posta -> 6 haneli kod -> yeni sifre. Girise yazilmis e-posta
+parametreyle tasiniyor, ikinci kez yazdirilmiyor.
+
+**`resetPasswordForEmail` KULLANILMADI, `signInWithOtp` kullanildi:**
+o yol Supabase'in "Reset Password" sablonunu gonderir ve o sablon
+BAGLANTI tasir (telefonda derin baglanti kurulumu ister, sablon hic
+duzenlenmedi, panel de bugun ulasilamaz). `signInWithOtp` ise kayit
+akisinin zaten kullandigi ve `{{ .Token }}` tasidigi DOGRULANMIS
+"Magic Link" sablonunu gonderiyor; kod `verifyOtp(type:'email')` ile
+dogrulaninca oturum aciliyor, `updateUser({password})` sifreyi yaziyor.
+**Panelde hicbir sey degismeden bugun calisiyor.**
+
+`shouldCreateUser: false` SART - ekran hesap ACMAZ; olmayan adres
+`otp_disabled` donduruyor, ekran bunu "hesap bulunamadi" diye
+gosteriyor. Onceden `epostaKayitliMi` (hiz sinirli RPC) ile kontrol
+edilip posta hic atilmiyor (bosa is yaptirma kurali; kayit ekrani
+zaten "hesap var" dedigi icin yeni sizinti yok).
+
+**KOK YONLENDIRME MUAFIYETI (`_layout.tsx`):** kod dogrulaninca oturum
+aciliyor ama sifre henuz yazilmadi; ekran `dogrula` gibi muaf
+tutulmasa kisi sifre yazamadan `/`a atilirdi. Testle kilitli.
+
+Yan isler: sifre kurali `lib/sifre.ts`e cikti (`EN_AZ_SIFRE = 8`,
+profil-olustur da oradan okuyor); `hata-metni.ts`teki telefon
+doneminden kalma iki metin duzeltildi ("Telefon numarasi ya da sifre
+hatali" -> "E-posta adresi ya da sifre hatali", "Bu numarada zaten" ->
+"Bu adreste zaten").
+
+**TUZAK: expo-router tip dosyasi yeni rotayi bilmiyordu** ve tsc
+`/sifre-sifirla` yolunu reddetti. `.expo/types/router.d.ts` ancak
+dev sunucusu calisinca uretiliyor (`npx expo start --web --port
+8123`, ~80 sn, sonra kapat). Port 8099 eski bir surecte takili
+kalmisti; `Get-NetTCPConnection -LocalPort` ile bulunup kapatildi.
+
+**Canli: `araclar/sifre-sifirla-canli-test.py`, 6/6.** Olculenler:
+olmayan adres reddediliyor ve HESAP ACILMIYOR; gercek hesapta kapi
+geciliyor; `updateUser` reauthentication istemiyor ("secure password
+change" kapali). **Test hesaplarina posta GITMIYOR:** Supabase posta
+katmani `.test` uzantisini "invalid" diye reddediyor - bu akisin
+degil test hesabinin siniri; posta zinciri 2026-09-02'de gercek
+adresle olculmustu. Gercek gmail hesaplarina test postasi atilmadi.
+
+Ekran goruntuleri `tasarim/giris-sifremi-unuttum.png`,
+`sifre-sifirla.png`. Testler: `sifre-sifirla.test.tsx` (16), giris +2,
+layout +3.
+
 ### SIRADAKI IS: APPLE / GOOGLE GIRISI - BYPASS KIPI BEKLIYOR - 2026-09-12
 
 Kullanici Apple/Google girisine gecmeye karar verdi. Marka hesaplari

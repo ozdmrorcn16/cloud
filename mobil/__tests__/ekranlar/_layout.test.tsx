@@ -418,3 +418,20 @@ describe('hedefRota - gizlilik metni', () => {
     expect(hedefRota(false, false, false, ['profil'])).toBe('/karsilama')
   })
 })
+
+// Sifre sifirlama: kod dogrulaninca oturum ACILIYOR ama sifre henuz
+// yazilmadi. Ekran muaf olmasa kisi sifre yazamadan uygulamaya
+// atilirdi (2026-09-12).
+describe('hedefRota - sifre sifirlama', () => {
+  it('oturum ve profil varken sifre-sifirla ekranindan CIKARMIYOR', () => {
+    expect(hedefRota(true, true, false, ['(auth)', 'sifre-sifirla'])).toBeNull()
+  })
+
+  it('ayni durumda (auth) grubunun BASKA bir ekrani hala / yonlendiriliyor', () => {
+    expect(hedefRota(true, true, false, ['(auth)', 'giris'])).toBe('/')
+  })
+
+  it('oturumsuz kullanici sifre-sifirla ekraninda kalabiliyor', () => {
+    expect(hedefRota(false, null, false, ['(auth)', 'sifre-sifirla'])).toBeNull()
+  })
+})

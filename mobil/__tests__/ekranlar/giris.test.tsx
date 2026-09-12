@@ -10,9 +10,15 @@ jest.mock('../../lib/supabase', () => ({
 
 const mockRouterReplace = jest.fn()
 const mockRouterBack = jest.fn()
+const mockRouterPush = jest.fn()
 let mockGeriGidilebilir = true
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockRouterReplace, back: mockRouterBack, canGoBack: () => mockGeriGidilebilir }),
+  useRouter: () => ({
+    replace: mockRouterReplace,
+    back: mockRouterBack,
+    push: mockRouterPush,
+    canGoBack: () => mockGeriGidilebilir,
+  }),
 }))
 
 describe('GirisEkrani', () => {
@@ -49,7 +55,7 @@ describe('GirisEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Şifre'), 'yanlissifre')
     await fireEvent.press(screen.getByText('Giriş yap'))
     await waitFor(() => {
-      expect(screen.getByText('Telefon numarası ya da şifre hatalı.')).toBeTruthy()
+      expect(screen.getByText('E-posta adresi ya da şifre hatalı.')).toBeTruthy()
     })
   })
 
@@ -117,5 +123,24 @@ describe('GirisEkrani', () => {
     // ve ekran eksigi soyluyor.
     await fireEvent.press(screen.getByText('Giriş yap'))
     expect(await screen.findByText('E-posta adresini ve şifreni gir.')).toBeTruthy()
+  })
+
+  // ------------------------------------------------------------------ //
+  // SIFREMI UNUTTUM (kullanicinin istegi 2026-09-12)
+  // ------------------------------------------------------------------ //
+
+  it('"Şifreni mi unuttun?" sifirlama ekranina gider', async () => {
+    await render(<GirisEkrani />)
+    await fireEvent.press(screen.getByText('Şifreni mi unuttun?'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/sifre-sifirla')
+  })
+
+  // Yazilmis e-posta ikinci kez yazdirilmiyor: sifirlama ekranina
+  // parametreyle tasiniyor.
+  it('e-posta yazilmissa sifirlama ekranina onu da tasir', async () => {
+    await render(<GirisEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('E-posta adresi'), 'ornek@eposta.com')
+    await fireEvent.press(screen.getByText('Şifreni mi unuttun?'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/sifre-sifirla?eposta=ornek%40eposta.com')
   })
 })

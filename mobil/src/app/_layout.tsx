@@ -52,7 +52,11 @@ export function hedefRota(
   // "bu numarada zaten hesap var" der. Bu karar bir kac istek suruyor;
   // o sirada buradan uygulamaya atilirsa mesaj hic gorunmez. Bu yuzden
   // /dogrula'dan zorla cikarilmiyor.
-  const dogrulamaEkraninda = authGrubunda && segments[1] === 'dogrula'
+  // Sifre sifirlama da ayni sinifta: kod dogrulaninca OTURUM ACILIYOR
+  // ama sifre henuz yazilmadi. O anda buradan uygulamaya atilirsa kisi
+  // sifresiz bir oturumla iceri girer ve akis yarim kalir (2026-09-12).
+  const dogrulamaEkraninda =
+    authGrubunda && (segments[1] === 'dogrula' || segments[1] === 'sifre-sifirla')
   const profilOlusturEkraninda = segments[0] === 'profil-olustur'
   const hesapDurumuEkraninda = segments[0] === 'hesap-durumu'
 

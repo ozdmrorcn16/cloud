@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
+import { EN_AZ_SIFRE } from '../../lib/sifre'
 import { supabase } from '../../lib/supabase'
 import { onSekizAltindaMi } from '../../lib/yas'
 import { useOturum } from '../../lib/oturum'
@@ -21,7 +22,6 @@ import { hataMetni } from '../../lib/hata-metni'
 const BEKLETME_MS = 300
 
 /** Sifrenin en az uzunlugu. */
-const EN_AZ_SIFRE = 8
 
 /** Yas siniri; tarih tekerlegi bundan daha yeni bir yil gostermiyor. */
 const EN_AZ_YAS = 18

@@ -104,8 +104,8 @@ const VERITABANI: Record<string, string> = {
 /** Supabase hata KODLARI - metinden daha guvenilir, once bunlara bakiliyor. */
 const KOD: Record<string, string> = {
   otp_expired: 'Kod geçersiz ya da süresi dolmuş. Yeni bir kod iste.',
-  user_already_exists: 'Bu numarada zaten bir hesap var. Giriş yapabilirsin.',
-  invalid_credentials: 'Telefon numarası ya da şifre hatalı.',
+  user_already_exists: 'Bu adreste zaten bir hesap var. Giriş yapabilirsin.',
+  invalid_credentials: 'E-posta adresi ya da şifre hatalı.',
   over_request_rate_limit: 'Çok sık denedin. Biraz bekleyip tekrar dene.',
   over_sms_send_rate_limit: 'Çok fazla kod istendi. Biraz bekleyip tekrar dene.',
   weak_password: 'Şifre çok zayıf. Daha güçlü bir şifre seç.',
@@ -129,8 +129,8 @@ const METIN: [RegExp, string][] = [
   [/unable to get sms provider/i, 'Şu anda bu numaraya kod gönderilemiyor. Biraz sonra tekrar dene.'],
   [/sms provider|phone provider/i, 'Şu anda bu numaraya kod gönderilemiyor. Biraz sonra tekrar dene.'],
   [/token has expired or is invalid|invalid token/i, 'Kod geçersiz ya da süresi dolmuş. Yeni bir kod iste.'],
-  [/user already registered/i, 'Bu numarada zaten bir hesap var. Giriş yapabilirsin.'],
-  [/invalid login credentials/i, 'Telefon numarası ya da şifre hatalı.'],
+  [/user already registered/i, 'Bu adreste zaten bir hesap var. Giriş yapabilirsin.'],
+  [/invalid login credentials/i, 'E-posta adresi ya da şifre hatalı.'],
   [/for security purposes.*after|rate limit/i, 'Çok sık denedin. Biraz bekleyip tekrar dene.'],
   [/password should be at least|password.*too short/i, 'Şifre çok kısa.'],
   [/new password should be different/i, 'Yeni şifren eskisinden farklı olmalı.'],

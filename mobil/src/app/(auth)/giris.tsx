@@ -170,6 +170,26 @@ export default function GirisEkrani() {
             {gonderiliyor ? t('giris.gonderiliyor') : t('giris.gonder')}
           </Text>
         </Pressable>
+
+        {/* SIFREMI UNUTTUM (kullanicinin istegi 2026-09-12). Butonun
+            hemen altinda, ortali, duz metin - Instagram'daki yer.
+            Buton DEGIL: ekranda tek turuncu dolgu kurali bozulmasin,
+            bu bir yan cikis. Ayri ekrana gidiyor; e-posta burada
+            yazildiysa oraya tasiniyor ki ikinci kez yazilmasin. */}
+        <Pressable
+          style={stiller.sifremiUnuttum}
+          onPress={() =>
+            router.push(
+              eposta.trim()
+                ? `/sifre-sifirla?eposta=${encodeURIComponent(eposta.trim())}`
+                : '/sifre-sifirla'
+            )
+          }
+          accessibilityRole="link"
+          hitSlop={8}
+        >
+          <Text style={stiller.sifremiUnuttumYazi}>{t('giris.sifremiUnuttum')}</Text>
+        </Pressable>
       </View>
 
       <View style={stiller.esnekBosluk} />
@@ -238,6 +258,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: '#FFFFFF',
+  },
+
+  sifremiUnuttum: { alignSelf: 'center', paddingVertical: bosluk.s },
+  sifremiUnuttumYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuYazi,
   },
 
   esnekBosluk: { flex: 1 },
