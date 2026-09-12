@@ -326,7 +326,6 @@ export default {
 
   kullanici: {
     bulunamadi: 'Bu profil bulunamadı',
-    aniSayisi: '{{sayi}} anı',
     // "Takip et" -> "Arkadaş ekle" (kullanicinin istegi 2026-09-08).
     // Ekran metninde iliski "takip" ya da "bag" degil ARKADASLIK.
     takipEt: 'Arkadaş ekle',
@@ -335,10 +334,6 @@ export default {
     istekBeklemede: 'Beklemede',
     istegiGeriCek: 'İsteği geri çek',
     bagiKopar: 'Arkadaşlıktan çıkar',
-    sohbetIste: 'Sohbet iste',
-    istekGonderildi: 'İstek gönderildi',
-    sohbetAcik: 'Sohbet açık',
-    mesajGonder: 'Mesaj gönder',
     gelenIstekAciklama:
       "Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.",
     kabulEt: 'Kabul et',
@@ -358,6 +353,10 @@ export default {
     engelleEvet: 'Evet, engelle',
     vazgec: 'Vazgeç',
     geri: 'Geri',
+    mesajYaz: 'Mesaj yaz',
+    arkadassin: 'Arkadaşsın',
+    paylas: 'Profili paylaş',
+    paylasMetni: '{{ad}} Slooin\'de: {{kullaniciAdi}}',
   },
 
   profilDuzenle: {

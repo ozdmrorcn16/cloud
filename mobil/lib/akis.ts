@@ -28,7 +28,17 @@ import { etiketleriGetir, type Etiket } from './etiket'
  */
 export function anidanAkisOgesi(
   ani: AniGorunumu,
-  secenekler: { kullaniciId: string; avatarUrl: string | null; rumuz: string | null }
+  secenekler: {
+    kullaniciId: string
+    avatarUrl: string | null
+    rumuz: string | null
+    /**
+     * Kart kimin? Varsayilan `true` (kendi profil). Baskasinin profili
+     * (2026-09-13) ayni karti `false` ile ciziyor: menu (duzenle/sil)
+     * gorunmuyor, ad ve avatar o kisinin profiline gidiyor.
+     */
+    benimMi?: boolean
+  }
 ): AkisOgesi {
   return {
     id: ani.id,
@@ -41,7 +51,7 @@ export function anidanAkisOgesi(
     fotografUrl: ani.fotografUrl,
     olusturmaZamani: ani.olusturmaZamani,
     canliMi: ani.canliMi,
-    benimMi: true,
+    benimMi: secenekler.benimMi ?? true,
     // Eski kayitlarda/testlerde alan eksik olabiliyor; kart bos liste bekliyor.
     etiketler: ani.etiketler ?? [],
     avatarUrl: secenekler.avatarUrl,

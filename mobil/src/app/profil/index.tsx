@@ -53,6 +53,7 @@ import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { bolgeMetni } from '../../../lib/bolge'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
+import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 
 /**
  * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
@@ -177,6 +178,9 @@ const KIMLIK_VARSAYILAN = 94
  * uzaniyor, yani kenar ekranin disinda kaliyor.
  */
 const HARITA_UST_TASMA = 96
+
+/** Profil avatarinin capi; fotografli ve bas harfli hal ayni olcude. */
+const AVATAR_CAPI = 88
 
 const EN_FAZLA_YER = 20
 
@@ -629,11 +633,14 @@ export default function ProfilEkrani() {
                   ) : (
                     // Fotografi olmayanda bos daire birakmak profili
                     // eksik gosteriyor; bas harf kimligi tasiyor.
-                    <View style={[stiller.avatar, stiller.avatarYok]}>
-                      <Text style={stiller.basHarf}>
-                        {(profil.ad || profil.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-                      </Text>
-                    </View>
+                    // ORTAK BILESEN (2026-09-13): daire artik acik
+                    // turuncu zeminli ve turuncu kenarlikli - beyaz
+                    // daire harita dokusunda kayboluyordu.
+                    <BasHarfAvatar
+                      ad={profil.ad || profil.kullaniciAdi}
+                      cap={AVATAR_CAPI}
+                      testID="bos-avatar"
+                    />
                   )}
                   {/* Rozet TURUNCU (referans): avatarin sag altinda,
                       beyaz halkayla fotograftan ayriliyor. */}
@@ -1274,23 +1281,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Buyutuldu (kullanicinin istegi 2026-08-27): profilin capasi bu.
   avatar: {
     // 104 -> 88: band kuculurken capa da orantili kuculdu.
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: AVATAR_CAPI,
+    height: AVATAR_CAPI,
+    borderRadius: AVATAR_CAPI / 2,
     // Zeminden fotografi ayiran beyaz halka.
     borderWidth: 4,
     borderColor: '#FFFFFF',
   },
-  avatarYok: {
-    backgroundColor: renk.yuzey,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  basHarf: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: 30,
-    color: renk.turuncuYazi,
-  },
+  /* `avatarYok` ve `basHarf` KALDIRILDI (2026-09-13): bos avatar artik
+     ortak `BasHarfAvatar` bileseninde ciziliyor. */
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
 
@@ -1333,14 +1332,17 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   izgara: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -bosluk.xl,
+    // Sayfa payi `bosluk.sayfa` (16); eskiden `xl` (24) yaziyordu ve
+    // 2026-09-06'da pay 16'ya inince izgara her iki yandan 8 px
+    // tasiyordu (2026-09-13'te fark edildi).
+    marginHorizontal: -bosluk.sayfa,
   },
   izgaraHucre: { width: '33.333%', aspectRatio: 1, padding: 1 },
   izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
 
   izgaraBuyukFoto: { width: '100%', height: '80%' },
 
-  aniListesi: { marginHorizontal: -bosluk.xl },
+  aniListesi: { marginHorizontal: -bosluk.sayfa },
 
   yerOrta: { flex: 1 },
   yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },

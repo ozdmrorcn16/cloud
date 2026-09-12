@@ -1,3 +1,4 @@
+import { Share } from 'react-native'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir, kendiKullaniciIdim } from '../../../lib/profil'
@@ -97,8 +98,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
-      // @ kalkti (kullanicinin karari 2026-09-03).
-      expect(screen.getByText('orcun')).toBeTruthy()
+      // @ GERI GELDI (2026-09-13): kendi profildeki gibi adin altinda.
+      expect(screen.getByText('@orcun')).toBeTruthy()
     })
   })
 
@@ -248,11 +249,14 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Sil')).toBeNull()
   })
 
-  it('bag yokken iki istek butonunu gosterir', async () => {
+  it('bag yokken eylem satirinda "Arkadaş ekle" ve "Mesaj yaz" var; "Sohbet iste" YOK', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
     expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
-    expect(screen.getByText('Sohbet iste')).toBeTruthy()
+    expect(screen.getByText('Mesaj yaz')).toBeTruthy()
+    // Ayri bir "sohbet iste" adimi KALKTI (2026-09-13): mesaj
+    // istekleri modeli geregi yabanci dogrudan tek mesaj yazabiliyor.
+    expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
   it('takip istegi gonderir ve durumu gunceller', async () => {
@@ -295,16 +299,17 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
   })
 
-  it('sohbet iste butonuna basinca dogru id ile cagirir ve istek gonderildi etiketi gosterir', async () => {
+  it('"Mesaj yaz" bag YOKKEN de sohbet ekranini acar; sohbet istegi RPC\'si HIC cagrilmaz', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
-    ;(sohbetIstegiGonder as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Sohbet iste'))
+    await fireEvent.press(await screen.findByText('Mesaj yaz'))
 
-    await waitFor(() => expect(sohbetIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('İstek gönderildi')).toBeTruthy()
-    expect(screen.queryByText('Sohbet iste')).toBeNull()
+    expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kullanici-2')
+    // Istegi sunucu `mesaj_gonder` icinde kendisi kuruyor; ekranin
+    // onceden bir istek atmasi ayni isi iki kez yapmak olurdu.
+    expect(sohbetIstegiGonder).not.toHaveBeenCalled()
+    expect(screen.queryByText('İstek gönderildi')).toBeNull()
   })
 
   /**
@@ -322,14 +327,17 @@ describe('KullaniciProfiliEkrani', () => {
    * engellemek (ve istenirse engeli kaldirmak); o yol konusmayi
    * mesajlariyla birlikte siliyor.
    */
-  it('sohbet beklemedeyken GERI CEK butonu YOK, yerine durum etiketi var', async () => {
+  it('sohbet beklemedeyken GERI CEK butonu YOK; durum etiketi de artik yok, "Mesaj yaz" var', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'beklemede' })
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('İstek gönderildi')).toBeTruthy()
-    expect(screen.queryByText('İsteği geri çek')).toBeNull()
+    // 2026-09-13: "Istek gonderildi" etiketi kalkti - istegin durumu
+    // sohbet ekraninin kendisinde gorunuyor.
     expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
+    expect(screen.queryByText('İstek gönderildi')).toBeNull()
+    expect(screen.queryByText('İsteği geri çek')).toBeNull()
+    expect(screen.getByText('Mesaj yaz')).toBeTruthy()
   })
 
   it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
@@ -431,12 +439,13 @@ describe('KullaniciProfiliEkrani', () => {
     await waitFor(() => expect(screen.queryByText('Reddet')).toBeNull())
   })
 
-  it('sohbet kabul edilmisse sohbet acik gosterir', async () => {
+  it('sohbet kabul edilmisse "Sohbet açık" etiketi YOK, "Mesaj yaz" var', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'kabul' })
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
+    expect(await screen.findByText('Mesaj yaz')).toBeTruthy()
+    expect(screen.queryByText('Sohbet açık')).toBeNull()
   })
 
   it('gelen sohbet istegini yanitlama basarisiz olursa hata gosterir ve blok kalir', async () => {
@@ -453,14 +462,14 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.getByText('Reddet')).toBeTruthy()
   })
 
-  it('gelen sohbet istegi kabul edilmisse ben istek gondermemis olsam bile sohbet acik gosterir', async () => {
+  it('gelen sohbet istegi kabul edilmisse "Mesaj yaz" var, "Sohbet iste" yok', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'kabul',
     })
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
+    expect(await screen.findByText('Mesaj yaz')).toBeTruthy()
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
@@ -471,7 +480,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     await render(<KullaniciProfiliEkrani />)
 
-    expect(await screen.findByText('Sohbet açık')).toBeTruthy()
+    expect(await screen.findByText('Mesaj yaz')).toBeTruthy()
     expect(screen.queryByText('İsteği geri çek')).toBeNull()
   })
 
@@ -498,52 +507,43 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Arkadaş ekle')).toBeNull()
   })
 
-  it('sohbet istegi basarisiz olursa sunucu mesajini gosterir ve durumu degistirmez', async () => {
-    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
-    ;(sohbetIstegiGonder as jest.Mock).mockRejectedValue(
-      new Error('Bugunluk istek sinirina ulastin')
-    )
+  /*
+   * PAYLAS SAG USTTE (kullanicinin tarifi 2026-09-13): "yukari saga
+   * paylas ikonu olucak ... bu profilini birine paylasmak icin".
+   */
+  it('sag ustteki paylas ikonu profil baglantisini paylasir', async () => {
+    const paylasSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Sohbet iste'))
+    await fireEvent.press(await screen.findByTestId('profili-paylas'))
 
-    expect(await screen.findByText('Bugunluk istek sinirina ulastin')).toBeTruthy()
-    expect(screen.getByText('Sohbet iste')).toBeTruthy()
-    expect(screen.queryByText('Istek gonderildi')).toBeNull()
+    await waitFor(() => expect(paylasSpy).toHaveBeenCalled())
+    const mesaj = (paylasSpy.mock.calls[0][0] as { message: string }).message
+    expect(mesaj).toContain('ada123')
+    expect(mesaj).toContain('/kullanici/kullanici-2')
+    paylasSpy.mockRestore()
   })
 
-  it('karsilikli takip varken mesaj gonder butonu gorunur ve sohbet rotasina yonlendirir', async () => {
+  it('arkadasken "Mesaj yaz" sohbet rotasina yonlendirir, buton "Arkadaşsın" durumunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
     })
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('Mesaj gönder'))
+    expect(await screen.findByText('Arkadaşsın')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Mesaj yaz'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/kullanici-2')
+    expect(screen.queryByText('Arkadaş ekle')).toBeNull()
   })
 
-  it('kabul edilmis sohbet istegi varken mesaj gonder butonu gorunur', async () => {
-    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
-      takip: 'yok', sohbet: 'kabul', gelenTakip: 'yok', gelenSohbet: 'yok',
-    })
-
-    await render(<KullaniciProfiliEkrani />)
-
-    expect(await screen.findByText('Mesaj gönder')).toBeTruthy()
-  })
-
-  it('gelen sohbet istegi kabul edilmisse mesaj gonder butonu gorunur', async () => {
-    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
-      takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'kabul',
-    })
-
-    await render(<KullaniciProfiliEkrani />)
-
-    expect(await screen.findByText('Mesaj gönder')).toBeTruthy()
-  })
-
-  it('hicbir bag yokken mesaj gonder butonu gorunmez', async () => {
+  /*
+   * "MESAJ YAZ" HER ZAMAN VAR (2026-09-13). Eskiden "Mesaj gonder"
+   * yalnizca bag varken gorunuyordu; iddia TERSINE cevrildi: bag yokken
+   * de buton var, cunku mesaj istekleri modeli (2026-09-01) yabanciya
+   * tek mesaj hakki veriyor ve kural sunucuda.
+   */
+  it('hicbir bag yokken de "Mesaj yaz" butonu VAR', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'yok', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
     })
@@ -551,6 +551,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
 
+    expect(screen.getByText('Mesaj yaz')).toBeTruthy()
     expect(screen.queryByText('Mesaj gönder')).toBeNull()
   })
 })
@@ -622,7 +623,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
     })
     await render(<KullaniciProfiliEkrani />)
 
-    await screen.findByText('Mesaj gönder')
+    await screen.findByText('Arkadaşsın')
     expect(screen.queryByText('Bu profil kapalı')).toBeNull()
   })
   // ------------------------------------------------------------------ //
@@ -717,6 +718,54 @@ describe('KullaniciProfiliEkrani duzen', () => {
    * gecmisi. Buradaki liste bir TANITIM: "bu kisi genelde nereye
    * gidiyor" sorusunu cevapliyor, tam bir ziyaret dokumu vermiyor.
    */
+  /*
+   * YENI DUZEN (kullanicinin tarifi 2026-09-13): kapali profilde akis
+   * yerine BUYUK bir kilit; acik profilde paylasimlar kendi profildeki
+   * gibi KART olarak gorunuyor (menusuz - baskasinin karti).
+   */
+  it('KAPALI profilde akis karti YOK, kilit alani VAR', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
+        fotografUrl: null, olusturmaZamani: new Date().toISOString(), canliMi: false,
+        mekanSemti: null, etiketler: [] },
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByTestId('profil-kilitli')
+
+    expect(screen.queryByText('Sahil Kafe')).toBeNull()
+    // Sayaclar yine de sayiyi soyluyor - kilit yalnizca AKISI kapatiyor.
+    expect(screen.getByLabelText('1 Anı')).toBeTruthy()
+  })
+
+  it('ACIK profilde paylasimlar KART olarak gorunur ve duzenleme menusu YOK', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
+        fotografUrl: null, olusturmaZamani: new Date().toISOString(), canliMi: false,
+        mekanSemti: null, etiketler: [] },
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByText('Sahil Kafe')).toBeTruthy()
+    expect(screen.getByText('harika')).toBeTruthy()
+    // Kart kendi profildekiyle AYNI bilesen; ama baskasinin karti
+    // oldugu icin uc nokta menusu cizilmiyor.
+    expect(screen.queryByLabelText('Seçenekler')).toBeNull()
+    expect(screen.queryByText('Sil')).toBeNull()
+  })
+
+  it('fotografsiz profilde ortak bas harfli avatar cizilir', async () => {
+    await render(<KullaniciProfiliEkrani />)
+
+    expect(await screen.findByTestId('bos-avatar')).toBeTruthy()
+    expect(screen.getByText('A')).toBeTruthy()
+  })
+
   it('EN SIK listesinde en fazla BES yer gorunuyor', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
@@ -732,9 +781,10 @@ describe('KullaniciProfiliEkrani duzen', () => {
           mekanId: `mekan-${m}`,
           mekanAdi: `Mekan ${m}`,
           mekanSemti: 'Nilüfer',
-          olusturuldu: new Date().toISOString(),
+          olusturmaZamani: new Date().toISOString(),
           notMetni: null,
-          fotograf: null,
+          fotografUrl: null,
+          etiketler: [],
         })
       }
     }
