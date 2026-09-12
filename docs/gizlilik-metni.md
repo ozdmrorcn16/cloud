@@ -41,10 +41,6 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - **E-posta adresin** - bugun hesabinin BIRINCIL kimligi. Hesap
   acarken ve giris yaparken kullanilir, dogrulama kodu buraya
   gonderilir.
-- Telefon numaran - YALNIZCA ESKI HESAPLARDA. Kayit ve giris 2026
-  Eylul'unde e-postaya tasindi; daha once telefonla acilmis hesaplar
-  calismaya devam ettigi icin numara o hesaplarda kayitli kalir. Yeni
-  bir hesap acarken telefon numarasi istenmez.
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
 - **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
   cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
@@ -66,8 +62,8 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 KVKK m.10, isleme amacinin yaninda **hukuki sebebin** de bildirilmesini
 ister. Her amacin dayanagi ayri ayri yazilidir:
 
-- **Hesabini kurmak ve e-posta adresini dogrulamak** (eski hesaplarda
-  telefon numarani). Hukuki sebep: **sozlesmenin ifasi** (KVKK
+- **Hesabini kurmak ve e-posta adresini dogrulamak.** Hukuki sebep:
+  **sozlesmenin ifasi** (KVKK
   m.5/2-c) - hesap olmadan uygulamanin hicbir islevi calismaz.
 - **Yakinindaki mekanlari ve kisileri kesfetmeni saglamak** (konum ve
   check-in). Hukuki sebep: **sozlesmenin ifasi** (KVKK m.5/2-c).

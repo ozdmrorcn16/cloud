@@ -1,18 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 /**
- * SMS DOGRULAMA KODU GONDERIM SAYACI.
+ * E-POSTA DOGRULAMA KODU GONDERIM SAYACI.
  *
- * Sorun (2026-08-26 guvenlik incelemesi): dogrulama ekranindaki 60
- * saniyelik geri sayim yalnizca EKRAN DURUMUNDA tutuluyordu. Sayfa
- * yenilenince ya da `/dogrula?telefon=...` adresi yeniden acilinca
- * sayac sifirlaniyor ve "Tekrar gonder" hemen basilabilir hale
- * geliyordu. Adres cubugundaki numara serbest oldugu icin bu, bir
- * baskasinin numarasina ust uste SMS attirmanin kolay yoluydu.
+ * (SMS doneminden kaldi - 2026-08-26 guvenlik incelemesi. Kayit ve
+ * giris 2026-09-01'de e-postaya tasindi; uygulamanin telefon
+ * numarasi ve SMS ile artik bir baglantisi YOK. Sayac ayni isi e-posta
+ * adresi icin yapiyor; asagidaki "numara" gecen yerler adres olarak
+ * okunmali.)
  *
- * Sayac artik CIHAZDA saklaniyor: bekleme suresi sayfa yenilense de
- * devam ediyor ve bir numaraya bir saat icinde gonderilebilecek kod
- * sayisi sinirli.
+ * Sorun: dogrulama ekranindaki 60 saniyelik geri sayim yalnizca EKRAN
+ * DURUMUNDA tutuluyordu. Sayfa yenilenince ya da dogrulama adresi
+ * yeniden acilinca sayac sifirlaniyor ve "Tekrar gonder" hemen
+ * basilabilir hale geliyordu - baskasinin adresine ust uste kod
+ * attirmanin kolay yoluydu.
+ *
+ * Sayac CIHAZDA saklaniyor: bekleme suresi sayfa yenilense de devam
+ * ediyor ve bir adrese bir saat icinde gonderilebilecek kod sayisi
+ * sinirli. Cihaz duzeyinde olmasi BILEREK: kotuye kullanim korumasi,
+ * hesaba bagli bir tercih degil.
  *
  * SINIRIN NEREDE OLDUGU KONUSUNDA DURUST OLMAK GEREKIR: burasi
  * ISTEMCI tarafi. Depolamayi temizleyen ya da dogrudan API'ye giden

@@ -18,9 +18,10 @@ import {
 const HANE = 6
 
 /**
- * Telefon dogrulama.
+ * E-posta dogrulama.
  *
- * Kayit ekranindan sonraki adim: numaraya gelen kodu girmek.
+ * Kayit ekranindan sonraki adim: adrese gelen 6 haneli kodu girmek.
+ * (Ekran SMS doneminden geliyor; 2026-09-01'den beri kod e-postayla.)
  *
  * Kod alani ALTI KUTU olarak ciziliyor ama altta TEK bir TextInput
  * var; kutular yalnizca gorsel. Alti ayri girdi kullanmak kulaga

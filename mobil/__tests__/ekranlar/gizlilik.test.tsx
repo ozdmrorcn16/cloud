@@ -44,9 +44,12 @@ it('veri sorumlusunu ve gercek basvuru adresini yazar (final inceleme: Bulgu 4)'
 })
 
 it('e-postayi birincil kimlik olarak yazar (final inceleme: Bulgu 2)', async () => {
-  const { getByText } = await render(<GizlilikEkrani />)
+  const { getByText, queryByText } = await render(<GizlilikEkrani />)
   expect(getByText(/E-posta adresin - bugün hesabının BİRİNCİL kimliği/)).toBeTruthy()
-  expect(getByText(/Telefon numaran - YALNIZCA ESKİ HESAPLARDA/)).toBeTruthy()
+  // TELEFON MADDESI KALDIRILDI (2026-09-13): gercek hicbir kullanici
+  // telefonla kayit olmadi, uygulamanin telefon/SMS ile baglantisi yok.
+  // Iddia silinmedi, tersine cevrildi.
+  expect(queryByText(/Telefon numaran/)).toBeNull()
 })
 
 it('her amacin hukuki sebebini yazar (final inceleme: Bulgu 3)', async () => {

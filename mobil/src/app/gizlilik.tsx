@@ -34,7 +34,6 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
     baslik: '1. Hangi verilerini işliyoruz',
     paragraflar: [
       'E-posta adresin - bugün hesabının BİRİNCİL kimliği. Hesap açarken ve giriş yaparken kullanılır, doğrulama kodu buraya gönderilir.',
-      "Telefon numaran - YALNIZCA ESKİ HESAPLARDA. Kayıt ve giriş 2026 Eylül'ünde e-postaya taşındı; daha önce telefonla açılmış hesaplar çalışmaya devam ettiği için numara o hesaplarda kayıtlı kalır. Yeni bir hesap açarken telefon numarası istenmez.",
       'Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.',
       'Konumun - üç farklı şekilde: mekan ararken ve mekan eklerken cihaz konumun sunucuya gönderilir ama saklanmaz; check-in aktifken koordinatın saklanır, check-in anıya dönüşünce (1 saat sonra ya da hemen "ayrıldım" dediğinde) koordinat silinir ve geriye yalnızca hangi mekanda olduğun kalır (tam ayrıntı aşağıda, 3. maddede).',
       'Gönderdiğin ve aldığın mesajların içeriği.',
@@ -48,7 +47,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
     baslik: '2. Ne amaçla işliyoruz - ve hangi hukuki sebeple',
     paragraflar: [
       'KVKK m.10, işleme amacının yanında hukuki sebebin de bildirilmesini ister. Her amacın dayanağı ayrı ayrı yazılıdır.',
-      'Hesabını kurmak ve e-posta adresini doğrulamak (eski hesaplarda telefon numaranı). Hukuki sebep: sözleşmenin ifası (KVKK m.5/2-c) - hesap olmadan uygulamanın hiçbir işlevi çalışmaz.',
+      'Hesabını kurmak ve e-posta adresini doğrulamak. Hukuki sebep: sözleşmenin ifası (KVKK m.5/2-c) - hesap olmadan uygulamanın hiçbir işlevi çalışmaz.',
       "Yakınındaki mekanları ve kişileri keşfetmeni sağlamak (konum ve check-in). Hukuki sebep: sözleşmenin ifası (KVKK m.5/2-c). Slooin'in yaptığı tek şey bir yere check-in yapman ve orada kimin olduğunu görmendir; konum işlenmeden uygulama çalışmaz, yani konum ayrı bir \"ek özellik\" değil hizmetin kendisidir.",
       'Mesajlaşmanı sağlamak. Hukuki sebep: sözleşmenin ifası (KVKK m.5/2-c).',
       'Kötüye kullanımı (taciz, sahte hesap, uygunsuz içerik) önlemek ve incelemek - şikayet kayıtları, moderasyon denetim izi, hesap durumu kayıtları ve istek tavanı sayaçları. Hukuki sebep: meşru menfaat (KVKK m.5/2-f): kullanıcıları taciz ve kötüye kullanımdan koruyabilmek.',
