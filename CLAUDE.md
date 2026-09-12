@@ -1305,6 +1305,45 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### AYARLAR YENIDEN DIZILDI, CHECK-IN'E "ARKADAS EKLE" - 2026-09-12
+
+Kullanicinin arka arkaya uc istegi, hepsi yayinda (OTA grup
+`825f6cdc-a725-40b3-a6a8-67faab0c23d9`, jest 73 paket / 873 test).
+
+**1. Gizlilik metni + Verilerimi indir EN ALTA, KART DISINA.**
+"Hesabin" karti tamamen kalkti; iki satir "Hesap" bolumunun ustunde
+duz baglanti (`ayar-baglantilari` testID). Ayni sabah eklenen
+`IndirIkonu` ve `BelgeIkonu` olu kaldi, silindi. Siralama ve kart
+disiligi testle kilitli.
+
+**2. "Yeni check-in'lerim" satiri KALDIRILDI, baslik "Gizlilik
+ayarlari".** Tek girisi bu satirdi; `/profil/check-in-gorunurlugu`
+ekrani, testleri ve `varsayilanBulunurluguAyarla` SILINDI
+(`varsayilanBulunurluguGetir` DURUYOR - check-in ekrani okuyor).
+**SONUCU KULLANICIYA SOYLENDI:** varsayilan bulunurluk artik
+degistirilemiyor, sunucudaki varsayilan (herkese_acik) gecerli;
+paylasimlari daraltmanin tek kontrolu "Profilim gizli". Not:
+`/profil/ani-gorunurlugu` ekrani 2026-08-30'dan beri ayni sekilde
+oksuz ve HALA duruyor - bu iste dokunulmadi.
+
+**3. Check-in ekraninda "Arkadas ekle (opsiyonel)" butonu.**
+Etiketleme ZATEN vardi ama satir ici cipler arkadas listesi BOSKEN
+hic cizilmiyordu - kullanicinin hesabinda arkadas olmadigi icin
+ozelligi hic gormedi ve "arkadas ekle koy" dedi. Buton artik her
+zaman gorunuyor (fotograf butonuyla ayni dil), yeni
+`src/tasarim/ArkadasSecici.tsx` alttan aciliyor: aranabilir, COKLU
+secim, "Tamam (N)"; liste bossa sebebini soyluyor. Secilenler
+butonun altinda cip, dokununca kalkiyor. `ListeSecici` kullanilmadi:
+o tek secimlik ve secince kapaniyor.
+
+Yan duzeltme: ilk kullanim uyarisi ("Bu check-in ne paylasiyor?")
+metni ASCII'ydi (karar 74 ihlali, 2026-08-23 cevirisinde atlanmis),
+duzgun Turkceye cevrildi; "takip eden arkadaslarina" -> "arkadaslarina".
+
+**EKRAN GORUNTUSU TUZAGI:** ekran goruntusu araci temiz profil
+kullandigi icin check-in ekraninda ilk kullanim uyarisi cikiyor;
+`SLOOIN_TIKLA="Anladım|Arkadaş ekle (opsiyonel)"` ile gecilir.
+
 ### "SIFRENI MI UNUTTUN?" - SIFRE SIFIRLAMA - 2026-09-12
 
 Kullanicinin istegi: "hesabi olan kullanicinin giris yapma sayfasina
