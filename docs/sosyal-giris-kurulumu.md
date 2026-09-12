@@ -1,5 +1,11 @@
 # Apple ve Google ile giriş — kurulum
 
+> **DURUM (2026-09-12): 1-4. adımların hepsi YAPILDI**, iOS derlemesi
+> alındı. Aşağısı kurulumun nasıl yapıldığının kaydıdır. Kalan tek iş
+> "Bittiğinde doğrulanacaklar" listesi (gerçek cihaz gerekiyor) ve
+> Maps SDK for Android anahtarı (faturalandırma hesabı kullanıcıda).
+> Ayrıntı `CLAUDE.md` → "SOSYAL GIRIS PANEL ISLERI BITTI".
+
 Kod tarafı hazır ve testli. Bu belge, **panelde yapılması gereken**
 adımları anlatıyor; hepsi tarayıcıdan ve kendi hesabınla yapılıyor, o
 yüzden bu kısım bende değil.

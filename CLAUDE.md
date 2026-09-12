@@ -1432,6 +1432,101 @@ Ekran goruntuleri `tasarim/giris-sifremi-unuttum.png`,
 layout +3; jest 73 paket / 873 test. Yayin: web `slooin.expo.app`,
 OTA grup `bddc8f54-2090-4080-8ca6-b5a2e0627205`.
 
+### SOSYAL GIRIS PANEL ISLERI BITTI, iOS DERLEMESI ALINDI - 2026-09-12 GECE
+
+Kullanici "hersey tamam, ayriliyorum, sana tam yetki" dedi; asagidakilerin
+hepsi `claude-in-chrome` ile GERCEK Chrome uzerinden yapildi (iki
+profil: Browser 2 = slooinapp@gmail.com -> Google Cloud; Browser 1 =
+kisisel hesap -> Apple Developer ve Supabase oturumlari oradaydi).
+
+**GOOGLE CLOUD (proje `slooin`, hesap slooinapp@gmail.com):** Hizmet
+Sartlari kabul edildi (kullanicinin onayiyla), OAuth consent (Google
+Auth Platform) kuruldu ve **"In production"a alindi** (yalnizca
+e-posta/profil kapsami, dogrulama gerekmedi; logo yuklenmedi cunku logo
+dogrulama sartini tetikliyor). Test kullanicilari slooinapp ve
+ozdmrorcn16. Uc istemci: Web (`Slooin Web`, redirect
+`.../auth/v1/callback`), iOS (`com.slooin.app`, App Store ID
+6806677710), Android (`com.slooin.app`, EAS keystore SHA-1
+`0C:27:27:DA:1F:64:41:E7:50:0D:BB:DE:A5:55:A0:13:A6:31:4E:7B`).
+Kimlikler `mobil/.env` icinde (`EXPO_PUBLIC_GOOGLE_WEB_ISTEMCI_ID`,
+`EXPO_PUBLIC_GOOGLE_IOS_ISTEMCI_ID`, `GOOGLE_IOS_URL_SCHEME`,
+`GOOGLE_ANDROID_ISTEMCI_ID`, `GOOGLE_WEB_ISTEMCI_SIFRESI`) ve ilk ucu
+EAS `production` + `preview` ortamlarinda.
+
+**PLAY APP SIGNING TUZAGI (ileride):** magazaya Play uzerinden cikinca
+Google APK'yi KENDI anahtariyla yeniden imzalar; o anahtarin SHA-1'i
+ile IKINCI bir Android OAuth istemcisi gerekir (Play Console > App
+integrity > App signing key certificate). Yoksa magazadan inen
+uygulamada Google girisi DEVELOPER_ERROR verir.
+
+**MAPS SDK FOR ANDROID ANAHTARI ALINAMADI:** hesapta faturalandirma
+hesabi YOK ve kurmak kart bilgisi istiyor - ajan bunu yapamaz
+(kimlik/odeme bilgisi kurali). Kullanici
+console.cloud.google.com/billing'de hesap acinca: Maps SDK for Android
+etkinlestir -> API key -> paket `com.slooin.app` + yukaridaki SHA-1 ile
+kisitla -> `eas env:create --environment production --name
+GOOGLE_MAPS_ANDROID_ANAHTARI --value ...` (preview icin de) -> yeni
+Android derlemesi.
+
+**APPLE DEVELOPER (Team 79QNZVGJC7):** `com.slooin.app` App ID'ye
+Sign In with Apple isaretlendi (profile gecersiz kilindi, EAS derlemede
+yeniden uretti - "Updated 1 second ago" gorundu). Services ID
+`com.slooin.app.web` (domain `swpiibyuoffykbmirvgq.supabase.co`, return
+URL `/auth/v1/callback`). Anahtar `Slooin Sign in with Apple`, **Key ID
+4T394Q83H5**, .p8 dosyasi `mobil/gizli/AuthKey_4T394Q83H5.p8`
+(gitignored; Apple bir daha indirtmez, YEDEKLE). `.env`de
+`APPLE_TEAM_ID`, `APPLE_SERVICES_ID`, `APPLE_KEY_ID`, `APPLE_P8_DOSYASI`.
+
+**SUPABASE:** Google ve Apple saglayicilari **Enabled**. Google Client
+IDs = uc istemci virgulle; Apple Client IDs = `com.slooin.app,
+com.slooin.app.web`. **SECRET ALANLARI BOS BIRAKILDI - bilincli:**
+uygulama native `signInWithIdToken` kullaniyor ve o yol yalnizca Client
+IDs ister; secret yalnizca tarayici OAuth akisi icin. Ayrica ajan kimlik
+bilgisini tarayici formuna girmiyor. Web OAuth (ornegin `slooin.expo.app`
+uzerinden Google/Apple ile giris) ISTENIRSE Google secret'i `.env`den,
+Apple icin .p8'den uretilen JWT'yi kullanici panele girmeli.
+
+**TUZAK - CHROME OTOMATIK DOLDURMA:** Supabase saglayici formunda
+Chrome, Client IDs alanina e-posta, Secret alanina 11 karakterlik
+KAYITLI BIR PAROLA yazdi; Google'da bu bir kez KAYDEDILDI (sonra
+temizlendi), Apple'da kaydi reddettirdi ("Disabled" kaldi). Parola
+alanina `[value redacted]` gorunuyorsa once bosalt.
+
+**SUPABASE ACCESS TOKEN:** panelden 7 gunluk, proje kapsamli bir token
+uretildi ama degerini okumak siniflandirici tarafindan engellendi
+("credential materialization"); kullanilmadi, 7 gunde duser. Ihtiyac
+olursa `supabase.com/dashboard/account/tokens`ten silinebilir.
+
+**KOD:** `app.json`a `ios.usesAppleSignIn: true` geri kondu,
+`app.config.js`ten karsi plugin CIKARILDI (dosya `plugins/` altinda
+tarihsel kayit). `npx expo config --type introspect` ile dogrulandi:
+entitlements `com.apple.developer.applesignin: [Default]`, plugin
+listesinde `@react-native-google-signin/google-signin` var. Commit
+`f26a951`.
+
+**iOS DERLEMESI:** `1ddfb894-f87e-4859-ae2f-2cb68bc486e5`
+(production, ~710 MB arsiv). Bitince `npx eas-cli submit --platform ios
+--latest` ve TestFlight'ta GERCEK cihazda dogrulanacaklar
+`docs/sosyal-giris-kurulumu.md` sonundaki liste. Dogrulanmadan
+"calisiyor" DENMEZ.
+
+**Google nonce notu:** Supabase Google saglayicisinda "Skip nonce
+checks" KAPALI birakildi; `lib/sosyal-giris.ts` nonce gondermiyor ve
+Google'in native SDK jetonu nonce tasimiyor, yani gecmeli. iOS'ta
+"nonce" hatasi gorulurse o anahtar acilir.
+
+**CLAUDE-IN-CHROME DERSLERI:** (1) iki tarayici bagliysa arac once
+`AskUserQuestion` ile secim ister, `select_browser` ile gecilir;
+hangi hesap oldugu `myaccount.google.com` metninden OKUNARAK dogrulandi.
+(2) Sekme arka plandayken (`document.visibilityState === 'hidden'`)
+ekran goruntusu ZAMAN ASIMINA duesuyor ve `type` bazen hic yazmiyor;
+DOM tarafi calisiyor: `javascript_tool` ile native value setter +
+`input` olayi guvenilir. (3) Supabase panosu ayni sekmede ikinci
+navigasyonda "document_idle" olmuyor - sekmeyi kapatip yenisini acmak
+cozuyor. (4) `javascript_tool` ciktisinda URL/cerez benzeri metin varsa
+sonuc `[BLOCKED: Cookie/query string data]` donuyor; kimlik iceren
+yollari `replace` ile maskeleyip yazdir.
+
 ### DEVIR NOTU - 2026-09-12 AKSAM: --chrome ILE YENIDEN AC, GOOGLE CLOUD'DAN BASLA
 
 Kullanici .bat'i duzenledi, oturum ONAYSIZ KIPTE acildi ve "hazir"
