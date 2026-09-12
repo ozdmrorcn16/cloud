@@ -1432,6 +1432,66 @@ Ekran goruntuleri `tasarim/giris-sifremi-unuttum.png`,
 layout +3; jest 73 paket / 873 test. Yayin: web `slooin.expo.app`,
 OTA grup `bddc8f54-2090-4080-8ca6-b5a2e0627205`.
 
+### MEKAN FOTOGRAF ALANI VE PUANLAMA - 2026-09-13 GECE
+
+Kullanicinin iki istegi, ikisi de mekan sayfasinda, ikisi de YAYINDA
+(web `slooin.expo.app`, OTA grup `42687a0b-11d2-48f8-96d9-9a189378adc9`).
+Jest 72 paket / 881 test, tsc temiz.
+
+**1. FOTOGRAF ALANI** ("check-in'lere konan fotograflar orada gorunecek").
+Ucuncu sekme "Fotograflar": 3 sutunlu izgara, dokununca buyuk gorunum
+(1/N sayaci, kaydirarak gecis, altta avatar + ad + mekan + gorece
+zaman - kullanicinin verdigi Swarm ornegi). RPC `mekan_fotograflari`
+`security invoker`: check_inler RLS'i aynen, kova politikasi ayni
+satira bagli - gorunurluk modeli GENISLEMEDI. 24 saat suzgeci YOK
+(galeri, "kim burada" listesi degil). Bilesen
+`src/tasarim/MekanFotografGalerisi.tsx`.
+
+**BULUNMA EKI BILEREK YOK.** Ilk yazimda altyazi "Ad · Mekan'da" idi ve
+`lib/turkce-ek.ts` unlu uyumuyla ek uretiyordu; test gercek bir hata
+yakaladi: "Muayene Istasyonu'da" (dogrusu "Istasyonu'nda" - iyelik
+ekli tamlamada kaynastirma n). "Dayi'da" ile "Merkezi'nde" sozluk
+olmadan ayirt edilemez; yanlis ek gostermektense uc satir (ad / mekan
+/ zaman). Yardimci ve testi SILINDI.
+
+**TUZAK - yatay FlatList'te sayfa yuksekligi:** `flex: 1` sayfa 0 px
+yukseklik aldi, fotograf hic cizilmedi (ekran goruntusuyle yakalandi:
+siyah ekran, sayac ve altyazi var, fotograf yok). Akis kartindaki
+"genislik sifir" tuzaginin dikey kardesi; yukseklik `onLayout` ile
+olculup sayfaya ACIKCA veriliyor.
+
+Uc sekme sigsin diye etiketler kisaldi: "Liderlik" / "Son gelenler" /
+"Fotograflar" (eski "Liderlik Tablosu" ve "Son Check-inler" 390 px'te
+iki satira kiriliyordu).
+
+**2. PUANLAMA** (Swarm referansi). Kotu / Iyi / Harika; kisi basina
+mekan basina TEK oy (upsert); puan 0-10 = Kotu 2 / Iyi 7 / Harika 10
+ortalamasi (seffaf, sunucuda); **3+ oy olmadan puan gelmiyor** (tek
+oyla "10,0" hem anlamsiz hem oyu ele verir), seviye sayilari her
+zaman; **yalnizca o mekanda check-in yapmis kisi oy verebilir**
+(sunucuda; ekran onceden "once check-in yap" diyor). Kisinin oyu
+yalnizca kendisine (`benim_puanim`), tabloya dogrudan erisim kapali.
+Migrasyonlar `20260913110000` (tablo + 2 RPC) ve `20260913120000`
+(disa aktarima `mekan_puanlarim`; fonksiyon govdesi tek parca oldugu
+icin 20260911180000 kopyalanip anahtar eklendi - sonraki degisiklik
+BU dosyadan devam etmeli). Bilesen `src/tasarim/MekanPuanlama.tsx`,
+ikonlar `mekan-ikonlari.tsx` (uc yuz). Gizlilik metni (uygulama +
+docs) ve `kvkk-uyum-listesi.md` guncellendi.
+
+Canli: `araclar/mekan-puanlama-canli-test.py` **15/15** (gecici
+check-in'leri service role ile ekliyor - `bitis_zamani` NOT NULL,
+gecmis bir tarih veriliyor; sonunda siliyor).
+
+**TESTFLIGHT NOTU (kullanicinin "Apple/Google girisi hala calismiyor"
+bildirimi):** App Store Connect'te Build 8 "Ready to Submit" ve dahili
+grup "tesstt"te; kullanicinin telefonu hala Build 7 (o derlemede Apple
+entitlement'i ve Google iOS URL semasi YOK, calisamaz). TestFlight'tan
+1.0.0 (8) kurulmasi istendi; sonucu bekleniyor. Calismazsa ekrandaki
+hata metni + `auth_logs` ile devam.
+
+**VPN PROJESI .BAT:** kullanicinin istegiyle `Claude - vpn.bat` son
+satiri `claude --dangerously-skip-permissions --chrome` yapildi.
+
 ### SOSYAL GIRIS PANEL ISLERI BITTI, iOS DERLEMESI ALINDI - 2026-09-12 GECE
 
 Kullanici "hersey tamam, ayriliyorum, sana tam yetki" dedi; asagidakilerin
