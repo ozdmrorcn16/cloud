@@ -1058,6 +1058,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // Tek oge (ayarlar) kaldi: `space-between` onu SOLA yapistirirdi.
     justifyContent: 'flex-end',
     gap: bosluk.m,
+    // Disli sag kenardan "cok az" iceride (kullanicinin istegi
+    // 2026-09-13): sayfa payina 6 px ekleniyor.
+    paddingRight: 6,
     // Kimlik blogu yukari alindi (kullanicinin istegi 2026-09-11):
     // 12 -> 4.
     marginBottom: bosluk.xs,

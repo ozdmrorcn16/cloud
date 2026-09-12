@@ -1,10 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { turSuzgeciniOku, turSuzgeciniYaz } from './tur-suzgeci-depo'
+import { kendiKullaniciIdim } from './profil'
 
-const ANAHTAR = 'slooin.tur-suzgeci'
+jest.mock('./profil', () => ({ kendiKullaniciIdim: jest.fn() }))
+
+// Anahtar HESABA BAGLI (2026-09-13): ayni telefonda ikinci hesap
+// oncekinin secimini gormemeli.
+const ANAHTAR = 'slooin.tur-suzgeci.kisi-a'
 
 beforeEach(async () => {
   await AsyncStorage.clear()
+  ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('kisi-a')
 })
 
 describe('tur suzgeci deposu', () => {
@@ -53,5 +59,32 @@ describe('tur suzgeci deposu', () => {
     await AsyncStorage.setItem(ANAHTAR, JSON.stringify({ tur: 'Kafe' }))
 
     expect(await turSuzgeciniOku()).toEqual([])
+  })
+
+  /*
+   * HESAP AYRIMI (kullanicinin bildirdigi kusur 2026-09-13): A'nin
+   * kaydettigi suzgec B'ye gorunmuyor; oturum yokken hicbir sey
+   * yazilmiyor; eski hesapsiz anahtar ilk okumada siliniyor.
+   */
+  it('baska hesabin suzgeci okunmuyor', async () => {
+    await turSuzgeciniYaz(['Kafe'])
+    ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('kisi-b')
+
+    expect(await turSuzgeciniOku()).toEqual([])
+  })
+
+  it('oturum yokken yazmiyor ve bos okuyor', async () => {
+    ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue(null)
+    await turSuzgeciniYaz(['Kafe'])
+
+    expect(await turSuzgeciniOku()).toEqual([])
+    expect((await AsyncStorage.getAllKeys()).length).toBe(0)
+  })
+
+  it('eski hesapsiz anahtar devredilmiyor, ilk okumada siliniyor', async () => {
+    await AsyncStorage.setItem('slooin.tur-suzgeci', JSON.stringify(['Kafe']))
+
+    expect(await turSuzgeciniOku()).toEqual([])
+    expect(await AsyncStorage.getItem('slooin.tur-suzgeci')).toBeNull()
   })
 })

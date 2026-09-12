@@ -35,6 +35,12 @@ jest.mock('../../../lib/checkin', () => ({
   checkIniSil: jest.fn(),
 }))
 
+// Tur suzgeci deposu anahtari HESABA bagli (2026-09-13); testte sabit
+// bir kimlik veriliyor.
+jest.mock('../../../lib/profil', () => ({
+  ...jest.requireActual('../../../lib/profil'),
+  kendiKullaniciIdim: jest.fn().mockResolvedValue('test-kisi'),
+}))
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush, replace: jest.fn() , canGoBack: () => false }),
   // Alt gezinme cubugu hangi sekmenin aktif oldugunu yoldan okuyor.
@@ -740,7 +746,7 @@ describe('MekanAramaEkrani', () => {
    * yansiyor. Yon 2: ekrandaki secim DEPOYA yaziliyor.
    */
   it('depoda kayitli suzgec acilista uygulaniyor', async () => {
-    await AsyncStorage.setItem('slooin.tur-suzgeci', JSON.stringify(['Kafe']))
+    await AsyncStorage.setItem('slooin.tur-suzgeci.test-kisi', JSON.stringify(['Kafe']))
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
@@ -772,7 +778,7 @@ describe('MekanAramaEkrani', () => {
     await fireEvent.press(screen.getByTestId('tur-kaydet'))
 
     await waitFor(async () =>
-      expect(await AsyncStorage.getItem('slooin.tur-suzgeci')).toBe(JSON.stringify(['Kafe']))
+      expect(await AsyncStorage.getItem('slooin.tur-suzgeci.test-kisi')).toBe(JSON.stringify(['Kafe']))
     )
   })
 
@@ -782,7 +788,7 @@ describe('MekanAramaEkrani', () => {
    * gelirdi.
    */
   it('"Filtreyi kaldır" depodaki kaydi da siliyor', async () => {
-    await AsyncStorage.setItem('slooin.tur-suzgeci', JSON.stringify(['Kafe']))
+    await AsyncStorage.setItem('slooin.tur-suzgeci.test-kisi', JSON.stringify(['Kafe']))
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([])
 
@@ -792,7 +798,7 @@ describe('MekanAramaEkrani', () => {
     await fireEvent.press(screen.getByTestId('turleri-temizle'))
 
     await waitFor(async () =>
-      expect(await AsyncStorage.getItem('slooin.tur-suzgeci')).toBeNull()
+      expect(await AsyncStorage.getItem('slooin.tur-suzgeci.test-kisi')).toBeNull()
     )
   })
 

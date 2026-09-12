@@ -71,7 +71,9 @@ export function hedefRota(
    * Olculdu: bu istisnadan once `slooin.expo.app/gizlilik` oturumsuz
    * acilinca karsilama ekranina yonleniyordu.
    */
-  const gizlilikEkraninda = segments[0] === 'gizlilik'
+  // Kullanim kosullari da ayni sinifta: hesap olusturma adimindaki
+  // baglantidan OTURUMSUZ aciliyor (2026-09-13).
+  const gizlilikEkraninda = segments[0] === 'gizlilik' || segments[0] === 'kosullar'
 
   // HESABI OLMAYAN HERKES, HER ACILISTA karsilama ekranini gorur
   // (kullanicinin karari 2026-08-25). Once "yalnizca ilk indirene

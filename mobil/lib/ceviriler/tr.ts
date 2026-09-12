@@ -86,12 +86,11 @@ export default {
     hataTelefon: 'Geçerli bir telefon numarası gir.',
     hataZatenKayitli:
       'Bu numarada zaten bir hesap var. Şifrenle giriş yapabilirsin.',
-    // ONAY ARTIK BURADA (kullanicinin karari 2026-09-01): profil
-    // olusturma ekranindaki onay kutusu kaldirildi, kabul "Devam"a
-    // basmakla veriliyor. Kayit KAYDI korunuyor - kvkk_onaylari
-    // tablosuna yine yaziliyor, yalnizca kaynagi degisti.
-    aydinlatma:
-      'Devam ederek Kullanım koşullarımızı kabul ettiğini ve Gizlilik Politikamızı okuduğunu onaylıyorsun.',
+    // HUKUKI BILGILENDIRME BU EKRANDAN KALDIRILDI (kullanicinin karari
+    // 2026-09-13): yalnizca hesabin GERCEKTEN olustugu son adimda
+    // (profil olusturma, adim 3) duruyor ve orada iki bagl antiyla
+    // okunabiliyor. Ispat kaydi (kvkk_onaylari) zaten o adimda
+    // yaziliyordu, degismedi.
   },
 
   profilOlustur: {
@@ -126,7 +125,9 @@ export default {
     },
 
     kullaniciAdiYerTutucu: 'Kullanıcı adı',
-    kullaniciAdiIpucu: '3-20 karakter; küçük harf, rakam, nokta ve alt çizgi.',
+    // Bicim kurali artik adim basliginin altinda (adim2Aciklama); bu
+    // metin yalnizca HATA olarak, kutunun altinda gorunuyor.
+    kullaniciAdiIpucu: 'Kullanıcı adı bu biçime uymuyor.',
     kullaniciAdiKontrol: 'Kontrol ediliyor…',
     kullaniciAdiMusait: 'Bu kullanıcı adı müsait.',
     kullaniciAdiAlinmis: 'Bu kullanıcı adı alınmış, başka bir tane dene.',
@@ -157,7 +158,10 @@ export default {
     yasNotu: 'Slooin 18 yaş ve üzeri içindir.',
 
     adim2Baslik: 'Kullanıcı adını seç',
-    adim2Aciklama: 'İnsanlar seni bu adla bulacak. Sonradan 30 günde bir değiştirebilirsin.',
+    // Kullanicinin istegi (2026-09-13): "Insanlar seni bu adla bulacak..."
+    // satiri kalkti, yerine bicim kurali basliga tasindi; kutunun
+    // altindaki tekrar da kaldirildi.
+    adim2Aciklama: '3-20 karakter; küçük harf, rakam, nokta ve alt çizgi içerebilir.',
     kullaniciAdiEtiket: 'Kullanıcı adın',
 
     adim3Baslik: 'Şifreni belirle',
@@ -166,10 +170,16 @@ export default {
     sifrelerAyni: 'Şifreler eşleşiyor.',
 
     devam: 'Devam',
-    // Onay kayit ekranindaki "Devam" ile veriliyor; hesap TAM OLARAK
-    // burada olustugu icin hatirlatma son adimda da duruyor.
-    sozlesmeNotu:
-      'Hesabı oluşturarak Kullanım koşullarını kabul ettiğini ve Gizlilik Politikasını okuduğunu onaylıyorsun.',
+    // HUKUKI BILGILENDIRME YALNIZCA BURADA (kullanicinin karari
+    // 2026-09-13); kayit ekranindaki kopyasi kaldirildi. Iki parca
+    // BAGLANTI: Kullanim kosullari -> /kosullar, Gizlilik Politikasi ->
+    // /gizlilik. Metin uc parcaya bolundu ki baglantilar ayri
+    // dokunulabilir olsun.
+    sozlesmeNotuOn: 'Hesabı oluşturarak ',
+    sozlesmeKosullar: 'Kullanım koşullarını',
+    sozlesmeNotuOrta: ' kabul ettiğini ve ',
+    sozlesmeGizlilik: 'Gizlilik Politikasını',
+    sozlesmeNotuSon: ' okuduğunu onaylıyorsun.',
 
     gonder: 'Hesabı oluştur',
     gonderiliyor: 'Oluşturuluyor…',
@@ -460,7 +470,7 @@ export default {
     checkInYap: 'Bir yere check-in yap',
     anilarBaslik: 'Anılar',
     bosAniBaslik: 'Henüz bir anın yok',
-    bosAniAciklama: 'Check-in’in bittiğinde burada bir anı olarak kalır.',
+    bosAniAciklama: 'Check-in’lerin burada bir anı olarak kalır.',
     profilYok: 'Profilin henüz hazır değil',
     profilYokAciklama: 'Adını ve kullanıcı adını belirle, sonra buradan devam et.',
     profilOlustur: 'Profilini oluştur',

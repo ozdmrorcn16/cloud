@@ -1,4 +1,5 @@
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle, G } from 'react-native-svg'
@@ -7,6 +8,7 @@ import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/t
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { KarsilamaSahnesi } from '../../tasarim/KarsilamaSahnesi'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
+import { useHareket } from '../../tasarim/hareket'
 
 /**
  * ILK ACILIS EKRANI.
@@ -132,6 +134,31 @@ export default function KarsilamaEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
+  const hareket = useHareket()
+
+  /*
+   * "HESAP OLUSTUR" SOLUKTAN BELIRIYOR (kullanicinin istegi 2026-09-13).
+   * Dugme ilk karede %0 opaklikta; kisa bir gecikmeden sonra 700 ms'de
+   * gorunur oluyor - sahne once, cagri sonra. "Hareketi azalt" aciksa
+   * deger aninda 1 (erisilebilirlik tabani, useHareket). Yalnizca
+   * OPAKLIK aniniyor: native surucu kullanilabiliyor ve dokunma alani
+   * bastan yerinde.
+   */
+  const dugmeOpakligi = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    if (!hareket) {
+      dugmeOpakligi.setValue(1)
+      return
+    }
+    const a = Animated.timing(dugmeOpakligi, {
+      toValue: 1,
+      duration: 700,
+      delay: 350,
+      useNativeDriver: true,
+    })
+    a.start()
+    return () => a.stop()
+  }, [hareket, dugmeOpakligi])
 
   function devamEt(hedef: 'kayit' | 'giris') {
     router.replace(hedef === 'kayit' ? '/kayit' : '/giris')
@@ -189,14 +216,16 @@ export default function KarsilamaEkrani() {
         ))}
       </View>
 
-      <Pressable
-        style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
-        onPress={() => devamEt('kayit')}
-        accessibilityRole="button"
-      >
-        <Text style={stiller.birincilYazi}>{t('karsilama.hesapOlustur')}</Text>
-        <Text style={stiller.birincilOk}>→</Text>
-      </Pressable>
+      <Animated.View style={{ opacity: dugmeOpakligi }} testID="hesap-olustur-sarmal">
+        <Pressable
+          style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
+          onPress={() => devamEt('kayit')}
+          accessibilityRole="button"
+        >
+          <Text style={stiller.birincilYazi}>{t('karsilama.hesapOlustur')}</Text>
+          <Text style={stiller.birincilOk}>→</Text>
+        </Pressable>
+      </Animated.View>
 
       {/* Hesabi olan biri de uygulamayi yeni bir cihaza kurmus olabilir;
           onu bu ekranda kilitlememek gerekiyor. */}

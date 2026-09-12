@@ -174,7 +174,7 @@ describe('ProfilOlusturEkrani', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Kullanıcı adı'), 'or')
     await fireEvent.press(screen.getByText('Devam'))
 
-    expect(await screen.findByText(/3-20 karakter/)).toBeTruthy()
+    expect(await screen.findByText('Kullanıcı adı bu biçime uymuyor.')).toBeTruthy()
     // Ucuncu adima gecilmedi: sifre alani hala yok.
     expect(screen.queryByPlaceholderText('En az 8 karakter')).toBeNull()
     expect(supabase.from).not.toHaveBeenCalled()
@@ -242,5 +242,28 @@ describe('ProfilOlusturEkrani', () => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
     expect(mockRouterReplace).toHaveBeenCalledWith('/karsilama')
+  })
+
+  /**
+   * HUKUKI BILGILENDIRME YALNIZCA SON ADIMDA ve BAGLANTILI
+   * (kullanicinin karari 2026-09-13). Iki baglanti iki ayri ekrana
+   * gidiyor; ikinci adimda not HIC yok.
+   */
+  describe('sozlesme notu', () => {
+    it('ikinci adimda not yok, ucuncu adimda iki baglantiyla var', async () => {
+      await render(<ProfilOlusturEkrani />)
+      await adim1()
+      expect(screen.queryByTestId('sozlesme-notu')).toBeNull()
+      // Ikinci adimda bicim kurali basligin altinda, "30 gunde bir" cumlesi YOK.
+      expect(screen.getByText('3-20 karakter; küçük harf, rakam, nokta ve alt çizgi içerebilir.')).toBeTruthy()
+      expect(screen.queryByText(/İnsanlar seni bu adla bulacak/)).toBeNull()
+
+      await adim2()
+      expect(screen.getByTestId('sozlesme-notu')).toBeTruthy()
+      await fireEvent.press(screen.getByTestId('baglanti-kosullar'))
+      expect(mockRouterPush).toHaveBeenCalledWith('/kosullar')
+      await fireEvent.press(screen.getByTestId('baglanti-gizlilik'))
+      expect(mockRouterPush).toHaveBeenCalledWith('/gizlilik')
+    })
   })
 })

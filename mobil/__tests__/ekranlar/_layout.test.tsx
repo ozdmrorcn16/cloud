@@ -414,6 +414,12 @@ describe('hedefRota - gizlilik metni', () => {
     expect(hedefRota(false, false, false, ['gizlilik'])).toBeNull()
   })
 
+  // Kullanim kosullari da ayni sinif (2026-09-13): hesap olusturma
+  // adimindaki baglantidan oturumsuz aciliyor.
+  it('oturumsuz kullaniciyi kullanim kosullari ekranindan CIKARMIYOR', () => {
+    expect(hedefRota(false, false, false, ['kosullar'])).toBeNull()
+  })
+
   it('oturumsuz kullanici BASKA bir ekranda hala karsilamaya gidiyor', () => {
     expect(hedefRota(false, false, false, ['profil'])).toBe('/karsilama')
   })

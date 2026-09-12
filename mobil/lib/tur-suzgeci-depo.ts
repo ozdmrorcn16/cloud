@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { TEMEL_TURLER } from './mekan'
+import { kendiKullaniciIdim } from './profil'
 
 /**
  * TUR SUZGECI CIHAZDA SAKLANIYOR.
@@ -19,9 +20,22 @@ import { TEMEL_TURLER } from './mekan'
  *
  * KISISEL VERI DEGIL: yalnizca tur adlari (ornegin "Kafe") duruyor;
  * konum, kimlik ya da arama gecmisi saklanmiyor.
+ *
+ * ANAHTAR HESABA BAGLI (kullanicinin bildirdigi kusur 2026-09-13):
+ * "yeni bir uyelik acmama ragmen kafe filtresi secili cikti - her
+ * kullanici kendi secimini yapmali." Tek anahtar ayni telefondaki
+ * ikinci hesaba onceki hesabin secimini devrediyordu. Artik anahtar
+ * `slooin.tur-suzgeci.<kullanici id>`; oturum yoksa hicbir sey
+ * okunmuyor/yazilmiyor. Eski tek anahtar okundugu ilk anda SILINIYOR
+ * ki kimseye devredilmesin.
  */
 
-const ANAHTAR = 'slooin.tur-suzgeci'
+const ESKI_ANAHTAR = 'slooin.tur-suzgeci'
+
+async function anahtar(): Promise<string | null> {
+  const kimlik = await kendiKullaniciIdim()
+  return kimlik ? `${ESKI_ANAHTAR}.${kimlik}` : null
+}
 
 /**
  * Okurken BILINEN TURLERE SUZULUYOR.
@@ -33,7 +47,12 @@ const ANAHTAR = 'slooin.tur-suzgeci'
  */
 export async function turSuzgeciniOku(): Promise<string[]> {
   try {
-    const ham = await AsyncStorage.getItem(ANAHTAR)
+    // Eski surumden kalan hesapsiz anahtar: kime ait oldugu belli
+    // degil, devredilmesin diye siliniyor.
+    await AsyncStorage.removeItem(ESKI_ANAHTAR)
+    const k = await anahtar()
+    if (!k) return []
+    const ham = await AsyncStorage.getItem(k)
     if (!ham) return []
     const cozulmus = JSON.parse(ham)
     if (!Array.isArray(cozulmus)) return []
@@ -46,8 +65,10 @@ export async function turSuzgeciniOku(): Promise<string[]> {
 
 export async function turSuzgeciniYaz(turler: string[]): Promise<void> {
   try {
-    if (turler.length === 0) await AsyncStorage.removeItem(ANAHTAR)
-    else await AsyncStorage.setItem(ANAHTAR, JSON.stringify(turler))
+    const k = await anahtar()
+    if (!k) return
+    if (turler.length === 0) await AsyncStorage.removeItem(k)
+    else await AsyncStorage.setItem(k, JSON.stringify(turler))
   } catch {
     // Yazilamamasi ekranin calismasini engellemiyor; yalnizca secim
     // bir sonraki acilista hatirlanmaz.

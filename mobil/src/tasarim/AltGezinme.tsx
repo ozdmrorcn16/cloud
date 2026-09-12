@@ -95,7 +95,14 @@ import { useRenk, useStiller } from './tema-baglami'
  * 24 px'lik ikonlar), yani "obur ikonlardan buyuk olsun" kurali
  * (2026-08-26) bozulmuyor.
  */
-const IKON_ALANI = 48
+/*
+ * 48 -> 44 ve dikey dolgu 8 -> 4 (kullanicinin istegi 2026-09-13:
+ * "sabit sutuna daha ince uzun bir goruntu"). Daire 44 -> 40 ki ikon
+ * alanina 2 px pay kalsin; check-in dugmesi hala en buyuk slot (44'e
+ * karsi 24 px ikonlar). "Uzun": yan pay 16 -> 8, cubuk ekrana daha
+ * cok yayiliyor. Cubuk 84 -> 68 px, ALT_GEZINME_PAYI 108 -> 92.
+ */
+const IKON_ALANI = 44
 
 /**
  * Cubugun ic satir yuksekligi = ikon alani + gap + etiket satiri.
@@ -117,10 +124,10 @@ const IKON_ALANI = 48
  * 48 ve dikey dolgu 12 -> 8, yani satir 72 -> 66 ve cubuk 98 -> 84 px.
  * Etiketler ve daire duruyor; kisalan sey yalnizca bosluk.
  */
-const SATIR = IKON_ALANI + 4 + 14
+const SATIR = IKON_ALANI + 2 + 14
 
 /** Aktif sekmeyi isaretleyen dairenin capi. */
-const DAIRE = 44
+const DAIRE = 40
 /**
  * Dairenin dikey konumu.
  *
@@ -585,7 +592,7 @@ export function AltGezinme() {
  * gostergesi) da paya dahil; web'de sifir. Cihaz olcusu uygulama
  * acilirken bir kez okunuyor - donmeyle degismiyor.
  */
-export const ALT_GEZINME_PAYI = 108 + (initialWindowMetrics?.insets.bottom ?? 0)
+export const ALT_GEZINME_PAYI = 92 + (initialWindowMetrics?.insets.bottom ?? 0)
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kapsayici: {
@@ -593,7 +600,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: bosluk.l,
+    // 16 -> 8: cubuk yana yayiliyor ("uzun", 2026-09-13).
+    paddingHorizontal: bosluk.s,
   },
   cubuk: {
     flexDirection: 'row',
@@ -604,8 +612,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: yuvarlak.buyuk,
     borderWidth: 1,
     borderColor: renk.cizgi,
-    // 12 -> 8 (kullanicinin istegi 2026-09-09: cubuk incelsin).
-    paddingVertical: bosluk.s,
+    // 12 -> 8 (2026-09-09) -> 4 (2026-09-13): cubuk incelsin.
+    paddingVertical: bosluk.xs,
     ...golge.yuzer,
   },
   sekme: {
@@ -614,7 +622,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     // ORTALAMA YOK: icerik yukaridan basliyor ki ikon alani her
     // slotta ayni yeri kaplasin ve etiketler ayni hizaya duessun.
-    gap: 4,
+    gap: 2,
     paddingHorizontal: 2,
   },
   /** Ikonun oturdugu bolge; merkez dugmenin dairesiyle ayni olcude. */
@@ -657,13 +665,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
      * hizalanmasi gereken sey cubugun ortasi degil IKONUN merkezi -
      * etiket eklenince ikon, kendi slotunda yukari kaydi (ikon + gap +
      * etiket birlikte ortalaniyor). Alt pay icerigi tam o kadar yukari
-     * itiyor: gap (4) + etiket satiri (~14) = 18, yarisi 9 px.
+     * itiyor: gap (2) + etiket satiri (~14) = 16, yarisi 8 px.
+     * (2026-09-13: gap 4 -> 2 ile 18 -> 16.)
      *
      * Bu sayi etiketin punto ya da gap degistiginde GUNCELLENMELI;
      * yoksa daire ikonun uzerine tam oturmaz ve dalis sirasinda kayma
      * gorunur.
      */
-    paddingBottom: 18,
+    paddingBottom: 16,
   },
   /** IC katman: gorunen turuncu yuvarlak. */
   daireGovde: {
@@ -698,7 +707,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   merkez: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
+    // Sekmelerle AYNI gap: etiketler bir hizada kalsin (2026-09-13).
+    gap: 2,
   },
   merkezEtiket: {
     fontFamily: yazi.govdeKalin,

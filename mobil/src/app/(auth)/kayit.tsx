@@ -217,8 +217,8 @@ export default function KayitEkrani() {
         </Text>
       </Pressable>
 
-      <View style={stiller.bosluk} />
-      <Text style={stiller.aydinlatma}>{t('kayit.aydinlatma')}</Text>
+      {/* Hukuki bilgilendirme bu ekrandan KALDIRILDI (2026-09-13):
+          yalnizca hesabin olustugu son adimda, baglantili. */}
     </KlavyeKapatan>
   )
 }
@@ -332,12 +332,4 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   ikincilVurgu: { fontFamily: yazi.govdeKalin, color: renk.metin },
 
-  bosluk: { flex: 1 },
-  aydinlatma: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    lineHeight: 16,
-    color: renk.metinSoluk,
-    textAlign: 'center',
-  },
 })

@@ -450,7 +450,7 @@ export default function ProfilOlusturEkrani() {
                     ? t('profilOlustur.kullaniciAdiMusait')
                     : adDurumu.hal === 'alinmis'
                       ? t('profilOlustur.kullaniciAdiAlinmis')
-                      : t('profilOlustur.kullaniciAdiIpucu')}
+                      : ' '}
             </Text>
           </>
         )}
@@ -547,7 +547,29 @@ export default function ProfilOlusturEkrani() {
             </Text>
           </Pressable>
 
-          {adim === 3 && <Text style={stiller.onayNotu}>{t('profilOlustur.sozlesmeNotu')}</Text>}
+          {adim === 3 && (
+            <Text style={stiller.onayNotu} testID="sozlesme-notu">
+              {t('profilOlustur.sozlesmeNotuOn')}
+              <Text
+                style={stiller.onayBaglanti}
+                onPress={() => router.push('/kosullar' as never)}
+                accessibilityRole="link"
+                testID="baglanti-kosullar"
+              >
+                {t('profilOlustur.sozlesmeKosullar')}
+              </Text>
+              {t('profilOlustur.sozlesmeNotuOrta')}
+              <Text
+                style={stiller.onayBaglanti}
+                onPress={() => router.push('/gizlilik' as never)}
+                accessibilityRole="link"
+                testID="baglanti-gizlilik"
+              >
+                {t('profilOlustur.sozlesmeGizlilik')}
+              </Text>
+              {t('profilOlustur.sozlesmeNotuSon')}
+            </Text>
+          )}
         </View>
       </ScrollView>
 
@@ -719,6 +741,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 17,
     color: renk.metinSoluk,
     marginTop: bosluk.m,
+  },
+  // Baglantilar okunur tonda ve altı cizili: soluk notun icinde
+  // dokunulabilir oldugu ancak boyle gorunuyor.
+  onayBaglanti: {
+    color: renk.metinIkincil,
+    textDecorationLine: 'underline',
   },
 
   hata: {
