@@ -8,6 +8,7 @@ import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk, NOT_EN_FAZLA } from '../../../lib/checkin'
 import { etiketleriKaydet } from '../../../lib/etiket'
+import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
@@ -42,6 +43,7 @@ export default function CheckInEkrani() {
   // liste kullaniciya secenek gostermek icin.
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [etiketlenenler, setEtiketlenenler] = useState<string[]>([])
+  const [arkadasSecimi, setArkadasSecimi] = useState(false)
   // Kullanici bulunurluk tercihini elle degistirdiyse (secenek satiri veya ilk
   // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
   // yaniti bu secimin uzerine yazmasin.
@@ -194,10 +196,10 @@ export default function CheckInEkrani() {
       <View style={stiller.kapsayici}>
         <Text style={stiller.baslik}>Bu check-in ne paylaşıyor?</Text>
         <Text style={stiller.uyariMetni}>
-          Check-in yaptiginda bulundugun mekan ve varsa yazdigin not, seni
-          takip eden arkadaslarina gorunur olur. Check-in suresi dolunca ya da
-          "ayrildim" dedigin anda kendiliginden kapanir. Istersen bu
-          check-in'i gizli yaparak sadece kendi profilinde tutabilirsin.
+          Check-in yaptığında bulunduğun mekan ve varsa yazdığın not
+          arkadaşlarına görünür olur. Check-in süresi dolunca ya da
+          "ayrıldım" dediğin anda kendiliğinden kapanır. İstersen bu
+          check-in’i gizli yaparak sadece kendi profilinde tutabilirsin.
         </Text>
         <Pressable style={stiller.buton} onPress={() => ilkUyariKapat(false)}>
           <Text style={stiller.butonYazi}>Anladım</Text>
@@ -222,31 +224,42 @@ export default function CheckInEkrani() {
         maxLength={NOT_EN_FAZLA}
         multiline
       />
-      {/* ARKADAS ETIKETLEME. Liste bosken bolum hic cizilmiyor:
-          hicbir bagi olmayan birine bos bir baslik gostermek yon
-          vermiyor. */}
-      {arkadaslar.length > 0 && (
-        <View style={stiller.etiketAlani}>
-          <Text style={stiller.etiketBaslik}>Arkadaşlarını etiketle</Text>
-          <View style={stiller.etiketCipleri}>
-            {arkadaslar.map((kisi) => {
-              const secili = etiketlenenler.includes(kisi.id)
-              return (
-                <Pressable
-                  key={kisi.id}
-                  style={[stiller.etiketCipi, secili && stiller.etiketCipiSecili]}
-                  onPress={() => etiketiDegistir(kisi.id)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: secili }}
-                  accessibilityLabel={kisi.ad ?? ''}
-                >
-                  <Text style={[stiller.etiketYazi, secili && stiller.etiketYaziSecili]}>
-                    {kisi.ad ?? ''}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </View>
+      {/* ARKADAS EKLE (kullanicinin istegi 2026-09-12: "Arkadas ekle koy
+          buraya"). Onceden etiketleme satir ici ciplerdi ve arkadas
+          listesi bosken HIC cizilmiyordu - hesabinda arkadas olmayan
+          biri ozelligin varligini gormuyordu. Buton artik her zaman
+          gorunuyor, fotograf butonuyla ayni dilde; secim alttan acilan
+          `ArkadasSecici` penceresinde, secilenler butonun altinda cip
+          olarak duruyor ve tek dokunusla kaldiriliyor. */}
+      <Pressable
+        style={stiller.fotoButonu}
+        onPress={() => setArkadasSecimi(true)}
+        accessibilityRole="button"
+        testID="arkadas-ekle"
+      >
+        <Text style={stiller.fotoButonuYazi}>
+          {etiketlenenler.length > 0
+            ? `Arkadaş ekle (${etiketlenenler.length} seçili)`
+            : 'Arkadaş ekle (opsiyonel)'}
+        </Text>
+      </Pressable>
+      {etiketlenenler.length > 0 && (
+        <View style={stiller.etiketCipleri}>
+          {etiketlenenler.map((id) => {
+            const kisi = arkadaslar.find((k) => k.id === id)
+            if (!kisi) return null
+            return (
+              <Pressable
+                key={id}
+                style={[stiller.etiketCipi, stiller.etiketCipiSecili]}
+                onPress={() => etiketiDegistir(id)}
+                accessibilityRole="button"
+                accessibilityLabel={`${kisi.ad} etiketini kaldır`}
+              >
+                <Text style={[stiller.etiketYazi, stiller.etiketYaziSecili]}>{kisi.ad} ✕</Text>
+              </Pressable>
+            )
+          })}
         </View>
       )}
 
@@ -288,19 +301,20 @@ export default function CheckInEkrani() {
         ]}
         onKapat={() => setKaynakSecimi(false)}
       />
+      <ArkadasSecici
+        acikMi={arkadasSecimi}
+        arkadaslar={arkadaslar}
+        secili={etiketlenenler}
+        onDegistir={etiketiDegistir}
+        onKapat={() => setArkadasSecimi(false)}
+      />
 
     </View>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  etiketAlani: { marginBottom: 16, gap: 8 },
-  etiketBaslik: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  etiketCipleri: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  etiketCipleri: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: bosluk.m },
   etiketCipi: {
     paddingHorizontal: 14,
     paddingVertical: 8,

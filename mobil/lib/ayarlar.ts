@@ -20,15 +20,6 @@ export async function varsayilanBulunurluguGetir(): Promise<Bulunurluk> {
   return (data?.varsayilan_bulunurluk ?? 'herkese_acik') as Bulunurluk
 }
 
-export async function varsayilanBulunurluguAyarla(deger: Bulunurluk): Promise<void> {
-  const id = await kendiKullaniciId()
-  const { error } = await supabase
-    .from('profiller')
-    .update({ varsayilan_bulunurluk: deger })
-    .eq('id', id)
-  if (error) throw new Error(hataMetni(error))
-}
-
 export async function aramadaGorunsunGetir(): Promise<boolean> {
   const id = await kendiKullaniciId()
   const { data, error } = await supabase

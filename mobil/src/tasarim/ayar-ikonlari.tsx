@@ -54,72 +54,12 @@ export const EtiketIkonu = () => {
   )
 }
 
-export const BelgeIkonu = () => {
-  const renk = useRenk()
-  return govde(
-    <>
-      <Path
-        d="M6 3.5h8l4 4v13H6z"
-        stroke={renk.metin}
-        strokeWidth={K}
-        fill="none"
-        strokeLinejoin="round"
-      />
-      <Path d="M9 12h6M9 16h6" stroke={renk.metin} strokeWidth={K} strokeLinecap="round" />
-    </>
-  )
-}
-
-// Indirme ikonu: tepsiye inen ok. "Verilerimi indir" satirinda
-// (2026-09-12). Onceden BelgeIkonu kullaniliyordu ve hemen ustundeki
-// "Gizlilik metni" ile AYNI ikonu tasiyordu - yan yana iki satirin
-// ayni isareti tasimasi ikonun tek isini (satiri gozle ayirmak)
-// bosa cikariyordu. Belge degil EYLEM ikonu: satir bir sey acmiyor,
-// bir dosya uretiyor.
-export const IndirIkonu = () => {
-  const renk = useRenk()
-  return govde(
-    <>
-      <Path
-        d="M12 4v10.5m0 0l-4-4m4 4l4-4"
-        stroke={renk.metin}
-        strokeWidth={K}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"
-        stroke={renk.metin}
-        strokeWidth={K}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </>
-  )
-}
-
 export const EngelIkonu = () => {
   const renk = useRenk()
   return govde(
     <>
       <Circle cx={12} cy={12} r={8} stroke={renk.metin} strokeWidth={K} fill="none" />
       <Line x1={6.5} y1={6.5} x2={17.5} y2={17.5} stroke={renk.metin} strokeWidth={K} />
-    </>
-  )
-}
-
-export const KonumIkonu = () => {
-  const renk = useRenk()
-  return govde(
-    <>
-      <Path
-        d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"
-        stroke={renk.metin}
-        strokeWidth={K}
-        fill="none"
-      />
-      <Circle cx={12} cy={10} r={2.6} stroke={renk.metin} strokeWidth={K} fill="none" />
     </>
   )
 }

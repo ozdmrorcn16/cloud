@@ -6,8 +6,12 @@ import { checkInYap } from '../../../lib/checkin'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import * as ImagePicker from 'expo-image-picker'
+import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { etiketleriKaydet } from '../../../lib/etiket'
 
 jest.mock('../../../lib/konum', () => ({ cihazKonumunuAl: jest.fn() }))
+jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
+jest.mock('../../../lib/etiket', () => ({ etiketleriKaydet: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ checkInYap: jest.fn() }))
 jest.mock('../../../lib/checkin-fotograf-yukle', () => ({ checkinFotografYukle: jest.fn() }))
 jest.mock('../../../lib/ayarlar', () => ({ varsayilanBulunurluguGetir: jest.fn() }))
@@ -30,6 +34,8 @@ beforeEach(async () => {
   jest.clearAllMocks()
   ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
   ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
+  ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
+  ;(etiketleriKaydet as jest.Mock).mockResolvedValue(undefined)
   // Varsayilan olarak ilk kullanim uyarisi daha once gosterilmis kabul edilir;
   // sadece bunu test eden senaryo bu bayragi acikca temizler.
   await AsyncStorage.setItem('ilk-checkin-uyarisi-gosterildi', 'true')
@@ -245,5 +251,72 @@ describe('CheckInEkrani fotograf kaynagi', () => {
       await screen.findByText('Fotoğraf çekmek için kamera izni gerekiyor.')
     ).toBeTruthy()
     expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled()
+  })
+
+  // ------------------------------------------------------------------ //
+  // ARKADAS EKLE (kullanicinin istegi 2026-09-12)
+  //
+  // Onceden etiketleme satir ici ciplerdi ve arkadas listesi BOSKEN hic
+  // cizilmiyordu; hesabinda arkadas olmayan biri ozelligi hic
+  // gormuyordu. Buton artik her zaman gorunuyor.
+  // ------------------------------------------------------------------ //
+
+  it('"Arkadaş ekle" butonu arkadas YOKKEN de gorunuyor ve pencere sebebini soyluyor', async () => {
+    await render(<CheckInEkrani />)
+    const buton = await screen.findByText('Arkadaş ekle (opsiyonel)')
+    await fireEvent.press(buton)
+    expect(await screen.findByText(/Henüz arkadaşın yok/)).toBeTruthy()
+  })
+
+  it('pencereden secilen arkadas butonun altinda cip olarak durur ve check-in ile etiketlenir', async () => {
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-2', ad: 'Deniz', kullaniciAdi: 'deniz' },
+      { id: 'k-3', ad: 'Ece', kullaniciAdi: 'ece' },
+    ])
+    ;(checkInYap as jest.Mock).mockResolvedValue({
+      id: 'checkin-9', mekanId: 'mekan-1', notMetni: null, fotograf: null,
+      olusturmaZamani: '2026-09-12T10:00:00Z', bitisZamani: '2026-09-12T11:00:00Z', canliMi: true,
+    })
+
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByText('Arkadaş ekle (opsiyonel)'))
+    await fireEvent.press(await screen.findByLabelText('Deniz'))
+    await fireEvent.press(screen.getByText('Tamam (1)'))
+
+    // Buton sayiyi soyluyor, cip duruyor.
+    expect(await screen.findByText('Arkadaş ekle (1 seçili)')).toBeTruthy()
+    expect(screen.getByLabelText('Deniz etiketini kaldır')).toBeTruthy()
+
+    const butonlar = screen.getAllByText('Check-in yap')
+    await fireEvent.press(butonlar[butonlar.length - 1])
+    await waitFor(() => expect(etiketleriKaydet).toHaveBeenCalledWith('checkin-9', ['k-2']))
+  })
+
+  it('cipe dokununca etiket kalkar', async () => {
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-2', ad: 'Deniz', kullaniciAdi: 'deniz' },
+    ])
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByText('Arkadaş ekle (opsiyonel)'))
+    await fireEvent.press(await screen.findByLabelText('Deniz'))
+    await fireEvent.press(screen.getByText('Tamam (1)'))
+    await fireEvent.press(await screen.findByLabelText('Deniz etiketini kaldır'))
+
+    expect(await screen.findByText('Arkadaş ekle (opsiyonel)')).toBeTruthy()
+    expect(screen.queryByLabelText('Deniz etiketini kaldır')).toBeNull()
+  })
+
+  it('pencerede arama listeyi suzer', async () => {
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-2', ad: 'Deniz', kullaniciAdi: 'deniz' },
+      { id: 'k-3', ad: 'Ece', kullaniciAdi: 'ece' },
+    ])
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByText('Arkadaş ekle (opsiyonel)'))
+    await screen.findByLabelText('Ece')
+    await fireEvent.changeText(screen.getByTestId('arkadas-secici-arama'), 'den')
+
+    expect(screen.getByLabelText('Deniz')).toBeTruthy()
+    expect(screen.queryByLabelText('Ece')).toBeNull()
   })
 })

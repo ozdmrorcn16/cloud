@@ -1,6 +1,5 @@
 import {
   varsayilanBulunurluguGetir,
-  varsayilanBulunurluguAyarla,
   aniGorunurlugunuAyarla,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
@@ -29,19 +28,6 @@ describe('varsayilanBulunurluguGetir', () => {
 
     expect(await varsayilanBulunurluguGetir()).toBe('gizli')
     expect(supabase.from).toHaveBeenCalledWith('profiller')
-  })
-})
-
-describe('varsayilanBulunurluguAyarla', () => {
-  it('profili gunceller', async () => {
-    const eq = jest.fn().mockResolvedValue({ error: null })
-    const update = jest.fn().mockReturnValue({ eq })
-    ;(supabase.from as jest.Mock).mockReturnValue({ update })
-
-    await varsayilanBulunurluguAyarla('gizli')
-
-    expect(update).toHaveBeenCalledWith({ varsayilan_bulunurluk: 'gizli' })
-    expect(eq).toHaveBeenCalledWith('id', 'kullanici-1')
   })
 })
 

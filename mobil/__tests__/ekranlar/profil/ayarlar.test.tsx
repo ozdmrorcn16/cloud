@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import AyarlarEkrani from '../../../src/app/profil/ayarlar'
 import {
-  varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
   profilGizliGetir,
   etiketOnayiGerekliGetir,
@@ -12,7 +11,6 @@ import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
 
 jest.mock('../../../lib/ayarlar', () => ({
-  varsayilanBulunurluguGetir: jest.fn(),
   aramadaGorunsunGetir: jest.fn(),
   profilGizliGetir: jest.fn(),
   profilGizliAyarla: jest.fn(),
@@ -45,7 +43,6 @@ const sahteCikis = supabase.auth.signOut as jest.Mock
 
 beforeEach(() => {
   jest.clearAllMocks()
-  ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
   ;(aramadaGorunsunGetir as jest.Mock).mockResolvedValue(true)
   ;(profilGizliGetir as jest.Mock).mockResolvedValue(false)
     ;(etiketOnayiGerekliGetir as jest.Mock).mockResolvedValue(false)
@@ -69,9 +66,11 @@ describe('AyarlarEkrani', () => {
     expect(screen.queryByText('Kullanıcı adı')).toBeNull()
   })
 
-  it('check-in gorunurlugunun mevcut degerini satirda gosterir', async () => {
+  // Satir kalkinca deger de kalkti: "Herkese açık" artik ekranda YOK.
+  it('check-in gorunurlugu degeri ARTIK GOSTERILMIYOR', async () => {
     await render(<AyarlarEkrani />)
-    expect(await screen.findByText('Herkese açık')).toBeTruthy()
+    await screen.findByText('Gizlilik ayarları')
+    expect(screen.queryByText('Herkese açık')).toBeNull()
   })
 
   /*
@@ -87,10 +86,14 @@ describe('AyarlarEkrani', () => {
     expect(mockRouterPush).not.toHaveBeenCalledWith('/profil/kullanici-adi')
   })
 
-  it('check-in gorunurlugu satiri kendi ekranina goturur', async () => {
+  // "Yeni check-in'lerim" satiri KALDIRILDI (kullanicinin istegi
+  // 2026-09-12); ekran da silindi. Iddia silinmedi, tersine cevrildi.
+  it('"Yeni check-in’lerim" satiri ARTIK YOK, bolum basligi "Gizlilik ayarları"', async () => {
     await render(<AyarlarEkrani />)
-    fireEvent.press(await screen.findByText('Yeni check-in’lerim'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/profil/check-in-gorunurlugu')
+    expect(await screen.findByText('Gizlilik ayarları')).toBeTruthy()
+    expect(screen.queryByText('Yeni check-in’lerim')).toBeNull()
+    expect(screen.queryByText('Seni kimler görebilir?')).toBeNull()
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/profil/check-in-gorunurlugu')
   })
 
   /*
@@ -148,7 +151,7 @@ describe('AyarlarEkrani', () => {
   })
 
   it('yukleme hatasi mesaj gosterir', async () => {
-    ;(varsayilanBulunurluguGetir as jest.Mock).mockRejectedValue(new Error('ağ hatası'))
+    ;(aramadaGorunsunGetir as jest.Mock).mockRejectedValue(new Error('ağ hatası'))
     await render(<AyarlarEkrani />)
     expect(await screen.findByText('ağ hatası')).toBeTruthy()
   })
@@ -240,6 +243,37 @@ describe('AyarlarEkrani', () => {
  * Dosyanin ICERIGI sunucuda belirleniyor ve orada canli olarak
  * olculuyor; buradaki testler ekranin davranisini kilitliyor.
  */
+describe('AyarlarEkrani - hukuki baglantilar', () => {
+  /*
+   * Kullanicinin istegi (2026-09-12): "Gizlilik metni" ve "Verilerimi
+   * indir" en altta, Hesap kategorisinin USTUNDE, KART DISINDA duz
+   * baglanti olsun. Onceden ekranin en ustundeki "Hesabin" kartinin
+   * icindeydiler.
+   */
+  it('iki baglanti Kisiler kartindan SONRA, Hesap kartindan ONCE ve kart disinda', async () => {
+    await render(<AyarlarEkrani />)
+    await screen.findByText('Gizlilik metni')
+
+    const agac = JSON.stringify(screen.toJSON())
+    const kisiler = agac.indexOf('Engellenenler')
+    const gizlilik = agac.indexOf('Gizlilik metni')
+    const indir = agac.indexOf('Verilerimi indir')
+    const hesap = agac.indexOf('Hesabımı dondur')
+    expect(kisiler).toBeGreaterThan(-1)
+    expect(gizlilik).toBeGreaterThan(kisiler)
+    expect(indir).toBeGreaterThan(gizlilik)
+    expect(hesap).toBeGreaterThan(indir)
+
+    // "Hesabin" karti ve basligi ARTIK YOK.
+    expect(screen.queryByText('Hesabın')).toBeNull()
+
+    // Kart disinda: ikisi de duz baglanti kabinin icinde, satir degil.
+    const kap = screen.getByTestId('ayar-baglantilari')
+    expect(within(kap).getByText('Gizlilik metni')).toBeTruthy()
+    expect(within(kap).getByText('Verilerimi indir')).toBeTruthy()
+  })
+})
+
 describe('AyarlarEkrani - verilerimi indir', () => {
   it('satira basinca imzali adres aciliyor', async () => {
     const { verilerimiDisaAktar } = require('../../../lib/veri-disa-aktar')

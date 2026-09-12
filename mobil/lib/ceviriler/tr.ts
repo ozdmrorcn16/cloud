@@ -357,7 +357,6 @@ export default {
     baslik: 'Ayarlar',
     geri: 'Geri',
 
-    bolumHesap: 'Hesabın',
     profilGizli: 'Profilim gizli',
     profilGizliAciklama:
       'Açıkken anıların ve check-in’lerin yalnızca arkadaşlarına görünür. Adın, kullanıcı adın ve fotoğrafın herkese açık kalır; böylece seni bulup arkadaşlık isteği gönderebilirler.',
@@ -368,8 +367,7 @@ export default {
     verilerimiIndirHata: 'Veriler hazırlanamadı. Tekrar dene.',
     gizlilikMetni: 'Gizlilik metni',
 
-    bolumGorunurluk: 'Seni kimler görebilir?',
-    checkInGorunurlugu: 'Yeni check-in’lerim',
+    bolumGorunurluk: 'Gizlilik ayarları',
     aniGorunurlugu: 'Geçmiş anılarım',
     // ETIKET ONAYI (kullanicinin karari 2026-09-06). Varsayilan
     // KAPALI: arkadasin seni direk etiketleyebiliyor.
@@ -391,9 +389,6 @@ export default {
     hesabiSil: 'Hesabımı sil',
     cikisYap: 'Çıkış yap',
 
-    bulunurlukHerkeseAcik: 'Herkese açık',
-    bulunurlukTakipcilerim: 'Sadece takipçilerim',
-    bulunurlukGizli: 'Gizli',
     aniHerkeseAcik: 'Herkes görsün',
     aniTakipcilerim: 'Sadece takipçilerim görsün',
     aniKimse: 'Kimse görmesin',
@@ -410,12 +405,6 @@ export default {
   kullaniciAdiEkrani: {
     yerTutucu: 'Yeni kullanıcı adı',
     sonrakiDegisim: 'Tekrar değiştirebileceğin tarih: {{tarih}}',
-  },
-
-  checkInGorunurlugu: {
-    baslik: 'Yeni check-in’lerim',
-    geri: 'Geri',
-    aciklama: 'Bundan sonra yaptığın check-in’ler bu ayarla başlar; her check-in’de tek tek değiştirebilirsin.',
   },
 
   aniGorunurlugu: {

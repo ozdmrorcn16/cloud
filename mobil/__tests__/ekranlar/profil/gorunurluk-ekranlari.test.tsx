@@ -1,15 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import CheckInGorunurluguEkrani from '../../../src/app/profil/check-in-gorunurlugu'
 import AniGorunurluguEkrani from '../../../src/app/profil/ani-gorunurlugu'
 import {
-  varsayilanBulunurluguGetir,
-  varsayilanBulunurluguAyarla,
   aniGorunurlugunuAyarla,
 } from '../../../lib/ayarlar'
 
 jest.mock('../../../lib/ayarlar', () => ({
-  varsayilanBulunurluguGetir: jest.fn(),
-  varsayilanBulunurluguAyarla: jest.fn(),
   aniGorunurlugunuAyarla: jest.fn(),
 }))
 
@@ -19,48 +14,12 @@ jest.mock('expo-router', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks()
-  ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
-  ;(varsayilanBulunurluguAyarla as jest.Mock).mockResolvedValue(undefined)
   ;(aniGorunurlugunuAyarla as jest.Mock).mockResolvedValue(undefined)
 })
 
-describe('CheckInGorunurluguEkrani', () => {
-  it('mevcut secimi isaretli gosterir', async () => {
-    await render(<CheckInGorunurluguEkrani />)
-
-    const satir = await screen.findByLabelText('Herkese açık')
-    expect(satir.props.accessibilityState.selected).toBe(true)
-  })
-
-  it('secim degisince kaydeder', async () => {
-    await render(<CheckInGorunurluguEkrani />)
-
-    await fireEvent.press(await screen.findByText('Sadece takipçilerim'))
-
-    await waitFor(() => expect(varsayilanBulunurluguAyarla).toHaveBeenCalledWith('takipcilerim'))
-  })
-
-  it('gizli secenegini artik gostermiyor', async () => {
-    await render(<CheckInGorunurluguEkrani />)
-
-    await screen.findByText('Herkese açık')
-    expect(screen.queryByText('Gizli')).toBeNull()
-  })
-
-  it('kaydetme basarisiz olursa secim eski haline doner', async () => {
-    ;(varsayilanBulunurluguAyarla as jest.Mock).mockRejectedValue(
-      new Error('Sunucuya ulasilamadi')
-    )
-
-    await render(<CheckInGorunurluguEkrani />)
-    await fireEvent.press(await screen.findByText('Sadece takipçilerim'))
-
-    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    await waitFor(() =>
-      expect(screen.getByLabelText('Herkese açık').props.accessibilityState.selected).toBe(true)
-    )
-  })
-})
+// `CheckInGorunurluguEkrani` testleri KALDIRILDI: ekran 2026-09-12'de
+// silindi (ayarlardaki tek girisi kullanicinin istegiyle kalkti).
+// Ayarlar testi satirin YOK oldugunu ayrica kilitliyor.
 
 describe('AniGorunurluguEkrani', () => {
   it('acilista hicbir secenek secili degil', async () => {

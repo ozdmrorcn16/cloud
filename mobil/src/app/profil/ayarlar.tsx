@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react'
-import { View, Switch, ScrollView, StyleSheet, Text, Linking } from 'react-native'
+import { View, Switch, ScrollView, StyleSheet, Text, Pressable, Linking } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import { verilerimiDisaAktar } from '../../../lib/veri-disa-aktar'
 import {
-  varsayilanBulunurluguGetir,
   aramadaGorunsunGetir,
   aramadaGorunsunAyarla,
   profilGizliGetir,
@@ -11,7 +10,6 @@ import {
   etiketOnayiGerekliGetir,
   etiketOnayiGerekliAyarla,
 } from '../../../lib/ayarlar'
-import type { Bulunurluk } from '../../../lib/checkin'
 import { hesabiDondur } from '../../../lib/hesap'
 import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
@@ -22,10 +20,7 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
-  BelgeIkonu,
-  IndirIkonu,
   EngelIkonu,
-  KonumIkonu,
   GozIkonu,
   AramaIkonu,
   EtiketIkonu,
@@ -77,7 +72,6 @@ export default function AyarlarEkrani() {
   }
 
   const { t } = useDil()
-  const [varsayilanBulunurluk, setVarsayilanBulunurluk] = useState<Bulunurluk | null>(null)
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
   const [profilGizli, setProfilGizli] = useState(false)
   const [etiketOnayi, setEtiketOnayi] = useState(false)
@@ -86,15 +80,8 @@ export default function AyarlarEkrani() {
   const [disaAktariliyor, setDisaAktariliyor] = useState(false)
   const [disaAktarimHatasi, setDisaAktarimHatasi] = useState(false)
 
-  const BULUNURLUK_ETIKETI: Record<Bulunurluk, string> = {
-    herkese_acik: t('ayarlar.bulunurlukHerkeseAcik'),
-    takipcilerim: t('ayarlar.bulunurlukTakipcilerim'),
-    gizli: t('ayarlar.bulunurlukGizli'),
-  }
-
   async function ayarlariYukle() {
     try {
-      setVarsayilanBulunurluk(await varsayilanBulunurluguGetir())
       setAramadaGorunsun(await aramadaGorunsunGetir())
       setProfilGizli(await profilGizliGetir())
       setEtiketOnayi(await etiketOnayiGerekliGetir())
@@ -192,55 +179,14 @@ export default function AyarlarEkrani() {
       <ScrollView contentContainerStyle={stiller.icerik} showsVerticalScrollIndicator={false}>
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-        <Bolum baslik={t('ayarlar.bolumHesap')}>
-          {/* "Profili duzenle" ve "Kullanici adi" satirlari
-              KALDIRILDI (kullanicinin istegi 2026-09-11).
-
-              ONCE KONTROL EDILDI - bir girisi kaldirmadan once o
-              islemin baska girisi var mi:
-                /profil/duzenle       -> VAR, profil ekranindaki
-                                         "Profili düzenle" butonu.
-                /profil/kullanici-adi -> tek giris buydu; ama islev
-                                         kaybolmuyor, kullanici adi
-                                         ayni gun profil duzenleme
-                                         ekranina SATIR ICI tasindi.
-                                         Ekran oksuz kaldigi icin
-                                         SILINDI.
-              Ayni kontrol 2026-09-03'te ATLANMIS ve `/profil/duzenle`
-              bir sure ulasilamaz kalmisti. */}
-          <Satir
-            ikon={<BelgeIkonu />}
-            etiket={t('ayarlar.gizlilikMetni')}
-            onPress={() => router.push('/gizlilik')}
-          />
-          {/* VERILERIMI INDIR (KVKK m.11 erisim hakki, 2026-09-11).
-              Gizlilik metninin hemen altinda: ikisi de "verim ne
-              oluyor" sorusunun cevabi.
-
-              Dosya bir KOVAYA yuklenip IMZALI BAGLANTI aciliyor.
-              `expo-sharing` secilmedi: yeni bir native modul ve OTA
-              ile gitmez; RN'in kendi dosya paylasimi da yalnizca
-              iOS'ta calisiyor. Ayrinti `lib/veri-disa-aktar.ts`. */}
-          <Satir
-            ikon={<IndirIkonu />}
-            etiket={
-              disaAktariliyor
-                ? t('ayarlar.verilerimiIndirHazirlaniyor')
-                : t('ayarlar.verilerimiIndir')
-            }
-            aciklama={disaAktarimHatasi ? t('ayarlar.verilerimiIndirHata') : undefined}
-            sonuncu
-            onPress={verilerimiIndir}
-          />
-        </Bolum>
-
         <Bolum baslik={t('ayarlar.bolumGorunurluk')}>
-          <Satir
-            ikon={<KonumIkonu />}
-            etiket={t('ayarlar.checkInGorunurlugu')}
-            deger={varsayilanBulunurluk ? BULUNURLUK_ETIKETI[varsayilanBulunurluk] : undefined}
-            onPress={() => router.push('/profil/check-in-gorunurlugu')}
-          />
+          {/* "Yeni check-in'lerim" satiri KALDIRILDI (kullanicinin
+              istegi 2026-09-12). Tek girisi buydu; ekran
+              (`/profil/check-in-gorunurlugu`) oksuz kaldigi icin
+              SILINDI. Sonucu: varsayilan bulunurluk artik kullanici
+              tarafindan degistirilemiyor, sunucudaki varsayilan
+              (herkese_acik) gecerli; paylasimlari daraltmanin tek
+              kontrolu asagidaki "Profilim gizli" anahtari. */}
           {/* "Gecmis anilarim" satiri KALDIRILDI (kullanicinin karari
               2026-08-30). Ekran (`/profil/ani-gorunurlugu`) duruyor ama
               artik menuden erisilmiyor; ani gorunurlugu, check-in
@@ -312,6 +258,45 @@ export default function AyarlarEkrani() {
           />
         </Bolum>
 
+        {/* GIZLILIK METNI ve VERILERIMI INDIR - DUZ BAGLANTI, KART DEGIL
+            (kullanicinin istegi 2026-09-12: "en altta Hesap kategorisinin
+            uzerine, sutunsuz, sadece uzerine basilabilir sekilde").
+            Onceden en ustte "Hesabin" karti icindeydiler; ekranin ilk
+            gordugu sey iki hukuki satirdi. Ikisi de gunluk kullanimda
+            nadiren basilan seyler - ekranin sonunda, ayar kartlarinin
+            dilinden ayri, kucuk baglanti olarak durmalari dogru.
+
+            VERILERIMI INDIR (KVKK m.11 erisim hakki, 2026-09-11): dosya
+            bir KOVAYA yuklenip IMZALI BAGLANTI aciliyor; ayrinti
+            `lib/veri-disa-aktar.ts`. Hata baglantinin altinda yaziyor,
+            `Alert` ile degil (web'de sessiz). */}
+        <View style={stiller.baglantilar} testID="ayar-baglantilari">
+          <Pressable
+            onPress={() => router.push('/gizlilik')}
+            accessibilityRole="link"
+            hitSlop={6}
+            style={stiller.baglanti}
+          >
+            <Text style={stiller.baglantiYazi}>{t('ayarlar.gizlilikMetni')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={verilerimiIndir}
+            accessibilityRole="link"
+            hitSlop={6}
+            style={stiller.baglanti}
+            disabled={disaAktariliyor}
+          >
+            <Text style={stiller.baglantiYazi}>
+              {disaAktariliyor
+                ? t('ayarlar.verilerimiIndirHazirlaniyor')
+                : t('ayarlar.verilerimiIndir')}
+            </Text>
+          </Pressable>
+          {disaAktarimHatasi && (
+            <Text style={stiller.baglantiHata}>{t('ayarlar.verilerimiIndirHata')}</Text>
+          )}
+        </View>
+
         <Bolum baslik={t('ayarlar.bolumHesapIslemleri')}>
           <Satir
             ikon={<DurdurIkonu />}
@@ -371,6 +356,22 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.yikici,
     marginTop: bosluk.m,
+  },
+
+  // Duz baglantilar: kart yok, ikon yok, ok yok. Kartlarin yan
+  // payiyla hizali dursunlar diye ayni ic pay.
+  baglantilar: { paddingHorizontal: bosluk.l, marginTop: bosluk.s, marginBottom: bosluk.xs },
+  baglanti: { alignSelf: 'flex-start', paddingVertical: bosluk.s + 2 },
+  baglantiYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  baglantiHata: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.yikici,
+    marginTop: bosluk.xs,
   },
 
   onay: {
