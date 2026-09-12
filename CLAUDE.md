@@ -1459,14 +1459,30 @@ ile IKINCI bir Android OAuth istemcisi gerekir (Play Console > App
 integrity > App signing key certificate). Yoksa magazadan inen
 uygulamada Google girisi DEVELOPER_ERROR verir.
 
-**MAPS SDK FOR ANDROID ANAHTARI ALINAMADI:** hesapta faturalandirma
-hesabi YOK ve kurmak kart bilgisi istiyor - ajan bunu yapamaz
-(kimlik/odeme bilgisi kurali). Kullanici
-console.cloud.google.com/billing'de hesap acinca: Maps SDK for Android
-etkinlestir -> API key -> paket `com.slooin.app` + yukaridaki SHA-1 ile
-kisitla -> `eas env:create --environment production --name
-GOOGLE_MAPS_ANDROID_ANAHTARI --value ...` (preview icin de) -> yeni
-Android derlemesi.
+**MAPS SDK FOR ANDROID ANAHTARI ALINDI (2026-09-13 gece):** kullanici
+`slooinapp@gmail.com` ile faturalandirma hesabini KENDI acti (kart
+girisi onda; 300 $ / 14.440 TL deneme kredisi, 90 gun). Google hesabi
+otomatik olarak "My First Project" adli BOS bir projeye baglamisti;
+Slooin `billing/linkedaccount?project=slooin` -> "Link a billing
+account" ile "My Billing Account"a baglandi. Maps SDK for Android
+etkinlestirilince Google'in onboarding akisi anahtari KENDILIGINDEN
+uretti ("Maps Platform API Key", 35 API'ye acik); anahtar
+**"Slooin Maps Android"** olarak yeniden adlandirilip iki yonden
+kisitlandi: Application = Android apps (`com.slooin.app` + EAS SHA-1),
+API = YALNIZCA Maps SDK for Android (kullanici "1 tane mi olmaliydi"
+diye sordu; evet, en az yetki - uygulama baska Maps API'si cagirmiyor).
+Deger `mobil/.env` (`GOOGLE_MAPS_ANDROID_ANAHTARI`) ve EAS
+`production` + `preview` (sensitive). `npx expo config --type
+introspect` react-native-maps plugin'ine anahtarin gectigini dogruladi.
+"My First Project" bos duruyor, silinebilir.
+
+**TUZAK - API kisiti coklu secim:** mat-select listesinde secenekleri
+tiklamak YETMIYOR, panelin altindaki **OK** dugmesine basmadan model
+degismiyor (backdrop'a tiklayip kapatinca 35'e geri donuyor).
+
+**ANDROID DERLEMESI (Maps anahtarli):** `6a377678-9a6c-4ccd-b4d6-157af1f91d69`
+(production, AAB). Bitince Play Console kapali teste bu yuklenmeli;
+`e0aaded9` (gri haritali) artik gecersiz.
 
 **APPLE DEVELOPER (Team 79QNZVGJC7):** `com.slooin.app` App ID'ye
 Sign In with Apple isaretlendi (profile gecersiz kilindi, EAS derlemede
