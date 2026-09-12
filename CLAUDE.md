@@ -1355,7 +1355,8 @@ adresle olculmustu. Gercek gmail hesaplarina test postasi atilmadi.
 
 Ekran goruntuleri `tasarim/giris-sifremi-unuttum.png`,
 `sifre-sifirla.png`. Testler: `sifre-sifirla.test.tsx` (16), giris +2,
-layout +3.
+layout +3; jest 73 paket / 873 test. Yayin: web `slooin.expo.app`,
+OTA grup `bddc8f54-2090-4080-8ca6-b5a2e0627205`.
 
 ### SIRADAKI IS: APPLE / GOOGLE GIRISI - BYPASS KIPI BEKLIYOR - 2026-09-12
 
