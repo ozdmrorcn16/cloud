@@ -41,6 +41,7 @@ export const BOLUMLER: { baslik: string; paragraflar: string[] }[] = [
       'Arkadaşlık bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde bulunduğun, kimi engellediğin.',
       'Bildirim göndermemiz için cihazının bildirim jetonu.',
       'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.',
+      'Mekânlara verdiğin puanlar (Kötü / İyi / Harika). Herkes yalnızca toplamları görür; hangi puanı verdiğini yalnızca sen görürsün. Check-in fotoğrafların, seçtiğin görünürlük kuralıyla o mekânın fotoğraf alanında da görünür.',
     ],
   },
   {

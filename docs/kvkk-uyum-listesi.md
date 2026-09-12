@@ -396,6 +396,43 @@ hic gostermemek (ornegin haftada 5'ten az check-in almis mekanda
 siralama ve toplam gizlensin) ve konut turu kayitlari siralama
 disinda birakmak. Esigin ne olacagi kullanicinin karari.
 
+## Mekan fotograf alani ve puanlama - 2026-09-13
+
+Iki yeni is kalemi, ikisi de mekan sayfasinda.
+
+**Fotograf alani** (check-in'lere konan fotograflar mekan sayfasinda):
+
+1. **Hangi veri:** YENI veri YOK. Zaten var olan check-in fotografi ve
+   check-in'in sahibi/zamani, yeni bir YERDEN (mekan sayfasi) gosteriliyor.
+2. **Dayanak:** check-in'in kendisiyle ayni (sozlesmenin ifasi; kisi
+   fotografi paylasarak yukledi, gorunurluk tercihini secti).
+3. **Sure:** check-in'in suresi; ayri saklama yok.
+4. **Kim gorur:** `check_inler` RLS'i AYNEN - RPC `security invoker`,
+   kova politikasi ayni satira bagli. Yani gorunurluk modeli
+   GENISLEMEDI: kisi ancak zaten gorebildigi check-in'in fotografini
+   gorur. Erisim kaydi yok (okuma; mevcut listelerle ayni).
+
+**Puanlama** (Kotu / Iyi / Harika, 0-10 puan):
+
+1. **Hangi veri:** YENI - `mekan_puanlari(mekan_id, kullanici_id, puan,
+   zaman)`. Kisinin bir mekan hakkindaki gorusu; kimlige bagli tutulmak
+   ZORUNDA (kisi basina tek oy kurali ve oyunu degistirebilmesi icin).
+2. **Dayanak:** sozlesmenin ifasi (ozellik kullanicinin kendi istegiyle
+   verdigi bir oy); aydinlatma metnine "mekan puanlarin" maddesi
+   eklenmeli (ACIK - gizlilik metnine bir satir).
+3. **Sure:** hesap omru; hesap silinince `on delete cascade` ile gidiyor.
+   Veri disa aktarimina `mekan_puanlarim` olarak giriyor.
+4. **Kim gorur:** herkes yalnizca TOPLAMLARI (kac Harika/Iyi/Kotu, puan);
+   kisinin KENDI oyu yalnizca kendisine (`benim_puanim`, auth.uid()).
+   Tabloya dogrudan erisim kapali, iki RPC tek kapi. Puan ancak 3+ oyla
+   hesaplaniyor - tek oyla "10,0" o kisinin oyunu ele verirdi; seviye
+   sayilari ise 1'den itibaren gorunuyor (mekan istatistikleriyle ayni
+   sinif, karar 71). Kucuk mekanda kucuk sayi riski yukaridaki "mekan
+   sayfasindaki sayilar" acik karariyla AYNI ve o karar hala acik.
+
+Ek kural: yalnizca o mekanda check-in yapmis kisi oy verebiliyor. Bu
+bir gizlilik onlemi degil, veri kalitesi onlemi (uzaktan oy sisirme).
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

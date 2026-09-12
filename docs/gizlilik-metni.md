@@ -56,6 +56,10 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   bulundugun, kimi engelledigin
 - Bildirim gonderebilmemiz icin cihazinin bildirim jetonu
 - Sikayet ettigin ya da hakkinda sikayet edilen bilgiler
+- Mekanlara verdigin puanlar (Kotu / Iyi / Harika). Herkes yalnizca
+  toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
+  Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin
+  fotograf alaninda da gorunur.
 
 ## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple
 

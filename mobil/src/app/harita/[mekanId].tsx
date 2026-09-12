@@ -39,6 +39,7 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 import { mekanFotografiUrl } from '../../../lib/mekan-duzenleme'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { MekanFotografGalerisi } from '../../tasarim/MekanFotografGalerisi'
+import { MekanPuanlama } from '../../tasarim/MekanPuanlama'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   KisilerIkonu,
@@ -700,6 +701,13 @@ export default function MekanSayfasi() {
                   </Text>
                 </View>
               </View>
+            </View>
+
+            {/* PUANLAMA (kullanicinin istegi 2026-09-13, Swarm'daki gibi):
+                0-10 puan, uc seviye cubugu ve oy karti. Kurallar
+                sunucuda; bilesen kendi verisini cekiyor. */}
+            <View style={stiller.bolum}>
+              <MekanPuanlama mekanId={mekanId} />
             </View>
 
             {/* SU AN BURADA. Kimse gorunmuyorsa bolum HIC cizilmiyor -

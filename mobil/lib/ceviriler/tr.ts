@@ -577,6 +577,20 @@ export default {
     fotografBos: 'Burada henüz fotoğraf yok.',
     fotografAc: 'Fotoğrafı büyüt',
     dahaFazlaFotograf: 'Daha fazla fotoğraf',
+    // PUANLAMA (kullanicinin istegi 2026-09-13, Swarm'daki gibi).
+    puan: 'Puan',
+    puanlamaSayisi: '{{sayi}} puanlama',
+    puanYok: 'Henüz puan yok',
+    puanAzOy: 'Puan için en az 3 puanlama gerekiyor',
+    puanKotu: 'Kötü',
+    puanIyi: 'İyi',
+    puanHarika: 'Harika',
+    puanSoru: 'Bu mekânı nasıl buldun?',
+    puanSart: 'Puan vermek için önce burada check-in yap.',
+    puanGonder: 'Gönder',
+    puanGuncelle: 'Puanını güncelle',
+    puanGonderiliyor: 'Gönderiliyor…',
+    puanTesekkur: 'Puanın kaydedildi.',
   },
 
   giris: {

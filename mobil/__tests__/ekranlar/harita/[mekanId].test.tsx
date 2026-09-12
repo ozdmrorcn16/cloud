@@ -8,6 +8,8 @@ import {
   mekanLiderligiGetir,
   mekanSonCheckInleriGetir,
   mekanFotograflariniGetir,
+  mekanPuanOzetiniGetir,
+  mekaniPuanla,
 } from '../../../lib/mekan-sayfasi'
 import {
   suAnBurdakileriGetir,
@@ -31,6 +33,8 @@ jest.mock('../../../lib/mekan-sayfasi', () => ({
   mekanLiderligiGetir: jest.fn(),
   mekanSonCheckInleriGetir: jest.fn(),
   mekanFotograflariniGetir: jest.fn(),
+  mekanPuanOzetiniGetir: jest.fn(),
+  mekaniPuanla: jest.fn(),
 }))
 // Modulun SABITLERI gercek kalsin diye requireActual ile basliyor;
 // yalnizca ag cagrisi degistiriliyor (2026-09-02'de ogrenilen tuzak:
@@ -89,6 +93,10 @@ beforeEach(() => {
   ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([])
   ;(mekanSonCheckInleriGetir as jest.Mock).mockResolvedValue([])
   ;(mekanFotograflariniGetir as jest.Mock).mockResolvedValue([])
+  ;(mekanPuanOzetiniGetir as jest.Mock).mockResolvedValue({
+    harika: 0, iyi: 0, kotu: 0, toplam: 0, puan: null, benimPuanim: null, puanVerebilir: false,
+  })
+  ;(mekaniPuanla as jest.Mock).mockResolvedValue(undefined)
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
   // Varsayilan: konum OKUNAMIYOR. Boylece her test kendi konumunu
@@ -938,6 +946,80 @@ describe('MekanSayfasi - check-in cubugu', () => {
       expect(altyazi).toHaveTextContent(/Nilüfer Tüvtürk Araç Muayene İstasyonu/)
       expect(altyazi).not.toHaveTextContent(/İstasyonu'/)
       expect(altyazi).toHaveTextContent(/2 gün önce/)
+      await cevreOturana()
+    })
+  })
+
+  /**
+   * PUANLAMA (kullanicinin istegi 2026-09-13, Swarm'daki gibi).
+   * Kurallar sunucuda; burada ekranin onlara gore davrandigi olculuyor.
+   */
+  describe('puanlama', () => {
+    it('3 oydan az: "Henüz puan yok", sayilar yine cizili', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanPuanOzetiniGetir as jest.Mock).mockResolvedValue({
+        harika: 1, iyi: 1, kotu: 0, toplam: 2, puan: null, benimPuanim: null, puanVerebilir: false,
+      })
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('mekan-puan-yok')).toBeTruthy())
+      expect(screen.getByText('2 puanlama')).toBeTruthy()
+      expect(screen.getByTestId('puan-cubuk-3')).toHaveTextContent('1')
+      // Orada check-in yapmamis kisi: dugme yerine sart.
+      expect(screen.getByTestId('puan-sart')).toBeTruthy()
+      expect(screen.queryByTestId('puan-gonder')).toBeNull()
+      await cevreOturana()
+    })
+
+    it('puan Turkce ondalikla yaziliyor (9,0) ve oy verebilen kisi gonderiyor', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanPuanOzetiniGetir as jest.Mock)
+        .mockResolvedValueOnce({
+          harika: 2, iyi: 1, kotu: 0, toplam: 3, puan: 9, benimPuanim: null, puanVerebilir: true,
+        })
+        .mockResolvedValueOnce({
+          harika: 3, iyi: 1, kotu: 0, toplam: 4, puan: 9.3, benimPuanim: 3, puanVerebilir: true,
+        })
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('mekan-puan')).toHaveTextContent('9,0'))
+
+      // Secim yapilmadan Gonder pasif: RPC cagrilmiyor.
+      await fireEvent.press(screen.getByTestId('puan-gonder'))
+      expect(mekaniPuanla).not.toHaveBeenCalled()
+
+      await fireEvent.press(screen.getByTestId('puan-sec-3'))
+      await fireEvent.press(screen.getByTestId('puan-gonder'))
+      await waitFor(() => expect(mekaniPuanla).toHaveBeenCalledWith('mekan-1', 3))
+      // Ozet yeniden cekildi, puan ve etiket guncellendi.
+      await waitFor(() => expect(screen.getByTestId('mekan-puan')).toHaveTextContent('9,3'))
+      expect(screen.getByText('Puanını güncelle')).toBeTruthy()
+      expect(screen.getByText('Puanın kaydedildi.')).toBeTruthy()
+      await cevreOturana()
+    })
+
+    it('kisinin kendi oyu onceden secili ve degistirmeden gonderilemiyor', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanPuanOzetiniGetir as jest.Mock).mockResolvedValue({
+        harika: 3, iyi: 0, kotu: 0, toplam: 3, puan: 10, benimPuanim: 3, puanVerebilir: true,
+      })
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('puan-sec-3')).toBeTruthy())
+      expect(screen.getByTestId('puan-sec-3').props.accessibilityState.selected).toBe(true)
+      await fireEvent.press(screen.getByTestId('puan-gonder'))
+      expect(mekaniPuanla).not.toHaveBeenCalled()
+      await cevreOturana()
+    })
+
+    it('sunucu reddederse hata metni gorunuyor', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanPuanOzetiniGetir as jest.Mock).mockResolvedValue({
+        harika: 0, iyi: 0, kotu: 0, toplam: 0, puan: null, benimPuanim: null, puanVerebilir: true,
+      })
+      ;(mekaniPuanla as jest.Mock).mockRejectedValue(new Error('Hesabın şu anda kullanılamıyor.'))
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('puan-sec-1')).toBeTruthy())
+      await fireEvent.press(screen.getByTestId('puan-sec-1'))
+      await fireEvent.press(screen.getByTestId('puan-gonder'))
+      await waitFor(() => expect(screen.getByText('Hesabın şu anda kullanılamıyor.')).toBeTruthy())
       await cevreOturana()
     })
   })

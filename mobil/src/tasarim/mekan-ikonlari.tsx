@@ -348,3 +348,48 @@ export function FotografIkonu({ boyut = 18, renk: verilen }: IkonProps) {
     </Svg>
   )
 }
+
+/**
+ * PUANLAMA YUZLERI (2026-09-13): Kotu / Iyi / Harika. Uc yuz ayni
+ * daire ve goz dili, yalnizca agiz degisiyor; Harika'da ek olarak
+ * parilti. Renk disaridan geliyor - secili dugmede beyaz, cubuk
+ * satirinda metin rengi.
+ */
+function YuzGovdesi({ boyut, c, agiz, parilti }: { boyut: number; c: string; agiz: string; parilti?: boolean }) {
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Circle cx={12} cy={12} r={8.4} fill="none" stroke={c} strokeWidth={1.9} />
+      <Circle cx={9.2} cy={10} r={1.15} fill={c} />
+      <Circle cx={14.8} cy={10} r={1.15} fill={c} />
+      <Path d={agiz} fill="none" stroke={c} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
+      {parilti && (
+        <>
+          <Path d="M20.5 2.5v3M19 4h3" stroke={c} strokeWidth={1.4} strokeLinecap="round" />
+          <Path d="M3.5 18.5v2.4M2.3 19.7h2.4" stroke={c} strokeWidth={1.2} strokeLinecap="round" />
+        </>
+      )}
+    </Svg>
+  )
+}
+
+export function YuzKotuIkonu({ boyut = 22, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  return <YuzGovdesi boyut={boyut} c={verilen ?? renk.metin} agiz="M8.8 15.6c1.6-1.9 4.8-1.9 6.4 0" />
+}
+
+export function YuzIyiIkonu({ boyut = 22, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  return <YuzGovdesi boyut={boyut} c={verilen ?? renk.metin} agiz="M8.6 13.8c1.7 2.1 5.1 2.1 6.8 0" />
+}
+
+export function YuzHarikaIkonu({ boyut = 22, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  return (
+    <YuzGovdesi
+      boyut={boyut}
+      c={verilen ?? renk.metin}
+      agiz="M8 13.4h8c-.5 2.4-2.1 3.8-4 3.8s-3.5-1.4-4-3.8z"
+      parilti
+    />
+  )
+}

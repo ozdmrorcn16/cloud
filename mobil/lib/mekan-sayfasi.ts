@@ -206,3 +206,61 @@ export async function mekanFotograflariniGetir(
       url,
     }))
 }
+
+/** 1 kotu, 2 iyi, 3 harika - sunucudaki degerlerle birebir. */
+export type PuanSeviyesi = 1 | 2 | 3
+
+export type MekanPuanOzeti = {
+  harika: number
+  iyi: number
+  kotu: number
+  toplam: number
+  /** 0-10; en az 3 puanlama yoksa null (sunucu kurali). */
+  puan: number | null
+  benimPuanim: PuanSeviyesi | null
+  /** Bu mekanda en az bir check-in'i var mi - puan verme sarti. */
+  puanVerebilir: boolean
+}
+
+/**
+ * MEKAN PUANLAMA (kullanicinin istegi 2026-09-13, Swarm'daki gibi).
+ *
+ * Uc seviye, kisi basina tek oy, 0-10 puan (Kotu 2 / Iyi 7 / Harika 10
+ * ortalamasi - formul sunucuda, `20260913110000`). Puan ancak 3+
+ * oyla donuyor; sayilar her zaman. Yalnizca orada check-in yapmis
+ * kisi oy verebiliyor ve o kural da SUNUCUDA - `puanVerebilir` ekranin
+ * dugmeyi onceden kapatabilmesi icin (bosa is yaptirma kurali).
+ */
+export async function mekanPuanOzetiniGetir(mekanId: string): Promise<MekanPuanOzeti> {
+  const { data, error } = await supabase.rpc('mekan_puan_ozeti', { p_mekan_id: mekanId })
+  if (error) throw new Error(hataMetni(error))
+  const s = (
+    data as {
+      harika: number
+      iyi: number
+      kotu: number
+      toplam: number
+      puan: number | string | null
+      benim_puanim: number | null
+      puan_verebilir: boolean
+    }[] | null
+  )?.[0]
+  if (!s) {
+    return { harika: 0, iyi: 0, kotu: 0, toplam: 0, puan: null, benimPuanim: null, puanVerebilir: false }
+  }
+  return {
+    harika: s.harika ?? 0,
+    iyi: s.iyi ?? 0,
+    kotu: s.kotu ?? 0,
+    toplam: s.toplam ?? 0,
+    // numeric PostgREST'ten dize gelebiliyor.
+    puan: s.puan === null || s.puan === undefined ? null : Number(s.puan),
+    benimPuanim: (s.benim_puanim as PuanSeviyesi | null) ?? null,
+    puanVerebilir: Boolean(s.puan_verebilir),
+  }
+}
+
+export async function mekaniPuanla(mekanId: string, puan: PuanSeviyesi): Promise<void> {
+  const { error } = await supabase.rpc('mekan_puanla', { p_mekan_id: mekanId, p_puan: puan })
+  if (error) throw new Error(hataMetni(error))
+}

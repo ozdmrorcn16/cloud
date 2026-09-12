@@ -82,6 +82,10 @@ const VERITABANI: Record<string, string> = {
   'Kullanici adi kurallara uymuyor': 'Kullanıcı adı kurallara uymuyor.',
   'Kullanici belirtilmeli': 'Kullanıcı belirtilmeli.',
   'Mekan bulunamadi': 'Mekan bulunamadı.',
+  // MEKAN PUANLAMA (2026-09-13)
+  'Gecersiz puan': 'Geçersiz puan.',
+  'Puan vermek icin once burada check-in yapmalisin':
+    'Puan vermek için önce burada check-in yapmalısın.',
   // ESKI ANAHTAR "(~500 m icinde olmalisin)" IDI VE HIC ESLESMIYORDU:
   // sunucudaki yaricap 2026-08-28'de 1 km'ye cikarilmis ama buradaki
   // karsilik guncellenmemisti, yani kullanici ham ASCII mesaji
