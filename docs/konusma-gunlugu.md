@@ -30,6 +30,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-12 — [2026-09-12-a16c21ef.md](oturumlar/2026-09-12-a16c21ef.md) — en çok para veren reklamlar hangileri
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
@@ -40,3 +41,7 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-09-12** — Uygulama fikri VPN uygulamasi olarak kayda gecti. Reklam
+  gelir modeli konusuldu: VPN'de odullu video ve app open en verimli
+  formatlar, ama ucretsiz VPN kitlesi dusuk eCPM'li ulkelerden geldigi icin
+  tek basina reklam modeli riskli; abonelikle hibrit onerildi.

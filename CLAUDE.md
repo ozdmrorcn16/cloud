@@ -30,12 +30,23 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 - **Depo:** `ozdmrorcn16/cloud`
 - **Calisma dali:** `claude/uygulama-fikri-o3tuda`
-- **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
+- **Asama:** Fikir asamasi. Uygulama fikri: VPN uygulamasi (asagida).
 
 ## Uygulama fikri
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+- **Ne:** VPN uygulamasi.
+- **Asama:** Fikir netlesti, teknik ve ticari kararlar henuz alinmadi.
+- **Gelir modeli (arastiriliyor, karar degil):** Ucretsiz katman + reklam
+  (odullu video agirlikli, app open, olculu gecis reklami) ve yaninda
+  abonelik; yani hibrit model.
+- **Acik sorular:** hedef platform (Android / iOS / ikisi), hedef ulkeler,
+  kendi sunucu altyapisi mi yoksa hazir VPN SDK / white-label mi,
+  protokol secimi (WireGuard / OpenVPN / IKEv2).
+- **Bilinen riskler:** Apple 5.4 kurali VPN uygulamasi icin sirket tipi
+  gelistirici hesabi ve veri paylasimi yasagi getiriyor; Google Play
+  `VpnService` icin ayri beyan istiyor ve reklam manipulasyonunu yasakliyor.
+  Ucretsiz VPN trafigi genelde dusuk eCPM'li ulkelerden geliyor, bant
+  genisligi maliyeti ise gercek.
 
 ## Eklentiler
 
@@ -51,3 +62,6 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - 2026-08-09 — `frontend-design` eklentisi kuruldu. Istenen `claude-plugins-official`
   adiyla bir market bu ortamda kayitli degildi; eklenti `anthropics/claude-code`
   deposundaki resmi markette bulundu ve `claude-code-plugins` adiyla eklendi.
+- 2026-09-12 — Uygulama fikri belirlendi: **VPN uygulamasi**. Para kazanma
+  tarafinda hibrit model (reklam + abonelik) arastiriliyor; kesin karar
+  platform ve hedef ulke netlesince verilecek.
