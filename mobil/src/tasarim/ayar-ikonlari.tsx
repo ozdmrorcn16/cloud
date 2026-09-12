@@ -70,6 +70,35 @@ export const BelgeIkonu = () => {
   )
 }
 
+// Indirme ikonu: tepsiye inen ok. "Verilerimi indir" satirinda
+// (2026-09-12). Onceden BelgeIkonu kullaniliyordu ve hemen ustundeki
+// "Gizlilik metni" ile AYNI ikonu tasiyordu - yan yana iki satirin
+// ayni isareti tasimasi ikonun tek isini (satiri gozle ayirmak)
+// bosa cikariyordu. Belge degil EYLEM ikonu: satir bir sey acmiyor,
+// bir dosya uretiyor.
+export const IndirIkonu = () => {
+  const renk = useRenk()
+  return govde(
+    <>
+      <Path
+        d="M12 4v10.5m0 0l-4-4m4 4l4-4"
+        stroke={renk.metin}
+        strokeWidth={K}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"
+        stroke={renk.metin}
+        strokeWidth={K}
+        fill="none"
+        strokeLinecap="round"
+      />
+    </>
+  )
+}
+
 export const EngelIkonu = () => {
   const renk = useRenk()
   return govde(

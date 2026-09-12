@@ -23,6 +23,7 @@ import { Bolum, Satir } from '../../tasarim/Liste'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   BelgeIkonu,
+  IndirIkonu,
   EngelIkonu,
   KonumIkonu,
   GozIkonu,
@@ -221,7 +222,7 @@ export default function AyarlarEkrani() {
               ile gitmez; RN'in kendi dosya paylasimi da yalnizca
               iOS'ta calisiyor. Ayrinti `lib/veri-disa-aktar.ts`. */}
           <Satir
-            ikon={<BelgeIkonu />}
+            ikon={<IndirIkonu />}
             etiket={
               disaAktariliyor
                 ? t('ayarlar.verilerimiIndirHazirlaniyor')
