@@ -1305,6 +1305,17 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### "VERILERIMI INDIR" SATIRINA AYRI IKON - 2026-09-12
+
+Ayarlar > Hesabin bolumunde "Gizlilik metni" ile "Verilerimi indir"
+AYNI belge ikonunu tasiyordu; yan yana iki satirin ayni isareti
+tasimasi ikonun tek isini (satiri gozle ayirmak) bosa cikariyordu.
+Yeni `IndirIkonu` (`ayar-ikonlari.tsx`): tepsiye inen ok, ayni dilde
+(20 px, 1.8 cizgi, dolgusuz). Belge degil EYLEM ikonu - satir bir
+sey acmiyor, dosya uretiyor. Canli ekran goruntusu
+`tasarim/ayarlar-indir-ikonu.png`. Yayin: web `slooin.expo.app`, OTA
+grup `1ff52715-443c-4f40-b211-91ab0aee07d0`. Jest ayarlar 19/19.
+
 ### AYARLAR SADELESTI: IKI SATIR KALKTI, BIR EKRAN SILINDI - 2026-09-12
 
 Kullanicinin istegi: "Ayarlardan profili duzenle ve kullanici adi
