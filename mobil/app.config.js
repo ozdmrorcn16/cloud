@@ -12,38 +12,22 @@
  * icin anahtardan hic etkilenmiyor.
  */
 /**
- * ACIK BORC - APPLE ILE GIRIS entitlement'i GECICI OLARAK KAPALI
- * (2026-09-07).
+ * APPLE ILE GIRIS ENTITLEMENT'I - 2026-09-12'de GERI ACILDI.
  *
- * `app.json` icinde `ios.usesAppleSignIn: true` vardi ve derlemeyi
- * KIRIYORDU. Xcode\'un verdigi hata aynen soyleydi:
+ * 2026-09-07 ile 2026-09-12 arasinda kapaliydi: provisioning profile
+ * 29 Agustos'ta, Sign In with Apple yetkisi eklenmeden ONCE uretilmisti
+ * ve Xcode "profile doesn't include the Sign In with Apple capability"
+ * diye derlemeyi kiriyordu. O donemde `plugins/apple-signin-entitlement-
+ * kaldir.js` adli bir karsi plugin entitlement'i siliyordu.
  *
- *   Provisioning profile "[expo] com.slooin.app AppStore
- *   2026-08-29T22:52:14.006Z" doesn't include the Sign In with Apple
- *   capability / the com.apple.developer.applesignin entitlement.
- *
- * Sebep: profile 29 Agustos\'ta, o satir eklenmeden ONCE uretilmisti;
- * icinde o yetki yok. Build 3 bu yuzden gecmis, 4 ve 5 bu yuzden
- * patlamisti.
- *
- * Satir kaldirildi cunku o an CALISAN bir islevi yoktu: Apple ile
- * giris Supabase tarafinda zaten etkin degil, dugmeye basinca "Bu
- * giris yontemi su an kullanilamiyor" donuyor. Yani kayip sifir,
- * kazanc TestFlight\'in yeniden calisir hale gelmesi.
- *
- * GERI ACMAK ICIN (magazaya cikmadan ONCE yapilmali - iOS\'ta baska
- * bir sosyal giris sunuluyorsa App Store "Apple ile giris"i ZORUNLU
- * tutuyor):
- *   1. developer.apple.com > Certificates, IDs & Profiles >
- *      Identifiers > com.slooin.app > "Sign In with Apple" isaretle,
- *      Save.
- *   2. `app.json` icindeki `ios` blokuna `"usesAppleSignIn": true`
- *      geri konur.
- *   3. Yeni bir derleme alinir; EAS profile\'i capability ile birlikte
- *      yeniden uretir.
- *
- * `expo-apple-authentication` paketi ve ekrandaki dugme YERINDE
- * duruyor - yalnizca entitlement kapali.
+ * 2026-09-12'de developer.apple.com'da com.slooin.app kimligine "Sign
+ * In with Apple" yetkisi ISARETLENDI (profile gecersiz kilindi; EAS bir
+ * sonraki derlemede yeniden uretir), Services ID (com.slooin.app.web)
+ * ve .p8 anahtari olusturuldu, Supabase'de Apple saglayicisi acildi.
+ * Bu yuzden karsi plugin listeden CIKARILDI ve app.json'a
+ * `ios.usesAppleSignIn: true` geri kondu. Dosya `plugins/` altinda
+ * tarihsel kayit olarak duruyor; bir daha gerekirse listenin EN SONUNA
+ * eklenmeli (once calissaydi sildigi anahtar yeniden eklenirdi).
  */
 module.exports = ({ config }) => {
   const androidAnahtari = process.env.GOOGLE_MAPS_ANDROID_ANAHTARI
@@ -69,11 +53,6 @@ module.exports = ({ config }) => {
       ...(googleIosSemasi
         ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosSemasi }]]
         : []),
-      // EN SONDA olmali: expo-apple-authentication'in kendi plugin'i
-      // entitlement'i kosulsuz ekliyor ve bu onu geri siliyor. Once
-      // calissaydi silinen anahtar yeniden eklenirdi. Gerekce ve geri
-      // acma adimlari dosyanin kendi basinda.
-      './plugins/apple-signin-entitlement-kaldir',
     ],
   }
 }
