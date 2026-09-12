@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -38,6 +38,7 @@ import { CanliHarita } from '../../tasarim/CanliHarita'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { mekanFotografiUrl } from '../../../lib/mekan-duzenleme'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
+import { MekanFotografGalerisi } from '../../tasarim/MekanFotografGalerisi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   KisilerIkonu,
@@ -45,6 +46,7 @@ import {
   YildizIkonu,
   KupaIkonu,
   SaatIkonu,
+  FotografIkonu,
   ArabaIkonu,
   NavigasyonIkonu,
   NisangahIkonu,
@@ -180,7 +182,7 @@ function basHarf(ad: string | null): string {
   return (ad || '?').trim().charAt(0).toLocaleUpperCase('tr-TR') || '?'
 }
 
-type Sekme = 'liderlik' | 'son'
+type Sekme = 'liderlik' | 'son' | 'fotograf'
 
 export default function MekanSayfasi() {
   const stiller = useStiller(stilleriYap)
@@ -195,6 +197,7 @@ export default function MekanSayfasi() {
   // Kimlik -> imzali profil fotografi. Akis ve bildirimler de ayni
   // yardimciyi kullaniyor; "kim gorunur" kurali RPC'de kaliyor.
   const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
+  const avatarlariEkleRef = useRef<(kimlikler: string[]) => Promise<void> | undefined>(() => undefined)
   const [liderlik, setLiderlik] = useState<LiderlikSatiri[]>([])
   const [sonlar, setSonlar] = useState<SonCheckIn[]>([])
   const [sekme, setSekme] = useState<Sekme>('liderlik')
@@ -268,6 +271,8 @@ export default function MekanSayfasi() {
 
     // Uc liste de ayni kisileri tasiyabiliyor; avatarlar TEK bir
     // sozlukte birikiyor ve ayni kimlik icin ikinci kez cekilmiyor.
+    // Fotograf galerisi de ayni yolu kullaniyor (ref uzerinden).
+    avatarlariEkleRef.current = avatarlariEkle
     async function avatarlariEkle(kimlikler: string[]) {
       const yeniler = [...new Set(kimlikler)]
       if (yeniler.length === 0) return
@@ -780,10 +785,30 @@ export default function MekanSayfasi() {
                   {t('mekanSayfasi.sonCheckInler')}
                 </Text>
               </Pressable>
+              {/* FOTOGRAFLAR (kullanicinin istegi 2026-09-13): check-in'lere
+                  konan fotograflar. */}
+              <Pressable
+                style={[stiller.sekme, sekme === 'fotograf' && stiller.sekmeAktif]}
+                onPress={() => setSekme('fotograf')}
+                accessibilityRole="button"
+                testID="sekme-fotograf"
+              >
+                <FotografIkonu boyut={15} renk={sekme === 'fotograf' ? '#FFFFFF' : renk.metinIkincil} />
+                <Text style={[stiller.sekmeYazi, sekme === 'fotograf' && stiller.sekmeYaziAktif]}>
+                  {t('mekanSayfasi.fotograflar')}
+                </Text>
+              </Pressable>
             </View>
 
-            <View style={stiller.liste}>
-              {sekme === 'liderlik' ? (
+            <View style={[stiller.liste, sekme === 'fotograf' && stiller.listeGaleri]}>
+              {sekme === 'fotograf' ? (
+                <MekanFotografGalerisi
+                  mekanId={mekanId}
+                  mekanAdi={mekan.ad}
+                  avatarlar={avatarlar}
+                  onKimlikler={(k) => void avatarlariEkleRef.current(k)}
+                />
+              ) : sekme === 'liderlik' ? (
                 liderlik.length === 0 ? (
                   <Text style={stiller.bos}>{t('mekanSayfasi.liderlikBos')}</Text>
                 ) : (
@@ -1274,6 +1299,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderColor: renk.cizgi,
     paddingHorizontal: bosluk.m,
   },
+  // Fotograf izgarasi kenardan kenara; kartin ic payi ve kenarligi
+  // ona dar gelir.
+  listeGaleri: { paddingHorizontal: 0, borderWidth: 0, backgroundColor: 'transparent', overflow: 'hidden' },
   listeSatiri: {
     flexDirection: 'row',
     alignItems: 'center',

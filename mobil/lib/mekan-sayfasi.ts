@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { checkInFotografiUrl } from './fotograf-url'
 
 /**
  * MEKAN SAYFASININ VERISI (kullanicinin istegi 2026-09-06).
@@ -144,4 +145,64 @@ export async function mekanSonCheckInleriGetir(
     notMetni: s.not_metni,
     canliMi: s.canli_mi,
   }))
+}
+
+export type MekanFotografi = {
+  /** Check-in kimligi - galeri anahtari ve tekrar elemesi icin. */
+  id: string
+  kullaniciId: string
+  kullaniciAdi: string | null
+  olusturmaZamani: string
+  /** Imzali adres; imzalanamayan fotograf listeye HIC girmiyor. */
+  url: string
+}
+
+/** Galeri sayfa boyu. Sunucu ust siniri 60. */
+export const MEKAN_FOTOGRAF_SAYFA = 30
+
+/**
+ * MEKANIN FOTOGRAF ALANI (kullanicinin istegi 2026-09-13).
+ *
+ * O mekanda yapilmis check-in'lerin fotograflari, yeniden eskiye.
+ * Dis kaynak YOK - veri check-in'lerden geliyor.
+ *
+ * RPC `security invoker`: `check_inler` RLS'i aynen isliyor, yani
+ * kisi ancak zaten gorebildigi check-in'in fotografini alir. Kova
+ * politikasi da ayni satira bagli oldugu icin imzalama da ayni kapidan
+ * geciyor; imzalanamayan bir dosya (nadir bir yaris durumu) sessizce
+ * atlanir - kirik resim gostermektense hic gostermemek dogru.
+ */
+export async function mekanFotograflariniGetir(
+  mekanId: string,
+  ofset = 0,
+  limit = MEKAN_FOTOGRAF_SAYFA
+): Promise<MekanFotografi[]> {
+  const { data, error } = await supabase.rpc('mekan_fotograflari', {
+    p_mekan_id: mekanId,
+    p_limit: limit,
+    p_ofset: ofset,
+  })
+  if (error) throw new Error(hataMetni(error))
+
+  const satirlar =
+    (data as {
+      id: string
+      kullanici_id: string
+      kullanici_adi: string | null
+      olusturma_zamani: string
+      fotograf: string
+    }[]) ?? []
+
+  const imzali = await Promise.all(
+    satirlar.map(async (s) => ({ satir: s, url: await checkInFotografiUrl(s.fotograf) }))
+  )
+  return imzali
+    .filter((x): x is { satir: (typeof satirlar)[number]; url: string } => x.url !== null)
+    .map(({ satir, url }) => ({
+      id: satir.id,
+      kullaniciId: satir.kullanici_id,
+      kullaniciAdi: satir.kullanici_adi,
+      olusturmaZamani: satir.olusturma_zamani,
+      url,
+    }))
 }

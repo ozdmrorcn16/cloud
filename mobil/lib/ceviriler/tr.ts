@@ -560,14 +560,23 @@ export default {
     diger: 'Diğer',
     biri: 'Biri',
     suAn: 'şu an',
-    liderlik: 'Liderlik Tablosu',
-    sonCheckInler: 'Son Check-inler',
+    // Uc sekme (Liderlik / Son gelenler / Fotograflar) tek satira
+    // sigsin diye kisaltildi (2026-09-13); "Liderlik Tablosu" ve
+    // "Son Check-inler" 390 px'te iki satira kiriliyordu.
+    liderlik: 'Liderlik',
+    sonCheckInler: 'Son gelenler',
     // Bos durum metinleri neden bos oldugunu SOYLEMIYOR, cunku iki
     // sebep var ve ayirt edilemez: gercekten kimse gelmemis olabilir
     // ya da gorunurluk tercihleri yuzunden sana gorunmuyor olabilir.
     // Ikinciyi ima etmek de bir sizinti olurdu.
     liderlikBos: 'Burada henüz gösterilecek bir check-in yok.',
     sonBos: 'Burada henüz gösterilecek bir check-in yok.',
+    // FOTOGRAF ALANI (kullanicinin istegi 2026-09-13): check-in'lere
+    // konan fotograflar burada. Bos durum yine sebep soylemiyor.
+    fotograflar: 'Fotoğraflar',
+    fotografBos: 'Burada henüz fotoğraf yok.',
+    fotografAc: 'Fotoğrafı büyüt',
+    dahaFazlaFotograf: 'Daha fazla fotoğraf',
   },
 
   giris: {

@@ -7,6 +7,7 @@ import {
   mekanIstatistikleriniGetir,
   mekanLiderligiGetir,
   mekanSonCheckInleriGetir,
+  mekanFotograflariniGetir,
 } from '../../../lib/mekan-sayfasi'
 import {
   suAnBurdakileriGetir,
@@ -25,9 +26,11 @@ jest.mock('../../../lib/mekan', () => ({
 }))
 
 jest.mock('../../../lib/mekan-sayfasi', () => ({
+  ...jest.requireActual('../../../lib/mekan-sayfasi'),
   mekanIstatistikleriniGetir: jest.fn(),
   mekanLiderligiGetir: jest.fn(),
   mekanSonCheckInleriGetir: jest.fn(),
+  mekanFotograflariniGetir: jest.fn(),
 }))
 // Modulun SABITLERI gercek kalsin diye requireActual ile basliyor;
 // yalnizca ag cagrisi degistiriliyor (2026-09-02'de ogrenilen tuzak:
@@ -85,6 +88,7 @@ beforeEach(() => {
   ;(suAnBurdakileriGetir as jest.Mock).mockResolvedValue([])
   ;(mekanLiderligiGetir as jest.Mock).mockResolvedValue([])
   ;(mekanSonCheckInleriGetir as jest.Mock).mockResolvedValue([])
+  ;(mekanFotograflariniGetir as jest.Mock).mockResolvedValue([])
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(checkIndenAyril as jest.Mock).mockResolvedValue(undefined)
   // Varsayilan: konum OKUNAMIYOR. Boylece her test kendi konumunu
@@ -861,5 +865,80 @@ describe('MekanSayfasi - check-in cubugu', () => {
 
     await waitFor(() => expect(screen.getByText('Buradasın · Ayrıl')).toBeTruthy())
     await cevreOturana()
+  })
+
+  /**
+   * FOTOGRAF ALANI (kullanicinin istegi 2026-09-13): ucuncu sekme,
+   * check-in'lere konan fotograflar. Galeri ancak sekmeye basilinca
+   * cekiliyor (bosa istek yok), dokununca buyuk gorunum sayac ve
+   * "Ad · Mekan'da" altyazisiyla aciliyor.
+   */
+  describe('fotograf sekmesi', () => {
+    const FOTOGRAFLAR = [
+      {
+        id: 'ci-1',
+        kullaniciId: 'k-1',
+        kullaniciAdi: 'Deniz Yılmaz',
+        olusturmaZamani: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+        url: 'https://ornek/1.jpg',
+      },
+      {
+        id: 'ci-2',
+        kullaniciId: 'k-2',
+        kullaniciAdi: 'Ali',
+        olusturmaZamani: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        url: 'https://ornek/2.jpg',
+      },
+    ]
+
+    it('sekmeye basilmadan fotograflar CEKILMIYOR', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('sekme-fotograf')).toBeTruthy())
+      await cevreOturana()
+      expect(mekanFotograflariniGetir).not.toHaveBeenCalled()
+    })
+
+    it('sekme fotograflari izgarada listeler, bos ise sebepsiz bos metin', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanFotograflariniGetir as jest.Mock).mockResolvedValue(FOTOGRAFLAR)
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('sekme-fotograf')).toBeTruthy())
+      await fireEvent.press(screen.getByTestId('sekme-fotograf'))
+      await waitFor(() => expect(screen.getAllByTestId('galeri-fotografi')).toHaveLength(2))
+      expect(mekanFotograflariniGetir).toHaveBeenCalledWith('mekan-1')
+      await cevreOturana()
+    })
+
+    it('bos galeri sebep soylemeyen bos metin gosterir', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('sekme-fotograf')).toBeTruthy())
+      await fireEvent.press(screen.getByTestId('sekme-fotograf'))
+      await waitFor(() => expect(screen.getByText('Burada henüz fotoğraf yok.')).toBeTruthy())
+      await cevreOturana()
+    })
+
+    it('fotografa dokununca buyuk gorunum sayac ve altyaziyla aciliyor', async () => {
+      ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+      ;(mekanFotograflariniGetir as jest.Mock).mockResolvedValue(FOTOGRAFLAR)
+      render(<CheckInHaritasiEkrani />)
+      await waitFor(() => expect(screen.getByTestId('sekme-fotograf')).toBeTruthy())
+      await fireEvent.press(screen.getByTestId('sekme-fotograf'))
+      await waitFor(() => expect(screen.getAllByTestId('galeri-fotografi')).toHaveLength(2))
+
+      await fireEvent.press(screen.getAllByTestId('galeri-fotografi')[1])
+      await waitFor(() => expect(screen.getByTestId('galeri-buyuk-gorunum')).toBeTruthy())
+      // Ikinci fotograf acildi: sayac 2 / 2.
+      expect(screen.getByTestId('galeri-sayac')).toHaveTextContent('2 / 2')
+      // Altyazi: ad, mekan, gorece zaman. Bulunma eki ("...'nda")
+      // BILEREK yok - bkz. MekanFotografGalerisi basindaki not.
+      const altyazi = screen.getByTestId('galeri-altyazi')
+      expect(altyazi).toHaveTextContent(/Ali/)
+      expect(altyazi).toHaveTextContent(/Nilüfer Tüvtürk Araç Muayene İstasyonu/)
+      expect(altyazi).not.toHaveTextContent(/İstasyonu'/)
+      expect(altyazi).toHaveTextContent(/2 gün önce/)
+      await cevreOturana()
+    })
   })
 })

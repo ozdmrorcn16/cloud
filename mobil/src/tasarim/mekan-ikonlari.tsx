@@ -332,3 +332,19 @@ export function GeriOkIkonu({ boyut = 24, renk: verilen }: IkonProps) {
     </Svg>
   )
 }
+
+/**
+ * Fotograf - mekan sayfasindaki "Fotograflar" sekmesi (2026-09-13).
+ * Cerceve + dag + gunes; diger sekme ikonlariyla ayni 1.8 cizgi dili.
+ */
+export function FotografIkonu({ boyut = 18, renk: verilen }: IkonProps) {
+  const renk = useRenk()
+  const c = verilen ?? renk.metinIkincil
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Rect x={3.5} y={4.5} width={17} height={15} rx={2.5} fill="none" stroke={c} strokeWidth={1.8} />
+      <Path d="M5.5 16.5l4.2-4.6 3.1 3.2 2.2-2.1 3.5 3.5" fill="none" stroke={c} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+      <Circle cx={15.5} cy={9} r={1.6} fill={c} />
+    </Svg>
+  )
+}
