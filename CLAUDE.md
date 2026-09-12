@@ -1305,6 +1305,41 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### ILK ANDROID URETIM DERLEMESI (AAB) - 2026-09-12
+
+Kullanici "Android test uygulamasi hazir mi" diye sordu; degildi -
+elde yalnizca 25 Agustos'tan kalma bir preview APK vardi. EAS'te
+`production` profiliyle ilk AAB alindi:
+
+    Build   e0aaded9-be53-4aed-8825-89c0200effc2   finished, 24 dk
+    AAB     https://expo.dev/artifacts/eas/xfNHHEtTqq9CtqDq3kyVnL9Lj-qfKDM7cGrnXHKQWHQ.aab
+    Kanal   production, runtime 1.0.0 -> bugune kadarki OTA'lar gomulu
+
+Keystore 25 Agustos'taki APK derlemesinden zaten vardi; derleme
+`--non-interactive --no-wait` ile sormadan basladi.
+
+**BILINEN EKSIK: HARITA GRI.** `GOOGLE_MAPS_ANDROID_ANAHTARI` EAS'te
+tanimsiz, app.config.js anahtari manifeste yazmadi. Native oldugu
+icin OTA ile gelmez; anahtar alininca IKINCI derleme sart. Anahtar,
+OAuth istemcileriyle birlikte Google Cloud'da (`slooinapp@gmail.com`)
+bypass kipi acilinca alinacak.
+
+**Play Console icin siradaki adimlar** (hesap `slooinapp@gmail.com`
+ile acildi): uygulama olustur -> Kapali test -> AAB yukle -> 12
+kisilik test listesi -> opt-in linki. 14 gunlik saat linkin
+dagitildigi gun baslar; haritali ikinci derleme ayni kanala sonradan
+yuklenir. Ilk kurulum formlari (gizlilik adresi
+`slooin.expo.app/gizlilik`, icerik derecelendirme, veri guvenligi)
+kapali test icin de kismen zorunlu.
+
+**Derleme arsivi 708 MB** (2 dk yukleme); ikinci derlemeden once
+`.easignore` yazilmali (DIKKAT: varsa .gitignore yoksayilir,
+node_modules dahil hepsi tek tek yazilir).
+
+**Arac tuzagi:** `eas build:view` `--non-interactive` bayragini
+KABUL ETMIYOR ("Nonexistent flag"); onunla cagrilinca hata donuyor
+ve bir yoklama dongusu sessizce hic eslesmiyor.
+
 ### AYARLAR YENIDEN DIZILDI, CHECK-IN'E "ARKADAS EKLE" - 2026-09-12
 
 Kullanicinin arka arkaya uc istegi, hepsi yayinda (OTA grup
