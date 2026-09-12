@@ -1504,11 +1504,21 @@ entitlements `com.apple.developer.applesignin: [Default]`, plugin
 listesinde `@react-native-google-signin/google-signin` var. Commit
 `f26a951`.
 
-**iOS DERLEMESI:** `1ddfb894-f87e-4859-ae2f-2cb68bc486e5`
-(production, ~710 MB arsiv). Bitince `npx eas-cli submit --platform ios
---latest` ve TestFlight'ta GERCEK cihazda dogrulanacaklar
-`docs/sosyal-giris-kurulumu.md` sonundaki liste. Dogrulanmadan
-"calisiyor" DENMEZ.
+**iOS DERLEMESI BITTI VE APP STORE CONNECT'E YUKLENDI:** build
+`1ddfb894-f87e-4859-ae2f-2cb68bc486e5` -> **1.0.0 (8)**, entitlement
+hatasi YOK (2026-09-07'den beri kirik olan iOS derlemesi bu yolla
+duzeldi). `eas submit --latest --non-interactive` EAS'teki ASC API
+anahtariyla (Key ID T2DU3DFMW4) sormadan gecti; Apple isleme 5-10 dk.
+Dahili test grubuna build 8 eklenince telefonda GERCEK cihazda
+dogrulanacaklar `docs/sosyal-giris-kurulumu.md` sonundaki liste.
+Dogrulanmadan "calisiyor" DENMEZ. Build 8 bugune kadarki butun OTA
+guncellemelerini gomulu tasiyor (runtime 1.0.0, kanal production).
+
+**ANDROID NOTU:** bugunku AAB (build e0aaded9) google-signin native
+modulunu autolinking ile zaten iceriyor; `EXPO_PUBLIC_GOOGLE_*`
+degerleri JS'e gomuldugu icin bir sonraki `eas update` Android'de
+Google girisini ACAR (yeni derleme gerekmez). Maps anahtari gelince
+zaten yeniden derlenecek.
 
 **Google nonce notu:** Supabase Google saglayicisinda "Skip nonce
 checks" KAPALI birakildi; `lib/sosyal-giris.ts` nonce gondermiyor ve
