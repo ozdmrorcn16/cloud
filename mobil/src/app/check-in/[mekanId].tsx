@@ -13,12 +13,21 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
+import { kendiKullaniciIdim } from '../../../lib/profil'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
+/*
+ * HESABA BAGLI (2026-09-13): tek anahtar ayni telefondaki ikinci
+ * hesabin "bu check-in ne paylasiyor?" uyarisini HIC gormemesine yol
+ * aciyordu (tur suzgecinde yasanan devretme kusurunun kardesi). Uyari
+ * bir aydinlatma; her yeni hesap kendi uyarisini gormeli.
+ */
 const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
+const ilkUyariAnahtari = (kimlik: string | null) =>
+  kimlik ? `${ILK_UYARI_ANAHTARI}.${kimlik}` : ILK_UYARI_ANAHTARI
 
 export default function CheckInEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -48,6 +57,7 @@ export default function CheckInEkrani() {
   // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
   // yaniti bu secimin uzerine yazmasin.
   const bulunurlukManuelDegisti = useRef(false)
+  const uyariAnahtari = useRef(ILK_UYARI_ANAHTARI)
 
   useEffect(() => {
     varsayilanBulunurluguGetir()
@@ -61,9 +71,15 @@ export default function CheckInEkrani() {
         // secmedigi bir yayin genisligine kaymamali.
         if (!bulunurlukManuelDegisti.current) setBulunurluk('gizli')
       })
-    AsyncStorage.getItem(ILK_UYARI_ANAHTARI).then((deger) => {
-      if (!deger) setIlkKullanimUyarisi(true)
-    })
+    kendiKullaniciIdim()
+      .then((kimlik) => {
+        uyariAnahtari.current = ilkUyariAnahtari(kimlik)
+        return AsyncStorage.getItem(uyariAnahtari.current)
+      })
+      .then((deger) => {
+        if (!deger) setIlkKullanimUyarisi(true)
+      })
+      .catch(() => {})
   }, [])
 
   function bulunurlukDegistir(deger: Bulunurluk) {
@@ -74,7 +90,7 @@ export default function CheckInEkrani() {
   async function ilkUyariKapat(gizliSecildi: boolean) {
     if (gizliSecildi) bulunurlukDegistir('gizli')
     setIlkKullanimUyarisi(false)
-    await AsyncStorage.setItem(ILK_UYARI_ANAHTARI, 'true')
+    await AsyncStorage.setItem(uyariAnahtari.current, 'true')
   }
 
   /**

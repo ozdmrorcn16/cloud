@@ -940,6 +940,12 @@ export default function KesfetEkrani() {
             autoCorrect={false}
             autoCapitalize="none"
             returnKeyType="search"
+            // Klavyeden "Ara"ya basinca oneri paneli KAPANIYOR
+            // (kullanicinin bildirdigi kusur 2026-09-13: "aratmaya
+            // bastim, oneriler acik kaldi"). Yeni harf yazilinca
+            // `aramaDegisti` yeniden aciyor.
+            onSubmitEditing={() => setOneriGizli(true)}
+            testID="mekan-arama-kutusu"
           />
         </View>
         <Pressable

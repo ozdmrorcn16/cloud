@@ -1234,6 +1234,30 @@ describe('MekanAramaEkrani', () => {
   })
 
   /*
+   * KLAVYEDEN "ARA"YA BASINCA PANEL KAPANIYOR (kullanicinin bildirdigi
+   * kusur 2026-09-13: "aratmaya bastim, oneriler acik kaldi"). Liste
+   * duruyor - kapanan yalnizca oneri paneli.
+   */
+  it('klavyeden aratinca oneri paneli kapaniyor, sonuc listesi duruyor', async () => {
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
+      {
+        id: 'mekan-1', ad: 'Sahil Kafe', tur: 'Kafe', adres: null, osmId: 1,
+        konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 0, semt: 'Nilüfer', il: 'Bursa',
+      },
+    ])
+
+    await render(<MekanAramaEkrani />)
+    await fireEvent.changeText(screen.getByPlaceholderText('Mekan ara'), 'kaf')
+    await screen.findByTestId('arama-onerileri')
+
+    await fireEvent(screen.getByTestId('mekan-arama-kutusu'), 'submitEditing')
+
+    expect(screen.queryByTestId('arama-onerileri')).toBeNull()
+    expect(screen.getAllByText('Sahil Kafe').length).toBeGreaterThanOrEqual(1)
+  })
+
+  /*
    * Secimden sonra yazmaya devam etmek paneli GERI aciyor. Bayrak
    * kalici olsaydi kullanici aramasini duzeltirken oneri alamazdi.
    */
