@@ -136,6 +136,12 @@ export const acikRenk = {
    * yok, cunku orada yuzey zeminden bir ton acik - ayrimi ton tasiyor.
    */
   cizgi: '#DCD3C9',
+  /**
+   * Tekerlek secicinin secim seridi (2026-09-13, kullanicinin iOS
+   * referansi): notr, hafif gri yuvarlatilmis bant. Turuncu tonlu
+   * serit kaldirildi - referans notr ve turuncu burada "eylem" degil.
+   */
+  secimSeridi: '#F0EEEB',
 
   /**
    * YIKICI EYLEM (sil, sikayet et, engelle).
@@ -270,6 +276,7 @@ export const koyuRenk: Renk = {
    */
   yuzey: '#1C1917',
   cizgi: '#2E2823',
+  secimSeridi: '#2A2622',
 
   yikici: '#FF6B5A',
 

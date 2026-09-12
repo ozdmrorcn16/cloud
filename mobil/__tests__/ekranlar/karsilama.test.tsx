@@ -18,11 +18,14 @@ describe('KarsilamaEkrani', () => {
 
     expect(await screen.findByText(/Yakınında kim var,/)).toBeTruthy()
     expect(screen.getByText('keşfet.')).toBeTruthy()
+    // Basligin altindaki aciklama KALDIRILDI (2026-09-13); metin yalnizca
+    // sahnenin erisilebilirlik etiketinde duruyor, ekranda yazi olarak
+    // YOK. Iddia silinmedi, tersine cevrildi.
     expect(
-      screen.getByText(
+      screen.queryByText(
         'Check-in yap, yeni insanlarla tanış.\nYakınındaki popüler yerleri keşfet.'
       )
-    ).toBeTruthy()
+    ).toBeNull()
   })
 
   it('dort tanitim kartini basligi ve aciklamasiyla gosterir', async () => {

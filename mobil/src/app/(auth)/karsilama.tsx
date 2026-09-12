@@ -170,8 +170,11 @@ export default function KarsilamaEkrani() {
         {t('karsilama.baslik')}
         <Text style={stiller.baslikVurgu}>{t('karsilama.baslikVurgu')}</Text>
       </Text>
-      <Text style={stiller.aciklama}>{t('karsilama.aciklama')}</Text>
-
+      {/* Basligin altindaki iki satirlik aciklama KALDIRILDI
+          (kullanicinin istegi 2026-09-13: "yazilari sil, map goruntusunu
+          yukari uzat"). Sahne o bosluga yayiliyor; ustten ve alttan
+          ayni pay (bosluk.m) ile kartlarla orantili. Metin ekran
+          okuyucu icin sahnenin erisilebilirlik etiketinde duruyor. */}
       <View style={stiller.sahne}>
         <KarsilamaSahnesi />
       </View>
@@ -236,24 +239,16 @@ const stilleriYap = (renk: Renk) =>
     },
     baslikVurgu: { color: renk.turuncuYazi },
 
-    aciklama: {
-      fontFamily: yazi.govde,
-      fontSize: olcek.kucuk,
-      color: renk.metinIkincil,
-      textAlign: 'center',
-      lineHeight: 19,
-      marginTop: bosluk.xs,
-      paddingHorizontal: bosluk.xl,
-    },
-
     // Sahne ekranin TAM GENISLIGINE yayiliyor: sayfa yan payini geri
     // aliyor. Haritanin kenardan tasmasi kadrajin devam ettigi hissini
     // veriyor - referansta da harita kenardan kenara.
     sahne: {
       flex: 1,
-      minHeight: 165,
+      minHeight: 200,
       marginHorizontal: -bosluk.sayfa,
-      marginTop: bosluk.s,
+      // Ust pay = kartlarin ust payi: harita basliga ve kartlara esit
+      // uzaklikta durur.
+      marginTop: bosluk.m,
     },
 
     kartlar: {

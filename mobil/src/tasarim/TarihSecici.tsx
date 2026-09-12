@@ -32,10 +32,19 @@ import { useRenk, useStiller } from './tema-baglami'
  * dolunca en yakin satira oturuluyor.
  */
 
-/** Bir satirin yuksekligi. Dokunma hedefi olarak da yeterli (>= 44). */
-const OGE = 44
+/**
+ * GORUNUM iOS'UN YERLI TEKERLEGINE GORE (kullanicinin referansi
+ * 2026-09-13): yedi satir, hepsi ayni punto ve agirlikta; secili satir
+ * koyu, digerleri merkezden uzaklastikca SOLUYOR (opaklik). Secim
+ * seridi notr gri, yuvarlatilmis. Onceki halde bes satir vardi, secili
+ * satir buyuyup kalinlasiyordu ve serit turuncu tonluydu.
+ */
+/** Bir satirin yuksekligi. */
+const OGE = 40
 /** Kac satir gorunur - tek sayi olmali ki ortada bir satir kalsin. */
-const GORUNUR = 5
+const GORUNUR = 7
+/** Merkezden uzakliga gore opaklik; dizinin disi en soluk deger. */
+const SOLMA = [1, 0.5, 0.3, 0.16]
 const YUKSEKLIK = OGE * GORUNUR
 /** Kaydirma durdu sayilana kadar beklenen sessizlik. */
 const OTURMA_MS = 140
@@ -113,13 +122,21 @@ function Sutun({
       onScroll={kaydirdi}
       accessibilityLabel={etiket}
     >
-      {ogeler.map((oge, i) => (
-        <View key={oge.deger} style={stiller.oge}>
-          <Text style={[stiller.ogeYazi, i === aktif && stiller.ogeYaziAktif]} numberOfLines={1}>
-            {oge.etiket}
-          </Text>
-        </View>
-      ))}
+      {ogeler.map((oge, i) => {
+        const uzaklik = Math.abs(i - aktif)
+        const opaklik = SOLMA[Math.min(uzaklik, SOLMA.length - 1)]
+        return (
+          <View key={oge.deger} style={stiller.oge}>
+            <Text
+              style={[stiller.ogeYazi, { opacity: opaklik }, i === aktif && stiller.ogeYaziAktif]}
+              numberOfLines={1}
+              testID={i === aktif ? 'tekerlek-secili' : undefined}
+            >
+              {oge.etiket}
+            </Text>
+          </View>
+        )
+      })}
     </ScrollView>
   )
 }
@@ -254,21 +271,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     right: 0,
     top: OGE * ((GORUNUR - 1) / 2),
     height: OGE,
-    backgroundColor: renk.turuncuZemin,
-    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.secimSeridi,
+    borderRadius: 10,
   },
   sutun: { height: YUKSEKLIK },
   oge: { height: OGE, alignItems: 'center', justifyContent: 'center' },
+  // Butun satirlar AYNI punto ve agirlikta (iOS tekerlegi); ayrim
+  // yalnizca opaklikla. Punto referanstaki gibi buyuk.
   ogeYazi: {
     fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metinSoluk,
-  },
-  ogeYaziAktif: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: 22,
     color: renk.metin,
   },
+  ogeYaziAktif: {},
 
   birincil: {
     backgroundColor: renk.turuncu,
