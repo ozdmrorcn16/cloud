@@ -6,10 +6,12 @@ import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { UstCubuk } from '../tasarim/UstCubuk'
+import { useDil } from '../../lib/dil'
 
 export default function SikayetEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
+  const { t } = useDil()
   const { hedefTur, hedefId } = useLocalSearchParams<{
     hedefTur: SikayetHedefTuru
     hedefId: string
@@ -22,7 +24,7 @@ export default function SikayetEkrani() {
 
   async function gonder() {
     if (!secilenSebep) {
-      setHata('Bir sebep seç')
+      setHata(t('sikayet.sebepSec'))
       return
     }
     setHata(null)
@@ -31,7 +33,7 @@ export default function SikayetEkrani() {
       await sikayetGonder(hedefTur, hedefId, secilenSebep, aciklama.trim() || undefined)
       setGonderildi(true)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       setGonderiliyor(false)
     }
@@ -40,10 +42,10 @@ export default function SikayetEkrani() {
   if (gonderildi) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.baslik}>Şikayetin alındı</Text>
-        <Text style={stiller.teyitMetni}>Bildirimin için teşekkürler.</Text>
+        <Text style={stiller.baslik}>{t('sikayet.alindi')}</Text>
+        <Text style={stiller.teyitMetni}>{t('sikayet.tesekkur')}</Text>
         <Pressable style={stiller.buton} onPress={() => router.back()}>
-          <Text style={stiller.butonYazi}>Kapat</Text>
+          <Text style={stiller.butonYazi}>{t('ortak.kapat')}</Text>
         </Pressable>
       </View>
     )
@@ -51,7 +53,7 @@ export default function SikayetEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <UstCubuk baslik="Şikayet et" geriEtiketi="Geri" />
+      <UstCubuk baslik={t('sikayet.baslik')} geriEtiketi={t('ortak.geri')} />
 
       {/* Karar 76: kademe 1 baglami sikayet edenin kendi konusmasindan
           da mesaj tasir, bu yuzden bildirilir. Ayri bir onay kutusu YOK -
@@ -59,7 +61,7 @@ export default function SikayetEkrani() {
           etmeyi caydirir. */}
       {hedefTur === 'mesaj' && (
         <Text style={stiller.baglamBildirimi}>
-          İncelemede bu mesajın çevresindeki mesajlar da moderasyona açılır.
+          {t('sikayet.mesajBaglami')}
         </Text>
       )}
 
@@ -72,13 +74,13 @@ export default function SikayetEkrani() {
           ]}
           onPress={() => setSecilenSebep(sebep.anahtar)}
         >
-          <Text style={stiller.sebepYazi}>{sebep.etiket}</Text>
+          <Text style={stiller.sebepYazi}>{t(`sikayet.sebepler.${sebep.anahtar}`)}</Text>
         </Pressable>
       ))}
 
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
-        placeholder="Eklemek istediğin bir şey var mı?"
+        placeholder={t('sikayet.aciklamaYerTutucu')}
         value={aciklama}
         onChangeText={setAciklama}
         multiline
@@ -87,7 +89,7 @@ export default function SikayetEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
       <Pressable style={stiller.buton} onPress={gonder} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Gönderiliyor...' : 'Gönder'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? t('ortak.gonderiliyor') : t('ortak.gonder')}</Text>
       </Pressable>
     </View>
   )

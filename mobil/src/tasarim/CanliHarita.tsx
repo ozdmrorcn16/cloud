@@ -37,6 +37,7 @@ import type { MekanDurumu } from '../../lib/mekan'
  */
 
 /** Ekrandaki en kucuk gosterim yaricapi - her sey merkeze yigilmasin. */
+import { cevir } from '../../lib/dil'
 const EN_AZ_GOSTERIM_METRE = 200
 
 /**
@@ -245,7 +246,7 @@ export function CanliHarita({
       onLayout={(o) =>
         setOlcu({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })
       }
-      accessibilityLabel="Çevrendeki mekanlar"
+      accessibilityLabel={cevir('harita.cevre')}
     >
       {/* Zemin: hafif bir izgara. Gercek sokak degil - oldugunu iddia
           etmiyor, yalnizca mesafe hissi veriyor. */}
@@ -294,7 +295,7 @@ export function CanliHarita({
             onPress={() => onMekanSec?.(mekan.id)}
             accessibilityRole="button"
             accessibilityLabel={
-              canli ? `${mekan.ad}, ${mekan.kisiSayisi} kişi burada` : mekan.ad
+              canli ? cevir('harita.kisiBurada', { ad: mekan.ad, sayi: mekan.kisiSayisi }) : mekan.ad
             }
             hitSlop={6}
           >

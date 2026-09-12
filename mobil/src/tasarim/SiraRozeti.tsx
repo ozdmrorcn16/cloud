@@ -31,6 +31,7 @@ import { useStiller } from './tema-baglami'
  * `require` DIZI ICINDE ve SABIT: Metro paketleyici require yolunu
  * derleme aninda cozuyor, `require(`...${sira}.png`)` calismiyor.
  */
+import { cevir } from '../../lib/dil'
 const MADALYA_GORSELLERI = [
   require('../../assets/images/madalya-1.png'),
   require('../../assets/images/madalya-2.png'),
@@ -65,7 +66,7 @@ export function SiraRozeti({ sira, boyut = SIRA_ROZETI_BOYU }: { sira: number; b
       // ortaliyor, hicbiri ezilmiyor.
       resizeMode="contain"
       accessibilityRole="image"
-      accessibilityLabel={`${sira}. sıra`}
+      accessibilityLabel={cevir('ortak.sira', { sira })}
     />
   )
 }

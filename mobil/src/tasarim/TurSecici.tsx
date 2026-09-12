@@ -5,6 +5,7 @@ import { useDil } from '../../lib/dil'
 import { bosluk, golge, olcek, yazi, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import type { YakinTur } from '../../lib/mekan'
+import { turEtiketi, turGrupEtiketi } from '../../lib/tur-etiketi'
 
 /**
  * TUR SECICI - kesfet ekranindaki suzgec dugmesinin actigi pencere.
@@ -137,7 +138,7 @@ export function TurSecici({
             )}
             {gruplar.map((grup) => (
               <View key={grup.baslik}>
-                <Text style={stiller.grupBasligi}>{grup.baslik}</Text>
+                <Text style={stiller.grupBasligi}>{turGrupEtiketi(grup.baslik)}</Text>
                 {grup.turler.map((tur) => {
                   const isaretli = taslak.includes(tur)
                   const adet = adetSozlugu.get(tur)
@@ -154,7 +155,7 @@ export function TurSecici({
                         {isaretli && <OnayIkonu renk="#FFFFFF" />}
                       </View>
                       <Text style={stiller.turAdi} numberOfLines={1}>
-                        {tur}
+                        {turEtiketi(tur)}
                       </Text>
                       {/* Adet: secimden ONCE sonucu tahmin ettiriyor. */}
                       {adet !== undefined && <Text style={stiller.adet}>{adet}</Text>}

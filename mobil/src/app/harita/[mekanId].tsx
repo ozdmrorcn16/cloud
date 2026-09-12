@@ -580,7 +580,7 @@ export default function MekanSayfasi() {
                 style={stiller.kapak}
                 resizeMode="cover"
                 accessibilityRole="image"
-                accessibilityLabel={`${mekan.ad} fotoğrafı`}
+                accessibilityLabel={t('mekanSayfasi.fotografEtiketi', { ad: mekan.ad })}
                 testID="mekan-kapak"
               />
             )}
@@ -612,7 +612,7 @@ export default function MekanSayfasi() {
                   hitSlop={8}
                   testID="duzenleme-talebi"
                 >
-                  <Text style={stiller.duzeltYazi}>Bilgileri düzelt</Text>
+                  <Text style={stiller.duzeltYazi}>{t('mekanDuzenle.baslik')}</Text>
                 </Pressable>
               </View>
               <Pressable

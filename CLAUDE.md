@@ -131,6 +131,83 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### DEVIR NOTU - 2026-09-13 GECE: i18n BUYUK OLCUDE BITTI, UC IS ACIK
+
+Kullanici "Yeni oturum acalim, butun su an yapmaya calistigin islemlere
+ordan devam edelim" dedi; bu not o gecisin devir kaydidir. Her sey
+commit'li (`feat(i18n): ...`), calisma dali
+`claude/plan2-moderasyon-paneli`.
+
+**KARAR (kullanicinin, 2026-09-13):** "dil telefondaki dili algilayip
+ona gore otomatik cevrilecek" ve ardindan "uygulama herseyi tam bitsin
+oyle yapalim". Yani 2026-08'den beri "tasarim bitince" diye ertelenen
+cok dillilik ARTIK YAPILDI: cihaz dili `expo-localization` ile
+algilaniyor (`lib/dil.tsx`, zaten vardi), sozlukler tamamlandi.
+
+**BITENLER:**
+
+| Asama | Ne |
+|---|---|
+| A | 17 ekran + 8 bilesendeki BUTUN gomulu Turkce metinler `tr.ts`e tasindi (`useDil().t` / `cevir()`); `lib/tur-etiketi.ts` (tur ve tur grubu adlari `turler.*` / `turGruplari.*` anahtarlariyla) |
+| B | `lib/hata-metni.ts` artik metin degil ANAHTAR donduruyor: `hatalar.vt.<slug>` (sunucu `raise exception` metinlerinin ASCII slug'i), `hatalar.kod.<supabase kodu>`, `hatalar.metin.<ad>` (Ingilizce desenler) |
+| D | `en, de, es, fr, ru, ar` sozlukleri SIFIRDAN yazildi - her biri tr'nin 697 yaprak anahtarinin tamamini tasiyor |
+| F | `__tests__/ceviri-tamlik.test.ts` (25 iddia): eksik anahtar yok, olu anahtar yok, `{{yerTutucu}}` adlari tr ile ayni, bos deger yok |
+
+Dogrulama: tsc uygulama kodunda 0 hata; tam jest 72 paket / 888 test
+(sikayet testindeki ASCII "rahatsiz" iddiasi duzgun Turkceye
+cevrildi - test degil metin dogruydu).
+
+**Tur adlari kasitli olarak TURKCE ANAHTAR tasiyor** (`turler: { Kafe:
+'Cafe', 'Cay evi': 'Tea house', ... }`): veritabanindaki `mekanlar.tur`
+degeri Turkce ve degismiyor; sozluk o degeri ekrana cevirirken
+kullaniliyor. `turEtiketi()` anahtar bulunamazsa ham degeri doner.
+
+**ACIK - SIRADAKI OTURUMUN ILK ISLERI (ucu de kullanicidan geldi):**
+
+1. **Hukuki metinler 6 dile (i18n E asamasi).** `src/app/gizlilik.tsx`
+   ve `src/app/kosullar.tsx` HALA yalnizca Turkce (`docs/gizlilik-metni.md`
+   kaynak). Plan: her dil icin cevrilmis bolum listesi + "Turkce metin
+   esastir / The Turkish text prevails" notu; ekranlar `useDil().dil`e
+   gore icerik secsin. Bu yapilmadan "hersey tam" degil.
+
+2. **BASKASININ PROFILI YENIDEN DUZENLENECEK** (kullanicinin tarifi,
+   ekran goruntusu kendi profilinin ust blogu). Kendi profille AYNI
+   duzen, su farklarla:
+   - "Profili duzenle"nin yerinde **"Arkadas ekle"**, yaninda
+     **"Mesaj yaz"** butonu (paylas dugmesi orada DEGIL).
+   - **Paylas ikonu SAG USTE** (kendi profildeki disli yerine) -
+     "bu profilini birine paylasmak icin kullanilir".
+   - Ani / Fotograf / Arkadas sayaclari **yalnizca SAYI** olarak
+     gorunur (bolum secmez).
+   - **GIZLI profil:** asagidaki bos alanda **BUYUK BIR KILIT IKONU**;
+     akis gorunmez.
+   - **ACIK profil:** kilit yok, akisi/paylasimlari kendi profildeki
+     gibi gorunur.
+   Ekran `src/app/kullanici/[id].tsx`; mevcut kilit gostergesi
+   2026-09-10'da kucuk konmustu, buyutulecek. Sayaclar ortak
+   `ProfilSayaclari` bileseni (`onSec` verilmezse salt okunur - zaten
+   oyle). Eylem satiri kendi profildeki `duzenleButonu` olcusunde
+   (yukseklik 40).
+
+3. **BOS AVATAR GORUNMUYOR** (kullanicinin ekran goruntusu, kendi
+   profili): profil fotografi yokken bas harf beyaz zemin uzerinde
+   turuncu harf olarak ciziliyor ve harita dokusu uzerinde
+   kayboluyor. Istek: "biraz daha gorunur bir hale getir". Cozum
+   onerisi: bas harfli daireye ACIK TURUNCU ZEMIN (`renk.turuncuZemin`)
+   + ince turuncu kenarlik, ya da dolu turuncu daire uzerine beyaz
+   harf - akis kartlarindaki avatar diliyle ayni olmali
+   (`ayni-sey-her-ekranda-ayni-gorunsun`). Iki ekranda da
+   (`profil/index.tsx`, `kullanici/[id].tsx`) ayni bilesen kullanilsin.
+
+Sonra: tam jest, tsc, baska bir dilde ekran goruntusu (cihaz dili
+`SLOOIN_TEST_DIL` ya da `lib/dil.tsx` icindeki secimle), commit,
+`npm run yayinla` + `eas update --channel production --environment
+production`, bu notun "BITTI" diye guncellenmesi.
+
+**Diger acik isler degismedi:** Apple/Google girisi Build 8 ile
+cihazda dogrulanmadi (kullanicinin telefonu Build 7'deydi); Play
+Console'a AAB (versionCode 3) yukleme kullanicida.
+
 ### SLOOIN WEB SITESI EKLENDI - 2026-09-07 (henuz yayinda degil)
 
 Magaza basvurusu icin ayri, statik bes sayfalik bir web sitesi

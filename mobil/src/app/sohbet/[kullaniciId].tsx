@@ -17,8 +17,7 @@ import { useOturum } from '../../../lib/oturum'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
-
-const KAPALI_KAPI_NOTU = 'Bu kişiye şu an mesaj gönderemezsin.'
+import { useDil, cevir } from '../../../lib/dil'
 
 // Iyimser eklenen (henuz sunucuda karsiligi olmayan) satirlar. Sunucu
 // satirlarindan `yerelMi` ile ayirt ediliyorlar; Realtime yansimasi
@@ -27,14 +26,15 @@ type ListeMesaji = Mesaj & { yerelMi?: boolean }
 
 function hataMesaji(e: unknown): string {
   if (e instanceof TypeError && e.message === 'Network request failed') {
-    return 'İnternet bağlantısı yok, tekrar dene'
+    return cevir('ortak.agYok')
   }
-  return e instanceof Error ? e.message : 'Bir sorun oluştu'
+  return e instanceof Error ? e.message : cevir('ortak.birSorunOldu')
 }
 
 export default function SohbetEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
+  const { t } = useDil()
   const { oturum } = useOturum()
   const benimKimligim = oturum?.user.id ?? null
   const { kullaniciId } = useLocalSearchParams<{ kullaniciId: string }>()
@@ -225,9 +225,9 @@ export default function SohbetEkrani() {
   return (
     <View style={stiller.kapsayici}>
       <View style={stiller.ustBar}>
-        <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? 'Sohbet'}</Text>
+        <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? t('sohbet.baslik')}</Text>
         <Pressable onPress={() => router.push(`/sikayet?hedefTur=kullanici&hedefId=${kullaniciId}`)}>
-          <Text style={stiller.sikayetButonu}>Şikayet et</Text>
+          <Text style={stiller.sikayetButonu}>{t('sikayet.baslik')}</Text>
         </Pressable>
       </View>
 
@@ -235,15 +235,13 @@ export default function SohbetEkrani() {
           Cevap yazmak da kabul sayiliyor, o yuzden yazma alani acik. */}
       {istekMi && (
         <View style={stiller.istekSeridi}>
-          <Text style={stiller.istekSeridiYazi}>
-            Bu bir mesaj isteği. Cevap yazarsan sohbet Mesajlar'a taşınır.
-          </Text>
+          <Text style={stiller.istekSeridiYazi}>{t('sohbet.istekSeridi')}</Text>
           <View style={stiller.istekButonlari}>
             <Pressable onPress={istegiKabulEt} accessibilityRole="button">
-              <Text style={stiller.kabulButonu}>Kabul et</Text>
+              <Text style={stiller.kabulButonu}>{t('sohbet.kabulEt')}</Text>
             </Pressable>
             <Pressable onPress={istegiReddet} accessibilityRole="button">
-              <Text style={stiller.reddetButonu}>Reddet</Text>
+              <Text style={stiller.reddetButonu}>{t('sohbet.reddet')}</Text>
             </Pressable>
           </View>
         </View>
@@ -276,14 +274,14 @@ export default function SohbetEkrani() {
             </Pressable>
           )
         }}
-        ListEmptyComponent={<Text style={stiller.durum}>Henüz mesaj yok</Text>}
+        ListEmptyComponent={<Text style={stiller.durum}>{t('sohbet.mesajYok')}</Text>}
       />
 
       {yazilabilirMi ? (
         <View style={stiller.girdiSatiri}>
           <TextInput
             style={stiller.girdi}
-            placeholder="Bir mesaj yaz..."
+            placeholder={t('sohbet.yerTutucu')}
             value={metin}
             onChangeText={setMetin}
             multiline
@@ -293,11 +291,11 @@ export default function SohbetEkrani() {
             onPress={gonder}
             disabled={!gonderMumkun}
           >
-            <Text style={stiller.gonderButonuYazi}>{gonderiliyor ? 'Gönderiliyor...' : 'Gönder'}</Text>
+            <Text style={stiller.gonderButonuYazi}>{gonderiliyor ? t('ortak.gonderiliyor') : t('ortak.gonder')}</Text>
           </Pressable>
         </View>
       ) : (
-        <Text style={stiller.kapaliNot}>{KAPALI_KAPI_NOTU}</Text>
+        <Text style={stiller.kapaliNot}>{t('sohbet.kapaliKapi')}</Text>
       )}
     </View>
   )

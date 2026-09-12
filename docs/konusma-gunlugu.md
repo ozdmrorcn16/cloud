@@ -42,6 +42,8 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-12 — [2026-09-12-8dc554ef.md](oturumlar/2026-09-12-8dc554ef.md) — claude
+- 2026-09-12 — [2026-09-12-4857d87a.md](oturumlar/2026-09-12-4857d87a.md) — oldumu
 - 2026-09-12 — [2026-09-12-129fd744.md](oturumlar/2026-09-12-129fd744.md) — Burdan devam edelim
 - 2026-09-11 — [2026-09-11-ca35eb85.md](oturumlar/2026-09-11-ca35eb85.md) — Yapılan bütün paylaşımlar checkinler hem anasayfaya hem profile düşecek aynı che…
 - 2026-09-10 — [2026-09-10-ca35eb85.md](oturumlar/2026-09-10-ca35eb85.md) — Yapılan bütün paylaşımlar checkinler hem anasayfaya hem profile düşecek aynı che…

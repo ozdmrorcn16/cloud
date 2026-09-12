@@ -46,6 +46,7 @@ export type { HaritaMekani } from './CanliHarita'
  */
 
 /** Cerceve yaricapi bundan kucuk olmasin - her sey bir noktaya toplanmasin. */
+import { cevir } from '../../lib/dil'
 const EN_AZ_GOSTERIM_METRE = 100
 
 /**
@@ -130,11 +131,8 @@ function durumu(m: HaritaMekani): MekanDurumu {
   return mekanDurumu({ kisiSayisi: m.kisiSayisi, toplamCheckIn: m.toplamCheckIn ?? 0 })
 }
 
-const DURUM_ETIKETI: Record<MekanDurumu, string> = {
-  sakin: 'Sakin',
-  yogun: 'Yoğun',
-  populer: 'Popüler',
-}
+const durumEtiketi = (d: MekanDurumu) =>
+  cevir(d === 'sakin' ? 'kesfet.sakin' : d === 'yogun' ? 'kesfet.yogun' : 'kesfet.populer')
 
 /**
  * KULLANICININ KONUM IGNESI - uygulamada TEK bir "ben buradayim"
@@ -278,7 +276,7 @@ export function CanliHarita({
   return (
     <View
       style={[stiller.kok, { height: yukseklik }]}
-      accessibilityLabel="Çevrendeki mekanlar"
+      accessibilityLabel={cevir('harita.cevre')}
     >
       <MapView
         ref={haritaRef}
@@ -331,8 +329,8 @@ export function CanliHarita({
                 onPress={() => onMekanSec?.(mekan.id)}
                 accessibilityLabel={
                   mekan.kisiSayisi > 0
-                    ? `${mekan.ad}, ${mekan.kisiSayisi} kişi burada`
-                    : `${mekan.ad}, ${DURUM_ETIKETI[d]}`
+                    ? cevir('harita.kisiBurada', { ad: mekan.ad, sayi: mekan.kisiSayisi })
+                    : `${mekan.ad}, ${durumEtiketi(d)}`
                 }
               >
                 <View style={stiller.igneKutu}>
@@ -393,7 +391,7 @@ export function CanliHarita({
           anchor={{ x: 0.5, y: 1 }}
           tracksViewChanges={false}
           accessibilityLabel={
-            merkezDurumu ? `Bu mekan, ${DURUM_ETIKETI[merkezDurumu]}` : 'Buradasın'
+            merkezDurumu ? cevir('harita.buMekan', { durum: durumEtiketi(merkezDurumu) }) : cevir('harita.buradasin')
           }
         >
           {/* OLCU MERKEZIN NE OLDUGUNA BAGLI (kullanicinin istegi
@@ -434,7 +432,7 @@ export function CanliHarita({
             }}
             anchor={{ x: 0.5, y: 1 }}
             tracksViewChanges={false}
-            accessibilityLabel="Buradasın"
+            accessibilityLabel={cevir('harita.buradasin')}
           >
             <KullaniciIgnesi renk={renk.turuncu} />
           </Marker>

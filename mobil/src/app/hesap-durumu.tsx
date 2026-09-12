@@ -7,16 +7,18 @@ import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { hataMetni } from '../../lib/hata-metni'
 
 // Bu ekran YALNIZCA moderasyon kararlari icindir. Dondurulmus hesap
+import { useDil } from '../../lib/dil'
 // buraya hic dusmez: giris sirasinda otomatik geri acilir (karar 66).
 export default function HesapDurumuEkrani() {
   const stiller = useStiller(stilleriYap)
+  const { t, dil } = useDil()
   const { hesapDurumu, hesapDurumunuYenile } = useOturum()
   const [cikisHatasi, setCikisHatasi] = useState<string | null>(null)
 
   const baslik =
     hesapDurumu?.durum === 'yasakli'
-      ? 'Hesabın kalıcı olarak kapatıldı'
-      : 'Hesabın askıya alındı'
+      ? t('hesapDurumu.yasakli')
+      : t('hesapDurumu.askida')
 
   async function cikisYap() {
     setCikisHatasi(null)
@@ -24,29 +26,30 @@ export default function HesapDurumuEkrani() {
       const { error } = await supabase.auth.signOut()
       if (error) setCikisHatasi(hataMetni(error))
     } catch (hata) {
-      setCikisHatasi(hata instanceof Error ? hataMetni(hata) : 'Çıkış yapılamadı')
+      setCikisHatasi(hata instanceof Error ? hataMetni(hata) : t('hesapDurumu.cikisYapilamadi'))
     }
   }
 
   return (
     <View style={stiller.kapsayici}>
       <Text style={stiller.baslik}>{baslik}</Text>
-      <Text style={stiller.metin}>Sebep: {hesapDurumu?.gerekce ?? '-'}</Text>
+      <Text style={stiller.metin}>
+        {t('hesapDurumu.sebep', { sebep: hesapDurumu?.gerekce ?? '-' })}
+      </Text>
       {hesapDurumu?.askiBitisi && (
         <Text style={stiller.metin}>
-          Bitis: {new Date(hesapDurumu.askiBitisi).toLocaleString('tr-TR')}
+          {t('hesapDurumu.bitis', {
+            tarih: new Date(hesapDurumu.askiBitisi).toLocaleString(dil === 'tr' ? 'tr-TR' : dil),
+          })}
         </Text>
       )}
-      <Text style={stiller.ipucu}>
-        Bu sure boyunca profilin baskalarina gorunmez ve yeni icerik
-        paylasamazsin. Verilerin silinmedi.
-      </Text>
+      <Text style={stiller.ipucu}>{t('hesapDurumu.ipucu')}</Text>
       {cikisHatasi && <Text style={stiller.hataMetni}>{cikisHatasi}</Text>}
       <Pressable style={stiller.ikincilButon} onPress={() => hesapDurumunuYenile()}>
-        <Text style={stiller.ikincilButonMetni}>Yenile</Text>
+        <Text style={stiller.ikincilButonMetni}>{t('hesapDurumu.yenile')}</Text>
       </Pressable>
       <Pressable style={stiller.buton} onPress={cikisYap}>
-        <Text style={stiller.butonMetni}>Çıkış yap</Text>
+        <Text style={stiller.butonMetni}>{t('ayarlar.cikisYap')}</Text>
       </Pressable>
     </View>
   )

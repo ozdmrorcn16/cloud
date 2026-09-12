@@ -18,6 +18,7 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
+import { useDil } from '../../../lib/dil'
 
 /*
  * HESABA BAGLI (2026-09-13): tek anahtar ayni telefondaki ikinci
@@ -32,6 +33,7 @@ const ilkUyariAnahtari = (kimlik: string | null) =>
 export default function CheckInEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
+  const { t } = useDil()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [notMetni, setNotMetni] = useState('')
   const [yerelFotoUri, setYerelFotoUri] = useState<string | null>(null)
@@ -108,7 +110,7 @@ export default function CheckInEkrani() {
     // hicbir sey olmamasini "uygulama bozuk" diye okur.
     const izin = await ImagePicker.requestCameraPermissionsAsync()
     if (!izin.granted) {
-      setHata('Fotoğraf çekmek için kamera izni gerekiyor.')
+      setHata(t('checkIn.kameraIzni'))
       return
     }
     const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
@@ -167,7 +169,7 @@ export default function CheckInEkrani() {
           }
         } catch {
           // Fotograf yuklenemezse check-in'i engelleme — notsuz/fotografsiz devam eder.
-          setUyari('Fotoğraf yüklenemedi, notunla check-in yapıldı')
+          setUyari(t('checkIn.fotografYuklenemedi'))
         }
       }
 
@@ -188,7 +190,7 @@ export default function CheckInEkrani() {
         try {
           await etiketleriKaydet(olusan.id, etiketlenenler)
         } catch {
-          setUyari('Check-in yapıldı ama arkadaşların etiketlenemedi.')
+          setUyari(t('checkIn.etiketlenemedi'))
         }
       }
 
@@ -198,9 +200,9 @@ export default function CheckInEkrani() {
       router.replace('/mekanlar')
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
-        setHata('İnternet bağlantısı yok, tekrar dene')
+        setHata(t('ortak.agYok'))
       } else {
-        setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+        setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
       }
     } finally {
       setGonderiliyor(false)
@@ -210,18 +212,13 @@ export default function CheckInEkrani() {
   if (ilkKullanimUyarisi) {
     return (
       <View style={stiller.kapsayici}>
-        <Text style={stiller.baslik}>Bu check-in ne paylaşıyor?</Text>
-        <Text style={stiller.uyariMetni}>
-          Check-in yaptığında bulunduğun mekan ve varsa yazdığın not
-          arkadaşlarına görünür olur. Check-in süresi dolunca ya da
-          "ayrıldım" dediğin anda kendiliğinden kapanır. İstersen bu
-          check-in’i gizli yaparak sadece kendi profilinde tutabilirsin.
-        </Text>
+        <Text style={stiller.baslik}>{t('checkIn.ilkUyariBaslik')}</Text>
+        <Text style={stiller.uyariMetni}>{t('checkIn.ilkUyariMetin')}</Text>
         <Pressable style={stiller.buton} onPress={() => ilkUyariKapat(false)}>
-          <Text style={stiller.butonYazi}>Anladım</Text>
+          <Text style={stiller.butonYazi}>{t('checkIn.anladim')}</Text>
         </Pressable>
         <Pressable style={stiller.ikincilButon} onPress={() => ilkUyariKapat(true)}>
-          <Text style={stiller.ikincilButonYazi}>Gizli yap</Text>
+          <Text style={stiller.ikincilButonYazi}>{t('checkIn.gizliYap')}</Text>
         </Pressable>
       </View>
     )
@@ -229,10 +226,10 @@ export default function CheckInEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <UstCubuk baslik="Yeni check-in" geriEtiketi="Geri" />
+      <UstCubuk baslik={t('checkIn.baslik')} geriEtiketi={t('ortak.geri')} />
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
-        placeholder="Bir not ekle (opsiyonel)"
+        placeholder={t('checkIn.notYerTutucu')}
         value={notMetni}
         // Sinir sunucuda da var; burada kirpmak kullaniciyi sinira
         // carptirmadan durduruyor (yorum kutusundaki desenin aynisi).
@@ -255,8 +252,8 @@ export default function CheckInEkrani() {
       >
         <Text style={stiller.fotoButonuYazi}>
           {etiketlenenler.length > 0
-            ? `Arkadaş ekle (${etiketlenenler.length} seçili)`
-            : 'Arkadaş ekle (opsiyonel)'}
+            ? t('checkIn.arkadasEkleSecili', { sayi: etiketlenenler.length })
+            : t('checkIn.arkadasEkle')}
         </Text>
       </Pressable>
       {etiketlenenler.length > 0 && (
@@ -270,7 +267,7 @@ export default function CheckInEkrani() {
                 style={[stiller.etiketCipi, stiller.etiketCipiSecili]}
                 onPress={() => etiketiDegistir(id)}
                 accessibilityRole="button"
-                accessibilityLabel={`${kisi.ad} etiketini kaldır`}
+                accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi.ad })}
               >
                 <Text style={[stiller.etiketYazi, stiller.etiketYaziSecili]}>{kisi.ad} ✕</Text>
               </Pressable>
@@ -281,7 +278,7 @@ export default function CheckInEkrani() {
 
       <Pressable style={stiller.fotoButonu} onPress={() => setKaynakSecimi(true)}>
         <Text style={stiller.fotoButonuYazi}>
-          {yerelFotoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle (opsiyonel)'}
+          {yerelFotoUri ? t('checkIn.fotografDegistir') : t('checkIn.fotografEkle')}
         </Text>
       </Pressable>
       {yerelFotoUri && <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} />}
@@ -303,7 +300,7 @@ export default function CheckInEkrani() {
         onPress={checkInYapButonu}
         disabled={gonderiliyor || bulunurluk === null}
       >
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Check-in yapılıyor...' : 'Check-in yap'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? t('checkIn.gonderiliyor') : t('checkIn.gonder')}</Text>
       </Pressable>
       <SecimPenceresi
         acikMi={kaynakSecimi}
@@ -312,8 +309,8 @@ export default function CheckInEkrani() {
           // gomulu; yenileri de ayni yerde tutuluyor ki ekranin yarisi
           // sozlukten yarisi gomuluden gelmesin. Ekranin tamaminin
           // i18n'e tasinmasi ayri bir is.
-          { etiket: 'Fotoğraf çek', testID: 'foto-kamera', onSec: kameradanCek },
-          { etiket: 'Galeriden seç', testID: 'foto-galeri', onSec: galeridenSec },
+          { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
+          { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
         ]}
         onKapat={() => setKaynakSecimi(false)}
       />

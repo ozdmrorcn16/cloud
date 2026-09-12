@@ -5,7 +5,7 @@ import { sikayetGonder } from '../../lib/sikayet'
 jest.mock('../../lib/sikayet', () => ({
   sikayetGonder: jest.fn(),
   SIKAYET_SEBEPLERI: [
-    { anahtar: 'taciz', etiket: 'Taciz veya rahatsiz etme' },
+    { anahtar: 'taciz', etiket: 'Taciz veya rahatsız etme' },
     { anahtar: 'spam', etiket: 'Spam veya reklam' },
   ],
 }))
@@ -32,7 +32,7 @@ describe('SikayetEkrani', () => {
     ;(sikayetGonder as jest.Mock).mockResolvedValue(undefined)
 
     await render(<SikayetEkrani />)
-    await fireEvent.press(screen.getByText('Taciz veya rahatsiz etme'))
+    await fireEvent.press(screen.getByText('Taciz veya rahatsız etme'))
     await fireEvent.changeText(screen.getByPlaceholderText('Eklemek istediğin bir şey var mı?'), 'detay')
     await fireEvent.press(screen.getByText('Gönder'))
 

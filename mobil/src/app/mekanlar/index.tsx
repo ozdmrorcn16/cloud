@@ -54,6 +54,7 @@ import {
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { turSuzgeciniOku, turSuzgeciniYaz } from '../../../lib/tur-suzgeci-depo'
+import { turEtiketi } from '../../../lib/tur-etiketi'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
 /** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
@@ -304,7 +305,7 @@ export default function KesfetEkrani() {
       setDahaVar(!aramaVarMi && sonuc.length === KESFET_LIMIT)
     } catch (e) {
       if (sira !== istekSirasi.current) return
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       if (sira === istekSirasi.current) {
         setYukleniyor(false)
@@ -419,7 +420,7 @@ export default function KesfetEkrani() {
       setSilOnayi(false)
       await yukle()
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -431,7 +432,7 @@ export default function KesfetEkrani() {
       setSilOnayi(false)
       await yukle()
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
@@ -631,7 +632,7 @@ export default function KesfetEkrani() {
   // guvenilmez oldugu icin yanlis tur gostermektense hic gostermemek
   // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
   function altSatir(m: MekanYogunlukIle): string {
-    const parcalar = turuGosterilir(m) ? [m.tur] : []
+    const parcalar = turuGosterilir(m) ? [turEtiketi(m.tur)] : []
     parcalar.push(konumYazisi(m), uzaklik(m), yogunlukYazisi(m))
     return parcalar.filter(Boolean).join(' · ')
   }
@@ -647,7 +648,7 @@ export default function KesfetEkrani() {
    * aranan kalabalik bir mekan sonuclarda HIC gorunmuyordu.
    */
   function yogunlukYazisi(m: MekanYogunlukIle): string {
-    return m.kisiSayisi > 0 ? `${m.kisiSayisi} kişi` : t('kesfet.sakin')
+    return m.kisiSayisi > 0 ? t('kesfet.kisi', { sayi: m.kisiSayisi }) : t('kesfet.sakin')
   }
 
   /**
@@ -692,7 +693,7 @@ export default function KesfetEkrani() {
     return (
       <View style={stiller.ortala}>
         <ActivityIndicator color={renk.turuncu} />
-        <Text style={stiller.durumYazi}>Çevren taranıyor…</Text>
+        <Text style={stiller.durumYazi}>{t('kesfet.taraniyor')}</Text>
       </View>
     )
   }
@@ -702,14 +703,12 @@ export default function KesfetEkrani() {
   if (hata && mekanlar.length === 0 && !arama.trim()) {
     return (
       <View style={stiller.ortala}>
-        <Text style={stiller.hataBaslik}>Çevreni göremiyoruz</Text>
+        <Text style={stiller.hataBaslik}>{t('kesfet.cevreGorunmuyor')}</Text>
         <Text style={stiller.hataAciklama}>
-          {hata === 'Konum izni verilmedi'
-            ? 'Yakınındaki mekanları gösterebilmek için konum iznine ihtiyacımız var. Tarayıcı ayarlarından izni açıp tekrar dene.'
-            : hata}
+          {hata === 'Konum izni verilmedi' ? t('kesfet.konumIzniAciklama') : hata}
         </Text>
         <Pressable style={stiller.birincilButon} onPress={() => yukle()}>
-          <Text style={stiller.birincilButonYazi}>Tekrar dene</Text>
+          <Text style={stiller.birincilButonYazi}>{t('ortak.tekrarDene')}</Text>
         </Pressable>
       </View>
     )
@@ -834,7 +833,7 @@ export default function KesfetEkrani() {
               style={stiller.buradaMetin}
               onPress={() => router.push(`/harita/${kartMekani.id}` as never)}
               accessibilityRole="button"
-              accessibilityLabel={`${kartMekani.ad} konumunu aç`}
+              accessibilityLabel={t('kesfet.konumuAc', { ad: kartMekani.ad })}
             >
               <Text style={stiller.buradaAd} numberOfLines={1}>
                 {kartMekani.ad}
@@ -850,7 +849,7 @@ export default function KesfetEkrani() {
             {(kartMekani.listedeki?.kisiSayisi ?? 0) > 0 && (
               <View style={stiller.buradaSayiAlani}>
                 <Text style={stiller.buradaSayi}>{kartMekani.listedeki?.kisiSayisi}</Text>
-                <Text style={stiller.buradaSayiEtiket}>kişi burada</Text>
+                <Text style={stiller.buradaSayiEtiket}>{t('kesfet.kisiBuradaEtiket')}</Text>
               </View>
             )}
           </View>
@@ -876,17 +875,17 @@ export default function KesfetEkrani() {
               */}
               <View style={stiller.canliSerit}>
                 <View style={stiller.buradaNokta} />
-                <Text style={stiller.canliYazi}>Şu an buradasın</Text>
+                <Text style={stiller.canliYazi}>{t('kesfet.suAnBuradasin')}</Text>
                 <View style={stiller.canliEylemler}>
                   <Pressable onPress={ayril} accessibilityRole="button" hitSlop={10}>
-                    <Text style={stiller.ayrilYazi}>Ayrıldım</Text>
+                    <Text style={stiller.ayrilYazi}>{t('kesfet.ayrildim')}</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => setSilOnayi(true)}
                     accessibilityRole="button"
                     hitSlop={10}
                   >
-                    <Text style={stiller.silYazi}>Sil</Text>
+                    <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
                   </Pressable>
                 </View>
               </View>
@@ -898,9 +897,9 @@ export default function KesfetEkrani() {
                   ayni pencere. */}
               <OnayPenceresi
                 acikMi={silOnayi}
-                baslik="Bu check-in kalıcı olarak silinsin mi?"
-                aciklama="Check-in, notu ve fotoğrafı kalıcı olarak silinir. Anılarında da kalmaz; bu işlem geri alınamaz."
-                eylemEtiketi="Sil"
+                baslik={t('anaSayfa.silOnay')}
+                aciklama={t('anaSayfa.silAciklama')}
+                eylemEtiketi={t('ortak.sil')}
                 onOnay={canliyiSil}
                 onVazgec={() => setSilOnayi(false)}
               />
@@ -911,7 +910,7 @@ export default function KesfetEkrani() {
               onPress={() => router.push(`/check-in/${kartMekani.id}`)}
               accessibilityRole="button"
             >
-              <Text style={stiller.checkInYazi}>Check-in yap</Text>
+              <Text style={stiller.checkInYazi}>{t('checkIn.gonder')}</Text>
             </Pressable>
           )}
         </View>
@@ -933,7 +932,7 @@ export default function KesfetEkrani() {
           <BuyutecIkonu renk={renk.turuncu} />
           <TextInput
             style={stiller.arama}
-            placeholder="Mekan ara"
+            placeholder={t('kesfet.mekanAra')}
             placeholderTextColor={renk.metinIkincil}
             value={arama}
             onChangeText={aramaDegisti}
@@ -989,7 +988,7 @@ export default function KesfetEkrani() {
               ]}
               onPress={() => oneriyeGit(m.id)}
               accessibilityRole="button"
-              accessibilityLabel={`${m.ad} konumunu gör`}
+              accessibilityLabel={t('kesfet.konumuGorEtiketi', { ad: m.ad })}
               testID={`arama-onerisi-${m.id}`}
             >
               <BuyutecIkonu renk={renk.metinSoluk} />
@@ -1027,10 +1026,10 @@ export default function KesfetEkrani() {
               style={stiller.seciliCip}
               onPress={() => turleriUygula(seciliTurler.filter((x) => x !== tur))}
               accessibilityRole="button"
-              accessibilityLabel={`${tur} filtresini kaldır`}
+              accessibilityLabel={t('kesfet.filtreyiKaldirEtiketi', { tur: turEtiketi(tur) })}
               testID={`secili-tur-${tur}`}
             >
-              <Text style={stiller.seciliCipYazi}>{tur}</Text>
+              <Text style={stiller.seciliCipYazi}>{turEtiketi(tur)}</Text>
               <Text style={stiller.seciliCipCarpi}>×</Text>
             </Pressable>
           ))}
@@ -1092,16 +1091,15 @@ export default function KesfetEkrani() {
           {yukleniyor ? (
             <>
               <ActivityIndicator size="small" color={renk.turuncu} />
-              <Text style={stiller.aramaDurumYazi}>Aranıyor…</Text>
+              <Text style={stiller.aramaDurumYazi}>{t('kesfet.araniyor')}</Text>
             </>
           ) : suzulmus.length === 0 ? (
             <Text style={stiller.aramaDurumYazi}>
-              “{arama.trim()}” için bir yer bulunamadı. Adın yazılışını
-              değiştirmeyi deneyebilirsin.
+              {t('kesfet.aramaBulunamadi', { arama: arama.trim() })}
             </Text>
           ) : (
             <Text style={stiller.aramaDurumYazi}>
-              {suzulmus.length} sonuç
+              {t('kesfet.sonucSayisi', { sayi: suzulmus.length })}
             </Text>
           )}
         </View>
@@ -1134,10 +1132,10 @@ export default function KesfetEkrani() {
            kalabilir") - o zaman da bu metin gorunuyor. */
         <Text style={stiller.bosDurum}>
           {arama.trim()
-            ? `"${arama.trim()}" için bu ilde sonuç yok.`
+            ? t('kesfet.bosArama', { arama: arama.trim() })
             : seciliTurler.length > 0
-              ? 'Bu filtreyle 500 m içinde mekân yok.'
-              : 'Yakınında mekân yok.'}
+              ? t('kesfet.bosFiltre')
+              : t('kesfet.bosCevre')}
         </Text>
       ) : (
         sakinler.map((item) => {
@@ -1151,7 +1149,7 @@ export default function KesfetEkrani() {
               <Pressable
                 onPress={() => router.push(`/harita/${item.id}` as never)}
                 accessibilityRole="button"
-                accessibilityLabel={`${item.ad} konumunu gör`}
+                accessibilityLabel={t('kesfet.konumuGorEtiketi', { ad: item.ad })}
                 hitSlop={6}
               >
                 <Text style={stiller.kartMekanAdi} numberOfLines={2}>
@@ -1209,7 +1207,7 @@ export default function KesfetEkrani() {
                   ]}
                   onPress={() => router.push(`/check-in/${item.id}`)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${item.ad} için check-in yap`}
+                  accessibilityLabel={t('kesfet.checkInEtiketi', { ad: item.ad })}
                   testID={`satir-checkin-${item.id}`}
                 >
                   <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
@@ -1239,16 +1237,14 @@ export default function KesfetEkrani() {
       )}
 
       <Pressable style={stiller.ekleButonu} onPress={() => router.push('/mekanlar/ekle')}>
-        <Text style={stiller.ekleButonuYazi}>Mekan bulamadın mı? Ekle</Text>
+        <Text style={stiller.ekleButonuYazi}>{t('kesfet.mekanEkle')}</Text>
       </Pressable>
       {/* ATIF - guncel tutulmasi ZORUNLU. Overture 2026-08-30'da silindi
           (karar 79), mekan verisi artik Foursquare; mahalle ve ilce ise
           OpenStreetMap'ten turetildi. OSM'in lisansi (ODbL) atfi HUKUKEN
           sart kosuyor, Foursquare'inki (Apache 2.0) kosmuyor ama dogru
           kaynagi yazmak zaten gerekli. */}
-      <Text style={stiller.atif}>
-        Mekan verileri: Foursquare · Mahalle ve ilçe: © OpenStreetMap katkıda bulunanlar
-      </Text>
+      <Text style={stiller.atif}>{t('kesfet.atif')}</Text>
     </ScrollView>
 
     <TurSecici

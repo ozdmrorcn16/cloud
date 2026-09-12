@@ -43,9 +43,12 @@ import { ALT_GEZINME_PAYI } from '../../../tasarim/AltGezinme'
  * TALEP DOGRUDAN UYGULANMIYOR - ekranda da bu yaziyor. Kullanici
  * "duzelttim" sanip degismedigini gorurse guveni kirilir.
  */
+import { useDil } from '../../../../lib/dil'
+import { turEtiketi, turGrupEtiketi } from '../../../../lib/tur-etiketi'
 export default function MekanDuzenleEkrani() {
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const router = useRouter()
+  const { t } = useDil()
   const stiller = useStiller(stilleriYap)
   const renk = useRenk()
 
@@ -88,7 +91,7 @@ export default function MekanDuzenleEkrani() {
         setTur(bulunan.tur ?? null)
       })
       .catch((e) => {
-        if (gecerli) setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+        if (gecerli) setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
       })
     return () => {
       gecerli = false
@@ -112,7 +115,7 @@ export default function MekanDuzenleEkrani() {
     setTimeout(() => {
       const cagri = kaynak === 'kamera' ? kameradanCek : galeridenSec
       cagri().catch((e) =>
-        setHata(e instanceof Error ? e.message : 'Fotoğraf seçilemedi.')
+        setHata(e instanceof Error ? e.message : t('mekanDuzenle.fotografSecilemedi'))
       )
     }, 350)
   }
@@ -121,7 +124,7 @@ export default function MekanDuzenleEkrani() {
     // Izin REDDEDILIRSE sessizce gecmiyoruz.
     const izin = await ImagePicker.requestCameraPermissionsAsync()
     if (!izin.granted) {
-      setHata('Fotoğraf çekmek için kamera izni gerekiyor.')
+      setHata(t('checkIn.kameraIzni'))
       return
     }
     const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
@@ -134,7 +137,7 @@ export default function MekanDuzenleEkrani() {
     // sebep gorunmuyordu.
     const izin = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!izin.granted) {
-      setHata('Galeriden seçmek için fotoğraf izni gerekiyor.')
+      setHata(t('mekanDuzenle.galeriIzni'))
       return
     }
     const sonuc = await ImagePicker.launchImageLibraryAsync({
@@ -171,7 +174,7 @@ export default function MekanDuzenleEkrani() {
       if (yerelFoto) {
         const { data } = await supabase.auth.getUser()
         const kisi = data.user?.id
-        if (!kisi) throw new Error('Oturum bulunamadı')
+        if (!kisi) throw new Error(t('mekanDuzenle.oturumYok'))
         fotografYolu = await mekanFotografiYukle(kisi, yerelFoto)
       }
       await duzenlemeTalebiGonder(mekanId, {
@@ -186,7 +189,7 @@ export default function MekanDuzenleEkrani() {
       })
       setGonderildi(true)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       setGonderiliyor(false)
     }
@@ -194,7 +197,7 @@ export default function MekanDuzenleEkrani() {
 
   return (
     <View style={stiller.kok}>
-      <UstCubuk baslik="Bilgileri düzelt" geriEtiketi="Geri" />
+      <UstCubuk baslik={t('mekanDuzenle.baslik')} geriEtiketi={t('ortak.geri')} />
 
       {/* KLAVYE KAYDIRINCA KAPANIYOR, kok bir Pressable ILE DEGIL.
           Ilk halde ekranin koku `Pressable`di (bos yere basinca klavye
@@ -213,35 +216,27 @@ export default function MekanDuzenleEkrani() {
           /* SONUC EKRANI. Formu acik birakip ustune "gonderildi" yazmak
              kisiye ikinci kez gonderebilecegini dusuendueruerdue. */
           <View style={stiller.sonuc} testID="talep-gonderildi">
-            <Text style={stiller.sonucBaslik}>Talebin gönderildi</Text>
-            <Text style={stiller.sonucMetin}>
-              Moderatör inceleyip onayladığında mekân bilgileri güncellenecek.
-            </Text>
+            <Text style={stiller.sonucBaslik}>{t('mekanDuzenle.gonderildiBaslik')}</Text>
+            <Text style={stiller.sonucMetin}>{t('mekanDuzenle.gonderildiMetin')}</Text>
             <Pressable style={stiller.birincil} onPress={() => router.back()}>
-              <Text style={stiller.birincilYazi}>Tamam</Text>
+              <Text style={stiller.birincilYazi}>{t('ortak.tamam')}</Text>
             </Pressable>
           </View>
         ) : bekleyenVar ? (
           <View style={stiller.sonuc} testID="bekleyen-talep">
-            <Text style={stiller.sonucBaslik}>Bekleyen talebin var</Text>
-            <Text style={stiller.sonucMetin}>
-              Bu mekân için gönderdiğin talep hâlâ inceleniyor. Sonuçlanınca yeni bir
-              düzeltme gönderebilirsin.
-            </Text>
+            <Text style={stiller.sonucBaslik}>{t('mekanDuzenle.bekleyenBaslik')}</Text>
+            <Text style={stiller.sonucMetin}>{t('mekanDuzenle.bekleyenMetin')}</Text>
           </View>
         ) : (
           <>
-            <Text style={stiller.aciklama}>
-              Yanlış bir bilgi mi var? Düzeltmen moderatöre gider; onaylanınca herkes için
-              güncellenir.
-            </Text>
+            <Text style={stiller.aciklama}>{t('mekanDuzenle.aciklama')}</Text>
 
-            <Text style={stiller.etiket}>Mekân adı</Text>
+            <Text style={stiller.etiket}>{t('mekanDuzenle.adEtiket')}</Text>
             <TextInput
               style={stiller.alan}
               value={ad}
               onChangeText={(d) => setAd(d.slice(0, AD_EN_FAZLA))}
-              placeholder="Mekânın adı"
+              placeholder={t('mekanDuzenle.adYerTutucu')}
               testID="duzenle-ad"
             />
 
@@ -250,21 +245,21 @@ export default function MekanDuzenleEkrani() {
                 ayri bir alan olmasi hem yazmayi kolaylastiriyor hem de
                 veriyi aranabilir tutuyor - adres serbest metin, mahalle
                 ise tek basina bir alan. */}
-            <Text style={stiller.etiket}>Mahalle</Text>
+            <Text style={stiller.etiket}>{t('mekanDuzenle.mahalle')}</Text>
             <TextInput
               style={stiller.alan}
               value={mahalle}
               onChangeText={(d) => setMahalle(d.slice(0, MAHALLE_EN_FAZLA))}
-              placeholder="Örnek: Alaaddinbey"
+              placeholder={t('mekanDuzenle.mahalleYerTutucu')}
               testID="duzenle-mahalle"
             />
 
-            <Text style={stiller.etiket}>Adres</Text>
+            <Text style={stiller.etiket}>{t('mekanDuzenle.adres')}</Text>
             <TextInput
               style={[stiller.alan, stiller.cokSatirli]}
               value={adres}
               onChangeText={(d) => setAdres(d.slice(0, ADRES_EN_FAZLA))}
-              placeholder="Cadde, sokak, numara"
+              placeholder={t('mekanDuzenle.adresYerTutucu')}
               multiline
               testID="duzenle-adres"
             />
@@ -273,57 +268,57 @@ export default function MekanDuzenleEkrani() {
                 birlikte okunuyor. */}
             <View style={stiller.ikili}>
               <View style={stiller.yariAlan}>
-                <Text style={stiller.etiket}>İl</Text>
+                <Text style={stiller.etiket}>{t('mekanDuzenle.il')}</Text>
                 <TextInput
                   style={stiller.alan}
                   value={il}
                   onChangeText={(d) => setIl(d.slice(0, IL_ILCE_EN_FAZLA))}
-                  placeholder="Bursa"
+                  placeholder={t('mekanDuzenle.ilYerTutucu')}
                   testID="duzenle-il"
                 />
               </View>
               <View style={stiller.yariAlan}>
-                <Text style={stiller.etiket}>İlçe</Text>
+                <Text style={stiller.etiket}>{t('mekanDuzenle.ilce')}</Text>
                 <TextInput
                   style={stiller.alan}
                   value={ilce}
                   onChangeText={(d) => setIlce(d.slice(0, IL_ILCE_EN_FAZLA))}
-                  placeholder="Nilüfer"
+                  placeholder={t('mekanDuzenle.ilceYerTutucu')}
                   testID="duzenle-ilce"
                 />
               </View>
             </View>
 
-            <Text style={stiller.etiket}>Tür</Text>
+            <Text style={stiller.etiket}>{t('mekanDuzenle.tur')}</Text>
             {/* TUR SERBEST METIN DEGIL: onay verildiginde deger dogrudan
                 mekan kaydina yaziliyor ve butun suzgecleri besliyor.
                 Liste suzgectekiyle AYNI kaynaktan (TEMEL_TUR_GRUPLARI) -
                 iki yerde iki farkli tur listesi olmasin. */}
             {TEMEL_TUR_GRUPLARI.map((grup) => (
               <View key={grup.baslik} style={stiller.grup}>
-                <Text style={stiller.grupBaslik}>{grup.baslik}</Text>
+                <Text style={stiller.grupBaslik}>{turGrupEtiketi(grup.baslik)}</Text>
                 <View style={stiller.cipler}>
-                  {grup.turler.map((t) => (
+                  {grup.turler.map((secenek) => (
                     <Pressable
-                      key={t}
-                      style={[stiller.cip, tur === t && stiller.cipSecili]}
-                      onPress={() => setTur(t)}
+                      key={secenek}
+                      style={[stiller.cip, tur === secenek && stiller.cipSecili]}
+                      onPress={() => setTur(secenek)}
                       accessibilityRole="button"
-                      accessibilityState={{ selected: tur === t }}
+                      accessibilityState={{ selected: tur === secenek }}
                     >
-                      <Text style={[stiller.cipYazi, tur === t && stiller.cipYaziSecili]}>{t}</Text>
+                      <Text style={[stiller.cipYazi, tur === secenek && stiller.cipYaziSecili]}>{turEtiketi(secenek)}</Text>
                     </Pressable>
                   ))}
                 </View>
               </View>
             ))}
 
-            <Text style={stiller.etiket}>Kapak fotoğrafı</Text>
+            <Text style={stiller.etiket}>{t('mekanDuzenle.kapakFotografi')}</Text>
             {yerelFoto ? (
               <View>
                 <Image source={{ uri: yerelFoto }} style={stiller.onizleme} />
                 <Pressable onPress={() => setYerelFoto(null)} testID="fotografi-kaldir">
-                  <Text style={stiller.kaldirYazi}>Fotoğrafı kaldır</Text>
+                  <Text style={stiller.kaldirYazi}>{t('mekanDuzenle.fotografiKaldir')}</Text>
                 </Pressable>
               </View>
             ) : (
@@ -332,7 +327,7 @@ export default function MekanDuzenleEkrani() {
                 onPress={() => setKaynakSecimi(true)}
                 testID="fotograf-ekle"
               >
-                <Text style={stiller.ikincilYazi}>Fotoğraf ekle</Text>
+                <Text style={stiller.ikincilYazi}>{t('mekanDuzenle.fotografEkle')}</Text>
               </Pressable>
             )}
 
@@ -355,19 +350,16 @@ export default function MekanDuzenleEkrani() {
             <View style={stiller.ayirici} />
             {mekan?.kapali ? (
               <Text style={stiller.kapaliNot} testID="zaten-kapali">
-                Bu mekân kalıcı olarak kapandı olarak işaretli.
+                {t('mekanDuzenle.zatenKapali')}
               </Text>
             ) : (
               <View style={stiller.kapaliSatir}>
                 <View style={stiller.kapaliMetin}>
-                  <Text style={stiller.kapaliBaslik}>Burası kalıcı olarak kapandı</Text>
-                  <Text style={stiller.kapaliAciklama}>
-                    Onaylanırsa bu mekân listelerden ve aramadan kaldırılır. Buraya yapılmış
-                    check-in&apos;ler silinmez.
-                  </Text>
+                  <Text style={stiller.kapaliBaslik}>{t('mekanDuzenle.kapaliBaslik')}</Text>
+                  <Text style={stiller.kapaliAciklama}>{t('mekanDuzenle.kapaliAciklama')}</Text>
                 </View>
                 <Switch
-                  accessibilityLabel="Burası kalıcı olarak kapandı"
+                  accessibilityLabel={t('mekanDuzenle.kapaliBaslik')}
                   value={kapali}
                   onValueChange={setKapali}
                   trackColor={{ true: renk.turuncu, false: renk.cizgi }}
@@ -384,12 +376,12 @@ export default function MekanDuzenleEkrani() {
                 hesap olusturma ekraninda ogrenildi). */}
             <Pressable
               style={[stiller.birincil, !degisiklikVar && stiller.birincilSolu]}
-              onPress={degisiklikVar ? gonder : () => setHata('Önce bir bilgiyi değiştir.')}
+              onPress={degisiklikVar ? gonder : () => setHata(t('mekanDuzenle.onceDegistir'))}
               testID="talebi-gonder"
               accessibilityRole="button"
             >
               <Text style={[stiller.birincilYazi, !degisiklikVar && stiller.birincilYaziSolu]}>
-                {gonderiliyor ? 'Gönderiliyor…' : 'Talebi gönder'}
+                {gonderiliyor ? t('ortak.gonderiliyor') : t('mekanDuzenle.talebiGonder')}
               </Text>
             </Pressable>
           </>
@@ -399,8 +391,8 @@ export default function MekanDuzenleEkrani() {
       <SecimPenceresi
         acikMi={kaynakSecimi}
         secimler={[
-          { etiket: 'Fotoğraf çek', testID: 'foto-kamera', onSec: () => kaynakSec('kamera') },
-          { etiket: 'Galeriden seç', testID: 'foto-galeri', onSec: () => kaynakSec('galeri') },
+          { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: () => kaynakSec('kamera') },
+          { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: () => kaynakSec('galeri') },
         ]}
         onKapat={() => setKaynakSecimi(false)}
       />

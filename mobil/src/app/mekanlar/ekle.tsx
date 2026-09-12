@@ -10,6 +10,8 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 
 // Tur SERBEST METIN DEGIL, listeden secilir.
+import { useDil } from '../../../lib/dil'
+import { turEtiketi } from '../../../lib/tur-etiketi'
 //
 // Bu ekran tur bilgisinin GIRILDIGI tek yer (karar 2026-08-24): dis
 // kaynaktan gelen mekanlarda tur artik gosterilmiyor, cunku dogrulugu
@@ -28,6 +30,7 @@ const EKLENEBILIR_TURLER = [
 export default function MekanEkleEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
+  const { t } = useDil()
   const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
   const [ad, setAd] = useState('')
   const [tur, setTur] = useState('')
@@ -51,7 +54,7 @@ export default function MekanEkleEkrani() {
   useEffect(() => {
     cihazKonumunuAl()
       .then(setCihazKonumu)
-      .catch((e) => setHata(e instanceof Error ? e.message : 'Bir sorun oluştu'))
+      .catch((e) => setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu')))
   }, [])
 
   /**
@@ -99,11 +102,11 @@ export default function MekanEkleEkrani() {
   async function ekle() {
     setHata(null)
     if (!cihazKonumu) {
-      setHata('Konum alınamadı, tekrar dene')
+      setHata(t('mekanEkle.konumAlinamadi'))
       return
     }
     if (ad.trim().length === 0 || tur.trim().length === 0) {
-      setHata('Mekan adı ve türü gerekli')
+      setHata(t('mekanEkle.adVeTurGerekli'))
       return
     }
 
@@ -118,7 +121,7 @@ export default function MekanEkleEkrani() {
       )
       router.replace(`/check-in/${yeniMekan.id}`)
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bir sorun oluştu')
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
       setGonderiliyor(false)
     }
@@ -141,19 +144,19 @@ export default function MekanEkleEkrani() {
       accessible={false}
       testID="ekle-kok"
     >
-      <UstCubuk baslik="Yeni mekan ekle" geriEtiketi="Geri" />
-      <TextInput style={stiller.girdi} placeholder="Mekan adı" value={ad} onChangeText={setAd} />
-      <Text style={stiller.turBaslik}>Türü seç</Text>
+      <UstCubuk baslik={t('mekanEkle.baslik')} geriEtiketi={t('ortak.geri')} />
+      <TextInput style={stiller.girdi} placeholder={t('mekanEkle.adYerTutucu')} value={ad} onChangeText={setAd} />
+      <Text style={stiller.turBaslik}>{t('mekanEkle.turuSec')}</Text>
       <View style={stiller.turIzgara}>
-        {EKLENEBILIR_TURLER.map((t) => {
-          const secili = tur === t
+        {EKLENEBILIR_TURLER.map((secenek) => {
+          const secili = tur === secenek
           return (
             <Pressable
-              key={t}
+              key={secenek}
               style={[stiller.turCipi, secili && stiller.turCipiSecili]}
-              onPress={() => setTur(t)}
+              onPress={() => setTur(secenek)}
             >
-              <Text style={[stiller.turCipiYazi, secili && stiller.turCipiYaziSecili]}>{t}</Text>
+              <Text style={[stiller.turCipiYazi, secili && stiller.turCipiYaziSecili]}>{turEtiketi(secenek)}</Text>
             </Pressable>
           )
         })}
@@ -180,7 +183,7 @@ export default function MekanEkleEkrani() {
           kaciyor. */}
       <TextInput
         style={[stiller.girdi, stiller.adresGirdisi]}
-        placeholder="Adres (opsiyonel)"
+        placeholder={t('mekanEkle.adresYerTutucu')}
         value={adres}
         onChangeText={adresDegisti}
         multiline
@@ -199,10 +202,8 @@ export default function MekanEkleEkrani() {
           kaldirilmisti. Onay adimi tam olarak o itirazi kapatiyor. */}
       {onerilenAdres !== null && !adresOnaylandi && (
         <View style={stiller.onayKutusu} testID="adres-onayi">
-          <Text style={stiller.onaySoru}>Bu adres doğru mu?</Text>
-          <Text style={stiller.onayAciklama}>
-            Konumundan bulundu. Yanlışsa yukarıdaki alanı düzeltebilirsin.
-          </Text>
+          <Text style={stiller.onaySoru}>{t('mekanEkle.adresSoru')}</Text>
+          <Text style={stiller.onayAciklama}>{t('mekanEkle.adresAciklama')}</Text>
           <View style={stiller.onayDugmeleri}>
             <Pressable
               style={[stiller.onayDugme, stiller.onayBirincil]}
@@ -210,7 +211,7 @@ export default function MekanEkleEkrani() {
               accessibilityRole="button"
               testID="adres-dogru"
             >
-              <Text style={stiller.onayBirincilYazi}>Doğru</Text>
+              <Text style={stiller.onayBirincilYazi}>{t('mekanEkle.dogru')}</Text>
             </Pressable>
             <Pressable
               style={[stiller.onayDugme, stiller.onayIkincil]}
@@ -222,7 +223,7 @@ export default function MekanEkleEkrani() {
               accessibilityRole="button"
               testID="adres-temizle"
             >
-              <Text style={stiller.onayIkincilYazi}>Temizle</Text>
+              <Text style={stiller.onayIkincilYazi}>{t('ortak.temizle')}</Text>
             </Pressable>
           </View>
         </View>
@@ -230,7 +231,7 @@ export default function MekanEkleEkrani() {
 
       {benzerMekanlar.length > 0 && (
         <View style={stiller.benzerKutu}>
-          <Text style={stiller.benzerBaslik}>Bunlardan biri mi demek istedin?</Text>
+          <Text style={stiller.benzerBaslik}>{t('mekanEkle.benzerBaslik')}</Text>
           <FlatList
             data={benzerMekanlar}
             keyExtractor={(m) => m.id}
@@ -245,7 +246,7 @@ export default function MekanEkleEkrani() {
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.buton} onPress={ekle} disabled={gonderiliyor}>
-        <Text style={stiller.butonYazi}>{gonderiliyor ? 'Ekleniyor...' : 'Ekle'}</Text>
+        <Text style={stiller.butonYazi}>{gonderiliyor ? t('mekanEkle.ekleniyor') : t('mekanEkle.ekle')}</Text>
       </Pressable>
     </Pressable>
   )

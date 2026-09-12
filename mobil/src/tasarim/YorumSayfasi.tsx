@@ -287,7 +287,7 @@ export function YorumSayfasi({
                     disabled={!item.kullaniciId}
                     accessibilityRole="button"
                     accessibilityLabel={
-                      item.kullaniciAdi ? `${item.kullaniciAdi} profilini gör` : undefined
+                      item.kullaniciAdi ? t('etkilesim.profiliGor', { ad: item.kullaniciAdi }) : undefined
                     }
                     hitSlop={6}
                   >

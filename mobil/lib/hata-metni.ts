@@ -27,99 +27,88 @@
  * kaybolur.
  */
 
-/** Veritabanindaki `raise exception` metinlerinin karsiliklari. */
+import { cevir } from './dil'
+
+/**
+ * Veritabanindaki `raise exception` metinleri -> ceviri anahtari
+ * (`hatalar.vt.<anahtar>`, sozluk `lib/ceviriler/*.ts`). i18n turu
+ * 2026-09-13: metinler burada degil sozlukte, dile gore geliyor.
+ */
 const VERITABANI: Record<string, string> = {
-  'Aski bitisi gelecekte olmali': 'Askı bitişi gelecekte olmalı.',
-  'Bir moderatore islem uygulanamaz': 'Bir moderatöre işlem uygulanamaz.',
-  'Bu kisiye su an mesaj gonderemezsin': 'Bu kişiye şu an mesaj gönderemezsin.',
-  'Bu kullanici adi alinmis': 'Bu kullanıcı adı alınmış, başka bir tane dene.',
-  'Bu kullanici bulunamadi': 'Bu kullanıcı bulunamadı.',
-  // MEKAN DUZENLEME TALEBI AILESI (2026-09-09'da eklenmis, karsiliklari
-  // 2026-09-11'de kondu). Eksik oldugu surece bu ekranin hatalari
-  // kullaniciya HAM ASCII olarak cikiyordu - "ekran metinleri duzgun
-  // Turkce" kurali sessizce deliniyordu.
-  'Bu fotograf sana ait degil': 'Bu fotoğraf sana ait değil.',
-  'Bu il listemizde yok': 'Bu il listemizde yok.',
-  'Bu mekan bulunamadi': 'Bu mekân bulunamadı.',
-  'Bu mekan icin bekleyen bir talebin zaten var':
-    'Bu mekân için gönderdiğin talep hâlâ inceleniyor.',
-  'Bu mekan kalici olarak kapandi': 'Bu mekân kalıcı olarak kapandı.',
-  'Bu mekan zaten kapali olarak isaretli': 'Bu mekân zaten kapalı olarak işaretli.',
-  'Bu tur listemizde yok': 'Bu tür listemizde yok.',
-  'En az bir alan doldurulmali': 'En az bir bilgiyi değiştirmelisin.',
-  'Gunluk duzenleme talebi sinirina ulastin':
-    'Günlük düzeltme sınırına ulaştın (5). Yarın tekrar deneyebilirsin.',
-  'Hesabin su an bu islemi yapamaz': 'Hesabın şu an bu işlemi yapamaz.',
-  'Bu paylasim bulunamadi': 'Bu paylaşım bulunamadı.',
-  'Not en fazla 500 karakter olabilir': 'Not en fazla 500 karakter olabilir.',
-  'Bu mesaji sikayet edemezsin': 'Bu mesajı şikayet edemezsin.',
-  'Bugunluk istek sinirina ulastin': 'Bugünlük istek sınırına ulaştın.',
-  'Check-in bulunamadi': 'Check-in bulunamadı.',
-  'Cok fazla kimlik': 'Çok fazla kimlik gönderildi.',
-  'En az 2 karakter gerekli': 'En az 2 karakter yazmalısın.',
-  'Gecersiz bulunurluk degeri': 'Geçersiz bulunurluk değeri.',
-  'Gecersiz gorunurluk degeri': 'Geçersiz görünürlük değeri.',
-  'Gecersiz platform': 'Geçersiz platform.',
-  'Gecersiz sikayet durumu': 'Geçersiz şikayet durumu.',
-  'Gecersiz sikayet hedefi': 'Geçersiz şikayet hedefi.',
-  'Gerekce belirtilmeli': 'Gerekçe belirtmelisin.',
-  'Geri cekilecek istek bulunamadi': 'Geri çekilecek istek bulunamadı.',
-  'Gunluk mekan ekleme limitine ulastin (5)':
-    'Günlük mekan ekleme sınırına ulaştın (5). Yarın tekrar deneyebilirsin.',
-  'Hesabin su anda kullanilamiyor': 'Hesabın şu anda kullanılamıyor.',
-  'Hesabin zaten kullanilamaz durumda': 'Hesabın zaten kullanılamaz durumda.',
-  'Istegin zaten gonderilmis': 'İsteğin zaten gönderilmiş.',
-  'Jeton bos olamaz': 'Bildirim jetonu boş olamaz.',
-  'Jeton cok uzun': 'Bildirim jetonu çok uzun.',
-  'Kendi mesajini sikayet edemezsin': 'Kendi mesajını şikayet edemezsin.',
-  'Kendine islem uygulayamazsin': 'Kendine işlem uygulayamazsın.',
-  'Kendine istek gonderemezsin': 'Kendine istek gönderemezsin.',
-  'Kendine mesaj gonderemezsin': 'Kendine mesaj gönderemezsin.',
-  'Kendini engelleyemezsin': 'Kendini engelleyemezsin.',
-  'Kendini sikayet edemezsin': 'Kendini şikayet edemezsin.',
-  'Kimlik dogrulamasi gerekli': 'Bu işlem için giriş yapmış olman gerekiyor.',
-  'Konusma bulunamadi': 'Konuşma bulunamadı.',
-  'Kullanici adi kurallara uymuyor': 'Kullanıcı adı kurallara uymuyor.',
-  'Kullanici belirtilmeli': 'Kullanıcı belirtilmeli.',
-  'Mekan bulunamadi': 'Mekan bulunamadı.',
-  // MEKAN PUANLAMA (2026-09-13)
-  'Gecersiz puan': 'Geçersiz puan.',
-  'Puan vermek icin once burada check-in yapmalisin':
-    'Puan vermek için önce burada check-in yapmalısın.',
-  // ESKI ANAHTAR "(~500 m icinde olmalisin)" IDI VE HIC ESLESMIYORDU:
-  // sunucudaki yaricap 2026-08-28'de 1 km'ye cikarilmis ama buradaki
-  // karsilik guncellenmemisti, yani kullanici ham ASCII mesaji
-  // goruyordu. Bu satir SUNUCUDAKI METINLE BIREBIR AYNI olmali.
-  'Mekana cok uzaksin (~1 km icinde olmalisin)':
-    'Mekana çok uzaksın. Check-in yapmak için yaklaşık 1 kilometre içinde olmalısın.',
-  'Mekana yakin olmalisin (~200 m icinde)':
-    'Mekan eklemek için ona yaklaşık 200 metre kadar yakın olmalısın.',
-  'Mesaj bos olamaz': 'Mesaj boş olamaz.',
-  'Mesaj bu konusmada bulunamadi': 'Mesaj bu konuşmada bulunamadı.',
-  'Mesaj cok uzun': 'Mesaj çok uzun.',
-  'Profil bulunamadi': 'Profil bulunamadı.',
-  'Sikayet bulunamadi': 'Şikayet bulunamadı.',
-  'Sikayet sebebi belirtilmeli': 'Şikayet sebebini belirtmelisin.',
-  'Yanitlanacak istek bulunamadi': 'Yanıtlanacak istek bulunamadı.',
-  Yetkisiz: 'Bu işlem için yetkin yok.',
-  'Zaten bu kullanici adini kullaniyorsun': 'Zaten bu kullanıcı adını kullanıyorsun.',
+  'Aski bitisi gelecekte olmali': 'aski_bitisi_gelecekte_olmali',
+  'Bir moderatore islem uygulanamaz': 'bir_moderatore_islem_uygulanamaz',
+  'Bu kisiye su an mesaj gonderemezsin': 'bu_kisiye_su_an_mesaj_gonderemezsin',
+  'Bu kullanici adi alinmis': 'bu_kullanici_adi_alinmis',
+  'Bu kullanici bulunamadi': 'bu_kullanici_bulunamadi',
+  'Bu fotograf sana ait degil': 'bu_fotograf_sana_ait_degil',
+  'Bu il listemizde yok': 'bu_il_listemizde_yok',
+  'Bu mekan bulunamadi': 'bu_mekan_bulunamadi',
+  'Bu mekan icin bekleyen bir talebin zaten var': 'bu_mekan_icin_bekleyen_bir_talebin_zaten_var',
+  'Bu mekan kalici olarak kapandi': 'bu_mekan_kalici_olarak_kapandi',
+  'Bu mekan zaten kapali olarak isaretli': 'bu_mekan_zaten_kapali_olarak_isaretli',
+  'Bu tur listemizde yok': 'bu_tur_listemizde_yok',
+  'En az bir alan doldurulmali': 'en_az_bir_alan_doldurulmali',
+  'Gunluk duzenleme talebi sinirina ulastin': 'gunluk_duzenleme_talebi_sinirina_ulastin',
+  'Hesabin su an bu islemi yapamaz': 'hesabin_su_an_bu_islemi_yapamaz',
+  'Bu paylasim bulunamadi': 'bu_paylasim_bulunamadi',
+  'Not en fazla 500 karakter olabilir': 'not_en_fazla_500_karakter_olabilir',
+  'Bu mesaji sikayet edemezsin': 'bu_mesaji_sikayet_edemezsin',
+  'Bugunluk istek sinirina ulastin': 'bugunluk_istek_sinirina_ulastin',
+  'Check-in bulunamadi': 'check_in_bulunamadi',
+  'Cok fazla kimlik': 'cok_fazla_kimlik',
+  'En az 2 karakter gerekli': 'en_az_2_karakter_gerekli',
+  'Gecersiz bulunurluk degeri': 'gecersiz_bulunurluk_degeri',
+  'Gecersiz gorunurluk degeri': 'gecersiz_gorunurluk_degeri',
+  'Gecersiz platform': 'gecersiz_platform',
+  'Gecersiz sikayet durumu': 'gecersiz_sikayet_durumu',
+  'Gecersiz sikayet hedefi': 'gecersiz_sikayet_hedefi',
+  'Gerekce belirtilmeli': 'gerekce_belirtilmeli',
+  'Geri cekilecek istek bulunamadi': 'geri_cekilecek_istek_bulunamadi',
+  'Gunluk mekan ekleme limitine ulastin (5)': 'gunluk_mekan_ekleme_limitine_ulastin_5',
+  'Hesabin su anda kullanilamiyor': 'hesabin_su_anda_kullanilamiyor',
+  'Hesabin zaten kullanilamaz durumda': 'hesabin_zaten_kullanilamaz_durumda',
+  'Istegin zaten gonderilmis': 'istegin_zaten_gonderilmis',
+  'Jeton bos olamaz': 'jeton_bos_olamaz',
+  'Jeton cok uzun': 'jeton_cok_uzun',
+  'Kendi mesajini sikayet edemezsin': 'kendi_mesajini_sikayet_edemezsin',
+  'Kendine islem uygulayamazsin': 'kendine_islem_uygulayamazsin',
+  'Kendine istek gonderemezsin': 'kendine_istek_gonderemezsin',
+  'Kendine mesaj gonderemezsin': 'kendine_mesaj_gonderemezsin',
+  'Kendini engelleyemezsin': 'kendini_engelleyemezsin',
+  'Kendini sikayet edemezsin': 'kendini_sikayet_edemezsin',
+  'Kimlik dogrulamasi gerekli': 'kimlik_dogrulamasi_gerekli',
+  'Konusma bulunamadi': 'konusma_bulunamadi',
+  'Kullanici adi kurallara uymuyor': 'kullanici_adi_kurallara_uymuyor',
+  'Kullanici belirtilmeli': 'kullanici_belirtilmeli',
+  'Mekan bulunamadi': 'mekan_bulunamadi',
+  'Gecersiz puan': 'gecersiz_puan',
+  'Puan vermek icin once burada check-in yapmalisin': 'puan_vermek_icin_once_burada_check_in_yapmalisin',
+  'Mekana cok uzaksin (~1 km icinde olmalisin)': 'mekana_cok_uzaksin_1_km_icinde_olmalisin',
+  'Mekana yakin olmalisin (~200 m icinde)': 'mekana_yakin_olmalisin_200_m_icinde',
+  'Mesaj bos olamaz': 'mesaj_bos_olamaz',
+  'Mesaj bu konusmada bulunamadi': 'mesaj_bu_konusmada_bulunamadi',
+  'Mesaj cok uzun': 'mesaj_cok_uzun',
+  'Profil bulunamadi': 'profil_bulunamadi',
+  'Sikayet bulunamadi': 'sikayet_bulunamadi',
+  'Sikayet sebebi belirtilmeli': 'sikayet_sebebi_belirtilmeli',
+  'Yanitlanacak istek bulunamadi': 'yanitlanacak_istek_bulunamadi',
+  Yetkisiz: 'yetkisiz',
+  'Zaten bu kullanici adini kullaniyorsun': 'zaten_bu_kullanici_adini_kullaniyorsun',
 }
 
 /** Supabase hata KODLARI - metinden daha guvenilir, once bunlara bakiliyor. */
 const KOD: Record<string, string> = {
-  otp_expired: 'Kod geçersiz ya da süresi dolmuş. Yeni bir kod iste.',
-  user_already_exists: 'Bu adreste zaten bir hesap var. Giriş yapabilirsin.',
-  invalid_credentials: 'E-posta adresi ya da şifre hatalı.',
-  over_request_rate_limit: 'Çok sık denedin. Biraz bekleyip tekrar dene.',
-  over_sms_send_rate_limit: 'Çok fazla kod istendi. Biraz bekleyip tekrar dene.',
-  weak_password: 'Şifre çok zayıf. Daha güçlü bir şifre seç.',
-  same_password: 'Yeni şifren eskisinden farklı olmalı.',
-  signup_disabled: 'Şu anda yeni kayıt alınamıyor.',
-  phone_provider_disabled: 'Şu anda bu numaraya kod gönderilemiyor. Biraz sonra tekrar dene.',
-  // Postgres: benzersizlik kisiti.
-  '23505': 'Bu kayıt zaten var.',
-  // Postgres: statement_timeout.
-  '57014': 'İşlem zaman aşımına uğradı. Tekrar dene.',
+  'otp_expired': 'otp_expired',
+  'user_already_exists': 'user_already_exists',
+  'invalid_credentials': 'invalid_credentials',
+  'over_request_rate_limit': 'over_request_rate_limit',
+  'over_sms_send_rate_limit': 'over_sms_send_rate_limit',
+  'weak_password': 'weak_password',
+  'same_password': 'same_password',
+  'signup_disabled': 'signup_disabled',
+  'phone_provider_disabled': 'phone_provider_disabled',
+  '23505': '23505',
+  '57014': '57014',
 }
 
 /**
@@ -130,18 +119,17 @@ const KOD: Record<string, string> = {
  * deneniyorlar.
  */
 const METIN: [RegExp, string][] = [
-  [/unable to get sms provider/i, 'Şu anda bu numaraya kod gönderilemiyor. Biraz sonra tekrar dene.'],
-  [/sms provider|phone provider/i, 'Şu anda bu numaraya kod gönderilemiyor. Biraz sonra tekrar dene.'],
-  [/token has expired or is invalid|invalid token/i, 'Kod geçersiz ya da süresi dolmuş. Yeni bir kod iste.'],
-  [/user already registered/i, 'Bu adreste zaten bir hesap var. Giriş yapabilirsin.'],
-  [/invalid login credentials/i, 'E-posta adresi ya da şifre hatalı.'],
-  [/for security purposes.*after|rate limit/i, 'Çok sık denedin. Biraz bekleyip tekrar dene.'],
-  [/password should be at least|password.*too short/i, 'Şifre çok kısa.'],
-  [/new password should be different/i, 'Yeni şifren eskisinden farklı olmalı.'],
-  [/signups? not allowed|signup.*disabled/i, 'Şu anda yeni kayıt alınamıyor.'],
-  [/network request failed|failed to fetch|networkerror/i,
-    'İnternet bağlantına ulaşılamadı. Bağlantını kontrol edip tekrar dene.'],
-  [/jwt|session.*expired|refresh token/i, 'Oturumun düşmüş. Tekrar giriş yap.'],
+  [/unable to get sms provider/i, 'sms_saglayici'],
+  [/sms provider|phone provider/i, 'sms_saglayici2'],
+  [/token has expired or is invalid|invalid token/i, 'kod_gecersiz'],
+  [/user already registered/i, 'zaten_kayitli'],
+  [/invalid login credentials/i, 'giris_hatali'],
+  [/for security purposes.*after|rate limit/i, 'cok_sik'],
+  [/password should be at least|password.*too short/i, 'sifre_kisa'],
+  [/new password should be different/i, 'sifre_ayni'],
+  [/signups? not allowed|signup.*disabled/i, 'kayit_kapali'],
+  [/network request failed|failed to fetch|networkerror/i, 'ag_yok'],
+  [/jwt|session.*expired|refresh token/i, 'oturum_dustu'],
 ]
 
 /**
@@ -150,12 +138,12 @@ const METIN: [RegExp, string][] = [
 const DESENLI: [RegExp, (e: RegExpMatchArray) => string][] = [
   [
     /^Kullanici adini 30 gunde bir degistirebilirsin\. Kalan sure: (\d+) gun$/,
-    (e) => `Kullanıcı adını 30 günde bir değiştirebilirsin. ${e[1]} gün kaldı.`,
+    (e) => cevir('hatalar.kullaniciAdi30Gun', { gun: e[1] }),
   ],
 ]
 
-/** Son care metni. */
-const GENEL = 'Bir şeyler ters gitti. Biraz sonra tekrar dene.'
+/** Son care metni (anahtar). */
+const GENEL = 'hatalar.genel'
 
 /**
  * Metin INGILIZCE mi gorunuyor?
@@ -203,8 +191,8 @@ function ayikla(hata: unknown): { metin: string; kod: string | null } {
 export function hataMetni(hata: unknown): string {
   const { metin, kod } = ayikla(hata)
 
-  if (kod && KOD[kod]) return KOD[kod]
-  if (metin && VERITABANI[metin]) return VERITABANI[metin]
+  if (kod && KOD[kod]) return cevir(`hatalar.kod.${KOD[kod]}`)
+  if (metin && VERITABANI[metin]) return cevir(`hatalar.vt.${VERITABANI[metin]}`)
 
   for (const [desen, uret] of DESENLI) {
     const eslesme = metin.match(desen)
@@ -212,7 +200,7 @@ export function hataMetni(hata: unknown): string {
   }
 
   for (const [desen, karsilik] of METIN) {
-    if (desen.test(metin)) return karsilik
+    if (desen.test(metin)) return cevir(`hatalar.metin.${karsilik}`)
   }
 
   if (metin && !INGILIZCE.test(metin)) {
@@ -225,5 +213,5 @@ export function hataMetni(hata: unknown): string {
     // asil metin.
     console.warn('[hata-metni] cevrilmemis hata:', kod ?? '-', metin)
   }
-  return GENEL
+  return cevir(GENEL)
 }

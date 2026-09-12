@@ -692,7 +692,7 @@ export default function ProfilEkrani() {
               </View>
 
               {fotografYukleniyor && (
-                <Text style={stiller.fotografDurumu}>Yükleniyor…</Text>
+                <Text style={stiller.fotografDurumu}>{t('ortak.yukleniyor')}</Text>
               )}
 
               {/* EYLEM SATIRI: genis "Profili düzenle" + kare paylas.

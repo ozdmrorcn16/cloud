@@ -9,6 +9,7 @@ import { bekleyenEtiketleriGetir } from '../../lib/etiket'
 import { useHareket } from './hareket'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { cevir } from '../../lib/dil'
 
 /**
  * Yuzer alt gezinme cubugu.
@@ -152,10 +153,11 @@ type Sekme = {
   ikon: (cizgi: string, dolgu: string) => React.ReactNode
 }
 
+// `ad` bir CEVIRI ANAHTARI (i18n turu 2026-09-13); ekranda `cevir(ad)`.
 const SEKMELER: Sekme[] = [
   {
     // Ana sayfa: akis. Instagram'daki gibi en solda ve ev ikonuyla.
-    ad: 'Ana sayfa',
+    ad: 'altGezinme.anaSayfa',
     yol: '/',
     onEk: '/',
     ikon: (cizgi, dolgu) => (
@@ -175,7 +177,7 @@ const SEKMELER: Sekme[] = [
     // karari 2026-08-29). Kisi arama artik ANA SAYFANIN ustundeki
     // sutunda; ayri bir sekmeye gerek kalmadi. `/kisiler` ekrani
     // duruyor ve calisiyor, yalnizca cubuktan giris kalkti.
-    ad: 'Bildirimler',
+    ad: 'altGezinme.bildirimler',
     yol: '/bildirimler',
     onEk: '/bildirimler',
     ikon: (cizgi, dolgu) => (
@@ -198,7 +200,7 @@ const SEKMELER: Sekme[] = [
     ),
   },
   {
-    ad: 'Mesajlar',
+    ad: 'altGezinme.mesajlar',
     yol: '/mesajlar',
     onEk: '/mesajlar',
     ikon: (cizgi, dolgu) => (
@@ -214,7 +216,7 @@ const SEKMELER: Sekme[] = [
     ),
   },
   {
-    ad: 'Profil',
+    ad: 'altGezinme.profil',
     yol: '/profil',
     onEk: '/profil',
     ikon: (cizgi, dolgu) => (
@@ -307,7 +309,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
       onPressOut={() => basiliyaGec(false)}
       accessibilityRole="button"
       accessibilityState={{ selected: aktif }}
-      accessibilityLabel="Check-in yap"
+      accessibilityLabel={cevir('checkIn.gonder')}
     >
       <Animated.View
         testID="checkin-dugmesi-daire"
@@ -326,7 +328,7 @@ function CheckInDugmesi({ aktif, onPress }: { aktif: boolean; onPress: () => voi
         </Svg>
       </Animated.View>
       <Text style={stiller.merkezEtiket} numberOfLines={1}>
-        Check-in
+        {cevir('kesfet.checkIn')}
       </Text>
     </Pressable>
   )
@@ -514,7 +516,7 @@ export function AltGezinme() {
               onPress={() => router.replace(s.yol as never)}
               accessibilityRole="tab"
               accessibilityState={{ selected: aktif }}
-              accessibilityLabel={s.ad}
+              accessibilityLabel={cevir(s.ad)}
             >
               {/*
                 Dairenin durdugu sekmenin ikonu GIZLI: o ikon artik
@@ -547,7 +549,7 @@ export function AltGezinme() {
                 yazmazdi.
               */}
               <Text style={[stiller.etiket, aktif && stiller.etiketAktif]} numberOfLines={1}>
-                {s.ad}
+                {cevir(s.ad)}
               </Text>
             </Pressable>
             </React.Fragment>

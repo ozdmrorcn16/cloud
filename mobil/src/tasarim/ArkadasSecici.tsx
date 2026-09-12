@@ -20,6 +20,7 @@ import { useRenk, useStiller } from './tema-baglami'
  * Metinler koda gomulu - check-in ekraninin geri kalaniyla ayni
  * durum (o ekran bastan beri sozlukte degil).
  */
+import { useDil } from '../../lib/dil'
 export function ArkadasSecici({
   acikMi,
   arkadaslar,
@@ -35,6 +36,7 @@ export function ArkadasSecici({
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
+  const { t } = useDil()
   const [arama, setArama] = useState('')
 
   const suzulmus = useMemo(() => {
@@ -56,19 +58,18 @@ export function ArkadasSecici({
     <Modal visible={acikMi} transparent animationType="slide" onRequestClose={kapat}>
       <Pressable style={stiller.perde} onPress={kapat} accessibilityRole="button" />
       <View style={stiller.pencere} testID="arkadas-secici">
-        <Text style={stiller.baslik}>Arkadaşlarını etiketle</Text>
+        <Text style={stiller.baslik}>{t('arkadasSecici.baslik')}</Text>
 
         {arkadaslar.length === 0 ? (
           // Sebep soyleniyor: bos bir liste "bozuk" gibi okunur.
           <Text style={stiller.bos}>
-            Henüz arkadaşın yok. Arkadaşlık isteği gönderip kabul edildiğinde burada
-            görünür ve check-in’lerinde etiketleyebilirsin.
+            {t('arkadasSecici.bos')}
           </Text>
         ) : (
           <>
             <TextInput
               style={stiller.arama}
-              placeholder="Ara"
+              placeholder={t('anaSayfa.aramaYerTutucu')}
               placeholderTextColor={renk.metinIkincil}
               value={arama}
               onChangeText={setArama}
@@ -100,14 +101,14 @@ export function ArkadasSecici({
                   </Pressable>
                 )
               }}
-              ListEmptyComponent={<Text style={stiller.bos}>Sonuç yok</Text>}
+              ListEmptyComponent={<Text style={stiller.bos}>{t('ortak.sonucYok')}</Text>}
             />
           </>
         )}
 
         <Pressable style={stiller.tamam} onPress={kapat} accessibilityRole="button">
           <Text style={stiller.tamamYazi}>
-            {secili.length > 0 ? `Tamam (${secili.length})` : 'Tamam'}
+            {secili.length > 0 ? t('arkadasSecici.tamamSayili', { sayi: secili.length }) : t('ortak.tamam')}
           </Text>
         </Pressable>
       </View>

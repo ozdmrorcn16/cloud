@@ -10,6 +10,7 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 import { hataMetni } from '../../../lib/hata-metni'
 
 // Spec karar 67: bekleme suresi YOK, koruma parola dogrulamasi.
+import { useDil } from '../../../lib/dil'
 // Dondurma alternatifi ayni ekranda sunuluyor cunku "kararsizim"
 // ihtiyacini o karsiliyor.
 //
@@ -21,13 +22,14 @@ import { hataMetni } from '../../../lib/hata-metni'
 // (`signInWithPassword`) dogruluyor, istemci bu adimi atlayamaz.
 export default function HesabiSilEkrani() {
   const stiller = useStiller(stilleriYap)
+  const { t } = useDil()
   const [parola, setParola] = useState('')
   const [hata, setHata] = useState<string | null>(null)
   const [calisiyor, setCalisiyor] = useState(false)
 
   async function sil() {
     if (parola.trim() === '') {
-      setHata('Onaylamak için parolanı yaz.')
+      setHata(t('hesabiSil.parolaGerekli'))
       return
     }
     setCalisiyor(true)
@@ -49,28 +51,18 @@ export default function HesabiSilEkrani() {
 
   return (
     <View style={stiller.kapsayici}>
-      <UstCubuk baslik="Hesabını sil" geriEtiketi="Geri" />
-      <Text style={stiller.metin}>
-        Geri donusu yok. Yeniden gelmek istersen sifirdan hesap acman
-        gerekir.
-      </Text>
-      <Text style={stiller.ipucu}>
-        Profilin, anilarin, baglarin ve konusma listen silinir. Karsi
-        tarafin gecmisindeki mesajlar kalir ama adin gorunmez.
-      </Text>
+      <UstCubuk baslik={t('hesabiSil.baslik')} geriEtiketi={t('ortak.geri')} />
+      <Text style={stiller.metin}>{t('hesabiSil.uyari')}</Text>
+      <Text style={stiller.ipucu}>{t('hesabiSil.ipucu')}</Text>
 
       <Pressable style={stiller.ikincilButon} onPress={() => router.back()}>
-        <Text style={stiller.ikincilButonMetni}>
-          Bunun yerine hesabımı dondur
-        </Text>
+        <Text style={stiller.ikincilButonMetni}>{t('hesabiSil.dondur')}</Text>
       </Pressable>
 
-      <Text style={stiller.etiket}>
-        Onaylamak için parolanı yaz
-      </Text>
+      <Text style={stiller.etiket}>{t('hesabiSil.parolaEtiket')}</Text>
       <TextInput
         style={stiller.girdi}
-        placeholder="parolan"
+        placeholder={t('hesabiSil.parolaYerTutucu')}
         secureTextEntry
         autoCapitalize="none"
         value={parola}
@@ -78,9 +70,7 @@ export default function HesabiSilEkrani() {
       />
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Pressable style={stiller.tehlikeButonu} onPress={sil} disabled={calisiyor}>
-        <Text style={stiller.tehlikeButonMetni}>
-          Hesabımı kalıcı olarak sil
-        </Text>
+        <Text style={stiller.tehlikeButonMetni}>{t('hesabiSil.sil')}</Text>
       </Pressable>
     </View>
   )

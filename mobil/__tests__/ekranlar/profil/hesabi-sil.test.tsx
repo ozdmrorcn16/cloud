@@ -18,7 +18,7 @@ it('dondurmayi alternatif olarak sunar', async () => {
   const { getByText } = await render(<HesabiSilEkrani />)
   expect(
     getByText(
-      'Geri donusu yok. Yeniden gelmek istersen sifirdan hesap acman gerekir.'
+      'Geri dönüşü yok. Yeniden gelmek istersen sıfırdan hesap açman gerekir.'
     )
   ).toBeTruthy()
   expect(getByText('Bunun yerine hesabımı dondur')).toBeTruthy()

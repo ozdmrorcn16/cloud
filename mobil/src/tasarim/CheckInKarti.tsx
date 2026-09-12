@@ -250,7 +250,7 @@ export function CheckInKarti({
               // Pressable'i kaldirildigi icin erisilebilirlik etiketi de
               // buraya tasindi.
               accessibilityRole="link"
-              accessibilityLabel={`${oge.mekanAdi} konumunu haritada gör`}
+              accessibilityLabel={t('anaSayfa.haritadaGor', { ad: oge.mekanAdi })}
               onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
             >
               {oge.mekanAdi}
@@ -329,7 +329,7 @@ export function CheckInKarti({
                     style={stiller.cip}
                     onPress={() => setKaldirilan((m) => [...m, e.kullaniciId])}
                     accessibilityRole="button"
-                    accessibilityLabel={`${e.ad ?? ''} etiketini kaldır`}
+                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: e.ad ?? '' })}
                   >
                     <Text style={stiller.cipYazi}>{e.ad ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
@@ -382,7 +382,7 @@ export function CheckInKarti({
                     style={stiller.cip}
                     onPress={() => setEklenen((m) => m.filter((x) => x !== id))}
                     accessibilityRole="button"
-                    accessibilityLabel={`${kisi?.ad ?? ''} etiketini kaldır`}
+                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi?.ad ?? '' })}
                   >
                     <Text style={stiller.cipYazi}>{kisi?.ad ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
