@@ -1432,7 +1432,45 @@ Ekran goruntuleri `tasarim/giris-sifremi-unuttum.png`,
 layout +3; jest 73 paket / 873 test. Yayin: web `slooin.expo.app`,
 OTA grup `bddc8f54-2090-4080-8ca6-b5a2e0627205`.
 
-### SIRADAKI IS: APPLE / GOOGLE GIRISI - BYPASS KIPI BEKLIYOR - 2026-09-12
+### DEVIR NOTU - 2026-09-12 AKSAM: --chrome ILE YENIDEN AC, GOOGLE CLOUD'DAN BASLA
+
+Kullanici .bat'i duzenledi, oturum ONAYSIZ KIPTE acildi ve "hazir"
+dedi. Ama tarayiciyi surmenin iki yolu da bu oturumda kapali cikti:
+
+1. **Kopya profil yolu OLMUYOR - tekrar denenmesin.** Chrome 152
+   cerezleri "app-bound encryption" ile sifreliyor ve anahtar PROFIL
+   YOLUNA bagli: `Profile 2` (Slooin, slooinapp@gmail.com)
+   scratchpad'e kopyalanip `--remote-debugging-port` ile acildi,
+   Google oturumu ACILMADI (accounts.google.com giris ekrani).
+   Ayrica cerez dosyasi Chrome acikken kilitli (paylasimli okuma bile
+   reddediliyor) ve yonetici yetkisi yok; Chrome'u kapatip kopyalamak
+   gerekti - kullanicinin pencereleri `--restore-last-session` ile
+   geri acildi. Chrome 136+ ayrica gercek (varsayilan) profil dizini
+   icin uzaktan hata ayiklamayi tamamen engelliyor.
+2. **`claude-in-chrome` bu oturumda BAGLI DEGILDI** cunku oturum
+   `--chrome` bayragi olmadan acilmisti. Eklenti kurulu
+   (`~/.claude.json` -> cachedChromeExtensionInstalled: true).
+
+**YAPILAN:** masaustundeki `Claude - cloud projesi.bat` iki yerden
+duzeltildi: `--chrome` eklendi ve `claude claude ...` satirindaki
+fazla "claude" kaldirildi (o kelime her acilista ILK MESAJ olarak
+gidiyordu; bu oturumun ilk mesaji o yuzden "claude" idi).
+
+**YENI OTURUMUN ILK ISI:** `mcp__claude-in-chrome__*` araclariyla
+GERCEK Chrome'u sur. Kullanicinin uyarisi: iki Gmail ile iki Chrome
+penceresi acik - **hangi hesapla calistigini sayfadan OKUYARAK
+dogrula** (Google hesap menusu / myaccount), varsayma. Dogru hesap
+`slooinapp@gmail.com`, profil adi "Slooin" (`Profile 2`). Sonra
+`docs/sosyal-giris-kurulumu.md` sirasi: Google Cloud (proje Slooin,
+OAuth consent, 3 istemci: web / iOS / Android + Maps SDK for Android
+anahtari) -> Apple Developer -> Supabase -> derleme. Android SHA-1:
+`npx eas-cli credentials`. Anahtarlar `mobil/.env` ve EAS env'e;
+DEPOYA YAZILMAZ, SOHBETE YAPISTIRILMAZ.
+
+Yardimci: scratchpad'de `tarayici.mjs` (puppeteer CDP surucusu) ve
+`chrome-kopya/` duruyor; ikisi de artik gereksiz.
+
+### ESKI: SIRADAKI IS: APPLE / GOOGLE GIRISI - BYPASS KIPI BEKLIYOR - 2026-09-12
 
 Kullanici Apple/Google girisine gecmeye karar verdi. Marka hesaplari
 acildi: **Google Cloud ve Play Console `slooinapp@gmail.com` ile**
