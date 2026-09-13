@@ -116,6 +116,20 @@ npm run dogrula
 # esdeger: node araclar/dogrula.mjs
 ```
 
+**DIKKAT: `dogrula` DERLEME YAPMAZ**, mevcut `dist/`i olcer; kod
+degistirdikten sonra once `npm run build` (2026-09-14'te eski dist
+ekran goruntusune yansidi).
+
+**Canli site icin ayri arac: `npm run dogrula:canli`**
+(`araclar/canli-dogrula.mjs`). Yerel dist ile yayin arasindaki fark iki
+kez uretim hatasi yaratti (Cloudflare e-posta gizlemesi, 404 yerine ana
+sayfa); bu betik https://slooin.com uzerinde ham HTML'den olcer:
+7 dil x 5 sayfa 200 + `<html lang>`, JS'siz metin uzunlugu, e-posta
+adreslerinin acik olmasi, olmayan yolun 404 donmesi, dil algilama
+yonlendirmesi ve cerezi, sitede expo.app baglantisi olmamasi. Tarayici
+gerekmez. Yayindan hemen sonra eski surumu olcebilir - bekleyip tekrar
+kos.
+
 Bu, sitenin `jest` benzeri tek test kosumu. Once `dist/`i (build
 onceden alinmis olmali) yerel bir HTTP sunucusuyla servis ediyor,
 sonra Puppeteer ile su sorulari cevapliyor:
