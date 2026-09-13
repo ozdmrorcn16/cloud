@@ -1,8 +1,9 @@
 # Yurt disina veri aktarim envanteri (KVKK m.9)
 
-Tarih: 2026-09-13. Bu belge hukuki gorus degildir; bir KVKK
-danismanina dogrulatilmadan mağaza basvurusunda dayanak olarak
-kullanilmamalidir. Amac: hangi kisisel verinin, hangi rolle, hangi
+Tarih: 2026-09-13. Kullanicinin karari: avukat kullanilmayacak,
+hukuki arastirma bu projede Claude tarafindan birincil kaynaklardan
+(Kanun, Yonetmelik, Kurum duyurulari ve rehberi) yapilir ve her
+iddia kaynagiyla yazilir. Amac: hangi kisisel verinin, hangi rolle, hangi
 ulkeye, hangi amacla gittigini TEK YERDE ve kod ile birebir uyumlu
 tutmak. Kod degisirse (yeni dis servis, kaldirilan servis) once bu
 belge, sonra gizlilik metni (`docs/gizlilik-metni.md` ve
@@ -35,7 +36,7 @@ Orcun Ozdemir (gercek kisi). Basvuru adresi: destek@slooin.com.
 |---|---|---|---|---|---|---|---|---|
 | 1 | Supabase Inc. (proje `swpiibyuoffykbmirvgq`, bolge eu-central-1) | Almanya (AB) | Veri isleyen | BUTUN veritabani ve dosya depolama: e-posta, ad, kullanici adi, dogum tarihi, biyografi, fotograflar, konum (check-in aktifken), mesajlar, bag grafigi, bildirim jetonlari, sikayetler, moderasyon izi | Barindirma - hizmetin kendisi | Sozlesmenin ifasi (m.5/2-c); moderasyon verisi mesru menfaat (m.5/2-f) | Standart sozlesme: **veri sorumlusundan veri isleyene** | EKSIK - talep yazisi hazir |
 | 2 | Expo (650 Industries, Inc.) - Expo Push API | ABD | Veri isleyen | Cihaz bildirim jetonu, alici kullanici, bildirimi tetikleyen kisinin ADI. Mesaj metni HIC gitmiyor | Push bildirimi | Sozlesmenin ifasi + mesru menfaat | Standart sozlesme: veri sorumlusundan veri isleyene | EKSIK - talep yazisi hazir |
-| 3 | Apple Inc. (Apple Haritalar, iOS) / Google LLC (Google Haritalar, Android) | ABD | Bagimsiz veri sorumlusu (kendi kosullari) | Ekranda gorunen harita bolgesinin koordinatlari + cihaz IP'si. Kimlik, hesap, check-in gitmiyor | Harita zemini | Konum izni + aydinlatma | **Avukat sorusu:** bu bir "kisisel veri aktarimi" mi (koordinat + IP dolayli konum) yoksa isletim sisteminin kendi hizmeti mi. Sayilirsa sozlesme yolu yok - saglayici imzalamaz; alternatif harita zeminini kaldirmak | ACIK KARAR |
+| 3 | Apple Inc. (Apple Haritalar, iOS) / Google LLC (Google Haritalar, Android) | ABD | Bagimsiz veri sorumlusu (kendi kosullari) | Ekranda gorunen harita bolgesinin koordinatlari + cihaz IP'si. Kimlik, hesap, check-in gitmiyor | Harita zemini | Konum izni + aydinlatma | **Aranmiyor** - veri cihazdan dogrudan saglayiciya gidiyor, biz iletmiyoruz (Rehber No. 48, "dogrudan ilgili kisi tarafindan iletilen veri" olcutu; asagida madde 4) | KARAR VERILDI: bizim aktarimimiz degil; gizlilik metninde seffaflik geregi yaziyor |
 | 4 | Resend (planlaniyor, SMTP) | ABD | Veri isleyen | E-posta adresi + dogrulama kodu | Kayit/giris postasi | Sozlesmenin ifasi | Standart sozlesme (SMTP'ye gecince) | HENUZ YOK - su an Supabase'in yerlesik postacisi (1'in icinde) |
 | 5 | Apple / Google (Sign in with Apple / Google Sign-In) | ABD | Bagimsiz veri sorumlusu | Kullanicinin kendi tetikledigi kimlik dogrulama; bize yalnizca kimlik jetonu geliyor | Sosyal giris | Kullanicinin eylemi | Saglayicinin kendi sozlesmesi; bizden ONLARA veri gitmiyor | Bilgi amacli |
 
