@@ -26,7 +26,7 @@ const a = sozluk(dil).ana
     <img class="filigran" src="/marka-isareti.png" alt="" aria-hidden="true" />
 
     <div class="ust">
-      <a class="giris" href="https://slooin.expo.app">{t.girisDugmesi}</a>
+      <a class="giris" href={dil === 'tr' ? '/giris' : `/${dil}/giris`}>{t.girisDugmesi}</a>
     </div>
 
     <div class="govde">
