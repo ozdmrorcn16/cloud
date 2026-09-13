@@ -268,8 +268,10 @@ Gizlilik metni yayinda: web `slooin--tee6yc230m`, OTA grup
 
 **KALAN:** Apple magaza formundaki gizlilik adresi
 `slooin.expo.app/gizlilik` -> `slooin.com/gizlilik`; Apple SPF
-durumunun yesile donmesi (birkac saat sonra bak); Resend icin de KVKK
-standart sozlesme talebi (Supabase/Expo sablonu).
+durumunun yesile donmesi (birkac saat sonra bak). Resend KVKK
+standart sozlesme talebi 2026-09-14'te GONDERILDI (Resend API,
+destek@ -> support@resend.com, delivered; cevap slooinapp@gmail.com'a
+duser).
 
 ### WEB GIRIS SAYFASI IPTAL, SITEDE expo.app YOK - 2026-09-14
 

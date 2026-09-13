@@ -1,4 +1,4 @@
-# Standart sozlesme talep yazilari (Supabase ve Expo)
+# Standart sozlesme talep yazilari (Supabase, Expo ve Resend)
 
 Kullanim: metni oldugu gibi e-postaya yapistir, koseli parantezleri
 doldur, Kurum'un standart sozlesmesini (veri sorumlusundan veri
@@ -13,6 +13,7 @@ Gonderilen tarih ve cevap buraya not edilsin:
 | Alici | Gonderildi | Cevap |
 |---|---|---|
 | Supabase | 2026-09-13 10:47 e-posta -> bilet **SU-471923** (otomatik yanit: e-posta biletleri Free sayilir, Pro icin dashboard formu). 11:05 dashboard destek formu (org "uygulama", proje konum-sosyal, kategori Other, Low) - "Support request sent"; form PDF kabul etmiyor (yalnizca png/jpg/har), PDF e-posta biletinde + Kurum baglantisi mesajda | insan cevabi bekleniyor |
+| Resend | 2026-09-14 00:50 e-posta, Resend API ile `destek@slooin.com`dan `support@resend.com`a (id `7fe2e09e-…`, durum **delivered**); ek yok, Kurum baglantisi mesajda | insan cevabi bekleniyor (destek@ -> slooinapp@gmail.com) |
 | Expo | 2026-09-13 10:48 e-posta (otomatik yanit: adres izlenmiyor) -> 10:51 expo.dev/contact formu, hesap byorcun; onay maili "PLAN-FREE / Other support - We've received your request" | insan cevabi bekleniyor (Free plan: yanit garantisi yok) |
 
 Gonderim ajan tarafindan Chrome (Browser 1, ozdmrorcn16@gmail.com)
@@ -134,3 +135,63 @@ Thank you,
 Orçun Özdemir
 
 Attachment: KVKK-Standart-Sozlesme-2-Veri-Sorumlusundan-Veri-Isleyene.pdf (Board's official Turkish text)
+
+
+---
+
+## 3. Resend
+
+**To:** support@resend.com
+**From:** destek@slooin.com (Resend API ile gonderildi; cevap
+destek@slooin.com -> slooinapp@gmail.com yonlendirmesine duser)
+**Subject:** Request to execute Turkish KVKK Standard Contract (data
+controller to processor) - domain slooin.com
+
+Hello Resend team,
+
+I operate a mobile application (Slooin) and use Resend to deliver
+transactional e-mails (6-digit verification codes for sign-up, sign-in
+and account deletion) from the verified domain `slooin.com`, region
+eu-west-1, account slooinapp@gmail.com. The only personal data passing
+through your service is the recipient's e-mail address and the
+one-time code; there is no recipient name and no other content.
+
+Under Article 9 of the Turkish Personal Data Protection Law (Law No.
+6698, as amended by Law No. 7499 effective 1 June 2024), a data
+controller established in Turkey may transfer personal data abroad
+only under an adequacy decision of the Turkish Data Protection Board
+(none exists today, including for the EU) or under "appropriate
+safeguards". The most practical safeguard for a controller-to-processor
+relationship is the **Standard Contract** published by the Board, which
+must be signed without modification by both parties and notified to
+the Board within five business days of signature.
+
+I am aware of your DPA and EU SCCs, but Turkish law requires the
+Board's own template in addition. I would therefore like to ask:
+
+1. Are you able to execute the Turkish Standard Contract
+   (controller-to-processor; the Board publishes it in Turkish, I can
+   provide an English courtesy translation) with me as the data
+   controller? Only the annexes (parties, data categories, purposes,
+   retention) are filled in; the body is the Board's text and cannot
+   be altered. Official text: https://www.kvkk.gov.tr/Icerik/2053/Yurtdisina-Aktarim
+2. If you cannot sign it, do you have any Turkey-specific arrangement
+   (a Board-approved undertaking or a documented position) that other
+   customers in Turkey rely on?
+
+Please note the formal requirements set by the Turkish Board, which
+we cannot waive: the contract body must remain unchanged; if a
+bilingual version is used, signatures must be placed on the Turkish
+text; the Board requires a **wet (handwritten) signature** by an
+authorised signatory (a Turkish qualified electronic signature is the
+only alternative), together with **proof of the signatory's authority
+bearing an apostille and a Turkish translation**. I know this is
+unusual; if you have handled it for other customers in Turkey, a
+pointer to that process would be very helpful.
+
+Signatory on my side: Orçun Özdemir, natural person, Bursa, Turkey
+(full postal address will appear in Annex I).
+Contact: destek@slooin.com.
+
+Thank you,
+Orçun Özdemir
