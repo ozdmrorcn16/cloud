@@ -142,6 +142,22 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SITEDE OTOMATIK DIL ALGILAMA + EMAIL_OFF - 2026-09-14
+
+Kullanicinin istegi: "otomatik dil algilayici koy". Cloudflare Pages
+Function `site/functions/_middleware.js`: `Accept-Language` -> oneksiz
+yoldan `/xx/...`e 302, `dil` cerezi secimi kilitler (onekli yol
+ziyareti cerezi yazar; alt seritteki "Turkce" `?dil=tr`). Canli olculdu
+(de/en yonleniyor, tr/ja dokunulmuyor, cerez ustun). Ayrintisi
+`site/README.md`. Ayni turda: Cloudflare e-posta gizlemesi
+`<!--email_off-->` ile kapatildi (JS kapaliyken "[email protected]"
+kaliyordu), hesap-sil dipnotu 7 dilde "gizli Apple adresine kod
+ULASIR" diye duzeltildi.
+
+Kullanici ayrica "sitede giris yapma ekrani yanlis" dedi - hangi ekran
+oldugu SORULDU, cevap bekleniyor (slooin.com'da giris ekrani yok;
+uygulamanin web surumu slooin.expo.app).
+
 ### POSTA SABLONU YENIDEN, KOD 10 DAKIKA - 2026-09-13 GECE
 
 Kullanici gelen postayi gordu: konu ve baslik ayni cumle, duz metin,

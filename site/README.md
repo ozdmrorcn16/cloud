@@ -245,8 +245,25 @@ cunku `.test` adreslerine posta gitmiyor; sayfadaki "Onay kodu gonder"
 bu yuzden test hesabinda "Kod su anda gonderilemedi" der ve betik kod
 alanini elle acar. Gercek kullanicida posta gider.)
 
-**Kalan:** `destek@slooin.com` posta yonlendirmesi (Cloudflare Email
-Routing) ve Resend SMTP. Not: `*.pages.dev` bu makinenin agindan
+**Otomatik dil algilama:** `site/functions/_middleware.js` (Cloudflare
+Pages Function). Oneksiz (Turkce) bir yola gelen ziyaretci
+`Accept-Language`a gore `/en/...` gibi kendi diline 302 ile gider;
+JavaScript kapaliyken de calisir. Secim `dil` cerezine yazilir: onekli
+bir dil yolunu ziyaret etmek cerezi o dile ceker, alt seritteki
+"Turkce" baglantisi `?dil=tr` tasir ve cerezi `tr` yapar - boylece
+Turkce'yi bilerek secen Almanca tarayicili biri bir daha atilmaz.
+Canli olcum (2026-09-14): de -> /de/gizlilik/, en -> /en/gizlilik/,
+tr ve listede olmayan (ja) -> dokunulmadi, `Cookie: dil=tr` + Almanca
+tarayici -> 200. `DILLER` listesi `src/i18n/diller.ts` ile ayni
+tutulmali (Function `src/`den import edemiyor).
+
+**Cloudflare e-posta gizlemesi kapali:** `Duzen.astro` govdeyi
+`<!--email_off-->` ile sariyor. Yoksa Cloudflare adresleri JS ile
+cozulen bicime ceviriyor ve JS kapaliyken "[email protected]" kaliyor
+(canlida goruldu; Apple'in JS'siz okunabilirlik sartini bozar).
+
+`destek@slooin.com` -> Cloudflare Email Routing -> slooinapp@gmail.com
+(kuruldu, test postasi delivered). Resend SMTP kuruldu. Not: `*.pages.dev` bu makinenin agindan
 erisilemiyor (baglanti zaman asimi); olcumler `slooin.com` uzerinden.
 
 **KARISTIRILMAMASI GEREKEN UC AYRI YAYIN YOLU** (bu proje uc ayri sey
