@@ -12,8 +12,8 @@ Gonderilen tarih ve cevap buraya not edilsin:
 
 | Alici | Gonderildi | Cevap |
 |---|---|---|
-| Supabase | 2026-09-13 10:47, ozdmrorcn16@gmail.com -> support@supabase.com, PDF ekli | bekleniyor |
-| Expo | 2026-09-13 10:48 e-posta (otomatik yanit: adres izlenmiyor) -> 10:5x expo.dev/contact formu, kategori "Other", hesap byorcun ("Message received") | bekleniyor |
+| Supabase | 2026-09-13 10:47 e-posta -> bilet **SU-471923** (otomatik yanit: e-posta biletleri Free sayilir, Pro icin dashboard formu). 11:05 dashboard destek formu (org "uygulama", proje konum-sosyal, kategori Other, Low) - "Support request sent"; form PDF kabul etmiyor (yalnizca png/jpg/har), PDF e-posta biletinde + Kurum baglantisi mesajda | insan cevabi bekleniyor |
+| Expo | 2026-09-13 10:48 e-posta (otomatik yanit: adres izlenmiyor) -> 10:51 expo.dev/contact formu, hesap byorcun; onay maili "PLAN-FREE / Other support - We've received your request" | insan cevabi bekleniyor (Free plan: yanit garantisi yok) |
 
 Gonderim ajan tarafindan Chrome (Browser 1, ozdmrorcn16@gmail.com)
 uzerinden yapildi - kullanicinin talimati: "Supabase'ye uye oldugum
