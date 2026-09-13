@@ -154,9 +154,8 @@ ziyareti cerezi yazar; alt seritteki "Turkce" `?dil=tr`). Canli olculdu
 kaliyordu), hesap-sil dipnotu 7 dilde "gizli Apple adresine kod
 ULASIR" diye duzeltildi.
 
-Kullanici ayrica "sitede giris yapma ekrani yanlis" dedi - hangi ekran
-oldugu SORULDU, cevap bekleniyor (slooin.com'da giris ekrani yok;
-uygulamanin web surumu slooin.expo.app).
+Kullanicinin "sitede giris yapma ekrani yanlis" sozunun cevabi Swarm
+referansli `slooin.com/giris` sayfasi oldu - bkz. asagidaki DEVIR NOTU.
 
 ### POSTA SABLONU YENIDEN, KOD 10 DAKIKA - 2026-09-13 GECE
 
@@ -275,10 +274,10 @@ standart sozlesme talebi (Supabase/Expo sablonu).
 
 Kullanici Swarm'in web giris sayfasini referans verip "Buna benzer bir
 giris sayfasi yap" / "web surumune yonlendirme" dedi. Is YAZILDI, YEREL
-TESTI GECTI, ama COMMIT'LENMEDI ve YAYINLANMADI. Oturum kullanicinin
+TESTI GECTI, commit `6a0b78c` ile push edildi, ama YAYINLANMADI. Oturum kullanicinin
 istegiyle burada durduruldu ("yeni oturumda devam edelim").
 
-**YAPILANLAR (calisma agacinda, commit yok):**
+**YAPILANLAR (commit `6a0b78c`):**
 - `site/src/pages/[...dil]/giris.astro` YENI: turuncu bant
   (`/marka-yazisi-acik.png` + ana sayfadaki "Yakinda" App Store /
   Google Play rozetleri), ortada kart (`#giris-formu`: eposta, sifre,
@@ -311,8 +310,8 @@ eksik olan yalnizca yayin ve canli test.
 **YENI OTURUMDA SIRA:**
 1. `cd site && npm run dogrula` (42 sayfa build OK idi, dogrula
    kosulmadi).
-2. Commit + push (site + mobil birlikte). Pages otomatik dagitir
-   (prod dal `claude/plan2-moderasyon-paneli`, kok `site`).
+2. Site push ile Pages'e ZATEN gitti (prod dal `claude/plan2-moderasyon-paneli`);
+   `https://slooin.com/giris` 200 donuyor mu bak.
 3. Uygulamayi yayinla ki `slooin.expo.app` fragment'i kabul etsin:
    `cd mobil && npm run yayinla` ve
    `npx eas-cli update --channel production --environment production
