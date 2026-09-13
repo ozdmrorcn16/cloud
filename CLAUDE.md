@@ -187,6 +187,10 @@ googleIleDogrula, sil); `hatalar.vt` bes yeni sunucu metni
 943 test, tsc uygulama kodunda 0 hata. KVKK listesi 5. madde
 guncellendi (dort soru cevapli).
 
+**YAYINDA:** commit `1c2b704`, web `slooin.expo.app` (dagitim
+`slooin--sjug3578v1`, pakette `kodla-sil` testID'si dogrulandi), OTA grup
+`c8baae8a-9e7e-4690-aa5c-1267b702f6ca`.
+
 ### SITE YEDI DILDE, HUKUKI METINLER ORTAK KAYNAKTAN; KVKK m.9 ISI - 2026-09-13 OGLE
 
 **Site (`site/`) yedi dile gecti** (commit `824cc01`): gizlilik ve
