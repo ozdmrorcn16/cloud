@@ -1224,3 +1224,12 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     yerlesim kusuru ekran goruntusuyle bulunup duzeltildi. Ekran
     goruntusu aracina SLOOIN_TEST_SEMA anahtari eklendi - koyu mod
     geldikten sonra sart oldu. Kapanis: jest 60/578.
+
+92. **WEB GIRIS SAYFASI IPTAL; SITEDE expo.app KULLANILMAZ**
+    (2026-09-14). Kullanici Swarm referansiyla `slooin.com/giris`
+    istemis, sayfa yazilip yayinlanmisti. Ayni gece iki karar:
+    "sitede slooin.expo'yu kullanma" ve "giris sayfasi ekleme iptal".
+    Sayfa, betigi, 7 dil sozlugu ve `detectSessionInUrl` degisikligi
+    geri alindi; ana sayfadaki "Giris" dugmesi kaldirildi (tek hedefi
+    slooin.expo.app idi). Kalici kural: `slooin.com` hicbir yerde
+    `slooin.expo.app`'e baglanti vermez. Commit `cb98e21`, `7d599e0`.
