@@ -194,62 +194,37 @@ try {
     await sayfa.close()
   }
 
-  // 6) Cok dilli yapi (yapi hazir, yayina bos dil konmuyor)
+  // 6) Cok dilli yapi - YEDI DIL KALICI (2026-09-13).
+  //
+  // Eskiden `diller.ts` gecici olarak ['tr','en'] yapilip derleniyor,
+  // sonra geri aliniyordu ("yayina bos dil konmuyor"). Artik yedi
+  // dilin hepsi dolu: gizlilik ve kosullar uygulamayla ortak
+  // kaynaktan (`mobil/lib/hukuki`), kalan sayfalar `sozlukler.ts`ten.
+  // Olcum: her dilin bes sayfasi uretilmis mi, hreflang karsilikli mi,
+  // <html lang> dogru mu, Arapca sayfa dir="rtl" mi, ve her dilin
+  // gizlilik sayfasi GERCEKTEN o dilde mi (Turkce basligi tasimiyor).
   console.log('\nCok dilli yapi')
-  if (!fs.existsSync(DILLER_TS)) {
-    kontrol(false, 'site/src/i18n/diller.ts henuz yok')
-  } else {
-    const ozgunIcerik = fs.readFileSync(DILLER_TS, 'utf8')
-    const desen = /export const DILLER = \[.*?\] as const/
-    const geciciIcerik = ozgunIcerik.replace(desen, "export const DILLER = ['tr', 'en'] as const")
-
-    if (!desen.test(ozgunIcerik) || geciciIcerik === ozgunIcerik) {
-      kontrol(false, 'diller.ts icinde DILLER deseni bulunamadi, gecici degisiklik yapilamadi')
-    } else {
-      let derlemeBasarili = false
-      try {
-        fs.writeFileSync(DILLER_TS, geciciIcerik)
-        try {
-          execSync('npm run build', { cwd: SITE_DIZINI, stdio: 'pipe' })
-          derlemeBasarili = true
-        } catch (e) {
-          kontrol(false, `gecici (iki dilli) derleme basarisiz: ${(e.stderr || e.message).toString().slice(0, 400)}`)
-        }
-
-        if (derlemeBasarili) {
-          for (const yol of ['/en', '/en/gizlilik', '/en/kosullar', '/en/destek', '/en/hesap-sil']) {
-            const dosya = path.join(DIST, yol, 'index.html')
-            kontrol(fs.existsSync(dosya), `${yol}/index.html uretildi mi`)
-          }
-
-          const trDosya = path.join(DIST, 'gizlilik', 'index.html')
-          const enDosya = path.join(DIST, 'en', 'gizlilik', 'index.html')
-          if (fs.existsSync(trDosya) && fs.existsSync(enDosya)) {
-            const trHtml = fs.readFileSync(trDosya, 'utf8')
-            const enHtml = fs.readFileSync(enDosya, 'utf8')
-            kontrol(/hreflang="tr"/.test(trHtml), 'Turkce sayfa hreflang="tr" tasiyor')
-            kontrol(/hreflang="en"/.test(trHtml), 'Turkce sayfa hreflang="en" tasiyor (karsilikli)')
-            kontrol(/hreflang="tr"/.test(enHtml), 'Ingilizce sayfa hreflang="tr" tasiyor (karsilikli)')
-            kontrol(/hreflang="en"/.test(enHtml), 'Ingilizce sayfa hreflang="en" tasiyor')
-            kontrol(/<html[^>]*\slang="en"/.test(enHtml), 'Ingilizce sayfada <html lang="en">')
-          } else {
-            kontrol(false, 'hreflang karsilastirmasi icin gizlilik sayfalari eksik')
-          }
-        }
-      } finally {
-        // Olcum ortasinda bir hata olsa bile diller.ts BOZUK KALMAMALI -
-        // yayina bos dil konmamasi bu geri donuse bagli.
-        fs.writeFileSync(DILLER_TS, ozgunIcerik)
-        try {
-          execSync('npm run build', { cwd: SITE_DIZINI, stdio: 'pipe' })
-        } catch (e) {
-          kontrol(false, `geri donus derlemesi basarisiz: ${(e.stderr || e.message).toString().slice(0, 400)}`)
-        }
-      }
-
-      kontrol(!fs.existsSync(path.join(DIST, 'en')), 'geri donduktan sonra yayinda /en/ uretilmiyor')
+  const DILLER = ['tr', 'en', 'de', 'es', 'fr', 'ru', 'ar']
+  const onek = (d) => (d === 'tr' ? '' : '/' + d)
+  for (const d of DILLER) {
+    for (const yol of ['', '/gizlilik', '/kosullar', '/destek', '/hesap-sil']) {
+      const dosya = path.join(DIST, onek(d) + yol, 'index.html')
+      kontrol(fs.existsSync(dosya), `${onek(d) + yol || '/'}/index.html uretildi mi`)
     }
   }
+  const trHtml = fs.readFileSync(path.join(DIST, 'gizlilik', 'index.html'), 'utf8')
+  for (const d of DILLER) {
+    kontrol(new RegExp(`hreflang="${d}"`).test(trHtml), `Turkce gizlilik sayfasi hreflang="${d}" tasiyor`)
+    if (d === 'tr') continue
+    const html = fs.readFileSync(path.join(DIST, d, 'gizlilik', 'index.html'), 'utf8')
+    kontrol(new RegExp(`<html[^>]*\\slang="${d}"`).test(html), `${d} sayfasinda <html lang="${d}">`)
+    kontrol(/hreflang="tr"/.test(html), `${d} sayfasi hreflang="tr" tasiyor (karsilikli)`)
+    kontrol(!html.includes('3. Konum özel olarak'), `${d} gizlilik sayfasi Turkce baslik TASIMIYOR (gercekten cevrilmis)`)
+    kontrol(html.includes('destek@slooin.com'), `${d} gizlilik sayfasinda basvuru adresi var`)
+  }
+  const arHtml = fs.readFileSync(path.join(DIST, 'ar', 'gizlilik', 'index.html'), 'utf8')
+  kontrol(/<html[^>]*\sdir="rtl"/.test(arHtml), 'Arapca sayfa dir="rtl"')
+  kontrol(/<html[^>]*\sdir="ltr"/.test(trHtml), 'Turkce sayfa dir="ltr"')
 
   // 7) Olu ic baglanti
   console.log('\nIc baglantilar')

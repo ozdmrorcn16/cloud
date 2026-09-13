@@ -13,6 +13,10 @@
  * parolayi kendisi yeniden dogruluyor.
  */
 import { createClient } from '@supabase/supabase-js'
+import { sozluk } from '../i18n/sozlukler'
+
+// Durum metinleri sayfanin diline gore (`<html lang>`); yedi dil.
+const t = sozluk(document.documentElement.lang).hesapSil.betik
 
 const URL = import.meta.env.PUBLIC_SUPABASE_URL
 const ANON = import.meta.env.PUBLIC_SUPABASE_ANON_KEY
@@ -38,12 +42,12 @@ form.addEventListener('submit', async (olay) => {
   const parola = String(veri.get('parola') || '')
 
   if (!eposta || !parola) {
-    bildir('E-posta ve parolanı gir.', 'hata')
+    bildir(t.eksik, 'hata')
     return
   }
 
   dugme.disabled = true
-  bildir('Hesabın kontrol ediliyor…', 'bilgi')
+  bildir(t.kontrol, 'bilgi')
 
   // 1) Oturum ac - JWT olmadan Edge Function cagrilamaz.
   const { data: oturum, error: girisHatasi } =
@@ -64,29 +68,17 @@ form.addEventListener('submit', async (olay) => {
       // Parolasi olmayan hesaplar da buraya duesuer (kayit e-posta
       // koduyla basliyor, parola profil olusturma adiminda
       // belirleniyor). Mesaj bu ihtimali de soyluyor.
-      bildir(
-        'Giriş yapılamadı. E-posta ya da parola yanlış olabilir. ' +
-          'Hesabını hiç parola belirlemeden açtıysan destek@slooin.com adresine yaz.',
-        'hata',
-      )
+      bildir(t.girisHatasi, 'hata')
     } else if (girisHatasi?.status === 429) {
-      bildir(
-        'Çok fazla deneme yapıldığı için bu girişim engellendi. Birkaç ' +
-          'dakika bekleyip tekrar dene.',
-        'hata',
-      )
+      bildir(t.cokDeneme, 'hata')
     } else {
-      bildir(
-        'Giriş şu anda tamamlanamadı. Birkaç dakika sonra tekrar dene; ' +
-          'sorun sürerse destek@slooin.com adresine yaz.',
-        'hata',
-      )
+      bildir(t.girisTamamlanamadi, 'hata')
     }
     dugme.disabled = false
     return
   }
 
-  bildir('Hesabın siliniyor…', 'bilgi')
+  bildir(t.siliniyor, 'bilgi')
 
   // 2) Silme. Parola GOVDEDE de gonderiliyor; fonksiyon onu sunucuda
   // yeniden dogruluyor, yani calinmis bir oturum jetonu tek basina
@@ -96,25 +88,17 @@ form.addEventListener('submit', async (olay) => {
   })
 
   if (error) {
-    bildir(
-      'Hesap silinemedi. Biraz sonra tekrar dene; sorun sürerse ' +
-        'destek@slooin.com adresine yaz.',
-      'hata',
-    )
+    bildir(t.silinemedi, 'hata')
     dugme.disabled = false
     return
   }
 
   if (data?.silindi) {
     form.hidden = true
-    bildir(
-      'Hesabın silindi. Bu işlem geri alınamaz. ' +
-        'Uygulama hâlâ telefonundaysa onu da kaldırabilirsin.',
-      'basari',
-    )
+    bildir(t.silindi, 'basari')
     return
   }
 
-  bildir('Beklenmeyen bir yanıt alındı. destek@slooin.com adresine yaz.', 'hata')
+  bildir(t.beklenmeyen, 'hata')
   dugme.disabled = false
 })

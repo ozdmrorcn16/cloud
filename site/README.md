@@ -23,29 +23,35 @@ Bunlara ek olarak bir **ana sayfa** (`/`) var - uygulamayi tanitan tek
 ekranlik bir sahne (Swarm tarzi kalabalik animasyonu + iki telefon
 maketi).
 
-## UYARI: gizlilik ve kosullar metni UC/IKI YERDE tekrarlaniyor
+## Gizlilik ve kosullar: uygulamayla ORTAK KAYNAK (2026-09-13)
 
-Bu iki hukuki metin tek bir kaynaktan servis edilmiyor; ayni icerik
-birden fazla dosyada elle tutuluyor:
+Iki hukuki metin artik ELLE TEKRARLANMIYOR. Site sayfalari
+(`src/pages/[...dil]/gizlilik.astro`, `kosullar.astro`) dogrudan
+`mobil/lib/hukuki/<dil>.ts` dosyalarini import ediyor - uygulama ici
+ekranlarin okudugu dizilerin ta kendisi. Yedi dil (tr, en, de, es, fr,
+ru, ar); Turkce kaynak, diger dillerde belgenin basinda "Turkce metin
+esastir" notu.
 
-**Gizlilik metni (3 yer):**
-- `docs/gizlilik-metni.md` - kaynak, karar defteri burada tutuluyor.
-- `site/src/pages/[...dil]/gizlilik.astro` - bu sitenin sayfasi.
-- `mobil/src/app/gizlilik.tsx` - uygulama ici ekran; metin kodun icine
-  KOPYALANMIS, cunku ekran cevrimdisi de okunabilmeli.
+**Kural:** hukuki bir degisiklik `docs/gizlilik-metni.md` (karar
+defteri) -> `mobil/lib/hukuki/tr.ts` -> alti ceviri sirasiyla yapilir;
+site kendiliginden guncellenir. `mobil/lib/hukuki/hukuki.test.ts`
+cevirilerin bolum/paragraf sayisini tr ile birebir tutuyor.
 
-**Kullanim kosullari (2 yer):**
-- `docs/kullanim-kosullari.md` - kaynak.
-- `site/src/pages/[...dil]/kosullar.astro` - bu sitenin sayfasi.
+Eski durum (tarihsel, 2026-09-07): metin uc yerde elle tekrarlaniyordu
+ve bir kez birbirinden kopmustu; site telefon numarasindan bahsederken
+uygulama e-postaya gecmisti. Bu is o sinif hatayi yapisal olarak
+kapatiyor.
 
-**Kural: bu dosyalardan birine yapilan bir degisiklik AYNI COMMIT
-icinde hepsine uygulanmali.** Tek dosya guncelleyip digerlerini
-"sonraya birakmak" onlari birbirinden koparir. Bu zaten BIR KEZ oldu:
-denetim, kaynak belge ve site guncellenirken uygulama ici ekranin
-eskisini gosterip iki yeni surumle celistigini buldu. Yeni bir hukuki
-degisiklik yapiliyorsa checklist su: kaynagi yaz, siteyi yaz, uygulama
-ekranini yaz, sonra bu ucunu ayni anahtar kelimeler icin grep'le
-karsilastir.
+## Yedi dil
+
+`src/i18n/diller.ts` yedi dili tasiyor (uygulamadaki
+`DESTEKLENEN_DILLER` ile ayni). Kabuk, ana sayfa, destek ve hesap silme
+metinleri `src/i18n/sozlukler.ts` icinde; `<html lang>` ve `dir`
+(Arapca `rtl`) `Duzen.astro`da. Kok dil Turkce oneksiz (`/gizlilik`),
+digerleri `/en/gizlilik` gibi. Hesap silme betigi durum metinlerini
+`document.documentElement.lang`den seciyor. `npm run dogrula` her dilin
+bes sayfasini, hreflang karsilikliligini ve gizlilik sayfasinin
+gercekten cevrilmis oldugunu (Turkce baslik tasimadigini) olcuyor.
 
 ## Neden Astro, neden Cloudflare Pages
 

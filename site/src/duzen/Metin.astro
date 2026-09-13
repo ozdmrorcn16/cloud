@@ -3,29 +3,36 @@ import Duzen from './Duzen.astro'
 import AltSerit from './AltSerit.astro'
 import MarkaLockup from '../ortak/MarkaLockup.astro'
 import { KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
+import { sozluk } from '../i18n/sozlukler'
 
 interface Props {
   baslik: string
   aciklama: string
-  guncelleme: string
+  /** Son guncelleme tarihi; dile gore bicimlenir. */
+  guncelleme: Date
   dil?: Dil
   /** Dil onegi HARIC sayfa yolu, orn. "/gizlilik". Hreflang icin sart. */
   yol: string
+  /** Turkce disinda "Turkce metin esastir" notu gosterilsin mi (hukuki sayfalar). */
+  hukuki?: boolean
 }
-const { baslik, aciklama, guncelleme, dil = KOK_DIL, yol } = Astro.props
+const { baslik, aciklama, guncelleme, dil = KOK_DIL, yol, hukuki = false } = Astro.props
 const anaSayfaYolu = dilOneki(dil) || '/'
+const t = sozluk(dil).kabuk
+const tarih = guncelleme.toLocaleDateString(dil, { day: 'numeric', month: 'long', year: 'numeric' })
 ---
 
 <Duzen baslik={`${baslik} · Slooin`} aciklama={aciklama} dil={dil} yol={yol}>
   <header class="ust-serit">
-    <a href={anaSayfaYolu} aria-label="Slooin ana sayfa">
+    <a href={anaSayfaYolu} aria-label={t.anaSayfaEtiketi}>
       <MarkaLockup genislik="128px" radar={false} />
     </a>
   </header>
 
   <main class="metin">
     <h1>{baslik}</h1>
-    <p class="guncelleme">Son güncelleme: {guncelleme}</p>
+    <p class="guncelleme">{t.sonGuncelleme}: {tarih}</p>
+    {hukuki && dil !== KOK_DIL && <p class="ustunluk">{t.ustunlukNotu}</p>}
     <slot />
   </main>
 
@@ -54,6 +61,17 @@ const anaSayfaYolu = dilOneki(dil) || '/'
   }
 
   .guncelleme { color: var(--soluk); font-size: 14px; margin: 0 0 32px; }
+
+  .ustunluk {
+    border-left: 3px solid var(--turuncu);
+    background: #fff8f2;
+    padding: 12px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: -16px 0 28px;
+    font-size: 15px;
+    color: var(--ikincil);
+  }
+  :global([dir='rtl']) .ustunluk { border-left: 0; border-right: 3px solid var(--turuncu); border-radius: 10px 0 0 10px; }
 
   .metin :global(h2) {
     font-size: 21px;

@@ -1,76 +1,56 @@
 ---
 import Metin from '../../duzen/Metin.astro'
 import { dilYollari, type Dil } from '../../i18n/diller'
+import { sozluk } from '../../i18n/sozlukler'
 
 export function getStaticPaths() {
   return dilYollari()
 }
 
 const { dil } = Astro.props as { dil: Dil }
+const t = sozluk(dil).hesapSil
+const EPOSTA = 'destek@slooin.com'
+const dipnot = t.dipnot.split(/(\{\{eposta\}\})/g).filter(Boolean)
 ---
 
 <Metin
-  baslik="Hesabını sil"
-  aciklama="Slooin hesabını ve hesabına bağlı verileri kalıcı olarak silme."
-  guncelleme="7 Eylül 2026"
+  baslik={t.baslik}
+  aciklama={t.aciklama}
+  guncelleme={new Date(2026, 8, 13)}
   dil={dil}
   yol="/hesap-sil"
 >
-  <p>
-    Hesabını uygulama içinden <strong>Ayarlar &rsaquo; Hesabımı sil</strong>
-    adımından silebilirsin. Uygulamayı telefonundan kaldırdıysan bu
-    sayfadan da silebilirsin — uygulamayı yeniden kurman gerekmez.
-  </p>
+  <p>{t.giris}</p>
 
-  <h2>Ne silinir?</h2>
+  <h2>{t.neSilinirBaslik}</h2>
   <ul>
-    <li>Hesabın ve profilin (adın, kullanıcı adın, biyografin, doğum tarihin)</li>
-    <li>Profil fotoğrafın ve check-in fotoğrafların</li>
-    <li>Bütün check-in'lerin ve anıların</li>
-    <li>Arkadaşlıkların, istekler, engellemeler ve bildirim kayıtların</li>
+    {t.silinenler.map((madde) => <li>{madde}</li>)}
   </ul>
 
-  <h2>Ne kalır?</h2>
-  <p>
-    Başkalarına gönderdiğin mesajlar ve gönderdiğin şikâyetler
-    <strong>silinmez, anonimleşir</strong> — gönderen bilgisi kaldırılır.
-    Mesajları silmek karşı tarafın konuşma geçmişini de silmek anlamına
-    geleceği için bu tercih edildi.
-  </p>
+  <h2>{t.neKalirBaslik}</h2>
+  <p>{t.neKalir}</p>
 
-  <p class="kutu">
-    Silme işlemi <strong>geri alınamaz</strong>. Aynı e-posta ile yeniden
-    kayıt olabilirsin ama eski verilerin geri gelmez. Hesabını geçici
-    olarak kapatmak istiyorsan, uygulama içindeki
-    <strong>hesabı dondurma</strong> seçeneğini kullan — tekrar giriş
-    yaptığında hesabın kendiliğinden açılır.
-  </p>
+  <p class="kutu">{t.uyari}</p>
 
-  <h2>Sil</h2>
-  <p>
-    Güvenlik için parolan isteniyor. Parolan sunucuda doğrulanır;
-    bu sayfanın hesabın üzerinde hiçbir yetkisi yoktur.
-  </p>
+  <h2>{t.silBaslik}</h2>
+  <p>{t.silAciklama}</p>
 
   <form id="silme-formu">
     <label>
-      E-posta
+      {t.epostaEtiket}
       <input type="email" name="eposta" autocomplete="email" required />
     </label>
     <label>
-      Parola
+      {t.parolaEtiket}
       <input type="password" name="parola" autocomplete="current-password" required />
     </label>
-    <button id="sil-dugmesi" type="submit">Hesabımı kalıcı olarak sil</button>
+    <button id="sil-dugmesi" type="submit">{t.dugme}</button>
   </form>
 
   <p id="durum" class="durum" role="status" aria-live="polite"></p>
 
   <p>
-    Hesabını telefon numarasıyla açtıysan ya da hiç parola
-    belirlemediysen bu form çalışmaz. O durumda
-    <a href="mailto:destek@slooin.com">destek@slooin.com</a> adresine
-    yaz; silme talebini oradan alırız.
+    {dipnot.map((parca) => (parca === '{{eposta}}' ? <a href={`mailto:${EPOSTA}`}>{EPOSTA}</a> : parca))}
   </p>
 </Metin>
 

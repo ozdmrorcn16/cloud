@@ -1,13 +1,11 @@
 ---
 import { DILLER, KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
-import { tr } from '../i18n/tr'
+import { sozluk } from '../i18n/sozlukler'
 
-// Bugun tek dil (tr) var; kayit genisletilebilir olsun diye kucuk bir
-// harita uzerinden okunuyor. Bilinmeyen bir dil gelirse Turkce'ye
-// duesuer - uygulamadaki `lib/dil.tsx` ile ayni desen.
-const SOZLUKLER: Record<string, typeof tr> = { tr }
+// Yedi dil; bilinmeyen bir dil gelirse Turkce'ye duesuer - uygulamadaki
+// `lib/dil.tsx` ile ayni desen.
 function kabukMetni(dil: Dil) {
-  return SOZLUKLER[dil] ?? tr
+  return sozluk(dil).kabuk
 }
 
 interface Props {

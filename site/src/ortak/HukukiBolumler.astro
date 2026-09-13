@@ -1,0 +1,51 @@
+---
+/**
+ * Hukuki bir belgenin (gizlilik / kosullar) bolumlerini cizer.
+ *
+ * ICERIK UYGULAMAYLA ORTAK: `mobil/lib/hukuki/<dil>.ts`. Site ve
+ * uygulama ayni diziyi okudugu icin ikisi birbirinden KOPAMAZ - eski
+ * "uc yerde elle tekrarlanan metin" sorunu (site/README.md) bununla
+ * kapaniyor. Turkce kaynak `mobil/lib/hukuki/tr.ts`, onun kaynagi
+ * `docs/gizlilik-metni.md`.
+ *
+ * Paragraflar duz metin; e-posta adresleri baglantiya cevriliyor
+ * (Apple'in gizlilik sayfasi JavaScript kapaliyken de okunabilmeli -
+ * bu bilesen tamamen statik HTML uretiyor).
+ */
+import type { HukukiBolum } from '../../../mobil/lib/hukuki/tur'
+
+interface Props {
+  bolumler: HukukiBolum[]
+}
+const { bolumler } = Astro.props
+
+const EPOSTA = /([\w.+-]+@[\w-]+\.[\w.-]+)/g
+
+function parcala(metin: string): { tur: 'metin' | 'eposta'; deger: string }[] {
+  const sonuc: { tur: 'metin' | 'eposta'; deger: string }[] = []
+  let son = 0
+  for (const m of metin.matchAll(EPOSTA)) {
+    const i = m.index ?? 0
+    if (i > son) sonuc.push({ tur: 'metin', deger: metin.slice(son, i) })
+    sonuc.push({ tur: 'eposta', deger: m[1] })
+    son = i + m[1].length
+  }
+  if (son < metin.length) sonuc.push({ tur: 'metin', deger: metin.slice(son) })
+  return sonuc
+}
+---
+
+{
+  bolumler.map((bolum) => (
+    <section>
+      <h2>{bolum.baslik}</h2>
+      {bolum.paragraflar.map((paragraf) => (
+        <p>
+          {parcala(paragraf).map((parca) =>
+            parca.tur === 'eposta' ? <a href={`mailto:${parca.deger}`}>{parca.deger}</a> : parca.deger
+          )}
+        </p>
+      ))}
+    </section>
+  ))
+}

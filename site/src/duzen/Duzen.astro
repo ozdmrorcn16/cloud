@@ -1,5 +1,6 @@
 ---
 import { DILLER, KOK_DIL, dilOneki, type Dil } from '../i18n/diller'
+import { SAGDAN_SOLA } from '../i18n/sozlukler'
 
 interface Props {
   baslik: string
@@ -17,7 +18,7 @@ function hreflangAdresi(hedefDil: Dil): string {
 }
 ---
 
-<html lang={dil}>
+<html lang={dil} dir={SAGDAN_SOLA.includes(dil) ? 'rtl' : 'ltr'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

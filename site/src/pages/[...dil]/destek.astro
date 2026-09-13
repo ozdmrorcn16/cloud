@@ -1,62 +1,52 @@
 ---
 import Metin from '../../duzen/Metin.astro'
-import { dilYollari, type Dil } from '../../i18n/diller'
+import { dilYollari, dilOneki, type Dil } from '../../i18n/diller'
+import { sozluk } from '../../i18n/sozlukler'
 
 export function getStaticPaths() {
   return dilYollari()
 }
 
 const { dil } = Astro.props as { dil: Dil }
+const t = sozluk(dil).destek
+const onek = dilOneki(dil)
+const EPOSTA = 'destek@slooin.com'
+
+/** `{{eposta}}` ve `{{hesapSil}}` yer tutucularini parcalara ayirir. */
+function parcala(metin: string) {
+  return metin.split(/(\{\{eposta\}\}|\{\{hesapSil\}\})/g).filter(Boolean)
+}
 ---
 
 <Metin
-  baslik="Destek"
-  aciklama="Slooin hakkında sık sorulan sorular ve destek iletişimi."
-  guncelleme="7 Eylül 2026"
+  baslik={t.baslik}
+  aciklama={t.aciklama}
+  guncelleme={new Date(2026, 8, 13)}
   dil={dil}
   yol="/destek"
 >
   <p>
-    Sorun, sorusun ya da bildirmek istediğin bir hata varsa
-    <a href="mailto:destek@slooin.com">destek@slooin.com</a> adresine
-    yaz. Mesajlar en geç üç iş günü içinde yanıtlanır.
+    {parcala(t.giris).map((p) => (p === '{{eposta}}' ? <a href={`mailto:${EPOSTA}`}>{EPOSTA}</a> : p))}
   </p>
 
-  <h2>Sık sorulan sorular</h2>
+  <h2>{t.sssBaslik}</h2>
 
-  <h3>Konumum sürekli paylaşılıyor mu?</h3>
-  <p>
-    Hayır. Konumun yalnızca sen check-in yaptığında ve seçtiğin
-    görünürlük kademesine göre paylaşılır. Check-in'in süresi
-    dolduğunda konum bilgisi silinir; geriye yalnızca "şurada oldum"
-    kaydı kalır.
-  </p>
-
-  <h3>Beni kimler görebilir?</h3>
-  <p>
-    Her check-in'de üç seçenekten birini seçersin: herkese açık
-    (aynı mekandakiler ve arkadaşların), sadece arkadaşlarım, ya da
-    gizli (kimse görmez).
-  </p>
-
-  <h3>Birinden rahatsız oldum, ne yapabilirim?</h3>
-  <p>
-    Kişiyi profilinden engelleyebilirsin. Engelleme çift taraflıdır ve
-    aranızdaki konuşmayı siler; engellenen kişi bunu bir hata mesajı
-    olarak görmez. Ayrıca kişiyi ya da tek bir mesajı şikâyet
-    edebilirsin.
-  </p>
-
-  <h3>Hesabımı nasıl silerim?</h3>
-  <p>
-    Uygulama içinde Ayarlar &rsaquo; Hesabımı sil adımından, ya da
-    uygulamayı silmiş olsan bile <a href="/hesap-sil">hesap silme
-    sayfasından</a> silebilirsin.
-  </p>
-
-  <h3>Uygulama neden benim şehrimde az mekan gösteriyor?</h3>
-  <p>
-    Mekan verisi Foursquare ve OpenStreetMap katkıcılarından geliyor.
-    Bir mekan eksikse uygulama içinden kendin ekleyebilirsin.
-  </p>
+  {
+    t.sss.map((madde) => (
+      <>
+        <h3>{madde.soru}</h3>
+        <p>
+          {parcala(madde.cevap).map((p) =>
+            p === '{{hesapSil}}' ? (
+              <a href={`${onek}/hesap-sil`}>{t.hesapSilBaglanti}</a>
+            ) : p === '{{eposta}}' ? (
+              <a href={`mailto:${EPOSTA}`}>{EPOSTA}</a>
+            ) : (
+              p
+            )
+          )}
+        </p>
+      </>
+    ))
+  }
 </Metin>
