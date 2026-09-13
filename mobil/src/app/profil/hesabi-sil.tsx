@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet, Platform, ScrollView } from 'react-native'
+import { router } from 'expo-router'
+import Svg, { Path, Rect } from 'react-native-svg'
 import { hesabiSil, hesabiDondur } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 import { gonderimKaydet } from '../../../lib/kod-gonderim'
@@ -13,6 +15,7 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
+import { AppleIkonu, GoogleIkonu } from '../../tasarim/sosyal-ikonlar'
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 
@@ -25,30 +28,40 @@ function gizliAppleAdresiMi(eposta: string | null): boolean {
 }
 
 /**
- * HESAP SILME - E-POSTA ONAY KODUYLA (kullanicinin karari 2026-09-13:
- * "hesap silme adimina e-postaya onaylama kodu getirilsin, e-postaya
- * gelen onay kodunu giren biri hesabini silebilecek, bilgilendirme
- * yazilari da olacak").
+ * Uzun adresi karta sigdirmak icin yerel kismi kisaltir:
+ * `dsh5zw82yk@privaterelay.appleid.com` -> `dsh5…@privaterelay.appleid.com`.
+ * Kisa adres oldugu gibi kalir - kisaltma bilgi degil yer kazandirir.
+ */
+function adresiKisalt(eposta: string, enFazla = 28): string {
+  if (eposta.length <= enFazla) return eposta
+  const at = eposta.indexOf('@')
+  if (at <= 4) return eposta
+  return `${eposta.slice(0, 4)}…${eposta.slice(at)}`
+}
+
+/**
+ * HESAP SILME EKRANI - kullanicinin verdigi referans gorsele gore
+ * (2026-09-13, "Boyle yap"). Yerlesim yukaridan asagi:
  *
- * Akis: bilgilendirme -> "Onay kodu gonder" -> koda gelen 6 hane ->
- * "Hesabimi kalici olarak sil". Kod `verifyOtp` ile dogrulaniyor; bu
- * YENI bir giris sayilir ve `last_sign_in_at`i ilerletir. `hesap-sil`
- * Edge Function'i parola gelmediginde tam olarak buna bakiyor: son
- * giris 10 dakikadan TAZE degilse silmiyor. Yani kapi SUNUCUDA -
- * istemci kod adimini atlayamaz.
+ *   ust cubuk "Hesabi sil"
+ *   kirmizi cop ikonu (acik kirmizi kutuda)
+ *   "Hesabini silmek istedigine emin misin?" + geri alinamaz uyarisi
+ *   SEFTALI KART: "Sadece ara vermek mi istiyorsun? / Hesabimi dondur"
+ *      -> basinca AYNI SAYFADA aciliyor (kullanicinin kurali: baska
+ *         sayfaya yonlendirme), aciklama + Evet, dondur / Vazgec
+ *   "Kimligini dogrula" + aciklama
+ *   GRI KART: zarf ikonu, "E-posta adresin", adres, altinda not
+ *      (Apple gizli adresiyse "Apple hesabina bagli adrese yonlendirilir")
+ *   TURUNCU dolu "Onay kodu gonder"  -> kod gelince yerini kod kutusu +
+ *      KIRMIZI "Hesabimi kalici olarak sil" + "Kodu tekrar gonder" aliyor
+ *   "veya" ayraci + saglayici dugmesi (Apple SIYAH, Google beyaz/cizgili;
+ *      yalnizca hesap o saglayiciyla acildiysa - e-postayla acilan
+ *      hesapta hicbiri yok)
+ *   "Vazgec"
  *
- * Onceki kapi PAROLAYDI (2026-08-22). Parola giris icin duruyor; silme
- * ekranindan kalkti. Sunucu parolali yolu da kabul etmeye devam ediyor
- * (web formu ve canli testler icin), yeni ekran onu kullanmiyor.
- *
- * APPLE / GOOGLE ILE ACILMIS HESAP: Apple "e-postami gizle" adresine
- * kod ULASMIYOR (gonderici alan adi Apple'da kayitli degil; slooin.com
- * + SMTP kurulunca cozulecek). O kisi icin ayrica "Apple ile dogrula"
- * dugmesi var - saglayiciyla yeniden giris de tazelik kapisini aciyor.
- * Dugme yalnizca hesap o saglayiciyla acildiysa gorunuyor.
- *
- * Dondurma alternatifi ayni ekranda: "kararsizim" ihtiyacini o
- * karsiliyor. Bekleme suresi YOK (spec karar 67).
+ * SUNUCU KAPISI DEGISMEDI: `hesap-sil` (surum 7) parola gelmezse son
+ * girisin 10 dk taze olmasini istiyor; `verifyOtp` ve saglayici girisi
+ * o tazeligi sagliyor. Istemci kod adimini atlayamaz.
  */
 export default function HesabiSilEkrani() {
   const renk = useRenk()
@@ -80,12 +93,8 @@ export default function HesabiSilEkrani() {
     }
   }, [])
 
-  /* DONDURMA AYNI SAYFADA (kullanicinin istegi 2026-09-13): "basan
-     kisiyi baska sayfaya yonlendirme, hemen ayni sayfada altinda
-     bilgilendirme cikip dondurabilsin". Ayarlardaki akisin aynisi
-     (metinler `ayarlar.*` anahtarlarindan, iki ekran ayni sozu
-     soylesin); dondurduktan sonra cikis, yoksa kisi dondurulmus ama
-     girisli bir ara durumda kalir (spec karar 66). */
+  /* Dondurma ayni sayfada; dondurduktan sonra cikis, yoksa kisi
+     dondurulmus ama girisli bir ara durumda kalir (spec karar 66). */
   async function dondur() {
     setCalisiyor(true)
     setHata(null)
@@ -169,23 +178,47 @@ export default function HesabiSilEkrani() {
     await silmeyiTamamla()
   }
 
+  const gizliApple = gizliAppleAdresiMi(eposta)
+
   return (
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.kapsayici}>
       <UstCubuk baslik={t('hesabiSil.baslik')} geriEtiketi={t('ortak.geri')} />
 
-      {/* BILGILENDIRME: tek cumle - sayfa uzundu, kullanici kisalttirdi
-          (2026-09-13). Ne silinip ne kaldigi gizlilik metninde duruyor. */}
-      <Text style={stiller.metin}>{t('hesabiSil.uyari')}</Text>
+      {/* Kirmizi cop ikonu - ekrandaki kirmizi ogeler yalnizca bu ve sil dugmesi. */}
+      <View style={stiller.ikonKutusu} testID="cop-ikonu">
+        <Svg width={28} height={28} viewBox="0 0 24 24">
+          <Path
+            d="M5 7h14M9 7V4.5h6V7M7 7l1 13h8l1-13M10 11v5M14 11v5"
+            stroke={renk.yikici}
+            strokeWidth={1.9}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        </Svg>
+      </View>
+      <Text style={stiller.soru}>{t('hesabiSil.soru')}</Text>
+      <Text style={stiller.uyari}>{t('hesabiSil.uyari')}</Text>
 
-      {/* DONDURMA - ayni sayfada acilir, baska ekrana gitmez. */}
+      {/* DONDURMA - seftali kart, ayni sayfada acilir. */}
       <Pressable
-        style={stiller.anahtarli}
+        style={stiller.dondurKarti}
         onPress={() => setDondurmaAcik((a) => !a)}
         disabled={calisiyor}
         accessibilityRole="button"
         testID="dondur-ac"
       >
-        <Text style={stiller.anahtarliYazi}>{t('hesabiSil.dondur')}</Text>
+        <View style={stiller.durakDairesi}>
+          <Svg width={20} height={20} viewBox="0 0 24 24">
+            <Rect x={7} y={5} width={3.5} height={14} rx={1.5} fill={renk.turuncu} />
+            <Rect x={13.5} y={5} width={3.5} height={14} rx={1.5} fill={renk.turuncu} />
+          </Svg>
+        </View>
+        <View style={stiller.dondurMetni}>
+          <Text style={stiller.dondurSoru}>{t('hesabiSil.araSoru')}</Text>
+          <Text style={stiller.dondurEylem}>{t('hesabiSil.dondur')}</Text>
+        </View>
+        <View style={[stiller.ok, dondurmaAcik && stiller.okAcik]} />
       </Pressable>
       {dondurmaAcik && (
         <View style={stiller.dondurmaKutusu} testID="dondurma-kutusu">
@@ -206,38 +239,61 @@ export default function HesabiSilEkrani() {
               accessibilityRole="button"
               hitSlop={8}
             >
-              <Text style={stiller.ikincilButonMetni}>{t('ayarlar.vazgec')}</Text>
+              <Text style={stiller.vazgecKucuk}>{t('ayarlar.vazgec')}</Text>
             </Pressable>
           </View>
         </View>
       )}
 
-      {/* ONAY KODU */}
-      <Text style={stiller.etiket}>
-        {kodGonderildi
-          ? t('hesabiSil.kodGonderildi', { eposta: eposta ?? '' })
-          : t('hesabiSil.kodAciklama', { eposta: eposta ?? '' })}
-      </Text>
-      {/* Apple "e-postami gizle": adres `@privaterelay.appleid.com` olur ve
-          kullaniciya yabanci gorunur (kullanicinin sorusu 2026-09-13:
-          "cok degisik bir e-posta yaziyor, kod nereye gonderiliyor").
-          Aktarim ancak gonderici alan adi Apple'da kayitliysa calisir;
-          o yuzden bu hesaplar icin asil yol asagidaki "Apple ile onayla". */}
-      {gizliAppleAdresiMi(eposta) && (
-        <Text style={stiller.ipucu} testID="gizli-apple-notu">
-          {t('hesabiSil.gizliAppleAdresi')}
+      {/* KIMLIK DOGRULAMA */}
+      <Text style={stiller.bolumBasligi}>{t('hesabiSil.dogrulaBaslik')}</Text>
+      <Text style={stiller.bolumAciklama}>{t('hesabiSil.dogrulaAciklama')}</Text>
+
+      <View style={stiller.epostaKarti}>
+        <View style={stiller.epostaSatiri}>
+          <Svg width={26} height={26} viewBox="0 0 24 24">
+            <Rect
+              x={3}
+              y={5}
+              width={18}
+              height={14}
+              rx={2.5}
+              stroke={renk.metin}
+              strokeWidth={1.7}
+              fill="none"
+            />
+            <Path d="M3.5 7l8.5 6 8.5-6" stroke={renk.metin} strokeWidth={1.7} fill="none" />
+          </Svg>
+          <View style={stiller.epostaMetni}>
+            <Text style={stiller.epostaEtiket}>{t('hesabiSil.epostaEtiket')}</Text>
+            <Text style={stiller.epostaDeger} numberOfLines={1} testID="eposta-degeri">
+              {eposta ? adresiKisalt(eposta) : '—'}
+            </Text>
+          </View>
+        </View>
+        <View style={stiller.epostaAyrac} />
+        {/* Apple "e-postami gizle": adres `@privaterelay.appleid.com` olur ve
+            kullaniciya yabanci gorunur; aktarim ancak gonderici alan adi
+            Apple'da kayitliysa calisir - o yuzden bu hesaplar icin asil yol
+            asagidaki "Apple ile onayla". */}
+        <Text style={stiller.epostaNot} testID={gizliApple ? 'gizli-apple-notu' : 'kod-notu'}>
+          {kodGonderildi
+            ? t('hesabiSil.kodGonderildi')
+            : gizliApple
+              ? t('hesabiSil.gizliAppleAdresi')
+              : t('hesabiSil.kodNot')}
         </Text>
-      )}
+      </View>
 
       {!kodGonderildi ? (
         <Pressable
-          style={stiller.anahtarli}
+          style={[stiller.dolu, calisiyor && stiller.soluk]}
           onPress={kodGonder}
           disabled={calisiyor}
           accessibilityRole="button"
           testID="kod-gonder"
         >
-          <Text style={stiller.anahtarliYazi}>
+          <Text style={stiller.doluYazi}>
             {calisiyor ? t('ortak.gonderiliyor') : t('hesabiSil.kodGonder')}
           </Text>
         </Pressable>
@@ -254,45 +310,63 @@ export default function HesabiSilEkrani() {
             onChangeText={(y) => setKod(y.replace(/\D/g, '').slice(0, HANE))}
             testID="dogrulama-kodu"
           />
+          {/* Silme geri alinamaz: ekrandaki tek kirmizi dolgu, bilerek. */}
           <Pressable
-            style={stiller.tehlikeButonu}
+            style={[stiller.tehlike, calisiyor && stiller.soluk]}
             onPress={kodlaSil}
             disabled={calisiyor}
             accessibilityRole="button"
             testID="kodla-sil"
           >
-            <Text style={stiller.tehlikeButonMetni}>{t('hesabiSil.sil')}</Text>
+            <Text style={stiller.doluYazi}>{t('hesabiSil.sil')}</Text>
           </Pressable>
           <Pressable
-            style={stiller.ikincilButon}
+            style={stiller.metinButonu}
             onPress={kodGonder}
             disabled={calisiyor}
             accessibilityRole="button"
           >
-            <Text style={stiller.ikincilButonMetni}>{t('hesabiSil.tekrarGonder')}</Text>
+            <Text style={stiller.metinButonuYazi}>{t('hesabiSil.tekrarGonder')}</Text>
           </Pressable>
         </>
       )}
 
       {saglayicilar.length > 0 && (
-        <Text style={stiller.ipucu}>{t('hesabiSil.saglayiciAciklama')}</Text>
+        <View style={stiller.ayrac}>
+          <View style={stiller.ayracCizgi} />
+          <Text style={stiller.ayracYazi}>{t('kayit.veya')}</Text>
+          <View style={stiller.ayracCizgi} />
+        </View>
       )}
+      {/* Apple'in dugmesi SIYAH (Apple'in kendi kilavuzu), Google'inki acik
+          zeminli cizgili (Google'in kilavuzu). */}
       {saglayicilar.map((s) => (
         <Pressable
           key={s}
-          style={stiller.anahtarli}
+          style={[s === 'apple' ? stiller.appleButonu : stiller.googleButonu, calisiyor && stiller.soluk]}
           onPress={() => saglayiciylaSil(s)}
           disabled={calisiyor}
           accessibilityRole="button"
           testID={`saglayici-${s}`}
         >
-          <Text style={stiller.anahtarliYazi}>
+          {s === 'apple' ? <AppleIkonu boyut={19} renk="#FFFFFF" /> : <GoogleIkonu boyut={19} />}
+          <Text style={s === 'apple' ? stiller.appleYazi : stiller.googleYazi}>
             {t(s === 'apple' ? 'hesabiSil.appleIleDogrula' : 'hesabiSil.googleIleDogrula')}
           </Text>
         </Pressable>
       ))}
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
+
+      <Pressable
+        style={stiller.metinButonu}
+        onPress={() => router.back()}
+        disabled={calisiyor}
+        accessibilityRole="button"
+        testID="vazgec"
+      >
+        <Text style={stiller.vazgecYazi}>{t('ayarlar.vazgec')}</Text>
+      </Pressable>
     </ScrollView>
   )
 }
@@ -300,16 +374,75 @@ export default function HesabiSilEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: { flex: 1, backgroundColor: renk.zemin },
   kapsayici: {
-    padding: bosluk.xl,
+    paddingHorizontal: bosluk.sayfa,
+    paddingTop: bosluk.xl,
     gap: bosluk.m,
     paddingBottom: ALT_GEZINME_PAYI,
   },
-  metin: {
-    fontFamily: yazi.govdeOrta,
+  // '1A' = %10 alfa: acik modda soluk kirmizi kutu; koyu modda da ayni
+  // jetondan turedigi icin zeminden kopmuyor.
+  ikonKutusu: {
+    width: 56,
+    height: 56,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.yikici + '1A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: bosluk.s,
+  },
+  soru: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: 30,
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    color: renk.metin,
+    marginTop: bosluk.xs,
+  },
+  uyari: {
+    fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 22,
+    color: renk.metinIkincil,
+  },
+
+  dondurKarti: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    marginTop: bosluk.s,
+  },
+  durakDairesi: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: renk.turuncu + '33',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dondurMetni: { flex: 1, gap: 2 },
+  dondurSoru: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
     color: renk.metin,
   },
+  dondurEylem: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.turuncuYazi,
+  },
+  ok: {
+    width: 10,
+    height: 10,
+    borderRightWidth: 2,
+    borderTopWidth: 2,
+    borderColor: renk.metinIkincil,
+    transform: [{ rotate: '45deg' }],
+    marginRight: 4,
+  },
+  okAcik: { transform: [{ rotate: '135deg' }] },
   dondurmaKutusu: {
     borderWidth: 1,
     borderColor: renk.cizgi,
@@ -323,18 +456,80 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.turuncuYazi,
   },
+  vazgecKucuk: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+  },
   ipucu: {
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 19,
     color: renk.metinIkincil,
   },
-  etiket: {
-    fontFamily: yazi.govdeOrta,
+
+  bolumBasligi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: 22,
+    letterSpacing: -0.3,
+    color: renk.metin,
+    marginTop: bosluk.l,
+  },
+  bolumAciklama: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: 22,
+    color: renk.metinIkincil,
+    marginTop: -bosluk.xs,
+  },
+  // Sicak gri kart: `karsilamaZemini` uygulamadaki tek acik-gri jeton ve
+  // iki palette de zeminden bir ton koyu.
+  epostaKarti: {
+    backgroundColor: renk.karsilamaZemini,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    gap: bosluk.m,
+  },
+  epostaSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.l },
+  epostaMetni: { flex: 1, gap: 2 },
+  epostaEtiket: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  epostaDeger: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+  epostaAyrac: { height: 1, backgroundColor: renk.cizgi },
+  epostaNot: {
+    fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     lineHeight: 19,
     color: renk.metinIkincil,
-    marginTop: bosluk.l,
+  },
+
+  dolu: {
+    backgroundColor: renk.turuncu,
+    borderRadius: yuvarlak.kart,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: bosluk.xs,
+  },
+  tehlike: {
+    backgroundColor: renk.yikici,
+    borderRadius: yuvarlak.kart,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  soluk: { opacity: 0.6 },
+  doluYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
   },
   girdi: {
     backgroundColor: renk.yuzey,
@@ -349,42 +544,65 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     textAlign: 'center',
     color: renk.metin,
   },
+
+  ayrac: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    marginVertical: bosluk.xs,
+  },
+  ayracCizgi: { flex: 1, height: 1, backgroundColor: renk.cizgi },
+  ayracYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  appleButonu: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: bosluk.m,
+    backgroundColor: '#000000',
+    borderRadius: yuvarlak.kart,
+    paddingVertical: 16,
+  },
+  appleYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
+  },
+  googleButonu: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: bosluk.m,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    paddingVertical: 16,
+  },
+  googleYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.metin,
+  },
+
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.yikici,
+    textAlign: 'center',
   },
-  ikincilButon: { paddingVertical: bosluk.m, alignItems: 'center' },
-  ikincilButonMetni: {
+  metinButonu: { paddingVertical: bosluk.m, alignItems: 'center' },
+  metinButonuYazi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
   },
-  /* Hayalet buton: kod gonder / saglayiciyla dogrula. Turuncu dolgu
-     degil - ekrandaki tek dolu buton kirmizi "sil". */
-  anahtarli: {
-    borderWidth: 1.5,
-    borderColor: renk.turuncu,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  anahtarliYazi: {
+  vazgecYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
-    color: renk.turuncuYazi,
-  },
-  // Silme geri alinamaz: uygulamadaki tek kirmizi zemin burada, bilerek.
-  tehlikeButonu: {
-    backgroundColor: renk.yikici,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: bosluk.s,
-  },
-  tehlikeButonMetni: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: '#FFFFFF',
+    color: renk.metinIkincil,
   },
 })

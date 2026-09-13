@@ -44,20 +44,24 @@ beforeEach(() => {
   mockVerifyOtp.mockResolvedValue({ data: { session: {} }, error: null })
 })
 
-it('SAYFA KISA: yalnizca uyari cumlesi; "Ne silinir / Ne kalir" bloklari ARTIK YOK', async () => {
+it('REFERANS DUZENI: soru basligi, uyari, dondurma karti; "Ne silinir / Ne kalir" bloklari YOK', async () => {
   await render(<HesabiSilEkrani />)
+  expect(screen.getByText('Hesabını silmek istediğine emin misin?')).toBeTruthy()
+  expect(screen.getByTestId('cop-ikonu')).toBeTruthy()
+  expect(screen.getByText('Kimliğini doğrula')).toBeTruthy()
   expect(
-    screen.getByText('Bu işlem geri alınamaz. Yeniden gelmek istersen sıfırdan hesap açman gerekir.')
+    screen.getByText('Bu işlem geri alınamaz. Yeniden katılmak istersen yeni bir hesap oluşturman gerekir.')
   ).toBeTruthy()
   expect(screen.queryByText('Ne silinir?')).toBeNull()
   expect(screen.queryByText('Ne kalır?')).toBeNull()
-  expect(screen.getByText('Bunun yerine hesabımı dondur')).toBeTruthy()
+  expect(screen.getByText('Sadece ara vermek mi istiyorsun?')).toBeTruthy()
+  expect(screen.getByText('Hesabımı dondur')).toBeTruthy()
 })
 
 it('dondur: AYNI SAYFADA acilir, baska ekrana gitmez; onaylaninca hesabiDondur + cikis', async () => {
   await render(<HesabiSilEkrani />)
   expect(screen.queryByTestId('dondurma-kutusu')).toBeNull()
-  await fireEvent.press(screen.getByText('Bunun yerine hesabımı dondur'))
+  await fireEvent.press(screen.getByTestId('dondur-ac'))
   expect(screen.getByTestId('dondurma-kutusu')).toBeTruthy()
   expect(
     screen.getByText('Verilerin silinmez. Tekrar giriş yaptığında hesabın kendiliğinden aktif olur.')
@@ -70,16 +74,17 @@ it('dondur: AYNI SAYFADA acilir, baska ekrana gitmez; onaylaninca hesabiDondur +
 
 it('dondurma kutusunda Vazgec kutuyu kapatir, dondurmaz', async () => {
   await render(<HesabiSilEkrani />)
-  await fireEvent.press(screen.getByText('Bunun yerine hesabımı dondur'))
-  await fireEvent.press(screen.getByText('Vazgeç'))
+  await fireEvent.press(screen.getByTestId('dondur-ac'))
+  await fireEvent.press(screen.getAllByText('Vazgeç')[0])
   expect(screen.queryByTestId('dondurma-kutusu')).toBeNull()
   expect(hesabiDondur).not.toHaveBeenCalled()
 })
 
 it('normal adreste Apple gizli-adres notu YOK', async () => {
   await render(<HesabiSilEkrani />)
-  await screen.findByText(/ali@ornek\.com adresine 6 haneli/)
+  await screen.findByText('ali@ornek.com')
   expect(screen.queryByTestId('gizli-apple-notu')).toBeNull()
+  expect(screen.getByText('6 haneli kod bu adrese gönderilir.')).toBeTruthy()
 })
 
 it('Apple gizli aktarma adresinde (@privaterelay.appleid.com) aciklama notu VAR', async () => {
@@ -88,11 +93,13 @@ it('Apple gizli aktarma adresinde (@privaterelay.appleid.com) aciklama notu VAR'
   })
   await render(<HesabiSilEkrani />)
   expect(await screen.findByTestId('gizli-apple-notu')).toBeTruthy()
+  // Uzun adres kisaltiliyor: yerel kismin ilk 4 harfi + ... + alan.
+  expect(screen.getByText('abc1…@privaterelay.appleid.com')).toBeTruthy()
 })
 
 it('PAROLA ALANI YOK; sil dugmesi kod gonderilmeden gorunmuyor', async () => {
   await render(<HesabiSilEkrani />)
-  await screen.findByText(/ali@ornek\.com adresine 6 haneli/)
+  await screen.findByText('ali@ornek.com')
   expect(screen.queryByPlaceholderText('parolan')).toBeNull()
   expect(screen.queryByText('Hesabımı kalıcı olarak sil')).toBeNull()
   expect(screen.getByText('Onay kodu gönder')).toBeTruthy()
@@ -109,7 +116,7 @@ it('kod gonder: kullanicinin KENDI e-postasina, hesap acmadan (shouldCreateUser 
       options: { shouldCreateUser: false },
     })
   )
-  expect(await screen.findByText(/Onay kodu ali@ornek\.com adresine gönderildi/)).toBeTruthy()
+  expect(await screen.findByText('Kod gönderildi; bir saat geçerli.')).toBeTruthy()
   expect(screen.getByText('Hesabımı kalıcı olarak sil')).toBeTruthy()
 })
 

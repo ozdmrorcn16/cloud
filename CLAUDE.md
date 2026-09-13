@@ -223,6 +223,37 @@ guncellendi (dort soru cevapli).
    Jest 75 paket / 947 test (hesabi-sil 13). Yayin: web
    `slooin--k8ewnmtn5u`, OTA grup `241a068b-e4c7-4a51-8763-86f0b72e6ff2`.
 
+**3. EKRAN REFERANS GORSELE GORE YENIDEN YAZILDI** (kullanici uc
+yerlesim istedi - Artifact `fabfb194-84df-40c1-adbf-a3a691d3cc96`,
+A iki kart / B ayarlar listesi / C iki adim - sonra KENDI referans
+gorselini gonderip "Boyle yap" dedi; uc secenegin hicbiri secilmedi,
+referans birebir uygulandi). Yerlesim: ust cubuk "Hesabi sil" ->
+acik kirmizi kutuda cop ikonu -> 30 px "Hesabini silmek istedigine
+emin misin?" -> uyari -> SEFTALI KART (durak ikonu, "Sadece ara
+vermek mi istiyorsun? / Hesabimi dondur", ok; ayni sayfada aciliyor)
+-> "Kimligini dogrula" + aciklama -> GRI KART (zarf, "E-posta
+adresin", kisaltilmis adres `dsh5…@privaterelay.appleid.com`, ayirici,
+not) -> TURUNCU DOLU "Onay kodu gonder" (kod gelince kod kutusu +
+KIRMIZI "Hesabimi kalici olarak sil" + "Kodu tekrar gonder") ->
+"veya" -> saglayici dugmesi -> "Vazgec" (geri).
+
+Saglayici dugmesi hesabin ACILDIGI saglayiciya gore: Apple hesabi
+SIYAH "Apple ile onayla" (Apple kilavuzu), Google hesabi beyaz
+cizgili "Google ile onayla" (Google kilavuzu), e-posta hesabinda
+hicbiri ve "veya" ayraci da yok. Kullanicinin sorusu "Google ile
+girseydim Google mi yazardi" - evet.
+
+Butonlar HAP degil `yuvarlak.kart` (16) - referans oyle. Gri kart
+`karsilamaZemini` (tek acik-gri jeton; koyu modda da calisiyor, iki
+modda ekran goruntusu `tasarim/hesabi-sil-referans.png` /
+`-dark.png`). Sozluk `hesabiSil` blogu yedi dilde bastan (19 anahtar:
+baslik, soru, uyari, araSoru, dondur, dogrulaBaslik, dogrulaAciklama,
+epostaEtiket, kodNot, gizliAppleAdresi, kodGonder, kodGonderildi,
+kodYerTutucu, kodEksik, tekrarGonder, epostaYok, appleIleDogrula,
+googleIleDogrula, sil); "veya" ve "Vazgec" `kayit.veya` /
+`ayarlar.vazgec`ten. Yayin: web `slooin--r85kz1ii83`, OTA grup
+`9ec449d7-e100-447b-85ae-ab703beb5eb0`.
+
 ### SITE YEDI DILDE, HUKUKI METINLER ORTAK KAYNAKTAN; KVKK m.9 ISI - 2026-09-13 OGLE
 
 **Site (`site/`) yedi dile gecti** (commit `824cc01`): gizlilik ve
