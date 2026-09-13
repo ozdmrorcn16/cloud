@@ -1,0 +1,104 @@
+---
+/**
+ * 404 SAYFASI (2026-09-14).
+ *
+ * Cloudflare Pages `404.html` yoksa olmayan her yol icin ana sayfayi
+ * 200 ile veriyor (canlida goruldu: `/en/giris/` ana sayfa dondu). Bu
+ * hem arama motorlarini hem magaza denetcilerini yaniltir; sayfa
+ * bunun icin var.
+ *
+ * Tek dosya, yedi dil: Pages butun olmayan yollar icin AYNI `404.html`i
+ * verdigi icin sayfa sunucuda Turkce cizilir, adres `/en/...` gibi
+ * onekli bir dilse metinler istemcide o dile cevrilir (JS yoksa Turkce
+ * kalir - hukuki sayfalar degil, JS'siz sart yok).
+ */
+import Duzen from '../duzen/Duzen.astro'
+import AltSerit from '../duzen/AltSerit.astro'
+import MarkaLockup from '../ortak/MarkaLockup.astro'
+import { DILLER, KOK_DIL, dilOneki } from '../i18n/diller'
+import { SAGDAN_SOLA, sozluk } from '../i18n/sozlukler'
+
+const t = sozluk(KOK_DIL).bulunamadi
+const metinler = Object.fromEntries(
+  DILLER.map((d) => [
+    d,
+    { ...sozluk(d).bulunamadi, anaSayfaYolu: dilOneki(d) || '/', sagdanSola: SAGDAN_SOLA.includes(d) },
+  ]),
+)
+---
+
+<Duzen baslik={`${t.baslik} · Slooin`} aciklama={t.aciklama} dil={KOK_DIL} yol="/">
+  <header class="ust-serit">
+    <a id="marka" href="/" aria-label="Slooin">
+      <MarkaLockup genislik="128px" radar={false} />
+    </a>
+  </header>
+
+  <main class="sahne">
+    <p class="kod" aria-hidden="true">404</p>
+    <h1 id="baslik">{t.baslik}</h1>
+    <p id="aciklama" class="aciklama">{t.aciklama}</p>
+    <a id="ana-sayfa" class="dugme" href="/">{t.anaSayfa}</a>
+  </main>
+
+  <AltSerit dil={KOK_DIL} yol="/" />
+</Duzen>
+
+<script is:inline define:vars={{ metinler }}>
+  // Adres onekinden dili sec: `/en/...` -> en. Onek yoksa Turkce kalir.
+  const onek = (location.pathname.split('/')[1] || '').toLowerCase()
+  const m = metinler[onek]
+  if (m && onek !== 'tr') {
+    document.documentElement.lang = onek
+    document.documentElement.dir = m.sagdanSola ? 'rtl' : 'ltr'
+    document.title = m.baslik + ' · Slooin'
+    document.getElementById('baslik').textContent = m.baslik
+    document.getElementById('aciklama').textContent = m.aciklama
+    const a = document.getElementById('ana-sayfa')
+    a.textContent = m.anaSayfa
+    a.href = m.anaSayfaYolu
+    document.getElementById('marka').href = m.anaSayfaYolu
+  }
+</script>
+
+<style>
+  .ust-serit {
+    background: var(--turuncu);
+    padding: 20px 28px;
+  }
+  .sahne {
+    max-width: 68ch;
+    margin: 0 auto;
+    padding: 72px 24px 96px;
+    text-align: center;
+  }
+  .kod {
+    margin: 0;
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: var(--turuncu);
+    line-height: 1;
+  }
+  h1 {
+    margin: 12px 0 8px;
+    font-size: 26px;
+    letter-spacing: -0.3px;
+  }
+  .aciklama {
+    margin: 0 0 28px;
+    color: var(--ikincil);
+    font-size: 16px;
+  }
+  .dugme {
+    display: inline-block;
+    background: var(--turuncu);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 12px 22px;
+  }
+  .dugme:hover { filter: brightness(0.96); }
+  .dugme:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 3px; }
+</style>

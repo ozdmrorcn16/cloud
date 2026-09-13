@@ -40,6 +40,8 @@ export type SiteSozlugu = {
   }
   gizlilik: { baslik: string; aciklama: string }
   kosullar: { baslik: string; aciklama: string }
+  /** 404 sayfasi (tek `404.html`; dil, adres onekinden istemcide secilir). */
+  bulunamadi: { baslik: string; aciklama: string; anaSayfa: string }
   destek: {
     baslik: string
     aciklama: string
@@ -120,6 +122,7 @@ const tr: SiteSozlugu = {
     aciklama:
       "Slooin'i kullanırken geçerli olan kurallar: yaş sınırı, hesap kuralları, yasak davranışlar ve sorumluluk sınırları.",
   },
+  bulunamadi: { baslik: 'Sayfa bulunamadı', aciklama: 'Aradığın sayfa yok ya da taşınmış.', anaSayfa: 'Ana sayfaya dön' },
   destek: {
     baslik: 'Destek',
     aciklama: 'Slooin hakkında sık sorulan sorular ve destek iletişimi.',
@@ -228,6 +231,7 @@ const en: SiteSozlugu = {
     baslik: 'Terms of Use',
     aciklama: 'The rules that apply when using Slooin: age limit, account rules, prohibited behaviour and limitation of liability.',
   },
+  bulunamadi: { baslik: 'Page not found', aciklama: 'The page you are looking for does not exist or has moved.', anaSayfa: 'Back to home' },
   destek: {
     baslik: 'Support',
     aciklama: 'Frequently asked questions about Slooin and how to reach support.',
@@ -326,6 +330,7 @@ const de: SiteSozlugu = {
     baslik: 'Nutzungsbedingungen',
     aciklama: 'Die Regeln für die Nutzung von Slooin: Altersgrenze, Kontoregeln, verbotenes Verhalten und Haftungsbeschränkung.',
   },
+  bulunamadi: { baslik: 'Seite nicht gefunden', aciklama: 'Die gesuchte Seite gibt es nicht oder sie wurde verschoben.', anaSayfa: 'Zur Startseite' },
   destek: {
     baslik: 'Support',
     aciklama: 'Häufig gestellte Fragen zu Slooin und Kontakt zum Support.',
@@ -409,6 +414,7 @@ const es: SiteSozlugu = {
     baslik: 'Condiciones de Uso',
     aciklama: 'Las reglas que se aplican al usar Slooin: límite de edad, reglas de cuenta, conductas prohibidas y limitación de responsabilidad.',
   },
+  bulunamadi: { baslik: 'Página no encontrada', aciklama: 'La página que buscas no existe o se ha movido.', anaSayfa: 'Volver al inicio' },
   destek: {
     baslik: 'Soporte',
     aciklama: 'Preguntas frecuentes sobre Slooin y contacto de soporte.',
@@ -492,6 +498,7 @@ const fr: SiteSozlugu = {
     baslik: "Conditions d'utilisation",
     aciklama: "Les règles applicables à l'utilisation de Slooin : limite d'âge, règles de compte, comportements interdits et limitation de responsabilité.",
   },
+  bulunamadi: { baslik: 'Page introuvable', aciklama: "La page que tu cherches n'existe pas ou a été déplacée.", anaSayfa: "Retour à l'accueil" },
   destek: {
     baslik: 'Assistance',
     aciklama: 'Questions fréquentes sur Slooin et contact de l\'assistance.',
@@ -575,6 +582,7 @@ const ru: SiteSozlugu = {
     baslik: 'Условия использования',
     aciklama: 'Правила использования Slooin: возрастное ограничение, правила аккаунта, запрещённое поведение и ограничение ответственности.',
   },
+  bulunamadi: { baslik: 'Страница не найдена', aciklama: 'Такой страницы нет или она была перемещена.', anaSayfa: 'На главную' },
   destek: {
     baslik: 'Поддержка',
     aciklama: 'Часто задаваемые вопросы о Slooin и контакты поддержки.',
@@ -658,6 +666,7 @@ const ar: SiteSozlugu = {
     baslik: 'شروط الاستخدام',
     aciklama: 'القواعد السارية عند استخدام Slooin: الحد الأدنى للعمر، وقواعد الحساب، والسلوك المحظور، وحدود المسؤولية.',
   },
+  bulunamadi: { baslik: 'الصفحة غير موجودة', aciklama: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.', anaSayfa: 'العودة إلى الصفحة الرئيسية' },
   destek: {
     baslik: 'الدعم',
     aciklama: 'الأسئلة الشائعة حول Slooin وطرق التواصل مع الدعم.',

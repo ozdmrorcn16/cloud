@@ -212,6 +212,17 @@ try {
       kontrol(fs.existsSync(dosya), `${onek(d) + yol || '/'}/index.html uretildi mi`)
     }
   }
+  // 404: Pages `404.html` yoksa olmayan yollara ana sayfayi 200 ile
+  // verir (2026-09-14'te canlida goruldu). Tek dosya, yedi dilin metni
+  // gomulu; sunucu tarafi Turkce.
+  const d404 = path.join(DIST, '404.html')
+  kontrol(fs.existsSync(d404), '404.html uretildi mi')
+  if (fs.existsSync(d404)) {
+    const h = fs.readFileSync(d404, 'utf8')
+    kontrol(h.includes('Sayfa bulunamadı'), '404 sayfasi Turkce basligi tasiyor')
+    for (const [d, metin] of [['en', 'Page not found'], ['de', 'Seite nicht gefunden'], ['ar', 'الصفحة غير موجودة']])
+      kontrol(h.includes(metin), `404 sayfasinda ${d} metni gomulu`)
+  }
   const trHtml = fs.readFileSync(path.join(DIST, 'gizlilik', 'index.html'), 'utf8')
   for (const d of DILLER) {
     kontrol(new RegExp(`hreflang="${d}"`).test(trHtml), `Turkce gizlilik sayfasi hreflang="${d}" tasiyor`)

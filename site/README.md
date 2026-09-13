@@ -19,6 +19,15 @@ App Store ve Google Play basvurusu ucu ayri web sayfasi istiyor:
   gizlilik metniyle ayni ciddiyette tutulmasi gereken bir belge,
   bu is kalemi sirasinda sifirdan yazildi.
 
+Ayrica bir **404 sayfasi** (`src/pages/404.astro` -> `dist/404.html`)
+var: Cloudflare Pages bu dosya yoksa olmayan her yola ana sayfayi 200
+ile veriyordu (2026-09-14'te canlida goruldu). Tek dosya; sunucuda
+Turkce, adres `/en/...` gibi onekliyse metin istemcide o dile donuyor.
+
+**Sitede `slooin.expo.app`'e baglanti YOK** - kullanicinin karari
+(2026-09-14). Uygulamanin web surumu ancak kendi alan adimiz altinda
+yasarsa siteden gosterilir.
+
 Bunlara ek olarak bir **ana sayfa** (`/`) var - uygulamayi tanitan tek
 ekranlik bir sahne (Swarm tarzi kalabalik animasyonu + iki telefon
 maketi).
