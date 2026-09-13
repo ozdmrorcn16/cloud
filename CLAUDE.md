@@ -271,6 +271,66 @@ Gizlilik metni yayinda: web `slooin--tee6yc230m`, OTA grup
 durumunun yesile donmesi (birkac saat sonra bak); Resend icin de KVKK
 standart sozlesme talebi (Supabase/Expo sablonu).
 
+### DEVIR NOTU - 2026-09-14: WEB GIRIS SAYFASI (slooin.com/giris) YARIM, YENI OTURUM BURADAN
+
+Kullanici Swarm'in web giris sayfasini referans verip "Buna benzer bir
+giris sayfasi yap" / "web surumune yonlendirme" dedi. Is YAZILDI, YEREL
+TESTI GECTI, ama COMMIT'LENMEDI ve YAYINLANMADI. Oturum kullanicinin
+istegiyle burada durduruldu ("yeni oturumda devam edelim").
+
+**YAPILANLAR (calisma agacinda, commit yok):**
+- `site/src/pages/[...dil]/giris.astro` YENI: turuncu bant
+  (`/marka-yazisi-acik.png` + ana sayfadaki "Yakinda" App Store /
+  Google Play rozetleri), ortada kart (`#giris-formu`: eposta, sifre,
+  `.unuttum` -> `https://slooin.expo.app/sifre-sifirla`,
+  `#giris-dugmesi`, `#durum`, `.hesap-yok`), AltSerit yol="/giris".
+- `site/src/betik/giris.ts` YENI: `signInWithPassword`
+  (`persistSession:false`); basarida
+  `window.location.replace('https://slooin.expo.app/#' + URLSearchParams
+  {access_token, refresh_token, expires_in, expires_at, token_type,
+  type:'web_giris'})`. Yanlis kimlik -> `t.yanlis`.
+- `site/src/i18n/sozlukler.ts`: `giris` blogu tip + 7 dil
+  (baslik, aciklama, eposta, sifre, sifremiUnuttum, dugme, hesapYok,
+  betik{eksik, giriliyor, yanlis, basarisiz, yonlendiriliyor}).
+- `site/src/pages/[...dil]/index.astro`: ustteki Giris baglantisi
+  `/giris` (dil onekli). `site/araclar/dogrula.mjs`: SAYFALAR ve
+  JS-kapali listesine `/giris` eklendi. `site/public/marka-yazisi-acik.png`
+  (mobil'deki `marka-yazisi-koyu.png` kopyasi).
+- `mobil/lib/supabase.ts`: `detectSessionInUrl: Platform.OS === 'web'`
+  (import'a `Platform` eklendi). Sebep: iki alan adi farkli, oturum
+  ancak URL fragment'iyla tasinabiliyor; supabase-js web'de fragment'i
+  okuyup oturumu kendisi kuruyor. tsc temiz.
+
+**YEREL OLCUM GECTI (bu oturumda):** `npx expo export --platform web`
++ yerel SPA sunucusu (8080) + puppeteer; test1@slooin.test ile alinan
+gercek oturum jetonlari fragment olarak verildi ->
+`uygulama ici mi: true`, giris ekrani gorunmedi. Ekran goruntusu
+`tasarim/web-giris-devir.png`. Yani devir mekanizmasi CALISIYOR;
+eksik olan yalnizca yayin ve canli test.
+
+**YENI OTURUMDA SIRA:**
+1. `cd site && npm run dogrula` (42 sayfa build OK idi, dogrula
+   kosulmadi).
+2. Commit + push (site + mobil birlikte). Pages otomatik dagitir
+   (prod dal `claude/plan2-moderasyon-paneli`, kok `site`).
+3. Uygulamayi yayinla ki `slooin.expo.app` fragment'i kabul etsin:
+   `cd mobil && npm run yayinla` ve
+   `npx eas-cli update --channel production --environment production
+   --message "web giris devri: detectSessionInUrl web"`.
+4. Canli test: `https://slooin.com/giris` -> test1@slooin.test /
+   test1234 -> `slooin.expo.app`e oturumlu inmeli. Puppeteer ile
+   olc (ekran metnine bak: "Ana sayfa|Bildirimler|Mesajlar").
+5. Ekran goruntusunu kullaniciya gonder; CLAUDE.md / site README /
+   `docs/kvkk-uyum-listesi.md` notu (jeton URL fragment'inde tasiniyor:
+   fragment sunucuya GITMEZ, Cloudflare/Pages gunlugune dusmez;
+   supabase-js okuyunca URL'den temizler - yine de yazilmali).
+
+**GUVENLIK NOTU (karar verildi, degistirme):** sifre yalnizca
+Supabase'in kendi istemcisine gidiyor, sitenin sunucusuna degil;
+oturum `persistSession:false` ile sitede TUTULMUYOR, tek is jetonu
+uygulamaya devretmek. Fragment yolu secildi cunku query string sunucu
+gunluklerine duser, fragment dusmez.
+
 ### HESAP SILME: PAROLA YERINE E-POSTA ONAY KODU - 2026-09-13 OGLEDEN SONRA
 
 Kullanici once "sifre tamamen kalksin" dedi, sonra "sifre yine kalsin,
