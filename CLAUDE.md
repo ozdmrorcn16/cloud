@@ -202,9 +202,12 @@ Commit `639a967`.
   Registered). Apple SPF'yi KOK alan adinda ariyor; Resend'in SPF'si
   `send.` alt alanindaydi, koke `v=spf1 include:_spf.mx.cloudflare.net
   include:amazonses.com ~all` eklendi. Panel hala kirmizi "SPF"
-  gosteriyor (Reverify denendi) - buyuk ihtimalle onbellek; asil olcum
-  gizli adrese gonderilen kod (Resend delivered, kullanicinin gelen
-  kutusu bekleniyor).
+  gosteriyor (Reverify denendi) - onbellek. **ASIL OLCUM GECTI:**
+  kullanicinin `@privaterelay.appleid.com` adresine Supabase uzerinden
+  gonderilen kod Apple ID posta kutusuna DUSTU (kullanici dogruladi,
+  2026-09-13 23:30). Yani "E-postami gizle" hesaplarinda kod yolu artik
+  calisiyor; ekrandaki "Apple hesabina bagli adrese yonlendirilir" notu
+  dogru.
 - **`destek@slooin.com`**: Cloudflare Email Routing -> slooinapp@gmail.com
   (hedef adres hesabin kendisi oldugu icin aninda Verified; MX x3 +
   DKIM Cloudflare'in "Add missing records" dugmesiyle, SPF mevcut kok
