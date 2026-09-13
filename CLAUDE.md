@@ -131,6 +131,51 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SLOOIN.COM ALINDI, SITE YAYINDA - 2026-09-13 AKSAM
+
+Kullanici `slooin.com`u Cloudflare Registrar'dan aldi (hesap
+`slooinapp@gmail.com`, account id `376c8a91fdd83c6366bdcf10e65dc08c`).
+Pages projesi `slooin` GERCEK Chrome'da (claude-in-chrome) kuruldu:
+GitHub uygulamasi YALNIZCA `ozdmrorcn16/cloud` deposuna yetkili,
+uretim dali **`claude/plan2-moderasyon-paneli`**, kok `site`, derleme
+`npm run build`, cikti `dist`, ortam `PUBLIC_SUPABASE_URL` +
+`PUBLIC_SUPABASE_ANON_KEY`. Ozel alan adlari `slooin.com` ve
+`www.slooin.com` (CNAME -> slooin.pages.dev, Cloudflare kendi yazdi).
+**https://slooin.com CANLI**, 7 dil 200; canli silme testi canli siteye
+karsi kosuldu ve gecti (`site/README.md` "Dagitim").
+
+**Ilk derleme kirildi: "Tsconfig not found expo/tsconfig.base".** Site
+`mobil/lib/hukuki`'yi dogrudan iceri aliyordu; Vite o dosyalar icin
+`mobil/tsconfig.json`u (`extends expo/tsconfig.base`) okuyor ve
+Cloudflare'de `mobil/node_modules` yok. Cozum `site/araclar/
+hukuki-kopyala.mjs` (`prebuild`): metinler `site/src/hukuki/`ye
+kopyalaniyor (gitignored), site mobil'in arac zincirine dokunmuyor.
+Commit `639a967`.
+
+**CLAUDE-IN-CHROME + CLOUDFLARE DERSLERI (uc kez yasandi):**
+1. Cloudflare paneli SEKME ARKA PLANDAYKEN hic acilmiyor
+   (`visibilityState: hidden` -> yukleme animasyonunda kalir, her CDP
+   komutu 45 sn zaman asimi). Kullanici terminale gecince Chrome
+   arkada kaliyor. Cozum: kullanici Chrome'u ekranin yarisina koyup
+   sekmeyi gorunur tutuyor; "renderer frozen" hatasinin sebebi bu,
+   anti-debug degil.
+2. **Hangi Chrome profilinde hangi oturum acik VARSAYMA.** CLAUDE.md
+   "Browser 2 = slooinapp" diyordu; Cloudflare oturumu Browser 1'deydi
+   ve ilk deneme `/login`e dustu. Kullanici "yanlis e-posta oturumunda
+   deniyorsun / boyle yanlislar yapma" dedi. Dogrusu: sayfa basligini
+   OKUYARAK dogrulamak ("Slooinapp@gmail.com's Account").
+3. `find` / `read_page` bu panelde sik sik zaman asimina dusuyor;
+   ekran goruntusu + koordinatla tiklama ve `get_page_text` calisiyor.
+4. `*.pages.dev` bu agdan erisilemiyor (curl 000, baglanti zaman
+   asimi); olcum `slooin.com` uzerinden yapilir.
+
+**KALAN (ayni is kalemi):** Resend hesabi (kullanici acacak) -> alan
+adi + DKIM/SPF DNS -> Supabase SMTP (API anahtarini kullanici
+yapistirir) -> Apple "Sign in with Apple for Email Communication"
+kaydi -> `destek@slooin.com` icin Cloudflare Email Routing -> Apple
+magaza formundaki gizlilik adresi `slooin.expo.app/gizlilik` ->
+`slooin.com/gizlilik`.
+
 ### HESAP SILME: PAROLA YERINE E-POSTA ONAY KODU - 2026-09-13 OGLEDEN SONRA
 
 Kullanici once "sifre tamamen kalksin" dedi, sonra "sifre yine kalsin,

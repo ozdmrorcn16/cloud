@@ -211,33 +211,50 @@ oneksiz halleridir, sonradan degismemesi gerekiyor. Digerleri
 
 ## Dagitim
 
-Cloudflare Pages, `main` dalina push ile otomatik. Proje ayarlari:
+**YAYINDA: https://slooin.com** (2026-09-13). Cloudflare Pages projesi
+`slooin` (hesap `slooinapp@gmail.com`), GitHub `ozdmrorcn16/cloud`
+deposuna bagli - **uretim dali `claude/plan2-moderasyon-paneli`**
+(`main` DEGIL: butun is o dalda; deponun varsayilan dali `site/`
+klasorunu hic tasimiyor). O dala her push otomatik derleme + yayin.
+`www.slooin.com` da bagli. Proje ayarlari:
 
 ```
 Kok dizin      : site
-Derleme komutu : npm run build
+Derleme komutu : npm run build     (prebuild: araclar/hukuki-kopyala.mjs)
 Cikti klasoru  : dist
+Ortam          : PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY (panelde)
 ```
 
-**Alan adi henuz alinmadi ve Cloudflare Pages projesi henuz
-kurulmadi** - bu README yazildigi anda site hicbir yerde yayinda
-degil. Kalan adimlar (kullaniciya ait, ajan yapamaz):
+**`prebuild` SART:** ilk Cloudflare derlemesi "Tsconfig not found
+expo/tsconfig.base" ile kirildi - site `mobil/lib/hukuki`'yi dogrudan
+iceri aliyordu ve Vite o dosyalar icin `mobil/tsconfig.json`u okuyup
+`expo`ya uzaniyordu; Cloudflare'de `mobil/node_modules` yok.
+`hukuki-kopyala.mjs` metinleri `src/hukuki/` altina kopyaliyor
+(gitignored, uretilmis); kaynak yine `mobil/lib/hukuki`.
 
-1. `slooin.com` satin alinir.
-2. Cloudflare Pages projesi olusturulur, GitHub deposu baglanir,
-   yukaridaki ayarlar ve ortam degiskenleri (`PUBLIC_SUPABASE_URL`,
-   `PUBLIC_SUPABASE_ANON_KEY`) panelde girilir, ozel alan adi baglanir.
-3. `destek@slooin.com` posta yonlendirmesi kurulur.
-4. Yayin sonrasi `npm run dogrula`'nin kontrol ettigi seyler
-   `https://slooin.com` uzerinde de dogrulanir, ve canli silme testi
-   bir kez `https://slooin.com`'a karsi kosulur.
+Yayin sonrasi dogrulama: `dogrula.mjs`nin kontrol ettigi sayfalar
+`slooin.com` uzerinde 200; canli silme testi canli siteye karsi kosuldu
+ve gecti:
+
+```
+SLOOIN_SITE_ADRES=https://slooin.com node araclar/silme-canli-test.mjs
+```
+
+(`SUPABASE_SERVICE_ROLE_KEY` de gerekli - kod admin API'den aliniyor,
+cunku `.test` adreslerine posta gitmiyor; sayfadaki "Onay kodu gonder"
+bu yuzden test hesabinda "Kod su anda gonderilemedi" der ve betik kod
+alanini elle acar. Gercek kullanicida posta gider.)
+
+**Kalan:** `destek@slooin.com` posta yonlendirmesi (Cloudflare Email
+Routing) ve Resend SMTP. Not: `*.pages.dev` bu makinenin agindan
+erisilemiyor (baglanti zaman asimi); olcumler `slooin.com` uzerinden.
 
 **KARISTIRILMAMASI GEREKEN UC AYRI YAYIN YOLU** (bu proje uc ayri sey
 yayinliyor, farkli komutlarla):
 
 | Hedef | Nasil |
 |---|---|
-| Bu site (`slooin.com`) | Cloudflare Pages, `main` dalina push ile otomatik |
+| Bu site (`slooin.com`) | Cloudflare Pages, `claude/plan2-moderasyon-paneli` dalina push ile otomatik |
 | Uygulamanin web surumu (`slooin.expo.app`) | `cd mobil && npm run yayinla` |
 | Telefon / TestFlight | `eas update --channel production` |
 
