@@ -31,6 +31,17 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   once bir kez yasandi: gercek bir Pexels anahtari teste ornek deger
   olarak yazilip push edilmisti.)
 - Kullaniciyla Turkce konus.
+- **Bu dosya KISA kalir; tarihli tur anlatimi buraya YAZILMAZ.** Olculdu
+  (2026-09-13): dosya 407.302 karaktere (~136.000 token) buyumustu ve
+  her oturum basinda tam bedeliyle yukleniyordu. Bir ayda o boyuta
+  geldi, yani kendiliginden geri buyuer.
+  Buraya yalnizca sunlar girer: yururlukteki kurallar, guncel durum,
+  acik borclar, ortam tuzaklari ve "bir daha yapma" dersleri.
+  "Su turda su ekrani su hale getirdik" anlatimi
+  `docs/claude-md-arsiv.md` dosyasina yazilir.
+  Olcut basit: bir bolum GECMISI anlatiyorsa arsive, GELECEKTEKI bir
+  karari degistiriyorsa buraya. Ikisini birden yapiyorsa dersi buraya,
+  anlatimi arsive.
 - **Gizlilik ve KVKK her adimda gozetilir** (kullanicinin karari,
   2026-08-22): "Attigimiz her adimda ... gizlilik ilkeleri ve KVKK
   kurallarini ihlal etmicek sekilde ilerlememiz gerek." Yeni bir is
