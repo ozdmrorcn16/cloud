@@ -141,11 +141,19 @@ sayfa, destek ve hesap silme `site/src/i18n/sozlukler.ts` (7 dil);
 `diller.ts` yedi dil; Arapca `dir="rtl"`; hesap-sil betigi durum
 metinlerini `<html lang>`den seciyor. `npm run dogrula` 128/128.
 Yayinda DEGIL (Cloudflare Pages kurulmadi, alan adi alinmadi).
-Dipnot duzeltmesi: "parola yoksa (Apple/Google girisi) form calismaz,
-destek@slooin.com'a yaz" - **ACIK BORC:** sosyal girisle acilmis
-hesabin hesap silme yolu (uygulama ici `hesap-sil` Edge Function da
-parola dogruluyor) parolasiz kullanici icin YOK; sosyal giris cihazda
-dogrulaninca cozulmeli (ornegin yeniden kimlik dogrulama ile).
+Dipnot: "parola yoksa form calismaz, destek@slooin.com'a yaz".
+(Ilk yazimda "Apple/Google ile girdiysen parolan yok" denmisti -
+YANLIS: profil olusturma adimi sosyal giriste de parola belirletiyor;
+Apple ile acilan gercek hesapta `encrypted_password` dolu. Duzeltildi.)
+
+**APPLE GIRISI CANLIDA CALISIYOR (olculdu, 2026-09-13):** auth_logs'ta
+Build 8 ile uc basarili `provider: apple` girisi (2026-09-12 22:05-22:12
+UTC), `privaterelay.appleid.com` adresli hesap, profil "ozdmr", KVKK
+onay kayitlari ve parola yerinde. Google icin sunucuya HIC istek
+gelmedi - cihazdaki davranis kullanicidan soruldu. Not: Apple "e-postami
+gizle" aktarici adresine posta gonderebilmek icin gonderici alan adi
+Apple Developer > "Sign in with Apple for Email Communication"da
+kayitli olmali (slooin.com + SMTP kurulunca).
 
 **KVKK m.9 - avukatsiz, kaynakli arastirma yapildi** (kullanicinin
 karari: "avukatsiz devam, bir avukat kadar bilgi"; hafiza

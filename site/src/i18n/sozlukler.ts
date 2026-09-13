@@ -176,7 +176,7 @@ const tr: SiteSozlugu = {
     parolaEtiket: 'Parola',
     dugme: 'Hesabımı kalıcı olarak sil',
     dipnot:
-      'Hesabına parola belirlemediysen (örneğin Apple ya da Google ile giriş yaptıysan) bu form çalışmaz. O durumda {{eposta}} adresine yaz; silme talebini oradan alırız.',
+      'Hesabına hiç parola belirlemediysen bu form çalışmaz. O durumda {{eposta}} adresine yaz; silme talebini oradan alırız.',
     betik: {
       eksik: 'E-posta ve parolanı gir.',
       kontrol: 'Hesabın kontrol ediliyor…',
@@ -274,7 +274,7 @@ const en: SiteSozlugu = {
     epostaEtiket: 'E-mail',
     parolaEtiket: 'Password',
     dugme: 'Delete my account permanently',
-    dipnot: 'If you never set a password for your account (for example you signed in with Apple or Google) this form will not work. In that case write to {{eposta}}; we will handle the deletion request from there.',
+    dipnot: 'If you never set a password for your account this form will not work. In that case write to {{eposta}}; we will handle the deletion request from there.',
     betik: {
       eksik: 'Enter your e-mail and password.',
       kontrol: 'Checking your account…',
@@ -354,7 +354,7 @@ const de: SiteSozlugu = {
     epostaEtiket: 'E-Mail',
     parolaEtiket: 'Passwort',
     dugme: 'Mein Konto dauerhaft löschen',
-    dipnot: 'Wenn du für dein Konto nie ein Passwort festgelegt hast (zum Beispiel weil du dich mit Apple oder Google angemeldet hast), funktioniert dieses Formular nicht. Schreib in dem Fall an {{eposta}}; wir übernehmen die Löschung von dort.',
+    dipnot: 'Wenn du für dein Konto nie ein Passwort festgelegt hast, funktioniert dieses Formular nicht. Schreib in dem Fall an {{eposta}}; wir übernehmen die Löschung von dort.',
     betik: {
       eksik: 'Gib E-Mail und Passwort ein.',
       kontrol: 'Dein Konto wird geprüft…',
@@ -434,7 +434,7 @@ const es: SiteSozlugu = {
     epostaEtiket: 'Correo electrónico',
     parolaEtiket: 'Contraseña',
     dugme: 'Eliminar mi cuenta de forma permanente',
-    dipnot: 'Si nunca estableciste una contraseña para tu cuenta (por ejemplo, si iniciaste sesión con Apple o Google), este formulario no funcionará. En ese caso escribe a {{eposta}}; gestionaremos la solicitud de eliminación desde allí.',
+    dipnot: 'Si nunca estableciste una contraseña para tu cuenta, este formulario no funcionará. En ese caso escribe a {{eposta}}; gestionaremos la solicitud de eliminación desde allí.',
     betik: {
       eksik: 'Introduce tu correo y tu contraseña.',
       kontrol: 'Comprobando tu cuenta…',
@@ -514,7 +514,7 @@ const fr: SiteSozlugu = {
     epostaEtiket: 'E-mail',
     parolaEtiket: 'Mot de passe',
     dugme: 'Supprimer définitivement mon compte',
-    dipnot: "Si tu n'as jamais défini de mot de passe pour ton compte (par exemple si tu t'es connecté avec Apple ou Google), ce formulaire ne fonctionnera pas. Dans ce cas, écris à {{eposta}} ; nous traiterons la demande de suppression de là.",
+    dipnot: "Si tu n'as jamais défini de mot de passe pour ton compte, ce formulaire ne fonctionnera pas. Dans ce cas, écris à {{eposta}} ; nous traiterons la demande de suppression de là.",
     betik: {
       eksik: 'Saisis ton e-mail et ton mot de passe.',
       kontrol: 'Vérification de ton compte…',
@@ -594,7 +594,7 @@ const ru: SiteSozlugu = {
     epostaEtiket: 'Эл. почта',
     parolaEtiket: 'Пароль',
     dugme: 'Удалить мой аккаунт навсегда',
-    dipnot: 'Если вы никогда не задавали пароль для аккаунта (например, входили через Apple или Google), эта форма не сработает. В таком случае напишите на {{eposta}}; мы примем запрос на удаление оттуда.',
+    dipnot: 'Если вы никогда не задавали пароль для аккаунта, эта форма не сработает. В таком случае напишите на {{eposta}}; мы примем запрос на удаление оттуда.',
     betik: {
       eksik: 'Введите почту и пароль.',
       kontrol: 'Проверяем аккаунт…',
@@ -674,7 +674,7 @@ const ar: SiteSozlugu = {
     epostaEtiket: 'البريد الإلكتروني',
     parolaEtiket: 'كلمة المرور',
     dugme: 'حذف حسابي نهائيًا',
-    dipnot: 'إذا لم تحدد كلمة مرور لحسابك قط (مثلًا إذا سجّلت الدخول عبر Apple أو Google) فلن يعمل هذا النموذج. في هذه الحالة اكتب إلى {{eposta}}؛ وسنستقبل طلب الحذف من هناك.',
+    dipnot: 'إذا لم تحدد كلمة مرور لحسابك قط فلن يعمل هذا النموذج. في هذه الحالة اكتب إلى {{eposta}}؛ وسنستقبل طلب الحذف من هناك.',
     betik: {
       eksik: 'أدخل بريدك الإلكتروني وكلمة المرور.',
       kontrol: 'جارٍ التحقق من حسابك…',
