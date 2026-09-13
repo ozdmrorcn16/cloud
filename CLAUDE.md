@@ -142,6 +142,37 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### POSTA SABLONU YENIDEN, KOD 10 DAKIKA - 2026-09-13 GECE
+
+Kullanici gelen postayi gordu: konu ve baslik ayni cumle, duz metin,
+marka yok. Uc tasarim gorsel olarak sunuldu (`tasarim/posta-tasarimlari.png`,
+Artifact `7ec6c44e-...`); **C - sade** secildi ve iki duzeltme geldi:
+"dakika belirtilmesin" (sure yazmiyor) ve baslik "Merhaba, Slooin
+dogrulama kodun:"; "Kodu uygulamadaki kutuya gir" satiri kaldirildi.
+
+Sablon depoda: `docs/posta-sablonu-dogrulama-kodu.html` (tablo tabanli,
+satir ici stil, sistem yazi tipi; tek gorsel `https://slooin.com/posta/simge.png`
+- `site/public/posta/`, 176 px uygulama simgesi). **Konu satiri
+`Slooin kodun: {{ .Token }}`** - Supabase konuyu da Go sablonu olarak
+isliyor, canlida dogrulandi ("Slooin kodun: 602874"). Bildirimden
+acmadan okunuyor.
+
+**Supabase'e BEN yazdim (claude-in-chrome, Browser 2 = Supabase
+oturumu):** Magic Link + Confirm sign up, ikisi de. Yontem: sayfa
+`window.monaco`yu aciyor, `monaco.editor.getModels()[0].setValue(html)`
++ subject input'una native setter + `input` olayi + "Save changes"
+tiklamasi. Kaydin gercekten gectigi Resend gonderim kaydindan olculdu
+(konu + govde). Supabase SPA'si de GIZLI SEKMEDE hic acilmiyor
+(Cloudflare ile ayni) - kullanici sekmeyi one getirince yuklendi.
+
+**OTP suresi 10 dakika** (kullanici: "bir saat yanlis geldi"): Supabase
+"Email OTP Expiration" = 600 sn (kullanici panelde yapti). Metinler:
+`hesabiSil.kodGonderildi` (7 dil), hukuki metin Resend paragrafi (7 dil),
+site sozlugu (7 dil), `docs/gizlilik-metni.md`. `lib/kod-gonderim.ts`
+icindeki saatlik GONDERIM SAYACI penceresi ayri bir sey, dokunulmadi.
+Yayin: web `slooin--2kqu96kj50`, OTA grup
+`45b3eda5-40ce-4a59-93bb-3978eba84aa5`.
+
 ### SLOOIN.COM ALINDI, SITE YAYINDA - 2026-09-13 AKSAM
 
 Kullanici `slooin.com`u Cloudflare Registrar'dan aldi (hesap
