@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node araclar/hukuki-kopyala.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "dogrula": "node araclar/dogrula.mjs"
