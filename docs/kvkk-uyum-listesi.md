@@ -190,6 +190,17 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
 olursa olsun Kurum'a bildirim ve belgeleme gerekiyor. **Bir danismana
 dogrulatilmali.**
 
+**2026-09-13 - is baslatildi.** Aktarimlarin tam envanteri (alici,
+ulke, rol, giden veri, gereken guvence, durum) artik ayri belgede:
+`docs/kvkk-aktarim-envanteri.md`. Supabase ve Expo'ya gonderilecek
+standart sozlesme talep yazilari hazir:
+`docs/kvkk-standart-sozlesme-talep-yazilari.md`. Kullaniciya acikca
+soylendi: hukuken zorunlu, mağaza icin engel degil; acik riza bu is
+icin dayanak yapilmiyor (surekli aktarim, hizmete sart kosulan riza
+sakat, riza geri alinabilir). Sira: kullanici standart sozlesmeyi
+indirip yazilari gonderir -> imza gelirse 5 is gununde Kurum
+bildirimi -> gizlilik metni yedi dilde guncellenir.
+
 Gizlilik metni (madde 1) artik bu aktarimin **durumunu bildiriyor**
 (hangi veri nereye, hangi ulkeye gidiyor), ama bu yalnizca bildirimdir -
 KVKK m.9'un istedigi **hukuki mekanizma** (standart sozlesme, Kurum

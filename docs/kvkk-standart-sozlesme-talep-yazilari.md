@@ -1,0 +1,102 @@
+# Standart sozlesme talep yazilari (Supabase ve Expo)
+
+Kullanim: metni oldugu gibi e-postaya yapistir, koseli parantezleri
+doldur, Kurum'un standart sozlesmesini (veri sorumlusundan veri
+isleyene, iki dilli surum varsa o) ek olarak koy. Ikisi de Ingilizce;
+karsi tarafin hukuk ekibi Turkce okumaz.
+
+Gonderilen tarih ve cevap buraya not edilsin:
+
+| Alici | Gonderildi | Cevap |
+|---|---|---|
+| Supabase | - | - |
+| Expo | - | - |
+
+---
+
+## 1. Supabase
+
+**To:** support@supabase.io (ya da dashboard > Support > "Legal /
+compliance" kategorisi)
+**Subject:** Request to execute Turkish KVKK Standard Contract (data
+controller to processor) - project swpiibyuoffykbmirvgq
+
+Hello Supabase team,
+
+I operate a mobile application (Slooin) hosted on Supabase, project ref
+`swpiibyuoffykbmirvgq`, region eu-central-1. The app processes personal
+data of users located in Turkey (e-mail, name, profile, temporary
+location, messages).
+
+Under Article 9 of the Turkish Personal Data Protection Law (Law No.
+6698, as amended by Law No. 7499 effective 1 June 2024), a data
+controller established in Turkey may transfer personal data abroad
+only under an adequacy decision of the Turkish Data Protection Board
+(none exists today, including for the EU) or under "appropriate
+safeguards". The most practical safeguard for a controller-to-processor
+relationship is the **Standard Contract** published by the Board, which
+must be signed without modification by both parties and notified to
+the Board within five business days of signature.
+
+I am aware of your DPA and EU SCCs, but Turkish law requires the
+Board's own template in addition. I would therefore like to ask:
+
+1. Are you able to execute the attached Turkish Standard Contract
+   (controller-to-processor, bilingual Turkish/English version) with me
+   as the data controller? Only the annexes (parties, data categories,
+   purposes, retention) are filled in; the body is the Board's text
+   and cannot be altered.
+2. If you cannot sign it, do you have any Turkey-specific arrangement
+   (a Turkish entity, a Board-approved undertaking, or a documented
+   position) that other Turkish customers rely on?
+
+Signatory on my side: [Ad Soyad], natural person, [adres], Turkey.
+Contact: destek@slooin.com.
+
+Thank you,
+[Ad Soyad]
+
+Attachment: KVKK-Standard-Contract-Controller-to-Processor.pdf
+
+---
+
+## 2. Expo
+
+**To:** support@expo.dev
+**Subject:** Request to execute Turkish KVKK Standard Contract for Expo
+Push Notification Service - account byorcun
+
+Hello Expo team,
+
+I use the Expo Push Notification Service (Expo account `byorcun`,
+project `slooin`, EAS project id 972aa05d-569b-4a5a-ab75-2b149fd8588c)
+from a backend located in the EU to deliver notifications to users in
+Turkey. The data passing through your service is the device push
+token, the recipient identifier and a short notification title
+containing another user's display name; message bodies are never sent.
+
+Under Article 9 of the Turkish Personal Data Protection Law (Law No.
+6698, as amended effective 1 June 2024), transferring personal data to
+a processor in the United States requires an "appropriate safeguard".
+In practice this is the **Standard Contract** published by the Turkish
+Data Protection Board (controller-to-processor), signed unchanged by
+both parties and notified to the Board within five business days.
+
+Could you let me know:
+
+1. Whether Expo (650 Industries, Inc.) can execute the attached
+   Turkish Standard Contract with me as the data controller. Only the
+   annexes are filled in; the contract body is the Board's fixed text.
+2. If not, whether Expo has any Turkey-specific arrangement or a
+   documented position that customers in Turkey rely on.
+
+If neither is possible I will consider sending notifications directly
+through APNs/FCM instead, so an early answer helps me plan.
+
+Signatory: [Ad Soyad], natural person, [adres], Turkey.
+Contact: destek@slooin.com.
+
+Thank you,
+[Ad Soyad]
+
+Attachment: KVKK-Standard-Contract-Controller-to-Processor.pdf
