@@ -12,15 +12,21 @@ Gonderilen tarih ve cevap buraya not edilsin:
 
 | Alici | Gonderildi | Cevap |
 |---|---|---|
-| Supabase | - | - |
-| Expo | - | - |
+| Supabase | 2026-09-13 10:47, ozdmrorcn16@gmail.com -> support@supabase.com, PDF ekli | bekleniyor |
+| Expo | 2026-09-13 10:48 e-posta (otomatik yanit: adres izlenmiyor) -> 10:5x expo.dev/contact formu, kategori "Other", hesap byorcun ("Message received") | bekleniyor |
+
+Gonderim ajan tarafindan Chrome (Browser 1, ozdmrorcn16@gmail.com)
+uzerinden yapildi - kullanicinin talimati: "Supabase'ye uye oldugum
+mailden gonder". Expo formu dosya eki almiyor; sozlesme resmi Kurum
+baglantisi olarak verildi. `support@supabase.com` gercek destek adresi
+(e-posta reddedilmedi). Cevaplar ozdmrorcn16@gmail.com gelen kutusuna
+duesecek.
 
 ---
 
 ## 1. Supabase
 
-**To:** support@supabase.io (ya da dashboard > Support > "Legal /
-compliance" kategorisi)
+**To:** support@supabase.com (ya da dashboard > Support)
 **Subject:** Request to execute Turkish KVKK Standard Contract (data
 controller to processor) - project swpiibyuoffykbmirvgq
 
@@ -45,10 +51,11 @@ I am aware of your DPA and EU SCCs, but Turkish law requires the
 Board's own template in addition. I would therefore like to ask:
 
 1. Are you able to execute the attached Turkish Standard Contract
-   (controller-to-processor, bilingual Turkish/English version) with me
-   as the data controller? Only the annexes (parties, data categories,
-   purposes, retention) are filled in; the body is the Board's text
-   and cannot be altered.
+   (controller-to-processor; the Board publishes it in Turkish only,
+   I can provide an English courtesy translation) with me as the data
+   controller? Only the annexes (parties, data categories, purposes,
+   retention) are filled in; the body is the Board's text and cannot
+   be altered.
 2. If you cannot sign it, do you have any Turkey-specific arrangement
    (a Turkish entity, a Board-approved undertaking, or a documented
    position) that other Turkish customers rely on?
@@ -64,13 +71,14 @@ bearing an apostille and a Turkish translation**. I know this is
 unusual; if you have handled it for other customers in Turkey, a
 pointer to that process would be very helpful.
 
-Signatory on my side: [Ad Soyad], natural person, [adres], Turkey.
+Signatory on my side: Orçun Özdemir, natural person, Bursa, Turkey
+(full postal address will appear in Annex I).
 Contact: destek@slooin.com.
 
 Thank you,
-[Ad Soyad]
+Orçun Özdemir
 
-Attachment: KVKK-Standard-Contract-Controller-to-Processor.pdf
+Attachment: KVKK-Standart-Sozlesme-2-Veri-Sorumlusundan-Veri-Isleyene.pdf (Board's official Turkish text)
 
 ---
 
@@ -118,10 +126,11 @@ pointer to that process would be very helpful.
 If neither is possible I will consider sending notifications directly
 through APNs/FCM instead, so an early answer helps me plan.
 
-Signatory: [Ad Soyad], natural person, [adres], Turkey.
+Signatory: Orçun Özdemir, natural person, Bursa, Turkey (full postal
+address will appear in Annex I).
 Contact: destek@slooin.com.
 
 Thank you,
-[Ad Soyad]
+Orçun Özdemir
 
-Attachment: KVKK-Standard-Contract-Controller-to-Processor.pdf
+Attachment: KVKK-Standart-Sozlesme-2-Veri-Sorumlusundan-Veri-Isleyene.pdf (Board's official Turkish text)
