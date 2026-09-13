@@ -4,9 +4,15 @@
 // Akis:
 //   1) Cagiranin JWT'si dogrulanir - KENDI hesabindan baskasini silemez;
 //      kimlik VE telefon buradan cikar.
-//   2) Govdeden gelen parola, cagiranin KENDI telefonuyla
-//      `signInWithPassword` denenerek SUNUCUDA dogrulanir. Bu istemci
-//      tarafinda ATLANAMAZ - fonksiyonun kendisi zorluyor.
+//   2) IKI KAPIDAN BIRI, SUNUCUDA zorlanir, istemci atlayamaz:
+//      (a) ASIL YOL (2026-09-13): parola YOKSA cagiranin son girisi
+//          TAZE olmali (`girisTazeMi`, 10 dk) - ekranlar silmeden hemen
+//          once e-posta ONAY KODUYLA (`verifyOtp`) ya da Apple/Google
+//          ile yeniden giris yaptiriyor. Kullanicinin karari: "e-postaya
+//          gelen onay kodunu giren biri hesabini silebilecek".
+//      (b) ESKI YOL: govdeden parola gelirse `signInWithPassword` ile
+//          dogrulanir. Ekranlar artik gondermiyor; canli test betikleri
+//          ve eski istemciler icin duruyor.
 //   3) Silinecek Storage yollari TOPLANIR (henuz silinmez).
 //   4) auth.admin.deleteUser cagrilir; cascade kalani goturur.
 //   5) (4) basariliysa Storage'daki profil ve check-in fotograflari
@@ -64,8 +70,8 @@
 // donduruyor; her sey (rate limit, ag, 5xx, bilinmeyen) "su anda
 // dogrulanamadi" (503) donduruyor - bkz. asagidaki (2).
 
-import { createClient } from 'npm:@supabase/supabase-js@2'
-import { fotografYollari } from './saf.ts'
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
+import { fotografYollari, girisTazeMi } from './saf.ts'
 
 // Bucket kimlikleri migrasyonlardan BIREBIR: dogrulama olmadan
 // tahmin edilmemeli. Kontrolor incelemesinde bulunan Critical (C1):
@@ -139,7 +145,8 @@ Deno.serve(async (istek: Request) => {
     return yanit({ hata: 'Kimlik dogrulamasi gecersiz' }, 401)
   }
 
-  // 2) Parola dogrulamasi - SUNUCUDA zorlanir, istemci atlayamaz.
+  // 2) Kapi: parola YA DA taze giris - SUNUCUDA zorlanir, istemci
+  // atlayamaz.
   let parola: string | null = null
   try {
     const govde = await istek.json()
@@ -149,7 +156,15 @@ Deno.serve(async (istek: Request) => {
   }
 
   if (!parola || parola.length === 0) {
-    return yanit({ hata: 'Parola gerekli' }, 400)
+    // (b) TAZE GIRIS. `getUser` GoTrue'dan kullanicinin GUNCEL kaydini
+    // getiriyor (JWT'deki eski kopyayi degil); `last_sign_in_at` son
+    // GERCEK giristir - e-posta kodu, Apple/Google ya da parola girisi.
+    // Jeton yenileme bu alani ilerletmez. Sinir `TAZELIK_DAKIKA`.
+    if (!girisTazeMi(kullaniciVerisi?.user?.last_sign_in_at)) {
+      console.error('hesap-sil: parola yok ve giris taze degil', { kimlik })
+      return yanit({ hata: 'Onay gerekli: parolani yaz ya da yeniden dogrula' }, 403)
+    }
+    return await sil(yonetici, kimlik)
   }
 
   if (!eposta && !telefon) {
@@ -193,6 +208,15 @@ Deno.serve(async (istek: Request) => {
     return yanit({ hata: 'Su anda dogrulanamadi, biraz sonra tekrar dene' }, 503)
   }
 
+  return await sil(yonetici, kimlik)
+})
+
+/**
+ * Asil silme: her iki kapidan gecen cagri buraya geliyor.
+ * (3) yollari topla, (4) deleteUser, (5) Storage temizligi.
+ */
+// deno-lint-ignore no-explicit-any
+async function sil(yonetici: SupabaseClient<any, 'public', 'public'>, kimlik: string): Promise<Response> {
   const { data: profil, error: profilHata } = await yonetici
     .from('profiller')
     .select('fotograflar')
@@ -264,4 +288,4 @@ Deno.serve(async (istek: Request) => {
     `hesap-sil: tamamlandi, profil dosyasi=${yollar.profil.length}, checkin dosyasi=${yollar.checkIn.length}`
   )
   return yanit({ silindi: true }, 200)
-})
+}

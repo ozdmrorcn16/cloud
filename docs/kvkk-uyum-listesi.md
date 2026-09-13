@@ -238,6 +238,26 @@ EDILMEZ (karar 70 geri alindi): silinen ad aninda serbest kalir.
 Denetim izi (`moderasyon_kayitlari`) silinmez, `moderator_id` alani
 `set null` olur: izin butunlugu korunur, kisiyle bagi kopar.
 
+**Silme kapisi 2026-09-13'te degisti: parola yerine E-POSTA ONAY KODU.**
+Kullanicinin karari: "hesap silme adimina e-postaya onaylama kodu
+getirilsin; e-postaya gelen onay kodunu giren biri hesabini silebilecek,
+bilgilendirme yazilari da olacak." Ekran once neyin silinip neyin
+kaldigini yaziyor, sonra kullanicinin KAYITLI adresine 6 haneli kod
+gonderiyor (`signInWithOtp`, `shouldCreateUser: false`); kod
+`verifyOtp` ile dogrulaninca `hesap-sil` cagriliyor. Apple/Google ile
+acilmis hesapta ayrica "Apple/Google ile onayla" dugmesi var (saglayici
+ile yeniden giris de ayni kapiyi aciyor). Sunucu (surum 7) parola
+gelmediginde `last_sign_in_at`in 10 dakikadan taze olmasini sart
+kosuyor; parola yolu web formu ve eski istemciler icin duruyor.
+
+Dort soru: (a) hangi veri - kullanicinin kendi e-posta adresi ve
+oturum kaydi, yeni veri toplanmiyor; (b) dayanak - veri sahibinin
+kimliginin dogrulanmasi (KVKK m.13, basvurunun kimlik tespitiyle
+alinmasi); (c) sure - kod bir saat gecerli, oturum zaten var olan
+oturum; (d) kim gorur - yalnizca kullanici (posta) ve sunucu; kod
+hicbir yerde saklanmiyor. Canli olcum `araclar/hesap-sil-kod-canli-test.py`
+(8/8) + kapali yon MCP SQL ile elle (eski giris + parolasiz -> 403).
+
 ### 6. Erisim hakki (KVKK m.11) - KAPANDI (2026-09-11)
 
 Ayarlar > "Verilerimi indir". `verilerimi_disa_aktar` RPC'si (security

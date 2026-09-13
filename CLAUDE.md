@@ -131,6 +131,62 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### HESAP SILME: PAROLA YERINE E-POSTA ONAY KODU - 2026-09-13 OGLEDEN SONRA
+
+Kullanici once "sifre tamamen kalksin" dedi, sonra "sifre yine kalsin,
+taze dogrulama ekleyelim", en sonunda karari kesinlestirdi: **"hesap
+silme adimina e-postaya onaylama kodu getirilsin; e-postaya gelen onay
+kodunu giren biri hesabini silebilecek; bilgilendirme yazilari da
+olacak."** Parola GIRIS ve profil olusturma icin DURUYOR (Apple/Google
+ile acilan hesap da profil-olustur 3. adimda parola belirliyor);
+degisen yalnizca SILME kapisi.
+
+**AKIS (`src/app/profil/hesabi-sil.tsx`, bastan yazildi):** bilgilendirme
+(geri alinamaz / ne silinir / ne kalir / "bunun yerine dondur") ->
+"Onay kodu gonder" (`signInWithOtp`, `shouldCreateUser:false`,
+`gonderimKaydet` ile cihaz sayaci) -> 6 haneli kod -> "Hesabimi kalici
+olarak sil" (`verifyOtp type:'email'` -> `hesabiSil()` -> `signOut`).
+Apple/Google ile acilmis hesapta (`app_metadata.providers`) ayrica
+"Apple/Google ile onayla" dugmesi; Apple yalnizca iOS'ta. Parola alani
+YOK. testID'ler: `kod-gonder`, `dogrulama-kodu`, `kodla-sil`,
+`saglayici-<s>`.
+
+**SUNUCU KAPISI (`hesap-sil` Edge Function SURUM 7, MCP ile deploy,
+verify_jwt acik):** govdede `parola` varsa eski yol (signInWithPassword)
+aynen; yoksa `girisTazeMi(last_sign_in_at)` - son giris **10 dakikadan
+taze** degilse 403 "Onay gerekli: parolani yaz ya da yeniden dogrula".
+`verifyOtp` ve `signInWithIdToken` gercek giris sayildigi icin
+`last_sign_in_at`i ilerletiyor; jeton YENILEME ilerletmiyor - kapi bu
+yuzden isliyor. Saf fonksiyon `saf.ts` icinde, deno test 10/10.
+
+**CANLI OLCULDU, iki parcada:**
+- `araclar/hesap-sil-kod-canli-test.py` **8/8**: taze giris + parolasiz
+  -> silindi; gecersiz jeton -> 401; admin `generate_link(magiclink)`
+  ile alinan `email_otp` (postadaki kodun kendisi) `verifyOtp`ten
+  gecip parolasiz silme -> silindi; yanlis parola 400 / dogru parola
+  silindi (eski yol duruyor).
+- KAPALI YON elle (betik `last_sign_in_at`i eskitemiyor, auth semasi
+  PostgREST'e kapali): gecici hesap acildi, giris yapildi, MCP SQL ile
+  `last_sign_in_at = now() - 1 saat`, ayni jetonla parolasiz cagri ->
+  **403**; ayni jetonla parola verilince 200 silindi.
+
+**KOD OMRU 1 SAAT, .test adreslerine posta GITMIYOR** (Supabase posta
+katmani reddediyor) - bu yuzden betik kodu admin API'den aliyor;
+gercek adresle posta zinciri 2026-09-02'de olculmustu.
+
+**SITE DE AYNI AKISA GECTI** (`site/src/betik/hesap-sil.ts`,
+`hesap-sil.astro`, `sozlukler.ts` yedi dilde): `#kod-dugmesi` ->
+signInWithOtp; form -> verifyOtp -> `functions.invoke('hesap-sil',
+{ body: {} })`. `npm run dogrula` HEPSI GECTI.
+
+Yedi dil: `hesabiSil` blogu bastan (baslik, uyari, neSilinir/neKalir,
+dondur, kodAciklama, kodGonder, kodGonderildi, kodYerTutucu, kodEksik,
+tekrarGonder, epostaYok, saglayiciAciklama, appleIleDogrula,
+googleIleDogrula, sil); `hatalar.vt` bes yeni sunucu metni
+(`hata-metni.ts` haritasi dahil). ceviri-tamlik 25/25. Jest 75 paket /
+943 test, tsc uygulama kodunda 0 hata. KVKK listesi 5. madde
+guncellendi (dort soru cevapli).
+
 ### SITE YEDI DILDE, HUKUKI METINLER ORTAK KAYNAKTAN; KVKK m.9 ISI - 2026-09-13 OGLE
 
 **Site (`site/`) yedi dile gecti** (commit `824cc01`): gizlilik ve

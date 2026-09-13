@@ -40,11 +40,14 @@ const dipnot = t.dipnot.split(/(\{\{eposta\}\})/g).filter(Boolean)
       {t.epostaEtiket}
       <input type="email" name="eposta" autocomplete="email" required />
     </label>
-    <label>
-      {t.parolaEtiket}
-      <input type="password" name="parola" autocomplete="current-password" required />
-    </label>
-    <button id="sil-dugmesi" type="submit">{t.dugme}</button>
+    <button id="kod-dugmesi" type="button">{t.kodGonder}</button>
+    <div id="kod-alani" hidden>
+      <label>
+        {t.kodEtiket}
+        <input type="text" name="kod" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" />
+      </label>
+      <button id="sil-dugmesi" type="submit">{t.dugme}</button>
+    </div>
   </form>
 
   <p id="durum" class="durum" role="status" aria-live="polite"></p>
@@ -59,7 +62,9 @@ const dipnot = t.dipnot.split(/(\{\{eposta\}\})/g).filter(Boolean)
 </script>
 
 <style>
-  form { display: flex; flex-direction: column; gap: 14px; margin: 18px 0 10px; max-width: 380px; }
+  form, #kod-alani { display: flex; flex-direction: column; gap: 14px; margin: 18px 0 10px; max-width: 380px; }
+  #kod-alani[hidden] { display: none; }
+  #kod-alani { margin: 0; }
 
   label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
 
@@ -75,7 +80,18 @@ const dipnot = t.dipnot.split(/(\{\{eposta\}\})/g).filter(Boolean)
 
   input:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 1px; }
 
-  button {
+  #kod-dugmesi {
+    font: inherit;
+    font-weight: 600;
+    padding: 12px 18px;
+    border: 1.5px solid var(--turuncu);
+    border-radius: 10px;
+    background: var(--beyaz);
+    color: var(--turuncu);
+    cursor: pointer;
+  }
+
+  #sil-dugmesi {
     font: inherit;
     font-weight: 600;
     padding: 12px 18px;

@@ -250,14 +250,24 @@ export default {
   },
   // HESABI SIL EKRANI (i18n turu 2026-09-13; iki paragraf ASCII'ydi).
   hesabiSil: {
+    // HESAP SILME E-POSTA ONAY KODUYLA (2026-09-13); parola anahtarlari kalkti.
     baslik: 'Hesabını sil',
-    uyari: 'Geri dönüşü yok. Yeniden gelmek istersen sıfırdan hesap açman gerekir.',
-    ipucu:
-      'Profilin, anıların, arkadaşlıkların ve konuşma listen silinir. Karşı tarafın geçmişindeki mesajlar kalır ama adın görünmez.',
+    uyari: 'Bu işlem geri alınamaz. Yeniden gelmek istersen sıfırdan hesap açman gerekir.',
+    neSilinirBaslik: 'Ne silinir?',
+    neSilinir: 'Hesabın ve profilin (adın, kullanıcı adın, biyografin, doğum tarihin), profil ve check-in fotoğrafların, bütün check-in\'lerin ve anıların, arkadaşlıkların, isteklerin, engellemelerin ve bildirim kayıtların.',
+    neKalirBaslik: 'Ne kalır?',
+    neKalir: 'Başkalarına gönderdiğin mesajlar ve gönderdiğin şikâyetler silinmez, anonimleşir — gönderen bilgisi kaldırılır. Mesajları silmek karşı tarafın konuşma geçmişini de silmek anlamına geleceği için bu tercih edildi.',
     dondur: 'Bunun yerine hesabımı dondur',
-    parolaEtiket: 'Onaylamak için parolanı yaz',
-    parolaYerTutucu: 'parolan',
-    parolaGerekli: 'Onaylamak için parolanı yaz.',
+    kodAciklama: 'Onaylamak için {{eposta}} adresine 6 haneli bir onay kodu göndereceğiz. Kodu giren kişi hesabı silebilir.',
+    kodGonder: 'Onay kodu gönder',
+    kodGonderildi: 'Onay kodu {{eposta}} adresine gönderildi. Kod bir saat geçerli.',
+    kodYerTutucu: '6 haneli kod',
+    kodEksik: '6 haneli kodun tamamını gir.',
+    tekrarGonder: 'Kodu tekrar gönder',
+    epostaYok: 'Hesabında e-posta adresi yok. destek@slooin.com adresine yaz.',
+    saglayiciAciklama: 'Hesabını Apple ya da Google ile açtıysan onlarla da onaylayabilirsin.',
+    appleIleDogrula: 'Apple ile onayla',
+    googleIleDogrula: 'Google ile onayla',
     sil: 'Hesabımı kalıcı olarak sil',
   },
   // SOHBET EKRANI (i18n turu 2026-09-13).
@@ -908,6 +918,11 @@ export default {
     genel: 'Bir şeyler ters gitti. Biraz sonra tekrar dene.',
     kullaniciAdi30Gun: 'Kullanıcı adını 30 günde bir değiştirebilirsin. {{gun}} gün kaldı.',
     vt: {
+      parola_yanlis: 'Parola yanlış.',
+      su_anda_dogrulanamadi: 'Şu anda doğrulanamadı, biraz sonra tekrar dene.',
+      silme_su_anda_tamamlanamadi: 'Silme şu anda tamamlanamadı, tekrar dene.',
+      giris_taze_degil: 'Onay kodu doğrulanmadı ya da süresi geçti; kodu tekrar gönder.',
+      silme_onayi_gerekli: 'Silmek için önce onay kodunu doğrula.',
       aski_bitisi_gelecekte_olmali: 'Askı bitişi gelecekte olmalı.',
       bir_moderatore_islem_uygulanamaz: 'Bir moderatöre işlem uygulanamaz.',
       bu_kisiye_su_an_mesaj_gonderemezsin: 'Bu kişiye şu an mesaj gönderemezsin.',

@@ -64,9 +64,16 @@ export async function hesabiGeriAc(): Promise<boolean> {
 // herkese acik oldugu icin onu sormak gercek bir koruma degildi;
 // parolayi bilmeyen biri (ornegin calinmis bir oturum jetonuyla) hesabi
 // silemez.
-export async function hesabiSil(parola: string): Promise<void> {
+/**
+ * `parola` VERILMEZSE ikinci kapi calisir (2026-09-13, kullanicinin
+ * karari "sifre yine kalsin, taze dogrulama ekleyelim"): sunucu, cagiranin
+ * son girisinin TAZE olmasini (10 dk) ister - ekran silmeden hemen once
+ * e-posta koduyla ya da Apple/Google ile yeniden giris yaptirmis olmali.
+ * Parolasini hatirlamayan kisi icin.
+ */
+export async function hesabiSil(parola?: string): Promise<void> {
   const { error } = await supabase.functions.invoke('hesap-sil', {
-    body: { parola },
+    body: parola ? { parola } : {},
   })
   if (error) {
     // Duzeltme turu 2 (N2, kod incelemesi): `data` burada HER ZAMAN

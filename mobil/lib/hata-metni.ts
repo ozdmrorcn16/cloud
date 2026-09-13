@@ -35,6 +35,12 @@ import { cevir } from './dil'
  * 2026-09-13: metinler burada degil sozlukte, dile gore geliyor.
  */
 const VERITABANI: Record<string, string> = {
+  // hesap-sil Edge Function metinleri (2026-09-13, onay kodu turu).
+  'Parola yanlis': 'parola_yanlis',
+  'Su anda dogrulanamadi, biraz sonra tekrar dene': 'su_anda_dogrulanamadi',
+  'Silme su anda tamamlanamadi, tekrar dene': 'silme_su_anda_tamamlanamadi',
+  'Giris taze degil, once yeniden dogrula': 'giris_taze_degil',
+  'Onay gerekli: parolani yaz ya da yeniden dogrula': 'silme_onayi_gerekli',
   'Aski bitisi gelecekte olmali': 'aski_bitisi_gelecekte_olmali',
   'Bir moderatore islem uygulanamaz': 'bir_moderatore_islem_uygulanamaz',
   'Bu kisiye su an mesaj gonderemezsin': 'bu_kisiye_su_an_mesaj_gonderemezsin',

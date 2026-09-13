@@ -8,7 +8,7 @@
 // kapsanmiyor.
 
 import { assertEquals } from '@std/assert'
-import { fotografYollari } from './saf.ts'
+import { fotografYollari, girisTazeMi, TAZELIK_DAKIKA } from './saf.ts'
 
 // Yollar gercek duzeni izliyor: `<kullaniciId>/<dosya>` (bkz.
 // lib/fotograf-yukle.ts, lib/checkin-fotograf-yukle.ts).
@@ -67,4 +67,30 @@ Deno.test('fotografYollari: karisik dizide yalnizca kendi yollari gecer', () => 
   // 'baskasi-4/z.jpg'. Bos/null degerler sayilmiyor - onlar zaten
   // normal (fotografsiz check-in/profil).
   assertEquals(sonuc.yabanciElenen, 2)
+})
+
+// ----- girisTazeMi: silme kapisi (sifre yerine, 2026-09-13) -----
+
+Deno.test('girisTazeMi: az once yapilan giris tazedir', () => {
+  const simdi = new Date('2026-09-13T10:00:00Z')
+  assertEquals(girisTazeMi('2026-09-13T09:58:00Z', simdi), true)
+})
+
+Deno.test('girisTazeMi: sinirin tam ustu taze, bir saniye otesi degil', () => {
+  const simdi = new Date('2026-09-13T10:00:00Z')
+  const sinir = new Date(simdi.getTime() - TAZELIK_DAKIKA * 60 * 1000)
+  assertEquals(girisTazeMi(sinir.toISOString(), simdi), true)
+  assertEquals(girisTazeMi(new Date(sinir.getTime() - 1000).toISOString(), simdi), false)
+})
+
+Deno.test('girisTazeMi: null, bos ve bozuk deger TAZE DEGIL (belirsizlikte kapi kapali)', () => {
+  assertEquals(girisTazeMi(null), false)
+  assertEquals(girisTazeMi(undefined), false)
+  assertEquals(girisTazeMi(''), false)
+  assertEquals(girisTazeMi('dun'), false)
+})
+
+Deno.test('girisTazeMi: gelecekteki bir zaman taze degil (saat kaymasi kapiyi acmasin)', () => {
+  const simdi = new Date('2026-09-13T10:00:00Z')
+  assertEquals(girisTazeMi('2026-09-13T10:05:00Z', simdi), false)
 })

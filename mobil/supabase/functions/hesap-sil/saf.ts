@@ -6,9 +6,38 @@
 // alinip `index_test.ts` tarafindan dogrudan test ediliyor.
 //
 // Buraya YALNIZCA saf kod girer. Veritabani, Storage ya da auth admin
-// API'sine dokunan her sey `index.ts` icinde kalir. Parola dogrulamasi
-// (`signInWithPassword`) bir ag cagrisi oldugu icin burada DEGIL,
-// `index.ts` icinde ve canli dogrulamada sinaniyor.
+// API'sine dokunan her sey `index.ts` icinde kalir.
+
+/**
+ * SILMEDEN ONCE GIRIS NE KADAR TAZE OLMALI (dakika).
+ *
+ * ASIL KAPI (kullanicinin karari 2026-09-13: "hesap silme adimina
+ * e-postaya onaylama kodu getirilsin, kodu giren biri hesabini
+ * silebilecek"). Uygulama ve web formu silmeden hemen once e-postaya
+ * gelen kodu `verifyOtp` ile dogruluyor (Apple/Google ile acilmis
+ * hesaplar `signInWithIdToken` ile). Ikisi de `auth.users.last_sign_in_at`
+ * degerini ilerletiyor; salt jeton yenileme (refresh) ILERLETMIYOR.
+ * Sunucu bu alanin 10 dakikadan taze oldugunu dogruluyor - yani
+ * calinmis bir oturum jetonu tek basina hesabi silemez. Parola yolu
+ * sunucuda DURUYOR (canli test betikleri ve eski istemciler icin) ama
+ * ekranlar artik kullanmiyor; giris icin parola yerinde.
+ */
+export const TAZELIK_DAKIKA = 10
+
+/**
+ * Son giris yeterince taze mi?
+ *
+ * `sonGiris` GoTrue'nun verdigi ISO metni; okunamazsa (null, bos,
+ * gecersiz tarih) TAZE DEGIL sayilir - belirsizlikte kapi kapali.
+ * `simdi` test edilebilirlik icin parametre.
+ */
+export function girisTazeMi(sonGiris: string | null | undefined, simdi: Date = new Date()): boolean {
+  if (!sonGiris) return false
+  const zaman = new Date(sonGiris).getTime()
+  if (Number.isNaN(zaman)) return false
+  const fark = simdi.getTime() - zaman
+  return fark >= 0 && fark <= TAZELIK_DAKIKA * 60 * 1000
+}
 
 export type Yollar = {
   profil: string[]
