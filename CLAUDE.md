@@ -131,6 +131,41 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SITE YEDI DILDE, HUKUKI METINLER ORTAK KAYNAKTAN; KVKK m.9 ISI - 2026-09-13 OGLE
+
+**Site (`site/`) yedi dile gecti** (commit `824cc01`): gizlilik ve
+kosullar sayfalari `mobil/lib/hukuki/<dil>.ts` dosyalarini DOGRUDAN
+import ediyor (`src/ortak/HukukiBolumler.astro`) - uygulama ile site
+artik ayni diziyi okuyor, elle tekrarlanan metin yok. Kabuk, ana
+sayfa, destek ve hesap silme `site/src/i18n/sozlukler.ts` (7 dil);
+`diller.ts` yedi dil; Arapca `dir="rtl"`; hesap-sil betigi durum
+metinlerini `<html lang>`den seciyor. `npm run dogrula` 128/128.
+Yayinda DEGIL (Cloudflare Pages kurulmadi, alan adi alinmadi).
+Dipnot duzeltmesi: "parola yoksa (Apple/Google girisi) form calismaz,
+destek@slooin.com'a yaz" - **ACIK BORC:** sosyal girisle acilmis
+hesabin hesap silme yolu (uygulama ici `hesap-sil` Edge Function da
+parola dogruluyor) parolasiz kullanici icin YOK; sosyal giris cihazda
+dogrulaninca cozulmeli (ornegin yeniden kimlik dogrulama ile).
+
+**KVKK m.9 - avukatsiz, kaynakli arastirma yapildi** (kullanicinin
+karari: "avukatsiz devam, bir avukat kadar bilgi"; hafiza
+`avukatsiz-hukuki-danisman-rolu`). Sonuclar ve kaynaklar
+`docs/kvkk-aktarim-envanteri.md`: yeterlilik karari hicbir ulke icin
+yok; bulut barindirma aktarimdir; acik riza yalnizca arizi aktarimda;
+harita/sosyal giris bizim aktarimimiz degil (dogrudan cihazdan);
+VERBIS muafiyeti var; standart sozlesme ISLAK IMZA + apostilli yetki
+belgesi istiyor (asil engel); 2026 cezalari. **Talepler gonderildi:**
+Supabase bilet SU-471923 (e-posta + dashboard formu, Pro org
+"uygulama"), Expo contact formu (Free plan). Cevap gelince
+`docs/kvkk-standart-sozlesme-talep-yazilari.md` tablosu guncellenir.
+Imza gelmezse secenekler envanterde (APNs/FCM'e gecis, TR barindirma,
+riski tasima).
+
+**Magaza ulke kapsami - oneri kabul bekliyor:** ilk yayinda iki
+magazada da yalnizca Turkiye (veri yalnizca TR, GDPR yuku yok).
+Yurt disi genisleme mumkun: ulke basina Foursquare dilimi + OSM idari
+poligonlari, AB icin GDPR m.27 temsilci; ilk aday Almanya.
+
 ### i18n BITTI, BASKASININ PROFILI YENIDEN, BOS AVATAR - 2026-09-13 SABAH
 
 Onceki oturumun (4857d87a) devir notundaki uc acik is bu oturumda
