@@ -2,7 +2,10 @@
 
 Kullanim: metni oldugu gibi e-postaya yapistir, koseli parantezleri
 doldur, Kurum'un standart sozlesmesini (veri sorumlusundan veri
-isleyene, iki dilli surum varsa o) ek olarak koy. Ikisi de Ingilizce;
+isleyene; Kurum iki dilli surum yayimliyor, onu kullan - imzalar
+TURKCE sutunda olmali) ek olarak koy. DIKKAT: Kurum ISLAK imza ve
+yabanci imzaci icin apostilli, Turkce tercumeli yetki belgesi
+istiyor (bkz. envanter, madde 6); yazilar bunu acikca soyluyor. Ikisi de Ingilizce;
 karsi tarafin hukuk ekibi Turkce okumaz.
 
 Gonderilen tarih ve cevap buraya not edilsin:
@@ -50,6 +53,17 @@ Board's own template in addition. I would therefore like to ask:
    (a Turkish entity, a Board-approved undertaking, or a documented
    position) that other Turkish customers rely on?
 
+
+Please note the formal requirements set by the Turkish Board, which
+we cannot waive: the contract body must remain unchanged; if a
+bilingual version is used, signatures must be placed on the Turkish
+text; the Board requires a **wet (handwritten) signature** by an
+authorised signatory (a Turkish qualified electronic signature is the
+only alternative), together with **proof of the signatory's authority
+bearing an apostille and a Turkish translation**. I know this is
+unusual; if you have handled it for other customers in Turkey, a
+pointer to that process would be very helpful.
+
 Signatory on my side: [Ad Soyad], natural person, [adres], Turkey.
 Contact: destek@slooin.com.
 
@@ -89,6 +103,17 @@ Could you let me know:
    annexes are filled in; the contract body is the Board's fixed text.
 2. If not, whether Expo has any Turkey-specific arrangement or a
    documented position that customers in Turkey rely on.
+
+
+Please note the formal requirements set by the Turkish Board, which
+we cannot waive: the contract body must remain unchanged; if a
+bilingual version is used, signatures must be placed on the Turkish
+text; the Board requires a **wet (handwritten) signature** by an
+authorised signatory (a Turkish qualified electronic signature is the
+only alternative), together with **proof of the signatory's authority
+bearing an apostille and a Turkish translation**. I know this is
+unusual; if you have handled it for other customers in Turkey, a
+pointer to that process would be very helpful.
 
 If neither is possible I will consider sending notifications directly
 through APNs/FCM instead, so an early answer helps me plan.
