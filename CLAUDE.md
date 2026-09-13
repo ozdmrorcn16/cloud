@@ -131,82 +131,91 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
-### DEVIR NOTU - 2026-09-13 GECE: i18n BUYUK OLCUDE BITTI, UC IS ACIK
+### i18n BITTI, BASKASININ PROFILI YENIDEN, BOS AVATAR - 2026-09-13 SABAH
 
-Kullanici "Yeni oturum acalim, butun su an yapmaya calistigin islemlere
-ordan devam edelim" dedi; bu not o gecisin devir kaydidir. Her sey
-commit'li (`feat(i18n): ...`), calisma dali
-`claude/plan2-moderasyon-paneli`.
+Onceki oturumun (4857d87a) devir notundaki uc acik is bu oturumda
+kapatildi. Oturum baslarken kullanicinin istegiyle o oturum
+KAPATILDI (pid 26860; isini bitirmis, `5c90832` commit'lenmisti) ve
+kaldigi yerden buradan devam edildi. Kullanici ayrica "onceki
+oturumda soyledigim duzeltmelerin hepsinin yapildigindan emin ol"
+dedi; tam transkriptten 28 mesaj cikarilip tek tek kodda dogrulandi -
+hepsi yapilmis, ve OTA listesine gore arayuz duzeltmeleri (gruplar
+`db0eff7d`, `9ef4c3a3`) telefona da gitmisti. TUZAK: oturum dokumu
+(`docs/oturumlar/*.md`) telefondan gonderilen mesajlari (queued_command,
+gorselli olanlar dahil) TASIMIYOR; tam liste yalnizca
+`~/.claude/projects/.../<oturum>.jsonl` icindeki `attachment` satirlarinda.
 
-**KARAR (kullanicinin, 2026-09-13):** "dil telefondaki dili algilayip
-ona gore otomatik cevrilecek" ve ardindan "uygulama herseyi tam bitsin
-oyle yapalim". Yani 2026-08'den beri "tasarim bitince" diye ertelenen
-cok dillilik ARTIK YAPILDI: cihaz dili `expo-localization` ile
-algilaniyor (`lib/dil.tsx`, zaten vardi), sozlukler tamamlandi.
+**1. HUKUKI METINLER YEDI DILDE (i18n E asamasi).** `lib/hukuki/`:
+`tur.ts` (tip), `tr.ts` (KAYNAK - eski `gizlilik.tsx` ve
+`kosullar.tsx` dizileri buraya tasindi), `en/de/es/fr/ru/ar.ts`
+(ceviriler), `index.ts` (`hukukiMetin(dil)`, `gizlilikBolumleri`,
+`kosulBolumleri`). Ekranlar `useDil().dil`e gore belgeyi seciyor;
+Turkce disindaki dillerde belgenin basinda **"Turkce metin esastir"**
+notu var (`hukuki.ustunlukNotu`, testID `ustunluk-notu`). Sozluklere
+`hukuki` bolumu eklendi (gizlilikBaslik, kosullarBaslik,
+sonGuncelleme, ustunlukNotu). `BOLUMLER` / `KOSUL_BOLUMLERI` disa
+aktarimlari DURUYOR (testler okuyor) ve Turkce kaynagi veriyor.
+Kosullardaki tarih `toLocaleDateString(dil)` ile ("September 7, 2026").
 
-**BITENLER:**
+`lib/hukuki/hukuki.test.ts` yapisal esitligi kilitliyor: bolum ve
+paragraf sayilari tr ile birebir, hicbir paragraf tr'nin kopyasi
+degil, olgusal sabitler (destek@slooin.com, 30, 200, 04:45/04h45,
+eu-central-1, Foursquare, OpenStreetMap, JSON, 24) her dilde geciyor.
+`__tests__/ekranlar/kosullar.test.tsx` cihazi Ingilizce yapip iki
+ekrani olcuyor. **KURAL: `docs/gizlilik-metni.md` degisirse
+`lib/hukuki/tr.ts` VE alti ceviri ayni turda guncellenir; test
+paragraf sayisi uyusmazsa kirilir.**
 
-| Asama | Ne |
-|---|---|
-| A | 17 ekran + 8 bilesendeki BUTUN gomulu Turkce metinler `tr.ts`e tasindi (`useDil().t` / `cevir()`); `lib/tur-etiketi.ts` (tur ve tur grubu adlari `turler.*` / `turGruplari.*` anahtarlariyla) |
-| B | `lib/hata-metni.ts` artik metin degil ANAHTAR donduruyor: `hatalar.vt.<slug>` (sunucu `raise exception` metinlerinin ASCII slug'i), `hatalar.kod.<supabase kodu>`, `hatalar.metin.<ad>` (Ingilizce desenler) |
-| D | `en, de, es, fr, ru, ar` sozlukleri SIFIRDAN yazildi - her biri tr'nin 697 yaprak anahtarinin tamamini tasiyor |
-| F | `__tests__/ceviri-tamlik.test.ts` (25 iddia): eksik anahtar yok, olu anahtar yok, `{{yerTutucu}}` adlari tr ile ayni, bos deger yok |
+**2. BASKASININ PROFILI KENDI PROFIL DUZENINDE** (kullanicinin
+tarifi 2026-09-13 02:04, kendi profilinin ekran goruntusuyle).
+`kullanici/[id].tsx` bastan yazildi: avatar solda + harita dokusu
+(`ProfilHaritaZemini`, ayni sabitler), ad / @kullaniciadi / biyografi /
+bolge / Instagram, eylem satiri **"Arkadas ekle" + "Mesaj yaz"**
+(yukseklik 40, `turuncuZemin`), **paylas ikonu SAG USTTE** (kendi
+profildeki dislinin yeri; `kullanici.paylasMetni`), sayaclar salt
+sayi, SekmeHapi (Anilar / En sik), **acik profilde `CheckInKarti`
+akisi** (`anidanAkisOgesi(..., { benimMi: false })` - menu yok,
+begeni/yorum/paylas var, cizim penceresi 10'ar), **kapali profilde
+72 px kilit**. "En sik" satirlari kendi profildeki gibi `SiraRozeti`
+ile, ilk bes.
 
-Dogrulama: tsc uygulama kodunda 0 hata; tam jest 72 paket / 888 test
-(sikayet testindeki ASCII "rahatsiz" iddiasi duzgun Turkceye
-cevrildi - test degil metin dogruydu).
+**"MESAJ YAZ" HER ZAMAN VAR ve dogrudan `/sohbet/<id>` aciyor.**
+Ayri "Sohbet iste" adimi, "Istek gonderildi" / "Sohbet acik"
+etiketleri ve "Mesaj gonder" butonu KALKTI: mesaj istekleri modeli
+(2026-09-01) geregi yabanci zaten tek mesaj yazabiliyor ve kural
+sunucuda (`mesaj_gonder`); sohbet ekrani konusma yokken yazmaya
+izin veriyor (`yazilabilirMi` true). `sohbetIstegiGonder` RPC'si
+lib'de duruyor ama profil artik cagirmiyor. Gelen takip/sohbet
+istegi kartlari (Kabul et / Reddet) duruyor. Arkadas butonu uc
+halde: "Arkadas ekle" (basilir) / "Beklemede" / "Arkadassin"
+(ikisi basilamaz, `cizgi` dolgu); geri cekme ve arkadasliktan cikma
+altindaki ikincil satirda. Kapali profili acan sey `bagVar` (takip
+kabul ya da sohbet kabul). Test 49/49; iddialar silinmedi, tersine
+cevrildi ("bag yokken Mesaj yaz VAR", "Sohbet acik etiketi YOK").
 
-**Tur adlari kasitli olarak TURKCE ANAHTAR tasiyor** (`turler: { Kafe:
-'Cafe', 'Cay evi': 'Tea house', ... }`): veritabanindaki `mekanlar.tur`
-degeri Turkce ve degismiyor; sozluk o degeri ekrana cevirirken
-kullaniliyor. `turEtiketi()` anahtar bulunamazsa ham degeri doner.
+**3. BOS AVATAR GORUNUR: ortak `src/tasarim/BasHarfAvatar.tsx`.**
+Acik turuncu zemin + turuncu harf (akis kartlariyla ayni dil) +
+**2 px turuncu kenarlik**. Kendi profilde daire beyaz zeminli ve
+beyaz halkaliydi, harita dokusunda kayboluyordu (kullanicinin ekran
+goruntusu). Dolu turuncu daire bilerek secilmedi (ust blokta buyuk
+turuncu leke, kural ihlali). Iki profil ekrani da bu bileseni
+kullaniyor (`testID="bos-avatar"`); `profil/index.tsx`teki
+`avatarYok`/`basHarf` stilleri silindi, `AVATAR_CAPI = 88` sabiti geldi.
 
-**ACIK - SIRADAKI OTURUMUN ILK ISLERI (ucu de kullanicidan geldi):**
+**YAN DUZELTME:** `profil/index.tsx`te `aniListesi` ve `izgara`
+`marginHorizontal: -bosluk.xl` (24) tasiyordu; sayfa payi 2026-09-06'da
+`bosluk.sayfa` (16) olmustu, yani kartlar iki yandan 8 px tasiyordu.
+`-bosluk.sayfa` yapildi.
 
-1. **Hukuki metinler 6 dile (i18n E asamasi).** `src/app/gizlilik.tsx`
-   ve `src/app/kosullar.tsx` HALA yalnizca Turkce (`docs/gizlilik-metni.md`
-   kaynak). Plan: her dil icin cevrilmis bolum listesi + "Turkce metin
-   esastir / The Turkish text prevails" notu; ekranlar `useDil().dil`e
-   gore icerik secsin. Bu yapilmadan "hersey tam" degil.
+Ekran goruntuleri: `tasarim/baskasinin-profili-acik.png` (koyu),
+`baskasinin-profili-kapali.png`, `profil-bos-avatar.png`,
+`kosullar-en.png`, `gizlilik-de.png`. Kapali profil goruntusu icin
+test2 hesabinin `profil_gizli`/`fotograflar` gecici degistirilip
+GERI ALINDI.
 
-2. **BASKASININ PROFILI YENIDEN DUZENLENECEK** (kullanicinin tarifi,
-   ekran goruntusu kendi profilinin ust blogu). Kendi profille AYNI
-   duzen, su farklarla:
-   - "Profili duzenle"nin yerinde **"Arkadas ekle"**, yaninda
-     **"Mesaj yaz"** butonu (paylas dugmesi orada DEGIL).
-   - **Paylas ikonu SAG USTE** (kendi profildeki disli yerine) -
-     "bu profilini birine paylasmak icin kullanilir".
-   - Ani / Fotograf / Arkadas sayaclari **yalnizca SAYI** olarak
-     gorunur (bolum secmez).
-   - **GIZLI profil:** asagidaki bos alanda **BUYUK BIR KILIT IKONU**;
-     akis gorunmez.
-   - **ACIK profil:** kilit yok, akisi/paylasimlari kendi profildeki
-     gibi gorunur.
-   Ekran `src/app/kullanici/[id].tsx`; mevcut kilit gostergesi
-   2026-09-10'da kucuk konmustu, buyutulecek. Sayaclar ortak
-   `ProfilSayaclari` bileseni (`onSec` verilmezse salt okunur - zaten
-   oyle). Eylem satiri kendi profildeki `duzenleButonu` olcusunde
-   (yukseklik 40).
-
-3. **BOS AVATAR GORUNMUYOR** (kullanicinin ekran goruntusu, kendi
-   profili): profil fotografi yokken bas harf beyaz zemin uzerinde
-   turuncu harf olarak ciziliyor ve harita dokusu uzerinde
-   kayboluyor. Istek: "biraz daha gorunur bir hale getir". Cozum
-   onerisi: bas harfli daireye ACIK TURUNCU ZEMIN (`renk.turuncuZemin`)
-   + ince turuncu kenarlik, ya da dolu turuncu daire uzerine beyaz
-   harf - akis kartlarindaki avatar diliyle ayni olmali
-   (`ayni-sey-her-ekranda-ayni-gorunsun`). Iki ekranda da
-   (`profil/index.tsx`, `kullanici/[id].tsx`) ayni bilesen kullanilsin.
-
-Sonra: tam jest, tsc, baska bir dilde ekran goruntusu (cihaz dili
-`SLOOIN_TEST_DIL` ya da `lib/dil.tsx` icindeki secimle), commit,
-`npm run yayinla` + `eas update --channel production --environment
-production`, bu notun "BITTI" diye guncellenmesi.
-
-**Diger acik isler degismedi:** Apple/Google girisi Build 8 ile
-cihazda dogrulanmadi (kullanicinin telefonu Build 7'deydi); Play
-Console'a AAB (versionCode 3) yukleme kullanicida.
+**KALAN (degismedi):** Apple/Google girisi Build 8 ile cihazda
+dogrulanmadi; Play Console'a Maps anahtarli AAB (versionCode 3,
+`ROC-eU5l...aab`) yukleme kullanicida.
 
 ### SLOOIN WEB SITESI EKLENDI - 2026-09-07 (henuz yayinda degil)
 

@@ -4,6 +4,15 @@
  * (`__tests__/ceviri-tamlik.test.ts`) signale tout ecart.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'Notice de confidentialité',
+    kosullarBaslik: "Conditions d'utilisation",
+    sonGuncelleme: 'Dernière mise à jour : {{tarih}}',
+    ustunlukNotu: "Le texte faisant foi est la version turque de ce document ; cette traduction est fournie à titre d'information.",
+  },
+
   ortak: {
     devam: 'Continuer',
     iptal: 'Annuler',

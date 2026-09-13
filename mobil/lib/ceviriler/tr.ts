@@ -10,6 +10,15 @@
  * metinleri icindir.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'Gizlilik metni',
+    kosullarBaslik: 'Kullanım koşulları',
+    sonGuncelleme: 'Son güncelleme: {{tarih}}',
+    ustunlukNotu: 'Bu belgenin bağlayıcı metni Türkçedir; çeviri bilgilendirme amaçlıdır.',
+  },
+
   ortak: {
     devam: 'Devam et',
     iptal: 'İptal',

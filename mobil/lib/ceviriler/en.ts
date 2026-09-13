@@ -10,6 +10,15 @@
  * values on purpose - the value column is what the user sees.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'Privacy notice',
+    kosullarBaslik: 'Terms of use',
+    sonGuncelleme: 'Last updated: {{tarih}}',
+    ustunlukNotu: 'The binding text of this document is the Turkish version; this translation is for information only.',
+  },
+
   ortak: {
     devam: 'Continue',
     iptal: 'Cancel',

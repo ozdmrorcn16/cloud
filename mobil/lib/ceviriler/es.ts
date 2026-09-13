@@ -4,6 +4,15 @@
  * (`__tests__/ceviri-tamlik.test.ts`) senala cualquier desvio.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'Aviso de privacidad',
+    kosullarBaslik: 'Condiciones de uso',
+    sonGuncelleme: 'Última actualización: {{tarih}}',
+    ustunlukNotu: 'El texto vinculante de este documento es la versión en turco; esta traducción es solo informativa.',
+  },
+
   ortak: {
     devam: 'Continuar',
     iptal: 'Cancelar',

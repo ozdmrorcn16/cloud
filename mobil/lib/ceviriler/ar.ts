@@ -4,6 +4,15 @@
  * (`__tests__/ceviri-tamlik.test.ts`) يلتقط أي انحراف.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'إشعار الخصوصية',
+    kosullarBaslik: 'شروط الاستخدام',
+    sonGuncelleme: 'آخر تحديث: {{tarih}}',
+    ustunlukNotu: 'النص الملزم لهذه الوثيقة هو النسخة التركية؛ وهذه الترجمة لأغراض الاطلاع فقط.',
+  },
+
   ortak: {
     devam: 'متابعة',
     iptal: 'إلغاء',

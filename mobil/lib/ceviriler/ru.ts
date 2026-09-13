@@ -4,6 +4,15 @@
  * (`__tests__/ceviri-tamlik.test.ts`) ловит любое расхождение.
  */
 export default {
+  // HUKUKI EKRANLAR (i18n E asamasi, 2026-09-13): basliklar ve
+  // "Turkce metin esastir" notu. Belgelerin kendisi lib/hukuki/ altinda.
+  hukuki: {
+    gizlilikBaslik: 'Уведомление о конфиденциальности',
+    kosullarBaslik: 'Условия использования',
+    sonGuncelleme: 'Последнее обновление: {{tarih}}',
+    ustunlukNotu: 'Юридически обязательным является турецкий текст этого документа; перевод приведён только для ознакомления.',
+  },
+
   ortak: {
     devam: 'Продолжить',
     iptal: 'Отмена',

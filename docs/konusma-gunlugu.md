@@ -155,6 +155,16 @@ beri sessizce bos olculuyordu.
 
 ## Kararlar
 
+- **2026-09-13** — Hukuki metinler (gizlilik + kullanim kosullari) yedi
+  dilde, `lib/hukuki/`; Turkce metin esastir, diger dillerde basta not.
+  Baskasinin profili kendi profil duzenine gecti: "Arkadas ekle" +
+  "Mesaj yaz", paylas sag ustte, sayaclar salt sayi, acik profilde
+  akis kartlari, kapali profilde buyuk kilit. "Mesaj yaz" her zaman
+  var ve dogrudan sohbeti aciyor - ayri "sohbet iste" adimi kalkti
+  (mesaj istekleri modeli). Bos avatar ortak `BasHarfAvatar` bileseni
+  (acik turuncu zemin + turuncu kenarlik). Ayrinti CLAUDE.md
+  "i18n BITTI, BASKASININ PROFILI YENIDEN, BOS AVATAR".
+
 - **2026-08-09** — Depo bos halde bulundu; onceki oturumdan kalan hicbir kayit
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
