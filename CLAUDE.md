@@ -572,9 +572,9 @@ Android'de Apple GOSTERILMIYOR (orada zorunlu degil).
    yetmez. Alan adi alinip Resend SMTP olarak baglanmali (ucretsiz
    katman ayda 3.000 mail).
 
-**ACIK BORC:** kayit ekranindaki metin "Kullanim kosullari"na atif
-yapiyor ama boyle bir belgemiz YOK - yalnizca gizlilik metni var. O
-belge magaza oncesi yazilmali.
+**~~ACIK BORC~~ KAPANDI (2026-09-13):** kullanim kosullari belgesi
+yazildi (`docs/kullanim-kosullari.md`, `src/app/kosullar.tsx`,
+`slooin.com/kosullar`).
 
 ### ARAMA KULLANICININ ILIYLE SINIRLI - 2026-09-01
 
@@ -831,13 +831,10 @@ giris varsa App Store "Apple ile giris"i ZORUNLU tutuyor):
 
 Ayrinti ve gerekce `mobil/app.config.js` basindaki yorumda.
 
-**AYRICA - derleme arsivi 496 MB** ve her denemede ~1,5 dakikasi
-yuklemeye gidiyor. `mobil/` altindaki gercek icerik ~50 MB (dist 41,
-assets 3, .expo 2); geri kalani node_modules. `.easignore` eklenirse
-kisalir ama DIKKAT: `.easignore` varsa `.gitignore` YOKSAYILIR, yani
-node_modules dahil her sey o dosyada tek tek yazilmali.
+**Derleme arsivi: KAPANDI (2026-09-14), bkz. "EAS ARSIVI 1,2 GB -> 5 MB"
+bolumu.** Eski teshis ("geri kalani node_modules") YANLISTI.
 
-**1. NATIVE DERLEME BEKLIYOR.** Su degisiklikler OTA ILE GITMEZ, yeni
+**1. ~~NATIVE DERLEME BEKLIYOR~~ KAPANDI (2026-09-12, iOS build 8 ve Android 6a377678).** Su degisiklikler OTA ILE GITMEZ, yeni
 bir iOS derlemesi gerekiyor: Apple ile giris, Google ile giris
 (`@react-native-google-signin`), `LSApplicationQueriesSchemes` (yol
 tarifinde kurulu olmayan harita uygulamasini gizleme). Bunlar kodda
@@ -846,24 +843,24 @@ DURUYOR ama telefondaki mevcut derlemede calismaz.
     npx eas-cli build --platform ios --profile production
     npx eas-cli submit --platform ios --latest
 
-**2. APPLE / GOOGLE GIRISI SUPABASE'DE ACIK DEGIL.** Dugmeler ekranda;
+**2. ~~APPLE / GOOGLE GIRISI SUPABASE'DE ACIK DEGIL~~ KAPANDI (2026-09-12, saglayicilar Enabled).** Eski hali: dugmeler ekranda;
 basilinca "Bu giris yontemi su an kullanilamiyor" diyor. Adim adim
 rehber: `docs/sosyal-giris-kurulumu.md`. Kullanicinin yapmasi gereken
 panel isleri (Google Cloud OAuth istemcileri, Apple Services ID +
 .p8, Supabase saglayici ayarlari). iOS'ta Apple ZORUNLU: baska bir
 sosyal giris varsa App Store "Apple ile giris"i de sart kosuyor.
 
-**3. SMTP.** Supabase'in yerlesik e-posta servisi saatte yalnizca
+**3. ~~SMTP~~ KAPANDI (2026-09-13, Resend).** Eski hali: Supabase'in yerlesik e-posta servisi saatte yalnizca
 birkac mail gonderiyor - kendi testine yeter, gercek kullaniciya
 yetmez. Alan adi alinip Resend SMTP olarak baglanmali (ucretsiz
 katman ayda 3.000 mail).
 
-**4. "Kullanim kosullari" belgesi YOK** ama kayit ekranindaki metin ona
-atif yapiyor. Elimizde yalnizca gizlilik metni var. Magaza oncesi
-yazilmali.
+**4. ~~"Kullanim kosullari" belgesi YOK~~ KAPANDI (2026-09-13):**
+`docs/kullanim-kosullari.md`, uygulamada `src/app/kosullar.tsx`, sitede
+`slooin.com/kosullar` (7 dil).
 
-**5. Google Maps Android anahtari yok** - Android'de harita zemini gri
-kalir. Ayrinti "KALAN (kullanicida)" bolumunde.
+**5. ~~Google Maps Android anahtari yok~~ KAPANDI (2026-09-13, anahtar
+EAS'te, derleme 6a377678).**
 
 **6. ~~`test:gorunurluk` icinde ETIKET ONAYI senaryosu yok~~ KAPANDI**
 (2026-09-02) - ve senaryo yazilir yazilmaz gercek bir kusur buldu;
@@ -1027,6 +1024,39 @@ eklenmis) hic haritalanmamisti - ayni sinif sizinti. Hepsi kondu.
 **Kural: bir `raise exception` metni degistiginde `hata-metni.ts`
 anahtari da degismeli; eslesmeyen anahtar sessizce ham metne duesuyor.**
 
+### EAS ARSIVI 1,2 GB -> 5 MB; .p8 HER DERLEMEDE YUKLENIYORMUS - 2026-09-14
+
+`eas build:inspect -p android -s archive -o <dizin>` ile arsiv YERELDE
+uretilip olculdu (derleme baslatmadan): **1,2 GB**. Sebep `mobil`
+degil (13 MB): EAS **git kokunu** kopyaliyor; `docs/` 853 MB (oturum
+dokumleri), `.git` 261 MB, `tasarim/` 69 MB. Eski "node_modules
+yuzunden" teshisi yanlisti.
+
+Kok dizine `.easignore` yazildi; arsiv **5,1 MB / 181 dosya**, sir yok.
+eas-cli kaynagindan (vcs/local.js, clients/git.js) okunan uc kural,
+dosyanin basinda da yaziyor:
+
+1. `.easignore` VARSA `.gitignore`lar HIC OKUNMAZ (yalnizca `.git` ve
+   `node_modules` varsayilan). Ilk denemede `mobil/.env` (service role,
+   Resend anahtari) arsive GIRDI; sirlar `.easignore`da da yazili
+   olmak ZORUNDA.
+2. `.easignore` YOKKEN ic `mobil/.gitignore` Windows'ta uygulanamiyor
+   (onek `mobil/` ile yol `mobil\...` eslesmiyor). **Bu yuzden Apple
+   `.p8` anahtari ve `dist/` bugune kadarki HER derlemede EAS'e
+   yuklendi.** Sizinti degil (EAS ozel), ama gereksizdi; artik kapali.
+3. `.git` ancak `.easignore`da acikca yazilirsa silinir.
+
+Dogrulama: `build:inspect -s pre-build` WINDOWS'TA CALISMIYOR ("Android
+builds are supported only on Linux and macOS" - .easignore ile ilgisi
+yok). Esdegeri elle yapildi: arsiv kopyasinda `npm ci` (940 paket) +
+`npx expo prebuild --platform android --no-install` GECTI;
+`applicationId com.slooin.app`, Maps anahtari meta-data'da, konum
+izinleri ve simgeler uretildi. Gercek kanit bir sonraki EAS derlemesi;
+kirilirsa ilk suphe `.easignore`daki `mobil/` satirlari. `.p8` olmadan derleme calisir: Apple
+anahtari yalnizca Supabase panelinde/tarayici OAuth'ta kullaniliyor,
+native derleme okumuyor; `.env` yerine EAS ortam degiskenleri
+(`production`/`preview`) devrede.
+
 ### ILK ANDROID URETIM DERLEMESI (AAB) - 2026-09-12
 
 Kullanici "Android test uygulamasi hazir mi" diye sordu; degildi -
@@ -1054,9 +1084,8 @@ yuklenir. Ilk kurulum formlari (gizlilik adresi
 `slooin.expo.app/gizlilik`, icerik derecelendirme, veri guvenligi)
 kapali test icin de kismen zorunlu.
 
-**Derleme arsivi 708 MB** (2 dk yukleme); ikinci derlemeden once
-`.easignore` yazilmali (DIKKAT: varsa .gitignore yoksayilir,
-node_modules dahil hepsi tek tek yazilir).
+**Derleme arsivi: `.easignore` YAZILDI (2026-09-14)**, bkz. "EAS
+ARSIVI 1,2 GB -> 5 MB" bolumu.
 
 **Arac tuzagi:** `eas build:view` `--non-interactive` bayragini
 KABUL ETMIYOR ("Nonexistent flag"); onunla cagrilinca hata donuyor

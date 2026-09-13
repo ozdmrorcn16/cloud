@@ -1,0 +1,64 @@
+# EAS DERLEME ARSIVI - git kokunde durur (2026-09-14).
+#
+# Olculdu: bu dosya yokken arsiv 1,2 GB'ti - EAS git KOKUNU kopyaliyor;
+# 853 MB docs/ (oturum dokumleri), 261 MB .git, 69 MB tasarim/; mobil/
+# yalnizca 13 MB. Derleme mobil/ disinda hicbir seye ihtiyac duymuyor.
+#
+# EAS-CLI KURALLARI (kaynaktan okundu, vcs/local.js + clients/git.js):
+#  - Bu dosya VARSA .gitignore dosyalari HIC OKUNMAZ; yalnizca `.git` ve
+#    `node_modules` varsayilan. Gizli dosyalar (.env, *.p8 ...) bu
+#    yuzden BURADA da yazili olmak zorunda - ilk denemede .env arsive
+#    girdi.
+#  - Bu dosya YOKKEN ic `mobil/.gitignore` Windows'ta uygulanamiyor
+#    (onek `mobil/` ile yol `mobil\...` eslesmiyor): `*.p8` ve `dist/`
+#    bugune kadar her derlemede yuklendi.
+#  - `.git` ancak burada acikca yazilirsa klondan silinir.
+#
+# Olcum (derleme baslatmadan): `cd mobil && npx eas-cli build:inspect
+# -p android -s archive -o <dizin>` sonra `du -sh <dizin>`;
+# `find <dizin> -name '*.p8' -o -name '.env'` BOS donmeli.
+
+# sirlar - depoya da arsive de girmez
+.env
+.env.*
+*.p8
+*.p12
+*.jks
+*.key
+*.keystore
+*.mobileprovision
+*.pem
+mobil/gizli/
+
+# git ve bagimliliklar
+.git
+node_modules
+
+# depo koku - derlemeyle ilgisiz
+docs/
+tasarim/
+site/
+panel/
+araclar/
+.claude/
+.superpowers/
+.worktrees/
+.github/
+.gstack/
+*.md
+
+# mobil/ icinde derlemeye girmeyenler
+mobil/dist/
+mobil/web-build/
+mobil/.expo/
+mobil/android/
+mobil/ios/
+mobil/__tests__/
+mobil/gorunurluk-testleri/
+mobil/araclar/
+mobil/tasarim/
+mobil/scripts/
+mobil/supabase/
+mobil/.vscode/
+mobil/.claude/
+mobil/coverage/
