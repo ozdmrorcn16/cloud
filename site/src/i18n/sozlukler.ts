@@ -16,7 +16,6 @@ export type Sss = { soru: string; cevap: string }
 
 export type SiteSozlugu = {
   kabuk: {
-    girisDugmesi: string
     altSeritGizlilik: string
     altSeritKosullar: string
     altSeritDestek: string
@@ -51,23 +50,6 @@ export type SiteSozlugu = {
     sss: Sss[]
     /** `{{hesapSil}}` baglantisinin metni (cumleye uyan hal). */
     hesapSilBaglanti: string
-  }
-  /** Web giris sayfasi (2026-09-14, Swarm referansi). */
-  giris: {
-    baslik: string
-    aciklama: string
-    eposta: string
-    sifre: string
-    sifremiUnuttum: string
-    dugme: string
-    hesapYok: string
-    betik: {
-      eksik: string
-      giriliyor: string
-      yanlis: string
-      basarisiz: string
-      yonlendiriliyor: string
-    }
   }
   hesapSil: {
     baslik: string
@@ -106,7 +88,6 @@ export type SiteSozlugu = {
 
 const tr: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Giriş',
     altSeritGizlilik: 'Gizlilik',
     altSeritKosullar: 'Kullanım koşulları',
     altSeritDestek: 'Destek',
@@ -174,22 +155,6 @@ const tr: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'hesap silme sayfasından',
   },
-  giris: {
-    baslik: 'Slooin\'e giriş yap',
-    aciklama: 'Slooin hesabına web\'den giriş yap.',
-    eposta: 'E-posta',
-    sifre: 'Şifre',
-    sifremiUnuttum: 'Şifreni mi unuttun?',
-    dugme: 'Giriş yap',
-    hesapYok: 'Hesabın yok mu? Hesap oluşturmak için Slooin uygulamasını indir.',
-    betik: {
-      eksik: 'E-posta ve şifreni yaz.',
-      giriliyor: 'Giriş yapılıyor…',
-      yanlis: 'E-posta adresi ya da şifre hatalı.',
-      basarisiz: 'Giriş şu anda yapılamadı. Biraz sonra tekrar dene.',
-      yonlendiriliyor: 'Giriş başarılı, uygulamaya geçiliyor…',
-    },
-  },
   hesapSil: {
     baslik: 'Hesabını sil',
     aciklama: 'Slooin hesabını ve hesabına bağlı verileri kalıcı olarak silme.',
@@ -233,7 +198,6 @@ const tr: SiteSozlugu = {
 
 const en: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Sign in',
     altSeritGizlilik: 'Privacy',
     altSeritKosullar: 'Terms of use',
     altSeritDestek: 'Support',
@@ -293,22 +257,6 @@ const en: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'account deletion page',
   },
-  giris: {
-    baslik: 'Sign in to Slooin',
-    aciklama: 'Sign in to your Slooin account on the web.',
-    eposta: 'E-mail',
-    sifre: 'Password',
-    sifremiUnuttum: 'Forgot your password?',
-    dugme: 'Sign in',
-    hesapYok: 'No account yet? Download the Slooin app to create one.',
-    betik: {
-      eksik: 'Enter your e-mail and password.',
-      giriliyor: 'Signing in…',
-      yanlis: 'Wrong e-mail address or password.',
-      basarisiz: 'Sign-in is not possible right now. Try again in a moment.',
-      yonlendiriliyor: 'Signed in, opening the app…',
-    },
-  },
   hesapSil: {
     baslik: 'Delete your account',
     aciklama: 'Permanently delete your Slooin account and the data attached to it.',
@@ -349,7 +297,6 @@ const en: SiteSozlugu = {
 
 const de: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Anmelden',
     altSeritGizlilik: 'Datenschutz',
     altSeritKosullar: 'Nutzungsbedingungen',
     altSeritDestek: 'Support',
@@ -393,22 +340,6 @@ const de: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'Seite zur Kontolöschung',
   },
-  giris: {
-    baslik: 'Bei Slooin anmelden',
-    aciklama: 'Melde dich im Web bei deinem Slooin-Konto an.',
-    eposta: 'E-Mail',
-    sifre: 'Passwort',
-    sifremiUnuttum: 'Passwort vergessen?',
-    dugme: 'Anmelden',
-    hesapYok: 'Noch kein Konto? Lade die Slooin-App herunter, um eines zu erstellen.',
-    betik: {
-      eksik: 'Gib E-Mail und Passwort ein.',
-      giriliyor: 'Anmeldung läuft…',
-      yanlis: 'E-Mail-Adresse oder Passwort ist falsch.',
-      basarisiz: 'Anmeldung ist gerade nicht möglich. Versuch es gleich noch einmal.',
-      yonlendiriliyor: 'Angemeldet, die App wird geöffnet…',
-    },
-  },
   hesapSil: {
     baslik: 'Konto löschen',
     aciklama: 'Dein Slooin-Konto und die damit verbundenen Daten dauerhaft löschen.',
@@ -449,7 +380,6 @@ const de: SiteSozlugu = {
 
 const es: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Iniciar sesión',
     altSeritGizlilik: 'Privacidad',
     altSeritKosullar: 'Condiciones de uso',
     altSeritDestek: 'Soporte',
@@ -493,22 +423,6 @@ const es: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'página de eliminación de cuenta',
   },
-  giris: {
-    baslik: 'Inicia sesión en Slooin',
-    aciklama: 'Inicia sesión en tu cuenta de Slooin desde la web.',
-    eposta: 'Correo electrónico',
-    sifre: 'Contraseña',
-    sifremiUnuttum: '¿Olvidaste tu contraseña?',
-    dugme: 'Iniciar sesión',
-    hesapYok: '¿Aún no tienes cuenta? Descarga la app de Slooin para crear una.',
-    betik: {
-      eksik: 'Escribe tu correo y tu contraseña.',
-      giriliyor: 'Iniciando sesión…',
-      yanlis: 'El correo o la contraseña no son correctos.',
-      basarisiz: 'No se puede iniciar sesión ahora. Inténtalo de nuevo en un momento.',
-      yonlendiriliyor: 'Sesión iniciada, abriendo la app…',
-    },
-  },
   hesapSil: {
     baslik: 'Eliminar tu cuenta',
     aciklama: 'Eliminar de forma permanente tu cuenta de Slooin y los datos asociados a ella.',
@@ -549,7 +463,6 @@ const es: SiteSozlugu = {
 
 const fr: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Connexion',
     altSeritGizlilik: 'Confidentialité',
     altSeritKosullar: "Conditions d'utilisation",
     altSeritDestek: 'Assistance',
@@ -593,22 +506,6 @@ const fr: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'page de suppression du compte',
   },
-  giris: {
-    baslik: 'Connexion à Slooin',
-    aciklama: 'Connecte-toi à ton compte Slooin depuis le web.',
-    eposta: 'E-mail',
-    sifre: 'Mot de passe',
-    sifremiUnuttum: 'Mot de passe oublié ?',
-    dugme: 'Se connecter',
-    hesapYok: 'Pas encore de compte ? Télécharge l\'application Slooin pour en créer un.',
-    betik: {
-      eksik: 'Saisis ton e-mail et ton mot de passe.',
-      giriliyor: 'Connexion en cours…',
-      yanlis: 'Adresse e-mail ou mot de passe incorrect.',
-      basarisiz: 'Connexion impossible pour le moment. Réessaie dans un instant.',
-      yonlendiriliyor: 'Connecté, ouverture de l\'application…',
-    },
-  },
   hesapSil: {
     baslik: 'Supprimer ton compte',
     aciklama: 'Supprimer définitivement ton compte Slooin et les données qui y sont rattachées.',
@@ -649,7 +546,6 @@ const fr: SiteSozlugu = {
 
 const ru: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'Войти',
     altSeritGizlilik: 'Конфиденциальность',
     altSeritKosullar: 'Условия использования',
     altSeritDestek: 'Поддержка',
@@ -693,22 +589,6 @@ const ru: SiteSozlugu = {
     ],
     hesapSilBaglanti: 'странице удаления аккаунта',
   },
-  giris: {
-    baslik: 'Войти в Slooin',
-    aciklama: 'Войдите в свой аккаунт Slooin через веб.',
-    eposta: 'Эл. почта',
-    sifre: 'Пароль',
-    sifremiUnuttum: 'Забыли пароль?',
-    dugme: 'Войти',
-    hesapYok: 'Ещё нет аккаунта? Скачайте приложение Slooin, чтобы создать его.',
-    betik: {
-      eksik: 'Введите эл. почту и пароль.',
-      giriliyor: 'Выполняется вход…',
-      yanlis: 'Неверный адрес эл. почты или пароль.',
-      basarisiz: 'Сейчас войти не получается. Попробуйте чуть позже.',
-      yonlendiriliyor: 'Вход выполнен, открываем приложение…',
-    },
-  },
   hesapSil: {
     baslik: 'Удалить аккаунт',
     aciklama: 'Навсегда удалить аккаунт Slooin и связанные с ним данные.',
@@ -749,7 +629,6 @@ const ru: SiteSozlugu = {
 
 const ar: SiteSozlugu = {
   kabuk: {
-    girisDugmesi: 'تسجيل الدخول',
     altSeritGizlilik: 'الخصوصية',
     altSeritKosullar: 'شروط الاستخدام',
     altSeritDestek: 'الدعم',
@@ -792,22 +671,6 @@ const ar: SiteSozlugu = {
       { soru: 'لماذا يعرض التطبيق أماكن قليلة في مدينتي؟', cevap: 'تأتي بيانات الأماكن من Foursquare ومساهمي OpenStreetMap. إذا كان هناك مكان ناقص يمكنك إضافته بنفسك من داخل التطبيق.' },
     ],
     hesapSilBaglanti: 'صفحة حذف الحساب',
-  },
-  giris: {
-    baslik: 'تسجيل الدخول إلى Slooin',
-    aciklama: 'سجّل الدخول إلى حسابك في Slooin عبر الويب.',
-    eposta: 'البريد الإلكتروني',
-    sifre: 'كلمة المرور',
-    sifremiUnuttum: 'نسيت كلمة المرور؟',
-    dugme: 'تسجيل الدخول',
-    hesapYok: 'ليس لديك حساب بعد؟ نزّل تطبيق Slooin لإنشاء حساب.',
-    betik: {
-      eksik: 'أدخل بريدك الإلكتروني وكلمة المرور.',
-      giriliyor: 'جارٍ تسجيل الدخول…',
-      yanlis: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
-      basarisiz: 'لا يمكن تسجيل الدخول الآن. حاول مجددًا بعد قليل.',
-      yonlendiriliyor: 'تم تسجيل الدخول، جارٍ فتح التطبيق…',
-    },
   },
   hesapSil: {
     baslik: 'حذف حسابك',

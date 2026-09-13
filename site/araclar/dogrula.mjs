@@ -45,7 +45,7 @@ try {
   process.exit(1)
 }
 
-const SAYFALAR = ['/', '/gizlilik', '/kosullar', '/destek', '/hesap-sil', '/giris']
+const SAYFALAR = ['/', '/gizlilik', '/kosullar', '/destek', '/hesap-sil']
 // JS kapaliyken tam okunmasi GEREKEN sayfalar (Apple sarti).
 const JSSIZ_OKUNMALI = ['/gizlilik', '/kosullar', '/destek']
 
@@ -207,7 +207,7 @@ try {
   const DILLER = ['tr', 'en', 'de', 'es', 'fr', 'ru', 'ar']
   const onek = (d) => (d === 'tr' ? '' : '/' + d)
   for (const d of DILLER) {
-    for (const yol of ['', '/gizlilik', '/kosullar', '/destek', '/hesap-sil', '/giris']) {
+    for (const yol of ['', '/gizlilik', '/kosullar', '/destek', '/hesap-sil']) {
       const dosya = path.join(DIST, onek(d) + yol, 'index.html')
       kontrol(fs.existsSync(dosya), `${onek(d) + yol || '/'}/index.html uretildi mi`)
     }

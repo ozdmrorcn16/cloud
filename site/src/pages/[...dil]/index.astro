@@ -25,10 +25,6 @@ const a = sozluk(dil).ana
     <span class="dalga" aria-hidden="true"></span>
     <img class="filigran" src="/marka-isareti.png" alt="" aria-hidden="true" />
 
-    <div class="ust">
-      <a class="giris" href={dil === 'tr' ? '/giris' : `/${dil}/giris`}>{t.girisDugmesi}</a>
-    </div>
-
     <div class="govde">
       <div class="sol">
         <MarkaLockup />
@@ -89,27 +85,6 @@ const a = sozluk(dil).ana
     transform: rotate(-3deg);
     pointer-events: none;
   }
-
-  .ust {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .giris {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--beyaz);
-    text-decoration: none;
-    border: 1.5px solid rgba(255, 255, 255, 0.85);
-    border-radius: 999px;
-    padding: 8px 24px;
-    background: transparent;
-  }
-
-  .giris:hover { background: rgba(255, 255, 255, 0.14); }
-  .giris:focus-visible { outline: 3px solid var(--beyaz); outline-offset: 3px; }
 
   .govde {
     position: relative;
