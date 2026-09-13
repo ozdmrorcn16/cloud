@@ -184,12 +184,17 @@ Verilerin uc ayri yerde islenir:
   baska bir kullanicinin adi da kisisel veridir ve bu aktarimin bir
   parcasidir - "icerik tasimaz" ifadesi yalnizca mesaj metni icin
   gecerlidir, "hicbir kisisel veri gitmiyor" anlamina gelmez.
+- **Resend** (dogrulama postalari - kayit, giris ve hesap silme
+  kodlari): sunuculari **Irlanda**'da (`eu-west-1` bolgesi, Avrupa
+  Birligi). Buraya yalnizca e-posta adresin ve gonderilen kod gecer;
+  kod bir saat icinde gecersiz olur. (2026-09-13'e kadar postalari
+  Supabase'in yerlesik postacisi gonderiyordu.)
 - **Harita zemini** (2026-08-30'dan itibaren, yalnizca iOS ve Android
   uygulamalarinda): iOS'ta **Apple Haritalar**, Android'de **Google
   Haritalar**. Harita cizilirken ekranda gorunen bolgenin koordinatlari
   saglayiciya gider; kimligin, hesabin ya da check-in'lerin gitmez.
   Web surumunde gercek harita yoktur, bu aktarim da olmaz.
-**Aktarimin hukuki sebebi:** uc aktarim da hizmetin verilebilmesi icin
+**Aktarimin hukuki sebebi:** dort aktarim da hizmetin verilebilmesi icin
 zorunludur, yani madde 2'deki dayanaklarin aynisina - **sozlesmenin
 ifasina** - dayanir; bildirim gonderimi ayrica mesru menfaat
 kapsamindadir.

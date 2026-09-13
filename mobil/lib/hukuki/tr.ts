@@ -72,8 +72,9 @@ const tr: HukukiMetin = {
       paragraflar: [
         "Supabase (veritabanı ve dosya depolama) sunucuları Almanya'da (eu-central-1 bölgesi). Bütün kişisel verin Türkiye dışında, Avrupa Birliği sınırları içinde tutulur.",
         "Expo Push API (bildirim gönderimi) sunucuları Amerika Birleşik Devletleri'nde. Bildirim gönderirken cihazının bildirim jetonu, kime gönderildiği bilgisi ve bildirimi tetikleyen kişinin adı buradan geçer (örneğin 'Deniz sana mesaj gönderdi' gibi). Mesajın metni bildirime hiçbir zaman eklenmez, ama bir başkasının adı da kişisel veridir ve bu aktarımın bir parçasıdır.",
+        'Doğrulama postalarını (kayıt, giriş, hesap silme kodları) Resend Inc. gönderir; sunucuları İrlanda\'da (eu-west-1 bölgesi, Avrupa Birliği). Buraya yalnızca e-posta adresin ve gönderilen kod geçer; kod bir saat içinde geçersiz olur.',
         "Harita zemini iOS'ta Apple Haritalar, Android'de Google Haritalar tarafından sağlanır. Harita çizilirken ekranda görünen bölgenin koordinatları bu sağlayıcıya gider; kimliğin, hesabın ya da check-in'lerin gitmez. Web sürümünde gerçek harita yoktur, bu aktarım da olmaz.",
-        'Aktarımın hukuki sebebi: üç aktarım da hizmetin verilebilmesi için zorunludur, yani 2. maddedeki dayanakların aynısına - sözleşmenin ifasına - dayanır; bildirim gönderimi ayrıca meşru menfaat kapsamındadır.',
+        'Aktarımın hukuki sebebi: dört aktarım da hizmetin verilebilmesi için zorunludur, yani 2. maddedeki dayanakların aynısına - sözleşmenin ifasına - dayanır; bildirim gönderimi ayrıca meşru menfaat kapsamındadır.',
         "Bunu açıkça yazmak istiyoruz: KVKK m.9 yurt dışına aktarım için hukuki sebebin yanında bir aktarım mekanizması da arar (yeterlilik kararı, standart sözleşme, taahhütname ya da açık rıza). Kişisel Verileri Koruma Kurulu'nun bu ülkeleri kapsayan bir yeterlilik kararı bulunmuyor ve bizim de bugün imzalanmış bir standart sözleşmemiz YOK. Bu, uygulama gerçek kullanıcılara açılmadan önce tamamlanması gereken açık bir eksiktir. Var olmayan bir mekanizmayı varmış gibi göstermemeyi tercih ediyoruz.",
       ],
     },

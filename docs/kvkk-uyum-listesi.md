@@ -479,3 +479,22 @@ cevaplanir ve cevaplar spec'e yazilir:
 Erisimi **kesmek** varsayilan cozum degildir (bkz. moderasyon paneli
 karar 63): yetki genis kalabilir, uyum seffaflik, denetim izi ve
 saklama disiplini ile saglanir.
+
+### Resend SMTP - 2026-09-13
+
+Dogrulama postalari artik Supabase'in yerlesik postacisindan degil
+**Resend** uzerinden gidiyor (`noreply@slooin.com`, alan adi Resend'de
+DKIM/SPF ile dogrulandi, bolge eu-west-1 / Irlanda). Dort soru:
+(a) hangi veri - e-posta adresi ve 6 haneli kod; (b) dayanak -
+sozlesmenin ifasi (kayit/giris/silme dogrulamasi); (c) sure - Resend
+gonderim gunlugu (adres + konu + teslimat durumu) Resend'de kalir,
+kodun kendisi bir saatte gecersiz; (d) kim gorur - Resend (isleyen)
+ve alicinin posta saglayicisi. Yurt disina aktarim envanterine 4.
+satir olarak islendi; gizlilik metnine (uygulama 7 dil + docs) Resend
+paragrafi eklendi, "uc aktarim" -> "dort aktarim".
+
+`destek@slooin.com` Cloudflare Email Routing ile `slooinapp@gmail.com`a
+yonlendiriliyor - gelen destek postasi Gmail'de durur; KVKK basvurulari
+bu kanaldan gelecegi icin Gmail hesabinin erisimi de kisisel veri
+erisimidir (2FA acik tutulmali).
+

@@ -180,12 +180,43 @@ Commit `639a967`.
 4. `*.pages.dev` bu agdan erisilemiyor (curl 000, baglanti zaman
    asimi); olcum `slooin.com` uzerinden yapilir.
 
-**KALAN (ayni is kalemi):** Resend hesabi (kullanici acacak) -> alan
-adi + DKIM/SPF DNS -> Supabase SMTP (API anahtarini kullanici
-yapistirir) -> Apple "Sign in with Apple for Email Communication"
-kaydi -> `destek@slooin.com` icin Cloudflare Email Routing -> Apple
-magaza formundaki gizlilik adresi `slooin.expo.app/gizlilik` ->
-`slooin.com/gizlilik`.
+**POSTA ZINCIRI KURULDU (ayni aksam):**
+
+- **Resend** (hesap `slooinapp@gmail.com`, API anahtari `mobil/.env`
+  `RESEND_API_KEY`; kullanici anahtari sohbete yapistirdi, oturum
+  kaydina `re_` maskesi eklendi). Alan adi API ile eklendi
+  (`region: eu-west-1`, id `a20861f2-...`), DKIM/SPF/CNAME + DMARC
+  kayitlari Cloudflare'e **BIND import** ile girildi (tek dosya,
+  `Import` dugmesi - satir satir form doldurmaktan cok daha saglam),
+  durum **verified**. Test postasi `noreply@slooin.com` -> Gmail
+  delivered.
+- **Supabase SMTP**: kullanici panelde girdi (host `smtp.resend.com`,
+  port 465, kullanici `resend`, parola = API anahtari, gonderen
+  `Slooin <noreply@slooin.com>`). Ilk deneme `535 Invalid username`
+  ile kirildi - kullanici adi alanina e-posta yazilmisti; dogrusu
+  kelimenin kendisi `resend`. Ozel SMTP acilinca Supabase'in saatlik
+  posta siniri 2 -> 30'a cikti (auth_logs'ta gorundu). Zincir olculdu:
+  `signInWithOtp` -> Resend `delivered` ("Slooin dogrulama kodun").
+- **Apple "Sign in with Apple for Email Communication"**: `slooin.com`,
+  `noreply@slooin.com`, `destek@slooin.com` kaydedildi (Successfully
+  Registered). Apple SPF'yi KOK alan adinda ariyor; Resend'in SPF'si
+  `send.` alt alanindaydi, koke `v=spf1 include:_spf.mx.cloudflare.net
+  include:amazonses.com ~all` eklendi. Panel hala kirmizi "SPF"
+  gosteriyor (Reverify denendi) - buyuk ihtimalle onbellek; asil olcum
+  gizli adrese gonderilen kod (Resend delivered, kullanicinin gelen
+  kutusu bekleniyor).
+- **`destek@slooin.com`**: Cloudflare Email Routing -> slooinapp@gmail.com
+  (hedef adres hesabin kendisi oldugu icin aninda Verified; MX x3 +
+  DKIM Cloudflare'in "Add missing records" dugmesiyle, SPF mevcut kok
+  kaydi taniyip "Unlocked" birakti - ikinci SPF eklemedi, DoH ile
+  dogrulandi). Test postasi delivered.
+- Gizlilik metni (7 dil + docs) ve KVKK envanteri/listesi Resend ile
+  guncellendi ("uc aktarim" -> "dort").
+
+**KALAN:** Apple magaza formundaki gizlilik adresi
+`slooin.expo.app/gizlilik` -> `slooin.com/gizlilik`; Apple SPF
+durumunun yesile donmesi (birkac saat sonra bak); Resend icin de KVKK
+standart sozlesme talebi (Supabase/Expo sablonu).
 
 ### HESAP SILME: PAROLA YERINE E-POSTA ONAY KODU - 2026-09-13 OGLEDEN SONRA
 

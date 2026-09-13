@@ -44,6 +44,8 @@ SIR_KALIPLARI = [
     # bir tanesi sohbete yapistirildi ve iptal ettirildi; ayni sinif
     # sizinti hf_ jetonunda da yasanmisti.
     re.compile(r"sbp_[A-Za-z0-9]{20,}"),                 # Supabase access token
+    # Resend API anahtari (2026-09-13: kullanici sohbete yapistirdi).
+    re.compile(r"re_[A-Za-z0-9]{6,}_[A-Za-z0-9]{20,}"),    # Resend API key
     # Supabase'in yeni bicim anahtarlari. `sb_secret_` GERCEK bir sir:
     # RLS'i asar ve butun veriye erisir. 2026-08-20'de bir tanesi
     # konusmaya yapistirildi ve buradaki kalip listesinde karsiligi
