@@ -213,6 +213,9 @@ Commit `639a967`.
 - Gizlilik metni (7 dil + docs) ve KVKK envanteri/listesi Resend ile
   guncellendi ("uc aktarim" -> "dort").
 
+Gizlilik metni yayinda: web `slooin--tee6yc230m`, OTA grup
+`355569ff-fab4-41d7-b20c-684d81bf82db`; site push ile kendiliginden.
+
 **KALAN:** Apple magaza formundaki gizlilik adresi
 `slooin.expo.app/gizlilik` -> `slooin.com/gizlilik`; Apple SPF
 durumunun yesile donmesi (birkac saat sonra bak); Resend icin de KVKK
