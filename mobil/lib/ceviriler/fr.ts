@@ -194,7 +194,7 @@ export default {
     kodNot: 'Un code à 6 chiffres sera envoyé à cette adresse.',
     gizliAppleAdresi: 'Le code à 6 chiffres est transféré vers l\'adresse e-mail liée à ton compte Apple.',
     kodGonder: 'Envoyer le code de confirmation',
-    kodGonderildi: 'Code envoyé ; valable une heure.',
+    kodGonderildi: 'Code envoyé ; valable 10 minutes.',
     kodYerTutucu: 'Code à 6 chiffres',
     kodEksik: 'Saisis les 6 chiffres du code.',
     tekrarGonder: 'Renvoyer le code',

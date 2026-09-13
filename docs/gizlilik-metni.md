@@ -187,7 +187,7 @@ Verilerin uc ayri yerde islenir:
 - **Resend** (dogrulama postalari - kayit, giris ve hesap silme
   kodlari): sunuculari **Irlanda**'da (`eu-west-1` bolgesi, Avrupa
   Birligi). Buraya yalnizca e-posta adresin ve gonderilen kod gecer;
-  kod bir saat icinde gecersiz olur. (2026-09-13'e kadar postalari
+  kod 10 dakika icinde gecersiz olur. (2026-09-13'e kadar postalari
   Supabase'in yerlesik postacisi gonderiyordu.)
 - **Harita zemini** (2026-08-30'dan itibaren, yalnizca iOS ve Android
   uygulamalarinda): iOS'ta **Apple Haritalar**, Android'de **Google

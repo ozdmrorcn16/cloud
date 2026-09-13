@@ -200,7 +200,7 @@ export default {
     kodNot: 'A 6-digit code will be sent to this address.',
     gizliAppleAdresi: 'The 6-digit code is forwarded to the e-mail address linked to your Apple account.',
     kodGonder: 'Send confirmation code',
-    kodGonderildi: 'Code sent; valid for one hour.',
+    kodGonderildi: 'Code sent; valid for 10 minutes.',
     kodYerTutucu: '6-digit code',
     kodEksik: 'Enter all 6 digits of the code.',
     tekrarGonder: 'Resend code',

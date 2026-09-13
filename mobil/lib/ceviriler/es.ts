@@ -194,7 +194,7 @@ export default {
     kodNot: 'Se enviará un código de 6 dígitos a esta dirección.',
     gizliAppleAdresi: 'El código de 6 dígitos se reenvía al correo vinculado a tu cuenta de Apple.',
     kodGonder: 'Enviar código de confirmación',
-    kodGonderildi: 'Código enviado; válido durante una hora.',
+    kodGonderildi: 'Código enviado; válido durante 10 minutos.',
     kodYerTutucu: 'Código de 6 dígitos',
     kodEksik: 'Introduce los 6 dígitos del código.',
     tekrarGonder: 'Reenviar código',

@@ -261,7 +261,7 @@ export default {
     kodNot: '6 haneli kod bu adrese gönderilir.',
     gizliAppleAdresi: '6 haneli kod, Apple hesabına bağlı e-posta adresine yönlendirilir.',
     kodGonder: 'Onay kodu gönder',
-    kodGonderildi: 'Kod gönderildi; bir saat geçerli.',
+    kodGonderildi: 'Kod gönderildi; 10 dakika geçerli.',
     kodYerTutucu: '6 haneli kod',
     kodEksik: '6 haneli kodun tamamını gir.',
     tekrarGonder: 'Kodu tekrar gönder',
