@@ -34,7 +34,14 @@ function hreflangAdresi(hedefDil: Dil): string {
     />
   </head>
   <body>
+    <!-- Cloudflare "Email Address Obfuscation" e-posta adreslerini JS ile
+         cozulen bir bicime ceviriyor; JavaScript kapaliyken sayfada
+         "[email protected]" kaliyor ve Apple'in "gizlilik sayfasi JS'siz
+         okunabilmeli" sarti bozuluyor (2026-09-14'te canlida goruldu).
+         email_off yorumu Cloudflare'in resmi kapatma anahtari. -->
+    <!--email_off-->
     <slot />
+    <!--/email_off-->
   </body>
 </html>
 

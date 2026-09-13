@@ -30,7 +30,7 @@ const t = kabukMetni(dil)
     DILLER.length > 1 && (
       <nav class="dil-secici" aria-label={t.dilSeciciEtiket}>
         {DILLER.map((d) => (
-          <a href={(dilOneki(d) + yol) || '/'} aria-current={d === dil ? 'page' : undefined}>
+          <a href={d === KOK_DIL ? (yol || '/') + '?dil=tr' : dilOneki(d) + yol} aria-current={d === dil ? 'page' : undefined}>
             {d.toUpperCase()}
           </a>
         ))}

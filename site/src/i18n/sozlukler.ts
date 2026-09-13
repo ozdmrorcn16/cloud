@@ -180,7 +180,7 @@ const tr: SiteSozlugu = {
     kodEtiket: "Onay kodu",
     kodGonder: "Onay kodu gönder",
     dugme: "Hesabımı kalıcı olarak sil",
-    dipnot: "Hesabını Apple ile açtıysan ve \"e-postamı gizle\"yi seçtiysen kod ulaşmayabilir; hesabını uygulama içinden (Ayarlar › Hesabımı sil, Apple ile onayla) silebilirsin ya da {{eposta}} adresine yaz.",
+    dipnot: "Hesabını Apple ile açtıysan ve \"e-postamı gizle\"yi seçtiysen kod, Apple'ın sana verdiği gizli adrese gider ve oradan Apple kimliğindeki asıl adresine iletilir. Sorun yaşarsan hesabını uygulama içinden (Ayarlar › Hesabımı sil, Apple ile onayla) silebilirsin ya da {{eposta}} adresine yaz.",
     betik: {
       eksik: "E-posta adresini gir.",
       kodEksik: "6 haneli kodun tamamını gir.",
@@ -280,7 +280,7 @@ const en: SiteSozlugu = {
     kodEtiket: "Confirmation code",
     kodGonder: "Send confirmation code",
     dugme: "Delete my account permanently",
-    dipnot: "If you created your account with Apple and chose \"Hide my email\", the code may not arrive; delete your account inside the app (Settings › Delete my account, confirm with Apple) or write to {{eposta}}.",
+    dipnot: "If you created your account with Apple and chose \"Hide my email\", the code goes to the private address Apple gave you and is forwarded to the real address on your Apple ID. If anything goes wrong, delete your account inside the app (Settings › Delete my account, confirm with Apple) or write to {{eposta}}.",
     betik: {
       eksik: "Enter your e-mail address.",
       kodEksik: "Enter the full 6-digit code.",
@@ -364,7 +364,7 @@ const de: SiteSozlugu = {
     kodEtiket: "Bestätigungscode",
     kodGonder: "Bestätigungscode senden",
     dugme: "Mein Konto dauerhaft löschen",
-    dipnot: "Wenn du dein Konto mit Apple erstellt und „E-Mail verbergen“ gewählt hast, kommt der Code eventuell nicht an; lösche dein Konto in der App (Einstellungen › Mein Konto löschen, mit Apple bestätigen) oder schreib an {{eposta}}.",
+    dipnot: "Wenn du dein Konto mit Apple erstellt und „E-Mail verbergen“ gewählt hast, geht der Code an die von Apple vergebene Weiterleitungsadresse und wird an die echte Adresse deiner Apple-ID weitergeleitet. Bei Problemen lösche dein Konto in der App (Einstellungen › Mein Konto löschen, mit Apple bestätigen) oder schreib an {{eposta}}.",
     betik: {
       eksik: "Gib deine E-Mail-Adresse ein.",
       kodEksik: "Gib den vollständigen 6-stelligen Code ein.",
@@ -448,7 +448,7 @@ const es: SiteSozlugu = {
     kodEtiket: "Código de confirmación",
     kodGonder: "Enviar código de confirmación",
     dugme: "Eliminar mi cuenta de forma permanente",
-    dipnot: "Si creaste tu cuenta con Apple y elegiste \"Ocultar mi correo\", puede que el código no llegue; elimina tu cuenta desde la app (Ajustes › Eliminar mi cuenta, confirmar con Apple) o escribe a {{eposta}}.",
+    dipnot: "Si creaste tu cuenta con Apple y elegiste \"Ocultar mi correo\", el código va a la dirección privada que te dio Apple y se reenvía al correo real de tu ID de Apple. Si algo falla, elimina tu cuenta desde la app (Ajustes › Eliminar mi cuenta, confirmar con Apple) o escribe a {{eposta}}.",
     betik: {
       eksik: "Introduce tu correo electrónico.",
       kodEksik: "Introduce el código completo de 6 dígitos.",
@@ -532,7 +532,7 @@ const fr: SiteSozlugu = {
     kodEtiket: "Code de confirmation",
     kodGonder: "Envoyer le code de confirmation",
     dugme: "Supprimer définitivement mon compte",
-    dipnot: "Si tu as créé ton compte avec Apple en choisissant « Masquer mon adresse e-mail », le code peut ne pas arriver ; supprime ton compte dans l'application (Réglages › Supprimer mon compte, confirmer avec Apple) ou écris à {{eposta}}.",
+    dipnot: "Si tu as créé ton compte avec Apple en choisissant « Masquer mon adresse e-mail », le code est envoyé à l'adresse relais fournie par Apple puis transféré vers l'adresse réelle de ton identifiant Apple. En cas de problème, supprime ton compte dans l'application (Réglages › Supprimer mon compte, confirmer avec Apple) ou écris à {{eposta}}.",
     betik: {
       eksik: "Saisis ton adresse e-mail.",
       kodEksik: "Saisis le code complet à 6 chiffres.",
@@ -616,7 +616,7 @@ const ru: SiteSozlugu = {
     kodEtiket: "Код подтверждения",
     kodGonder: "Отправить код подтверждения",
     dugme: "Удалить мой аккаунт навсегда",
-    dipnot: "Если вы создали аккаунт через Apple и выбрали «Скрыть e-mail», код может не прийти; удалите аккаунт в приложении (Настройки › Удалить аккаунт, подтвердить через Apple) или напишите на {{eposta}}.",
+    dipnot: "Если вы создали аккаунт через Apple и выбрали «Скрыть e-mail», код придёт на выданный Apple адрес-ретранслятор и будет переслан на настоящий адрес вашего Apple ID. Если что-то не сработает, удалите аккаунт в приложении (Настройки › Удалить аккаунт, подтвердить через Apple) или напишите на {{eposta}}.",
     betik: {
       eksik: "Введите адрес электронной почты.",
       kodEksik: "Введите полный 6-значный код.",
@@ -700,7 +700,7 @@ const ar: SiteSozlugu = {
     kodEtiket: "رمز التأكيد",
     kodGonder: "إرسال رمز التأكيد",
     dugme: "حذف حسابي نهائيًا",
-    dipnot: "إذا أنشأت حسابك عبر Apple واخترت «إخفاء بريدي الإلكتروني» فقد لا يصلك الرمز؛ احذف حسابك من داخل التطبيق (الإعدادات › حذف حسابي، التأكيد عبر Apple) أو اكتب إلى {{eposta}}.",
+    dipnot: "إذا أنشأت حسابك عبر Apple واخترت «إخفاء بريدي الإلكتروني»، يُرسل الرمز إلى عنوان إعادة التوجيه الذي منحته لك Apple ثم يُعاد توجيهه إلى عنوانك الحقيقي في Apple ID. إذا واجهت مشكلة فاحذف حسابك من داخل التطبيق (الإعدادات › حذف حسابي، التأكيد عبر Apple) أو اكتب إلى {{eposta}}.",
     betik: {
       eksik: "أدخل بريدك الإلكتروني.",
       kodEksik: "أدخل الرمز الكامل المكوّن من 6 أرقام.",
