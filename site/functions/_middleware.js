@@ -79,7 +79,7 @@ export async function onRequest({ request, next }) {
     // Turkce'yi bilerek secmis ya da onekli bir dil secmis: onekli dil
     // seciliyse oraya yonlendir, Turkce'yse oldugu gibi birak.
     if (secim !== KOK_DIL && DILLER.includes(secim)) {
-      return Response.redirect(`${url.origin}/${secim}${yol === '/' ? '/' : yol}`, 302)
+      return Response.redirect(`${url.origin}/${secim}${yol === '/' ? '/' : yol.replace(/\/?$/, '/')}`, 302)
     }
     return next()
   }
@@ -93,7 +93,8 @@ export async function onRequest({ request, next }) {
     y.headers.append('Set-Cookie', `${CEREZ}=${KOK_DIL}; Path=/; Max-Age=${BIR_YIL}; SameSite=Lax; Secure`)
     return y
   }
-  const hedef = `${url.origin}/${algilanan}${yol === '/' ? '/' : yol}${url.search}`
+  // Sondaki egik cizgi: Pages onu zaten 308 ile ekliyor, iki zipla bir olsun.
+  const hedef = `${url.origin}/${algilanan}${yol === '/' ? '/' : yol.replace(/\/?$/, '/')}${url.search}`
   const y2 = new Response(null, { status: 302, headers: { Location: hedef } })
   y2.headers.append('Set-Cookie', `${CEREZ}=${algilanan}; Path=/; Max-Age=${BIR_YIL}; SameSite=Lax; Secure`)
   y2.headers.append('Vary', 'Accept-Language, Cookie')
