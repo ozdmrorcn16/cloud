@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, StyleSheet, Platform, ScrollView } from 'react-native'
-import { router } from 'expo-router'
-import { hesabiSil } from '../../../lib/hesap'
+import { hesabiSil, hesabiDondur } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 import { gonderimKaydet } from '../../../lib/kod-gonderim'
 import {
@@ -19,6 +18,11 @@ import { useDil } from '../../../lib/dil'
 
 /** Kodun hane sayisi - dogrulama ekraniyla ayni. */
 const HANE = 6
+
+/** Apple'in "e-postami gizle" aktarma adresi mi? */
+function gizliAppleAdresiMi(eposta: string | null): boolean {
+  return !!eposta && eposta.toLowerCase().endsWith('@privaterelay.appleid.com')
+}
 
 /**
  * HESAP SILME - E-POSTA ONAY KODUYLA (kullanicinin karari 2026-09-13:
@@ -56,6 +60,7 @@ export default function HesabiSilEkrani() {
   const [kod, setKod] = useState('')
   const [eposta, setEposta] = useState<string | null>(null)
   const [saglayicilar, setSaglayicilar] = useState<Saglayici[]>([])
+  const [dondurmaAcik, setDondurmaAcik] = useState(false)
 
   useEffect(() => {
     let gecerli = true
@@ -74,6 +79,24 @@ export default function HesabiSilEkrani() {
       gecerli = false
     }
   }, [])
+
+  /* DONDURMA AYNI SAYFADA (kullanicinin istegi 2026-09-13): "basan
+     kisiyi baska sayfaya yonlendirme, hemen ayni sayfada altinda
+     bilgilendirme cikip dondurabilsin". Ayarlardaki akisin aynisi
+     (metinler `ayarlar.*` anahtarlarindan, iki ekran ayni sozu
+     soylesin); dondurduktan sonra cikis, yoksa kisi dondurulmus ama
+     girisli bir ara durumda kalir (spec karar 66). */
+  async function dondur() {
+    setCalisiyor(true)
+    setHata(null)
+    try {
+      await hesabiDondur()
+      await supabase.auth.signOut()
+    } catch (e) {
+      setHata(hataMetni(e))
+      setCalisiyor(false)
+    }
+  }
 
   async function silmeyiTamamla() {
     setCalisiyor(true)
@@ -150,16 +173,44 @@ export default function HesabiSilEkrani() {
     <ScrollView style={stiller.sayfa} contentContainerStyle={stiller.kapsayici}>
       <UstCubuk baslik={t('hesabiSil.baslik')} geriEtiketi={t('ortak.geri')} />
 
-      {/* BILGILENDIRME: ne silinir, ne kalir, geri alinamaz. */}
+      {/* BILGILENDIRME: tek cumle - sayfa uzundu, kullanici kisalttirdi
+          (2026-09-13). Ne silinip ne kaldigi gizlilik metninde duruyor. */}
       <Text style={stiller.metin}>{t('hesabiSil.uyari')}</Text>
-      <Text style={stiller.altBaslik}>{t('hesabiSil.neSilinirBaslik')}</Text>
-      <Text style={stiller.ipucu}>{t('hesabiSil.neSilinir')}</Text>
-      <Text style={stiller.altBaslik}>{t('hesabiSil.neKalirBaslik')}</Text>
-      <Text style={stiller.ipucu}>{t('hesabiSil.neKalir')}</Text>
 
-      <Pressable style={stiller.ikincilButon} onPress={() => router.back()} accessibilityRole="button">
-        <Text style={stiller.ikincilButonMetni}>{t('hesabiSil.dondur')}</Text>
+      {/* DONDURMA - ayni sayfada acilir, baska ekrana gitmez. */}
+      <Pressable
+        style={stiller.anahtarli}
+        onPress={() => setDondurmaAcik((a) => !a)}
+        disabled={calisiyor}
+        accessibilityRole="button"
+        testID="dondur-ac"
+      >
+        <Text style={stiller.anahtarliYazi}>{t('hesabiSil.dondur')}</Text>
       </Pressable>
+      {dondurmaAcik && (
+        <View style={stiller.dondurmaKutusu} testID="dondurma-kutusu">
+          <Text style={stiller.ipucu}>{t('ayarlar.dondurAciklama')}</Text>
+          <View style={stiller.dondurmaButonlari}>
+            <Pressable
+              onPress={dondur}
+              disabled={calisiyor}
+              accessibilityRole="button"
+              testID="dondur-onayla"
+              hitSlop={8}
+            >
+              <Text style={stiller.dondurEvet}>{t('ayarlar.dondurEvet')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setDondurmaAcik(false)}
+              disabled={calisiyor}
+              accessibilityRole="button"
+              hitSlop={8}
+            >
+              <Text style={stiller.ikincilButonMetni}>{t('ayarlar.vazgec')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {/* ONAY KODU */}
       <Text style={stiller.etiket}>
@@ -167,6 +218,16 @@ export default function HesabiSilEkrani() {
           ? t('hesabiSil.kodGonderildi', { eposta: eposta ?? '' })
           : t('hesabiSil.kodAciklama', { eposta: eposta ?? '' })}
       </Text>
+      {/* Apple "e-postami gizle": adres `@privaterelay.appleid.com` olur ve
+          kullaniciya yabanci gorunur (kullanicinin sorusu 2026-09-13:
+          "cok degisik bir e-posta yaziyor, kod nereye gonderiliyor").
+          Aktarim ancak gonderici alan adi Apple'da kayitliysa calisir;
+          o yuzden bu hesaplar icin asil yol asagidaki "Apple ile onayla". */}
+      {gizliAppleAdresiMi(eposta) && (
+        <Text style={stiller.ipucu} testID="gizli-apple-notu">
+          {t('hesabiSil.gizliAppleAdresi')}
+        </Text>
+      )}
 
       {!kodGonderildi ? (
         <Pressable
@@ -249,11 +310,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 22,
     color: renk.metin,
   },
-  altBaslik: {
+  dondurmaKutusu: {
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart,
+    padding: bosluk.l,
+    gap: bosluk.m,
+  },
+  dondurmaButonlari: { flexDirection: 'row', gap: bosluk.xl, alignItems: 'center' },
+  dondurEvet: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metin,
-    marginTop: bosluk.xs,
+    fontSize: olcek.govde,
+    color: renk.turuncuYazi,
   },
   ipucu: {
     fontFamily: yazi.govde,

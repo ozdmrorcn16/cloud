@@ -185,11 +185,8 @@ export default {
   hesabiSil: {
     baslik: 'Konto löschen',
     uyari: 'Das kann nicht rückgängig gemacht werden. Wenn du zurückkommen willst, musst du ein Konto von Grund auf neu anlegen.',
-    neSilinirBaslik: 'Was wird gelöscht?',
-    neSilinir: 'Dein Konto und Profil (Name, Benutzername, Bio, Geburtsdatum), deine Profil- und Check-in-Fotos, alle deine Check-ins und Erinnerungen, deine Freundschaften, Anfragen, Blockierungen und Benachrichtigungseinträge.',
-    neKalirBaslik: 'Was bleibt?',
-    neKalir: 'Nachrichten, die du anderen gesendet hast, und Meldungen, die du erstattet hast, werden nicht gelöscht, sondern anonymisiert — die Absenderangabe wird entfernt. Die Nachrichten zu löschen hieße auch, den Gesprächsverlauf der anderen Person zu löschen; deshalb wurde so entschieden.',
     dondur: 'Stattdessen mein Konto einfrieren',
+    gizliAppleAdresi: 'Das ist die Weiterleitungsadresse, die Apple zum Verbergen deiner E-Mail erstellt hat; der Code wird von dort an die echte Adresse deiner Apple-ID weitergeleitet.',
     kodAciklama: 'Zur Bestätigung senden wir einen 6-stelligen Code an {{eposta}}. Wer den Code eingibt, kann das Konto löschen.',
     kodGonder: 'Bestätigungscode senden',
     kodGonderildi: 'Der Code wurde an {{eposta}} gesendet. Er ist eine Stunde gültig.',

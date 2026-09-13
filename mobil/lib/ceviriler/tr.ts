@@ -253,11 +253,8 @@ export default {
     // HESAP SILME E-POSTA ONAY KODUYLA (2026-09-13); parola anahtarlari kalkti.
     baslik: 'Hesabını sil',
     uyari: 'Bu işlem geri alınamaz. Yeniden gelmek istersen sıfırdan hesap açman gerekir.',
-    neSilinirBaslik: 'Ne silinir?',
-    neSilinir: 'Hesabın ve profilin (adın, kullanıcı adın, biyografin, doğum tarihin), profil ve check-in fotoğrafların, bütün check-in\'lerin ve anıların, arkadaşlıkların, isteklerin, engellemelerin ve bildirim kayıtların.',
-    neKalirBaslik: 'Ne kalır?',
-    neKalir: 'Başkalarına gönderdiğin mesajlar ve gönderdiğin şikâyetler silinmez, anonimleşir — gönderen bilgisi kaldırılır. Mesajları silmek karşı tarafın konuşma geçmişini de silmek anlamına geleceği için bu tercih edildi.',
     dondur: 'Bunun yerine hesabımı dondur',
+    gizliAppleAdresi: 'Bu adres, Apple\'ın e-postanı gizlemek için oluşturduğu aktarma adresi; kod oradan Apple kimliğindeki asıl adresine yönlendirilir.',
     kodAciklama: 'Onaylamak için {{eposta}} adresine 6 haneli bir onay kodu göndereceğiz. Kodu giren kişi hesabı silebilir.',
     kodGonder: 'Onay kodu gönder',
     kodGonderildi: 'Onay kodu {{eposta}} adresine gönderildi. Kod bir saat geçerli.',

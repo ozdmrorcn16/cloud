@@ -185,11 +185,8 @@ export default {
   hesabiSil: {
     baslik: 'Supprimer ton compte',
     uyari: 'Cette action est irréversible. Si tu veux revenir, tu devras créer un compte à partir de zéro.',
-    neSilinirBaslik: 'Que supprime-t-on ?',
-    neSilinir: 'Ton compte et ton profil (nom, nom d\'utilisateur, bio, date de naissance), tes photos de profil et de check-in, tous tes check-ins et souvenirs, tes amitiés, demandes, blocages et enregistrements de notifications.',
-    neKalirBaslik: 'Que reste-t-il ?',
-    neKalir: 'Les messages que tu as envoyés à d\'autres et les signalements que tu as faits ne sont pas supprimés mais anonymisés — l\'information sur l\'expéditeur est retirée. Supprimer les messages reviendrait à supprimer aussi l\'historique de conversation de l\'autre personne ; c\'est pourquoi ce choix a été fait.',
     dondur: 'Plutôt geler mon compte',
+    gizliAppleAdresi: 'C\'est l\'adresse relais créée par Apple pour masquer ton e-mail ; le code est transféré de là vers l\'adresse réelle de ton identifiant Apple.',
     kodAciklama: 'Pour confirmer, nous enverrons un code à 6 chiffres à {{eposta}}. La personne qui saisit le code peut supprimer le compte.',
     kodGonder: 'Envoyer le code de confirmation',
     kodGonderildi: 'Le code a été envoyé à {{eposta}}. Il est valable une heure.',

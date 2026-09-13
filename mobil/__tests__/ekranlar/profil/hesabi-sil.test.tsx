@@ -1,6 +1,6 @@
 import { render, fireEvent, screen, waitFor } from '@testing-library/react-native'
 import HesabiSilEkrani from '../../../src/app/profil/hesabi-sil'
-import { hesabiSil } from '../../../lib/hesap'
+import { hesabiSil, hesabiDondur } from '../../../lib/hesap'
 import { supabase } from '../../../lib/supabase'
 import { saglayiciylaGirisYap } from '../../../lib/sosyal-giris'
 
@@ -11,7 +11,7 @@ import { saglayiciylaGirisYap } from '../../../lib/sosyal-giris'
  * cevrildi: parola alani ARTIK YOK, kod gonderilmeden sil dugmesi
  * gorunmuyor, kod dogrulanmadan `hesabiSil` cagrilmiyor.
  */
-jest.mock('../../../lib/hesap', () => ({ hesabiSil: jest.fn() }))
+jest.mock('../../../lib/hesap', () => ({ hesabiSil: jest.fn(), hesabiDondur: jest.fn() }))
 jest.mock('../../../lib/kod-gonderim', () => ({ gonderimKaydet: jest.fn() }))
 jest.mock('../../../lib/sosyal-giris', () => ({
   saglayiciylaGirisYap: jest.fn(),
@@ -44,14 +44,50 @@ beforeEach(() => {
   mockVerifyOtp.mockResolvedValue({ data: { session: {} }, error: null })
 })
 
-it('bilgilendirme metinleri ve dondurma alternatifi ekranda', async () => {
+it('SAYFA KISA: yalnizca uyari cumlesi; "Ne silinir / Ne kalir" bloklari ARTIK YOK', async () => {
   await render(<HesabiSilEkrani />)
   expect(
     screen.getByText('Bu işlem geri alınamaz. Yeniden gelmek istersen sıfırdan hesap açman gerekir.')
   ).toBeTruthy()
-  expect(screen.getByText('Ne silinir?')).toBeTruthy()
-  expect(screen.getByText('Ne kalır?')).toBeTruthy()
+  expect(screen.queryByText('Ne silinir?')).toBeNull()
+  expect(screen.queryByText('Ne kalır?')).toBeNull()
   expect(screen.getByText('Bunun yerine hesabımı dondur')).toBeTruthy()
+})
+
+it('dondur: AYNI SAYFADA acilir, baska ekrana gitmez; onaylaninca hesabiDondur + cikis', async () => {
+  await render(<HesabiSilEkrani />)
+  expect(screen.queryByTestId('dondurma-kutusu')).toBeNull()
+  await fireEvent.press(screen.getByText('Bunun yerine hesabımı dondur'))
+  expect(screen.getByTestId('dondurma-kutusu')).toBeTruthy()
+  expect(
+    screen.getByText('Verilerin silinmez. Tekrar giriş yaptığında hesabın kendiliğinden aktif olur.')
+  ).toBeTruthy()
+  await fireEvent.press(screen.getByText('Evet, dondur'))
+  await waitFor(() => expect(hesabiDondur).toHaveBeenCalled())
+  await waitFor(() => expect(supabase.auth.signOut).toHaveBeenCalled())
+  expect(sahteSil).not.toHaveBeenCalled()
+})
+
+it('dondurma kutusunda Vazgec kutuyu kapatir, dondurmaz', async () => {
+  await render(<HesabiSilEkrani />)
+  await fireEvent.press(screen.getByText('Bunun yerine hesabımı dondur'))
+  await fireEvent.press(screen.getByText('Vazgeç'))
+  expect(screen.queryByTestId('dondurma-kutusu')).toBeNull()
+  expect(hesabiDondur).not.toHaveBeenCalled()
+})
+
+it('normal adreste Apple gizli-adres notu YOK', async () => {
+  await render(<HesabiSilEkrani />)
+  await screen.findByText(/ali@ornek\.com adresine 6 haneli/)
+  expect(screen.queryByTestId('gizli-apple-notu')).toBeNull()
+})
+
+it('Apple gizli aktarma adresinde (@privaterelay.appleid.com) aciklama notu VAR', async () => {
+  mockGetUser.mockResolvedValue({
+    data: { user: { email: 'abc123@privaterelay.appleid.com', app_metadata: { providers: ['apple'] } } },
+  })
+  await render(<HesabiSilEkrani />)
+  expect(await screen.findByTestId('gizli-apple-notu')).toBeTruthy()
 })
 
 it('PAROLA ALANI YOK; sil dugmesi kod gonderilmeden gorunmuyor', async () => {

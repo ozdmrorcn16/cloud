@@ -191,6 +191,38 @@ guncellendi (dort soru cevapli).
 `slooin--sjug3578v1`, pakette `kodla-sil` testID'si dogrulandi), OTA grup
 `c8baae8a-9e7e-4690-aa5c-1267b702f6ca`.
 
+**AYNI GUN IKI DUZELTME (kullanicinin telefondan bildirdikleri):**
+
+1. **"Cok uzun bir sayfa; basliktaki alt baslik dursun, altina 'bunun
+   yerine hesabimi dondur' gelsin ve basan kisiyi baska sayfaya
+   yonlendirme, ayni sayfada bilgilendirme cikip dondurabilsin."**
+   "Ne silinir / Ne kalir" bloklari KALKTI (yedi sozlukten de - o
+   bilgi gizlilik metninde duruyor); uyari cumlesinin hemen altinda
+   "Bunun yerine hesabimi dondur" hayalet butonu, basinca ayni sayfada
+   kutu aciliyor (`ayarlar.dondurAciklama` + "Evet, dondur" / "Vazgec",
+   ayarlar ekraniyla AYNI metinler) ve onay `hesabiDondur` + `signOut`.
+   Onceden buton `router.back()` yapiyordu, yani dondurma yalnizca
+   ayarlardaydi. testID'ler `dondur-ac`, `dondurma-kutusu`,
+   `dondur-onayla`. Ekran goruntusu `tasarim/hesabi-sil-dondur-acik.png`.
+
+2. **"Cok degisik bir e-posta yaziyor, kod nereye gonderiliyor?"**
+   Kullanicinin hesabi Apple ile ve "e-postami gizle" secilmis; adres
+   `xxxx@privaterelay.appleid.com` - Apple'in AKTARMA adresi, kisinin
+   kendisi bile ilk kez goruyor. Ekran artik bu adreslerde bir not
+   gosteriyor (`hesabiSil.gizliAppleAdresi`, 7 dil, testID
+   `gizli-apple-notu`): "Apple'in e-postani gizlemek icin olusturdugu
+   aktarma adresi; kod oradan asil adresine yonlendirilir."
+   **AMA AKTARIM BUGUN CALISMIYOR:** Apple yalnizca Apple Developer >
+   "Sign in with Apple for Email Communication"da KAYITLI gonderici
+   alan adlarindan gelen postayi iletiyor; bizim gonderici Supabase'in
+   varsayilan alani ve kayitli degil. Yani bu hesaplar icin bugun tek
+   calisan yol "Apple ile onayla" dugmesi (kullaniciya soylendi).
+   slooin.com + Resend SMTP kurulunca alan adi Apple'a kaydedilecek
+   ve kod yolu da acilacak.
+
+   Jest 75 paket / 947 test (hesabi-sil 13). Yayin: web
+   `slooin--k8ewnmtn5u`, OTA grup `241a068b-e4c7-4a51-8763-86f0b72e6ff2`.
+
 ### SITE YEDI DILDE, HUKUKI METINLER ORTAK KAYNAKTAN; KVKK m.9 ISI - 2026-09-13 OGLE
 
 **Site (`site/`) yedi dile gecti** (commit `824cc01`): gizlilik ve

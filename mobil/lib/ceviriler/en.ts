@@ -191,11 +191,8 @@ export default {
   hesabiSil: {
     baslik: 'Delete your account',
     uyari: 'This cannot be undone. If you want to come back you will have to create an account from scratch.',
-    neSilinirBaslik: 'What is deleted?',
-    neSilinir: 'Your account and profile (name, username, bio, date of birth), your profile and check-in photos, all your check-ins and memories, your friendships, requests, blocks and notification records.',
-    neKalirBaslik: 'What remains?',
-    neKalir: 'Messages you sent to others and reports you filed are not deleted but anonymised — the sender information is removed. Deleting the messages would also delete the other person\'s conversation history, which is why this was chosen.',
     dondur: 'Freeze my account instead',
+    gizliAppleAdresi: 'This is the relay address Apple created to hide your e-mail; the code is forwarded from there to the real address on your Apple ID.',
     kodAciklama: 'To confirm, we will send a 6-digit code to {{eposta}}. Whoever enters the code can delete the account.',
     kodGonder: 'Send confirmation code',
     kodGonderildi: 'The code was sent to {{eposta}}. It is valid for one hour.',

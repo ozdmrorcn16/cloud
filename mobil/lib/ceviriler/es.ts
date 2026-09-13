@@ -185,11 +185,8 @@ export default {
   hesabiSil: {
     baslik: 'Eliminar tu cuenta',
     uyari: 'Esto no se puede deshacer. Si quieres volver, tendrás que crear una cuenta desde cero.',
-    neSilinirBaslik: '¿Qué se elimina?',
-    neSilinir: 'Tu cuenta y tu perfil (nombre, nombre de usuario, biografía, fecha de nacimiento), tus fotos de perfil y de check-in, todos tus check-ins y recuerdos, tus amistades, solicitudes, bloqueos y registros de notificaciones.',
-    neKalirBaslik: '¿Qué permanece?',
-    neKalir: 'Los mensajes que enviaste a otras personas y las denuncias que presentaste no se eliminan, se anonimizan: se quita la información del remitente. Eliminar los mensajes supondría borrar también el historial de conversación de la otra persona; por eso se optó por esto.',
     dondur: 'Mejor congelar mi cuenta',
+    gizliAppleAdresi: 'Esta es la dirección de reenvío que Apple creó para ocultar tu correo; el código se reenvía desde ahí a la dirección real de tu ID de Apple.',
     kodAciklama: 'Para confirmar, enviaremos un código de 6 dígitos a {{eposta}}. Quien introduzca el código podrá eliminar la cuenta.',
     kodGonder: 'Enviar código de confirmación',
     kodGonderildi: 'El código se envió a {{eposta}}. Es válido durante una hora.',
