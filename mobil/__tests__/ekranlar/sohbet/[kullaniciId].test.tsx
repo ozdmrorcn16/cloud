@@ -28,8 +28,14 @@ jest.mock('../../../lib/sohbet', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+const mockRouterBack = jest.fn()
+let mockGeriGidilebilir = true
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({
+    push: mockRouterPush,
+    back: mockRouterBack,
+    canGoBack: () => mockGeriGidilebilir,
+  }),
   useLocalSearchParams: () => ({ kullaniciId: 'kullanici-2' }),
 }))
 
@@ -473,7 +479,8 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     await render(<SohbetEkrani />)
     await screen.findByText('Benim son')
 
-    const teslimler = screen.getAllByText('Teslim edildi')
+    // Saatle birlikte: "13:01 · Teslim edildi"
+    const teslimler = screen.getAllByText(/Teslim edildi/)
     expect(teslimler).toHaveLength(1)
     expect(screen.getByTestId('teslim-m2')).toBeTruthy()
     expect(screen.queryByTestId('teslim-m1')).toBeNull()
@@ -496,12 +503,12 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     await fireEvent.press(screen.getByText('Gönder'))
 
     await screen.findByText('Merhaba')
-    expect(screen.queryByText('Teslim edildi')).toBeNull()
+    expect(screen.queryByText(/Teslim edildi/)).toBeNull()
 
     await act(async () => {
       geldiCallback!(mesaj({ id: 's1', gonderenId: 'kullanici-1', metin: 'Merhaba' }))
     })
-    expect(screen.getByText('Teslim edildi')).toBeTruthy()
+    expect(screen.getByText(/Teslim edildi/)).toBeTruthy()
   })
 
   it('hic kendi mesajim yoksa "Teslim edildi" hic gorunmez', async () => {
@@ -510,7 +517,7 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     await render(<SohbetEkrani />)
     await screen.findByText('Bir')
 
-    expect(screen.queryByText('Teslim edildi')).toBeNull()
+    expect(screen.queryByText(/Teslim edildi/)).toBeNull()
   })
 
   it('karsi tarafin HER mesajinin yaninda avatari var, kendi mesajimda yok', async () => {
@@ -529,5 +536,56 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     )
     expect(screen.getByTestId('balon-avatar-m1')).toBeTruthy()
     expect(screen.queryByTestId('balon-avatar-m2')).toBeNull()
+  })
+
+  // GERI DUGMESI (kullanicinin istegi 2026-09-14: "mesajdan geri cikma
+  // ekle"). Uygulamada Stack yok, ekranin kendi geri oku olmali.
+  it('ust bardaki geri oku bir onceki ekrana doner', async () => {
+    mockGeriGidilebilir = true
+    await render(<SohbetEkrani />)
+    await screen.findByText('Ada')
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).toHaveBeenCalled()
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/mesajlar')
+  })
+
+  it('gecmis yoksa (bildirimden acildi) geri oku Mesajlar listesine gider', async () => {
+    mockGeriGidilebilir = false
+    await render(<SohbetEkrani />)
+    await screen.findByText('Ada')
+
+    await fireEvent.press(screen.getByLabelText('Geri'))
+
+    expect(mockRouterBack).not.toHaveBeenCalled()
+    expect(mockRouterPush).toHaveBeenCalledWith('/mesajlar')
+  })
+
+  // SAAT VE GUN AYRACI (kullanicinin istegi 2026-09-14: "mesajlarin
+  // yazilan saatleri, tarihleri, sohbet tarihi belli olsun").
+  it('her balonun altinda saat, gun degisince ortada gun ayraci', async () => {
+    const bugun = new Date()
+    bugun.setHours(14, 5, 0, 0)
+    const dun = new Date(bugun.getTime() - 24 * 60 * 60 * 1000)
+    dun.setHours(9, 30, 0, 0)
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm3', gonderenId: 'kullanici-1', metin: 'Bugunku', olusturuldu: bugun.toISOString() }),
+      mesaj({ id: 'm2', gonderenId: 'kullanici-2', metin: 'Dunku 2', olusturuldu: new Date(dun.getTime() + 60000).toISOString() }),
+      mesaj({ id: 'm1', gonderenId: 'kullanici-2', metin: 'Dunku 1', olusturuldu: dun.toISOString() }),
+    ])
+
+    await render(<SohbetEkrani />)
+    await screen.findByText('Bugunku')
+
+    // Saatler
+    expect(screen.getByText('14:05 · Teslim edildi')).toBeTruthy()
+    expect(screen.getByText('09:31')).toBeTruthy()
+    expect(screen.getByText('09:30')).toBeTruthy()
+    // Ayraclar: en eski mesajin ustunde "Dün", gun degisiminde "Bugün";
+    // ayni gunun ikinci mesajinda ayrac YOK.
+    expect(screen.getByTestId('gun-ayraci-m1').props.children).toBe('Dün')
+    expect(screen.getByTestId('gun-ayraci-m3').props.children).toBe('Bugün')
+    expect(screen.queryByTestId('gun-ayraci-m2')).toBeNull()
   })
 })

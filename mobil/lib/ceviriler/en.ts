@@ -218,6 +218,8 @@ export default {
     yerTutucu: 'Write a message...',
     kapaliKapi: "You can't message this person right now.",
     teslimEdildi: 'Delivered',
+    bugun: 'Today',
+    dun: 'Yesterday',
   },
   etkilesim: {
     profiliGor: "View {{ad}}'s profile",

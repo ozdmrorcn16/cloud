@@ -16,10 +16,12 @@ import {
 import { useOturum } from '../../../lib/oturum'
 import { avatarlariGetir } from '../../../lib/akis'
 import { Avatar } from '../../tasarim/Avatar'
+import { GeriOkIkonu } from '../../tasarim/mekan-ikonlari'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { useDil, cevir } from '../../../lib/dil'
+import { saatYazisi, ayniGunMu, gunEtiketi } from '../../../lib/zaman'
 
 // Iyimser eklenen (henuz sunucuda karsiligi olmayan) satirlar. Sunucu
 // satirlarindan `yerelMi` ile ayirt ediliyorlar; Realtime yansimasi
@@ -36,7 +38,7 @@ function hataMesaji(e: unknown): string {
 export default function SohbetEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
-  const { t } = useDil()
+  const { t, dil } = useDil()
   const { oturum } = useOturum()
   const benimKimligim = oturum?.user.id ?? null
   const { kullaniciId } = useLocalSearchParams<{ kullaniciId: string }>()
@@ -267,6 +269,17 @@ export default function SohbetEkrani() {
       ]}
     >
       <View style={stiller.ustBar}>
+        {/* GERI (kullanicinin istegi 2026-09-14). Uygulamada Stack yok
+            (Slot), ekranin kendi oku sart. Bildirimden acilinca gecmis
+            olmayabilir; o zaman Mesajlar listesine gidiyor. */}
+        <Pressable
+          onPress={() => (router.canGoBack() ? router.back() : router.push('/mesajlar'))}
+          accessibilityRole="button"
+          accessibilityLabel={t('ortak.geri')}
+          hitSlop={12}
+        >
+          <GeriOkIkonu />
+        </Pressable>
         <Pressable
           testID="sohbet-avatar-dugmesi"
           onPress={() => router.push(`/kullanici/${kullaniciId}`)}
@@ -310,10 +323,19 @@ export default function SohbetEkrani() {
         data={mesajlar}
         keyExtractor={(m) => m.id}
         inverted
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           // gonderen_id null = gonderen hesabini silmis. Kendi mesajim
           // olmadigi kesin, karsi balon olarak cizilir.
           const benimMi = item.gonderenId !== null && item.gonderenId === benimKimligim
+          // GUN AYRACI (kullanicinin istegi 2026-09-14). Liste ters:
+          // index+1 daha ESKI mesaj. Gun, eski mesajinkinden farkliysa
+          // (ya da bu en eski mesajsa) bu balonun USTUNE ayrac konur.
+          // Ters listede satir ici duzen normal, yani "ustune" = satirda
+          // once cizmek.
+          const eskisi = mesajlar[index + 1]
+          const gunAyraci = !eskisi || !ayniGunMu(item.olusturuldu, eskisi.olusturuldu)
+          const saat = saatYazisi(item.olusturuldu)
+          const altYazi = item.id === sonKendiMesajimId ? `${saat} · ${t('sohbet.teslimEdildi')}` : saat
           // Kendi mesajini sikayet etmek sunucuda zaten reddediliyor
           // (Kendi mesajini sikayet edemezsin); arayuz de o yola hic
           // sokmuyor.
@@ -322,6 +344,11 @@ export default function SohbetEkrani() {
           // Balonun altina hizali; kendi balonumda yok.
           return (
             <View>
+              {gunAyraci && (
+                <Text style={stiller.gunAyraci} testID={`gun-ayraci-${item.id}`}>
+                  {gunEtiketi(item.olusturuldu, dil, { bugun: t('sohbet.bugun'), dun: t('sohbet.dun') })}
+                </Text>
+              )}
               <View style={benimMi ? stiller.kendiSatiri : stiller.karsiSatiri}>
                 {!benimMi && (
                   <Avatar
@@ -343,11 +370,15 @@ export default function SohbetEkrani() {
                   <Text testID="mesaj-metni">{item.metin}</Text>
                 </Pressable>
               </View>
-              {item.id === sonKendiMesajimId && (
-                <Text style={stiller.teslim} testID={`teslim-${item.id}`}>
-                  {t('sohbet.teslimEdildi')}
-                </Text>
-              )}
+              {/* Saat her balonun altinda; en son kendi mesajimda yanina
+                  "Teslim edildi" ekleniyor. Iyimser satirda saat yerel,
+                  sunucu satiri gelince onunki. */}
+              <Text
+                style={[stiller.altYazi, benimMi ? stiller.altYaziSag : stiller.altYaziSol]}
+                testID={item.id === sonKendiMesajimId ? `teslim-${item.id}` : `saat-${item.id}`}
+              >
+                {altYazi}
+              </Text>
             </View>
           )
         }}
@@ -385,15 +416,29 @@ const UST_BAR_AVATAR_CAPI = 36
 const BALON_AVATAR_CAPI = 28
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  // Balonun altinda, sag hizali, soluk ve kucuk: bilgi, vurgu degil.
-  teslim: {
-    alignSelf: 'flex-end',
+  // Balonun altinda, soluk ve kucuk: bilgi, vurgu degil. Karsi tarafta
+  // avatar genisligi kadar iceriden baslar ki balonla hizali dursun.
+  altYazi: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
     color: renk.metinSoluk,
     marginTop: -2,
     marginBottom: bosluk.xs,
-    marginRight: bosluk.xs,
+  },
+  altYaziSag: { alignSelf: 'flex-end', marginRight: bosluk.xs },
+  altYaziSol: { alignSelf: 'flex-start', marginLeft: BALON_AVATAR_CAPI + bosluk.s + bosluk.xs },
+  // Gun ayraci ortada, hap gibi: akisi boler ama bagirmaz.
+  gunAyraci: {
+    alignSelf: 'center',
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.minik,
+    color: renk.metinIkincil,
+    backgroundColor: renk.karsilamaZemini,
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.m,
+    paddingVertical: 4,
+    marginVertical: bosluk.m,
+    overflow: 'hidden',
   },
   istekSeridi: {
     backgroundColor: renk.turuncuZemin,

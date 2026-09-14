@@ -212,6 +212,8 @@ export default {
     yerTutucu: 'اكتب رسالة...',
     kapaliKapi: 'لا يمكنك مراسلة هذا الشخص حاليا.',
     teslimEdildi: 'تم التسليم',
+    bugun: 'اليوم',
+    dun: 'أمس',
   },
   etkilesim: {
     profiliGor: 'عرض ملف {{ad}}',

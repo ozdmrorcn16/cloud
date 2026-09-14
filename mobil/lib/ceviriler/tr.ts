@@ -280,6 +280,8 @@ export default {
     yerTutucu: 'Bir mesaj yaz...',
     kapaliKapi: 'Bu kişiye şu an mesaj gönderemezsin.',
     teslimEdildi: 'Teslim edildi',
+    bugun: 'Bugün',
+    dun: 'Dün',
   },
 
   etkilesim: {

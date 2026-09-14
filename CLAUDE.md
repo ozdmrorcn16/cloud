@@ -291,6 +291,14 @@ hata: yazma kutusu klavyenin altinda kaliyordu.
   deseni); iyimser (`yerelMi`) satirda yazilmaz, sunucu satiri gelince
   yazar. "Goruldu" YOK - karsi tarafin son okumasi istemciye acik degil.
   `sohbet.teslimEdildi` 7 dil.
+- Geri oku ust barda (`GeriOkIkonu`); gecmis yoksa (bildirimden
+  acildi) `/mesajlar`a gider. Uygulamada Stack yok, ekran kendi okunu
+  tasimak zorunda.
+- Saat her balonun altinda (`saatYazisi`), son kendi mesajimda
+  "12:01 · Teslim edildi". Gun ayraci (`gunEtiketi`, lib/zaman.ts):
+  "Bugün" / "Dün" / "2 Eylül" / "31 Aralık 2025"; ay adi cihaz diline
+  gore, Bugün/Dün sozlukten (`sohbet.bugun/dun`, 7 dil). Ters listede
+  ayrac, mesajin gunu bir ESKI mesajinkinden farkliysa balonun ustune.
 - Klavye: iOS'ta `keyboardWillShow/Hide` ile alt pay ALT_GEZINME_PAYI
   yerine klavye yuksekligi (gezinme cubugu zaten klavyenin arkasinda).
   Android'e dokunulmadi (pencere `resize` ile kendisi daraliyor).

@@ -87,3 +87,35 @@ export function tamZaman(iso: string): string {
   const iki = (n: number) => String(n).padStart(2, '0')
   return `${iki(t.getDate())}.${iki(t.getMonth() + 1)}.${t.getFullYear()} ${iki(t.getHours())}:${iki(t.getMinutes())}`
 }
+
+/** Iki an ayni takvim gununde mi (cihaz saat dilimine gore)? */
+export function ayniGunMu(isoA: string, isoB: string): boolean {
+  const a = new Date(isoA)
+  const b = new Date(isoB)
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+/**
+ * Sohbetteki gun ayraci: "Bugün" / "Dün" / "12 Eylül" / "12 Eylül 2025".
+ *
+ * Yil yalnizca bu yildan degilse yazilir - "12 Eylül 2026" bugunun
+ * yilinda gereksiz uzun. Ay adi cihaz diline gore (`toLocaleDateString`);
+ * "Bugün"/"Dün" sozlukten geliyor ki yedi dilde tutarli olsun.
+ */
+export function gunEtiketi(
+  iso: string,
+  dil: string,
+  metin: { bugun: string; dun: string },
+  simdi: number = Date.now()
+): string {
+  const bugun = new Date(simdi).toISOString()
+  if (ayniGunMu(iso, bugun)) return metin.bugun
+  if (ayniGunMu(iso, new Date(simdi - GUN).toISOString())) return metin.dun
+  const t = new Date(iso)
+  const ayniYil = t.getFullYear() === new Date(simdi).getFullYear()
+  return t.toLocaleDateString(dil, { day: 'numeric', month: 'long', ...(ayniYil ? {} : { year: 'numeric' }) })
+}

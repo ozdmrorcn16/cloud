@@ -1,4 +1,4 @@
-import { gorecelZaman, suAnBuradaMi, tamZaman, saatYazisi } from './zaman'
+import { gorecelZaman, suAnBuradaMi, tamZaman, saatYazisi, ayniGunMu, gunEtiketi } from './zaman'
 
 const DAKIKA = 60 * 1000
 const SAAT = 60 * DAKIKA
@@ -74,5 +74,31 @@ describe('tamZaman', () => {
 describe('saatYazisi', () => {
   it('yalnizca saat ve dakika yazar', () => {
     expect(saatYazisi('2026-08-29T09:05:00')).toBe('09:05')
+  })
+})
+
+describe('gunEtiketi (sohbet gun ayraci)', () => {
+  const M = { bugun: 'Bugün', dun: 'Dün' }
+  // Sabit "simdi": 2026-09-14 12:00 yerel saat.
+  const simdi = new Date(2026, 8, 14, 12, 0).getTime()
+
+  it('bugunku mesaj "Bugün"', () => {
+    expect(gunEtiketi(new Date(2026, 8, 14, 0, 5).toISOString(), 'tr', M, simdi)).toBe('Bugün')
+  })
+  it('dunku mesaj "Dün" (gece yarisina yakin da olsa)', () => {
+    expect(gunEtiketi(new Date(2026, 8, 13, 23, 59).toISOString(), 'tr', M, simdi)).toBe('Dün')
+  })
+  it('bu yilki eski gun: gun + ay, yil YOK', () => {
+    expect(gunEtiketi(new Date(2026, 8, 2, 9, 0).toISOString(), 'tr', M, simdi)).toBe('2 Eylül')
+  })
+  it('gecen yilki gun: yil da yazilir', () => {
+    expect(gunEtiketi(new Date(2025, 11, 31, 9, 0).toISOString(), 'tr', M, simdi)).toBe('31 Aralık 2025')
+  })
+  it('ay adi dile gore', () => {
+    expect(gunEtiketi(new Date(2026, 8, 2, 9, 0).toISOString(), 'en', { bugun: 'Today', dun: 'Yesterday' }, simdi)).toBe('September 2')
+  })
+  it('ayniGunMu takvim gunune bakar, 24 saate degil', () => {
+    expect(ayniGunMu(new Date(2026, 8, 14, 0, 1).toISOString(), new Date(2026, 8, 14, 23, 58).toISOString())).toBe(true)
+    expect(ayniGunMu(new Date(2026, 8, 14, 23, 58).toISOString(), new Date(2026, 8, 15, 0, 1).toISOString())).toBe(false)
   })
 })

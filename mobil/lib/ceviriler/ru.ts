@@ -212,6 +212,8 @@ export default {
     yerTutucu: 'Напиши сообщение...',
     kapaliKapi: 'Сейчас ты не можешь написать этому человеку.',
     teslimEdildi: 'Доставлено',
+    bugun: 'Сегодня',
+    dun: 'Вчера',
   },
   etkilesim: {
     profiliGor: 'Открыть профиль {{ad}}',

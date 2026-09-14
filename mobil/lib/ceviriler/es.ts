@@ -212,6 +212,8 @@ export default {
     yerTutucu: 'Escribe un mensaje...',
     kapaliKapi: 'Ahora mismo no puedes escribir a esta persona.',
     teslimEdildi: 'Entregado',
+    bugun: 'Hoy',
+    dun: 'Ayer',
   },
   etkilesim: {
     profiliGor: 'Ver el perfil de {{ad}}',
