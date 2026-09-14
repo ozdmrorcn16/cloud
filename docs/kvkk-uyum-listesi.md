@@ -485,6 +485,30 @@ Kullanicinin karari: Mesajlar listesinde satiri sola kaydirinca "Sil";
 Gizlilik metninde degisiklik gerekmedi: metin zaten mesajlarin karsi
 tarafta kaldigini soyluyor. Canli olcum: `test:gorunurluk` senaryo 66.
 
+## Yakin mekanlar listesinde kapak fotografi ve avatar yigini - 2026-09-14
+
+Kullanicinin referans gorseli: her kartta mekan fotografi ve orada
+bulunanlarin avatarlari. Dort soru:
+
+- **Hangi veri:** (a) `mekanlar.kapak_fotograf` - kullanicinin cekip
+  moderatorden gecirdigi mekan gorseli (kisisel veri degil, mekan
+  verisi; yukleyenin kimligi gosterilmiyor). (b) mekanda SU AN canli
+  check-in'i olan kisilerin kimligi ve avatari (kisisel veri, konumla
+  bagli).
+- **Dayanak:** sozlesmenin ifasi (m.5/2-c) - "gorunur ol" adimi; kisi
+  `bulunurluk` ayariyla kimin gorecegini kendisi seciyor.
+- **Sure:** yeni saklama YOK; canli check-in koordinatiyla birlikte 1
+  saat (+cron gecikmesi) gorunur, sonra listeden duser.
+- **Kim gorur:** YENI BIR GORUNURLUK ACILMADI. Liste `check_inler`i
+  dogrudan okuyor, yani mekan sayfasindaki "kim burada" ile AYNI satir
+  guvenligi ("check-in gorunurlugu" politikasi): yalnizca ayni mekanda
+  canli olan ya da takip eden kisi gorur; profili gizli / engelli /
+  askida hesap gorunmez. Kisi sayisi ise eskisi gibi kimliksiz toplam.
+  Bu yuzden avatar sayisi sayidan kucuk olabilir ve bu bir hata degil.
+
+Gizlilik metninde degisiklik gerekmedi: check-in gorunurlugu bolumu bu
+durumu zaten anlatiyor.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

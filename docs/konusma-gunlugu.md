@@ -1235,3 +1235,26 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     geri alindi; ana sayfadaki "Giris" dugmesi kaldirildi (tek hedefi
     slooin.expo.app idi). Kalici kural: `slooin.com` hicbir yerde
     `slooin.expo.app`'e baglanti vermez. Commit `cb98e21`, `7d599e0`.
+
+93. **YAKIN MEKANLAR KARTI REFERANS GORSELE GORE** (2026-09-14).
+    Kullanici "Yakinindaki mekanlar" listesi icin bir referans gorsel
+    verdi ("bunun aynisini yap"). Kart: solda kapak fotografi
+    (yalnizca moderator onayli `kapak_fotograf`; dis kaynaktan gorsel
+    YOK, 2026-08-24 karari duruyor), sagda ad + nokta rozetli durum,
+    "Kafe • 120 m", avatar yigini + "4 kişi burada"; en yakin kart
+    turuncu cerceveli, altinda "Yol tarifi" + "Check-in yap". Avatarlar
+    mekan sayfasiyla ayni RLS kapisindan (yeni gorunurluk acilmadi).
+    "Mesafeye göre" bir etiket, secici DEGIL - siralama sabit kural.
+    Migrasyon 20260914150000. Commit `ac800f7`.
+
+94. **TEK DOSYA DEVIR BELGESI: `slooin-projesi.md`** (2026-09-14).
+    Kullanici projeye baska bir hesaptan girip kaldigi yerden devam
+    edebilmek icin butun icerigi, isleyisi, araclari ve becerileri tek
+    dosyada istedi. Depo kokune `slooin-projesi.md` yazildi (kimlik,
+    servisler - deger yok, klasorler, calistirma/yayin komutlari,
+    mimari, araclar/eklentiler, kullanicinin kalici kurallari, "kaldigi
+    yer", yeni makine kurulumu). Ayni dosya masaustune (CLAUDE.md ve bu
+    gunluk ekli olarak) ve GitHub'da `ozdmrorcn16/slooin-projesi`
+    aynasina kondu; `origin` artik iki uzak depoya birden push ediyor.
+    Kural: her yayindan sonra dosyanin "Kaldigi yer" bolumu guncellenir.
+

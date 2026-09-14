@@ -19,6 +19,12 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 
 ## Claude icin kurallar
 
+- **ONCE `slooin-projesi.md` OKU** (depo koku, 2026-09-14): projenin tek
+  dosyalik devir belgesi - servisler, komutlar, kullanicinin kalici
+  kurallari ve "kaldigi yer". Her yayindan sonra oradaki "Kaldigi yer"
+  bolumu guncellenir. Masaustundeki `slooin projesi.md` ve GitHub
+  `ozdmrorcn16/slooin-projesi` aynasi ayni dosyanin kopyalari;
+  `git push origin` iki depoya birden gider.
 - Oturuma baslarken `docs/konusma-gunlugu.md` dosyasindaki son girdileri oku.
 - Kalici bir karar alindiginda (teknoloji secimi, kapsam, isim, mimari) bu
   dosyayi veya konusma gunlugunu guncelle ve commit'le.
