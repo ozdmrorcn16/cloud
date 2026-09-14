@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, TextInput, Pressable, FlatList, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, FlatList, StyleSheet, Keyboard, Platform } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import {
   mesajIsteklerimiGetir,
@@ -14,6 +14,8 @@ import {
   type Mesaj,
 } from '../../../lib/sohbet'
 import { useOturum } from '../../../lib/oturum'
+import { avatarlariGetir } from '../../../lib/akis'
+import { Avatar } from '../../tasarim/Avatar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
@@ -56,6 +58,32 @@ export default function SohbetEkrani() {
    */
   const [istekMi, setIstekMi] = useState(false)
   const yerelSayac = useRef(0)
+  // Karsi tarafin profil resmi (kullanicinin istegi 2026-09-14). Mesajlar
+  // listesi ve bildirimlerle AYNI yol: fotograf ikincil bilgi, cekilemezse
+  // bas harf cizilir, ekran hata gostermez.
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let iptal = false
+    avatarlariGetir([kullaniciId])
+      .then((a) => { if (!iptal) setAvatarUrl(a[kullaniciId] ?? null) })
+      .catch(() => {})
+    return () => { iptal = true }
+  }, [kullaniciId])
+
+  // KLAVYE (kullanicinin bildirimi 2026-09-14: "yazdigimi gordugum
+  // kutu klavyenin altinda kaliyor"). Ekranin alt payi normalde yuzer
+  // gezinme cubugu icin (ALT_GEZINME_PAYI); klavye acikken o cubuk
+  // zaten klavyenin arkasinda, pay klavye yuksekligi olmali. iOS'ta
+  // pencere kuculmuyor, bu yuzden elle olculuyor; Android'de pencere
+  // klavyeyle birlikte daraliyor (softwareKeyboardLayoutMode=resize),
+  // orada ek pay klavyeyi iki kez sayardi.
+  const [klavyeYuksekligi, setKlavyeYuksekligi] = useState(0)
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return
+    const ac = Keyboard.addListener('keyboardWillShow', (e) => setKlavyeYuksekligi(e.endCoordinates.height))
+    const kapa = Keyboard.addListener('keyboardWillHide', () => setKlavyeYuksekligi(0))
+    return () => { ac.remove(); kapa.remove() }
+  }, [])
 
   useEffect(() => {
     let iptalEdildi = false
@@ -222,10 +250,38 @@ export default function SohbetEkrani() {
   // bir yol var (asagida, uzun basis): sikayetin hedefi gercek mesaj
   // id'si olmali, yoksa moderator "hangi mesaj" sorusunu cevaplayamaz.
   // Eskiden bu dugme 'mesaj' turuyle KONUSMA id'si gonderiyordu.
+  // "Teslim edildi" YALNIZCA en son kendi mesajimin altinda (Instagram /
+  // iMessage deseni): her balonun altina yazmak listeyi tekrarla
+  // doldururdu; en sondaki, oncekilerin de ulastigini zaten soyluyor.
+  // Iyimser (henuz sunucuya ulasmamis, yerelMi) satirda yazilmaz -
+  // sozcuk ancak sunucu satiri geldiginde dogru olur. Liste ters
+  // (inverted) oldugu icin "en son" = dizideki ILK kendi mesajim.
+  const sonKendiMesajimId =
+    mesajlar.find((m) => m.gonderenId !== null && m.gonderenId === benimKimligim && !m.yerelMi)?.id ?? null
+
   return (
-    <View style={stiller.kapsayici}>
+    <View
+      style={[
+        stiller.kapsayici,
+        klavyeYuksekligi > 0 && { paddingBottom: klavyeYuksekligi + bosluk.s },
+      ]}
+    >
       <View style={stiller.ustBar}>
-        <Text style={stiller.baslik}>{konusmaSatiri?.ad ?? t('sohbet.baslik')}</Text>
+        <Pressable
+          testID="sohbet-avatar-dugmesi"
+          onPress={() => router.push(`/kullanici/${kullaniciId}`)}
+          accessibilityRole="button"
+          accessibilityLabel={konusmaSatiri?.ad ?? t('sohbet.baslik')}
+        >
+          <Avatar
+            fotografUrl={avatarUrl}
+            ad={konusmaSatiri?.ad}
+            kullaniciAdi={konusmaSatiri?.kullaniciAdi ?? ''}
+            cap={UST_BAR_AVATAR_CAPI}
+            testID="sohbet-avatar"
+          />
+        </Pressable>
+        <Text style={stiller.baslik} numberOfLines={1}>{konusmaSatiri?.ad ?? t('sohbet.baslik')}</Text>
         <Pressable onPress={() => router.push(`/sikayet?hedefTur=kullanici&hedefId=${kullaniciId}`)}>
           <Text style={stiller.sikayetButonu}>{t('sikayet.baslik')}</Text>
         </Pressable>
@@ -262,16 +318,23 @@ export default function SohbetEkrani() {
           // (Kendi mesajini sikayet edemezsin); arayuz de o yola hic
           // sokmuyor.
           return (
-            <Pressable
-              onLongPress={
-                benimMi
-                  ? undefined
-                  : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
-              }
-              style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
-            >
-              <Text testID="mesaj-metni">{item.metin}</Text>
-            </Pressable>
+            <View>
+              <Pressable
+                onLongPress={
+                  benimMi
+                    ? undefined
+                    : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
+                }
+                style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
+              >
+                <Text testID="mesaj-metni">{item.metin}</Text>
+              </Pressable>
+              {item.id === sonKendiMesajimId && (
+                <Text style={stiller.teslim} testID={`teslim-${item.id}`}>
+                  {t('sohbet.teslimEdildi')}
+                </Text>
+              )}
+            </View>
           )
         }}
         ListEmptyComponent={<Text style={stiller.durum}>{t('sohbet.mesajYok')}</Text>}
@@ -301,7 +364,21 @@ export default function SohbetEkrani() {
   )
 }
 
+// Ust bar avatari liste satirlarindan (48) kucuk: baslik satirinin
+// yuksekligini buyutmeden adin yaninda durmali.
+const UST_BAR_AVATAR_CAPI = 36
+
 const stilleriYap = (renk: Renk) => StyleSheet.create({
+  // Balonun altinda, sag hizali, soluk ve kucuk: bilgi, vurgu degil.
+  teslim: {
+    alignSelf: 'flex-end',
+    fontFamily: yazi.govde,
+    fontSize: olcek.minik,
+    color: renk.metinSoluk,
+    marginTop: -2,
+    marginBottom: bosluk.xs,
+    marginRight: bosluk.xs,
+  },
   istekSeridi: {
     backgroundColor: renk.turuncuZemin,
     paddingHorizontal: bosluk.l,
@@ -341,7 +418,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginBottom: bosluk.m,
   },
   baslik: {
-    flexShrink: 1,
+    flex: 1,
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,

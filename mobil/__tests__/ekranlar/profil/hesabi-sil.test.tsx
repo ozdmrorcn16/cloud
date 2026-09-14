@@ -116,7 +116,7 @@ it('kod gonder: kullanicinin KENDI e-postasina, hesap acmadan (shouldCreateUser 
       options: { shouldCreateUser: false },
     })
   )
-  expect(await screen.findByText('Kod gönderildi; bir saat geçerli.')).toBeTruthy()
+  expect(await screen.findByText('Kod gönderildi; 10 dakika geçerli.')).toBeTruthy()
   expect(screen.getByText('Hesabımı kalıcı olarak sil')).toBeTruthy()
 })
 

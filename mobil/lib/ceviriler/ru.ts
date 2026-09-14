@@ -211,6 +211,7 @@ export default {
     mesajYok: 'Сообщений пока нет',
     yerTutucu: 'Напиши сообщение...',
     kapaliKapi: 'Сейчас ты не можешь написать этому человеку.',
+    teslimEdildi: 'Доставлено',
   },
   etkilesim: {
     profiliGor: 'Открыть профиль {{ad}}',

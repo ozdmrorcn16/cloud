@@ -211,6 +211,7 @@ export default {
     mesajYok: 'لا رسائل بعد',
     yerTutucu: 'اكتب رسالة...',
     kapaliKapi: 'لا يمكنك مراسلة هذا الشخص حاليا.',
+    teslimEdildi: 'تم التسليم',
   },
   etkilesim: {
     profiliGor: 'عرض ملف {{ad}}',

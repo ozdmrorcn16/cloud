@@ -211,6 +211,7 @@ export default {
     mesajYok: 'Noch keine Nachrichten',
     yerTutucu: 'Nachricht schreiben...',
     kapaliKapi: 'Du kannst dieser Person gerade nicht schreiben.',
+    teslimEdildi: 'Zugestellt',
   },
   etkilesim: {
     profiliGor: 'Profil von {{ad}} ansehen',

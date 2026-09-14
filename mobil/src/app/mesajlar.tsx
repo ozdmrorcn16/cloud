@@ -7,7 +7,9 @@ import {
   mesajIsteklerimiGetir,
   type Konusma,
 } from '../../lib/sohbet'
+import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
+import { Avatar } from '../tasarim/Avatar'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
@@ -18,6 +20,7 @@ export default function MesajlarEkrani() {
   const { t } = useDil()
   const [konusmalar, setKonusmalar] = useState<Konusma[]>([])
   const [istekSayisi, setIstekSayisi] = useState(0)
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   const [hata, setHata] = useState<string | null>(null)
 
   // Iki istek PARALEL gidiyor: rozet, konusma listesinin donmesini
@@ -34,12 +37,29 @@ export default function MesajlarEkrani() {
     if (gelenKonusmalar.status === 'fulfilled') {
       setKonusmalar(gelenKonusmalar.value)
       setHata(null)
+      avatarlariYukle(gelenKonusmalar.value)
     } else {
       const e = gelenKonusmalar.reason
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
 
     setIstekSayisi(gelenIstekler.status === 'fulfilled' ? gelenIstekler.value.length : 0)
+  }
+
+  // PROFIL RESMI (kullanicinin istegi 2026-09-14). Bildirimler
+  // ekraniyla AYNI yol: avatarlar listeden SONRA ve ayri geliyor; kova
+  // okunamazsa liste yine gorunur, yalnizca bas harf cizilir. Silinmis
+  // hesabin (kisiId null) fotografi sorulmaz.
+  async function avatarlariYukle(liste: Konusma[]) {
+    const kimlikler = Array.from(
+      new Set(liste.map((k) => k.kisiId).filter((id): id is string => id !== null))
+    )
+    if (kimlikler.length === 0) return
+    try {
+      setAvatarlar(await avatarlariGetir(kimlikler))
+    } catch {
+      // sessiz: fotograf ikincil bilgi
+    }
   }
 
   // useEffect yalnizca ilk acilista bir kez cekiyordu: kullanici bir
@@ -109,6 +129,20 @@ export default function MesajlarEkrani() {
             return (
               <View style={stiller.satir}>
                 <Pressable
+                  onPress={() => acilabilirMi && router.push(`/sohbet/${item.kisiId}`)}
+                  disabled={!acilabilirMi}
+                  accessibilityRole="button"
+                  accessibilityLabel={gorunenAd}
+                >
+                  <Avatar
+                    fotografUrl={item.kisiId ? avatarlar[item.kisiId] ?? null : null}
+                    ad={item.ad}
+                    kullaniciAdi={item.kullaniciAdi ?? ''}
+                    cap={AVATAR_CAPI}
+                    testID={`konusma-avatar-${item.kisiId ?? 'silinmis'}`}
+                  />
+                </Pressable>
+                <Pressable
                   style={stiller.icerik}
                   onPress={() => acilabilirMi && router.push(`/sohbet/${item.kisiId}`)}
                   disabled={!acilabilirMi}
@@ -157,6 +191,9 @@ export default function MesajlarEkrani() {
     </View>
   )
 }
+
+// Bildirim satirlariyla ayni cap: ayni sey her ekranda ayni gorunsun.
+const AVATAR_CAPI = 48
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
@@ -214,11 +251,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   satir: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: bosluk.m,
     paddingVertical: bosluk.m,
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
   },
-  icerik: { flex: 1, marginRight: bosluk.m },
+  icerik: { flex: 1 },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
   ad: {
     flexShrink: 1,

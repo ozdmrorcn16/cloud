@@ -279,6 +279,7 @@ export default {
     mesajYok: 'Henüz mesaj yok',
     yerTutucu: 'Bir mesaj yaz...',
     kapaliKapi: 'Bu kişiye şu an mesaj gönderemezsin.',
+    teslimEdildi: 'Teslim edildi',
   },
 
   etkilesim: {

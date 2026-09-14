@@ -217,6 +217,7 @@ export default {
     mesajYok: 'No messages yet',
     yerTutucu: 'Write a message...',
     kapaliKapi: "You can't message this person right now.",
+    teslimEdildi: 'Delivered',
   },
   etkilesim: {
     profiliGor: "View {{ad}}'s profile",

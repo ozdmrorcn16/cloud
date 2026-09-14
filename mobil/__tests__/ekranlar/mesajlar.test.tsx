@@ -2,7 +2,9 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-
 import MesajlarEkrani from '../../src/app/mesajlar'
 import { konusmalarimiGetir, konusmayiGizle, mesajIsteklerimiGetir } from '../../lib/sohbet'
 import type { Konusma, MesajIstegi } from '../../lib/sohbet'
+import { avatarlariGetir } from '../../lib/akis'
 
+jest.mock('../../lib/akis', () => ({ avatarlariGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
   konusmayiGizle: jest.fn(),
@@ -60,6 +62,7 @@ beforeEach(() => {
   // ayrica veriyor. Bu olmadan cagri undefined donuyor ve ekran hata
   // durumuna dusuyor.
   ;(mesajIsteklerimiGetir as jest.Mock).mockResolvedValue([])
+  ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
 })
 
 describe('MesajlarEkrani', () => {
@@ -268,5 +271,45 @@ describe('MesajlarEkrani - istekler girisi', () => {
 
     expect(await screen.findByText('Orcun Ozdemir')).toBeTruthy()
     expect(screen.queryByTestId('istek-sayisi')).toBeNull()
+  })
+
+  // PROFIL RESMI (kullanicinin istegi 2026-09-14: "basinda profil resmi
+  // gorunsun"). Bildirimler ekraniyla AYNI Avatar bileseni ve AYNI
+  // avatarlariGetir yolu.
+  it('her satirin basinda karsi kisinin avatari var; fotografi yoksa bas harf', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
+      konusma(),
+      konusma({ konusmaId: 'k2', kisiId: 'u2', kullaniciAdi: 'semra', ad: 'Semra Ozdemir' }),
+    ])
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ u1: 'https://x/u1.jpg', u2: null })
+
+    await render(<MesajlarEkrani />)
+
+    expect(await screen.findByText('Semra Ozdemir')).toBeTruthy()
+    await waitFor(() => expect(avatarlariGetir).toHaveBeenCalledWith(['u1', 'u2']))
+    // u1 fotografli: Image cizilir; u2 fotografsiz: bas harf "S"
+    await waitFor(() => expect(screen.getByTestId('konusma-avatar-u1').props.source).toEqual([{ uri: 'https://x/u1.jpg' }]))
+    expect(screen.getByText('S')).toBeTruthy()
+  })
+
+  it('avatarlar cekilemezse konusmalar yine listelenir (bas harfle)', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
+    ;(avatarlariGetir as jest.Mock).mockRejectedValue(new Error('kova okunamadi'))
+
+    await render(<MesajlarEkrani />)
+
+    expect(await screen.findByText('Orcun Ozdemir')).toBeTruthy()
+    expect(screen.getByText('O')).toBeTruthy()
+    expect(screen.queryByText('kova okunamadi')).toBeNull()
+  })
+
+  it('silinmis karsi taraf icin avatar cekilmez, soru isareti cizilir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma({ kisiId: null, ad: null, kullaniciAdi: null })])
+
+    await render(<MesajlarEkrani />)
+
+    expect(await screen.findByText('Silinmiş kullanıcı')).toBeTruthy()
+    expect(avatarlariGetir).not.toHaveBeenCalled()
+    expect(screen.getByText('?')).toBeTruthy()
   })
 })

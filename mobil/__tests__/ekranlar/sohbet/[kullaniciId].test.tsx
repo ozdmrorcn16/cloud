@@ -11,6 +11,9 @@ import {
   mesajIsteginiReddet,
 } from '../../../lib/sohbet'
 import type { Konusma, Mesaj } from '../../../lib/sohbet'
+import { avatarlariGetir } from '../../../lib/akis'
+
+jest.mock('../../../lib/akis', () => ({ avatarlariGetir: jest.fn() }))
 
 jest.mock('../../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
@@ -69,6 +72,7 @@ beforeEach(() => {
   ;(mesajlariGetir as jest.Mock).mockResolvedValue([])
   ;(konusmayiOkunduIsaretle as jest.Mock).mockResolvedValue(undefined)
   ;(mesajlaraAbonelOl as jest.Mock).mockReturnValue(bosAbonelikIptali)
+  ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
 })
 
 describe('SohbetEkrani', () => {
@@ -421,5 +425,91 @@ describe('SohbetEkrani - mesaj istegi', () => {
     await fireEvent.press(screen.getByText('Reddet'))
 
     await waitFor(() => expect(mesajIsteginiReddet).toHaveBeenCalledWith('kullanici-2'))
+  })
+})
+
+// 2026-09-14, kullanicinin uc istegi: ust barda karsi tarafin profil
+// resmi, kendi mesajimin altinda "Teslim edildi", yazma kutusunun
+// klavyenin altinda kalmamasi.
+describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
+  it('ust barda karsi tarafin avatari adin yaninda; fotografi varsa resim', async () => {
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ 'kullanici-2': 'https://x/ada.jpg' })
+
+    await render(<SohbetEkrani />)
+
+    expect(await screen.findByText('Ada')).toBeTruthy()
+    await waitFor(() => expect(avatarlariGetir).toHaveBeenCalledWith(['kullanici-2']))
+    await waitFor(() =>
+      expect(screen.getByTestId('sohbet-avatar').props.source).toEqual([{ uri: 'https://x/ada.jpg' }])
+    )
+  })
+
+  it('fotografi yoksa bas harf; avatar cekilemezse ekran yine acilir', async () => {
+    ;(avatarlariGetir as jest.Mock).mockRejectedValue(new Error('kova'))
+
+    await render(<SohbetEkrani />)
+
+    expect(await screen.findByText('Ada')).toBeTruthy()
+    expect(screen.getByText('A')).toBeTruthy()
+    expect(screen.queryByText('kova')).toBeNull()
+  })
+
+  it('ust bardaki avatara basinca karsi tarafin profili acilir', async () => {
+    await render(<SohbetEkrani />)
+    await screen.findByText('Ada')
+
+    await fireEvent.press(screen.getByTestId('sohbet-avatar-dugmesi'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+  })
+
+  it('"Teslim edildi" yalnizca EN SON kendi mesajimin altinda, karsi tarafinkinde hic', async () => {
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm3', gonderenId: 'kullanici-2', metin: 'Karsi son' }),
+      mesaj({ id: 'm2', gonderenId: 'kullanici-1', metin: 'Benim son' }),
+      mesaj({ id: 'm1', gonderenId: 'kullanici-1', metin: 'Benim eski' }),
+    ])
+
+    await render(<SohbetEkrani />)
+    await screen.findByText('Benim son')
+
+    const teslimler = screen.getAllByText('Teslim edildi')
+    expect(teslimler).toHaveLength(1)
+    expect(screen.getByTestId('teslim-m2')).toBeTruthy()
+    expect(screen.queryByTestId('teslim-m1')).toBeNull()
+    expect(screen.queryByTestId('teslim-m3')).toBeNull()
+  })
+
+  it('sunucuya henuz ulasmamis (iyimser) mesajda "Teslim edildi" yazmaz, yansima gelince yazar', async () => {
+    let geldiCallback: ((m: Mesaj) => void) | null = null
+    ;(mesajlaraAbonelOl as jest.Mock).mockImplementation((_konusmaId, geldi) => {
+      geldiCallback = geldi
+      return bosAbonelikIptali
+    })
+    // Konusma zaten var: gonder() gecmisi yeniden CEKMEZ, iyimser satir
+    // yansima gelene kadar yerelMi olarak kalir.
+    ;(mesajGonder as jest.Mock).mockResolvedValue('konusma-1')
+
+    await render(<SohbetEkrani />)
+    const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
+    await fireEvent.changeText(girdi, 'Merhaba')
+    await fireEvent.press(screen.getByText('Gönder'))
+
+    await screen.findByText('Merhaba')
+    expect(screen.queryByText('Teslim edildi')).toBeNull()
+
+    await act(async () => {
+      geldiCallback!(mesaj({ id: 's1', gonderenId: 'kullanici-1', metin: 'Merhaba' }))
+    })
+    expect(screen.getByText('Teslim edildi')).toBeTruthy()
+  })
+
+  it('hic kendi mesajim yoksa "Teslim edildi" hic gorunmez', async () => {
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([mesaj({ id: 'm1', gonderenId: 'kullanici-2' })])
+
+    await render(<SohbetEkrani />)
+    await screen.findByText('Bir')
+
+    expect(screen.queryByText('Teslim edildi')).toBeNull()
   })
 })
