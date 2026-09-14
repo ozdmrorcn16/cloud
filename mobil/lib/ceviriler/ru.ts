@@ -600,6 +600,8 @@ export default {
     yogun: 'Людно',
     populer: 'Популярно',
     yakinindakiMekanlar: 'Места рядом с тобой',
+    mesafeyeGore: 'По расстоянию',
+    yolTarifi: 'Маршрут',
     sonuclar: 'Результаты',
     kisiBurada: 'здесь {{sayi}} чел.',
     checkIn: 'Чек-ин',

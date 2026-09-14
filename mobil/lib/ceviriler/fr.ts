@@ -600,6 +600,8 @@ export default {
     yogun: 'Animé',
     populer: 'Populaire',
     yakinindakiMekanlar: 'Lieux près de toi',
+    mesafeyeGore: 'Par distance',
+    yolTarifi: 'Itinéraire',
     sonuclar: 'Résultats',
     kisiBurada: '{{sayi}} personnes ici',
     checkIn: 'Check-in',

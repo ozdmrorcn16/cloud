@@ -1,4 +1,4 @@
-import { duzenlemeTalebiGonder } from './mekan-duzenleme'
+import { duzenlemeTalebiGonder, mekanFotografiUrlleri } from './mekan-duzenleme'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -53,5 +53,41 @@ describe('duzenlemeTalebiGonder', () => {
     await expect(duzenlemeTalebiGonder('mekan-1', { kapali: true })).rejects.toThrow(
       'Bu mekân zaten kapalı olarak işaretli.'
     )
+  })
+})
+
+/**
+ * Yakin mekanlar listesi icin toplu imzali adres (2026-09-14): tek
+ * istek, imzalanamayan yol sonucta yer almaz.
+ */
+describe('mekanFotografiUrlleri', () => {
+  it('bos listede kovaya gitmez', async () => {
+    ;(supabase.storage.from as jest.Mock).mockClear()
+    expect(await mekanFotografiUrlleri([])).toEqual({})
+    expect(supabase.storage.from).not.toHaveBeenCalled()
+  })
+
+  it('yollari tek istekte imzalar, hatali olani atlar', async () => {
+    const createSignedUrls = jest.fn().mockResolvedValue({
+      data: [
+        { path: 'a/1.jpg', signedUrl: 'https://imzali/a1', error: null },
+        { path: 'b/2.jpg', signedUrl: null, error: 'Object not found' },
+      ],
+      error: null,
+    })
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrls })
+
+    const sonuc = await mekanFotografiUrlleri(['a/1.jpg', 'b/2.jpg'])
+
+    expect(supabase.storage.from).toHaveBeenCalledWith('mekan-fotograflari')
+    expect(createSignedUrls).toHaveBeenCalledWith(['a/1.jpg', 'b/2.jpg'], 3600)
+    expect(sonuc).toEqual({ 'a/1.jpg': 'https://imzali/a1' })
+  })
+
+  it('kova hata donerse bos sonuc, hata firlatmaz', async () => {
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({
+      createSignedUrls: jest.fn().mockResolvedValue({ data: null, error: { message: 'x' } }),
+    })
+    expect(await mekanFotografiUrlleri(['a/1.jpg'])).toEqual({})
   })
 })

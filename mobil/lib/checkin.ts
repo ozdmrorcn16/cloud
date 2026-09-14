@@ -100,6 +100,51 @@ export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGoru
   return (data as unknown as CheckInSatiriProfilli[]).map(satiriGorunumeCevir)
 }
 
+/** Bir mekanda su an bulunan (gorunur) kisi. */
+export type BulunanKisi = { kullaniciId: string; kullaniciAdi: string | null }
+
+/**
+ * Listedeki mekanlarda SU AN kim var - kart basina en fazla `enFazla`
+ * kisi (referans gorseldeki avatar yigini, 2026-09-14).
+ *
+ * `suAnBurdakileriGetir` ile AYNI KAPI: tablo dogrudan okunuyor, yani
+ * "check-in gorunurlugu" politikasi aynen isliyor. Mekan sayfasinda
+ * gorunmeyen kimse listede de gorunmuyor; canli check-in'i yalnizca
+ * arkadaslarina ya da ayni mekandakilere acik olan kisi baskasinin
+ * listesine dusmuyor. `kisiSayisi` (toplam) ise kimliksiz - o sayi
+ * avatarlardan buyuk olabilir ve bu normal.
+ *
+ * TEK ISTEK, sayfa basina: 50 mekan icin 50 ayri sorgu atmak hem agi
+ * hem listeyi yavaslatirdi.
+ */
+export async function mekanlardaBulunanlariGetir(
+  mekanIdleri: string[],
+  enFazla = 3
+): Promise<Record<string, BulunanKisi[]>> {
+  const sonuc: Record<string, BulunanKisi[]> = {}
+  if (mekanIdleri.length === 0) return sonuc
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select('mekan_id, kullanici_id, kullanici_adi, olusturma_zamani')
+    .not('konum', 'is', null)
+    .in('mekan_id', mekanIdleri)
+    .order('olusturma_zamani', { ascending: false })
+  if (error) throw new Error(hataMetni(error))
+  for (const satir of (data ?? []) as {
+    mekan_id: string
+    kullanici_id: string
+    kullanici_adi: string | null
+  }[]) {
+    const liste = (sonuc[satir.mekan_id] ??= [])
+    // Ayni kisi ayni mekanda iki canli satir tasiyabilir (nadir);
+    // avatar yigininda bir yuz iki kez gorunmesin.
+    if (liste.some((k) => k.kullaniciId === satir.kullanici_id)) continue
+    if (liste.length >= enFazla) continue
+    liste.push({ kullaniciId: satir.kullanici_id, kullaniciAdi: satir.kullanici_adi })
+  }
+  return sonuc
+}
+
 export type AniGorunumu = CheckIn & {
   mekanAdi: string
   /** Mekanin semti; bilinmiyorsa null. */

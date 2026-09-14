@@ -1,5 +1,5 @@
 import { YORUM_EN_FAZLA } from './etkilesim'
-import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil, NOT_EN_FAZLA } from './checkin'
+import { checkInYap, checkIndenAyril, suAnBurdakileriGetir, mekanlardaBulunanlariGetir, kullanicininAnilariniGetir, aktifCheckInimiGetir, checkIniSil, NOT_EN_FAZLA } from './checkin'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -242,5 +242,47 @@ describe('NOT_EN_FAZLA', () => {
 
   it('500 karakter', () => {
     expect(NOT_EN_FAZLA).toBe(500)
+  })
+})
+
+/**
+ * Yakin mekanlar listesindeki avatar yigini (referans gorsel,
+ * 2026-09-14). `suAnBurdakileriGetir` ile ayni kapi: tablo dogrudan,
+ * satir guvenligi devrede.
+ */
+describe('mekanlardaBulunanlariGetir', () => {
+  function tabloyuKur(satirlar: unknown[]) {
+    const mockOrder = jest.fn().mockResolvedValue({ data: satirlar, error: null })
+    const mockIn = jest.fn().mockReturnValue({ order: mockOrder })
+    const mockNot = jest.fn().mockReturnValue({ in: mockIn })
+    const mockSelect = jest.fn().mockReturnValue({ not: mockNot })
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select: mockSelect })
+    return { mockNot, mockIn }
+  }
+
+  it('bos listede sunucuya HIC gitmez', async () => {
+    ;(supabase.from as jest.Mock) = jest.fn()
+    expect(await mekanlardaBulunanlariGetir([])).toEqual({})
+    expect(supabase.from).not.toHaveBeenCalled()
+  })
+
+  it('canli satirlari mekana gore gruplar, kisi basina tek, en fazla 3', async () => {
+    const { mockNot, mockIn } = tabloyuKur([
+      { mekan_id: 'm1', kullanici_id: 'k1', kullanici_adi: 'Ayşe', olusturma_zamani: '2026-09-14T10:04:00Z' },
+      { mekan_id: 'm1', kullanici_id: 'k1', kullanici_adi: 'Ayşe', olusturma_zamani: '2026-09-14T10:03:00Z' },
+      { mekan_id: 'm1', kullanici_id: 'k2', kullanici_adi: 'Can', olusturma_zamani: '2026-09-14T10:02:00Z' },
+      { mekan_id: 'm1', kullanici_id: 'k3', kullanici_adi: null, olusturma_zamani: '2026-09-14T10:01:00Z' },
+      { mekan_id: 'm1', kullanici_id: 'k4', kullanici_adi: 'Dört', olusturma_zamani: '2026-09-14T10:00:00Z' },
+      { mekan_id: 'm2', kullanici_id: 'k9', kullanici_adi: 'Ece', olusturma_zamani: '2026-09-14T09:00:00Z' },
+    ])
+
+    const sonuc = await mekanlardaBulunanlariGetir(['m1', 'm2'])
+
+    expect(supabase.from).toHaveBeenCalledWith('check_inler')
+    expect(mockNot).toHaveBeenCalledWith('konum', 'is', null)
+    expect(mockIn).toHaveBeenCalledWith('mekan_id', ['m1', 'm2'])
+    expect(sonuc.m1.map((k) => k.kullaniciId)).toEqual(['k1', 'k2', 'k3'])
+    expect(sonuc.m1[0].kullaniciAdi).toBe('Ayşe')
+    expect(sonuc.m2).toEqual([{ kullaniciId: 'k9', kullaniciAdi: 'Ece' }])
   })
 })

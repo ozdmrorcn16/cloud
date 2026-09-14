@@ -33,6 +33,16 @@ jest.mock('../../../lib/checkin', () => ({
   aktifCheckInimiGetir: jest.fn().mockResolvedValue(null),
   checkIndenAyril: jest.fn(),
   checkIniSil: jest.fn(),
+  // Kart ekleri (2026-09-14): mekanda bulunanlar; testler gerektiginde
+  // kendi degerini veriyor.
+  mekanlardaBulunanlariGetir: jest.fn().mockResolvedValue({}),
+}))
+// Kapak fotografi imzali adresleri ve avatarlar da kart ekleri.
+jest.mock('../../../lib/mekan-duzenleme', () => ({
+  mekanFotografiUrlleri: jest.fn().mockResolvedValue({}),
+}))
+jest.mock('../../../lib/akis', () => ({
+  avatarlariGetir: jest.fn().mockResolvedValue({}),
 }))
 
 // Tur suzgeci deposu anahtari HESABA bagli (2026-09-13); testte sabit
@@ -148,8 +158,8 @@ describe('MekanAramaEkrani', () => {
     // 2026-09-06'da referans gorsele gecilince DURUM alt satirdan
     // cikip ayri bir ROZETE tasindi; alt satirda yalnizca yer ve
     // mesafe kaldi.
-    expect(screen.getAllByText('Nilüfer, Bursa · 240 m').length).toBe(2)
-    expect(screen.queryByText('Ertuğrul · 240 m')).toBeNull()
+    expect(screen.getAllByText('Nilüfer, Bursa • 240 m').length).toBe(2)
+    expect(screen.queryByText('Ertuğrul • 240 m')).toBeNull()
     // Durum rozeti: iki mekan da sakin.
     expect(screen.getAllByText('Sakin').length).toBeGreaterThanOrEqual(2)
   })
@@ -483,8 +493,9 @@ describe('MekanAramaEkrani', () => {
     // Kart, listede olmayan check-in mekanini gosteriyor.
     expect(await screen.findByText('Kent Meydanı')).toBeTruthy()
     expect(screen.getByText('Şu an buradasın')).toBeTruthy()
-    // Hicbir yerde "Check-in yap" yok.
-    expect(screen.queryByText('Check-in yap')).toBeNull()
+    // KARTTA "Check-in yap" yok (listedeki satirlar kendi dugmelerini
+    // tasiyor - referans gorsel 2026-09-14, etiket "Check-in yap").
+    expect(within(screen.getByTestId('burada-karti')).queryByText('Check-in yap')).toBeNull()
   })
 
   it('ekranda yaricap secici YOK', async () => {
@@ -555,6 +566,10 @@ describe('MekanAramaEkrani', () => {
   // Kullanicinin karari 2026-08-31: "En yakin yeri otomatik secen
   // sutunu kaldir tamamen", yerine haritanin altina iki sekme.
   it('en yakin mekani otomatik seçen kartı GOSTERMIYOR', async () => {
+    // TUZAK: `clearAllMocks` govdeyi silmiyor; bir onceki test aktif
+    // check-in'i "Kent Meydanı" yapmisti ve burada sizmisti.
+    const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
     ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue([
       {
@@ -566,7 +581,8 @@ describe('MekanAramaEkrani', () => {
     await render(<MekanAramaEkrani />)
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
-    expect(screen.queryByText('Check-in yap')).toBeNull()
+    // Aktif check-in yokken kart HIC cizilmiyor.
+    expect(screen.queryByTestId('burada-karti')).toBeNull()
   })
 
   // Kullanicinin istegi (2026-09-01): "Checkin sayfasi acildiginda ilk
@@ -585,7 +601,7 @@ describe('MekanAramaEkrani', () => {
 
     // Arama kutusu ILK ACILISTA gorunur olmali.
     expect(screen.getByPlaceholderText('Mekan ara')).toBeTruthy()
-    expect(screen.getByText('Yakınındaki Mekanlar')).toBeTruthy()
+    expect(screen.getByText('Yakınındaki mekânlar')).toBeTruthy()
 
     // Kesfet'e gecilince arama kutusu kapaniyor.
     // Suzgec ACILINCA da arama kutusu duruyor: 2026-09-06'da sekmeler
@@ -613,7 +629,7 @@ describe('MekanAramaEkrani', () => {
     await waitFor(() => screen.getByText('Sahil Kafe'))
 
 
-    await waitFor(() => expect(screen.getByText('Yakınındaki Mekanlar')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Yakınındaki mekânlar')).toBeTruthy())
     expect(screen.queryByText('Sonuçlar')).toBeNull()
   })
 
@@ -953,7 +969,7 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    expect(await screen.findByText('Nilüfer, Bursa · 240 m')).toBeTruthy()
+    expect(await screen.findByText('Nilüfer, Bursa • 240 m')).toBeTruthy()
   })
 
   /**
@@ -1016,10 +1032,8 @@ describe('MekanAramaEkrani', () => {
 
     // "Check-in" ekranda birden fazla yerde geciyor (ust baslik, alt
     // gezinme); etiket BUTONUN ICINDEN aliniyor.
-    const etiket = screen.getAllByText('Check-in').find(
-      (e) => StyleSheet.flatten(e.props.style)?.color === '#FFFFFF'
-    )
-    expect(etiket).toBeTruthy()
+    const etiket = within(buton).getByText('Check-in yap')
+    expect(StyleSheet.flatten(etiket.props.style)?.color).toBe('#FFFFFF')
   })
   // ------------------------------------------------------------------ //
   // SAYFALAMA (kullanicinin istegi 2026-09-09)
@@ -1307,7 +1321,7 @@ describe('MekanAramaEkrani', () => {
   /*
    * BOLUM BASLIGI KARTLARLA AYNI HIZADA.
    *
-   * Kullanicinin bildirdigi kusur (2026-09-10): "Yakınındaki Mekanlar
+   * Kullanicinin bildirdigi kusur (2026-09-10): "Yakınındaki mekânlar
    * yazisini sol basa hizala." Baslik KENDI yan payini koyuyordu ve o
    * pay sayfanin payiyla TOPLANIYORDU - baslik 32 px iceride, arama
    * kutusu ve kartlar 16 px'te.
@@ -1321,7 +1335,7 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    const baslik = await screen.findByText('Yakınındaki Mekanlar')
+    const baslik = await screen.findByText('Yakınındaki mekânlar')
     const stil = StyleSheet.flatten(baslik.props.style) as {
       paddingHorizontal?: number
       paddingLeft?: number
@@ -1335,5 +1349,137 @@ describe('MekanAramaEkrani', () => {
     expect(stil.paddingLeft).toBeUndefined()
     expect(stil.marginHorizontal).toBeUndefined()
     expect(stil.marginLeft).toBeUndefined()
+  })
+})
+
+// ------------------------------------------------------------------ //
+// MEKAN KARTI - kullanicinin referans gorseli (2026-09-14): solda kapak
+// fotografi, sagda ad + durum rozeti, "Kafe • 120 m", avatar yigini +
+// "4 kişi burada"; en yakin kart turuncu cerceveli ve altinda "Yol
+// tarifi" + "Check-in yap".
+// ------------------------------------------------------------------ //
+describe('MekanAramaEkrani - referans kart', () => {
+  const { Linking, ActionSheetIOS } = require('react-native')
+  const { mekanlardaBulunanlariGetir, aktifCheckInimiGetir } = require('../../../lib/checkin')
+  const { mekanFotografiUrlleri } = require('../../../lib/mekan-duzenleme')
+  const { avatarlariGetir } = require('../../../lib/akis')
+
+  const IKI_MEKAN = [
+    {
+      id: 'mola', ad: 'Mola Coffee', tur: 'Kafe', kaynak: 'kullanici', adres: null, osmId: 1,
+      semt: 'Nilüfer', il: 'Bursa', konum: { lat: 41.015, lng: 28.979 }, kisiSayisi: 4,
+      toplamCheckIn: 4, kapakFotograf: 'kisi-1/mola.jpg',
+    },
+    {
+      id: 'park', ad: 'Nilüfer Parkı', tur: 'park', adres: null, osmId: 2,
+      semt: 'Nilüfer', il: 'Bursa', konum: { lat: 41.016, lng: 28.979 }, kisiSayisi: 0,
+      toplamCheckIn: 0, kapakFotograf: null,
+    },
+  ]
+
+  beforeEach(() => {
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
+    ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue(IKI_MEKAN)
+    ;(mekanlardaBulunanlariGetir as jest.Mock).mockResolvedValue({})
+    ;(mekanFotografiUrlleri as jest.Mock).mockResolvedValue({})
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
+  })
+
+  it('EN YAKIN kart turuncu cerceveli, altinda Yol tarifi + Check-in yap; digeri kompakt', async () => {
+    await render(<MekanAramaEkrani />)
+    const ilk = await screen.findByTestId('mekan-karti-mola')
+    const ikinci = screen.getByTestId('mekan-karti-park')
+
+    expect(StyleSheet.flatten(ilk.props.style).borderColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(ikinci.props.style).borderColor).not.toBe(acikRenk.turuncu)
+
+    expect(within(ilk).getByTestId('yol-tarifi-mola')).toBeTruthy()
+    expect(within(ilk).getByText('Yol tarifi')).toBeTruthy()
+    expect(within(ilk).getByText('Check-in yap')).toBeTruthy()
+    // Kompakt kartta yol tarifi yok, Check-in yap var.
+    expect(within(ikinci).queryByTestId('yol-tarifi-park')).toBeNull()
+    expect(within(ikinci).getByText('Check-in yap')).toBeTruthy()
+  })
+
+  it('kullanicinin ekledigi mekanda "Kafe • Nilüfer, Bursa • 240 m", dis kaynaklida tur yok', async () => {
+    await render(<MekanAramaEkrani />)
+    expect(await screen.findByText('Kafe • Nilüfer, Bursa • 240 m')).toBeTruthy()
+    expect(screen.getByText('Nilüfer, Bursa • 240 m')).toBeTruthy()
+  })
+
+  it('durum rozeti: Yogun/Sakin metni ve renkli nokta', async () => {
+    await render(<MekanAramaEkrani />)
+    const ilk = await screen.findByTestId('mekan-karti-mola')
+    expect(within(ilk).getByText('Yoğun')).toBeTruthy()
+    expect(within(screen.getByTestId('mekan-karti-park')).getByText('Sakin')).toBeTruthy()
+  })
+
+  it('kapak fotografi imzalanip cizilir; fotografsiz kartta igneli kutu', async () => {
+    ;(mekanFotografiUrlleri as jest.Mock).mockResolvedValue({
+      'kisi-1/mola.jpg': 'https://imzali/mola.jpg',
+    })
+    await render(<MekanAramaEkrani />)
+
+    const kapak = await screen.findByTestId('kapak-mola')
+    expect(kapak.props.source).toEqual([{ uri: 'https://imzali/mola.jpg' }])
+    expect(screen.getByTestId('kapak-yok-park')).toBeTruthy()
+    // Yalnizca fotografi olan mekanin yolu imzalatiliyor.
+    expect(mekanFotografiUrlleri).toHaveBeenCalledWith(['kisi-1/mola.jpg'])
+  })
+
+  it('kalabalik mekanda gorunen kisilerin avatarlari yigin halinde, sayi yaninda', async () => {
+    ;(mekanlardaBulunanlariGetir as jest.Mock).mockResolvedValue({
+      mola: [
+        { kullaniciId: 'k1', kullaniciAdi: 'Ayşe' },
+        { kullaniciId: 'k2', kullaniciAdi: 'Can' },
+      ],
+    })
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ k1: 'https://a/k1.jpg', k2: null })
+    await render(<MekanAramaEkrani />)
+
+    expect(await screen.findByTestId('bulunan-mola-k1')).toBeTruthy()
+    expect(screen.getByTestId('bulunan-mola-k1').props.source).toEqual([{ uri: 'https://a/k1.jpg' }])
+    // Fotografsiz kisi bas harfiyle.
+    expect(within(screen.getByTestId('bulunan-mola-k2')).getByText('C')).toBeTruthy()
+    expect(screen.getByText('4 kişi burada')).toBeTruthy()
+    // Yalnizca KALABALIK mekanlar soruluyor (0 kisilik park degil).
+    expect(mekanlardaBulunanlariGetir).toHaveBeenCalledWith(['mola'])
+    expect(avatarlariGetir).toHaveBeenCalledWith(['k1', 'k2'])
+    // Sakin kartta kisi satiri yok.
+    expect(within(screen.getByTestId('mekan-karti-park')).queryByText(/kişi burada/)).toBeNull()
+  })
+
+  it('gorunen kisi yoksa avatar yigini cizilmez ama sayi durur', async () => {
+    await render(<MekanAramaEkrani />)
+    expect(await screen.findByText('4 kişi burada')).toBeTruthy()
+    expect(screen.queryByTestId('bulunanlar-mola')).toBeNull()
+  })
+
+  it('"Mesafeye göre" etiketi var ve bir secici DEGIL; aramada gizlenir', async () => {
+    await render(<MekanAramaEkrani />)
+    const etiket = await screen.findByTestId('siralama-etiketi')
+    expect(etiket.props.accessibilityRole).toBeUndefined()
+    expect(screen.getByText('Mesafeye göre')).toBeTruthy()
+
+    await fireEvent.changeText(screen.getByTestId('mekan-arama-kutusu'), 'kahve')
+    await waitFor(() => expect(screen.queryByTestId('siralama-etiketi')).toBeNull())
+  })
+
+  it('Yol tarifi mekan sayfasiyla AYNI akisi kullanir: secim -> harita uygulamasi', async () => {
+    const ac = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true)
+    jest
+      .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
+      .mockImplementation((_ayarlar: unknown, geriCagir: (i: number) => void) => geriCagir(1))
+
+    await render(<MekanAramaEkrani />)
+    await fireEvent.press(await screen.findByTestId('yol-tarifi-mola'))
+
+    await waitFor(() =>
+      expect(ac).toHaveBeenCalledWith(
+        expect.stringContaining('google.com/maps/dir/?api=1&destination=41.015,28.979')
+      )
+    )
   })
 })

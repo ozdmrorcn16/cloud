@@ -600,6 +600,8 @@ export default {
     yogun: 'مزدحم',
     populer: 'رائج',
     yakinindakiMekanlar: 'الأماكن القريبة منك',
+    mesafeyeGore: 'حسب المسافة',
+    yolTarifi: 'الاتجاهات',
     sonuclar: 'النتائج',
     kisiBurada: '{{sayi}} أشخاص هنا',
     checkIn: 'تسجيل الحضور',

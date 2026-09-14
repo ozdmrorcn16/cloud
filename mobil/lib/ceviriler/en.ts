@@ -606,6 +606,8 @@ export default {
     yogun: 'Busy',
     populer: 'Popular',
     yakinindakiMekanlar: 'Places Near You',
+    mesafeyeGore: 'By distance',
+    yolTarifi: 'Directions',
     sonuclar: 'Results',
     kisiBurada: '{{sayi}} people here',
     checkIn: 'Check-in',

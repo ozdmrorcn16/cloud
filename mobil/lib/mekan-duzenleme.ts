@@ -90,6 +90,26 @@ export async function mekanFotografiUrl(yol: string): Promise<string | null> {
   return data?.signedUrl ?? null
 }
 
+/**
+ * Birden cok kapak fotografinin imzali adresi, TEK istekle.
+ *
+ * Yakin mekanlar listesi icin (2026-09-14): sayfada 50 mekan var ve
+ * her biri icin ayri `createSignedUrl` 50 istek demekti. Imzalanamayan
+ * yol sonucta YER ALMIYOR; ekran o karti fotografsiz cizer.
+ */
+export async function mekanFotografiUrlleri(yollar: string[]): Promise<Record<string, string>> {
+  const sonuc: Record<string, string> = {}
+  if (yollar.length === 0) return sonuc
+  const { data, error } = await supabase.storage
+    .from('mekan-fotograflari')
+    .createSignedUrls(yollar, 60 * 60)
+  if (error || !data) return sonuc
+  for (const satir of data) {
+    if (satir.path && satir.signedUrl && !satir.error) sonuc[satir.path] = satir.signedUrl
+  }
+  return sonuc
+}
+
 export async function duzenlemeTalebiGonder(
   mekanId: string,
   talep: DuzenlemeTalebi

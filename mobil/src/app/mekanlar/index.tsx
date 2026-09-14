@@ -12,16 +12,22 @@ import {
   ActivityIndicator,
   StyleSheet,
   Keyboard,
+  Platform,
+  ActionSheetIOS,
+  Linking,
 } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
+import { Image } from 'expo-image'
 import { cihazKonumunuAl, mesafeMetre } from '../../../lib/konum'
 import { useDil } from '../../../lib/dil'
 import {
   aktifCheckInimiGetir,
   checkIndenAyril,
   checkIniSil,
+  mekanlardaBulunanlariGetir,
   type AktifCheckIn,
+  type BulunanKisi,
 } from '../../../lib/checkin'
 import {
   yakinMekanlariYogunlukIleGetir,
@@ -45,16 +51,24 @@ import {
   HaritaIkonu,
   ListeIkonu,
   SuzgecIkonu,
-  YaprakIkonu,
   IgneIkonu,
-  CubukIkonu,
   YildizIkonu,
-  KisilerIkonu,
+  NavigasyonIkonu,
   GeriOkIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { turSuzgeciniOku, turSuzgeciniYaz } from '../../../lib/tur-suzgeci-depo'
 import { turEtiketi } from '../../../lib/tur-etiketi'
+import { avatarlariGetir } from '../../../lib/akis'
+import { mekanFotografiUrlleri } from '../../../lib/mekan-duzenleme'
+import {
+  haritaSecenekleri,
+  kuruluHaritalar,
+  haritaAdresi,
+  type HaritaSecimi,
+} from '../../../lib/yol-tarifi'
+import { Avatar } from '../../tasarim/Avatar'
+import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
 /** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
@@ -121,6 +135,9 @@ const DURUM_RENGI: Record<MekanDurumu, string> = {
  * bir kisayol, ekranin kendisi degil.
  */
 const ONERI_ADEDI = 6
+
+/** Karttaki avatar yigininin capi (referans gorsel). */
+const BULUNAN_AVATAR_CAPI = 28
 
 const DURUM_ZEMINI: Record<MekanDurumu, string> = {
   sakin: 'rgba(47, 191, 91, 0.12)',
@@ -206,6 +223,80 @@ export default function KesfetEkrani() {
    * gereksiz ikinci bir sorgu olurdu.
    */
   const [dahaVar, setDahaVar] = useState(false)
+  /*
+   * KART EKLERI (referans gorsel, 2026-09-14): kapak fotografinin
+   * imzali adresi, mekanda su an bulunan (gorunur) kisiler ve onlarin
+   * avatarlari. Listeden AYRI ve SONRA yukleniyor - liste onlari
+   * beklemiyor; okunamazlarsa kart fotografsiz/avatarsiz cizilir,
+   * hata gosterilmez (bildirimlerdeki avatar deseniyle ayni).
+   */
+  const [kapakUrller, setKapakUrller] = useState<Record<string, string>>({})
+  const [bulunanlar, setBulunanlar] = useState<Record<string, BulunanKisi[]>>({})
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
+  // Yol tarifi secimi (web'de kendi penceremiz; iOS sistem sayfasi).
+  const [tarifMekani, setTarifMekani] = useState<MekanYogunlukIle | null>(null)
+
+  async function kartEkleriniYukle(liste: MekanYogunlukIle[]) {
+    const yollar = liste
+      .map((m) => m.kapakFotograf)
+      .filter((y): y is string => Boolean(y) && !(y! in kapakUrller))
+    const kalabalik = liste.filter((m) => m.kisiSayisi > 0).map((m) => m.id)
+    try {
+      const [urller, kisiler] = await Promise.all([
+        mekanFotografiUrlleri(yollar),
+        mekanlardaBulunanlariGetir(kalabalik),
+      ])
+      if (Object.keys(urller).length > 0) setKapakUrller((eski) => ({ ...eski, ...urller }))
+      setBulunanlar((eski) => ({ ...eski, ...kisiler }))
+      const kimlikler = Array.from(
+        new Set(Object.values(kisiler).flat().map((k) => k.kullaniciId))
+      ).filter((id) => !(id in avatarlar))
+      if (kimlikler.length > 0) {
+        const yeni = await avatarlariGetir(kimlikler)
+        setAvatarlar((eski) => ({ ...eski, ...yeni }))
+      }
+    } catch {
+      // Ekler okunamazsa kart eksiksiz calismaya devam ediyor.
+    }
+  }
+
+  /**
+   * YOL TARIFI - mekan sayfasindaki dugmeyle ayni akis: kurulu
+   * haritalar sorulur; tek secenek varsa dogrudan acilir, iOS'ta
+   * sistem ActionSheet'i, web'de kendi secim penceremiz.
+   */
+  function haritayiAc(secim: HaritaSecimi, mekan: MekanYogunlukIle) {
+    setTarifMekani(null)
+    Linking.openURL(haritaAdresi(secim, mekan, 'tarif'))
+  }
+
+  async function yolTarifiAc(mekan: MekanYogunlukIle) {
+    const secenekler = await kuruluHaritalar()
+    if (secenekler.length <= 1) {
+      haritayiAc(secenekler[0] ?? 'google', mekan)
+      return
+    }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...secenekler.map(secenekEtiketi), t('checkInHaritasi.vazgec')],
+          cancelButtonIndex: secenekler.length,
+        },
+        (secilen) => {
+          if (secilen < secenekler.length) haritayiAc(secenekler[secilen], mekan)
+        }
+      )
+      return
+    }
+    setTarifMekani(mekan)
+  }
+
+  function secenekEtiketi(secim: HaritaSecimi): string {
+    return secim === 'apple'
+      ? t('checkInHaritasi.appleHaritalar')
+      : t('checkInHaritasi.googleHaritalar')
+  }
+
   const [sonrakiYukleniyor, setSonrakiYukleniyor] = useState(false)
 
   /**
@@ -300,6 +391,7 @@ export default function KesfetEkrani() {
        */
       if (sira !== istekSirasi.current) return
       setMekanlar(sonuc)
+      void kartEkleriniYukle(sonuc)
       // ARAMADA SAYFALAMA YOK: orada limit hic gonderilmiyor, sunucu
       // kendi tavaniyla (200) donuyor ve ikinci sayfa istemek anlamsiz.
       setDahaVar(!aramaVarMi && sonuc.length === KESFET_LIMIT)
@@ -344,6 +436,7 @@ export default function KesfetEkrani() {
       )
       if (sira !== istekSirasi.current) return
       setMekanlar((mevcut) => [...mevcut, ...sonuc])
+      void kartEkleriniYukle(sonuc)
       setDahaVar(sonuc.length === KESFET_LIMIT)
     } catch {
       // Sayfalama hatasi listeyi bozmuyor: eldeki kayitlar duruyor,
@@ -633,22 +726,8 @@ export default function KesfetEkrani() {
   // tercih edildi. Dis kaynakli kayitlarda semt ve uzaklik kaliyor.
   function altSatir(m: MekanYogunlukIle): string {
     const parcalar = turuGosterilir(m) ? [turEtiketi(m.tur)] : []
-    parcalar.push(konumYazisi(m), uzaklik(m), yogunlukYazisi(m))
-    return parcalar.filter(Boolean).join(' · ')
-  }
-
-  /**
-   * Yogunluk artik SAGDAKI AYRI SUTUNDA degil, alt satirda mesafenin
-   * yaninda (kullanicinin sectigi tasarim, 2026-09-01): sag taraf
-   * check-in dugmesine ayrildi.
-   *
-   * Kalabalik da burada gosteriliyor, cunku "Mekan ara" listesi artik
-   * canli mekanlari da tasiyor - eskiden yalnizca kisiSayisi === 0
-   * olanlar listeleniyordu ve canlilar seridi Kesfet'e ozel oldugu icin
-   * aranan kalabalik bir mekan sonuclarda HIC gorunmuyordu.
-   */
-  function yogunlukYazisi(m: MekanYogunlukIle): string {
-    return m.kisiSayisi > 0 ? t('kesfet.kisi', { sayi: m.kisiSayisi }) : t('kesfet.sakin')
+    parcalar.push(konumYazisi(m), uzaklik(m))
+    return parcalar.filter(Boolean).join(' • ')
   }
 
   /**
@@ -815,7 +894,7 @@ export default function KesfetEkrani() {
           degil kolaylik: ayrilma mekan sayfasindaki "Buradasın · Ayrıl"
           cubugunda, silme akis kartinin uc nokta menusunde. */}
       {kartMekani && (
-        <View style={stiller.buradaKart}>
+        <View style={stiller.buradaKart} testID="burada-karti">
           <View style={stiller.buradaUst}>
             {/*
               MEKAN ADI BASILABILIR (kullanicinin istegi 2026-09-07:
@@ -1118,7 +1197,18 @@ export default function KesfetEkrani() {
         {/* "Tümünü gör" KALDIRILDI (kullanicinin istegi 2026-09-08).
             Islev kaybi YOK: o baglanti yalnizca liste gorunumune
             geciriyordu ve ayni is ust cubuktaki Harita/Liste
-            segmentinde zaten var. Ayni eylemin iki girisi vardi. */}
+            segmentinde zaten var. Ayni eylemin iki girisi vardi.
+
+            "Mesafeye göre" (referans gorsel) bir ETIKET, secici degil:
+            siralama her zaman en yakindan uzaga (sabit kural,
+            2026-09-01), sunulacak ikinci bir secenek yok - tek
+            secenekli bir acilir menu olu dugme olurdu. Referanstaki
+            ok bu yuzden cizilmiyor. */}
+        {arama.trim().length === 0 && (
+          <Text style={stiller.siralamaEtiketi} testID="siralama-etiketi">
+            {t('kesfet.mesafeyeGore')}
+          </Text>
+        )}
       </View>
       {sakinler.length === 0 ? (
         /* BOS DURUM SEBEBINI SOYLUYOR. Uc ayri sebep var ve tek bir
@@ -1138,84 +1228,160 @@ export default function KesfetEkrani() {
               : t('kesfet.bosCevre')}
         </Text>
       ) : (
-        sakinler.map((item) => {
+        sakinler.map((item, sira) => {
           const d = mekanDurumu(item)
+          /*
+           * ONE CIKAN KART = LISTENIN ILKI, yani EN YAKIN mekan
+           * (referans gorsel: turuncu cerceveli kart, altinda "Yol
+           * tarifi" + "Check-in yap" satiri). Digerleri kompakt:
+           * Check-in butonu kisi satirinin sagina giriyor. Siralama
+           * sunucudan geldigi ve sabit oldugu icin (2026-09-01) "ilk"
+           * her zaman en yakin demek.
+           */
+          const oneCikan = sira === 0
+          const kisiler = bulunanlar[item.id] ?? []
+          const kapak = item.kapakFotograf ? kapakUrller[item.kapakFotograf] : undefined
+          const checkInDugmesi = (genis: boolean) => (
+            <Pressable
+              style={({ pressed }) => [
+                stiller.kartCheckIn,
+                // Kompakt kartta SAGA yaslanir (referans): kisi
+                // satiri bos olsa bile buton sagda durmali.
+                genis ? stiller.kartCheckInGenis : stiller.kartCheckInSag,
+                pressed && stiller.kartCheckInBasili,
+              ]}
+              onPress={() => router.push(`/check-in/${item.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={t('kesfet.checkInEtiketi', { ad: item.ad })}
+              testID={`satir-checkin-${item.id}`}
+            >
+              <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
+                {t('checkIn.gonder')}
+              </Text>
+            </Pressable>
+          )
           return (
-          <View key={item.id} style={stiller.mekanKarti}>
-            <View style={stiller.kartGovde}>
-              {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin karari
-                  2026-08-31): dokununca mekanin KONUM sayfasini
-                  aciyor. */}
+          <View
+            key={item.id}
+            style={[stiller.mekanKarti, oneCikan && stiller.mekanKartiOneCikan]}
+            testID={`mekan-karti-${item.id}`}
+          >
+            <View style={stiller.kartUst}>
+              {/* KAPAK FOTOGRAFI (referans gorsel, 2026-09-14). Dis
+                  kaynaktan gorsel cekilmiyor (2026-08-24 karari
+                  duruyor); yalnizca moderatorden gecmis
+                  `kapak_fotograf` var. Fotograf yoksa ayni olcude
+                  sessiz bir kutu ve igne - kartlarin hizasi
+                  fotografli/fotografsiz ayni kalsin. Ikisi de mekan
+                  sayfasini aciyor, ad gibi. */}
               <Pressable
                 onPress={() => router.push(`/harita/${item.id}` as never)}
                 accessibilityRole="button"
                 accessibilityLabel={t('kesfet.konumuGorEtiketi', { ad: item.ad })}
-                hitSlop={6}
               >
-                <Text style={stiller.kartMekanAdi} numberOfLines={2}>
-                  {item.ad}
-                </Text>
+                {kapak ? (
+                  <Image
+                    source={{ uri: kapak }}
+                    style={stiller.kapak}
+                    contentFit="cover"
+                    transition={120}
+                    testID={`kapak-${item.id}`}
+                  />
+                ) : (
+                  <View style={[stiller.kapak, stiller.kapakYok]} testID={`kapak-yok-${item.id}`}>
+                    <IgneIkonu boyut={26} renk={renk.turuncu} />
+                  </View>
+                )}
               </Pressable>
 
-              <View style={stiller.kartSatir}>
-                <IgneIkonu boyut={12} renk={renk.metinSoluk} />
-                <Text style={stiller.kartSatirYazi} numberOfLines={1}>
-                  {[konumYazisi(item), uzaklik(item)].filter(Boolean).join(' · ')}
+              <View style={stiller.kartGovde}>
+                <View style={stiller.kartBaslikSatiri}>
+                  {/* MEKAN ADI BASILABILIR BIR ETIKET (kullanicinin
+                      karari 2026-08-31): dokununca mekanin KONUM
+                      sayfasini aciyor. */}
+                  <Pressable
+                    style={stiller.kartAdAlani}
+                    onPress={() => router.push(`/harita/${item.id}` as never)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('kesfet.konumuGorEtiketi', { ad: item.ad })}
+                    hitSlop={6}
+                  >
+                    <Text style={stiller.kartMekanAdi} numberOfLines={2}>
+                      {item.ad}
+                    </Text>
+                  </Pressable>
+                  {/* DURUM ROZETI: renkli nokta + yazi (referans).
+                      Yaprak/cubuk/yildiz simgeleri kalkti; cipler
+                      kendi ignelerini tasimaya devam ediyor. */}
+                  <View style={[stiller.rozet, { backgroundColor: DURUM_ZEMINI[d] }]}>
+                    <View style={[stiller.rozetNokta, { backgroundColor: DURUM_RENGI[d] }]} />
+                    <Text style={[stiller.rozetYazi, { color: DURUM_RENGI[d] }]}>
+                      {t(`kesfet.${d}`)}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* "Kafe • 120 m" (referans). Tur yalnizca kullanicinin
+                    ekledigi mekanda (2026-08-24); dis kaynakli kayitta
+                    ilce ve il (2026-08-31 kurali) + uzaklik. */}
+                <Text style={stiller.kartAltYazi} numberOfLines={1}>
+                  {altSatir(item)}
                 </Text>
-              </View>
 
-              {/* Kisi satiri YALNIZCA birileri VARSA. Sifir yazmak
-                  bilgi tasimiyor; durumu zaten rozet soyluyor. */}
-              {item.kisiSayisi > 0 && (
-                <View style={stiller.kartSatir}>
-                  <KisilerIkonu boyut={13} />
-                  <Text style={stiller.kartKisiYazi}>
-                    {t('kesfet.kisiBurada', { sayi: item.kisiSayisi })}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <View style={stiller.kartSag}>
-              {/* UC NOKTA KALDIRILDI (kullanicinin istegi 2026-09-06:
-                  "Yanlarindaki 3 noktayi kaldirip oyle duzenle").
-                  Icindeki iki islem zaten baska yerde: mekan ADINA
-                  basmak konum sayfasini aciyor, buton da check-in'i.
-                  Kalkinca sag blok daraldi ve ada yer acildi.
-
-                  ROZET, CHECK-IN'IN SOLUNDA ve ayni satirda
-                  (kullanicinin duzeltmesi: "Rozet check-in yazisinin
-                  soluna gelicek"). */}
-              <View style={stiller.kartAltSatir}>
-                <View style={[stiller.rozet, { backgroundColor: DURUM_ZEMINI[d] }]}>
-                  {d === 'sakin' ? (
-                    <YaprakIkonu boyut={12} />
-                  ) : d === 'yogun' ? (
-                    <CubukIkonu boyut={12} renk={DURUM_RENGI.yogun} />
-                  ) : (
-                    <YildizIkonu boyut={12} renk={DURUM_RENGI.populer} />
+                {/* KISI SATIRI: avatar yigini + "4 kişi burada".
+                    Avatarlar yalnizca SANA GORUNEN check-in'lerden
+                    (satir guvenligi, mekan sayfasiyla ayni kapi);
+                    sayi ise kimliksiz toplam - avatar sayisi sayidan
+                    kucuk olabilir. Kimse yoksa satir cizilmiyor;
+                    kompakt kartta Check-in yine bu satirin saginda. */}
+                <View style={stiller.kartKisiSatiri}>
+                  {item.kisiSayisi > 0 && (
+                    <View style={stiller.kisiAlani}>
+                      {kisiler.length > 0 && (
+                        <View style={stiller.avatarYigini} testID={`bulunanlar-${item.id}`}>
+                          {kisiler.map((k, i) => (
+                            <View
+                              key={k.kullaniciId}
+                              style={[stiller.avatarHalka, i > 0 && stiller.avatarBindirme]}
+                            >
+                              <Avatar
+                                fotografUrl={avatarlar[k.kullaniciId] ?? null}
+                                ad={k.kullaniciAdi}
+                                kullaniciAdi=""
+                                cap={BULUNAN_AVATAR_CAPI}
+                                testID={`bulunan-${item.id}-${k.kullaniciId}`}
+                              />
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                      <Text style={stiller.kartKisiYazi} numberOfLines={1}>
+                        {t('kesfet.kisiBurada', { sayi: item.kisiSayisi })}
+                      </Text>
+                    </View>
                   )}
-                  <Text style={[stiller.rozetYazi, { color: DURUM_RENGI[d] }]}>
-                    {t(`kesfet.${d}`)}
-                  </Text>
+                  {!oneCikan && checkInDugmesi(false)}
                 </View>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    stiller.kartCheckIn,
-                    pressed && stiller.kartCheckInBasili,
-                  ]}
-                  onPress={() => router.push(`/check-in/${item.id}`)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('kesfet.checkInEtiketi', { ad: item.ad })}
-                  testID={`satir-checkin-${item.id}`}
-                >
-                  <Text style={stiller.kartCheckInYazi} numberOfLines={1}>
-                    {t('kesfet.checkIn')}
-                  </Text>
-                </Pressable>
               </View>
             </View>
+
+            {/* ONE CIKAN KARTIN EYLEM SATIRI: Yol tarifi (cerceveli)
+                + Check-in yap (dolu). Yol tarifi mekan sayfasindaki
+                dugmeyle AYNI yardimcilari kullaniyor (lib/yol-tarifi). */}
+            {oneCikan && (
+              <View style={stiller.kartEylemler}>
+                <Pressable
+                  style={({ pressed }) => [stiller.yolTarifi, pressed && stiller.yolTarifiBasili]}
+                  onPress={() => yolTarifiAc(item)}
+                  accessibilityRole="button"
+                  testID={`yol-tarifi-${item.id}`}
+                >
+                  <NavigasyonIkonu boyut={18} />
+                  <Text style={stiller.yolTarifiYazi}>{t('kesfet.yolTarifi')}</Text>
+                </Pressable>
+                {checkInDugmesi(true)}
+              </View>
+            )}
           </View>
           )
         })
@@ -1247,6 +1413,18 @@ export default function KesfetEkrani() {
       <Text style={stiller.atif}>{t('kesfet.atif')}</Text>
     </ScrollView>
 
+    {/* Yol tarifi harita secimi - yalnizca web'de (iOS sistem sayfasini,
+        Android tek secenegi dogrudan aciyor). */}
+    <SecimPenceresi
+      acikMi={tarifMekani !== null}
+      secimler={haritaSecenekleri().map((secim) => ({
+        etiket: secenekEtiketi(secim),
+        testID: `harita-secimi-${secim}`,
+        onSec: () => tarifMekani && haritayiAc(secim, tarifMekani),
+      }))}
+      onKapat={() => setTarifMekani(null)}
+    />
+
     <TurSecici
       acikMi={turSeciciAcik}
       gruplar={TEMEL_TUR_GRUPLARI}
@@ -1262,6 +1440,8 @@ export default function KesfetEkrani() {
 }
 
 const KART_GENISLIK = 256
+/** Karttaki kare kapak fotografinin kenari (referans gorsel). */
+const KAPAK_OLCUSU = 96
 const KART_YUKSEKLIK = 316
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
@@ -1519,91 +1699,154 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   bolumSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
 
   // --- mekan karti ---
+  /**
+   * MEKAN KARTI - kullanicinin referans gorseline gore (2026-09-14):
+   * solda kare kapak, sagda ad + durum rozeti / "Kafe • 120 m" /
+   * avatar yigini + "4 kisi burada"; en yakin (ilk) kart turuncu
+   * cerceveli ve altinda "Yol tarifi" + "Check-in yap" satiri, diger
+   * kartlarda Check-in kisi satirinin saginda.
+   *
+   * Beyaz zemin uzerinde beyaz kart: ayrimi golge + ince cizgi
+   * tasiyor (2026-08-27 kurali); one cikan kartta cizgi turuncu.
+   */
   mekanKarti: {
-    flexDirection: 'row',
-    // STRETCH: sag sutun govde yuksekligine yayiliyor, boylece rozet
-    // ustte / Check-in altta duruyor (referans gorseldeki hiza).
-    // `flex-start` ile ikisi bitisik kaliyor ve buton kartin ortasinda
-    // asili gorunuyordu.
-    alignItems: 'stretch',
-    gap: bosluk.m,
-    // TABAN YUKSEKLIK YOK: kart icerigi kadar. Ilk halde `minHeight: 84`
-    // vardi ve kisi satiri olmayan (0 kisi) kartlarda buton ile rozet
-    // arasinda bos bir bosluk biraktiyordu; referansta kartlar
-    // iceriklerine gore uzuyor.
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
+    borderRadius: yuvarlak.buyuk,
     padding: bosluk.m,
+    gap: bosluk.m,
+    ...golge.kart,
   },
-  kartGovde: { flex: 1, minWidth: 0, gap: 4 },
+  mekanKartiOneCikan: {
+    borderWidth: 1.5,
+    borderColor: renk.turuncu,
+  },
+  kartUst: { flexDirection: 'row', gap: bosluk.m, alignItems: 'flex-start' },
+  // Kapak KARE ve sabit: referansta kartin yuksekligini fotograf
+  // belirliyor, metin onun yanina siginiyor.
+  kapak: {
+    width: KAPAK_OLCUSU,
+    height: KAPAK_OLCUSU,
+    borderRadius: yuvarlak.kart,
+  },
+  kapakYok: {
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kartGovde: { flex: 1, minWidth: 0, gap: 4, minHeight: KAPAK_OLCUSU },
+  kartBaslikSatiri: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: bosluk.s,
+  },
+  kartAdAlani: { flex: 1, minWidth: 0 },
   kartMekanAdi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.govde,
+    fontSize: olcek.altBaslik,
     color: renk.metin,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
-  kartSatir: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  kartSatirYazi: {
-    flexShrink: 1,
+  kartAltYazi: {
     fontFamily: yazi.govde,
-    fontSize: olcek.minik,
+    fontSize: olcek.kucuk,
     color: renk.metinIkincil,
   },
-  kartKisiYazi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.minik,
-    color: renk.turuncuYazi,
+  // Kisi satiri govdenin DIBINE itiliyor (`marginTop: 'auto'`):
+  // kapak sabit yukseklikte oldugu icin satir referanstaki gibi
+  // fotografin alt kenariyla hizalaniyor.
+  kartKisiSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    // SARIYOR: 390 px'lik telefonda avatar yigini + "18 kişi burada"
+    // + Check-in yap ayni satira sigmiyor (olculdu: ~300 px'e karsi
+    // ~240 px). Sigmayinca buton alt satira, yine saga yasli iner;
+    // referanstaki gibi yazi kirpilmiyor.
+    flexWrap: 'wrap',
+    gap: bosluk.s,
+    marginTop: 'auto',
+    paddingTop: bosluk.s,
   },
-  // Uc nokta kalkinca sag blokta tek satir kaldi: rozet + buton.
-  kartSag: { alignItems: 'flex-end', justifyContent: 'flex-end' },
-  // Rozet ve Check-in YAN YANA, rozet solda.
-  kartAltSatir: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  // Rozet ve buton YAN YANA durdugu icin ikisi de dar tutuluyor:
-  // 342 px'lik bir kartta sag blok genisledikce mekan adina yer
-  // kalmiyor ve ad iki satira duesuyor.
+  kisiAlani: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s, flexShrink: 1 },
+  avatarYigini: { flexDirection: 'row', alignItems: 'center' },
+  // Beyaz halka: bindirilmis avatarlar birbirinden ayrilsin.
+  avatarHalka: {
+    borderWidth: 2,
+    borderColor: renk.yuzey,
+    borderRadius: yuvarlak.hap,
+  },
+  avatarBindirme: { marginLeft: -10 },
+  kartKisiYazi: {
+    flexShrink: 1,
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+  },
+  // Rozet: renkli nokta + yazi, acik zeminli hap (referans).
   rozet: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     borderRadius: yuvarlak.hap,
   },
+  rozetNokta: { width: 8, height: 8, borderRadius: 4 },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
+  kartEylemler: { flexDirection: 'row', gap: bosluk.s },
+  // Yol tarifi: turuncu cerceveli, ici bos, ikonlu (referans).
+  yolTarifi: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: renk.turuncu,
+    borderRadius: yuvarlak.hap,
+    paddingVertical: 11,
+  },
+  yolTarifiBasili: { backgroundColor: renk.turuncuZemin },
+  yolTarifiYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: renk.turuncuYazi,
+  },
   /**
-   * LISTEDEKI CHECK-IN BUTONU: DOLU TURUNCU.
-   *
-   * 2026-09-07 tasarim denetiminde bu butonlar HAYALETE cevrilmisti
-   * (kenarlik + turuncu yazi); gerekce "bir ekranda tek birincil
-   * turuncu eylem olur" kuraliydi ve dort ozdes dolu buton o kurali
-   * tuketiyordu. Kullanici 2026-09-09'da GERI ALDI: "check-in
-   * butonlarinin icini dolu turuncu yap".
-   *
-   * Karar kullanicinin ve savunulabilir: bu ekranin adi zaten
-   * "Check-in" ve listedeki her satirin TEK isi o eylem. Hayalet
-   * buton, asil eylemi ikincil gosteriyordu.
-   *
-   * Beyaz yazi marka turuncusu uzerinde 2,65:1 veriyor - BILINEN ve
-   * kabul edilmis odun (bkz. `marka-turuncusu-degistirilmez`); yazi
-   * `govdeKalin` oldugu icin kucuk puntoda da okunuyor.
+   * CHECK-IN BUTONU: DOLU TURUNCU (kullanicinin karari 2026-09-09,
+   * "check-in butonlarinin icini dolu turuncu yap"; 2026-09-07'deki
+   * hayalet hali geri alindi). Beyaz yazi marka turuncusu uzerinde
+   * 2,65:1 - bilinen ve kabul edilmis odun (`marka-turuncusu-
+   * degistirilmez`), yazi kalin oldugu icin okunuyor.
    */
   kartCheckIn: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    // Kenarlik kalkinca dolgu 1,5 px daralmis oluyordu; dolgu
-    // buyutuIerek buton eski olcusunde tutuluyor.
-    paddingVertical: 9.5,
-    paddingHorizontal: 14.5,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  // One cikan kartta Yol tarifi ile satiri paylasiyor; genis olan bu.
+  kartCheckInGenis: { flex: 1.3, paddingVertical: 12 },
+  kartCheckInSag: { marginLeft: 'auto' },
   // Basili hal DOLGUYU KOYULASTIRIYOR: dolu bir butonda opaklik
   // dusurmek "pasif" okunuyor.
   kartCheckInBasili: { backgroundColor: renk.turuncuBasili },
   kartCheckInYazi: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
+    fontSize: olcek.govde,
     color: '#FFFFFF',
+  },
+  // Bolum basliginin sagindaki "Mesafeye göre" etiketi.
+  siralamaEtiketi: {
+    marginLeft: 'auto',
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
   },
 
   sayfa: { flex: 1, backgroundColor: renk.zemin },
@@ -1748,34 +1991,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   turCipiSecili: { backgroundColor: renk.metin, borderColor: renk.metin },
   turYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
   turYaziSecili: { color: renk.yuzey },
-
-  kartSatiri: { gap: bosluk.m, paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.l },
-  kart: { width: KART_GENISLIK, height: KART_YUKSEKLIK, borderRadius: 28, ...golge.yuzer },
-  // Beyaz kapak uzerinde cam rozet gorunmuyordu: dolgu turuncuya
-  // gecti. Turuncu burada dogru - "su an canli" bir eylem/canlilik
-  // isareti.
-  canliRozet: {
-    position: 'absolute',
-    top: 14,
-    left: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: renk.turuncu,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 7,
-    paddingHorizontal: 13,
-  },
-  canliNokta: { width: 7, height: 7, borderRadius: 999, backgroundColor: '#FFFFFF' },
-  canliRozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik, color: '#FFFFFF' },
-  kartAlt: { position: 'absolute', left: 18, right: 18, bottom: 18, gap: 2 },
-  kartAd: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: 20,
-    color: renk.metin,
-    letterSpacing: -0.3,
-  },
-  kartAltYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
 
   bolumBasligi: {
     fontFamily: yazi.ekranBasligi,

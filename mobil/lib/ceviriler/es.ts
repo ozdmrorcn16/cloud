@@ -600,6 +600,8 @@ export default {
     yogun: 'Lleno',
     populer: 'Popular',
     yakinindakiMekanlar: 'Lugares cerca de ti',
+    mesafeyeGore: 'Por distancia',
+    yolTarifi: 'Cómo llegar',
     sonuclar: 'Resultados',
     kisiBurada: '{{sayi}} personas aquí',
     checkIn: 'Check-in',
