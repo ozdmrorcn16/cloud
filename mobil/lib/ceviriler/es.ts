@@ -173,7 +173,6 @@ export default {
     istekler: 'Solicitudes',
     istekRozeti: 'Solicitud',
     silBaslik: 'Eliminar conversación',
-    silAciklama: 'Esta conversación se elimina de tu lista; la otra persona la conserva. Si alguno vuelve a escribir, solo se verán los mensajes nuevos.',
   },
   mesajIstekleri: {
     baslik: 'Solicitudes',

@@ -238,7 +238,6 @@ export default {
     istekler: 'İstekler',
     istekRozeti: 'İstek',
     silBaslik: 'Konuşmayı sil',
-    silAciklama: 'Bu konuşma senin listenden silinir; karşı tarafta kalır. Biriniz yeniden yazarsa yalnızca yeni mesajlar görünür.',
   },
   mesajIstekleri: {
     baslik: 'İstekler',

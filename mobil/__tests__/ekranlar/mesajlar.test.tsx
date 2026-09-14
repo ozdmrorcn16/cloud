@@ -20,8 +20,10 @@ const mockRouterPush = jest.fn()
 // bilesen birden fazla kez render olabiliyor; ayni useCallback referansi
 // her render'da tekrar kaydedilirse dizi cogalirdi, Set bunu tekillestirir.
 let mockOdakGeriCagirmalari = new Set<() => void>()
+const mockRouterBack = jest.fn()
+let mockGeriGidilebilir = true
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, back: mockRouterBack, canGoBack: () => mockGeriGidilebilir }),
   useFocusEffect: (effect: () => void) => {
     mockOdakGeriCagirmalari.add(effect)
     require('react').useEffect(effect, [])
@@ -125,7 +127,8 @@ describe('MesajlarEkrani', () => {
 
     expect(konusmayiSil).not.toHaveBeenCalled()
     expect(screen.getByText('Konuşmayı sil')).toBeTruthy()
-    expect(screen.getByText(/karşı tarafta kalır/)).toBeTruthy()
+    // Aciklama YOK (kullanicinin istegi): yalnizca baslik + Sil / Vazgec.
+    expect(screen.queryByText(/karşı tarafta kalır/)).toBeNull()
     await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     await waitFor(() => expect(konusmayiSil).toHaveBeenCalledWith('k1'))
@@ -344,5 +347,18 @@ describe('MesajlarEkrani - istekler girisi', () => {
     expect(await screen.findByText('Silinmiş kullanıcı')).toBeTruthy()
     expect(avatarlariGetir).not.toHaveBeenCalled()
     expect(screen.getByText('?')).toBeTruthy()
+  })
+
+  // GERI OKU (kullanicinin istegi 2026-09-14): sol ustte.
+  it('sol ustteki geri oku onceki ekrana doner; gecmis yoksa ana sayfaya', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
+    mockGeriGidilebilir = true
+    await render(<MesajlarEkrani />)
+    await fireEvent.press(await screen.findByLabelText('Geri'))
+    expect(mockRouterBack).toHaveBeenCalled()
+
+    mockGeriGidilebilir = false
+    await fireEvent.press(screen.getByLabelText('Geri'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/')
   })
 })

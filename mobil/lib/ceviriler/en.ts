@@ -179,7 +179,6 @@ export default {
     istekler: 'Requests',
     istekRozeti: 'Request',
     silBaslik: 'Delete conversation',
-    silAciklama: 'This conversation is removed from your list; the other person keeps it. If either of you writes again, only new messages will show.',
   },
   mesajIstekleri: {
     baslik: 'Requests',
