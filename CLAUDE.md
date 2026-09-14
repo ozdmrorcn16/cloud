@@ -299,6 +299,14 @@ hata: yazma kutusu klavyenin altinda kaliyordu.
   "Bugün" / "Dün" / "2 Eylül" / "31 Aralık 2025"; ay adi cihaz diline
   gore, Bugün/Dün sozlukten (`sohbet.bugun/dun`, 7 dil). Ters listede
   ayrac, mesajin gunu bir ESKI mesajinkinden farkliysa balonun ustune.
+- HATA DUZELTILDI (kullanicinin bildirimi): gondere basinca mesaj bir
+  an KARSI TARAF yazmis gibi (sol, avatarli) gorunuyordu. Iyimser satir
+  `gonderenId: ''` tasiyordu ve `benimMi` dusuyordu; artik kendi
+  kimligim. Eski yorum "gonderenId yerel satirda kullanilmiyor" diyordu
+  - YANLISTI, benimMi hep ona bakiyordu; avatar gelince gorunur oldu.
+  TEST DERSI: `Avatar` bas harf halinde testID tasimiyordu, bu yuzden
+  "avatar yok" iddiasi fotografsiz mock'ta bos bos geciyordu; artik
+  iki halde de tasiyor, "resim yok" olcusu `props.source` undefined.
 - Klavye: iOS'ta `keyboardWillShow/Hide` ile alt pay ALT_GEZINME_PAYI
   yerine klavye yuksekligi (gezinme cubugu zaten klavyenin arkasinda).
   Android'e dokunulmadi (pencere `resize` ile kendisi daraliyor).

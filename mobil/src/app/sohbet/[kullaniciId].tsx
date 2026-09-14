@@ -213,12 +213,13 @@ export default function SohbetEkrani() {
     // Iyimser ekleme: mesaj sunucu yanitini beklemeden listede belirsin.
     // Onceden yalnizca Realtime yansitinca goruluyordu ve davranis
     // tutarsizdi (konusmayi acan ilk gonderimde gecmis yeniden cekildigi
-    // icin hemen, sonrakilerde gecikmeli). gonderenId yerel satirda
-    // kullanilmiyor; ekranda yalnizca metin cizdiriliyor.
+    // icin hemen, sonrakilerde gecikmeli). gonderenId KENDI kimligim
+    // olmali: bos string bir kez "karsi taraf yazmis gibi" cizdirdi
+    // (kullanicinin bildirimi 2026-09-14) - benimMi kontrolu ona bakiyor.
     setMesajlar((mevcut) => [
       {
         id: yerelId,
-        gonderenId: '',
+        gonderenId: benimKimligim,
         metin: gonderilecekMetin,
         olusturuldu: new Date().toISOString(),
         yerelMi: true,

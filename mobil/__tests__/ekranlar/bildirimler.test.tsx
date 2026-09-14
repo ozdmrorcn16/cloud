@@ -115,7 +115,9 @@ describe('BildirimlerEkrani', () => {
     await render(<BildirimlerEkrani />)
 
     expect(await screen.findByText('D')).toBeTruthy()
-    expect(screen.queryByTestId('bildirim-avatar')).toBeNull()
+    // Bas harf gorunumu de ayni testID'yi tasiyor (2026-09-14); "resim
+    // cizilmedi"nin olcusu source'un olmamasi.
+    expect(screen.getByTestId('bildirim-avatar').props.source).toBeUndefined()
   })
 
   it('avatar okunamazsa bildirimler yine gorunur', async () => {

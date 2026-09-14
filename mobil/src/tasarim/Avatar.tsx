@@ -40,8 +40,11 @@ export function Avatar({
     )
   }
 
+  // testID bas harf halinde de var: testler "avatar cizildi mi" sorusunu
+  // fotograf olmadan da sorabilsin (2026-09-14'te bir test bu yuzden
+  // yanlis gecti).
   return (
-    <View style={[boyut, stiller.fotografYok]}>
+    <View style={[boyut, stiller.fotografYok]} testID={testID}>
       <Text style={[stiller.basHarf, { fontSize: Math.round(cap * 0.43) }]}>
         {(ad || kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
       </Text>

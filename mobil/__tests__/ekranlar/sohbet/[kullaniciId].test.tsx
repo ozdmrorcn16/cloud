@@ -588,4 +588,23 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     expect(screen.getByTestId('gun-ayraci-m3').props.children).toBe('Bugün')
     expect(screen.queryByTestId('gun-ayraci-m2')).toBeNull()
   })
+
+  // HATA (kullanicinin bildirimi 2026-09-14): gondere basinca mesaj bir
+  // an karsi taraf yazmis gibi (sol, avatarli) gorunuyordu. Iyimser
+  // satirin gonderenId'si bos string'di, "benim mi" kontrolu dusuyordu.
+  it('iyimser satir sunucu yansimasi gelmeden de KENDI balonum olarak cizilir', async () => {
+    ;(mesajlaraAbonelOl as jest.Mock).mockReturnValue(bosAbonelikIptali)
+    ;(mesajGonder as jest.Mock).mockResolvedValue('konusma-1')
+
+    await render(<SohbetEkrani />)
+    const girdi = await screen.findByPlaceholderText('Bir mesaj yaz...')
+    await fireEvent.changeText(girdi, 'Merhaba')
+    await fireEvent.press(screen.getByText('Gönder'))
+
+    await screen.findByText('Merhaba')
+    // Karsi balonun isareti avatar: iyimser satirda OLMAMALI.
+    expect(screen.queryAllByTestId(/^balon-avatar-/)).toHaveLength(0)
+    // ...ve kendi balonumun altinda saat cizilir (sag hizali alt yazi).
+    expect(screen.getByTestId(/^saat-yerel:/)).toBeTruthy()
+  })
 })
