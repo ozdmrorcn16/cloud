@@ -291,6 +291,18 @@ hata: yazma kutusu klavyenin altinda kaliyordu.
   deseni); iyimser (`yerelMi`) satirda yazilmaz, sunucu satiri gelince
   yazar. "Goruldu" YOK - karsi tarafin son okumasi istemciye acik degil.
   `sohbet.teslimEdildi` 7 dil.
+- MESAJLAR LISTESI: "Gizle" KALKTI, satir sola kaydirilinca sagda
+  kirmizi "Sil" (RNGH eski `Swipeable`, Animated tabanli - reanimated
+  jest'te calismadigi icin ReanimatedSwipeable DEGIL). Kullanicinin
+  karari: "Sil'e basinca benden silinir, karsi tarafta kalir."
+  Sunucu: `konusma_uyeleri.silme_zamani` + `konusmayi_sil` RPC;
+  `konusmalarim` ve `mesajlari_getir` silme anindan oncekileri eler;
+  biri yazinca konusma yalnizca yeni mesajlarla geri gelir
+  (migrasyon `20260914120000`). `konusmayi_gizle` RPC eski surumler
+  icin duruyor. Canli: `test:gorunurluk` senaryo 66 (yeni
+  `SLOOIN_SENARYO=66` filtresiyle tek basina kosulabiliyor).
+  Kullanicinin gizledigi tek konusma SQL ile geri acildi.
+  KVKK listesi: "Konusmayi kendi tarafindan silme" bolumu.
 - Geri oku ust barda (`GeriOkIkonu`); gecmis yoksa (bildirimden
   acildi) `/mesajlar`a gider. Uygulamada Stack yok, ekran kendi okunu
   tasimak zorunda.

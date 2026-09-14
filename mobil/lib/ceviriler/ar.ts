@@ -169,7 +169,7 @@ export default {
     baslik: 'الرسائل',
     bosBaslik: 'لا محادثات بعد',
     silinmisKullanici: 'مستخدم محذوف',
-    gizle: 'إخفاء',
+    sil: 'حذف',
     istekler: 'الطلبات',
     istekRozeti: 'طلب',
   },

@@ -169,7 +169,7 @@ export default {
     baslik: 'Messages',
     bosBaslik: 'Pas encore de conversation',
     silinmisKullanici: 'Utilisateur supprimé',
-    gizle: 'Masquer',
+    sil: 'Supprimer',
     istekler: 'Demandes',
     istekRozeti: 'Demande',
   },

@@ -169,7 +169,7 @@ export default {
     baslik: 'Сообщения',
     bosBaslik: 'Разговоров пока нет',
     silinmisKullanici: 'Удалённый пользователь',
-    gizle: 'Скрыть',
+    sil: 'Удалить',
     istekler: 'Запросы',
     istekRozeti: 'Запрос',
   },

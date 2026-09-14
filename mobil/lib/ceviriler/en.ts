@@ -175,7 +175,7 @@ export default {
     baslik: 'Messages',
     bosBaslik: 'No conversations yet',
     silinmisKullanici: 'Deleted user',
-    gizle: 'Hide',
+    sil: 'Delete',
     istekler: 'Requests',
     istekRozeti: 'Request',
   },

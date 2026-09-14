@@ -42,6 +42,8 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-14 — [2026-09-14-e70637b0.md](oturumlar/2026-09-14-e70637b0.md) — burdan devam et
+- 2026-09-13 — [2026-09-13-e70637b0.md](oturumlar/2026-09-13-e70637b0.md) — burdan devam et
 - 2026-09-13 — [2026-09-13-8dc554ef.md](oturumlar/2026-09-13-8dc554ef.md) — claude
 - 2026-09-13 — [2026-09-13-506f7474.md](oturumlar/2026-09-13-506f7474.md) — maps olmadımı android oturumu hala devam ediyor işlemleri bitince kaldıgı yerden…
 - 2026-09-13 — [2026-09-13-21d2d2dc.md](oturumlar/2026-09-13-21d2d2dc.md) — inter sitesinin yapımına başlamalıyız

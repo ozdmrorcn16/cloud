@@ -464,6 +464,27 @@ Iki yeni is kalemi, ikisi de mekan sayfasinda.
 Ek kural: yalnizca o mekanda check-in yapmis kisi oy verebiliyor. Bu
 bir gizlilik onlemi degil, veri kalitesi onlemi (uzaktan oy sisirme).
 
+## Konusmayi kendi tarafindan silme - 2026-09-14
+
+Kullanicinin karari: Mesajlar listesinde satiri sola kaydirinca "Sil";
+"Sil'e basinca benden silinir, karsi tarafta kalir." Dort soru:
+
+- **Hangi veri:** `konusma_uyeleri.silme_zamani` (yalnizca bir zaman
+  damgasi). Mesaj satirlari DEGISMIYOR.
+- **Dayanak:** sozlesmenin ifasi (m.5/2-c) - kullanicinin kendi
+  arayuzunu duzenlemesi. Karsi tarafin kopyasi onun verisi; onun
+  gorunumu silinmiyor. Bir konusma iki kisiye ait, tek taraf digerinin
+  kaydini yok edemez (erisim hakki bolumundeki ilkeyle ayni).
+- **Sure:** mesajlar mevcut saklama kuralina tabi (madde 4); silme
+  damgasi uyelik satiriyla birlikte yasar.
+- **Kim gorur:** silen kisi silme anindan onceki mesajlari bir daha
+  gormez (konusmalarim + mesajlari_getir sunucuda eler). Karsi taraf
+  ve moderasyon paneli (sikayet uzerine, izli) eskisi gibi gorur.
+  Konusma biri yazinca silen tarafa yalnizca yeni mesajlarla geri gelir.
+
+Gizlilik metninde degisiklik gerekmedi: metin zaten mesajlarin karsi
+tarafta kaldigini soyluyor. Canli olcum: `test:gorunurluk` senaryo 66.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

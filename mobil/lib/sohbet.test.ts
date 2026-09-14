@@ -5,6 +5,7 @@ import {
   mesajlariGetir,
   konusmayiOkunduIsaretle,
   konusmayiGizle,
+  konusmayiSil,
   mesajlaraAbonelOl,
   mesajIsteklerimiGetir,
   mesajIsteginiKabulEt,
@@ -156,6 +157,19 @@ describe('konusmayiGizle', () => {
   it('hata donerse firlatir', async () => {
     mockRpc.mockResolvedValue({ error: { message: 'Konusma bulunamadi' } })
     await expect(konusmayiGizle('konusma-1')).rejects.toThrow('Konuşma bulunamadı.')
+  })
+})
+
+describe('konusmayiSil', () => {
+  it('RPC-yi dogru ad ve parametreyle cagirir', async () => {
+    mockRpc.mockResolvedValue({ error: null })
+    await konusmayiSil('konusma-1')
+    expect(mockRpc).toHaveBeenCalledWith('konusmayi_sil', { p_konusma_id: 'konusma-1' })
+  })
+
+  it('hata donerse firlatir', async () => {
+    mockRpc.mockResolvedValue({ error: { message: 'Konusma bulunamadi' } })
+    await expect(konusmayiSil('konusma-1')).rejects.toThrow('Konuşma bulunamadı.')
   })
 })
 

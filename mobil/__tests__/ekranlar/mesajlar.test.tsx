@@ -1,13 +1,13 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import MesajlarEkrani from '../../src/app/mesajlar'
-import { konusmalarimiGetir, konusmayiGizle, mesajIsteklerimiGetir } from '../../lib/sohbet'
+import { konusmalarimiGetir, konusmayiSil, mesajIsteklerimiGetir } from '../../lib/sohbet'
 import type { Konusma, MesajIstegi } from '../../lib/sohbet'
 import { avatarlariGetir } from '../../lib/akis'
 
 jest.mock('../../lib/akis', () => ({ avatarlariGetir: jest.fn() }))
 jest.mock('../../lib/sohbet', () => ({
   konusmalarimiGetir: jest.fn(),
-  konusmayiGizle: jest.fn(),
+  konusmayiSil: jest.fn(),
   mesajIsteklerimiGetir: jest.fn(),
 }))
 
@@ -101,23 +101,36 @@ describe('MesajlarEkrani', () => {
     await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/sohbet/u1'))
   })
 
-  it('Gizle butonuna basinca konusmayiGizle dogru konusma id ile cagrilir ve satir listeden kalkar', async () => {
+  // "GIZLE" KALKTI, "SIL" GELDI (kullanicinin karari 2026-09-14): satir
+  // sola kaydirilinca sagda Sil. Kaydirma hareketi jest'te yok; dugme
+  // agacta duruyor (Swipeable sag eylemleri hep cizer), dogrudan
+  // basiliyor.
+  it('satirda "Gizle" YOK', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
-    ;(konusmayiGizle as jest.Mock).mockResolvedValue(undefined)
 
     await render(<MesajlarEkrani />)
-    await fireEvent.press(await screen.findByText('Gizle'))
+    await screen.findByText('Orcun Ozdemir')
 
-    await waitFor(() => expect(konusmayiGizle).toHaveBeenCalledWith('k1'))
+    expect(screen.queryByText('Gizle')).toBeNull()
+  })
+
+  it('Sil dugmesine basinca konusmayiSil dogru konusma id ile cagrilir ve satir listeden kalkar', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
+    ;(konusmayiSil as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<MesajlarEkrani />)
+    await fireEvent.press(await screen.findByTestId('konusma-sil-k1'))
+
+    await waitFor(() => expect(konusmayiSil).toHaveBeenCalledWith('k1'))
     await waitFor(() => expect(screen.queryByText('Orcun Ozdemir')).toBeNull())
   })
 
-  it('gizleme reddedilirse hata mesaji gorunur ve satir listede kalir', async () => {
+  it('silme reddedilirse hata mesaji gorunur ve satir listede kalir', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
-    ;(konusmayiGizle as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    ;(konusmayiSil as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<MesajlarEkrani />)
-    await fireEvent.press(await screen.findByText('Gizle'))
+    await fireEvent.press(await screen.findByTestId('konusma-sil-k1'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()

@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react'
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
+import { Swipeable } from 'react-native-gesture-handler'
 import { useRouter, useFocusEffect } from 'expo-router'
 import {
   konusmalarimiGetir,
-  konusmayiGizle,
+  konusmayiSil,
   mesajIsteklerimiGetir,
   type Konusma,
 } from '../../lib/sohbet'
@@ -71,12 +72,15 @@ export default function MesajlarEkrani() {
     }, [])
   )
 
-  // Iyimser guncelleme deseni: durumu yalnizca await cozuldukten SONRA
-  // degistiriyoruz. Boylece basarisiz bir gizleme, satiri listeden
-  // kaldirmis gibi yalan soylemiyor - hata gosterilir, satir yerinde kalir.
-  async function gizle(konusmaId: string) {
+  // "SIL" (kullanicinin karari 2026-09-14, "Gizle"nin yerine): satir sola
+  // kaydirilinca sagda. Benden silinir, karsi tarafta kalir; biri
+  // yazinca yalnizca yeni mesajlarla geri gelir (sunucu `konusmayi_sil`).
+  // Durum yalnizca await cozuldukten SONRA degisiyor: basarisiz bir
+  // silme satiri kaldirmis gibi yalan soylemesin - hata gosterilir,
+  // satir yerinde kalir.
+  async function sil(konusmaId: string) {
     try {
-      await konusmayiGizle(konusmaId)
+      await konusmayiSil(konusmaId)
       setKonusmalar((mevcut) => mevcut.filter((k) => k.konusmaId !== konusmaId))
       setHata(null)
     } catch (e) {
@@ -127,6 +131,22 @@ export default function MesajlarEkrani() {
             const okunmamis = item.okunmamis > 0
 
             return (
+              <Swipeable
+                friction={2}
+                rightThreshold={40}
+                overshootRight={false}
+                renderRightActions={() => (
+                  <Pressable
+                    style={stiller.silButonu}
+                    onPress={() => sil(item.konusmaId)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('mesajlar.sil')}
+                    testID={`konusma-sil-${item.konusmaId}`}
+                  >
+                    <Text style={stiller.silButonuYazi}>{t('mesajlar.sil')}</Text>
+                  </Pressable>
+                )}
+              >
               <View style={stiller.satir}>
                 <Pressable
                   onPress={() => acilabilirMi && router.push(`/sohbet/${item.kisiId}`)}
@@ -168,14 +188,8 @@ export default function MesajlarEkrani() {
                     {item.sonMesaj ?? ''}
                   </Text>
                 </Pressable>
-                <Pressable
-                  onPress={() => gizle(item.konusmaId)}
-                  accessibilityRole="button"
-                  hitSlop={8}
-                >
-                  <Text style={stiller.gizleButonu}>{t('mesajlar.gizle')}</Text>
-                </Pressable>
               </View>
+              </Swipeable>
             )
           }}
           ListEmptyComponent={
@@ -252,6 +266,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
+    backgroundColor: renk.zemin,
     paddingVertical: bosluk.m,
     borderBottomWidth: 1,
     borderBottomColor: renk.cizgi,
@@ -291,10 +306,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  gizleButonu: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinSoluk,
+  // Kaydirinca acilan Sil: kirmizi, satir boyunca, iOS Mail deseni.
+  // Satir zemini sayfa zeminiyle ayni (beyaz) olsun ki kaydirirken
+  // altta ne oldugu gorulmesin - kirmizi yalnizca acilan alan.
+  silButonu: {
+    backgroundColor: renk.yikici,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: bosluk.xl,
+    marginVertical: 0,
+  },
+  silButonuYazi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde,
+    color: '#FFFFFF',
   },
 
   bosAlan: { paddingTop: bosluk.xxl, alignItems: 'center' },

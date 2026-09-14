@@ -102,6 +102,17 @@ export async function konusmayiGizle(konusmaId: string): Promise<void> {
 }
 
 /**
+ * KONUSMAYI KENDI TARAFIMDAN SIL (2026-09-14, kullanicinin karari:
+ * "Sil'e basinca benden silinir, karsi tarafta kalir"). Gizle'den farki:
+ * silme ani kaydedilir, oncesindeki mesajlar bana bir daha gelmez.
+ * Konusma biri yazinca yalnizca yeni mesajlarla geri gelir. Satirlar
+ * silinmez (karsi taraf, sikayet ve moderasyon izi durur).
+ */
+export async function konusmayiSil(konusmaId: string): Promise<void> {
+  await rpcCagir('konusmayi_sil', { p_konusma_id: konusmaId })
+}
+
+/**
  * MESAJ ISTEGI: arkadasin olmayan birinden gelen ilk mesaj.
  *
  * Kullanicinin karari (2026-09-01): boyle bir mesaj Mesajlar kutusuna

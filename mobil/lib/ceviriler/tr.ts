@@ -234,7 +234,7 @@ export default {
     baslik: 'Mesajlar',
     bosBaslik: 'Henüz bir konuşman yok',
     silinmisKullanici: 'Silinmiş kullanıcı',
-    gizle: 'Gizle',
+    sil: 'Sil',
     istekler: 'İstekler',
     istekRozeti: 'İstek',
   },

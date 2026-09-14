@@ -217,6 +217,11 @@ async function konusmaTemizleVeDogrula(konusmaId: string) {
 }
 
 async function senaryo(isim: string, fn: () => Promise<void>) {
+  // SLOOIN_SENARYO=66 (ya da "41,66") verilince yalnizca o numarali
+  // senaryolar kosar; on kosul kurulumlari her senaryonun icinde oldugu
+  // icin tek senaryo tek basina calisabiliyor. Tam kosum icin bos birak.
+  const secim = process.env.SLOOIN_SENARYO
+  if (secim && !secim.split(',').map((x) => x.trim()).includes(isim.split(' ')[0])) return
   console.log(`\n--- Senaryo: ${isim} ---`)
   try {
     await fn()
@@ -3491,6 +3496,56 @@ async function main() {
       p_not: 'kimliksiz',
     })
     esitMi(anonHata !== null, true, 'kimliksiz cagri reddedilir')
+  })
+
+  await senaryo('66 - Konusmayi sil: benden gider, karsi tarafta kalir, yeni mesajla geri gelir', async () => {
+    // Kullanicinin karari 2026-09-14: "Sil'e basinca benden silinir,
+    // karsi tarafta kalir." Gizle (senaryo 41) gecmisi geri getiriyordu;
+    // Sil silme anindan oncekileri bir daha GOSTERMEZ.
+    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
+    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', { p_kullanici_id: aId, p_kabul: true })
+    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+
+    const { data: konusmaId, error: m1Hata } = await a.rpc('mesaj_gonder', { p_kullanici_id: bId, p_metin: 'senaryo 66 - eski 1' })
+    esitMi(m1Hata, null, 'A ilk mesaji gonderebiliyor')
+    const { error: m2Hata } = await b.rpc('mesaj_gonder', { p_kullanici_id: aId, p_metin: 'senaryo 66 - eski 2' })
+    esitMi(m2Hata, null, 'B cevap yazabiliyor')
+
+    const { error: silHata } = await a.rpc('konusmayi_sil', { p_konusma_id: konusmaId })
+    esitMi(silHata, null, 'A konusmayi silebiliyor')
+
+    const { data: aListe } = await a.rpc('konusmalarim')
+    esitMi(((aListe ?? []) as KonusmaSatiri[]).some((k) => k.kisi_id === bId), false, "sildikten sonra A'nin kutusunda B yok")
+
+    const { data: bListe } = await b.rpc('konusmalarim')
+    const bSatir = ((bListe ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === aId)
+    esitMi(bSatir?.son_mesaj, 'senaryo 66 - eski 2', "B'nin kutusunda konusma ve gecmis aynen duruyor")
+    const { data: bMesajlar } = await b.rpc('mesajlari_getir', { p_konusma_id: konusmaId })
+    esitMi((bMesajlar ?? []).length, 2, 'B iki eski mesaji da hala okuyor')
+
+    const { error: aOkumaHata, data: aMesajlar } = await a.rpc('mesajlari_getir', { p_konusma_id: konusmaId })
+    esitMi(aOkumaHata, null, 'A konusmayi dogrudan acsa da hata yok (uyelik duruyor)')
+    esitMi((aMesajlar ?? []).length, 0, 'A icin eski mesajlar artik GORUNMUYOR')
+
+    const { error: m3Hata } = await b.rpc('mesaj_gonder', { p_kullanici_id: aId, p_metin: 'senaryo 66 - yeni' })
+    esitMi(m3Hata, null, 'B yeni mesaj yazabiliyor')
+
+    const { data: aListe2 } = await a.rpc('konusmalarim')
+    const aSatir = ((aListe2 ?? []) as KonusmaSatiri[]).find((k) => k.kisi_id === bId)
+    esitMi(aSatir?.son_mesaj, 'senaryo 66 - yeni', "yeni mesajla konusma A'ya geri geldi, son mesaj yeni olan")
+    esitMi(aSatir?.okunmamis, 1, 'okunmamis sayisi yalnizca yeni mesaji sayiyor (eski 2 degil)')
+    const { data: aMesajlar2 } = await a.rpc('mesajlari_getir', { p_konusma_id: konusmaId })
+    esitMi(((aMesajlar2 ?? []) as { metin: string }[]).map((m) => m.metin), ['senaryo 66 - yeni'], 'A yalnizca yeni mesaji goruyor')
+
+    const { data: bMesajlar2 } = await b.rpc('mesajlari_getir', { p_konusma_id: konusmaId })
+    esitMi((bMesajlar2 ?? []).length, 3, 'B ucunu de goruyor')
+
+    const { error: birakHata } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(birakHata, null, 'temizlik: bag koparilabiliyor')
+    const takipKalan = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(takipKalan, [], "temizlik: iki yonun ikisi de takipler'den gitti")
+    await konusmaTemizleVeDogrula(konusmaId as string)
   })
 
   await temizle(t)
