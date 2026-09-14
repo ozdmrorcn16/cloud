@@ -114,15 +114,34 @@ describe('MesajlarEkrani', () => {
     expect(screen.queryByText('Gizle')).toBeNull()
   })
 
-  it('Sil dugmesine basinca konusmayiSil dogru konusma id ile cagrilir ve satir listeden kalkar', async () => {
+  // Sil ONAY ISTER (kullanicinin istegi 2026-09-14: "Sil'e basinca bir
+  // uyari gorunsun, onay verince silinsin").
+  it('Sil dugmesi once uyari acar; onaylayinca konusmayiSil cagrilir ve satir kalkar', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
     ;(konusmayiSil as jest.Mock).mockResolvedValue(undefined)
 
     await render(<MesajlarEkrani />)
     await fireEvent.press(await screen.findByTestId('konusma-sil-k1'))
 
+    expect(konusmayiSil).not.toHaveBeenCalled()
+    expect(screen.getByText('Konuşmayı sil')).toBeTruthy()
+    expect(screen.getByText(/karşı tarafta kalır/)).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
+
     await waitFor(() => expect(konusmayiSil).toHaveBeenCalledWith('k1'))
     await waitFor(() => expect(screen.queryByText('Orcun Ozdemir')).toBeNull())
+  })
+
+  it('uyaride Vazgec: silinmez, satir kalir', async () => {
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
+
+    await render(<MesajlarEkrani />)
+    await fireEvent.press(await screen.findByTestId('konusma-sil-k1'))
+    await fireEvent.press(screen.getByText('Vazgeç'))
+
+    expect(konusmayiSil).not.toHaveBeenCalled()
+    expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
+    expect(screen.queryByText('Konuşmayı sil')).toBeNull()
   })
 
   it('silme reddedilirse hata mesaji gorunur ve satir listede kalir', async () => {
@@ -131,6 +150,7 @@ describe('MesajlarEkrani', () => {
 
     await render(<MesajlarEkrani />)
     await fireEvent.press(await screen.findByTestId('konusma-sil-k1'))
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()

@@ -651,7 +651,9 @@ export default function ProfilEkrani() {
             <View style={stiller.kimlikKap}>
               <ProfilHaritaZemini
                 yukseklik={kimlikYuksekligi + HARITA_KUYRUGU}
-                ustTasma={HARITA_UST_TASMA}
+                // Guvenli alan da tasmaya dahil (2026-09-14): kenar
+                // saatin ustunde degil, ekranin DISINDA.
+                ustTasma={HARITA_UST_TASMA + guvenliAlan.top}
               />
 
               <View

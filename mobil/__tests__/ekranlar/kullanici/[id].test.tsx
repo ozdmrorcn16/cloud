@@ -1,4 +1,5 @@
-import { Share } from 'react-native'
+import { Share, StyleSheet } from 'react-native'
+import { acikRenk } from '../../../src/tasarim/tema'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir, kendiKullaniciIdim } from '../../../lib/profil'
@@ -270,10 +271,17 @@ describe('KullaniciProfiliEkrani', () => {
     expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
   })
 
-  it('takip ediyorken birakma butonunu gosterir', async () => {
+  // 2026-09-14 (kullanicinin istegi): "Arkadasliktan cikar" artik ayri
+  // bir satir degil; "Arkadassin" dugmesine basinca acilan menude.
+  it('arkadasken "Arkadassin" basilabilir ve menude "Arkadasliktan cikar" var; ekranda ayri satir YOK', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
     await render(<KullaniciProfiliEkrani />)
-    expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
+    expect(await screen.findByText('Arkadaşsın')).toBeTruthy()
+    expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
+
+    await fireEvent.press(screen.getByTestId('arkadas-durumu'))
+
+    expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
   })
 
   it('sunucu hatasini gosterir', async () => {
@@ -292,6 +300,7 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByTestId('arkadas-durumu'))
     await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
@@ -334,7 +343,7 @@ describe('KullaniciProfiliEkrani', () => {
 
     // 2026-09-13: "Istek gonderildi" etiketi kalkti - istegin durumu
     // sohbet ekraninin kendisinde gorunuyor.
-    expect(await screen.findByText('Arkadaşlıktan çıkar')).toBeTruthy()
+    expect(await screen.findByText('Arkadaşsın')).toBeTruthy()
     expect(screen.queryByText('İstek gönderildi')).toBeNull()
     expect(screen.queryByText('İsteği geri çek')).toBeNull()
     expect(screen.getByText('Mesaj yaz')).toBeTruthy()
@@ -500,10 +509,11 @@ describe('KullaniciProfiliEkrani', () => {
     ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
 
     await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByTestId('arkadas-durumu'))
     await fireEvent.press(await screen.findByText('Arkadaşlıktan çıkar'))
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
+    expect(screen.getByText('Arkadaşsın')).toBeTruthy()
     expect(screen.queryByText('Arkadaş ekle')).toBeNull()
   })
 
@@ -800,5 +810,22 @@ describe('KullaniciProfiliEkrani duzen', () => {
     // Altinci ve yedinci KESILIYOR.
     expect(screen.queryByText('Mekan 5')).toBeNull()
     expect(screen.queryByText('Mekan 6')).toBeNull()
+  })
+
+  // DUGME RENKLERI (kullanicinin istegi 2026-09-14: "daha belirgin"):
+  // "Mesaj yaz" dolu turuncu + beyaz yazi; "Arkadassin" turuncu cizgili
+  // + turuncu yazi. Onceki ikisi de notr gri/seftaliydi.
+  it('"Mesaj yaz" dolu turuncu, "Arkadassin" turuncu cerceveli', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    const mesaj = await screen.findByTestId('mesaj-yaz')
+    const mesajStil = StyleSheet.flatten(typeof mesaj.props.style === 'function' ? mesaj.props.style({ pressed: false }) : mesaj.props.style)
+    expect(mesajStil.backgroundColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(screen.getByText('Mesaj yaz').props.style).color).toBe('#FFFFFF')
+
+    const durum = screen.getByTestId('arkadas-durumu')
+    const durumStil = StyleSheet.flatten(typeof durum.props.style === 'function' ? durum.props.style({ pressed: false }) : durum.props.style)
+    expect(durumStil.borderColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(screen.getByText('Arkadaşsın').props.style).color).toBe(acikRenk.turuncuYazi)
   })
 })

@@ -394,6 +394,13 @@ describe('Ust guvenli alan', () => {
     expect(ustPay(ekran)).toBeUndefined()
   })
 
+  it('BASKASININ PROFILI: kok duzen ust pay VERMIYOR - harita dokusu saatin ardina uzaniyor', async () => {
+    // Kullanicinin istegi 2026-09-14: butun profiller ayni gorunsun.
+    mockSegments = ['kullanici', 'k2']
+    const ekran = await render(<KokLayout />)
+    expect(ustPay(ekran)).toBeUndefined()
+  })
+
   it('PROFIL DISINDAKI diger ekranlar ust payi kok duzenden aliyor', async () => {
     // Karsi kontrol: pay kosulu bir ekrana ozel, herkese kapali degil.
     mockSegments = ['bazi-ekran']

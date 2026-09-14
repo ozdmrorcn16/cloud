@@ -172,6 +172,8 @@ export default {
     sil: 'Löschen',
     istekler: 'Anfragen',
     istekRozeti: 'Anfrage',
+    silBaslik: 'Unterhaltung löschen',
+    silAciklama: 'Diese Unterhaltung wird aus deiner Liste entfernt; die andere Person behält sie. Schreibt einer von euch erneut, erscheinen nur neue Nachrichten.',
   },
   mesajIstekleri: {
     baslik: 'Anfragen',

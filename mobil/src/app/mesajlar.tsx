@@ -11,6 +11,7 @@ import {
 import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { Avatar } from '../tasarim/Avatar'
+import { OnayPenceresi } from '../tasarim/OnayPenceresi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
@@ -22,6 +23,9 @@ export default function MesajlarEkrani() {
   const [konusmalar, setKonusmalar] = useState<Konusma[]>([])
   const [istekSayisi, setIstekSayisi] = useState(0)
   const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
+  // Silme onayi (kullanicinin istegi 2026-09-14): kaydirip Sil'e basmak
+  // sormaya yeter, silmeye yetmez. Bekleyen konusma id'si.
+  const [silOnayi, setSilOnayi] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
 
   // Iki istek PARALEL gidiyor: rozet, konusma listesinin donmesini
@@ -79,6 +83,7 @@ export default function MesajlarEkrani() {
   // silme satiri kaldirmis gibi yalan soylemesin - hata gosterilir,
   // satir yerinde kalir.
   async function sil(konusmaId: string) {
+    setSilOnayi(null)
     try {
       await konusmayiSil(konusmaId)
       setKonusmalar((mevcut) => mevcut.filter((k) => k.konusmaId !== konusmaId))
@@ -138,7 +143,7 @@ export default function MesajlarEkrani() {
                 renderRightActions={() => (
                   <Pressable
                     style={stiller.silButonu}
-                    onPress={() => sil(item.konusmaId)}
+                    onPress={() => setSilOnayi(item.konusmaId)}
                     accessibilityRole="button"
                     accessibilityLabel={t('mesajlar.sil')}
                     testID={`konusma-sil-${item.konusmaId}`}
@@ -202,6 +207,14 @@ export default function MesajlarEkrani() {
         />
       </View>
 
+      <OnayPenceresi
+        acikMi={silOnayi !== null}
+        baslik={t('mesajlar.silBaslik')}
+        aciklama={t('mesajlar.silAciklama')}
+        eylemEtiketi={t('mesajlar.sil')}
+        onOnay={() => silOnayi && sil(silOnayi)}
+        onVazgec={() => setSilOnayi(null)}
+      />
     </View>
   )
 }

@@ -43,6 +43,8 @@ import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { bolgeMetni } from '../../../lib/bolge'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -338,7 +340,15 @@ export default function KullaniciProfiliEkrani() {
     }
   }
 
+  // "Arkadassin" dugmesi (kullanicinin istegi 2026-09-14): basinca
+  // "Arkadasliktan cikar" secenegi acilir; ayri satir yok.
+  const [arkadasMenusu, setArkadasMenusu] = useState(false)
+  // Ust pay BURADA veriliyor, kok duzende degil (kendi profille ayni):
+  // harita dokusu saatin ardina kadar uzaniyor.
+  const guvenliAlan = useSafeAreaInsets()
+
   async function takibiBirakEt() {
+    setArkadasMenusu(false)
     try {
       await takibiBirak(id)
       setBagDurum((onceki) => (onceki ? { ...onceki, takip: 'yok' } : onceki))
@@ -437,7 +447,7 @@ export default function KullaniciProfiliEkrani() {
 
   if (!profil) {
     return (
-      <View style={stiller.kok}>
+      <View style={[stiller.kok, { paddingTop: guvenliAlan.top }]}>
         {ustCubuk}
         <View style={stiller.icerik}>
           {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -449,22 +459,25 @@ export default function KullaniciProfiliEkrani() {
 
   return (
     <View style={stiller.kok}>
-      {ustCubuk}
-
       <ScrollView
         testID="kullanici-kaydirma"
-        contentContainerStyle={stiller.icerik}
+        contentContainerStyle={[stiller.icerik, { paddingTop: guvenliAlan.top }]}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={160}
         onScroll={dibeYaklasinca}
       >
+        {/* Ust cubuk KAYDIRMANIN ICINDE (kendi profildeki disli gibi):
+            doku onun da arkasindan gecip saatin ardina uzaniyor. */}
+        {ustCubuk}
+
         {/* KIMLIK BLOGU - kendi profille AYNI: avatar solda, bilgiler
             saginda, arkada isimsiz harita dokusu. Doku kimlik blogunun
-            OLCUELEN yuksekligine gore uzuyor (biyografi 1-5 satir). */}
+            OLCUELEN yuksekligine gore uzuyor (biyografi 1-5 satir).
+            Ust tasma guvenli alani da kapsiyor: kenar ekranin DISINDA. */}
         <View style={stiller.kimlikKap}>
           <ProfilHaritaZemini
             yukseklik={kimlikYuksekligi + HARITA_KUYRUGU}
-            ustTasma={HARITA_UST_TASMA}
+            ustTasma={HARITA_UST_TASMA + guvenliAlan.top}
           />
 
           <View
@@ -513,9 +526,14 @@ export default function KullaniciProfiliEkrani() {
               cikmak asagidaki ikincil satirda. */}
           <View style={stiller.eylemler}>
             {bagDurum?.takip === 'kabul' ? (
-              <View style={[stiller.eylemButonu, stiller.eylemDurum]} testID="arkadas-durumu">
-                <Text style={stiller.eylemDurumYazi}>{t('kullanici.arkadassin')}</Text>
-              </View>
+              <Pressable
+                style={({ pressed }) => [stiller.eylemButonu, stiller.eylemArkadas, pressed && stiller.eylemArkadasBasili]}
+                onPress={() => setArkadasMenusu(true)}
+                accessibilityRole="button"
+                testID="arkadas-durumu"
+              >
+                <Text style={stiller.eylemArkadasYazi}>{t('kullanici.arkadassin')}</Text>
+              </Pressable>
             ) : bagDurum?.takip === 'beklemede' ? (
               <View style={[stiller.eylemButonu, stiller.eylemDurum]} testID="arkadas-durumu">
                 <Text style={stiller.eylemDurumYazi}>{t('kullanici.istekBeklemede')}</Text>
@@ -531,29 +549,22 @@ export default function KullaniciProfiliEkrani() {
               </Pressable>
             )}
             <Pressable
-              style={({ pressed }) => [stiller.eylemButonu, pressed && stiller.eylemBasili]}
+              style={({ pressed }) => [stiller.eylemButonu, stiller.eylemBirincil, pressed && stiller.eylemBirincilBasili]}
               onPress={() => router.push(`/sohbet/${id}`)}
               accessibilityRole="button"
               testID="mesaj-yaz"
             >
-              <Text style={stiller.eylemYazi}>{t('kullanici.mesajYaz')}</Text>
+              <Text style={stiller.eylemBirincilYazi}>{t('kullanici.mesajYaz')}</Text>
             </Pressable>
           </View>
         </View>
 
         {/* Ikincil bag eylemleri: yalnizca gerektiginde ciziliyor. */}
-        {(bagDurum?.takip === 'beklemede' || bagDurum?.takip === 'kabul') && (
+        {bagDurum?.takip === 'beklemede' && (
           <View style={stiller.ikincilSatir}>
-            {bagDurum.takip === 'beklemede' && (
-              <Pressable onPress={takibiBirakEt} accessibilityRole="button" hitSlop={8}>
-                <Text style={stiller.ikincilYazi}>{t('kullanici.istegiGeriCek')}</Text>
-              </Pressable>
-            )}
-            {bagDurum.takip === 'kabul' && (
-              <Pressable onPress={takibiBirakEt} accessibilityRole="button" hitSlop={8}>
-                <Text style={stiller.ikincilYazi}>{t('kullanici.bagiKopar')}</Text>
-              </Pressable>
-            )}
+            <Pressable onPress={takibiBirakEt} accessibilityRole="button" hitSlop={8}>
+              <Text style={stiller.ikincilYazi}>{t('kullanici.istegiGeriCek')}</Text>
+            </Pressable>
           </View>
         )}
 
@@ -721,6 +732,18 @@ export default function KullaniciProfiliEkrani() {
         </View>
       </ScrollView>
 
+      <SecimPenceresi
+        acikMi={arkadasMenusu}
+        secimler={[
+          {
+            etiket: t('kullanici.bagiKopar'),
+            testID: 'menu-arkadasliktan-cik',
+            yikici: true,
+            onSec: takibiBirakEt,
+          },
+        ]}
+        onKapat={() => setArkadasMenusu(false)}
+      />
       <OnayPenceresi
         acikMi={engelleOnayi}
         baslik={t('kullanici.engelle')}
@@ -743,12 +766,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.l,
     paddingBottom: bosluk.xs,
-    // Paylas ikonu sag kenardan "cok az" iceride - kendi profildeki
-    // disliyle ayni (2026-09-13).
-    paddingRight: bosluk.sayfa + 6,
+    // Kaydirmanin icinde: yatay pay `icerik`ten geliyor. Paylas ikonu
+    // sag kenardan "cok az" iceride - kendi profildeki disliyle ayni.
+    paddingRight: 6,
+    // Dokunun ustunde kalsin.
+    zIndex: 1,
   },
 
   icerik: {
@@ -819,8 +843,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   /* Basili hal: dolgu koyulasiyor (opaklik dusurmek "yukleniyor" gibi
      okunuyordu, 2026-09-07 dersi). */
   eylemBasili: { backgroundColor: renk.cizgi },
-  /* DURUM (beklemede / arkadassin): basilamaz, dolgu notr. Turuncu
-     birakip yalnizca opaklik dusurmek "yukleniyor" gibi okunurdu. */
+  /* MESAJ YAZ - birincil, dolu turuncu + beyaz yazi (kullanicinin
+     istegi 2026-09-14: "daha belirgin bir renk"). */
+  eylemBirincil: { backgroundColor: renk.turuncu },
+  eylemBirincilBasili: { backgroundColor: renk.turuncuBasili },
+  eylemBirincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
+  /* ARKADASSIN - turuncu cerceve + turuncu yazi: kurulu bir bag, ama
+     basilabilir (menu acar). Dolu turuncuyla yarismasin diye cerceveli. */
+  eylemArkadas: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: renk.turuncu },
+  eylemArkadasBasili: { backgroundColor: renk.turuncuZemin },
+  eylemArkadasYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
+  /* DURUM (beklemede): basilamaz, dolgu notr. Turuncu birakip yalnizca
+     opaklik dusurmek "yukleniyor" gibi okunurdu. */
   eylemDurum: { backgroundColor: renk.cizgi },
   eylemDurumYazi: {
     fontFamily: yazi.govdeKalin,

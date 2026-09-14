@@ -303,6 +303,20 @@ hata: yazma kutusu klavyenin altinda kaliyordu.
   `SLOOIN_SENARYO=66` filtresiyle tek basina kosulabiliyor).
   Kullanicinin gizledigi tek konusma SQL ile geri acildi.
   KVKK listesi: "Konusmayi kendi tarafindan silme" bolumu.
+  Sil ONAY ISTER (kullanicinin istegi, ayni gun): `OnayPenceresi`,
+  metin `mesajlar.silBaslik/silAciklama` (7 dil).
+- PROFIL EKRANLARI (ayni gun, kullanicinin istekleri): (a) kendi
+  profildeki arkadas listesi: `Avatar` + sagda `UcNoktaIkonu` ->
+  `SecimPenceresi` (Arkadasliktan cikar / Engelle; engel `OnayPenceresi`
+  ile). YENI BILESEN YAZILMADI - `SecimPenceresi` zaten vardi (bir kez
+  yazip silindi; once `src/tasarim`a bak). (b) baskasinin profili:
+  "Mesaj yaz" dolu turuncu + beyaz, "Arkadassin" turuncu cerceveli ve
+  BASILABILIR -> menude "Arkadasliktan cikar" (ayri satir kalkti,
+  "Istegi geri cek" satiri duruyor). (c) "ust taraf sonsuz": kok duzen
+  `kullanici/[id]` icin de ust pay vermiyor (`_layout.tsx`
+  `baskasininProfili`), ust cubuk kaydirmanin icine alindi, iki
+  profilde de doku tasmasi `HARITA_UST_TASMA + guvenliAlan.top` -
+  kenar ekranin disinda.
 - Geri oku ust barda (`GeriOkIkonu`); gecmis yoksa (bildirimden
   acildi) `/mesajlar`a gider. Uygulamada Stack yok, ekran kendi okunu
   tasimak zorunda.

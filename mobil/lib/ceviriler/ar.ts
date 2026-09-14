@@ -172,6 +172,8 @@ export default {
     sil: 'حذف',
     istekler: 'الطلبات',
     istekRozeti: 'طلب',
+    silBaslik: 'حذف المحادثة',
+    silAciklama: 'تُحذف هذه المحادثة من قائمتك وتبقى لدى الطرف الآخر. إذا كتب أحدكما مجددًا، ستظهر الرسائل الجديدة فقط.',
   },
   mesajIstekleri: {
     baslik: 'الطلبات',

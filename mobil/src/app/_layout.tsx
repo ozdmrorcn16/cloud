@@ -183,8 +183,11 @@ function YonlendirmeKontrolu() {
   //
   // Saat okunur kaliyor: seftali acik bir ton, sistem saati koyu.
   const profilKoku = segments[0] === 'profil' && !segments[1]
+  // Baskasinin profili de ayni gorunum (kullanicinin istegi 2026-09-14:
+  // "ekranin ust tarafini sonsuz gibi yap, butun profiller icin").
+  const baskasininProfili = segments[0] === 'kullanici' && !!segments[1]
   const karsilamaEkrani = segments[0] === '(auth)' && segments[1] === 'karsilama'
-  const kendiUstPayiniKoyar = profilKoku || karsilamaEkrani
+  const kendiUstPayiniKoyar = profilKoku || baskasininProfili || karsilamaEkrani
 
   return (
     <View style={stiller.kok}>

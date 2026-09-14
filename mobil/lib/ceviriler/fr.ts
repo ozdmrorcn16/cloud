@@ -172,6 +172,8 @@ export default {
     sil: 'Supprimer',
     istekler: 'Demandes',
     istekRozeti: 'Demande',
+    silBaslik: 'Supprimer la conversation',
+    silAciklama: "Cette conversation est retirée de ta liste ; l'autre personne la conserve. Si l'un de vous écrit à nouveau, seuls les nouveaux messages apparaîtront.",
   },
   mesajIstekleri: {
     baslik: 'Demandes',
