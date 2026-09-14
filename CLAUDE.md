@@ -273,6 +273,31 @@ standart sozlesme talebi 2026-09-14'te GONDERILDI (Resend API,
 destek@ -> support@resend.com, delivered; cevap slooinapp@gmail.com'a
 duser).
 
+### SOHBET: PROFIL RESIMLERI, "TESLIM EDILDI", KLAVYE - 2026-09-14
+
+Kullanicinin telefondan uc istegi (aynı sabah): (1) Mesajlar listesinde
+satir basinda profil resmi, (2) sohbet ekraninda karsi tarafin profil
+resmi, (3) kendi mesajinin altinda "Teslim edildi"; ayrica bildirdigi
+hata: yazma kutusu klavyenin altinda kaliyordu.
+
+- Avatar bildirimlerle AYNI yol: `Avatar` bileseni + `avatarlariGetir`
+  (listeden sonra, ayri; kova okunamazsa bas harf, hata yok). Listede
+  48, ust barda 36 px; ust bardaki avatar profile gider.
+- "Teslim edildi" YALNIZCA en son kendi mesajimin altinda (Instagram
+  deseni); iyimser (`yerelMi`) satirda yazilmaz, sunucu satiri gelince
+  yazar. "Goruldu" YOK - karsi tarafin son okumasi istemciye acik degil.
+  `sohbet.teslimEdildi` 7 dil.
+- Klavye: iOS'ta `keyboardWillShow/Hide` ile alt pay ALT_GEZINME_PAYI
+  yerine klavye yuksekligi (gezinme cubugu zaten klavyenin arkasinda).
+  Android'e dokunulmadi (pencere `resize` ile kendisi daraliyor).
+  **Web'de olculemedi**, telefonda dogrulanmali.
+- Yan duzeltme: `hesabi-sil.test.tsx` "bir saat" bekliyordu (dun geceki
+  10 dakika degisikligi testi guncellememisti).
+
+Jest 75 paket / 956 test. Yayin: web `slooin--13w4011lam`, OTA grup
+`96d76377-b436-41d7-b86e-9b872546461d`. Goruntuler
+`tasarim/mesajlar-avatar.png`, `tasarim/sohbet-avatar-teslim.png`.
+
 ### WEB GIRIS SAYFASI IPTAL, SITEDE expo.app YOK - 2026-09-14
 
 Kullanici Swarm referansiyla `slooin.com/giris` istemisti; sayfa
