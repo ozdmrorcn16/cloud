@@ -10,6 +10,9 @@ import {
   checkIndenAyril,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { takibiBirak } from '../../../lib/bag'
+import { engelle } from '../../../lib/engelleme'
+import { avatarlariGetir } from '../../../lib/akis'
 import { checkIniSil } from '../../../lib/checkin'
 import { etkilesimOzetleriniGetir, begen, paylas } from '../../../lib/etkilesim'
 
@@ -44,6 +47,12 @@ jest.mock('../../../lib/etkilesim', () => ({
   paylas: jest.fn(),
 }))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
+jest.mock('../../../lib/bag', () => ({ takibiBirak: jest.fn() }))
+jest.mock('../../../lib/engelleme', () => ({ engelle: jest.fn() }))
+jest.mock('../../../lib/akis', () => ({
+  ...jest.requireActual('../../../lib/akis'),
+  avatarlariGetir: jest.fn().mockResolvedValue({}),
+}))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -745,5 +754,76 @@ describe('ProfilEkrani sayac satiri ve sekmeler', () => {
     fireEvent.press(await screen.findByText('En sık'))
 
     expect(screen.getAllByTestId('sekme-gostergesi')).toHaveLength(1)
+  })
+})
+
+// ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
+// sagda "..." -> Arkadasliktan cikar / Engelle.
+describe('ProfilEkrani arkadas listesi', () => {
+  const ARKADAS = { id: 'k2', kullaniciAdi: 'semra', ad: 'Semra Ozdemir' }
+
+  async function arkadasSekmesiniAc() {
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([ARKADAS])
+    await render(<ProfilEkrani />)
+    await screen.findByText('Arkadaş')
+    await fireEvent.press(screen.getByText('Arkadaş'))
+    await screen.findByText('Semra Ozdemir')
+  }
+
+  it('satirda arkadasin profil resmi var (avatarlariGetir ile)', async () => {
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ k2: 'https://x/semra.jpg' })
+    await arkadasSekmesiniAc()
+
+    await waitFor(() => expect(avatarlariGetir).toHaveBeenCalledWith(['k2']))
+    await waitFor(() =>
+      expect(screen.getByTestId('arkadas-avatar-k2').props.source).toEqual([{ uri: 'https://x/semra.jpg' }])
+    )
+  })
+
+  it('"..." dugmesi iki secenek acar: Arkadasliktan cikar ve Engelle', async () => {
+    await arkadasSekmesiniAc()
+
+    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
+
+    expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
+    expect(screen.getByText('Engelle')).toBeTruthy()
+  })
+
+  it('Arkadasliktan cikar: takibiBirak cagrilir, satir listeden kalkar', async () => {
+    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
+    await arkadasSekmesiniAc()
+
+    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
+    await fireEvent.press(screen.getByText('Arkadaşlıktan çıkar'))
+
+    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
+    await waitFor(() => expect(screen.queryByText('Semra Ozdemir')).toBeNull())
+  })
+
+  it('Engelle: once onay penceresi, "Evet, engelle" ile engelle cagrilir ve satir kalkar', async () => {
+    ;(engelle as jest.Mock).mockResolvedValue(undefined)
+    await arkadasSekmesiniAc()
+
+    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
+    await fireEvent.press(screen.getByText('Engelle'))
+
+    // Onay gelmeden engelleme YOK.
+    expect(engelle).not.toHaveBeenCalled()
+    expect(screen.getByText('Evet, engelle')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Evet, engelle'))
+
+    await waitFor(() => expect(engelle).toHaveBeenCalledWith('k2'))
+    await waitFor(() => expect(screen.queryByText('Semra Ozdemir')).toBeNull())
+  })
+
+  it('islem reddedilirse hata gorunur, satir yerinde kalir', async () => {
+    ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
+    await arkadasSekmesiniAc()
+
+    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
+    await fireEvent.press(screen.getByText('Arkadaşlıktan çıkar'))
+
+    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
+    expect(screen.getByText('Semra Ozdemir')).toBeTruthy()
   })
 })

@@ -37,7 +37,12 @@ import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
-import { anidanAkisOgesi } from '../../../lib/akis'
+import { anidanAkisOgesi, avatarlariGetir } from '../../../lib/akis'
+import { takibiBirak } from '../../../lib/bag'
+import { engelle } from '../../../lib/engelleme'
+import { Avatar } from '../../tasarim/Avatar'
+import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import {
   etkilesimOzetleriniGetir,
   begen,
@@ -228,6 +233,37 @@ export default function ProfilEkrani() {
   // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler).
   const [sekme, setSekme] = useState<'anilar' | 'yerler' | 'fotograflar' | 'arkadaslar'>('anilar')
   const [baglar, setBaglar] = useState<BagKisi[]>([])
+  // ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
+  // sagda "..." -> Arkadasliktan cikar / Engelle. Avatarlar listeden
+  // sonra ve ayri (bildirimler/mesajlarla ayni yol).
+  const [arkadasAvatarlari, setArkadasAvatarlari] = useState<Record<string, string | null>>({})
+  const [secenekAcikKisi, setSecenekAcikKisi] = useState<BagKisi | null>(null)
+  const [engelOnayiKisi, setEngelOnayiKisi] = useState<BagKisi | null>(null)
+
+  // Iki eylem de sunucu cevabindan SONRA satiri kaldiriyor: basarisiz
+  // islem satiri kaldirmis gibi yalan soylemesin (mesajlardaki desen).
+  async function arkadasliktanCikar(kisi: BagKisi) {
+    setSecenekAcikKisi(null)
+    try {
+      await takibiBirak(kisi.id)
+      setBaglar((mevcut) => mevcut.filter((k) => k.id !== kisi.id))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
+
+  async function arkadasiEngelle(kisi: BagKisi) {
+    try {
+      await engelle(kisi.id)
+      setBaglar((mevcut) => mevcut.filter((k) => k.id !== kisi.id))
+      setHata(null)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    } finally {
+      setEngelOnayiKisi(null)
+    }
+  }
   // Izgaradan acilan buyuk gorunum; null ise kapali.
   const [buyukFotograf, setBuyukFotograf] = useState<string | null>(null)
   // Silme geri alinamaz: once onay. Deger, onayi acik olan aninin
@@ -284,6 +320,11 @@ export default function ProfilEkrani() {
       setBaglar(baglar)
       setFotografUrl(foto)
       setHata(null)
+      if (baglar.length > 0) {
+        avatarlariGetir(baglar.map((k) => k.id))
+          .then(setArkadasAvatarlari)
+          .catch(() => {})
+      }
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
@@ -789,25 +830,35 @@ export default function ProfilEkrani() {
                 </View>
               ) : (
                 baglar.map((kisi) => (
-                  <Pressable
-                    key={kisi.id}
-                    style={stiller.kisiSatiri}
-                    onPress={() => router.push(`/kullanici/${kisi.id}`)}
-                    accessibilityRole="button"
-                  >
-                    <View style={stiller.kisiAvatar}>
-                      <Text style={stiller.kisiBasHarf}>
-                        {(kisi.ad || kisi.kullaniciAdi || '?')
-                          .trim()
-                          .charAt(0)
-                          .toLocaleUpperCase('tr-TR')}
-                      </Text>
-                    </View>
-                    <View style={stiller.yerOrta}>
-                      <Text style={stiller.yerAd}>{kisi.ad}</Text>
-                      <Text style={stiller.yerSemt}>{kisi.kullaniciAdi}</Text>
-                    </View>
-                  </Pressable>
+                  <View key={kisi.id} style={stiller.kisiSatiri}>
+                    <Pressable
+                      style={stiller.kisiSol}
+                      onPress={() => router.push(`/kullanici/${kisi.id}`)}
+                      accessibilityRole="button"
+                      accessibilityLabel={kisi.ad || kisi.kullaniciAdi}
+                    >
+                      <Avatar
+                        fotografUrl={arkadasAvatarlari[kisi.id] ?? null}
+                        ad={kisi.ad}
+                        kullaniciAdi={kisi.kullaniciAdi}
+                        cap={ARKADAS_AVATAR_CAPI}
+                        testID={`arkadas-avatar-${kisi.id}`}
+                      />
+                      <View style={stiller.yerOrta}>
+                        <Text style={stiller.yerAd}>{kisi.ad}</Text>
+                        <Text style={stiller.yerSemt}>{kisi.kullaniciAdi}</Text>
+                      </View>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setSecenekAcikKisi(kisi)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('anaSayfa.secenekler')}
+                      hitSlop={10}
+                      testID={`arkadas-secenekler-${kisi.id}`}
+                    >
+                      <UcNoktaIkonu />
+                    </Pressable>
+                  </View>
                 ))
               )
             ) : sekme === 'fotograflar' ? (
@@ -1011,9 +1062,44 @@ export default function ProfilEkrani() {
           </View>
         </View>
       </Modal>
+      <SecimPenceresi
+        acikMi={secenekAcikKisi !== null}
+        secimler={
+          secenekAcikKisi
+            ? [
+                {
+                  etiket: t('baglar.arkadasliktanCikar'),
+                  testID: 'arkadas-cikar',
+                  onSec: () => arkadasliktanCikar(secenekAcikKisi),
+                },
+                {
+                  etiket: t('baglar.engelle'),
+                  testID: 'arkadas-engelle',
+                  yikici: true,
+                  onSec: () => {
+                    setEngelOnayiKisi(secenekAcikKisi)
+                    setSecenekAcikKisi(null)
+                  },
+                },
+              ]
+            : []
+        }
+        onKapat={() => setSecenekAcikKisi(null)}
+      />
+      <OnayPenceresi
+        acikMi={engelOnayiKisi !== null}
+        baslik={t('kullanici.engelle')}
+        aciklama={t('kullanici.engelleOnayi')}
+        eylemEtiketi={t('kullanici.engelleEvet')}
+        onOnay={() => engelOnayiKisi && arkadasiEngelle(engelOnayiKisi)}
+        onVazgec={() => setEngelOnayiKisi(null)}
+      />
     </View>
   )
 }
+
+// Bildirim ve mesaj satirlariyla ayni cap.
+const ARKADAS_AVATAR_CAPI = 48
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: 16 },
@@ -1293,19 +1379,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   sayilar: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
 
-  kisiAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: renk.turuncuZemin,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  kisiBasHarf: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.turuncuYazi,
-  },
+  /* `kisiAvatar` / `kisiBasHarf` KALDIRILDI (2026-09-14): arkadas
+     satiri ortak `Avatar` bilesenini kullaniyor. */
+  kisiSol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
 
   // Bandin icindeki dugmeler: dolu olan birincil (Profili duzenle),
   // hayalet olan ikincil (Paylas). Band acildigi icin dolu dugme artik
