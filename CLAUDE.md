@@ -283,6 +283,10 @@ hata: yazma kutusu klavyenin altinda kaliyordu.
 - Avatar bildirimlerle AYNI yol: `Avatar` bileseni + `avatarlariGetir`
   (listeden sonra, ayri; kova okunamazsa bas harf, hata yok). Listede
   48, ust barda 36 px; ust bardaki avatar profile gider.
+- Karsi tarafin HER balonunun solunda 28 px avatar (kullanicinin
+  ikinci istegi, ayni sabah: "her yazdigi mesaj satirinin yaninda").
+  Instagram'in "grubun sonuncusunda" sadelestirmesi bilerek
+  YAPILMADI - kullanici "her" dedi.
 - "Teslim edildi" YALNIZCA en son kendi mesajimin altinda (Instagram
   deseni); iyimser (`yerelMi`) satirda yazilmaz, sunucu satiri gelince
   yazar. "Goruldu" YOK - karsi tarafin son okumasi istemciye acik degil.

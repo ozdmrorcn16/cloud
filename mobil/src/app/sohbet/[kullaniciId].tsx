@@ -317,18 +317,32 @@ export default function SohbetEkrani() {
           // Kendi mesajini sikayet etmek sunucuda zaten reddediliyor
           // (Kendi mesajini sikayet edemezsin); arayuz de o yola hic
           // sokmuyor.
+          // Karsi tarafin HER balonunun solunda kucuk avatar (kullanicinin
+          // istegi 2026-09-14: "her yazdigi mesaj satirinin yaninda").
+          // Balonun altina hizali; kendi balonumda yok.
           return (
             <View>
-              <Pressable
-                onLongPress={
-                  benimMi
-                    ? undefined
-                    : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
-                }
-                style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
-              >
-                <Text testID="mesaj-metni">{item.metin}</Text>
-              </Pressable>
+              <View style={benimMi ? stiller.kendiSatiri : stiller.karsiSatiri}>
+                {!benimMi && (
+                  <Avatar
+                    fotografUrl={avatarUrl}
+                    ad={konusmaSatiri?.ad}
+                    kullaniciAdi={konusmaSatiri?.kullaniciAdi ?? ''}
+                    cap={BALON_AVATAR_CAPI}
+                    testID={`balon-avatar-${item.id}`}
+                  />
+                )}
+                <Pressable
+                  onLongPress={
+                    benimMi
+                      ? undefined
+                      : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
+                  }
+                  style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
+                >
+                  <Text testID="mesaj-metni">{item.metin}</Text>
+                </Pressable>
+              </View>
               {item.id === sonKendiMesajimId && (
                 <Text style={stiller.teslim} testID={`teslim-${item.id}`}>
                   {t('sohbet.teslimEdildi')}
@@ -367,6 +381,8 @@ export default function SohbetEkrani() {
 // Ust bar avatari liste satirlarindan (48) kucuk: baslik satirinin
 // yuksekligini buyutmeden adin yaninda durmali.
 const UST_BAR_AVATAR_CAPI = 36
+// Balon yanindaki avatar: metin satirindan buyuk olmasin.
+const BALON_AVATAR_CAPI = 28
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Balonun altinda, sag hizali, soluk ve kucuk: bilgi, vurgu degil.
@@ -431,12 +447,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   liste: { flex: 1 },
 
+  karsiSatiri: { flexDirection: 'row', alignItems: 'flex-end', gap: bosluk.s },
+  kendiSatiri: { alignItems: 'flex-end' },
   mesajBalonu: {
     borderRadius: yuvarlak.kart,
     paddingHorizontal: bosluk.m,
     paddingVertical: bosluk.s + 2,
     marginVertical: bosluk.xs,
     maxWidth: '80%',
+    flexShrink: 1,
   },
   // Kendi mesajin turuncu: konusmada kimin konustugu tek bakista
   // okunmali. Turuncunun burada "eylem" degil "sen" demesi kimligin

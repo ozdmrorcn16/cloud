@@ -512,4 +512,22 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
 
     expect(screen.queryByText('Teslim edildi')).toBeNull()
   })
+
+  it('karsi tarafin HER mesajinin yaninda avatari var, kendi mesajimda yok', async () => {
+    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ 'kullanici-2': 'https://x/ada.jpg' })
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm3', gonderenId: 'kullanici-2', metin: 'Karsi 2' }),
+      mesaj({ id: 'm2', gonderenId: 'kullanici-1', metin: 'Benim' }),
+      mesaj({ id: 'm1', gonderenId: 'kullanici-2', metin: 'Karsi 1' }),
+    ])
+
+    await render(<SohbetEkrani />)
+    await screen.findByText('Karsi 2')
+
+    await waitFor(() =>
+      expect(screen.getByTestId('balon-avatar-m3').props.source).toEqual([{ uri: 'https://x/ada.jpg' }])
+    )
+    expect(screen.getByTestId('balon-avatar-m1')).toBeTruthy()
+    expect(screen.queryByTestId('balon-avatar-m2')).toBeNull()
+  })
 })
