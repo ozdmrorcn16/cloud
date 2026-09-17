@@ -1296,4 +1296,8 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     (once butonlar, sonra sayaclar, "Anılar / En sık" sekmeleri) eski
     haline dondu; yeni sira yalnizca gizli profilde. Sikayet ve
     engelleme SILINMEDI, ust cubuktaki uc nokta menusune tasindi (iki
-    halde de ayni yer): magaza kurali bu yolu sart kosuyor.
+    halde de ayni yer): magaza kurali bu yolu sart kosuyor. Ayni gun ucuncu istek:
+    ust cubuktaki paylas ikonu da kalkti, "Profili paylaş" menunun ilk
+    satiri oldu ve uc nokta seftali daire icinde koyu renkle belirgin
+    hale getirildi.
+

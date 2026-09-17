@@ -21,14 +21,24 @@ import { useRenk, useStiller } from './tema-baglami'
  * aciyor - menuden secmek isi yapmiyor, yalnizca soruyor.
  */
 
-/** Baslik satirindaki uc nokta. */
-export function UcNoktaIkonu() {
+/**
+ * Baslik satirindaki uc nokta.
+ *
+ * Boyut ve renk ISTEGE BAGLI; varsayilanlar (18 px, soluk) degismedi -
+ * akis kartindaki ve yorumlardaki menuler oyle. Baskasinin profilinde
+ * (2026-09-17) ikon tek basina bir dugme oldugu icin daha buyuk ve
+ * daha koyu veriliyor: kullanici "daha belirgin olsun" dedi.
+ */
+export function UcNoktaIkonu({ boyut = 18, renk: verilen }: { boyut?: number; renk?: string } = {}) {
   const renk = useRenk()
+  const c = verilen ?? renk.metinSoluk
+  // viewBox sabit (24): noktalarin yaricapi da sabit kaliyor, ikon
+  // `boyut` ile birlikte orantili buyuyor.
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
-      <Circle cx={5} cy={12} r={1.7} fill={renk.metinSoluk} />
-      <Circle cx={12} cy={12} r={1.7} fill={renk.metinSoluk} />
-      <Circle cx={19} cy={12} r={1.7} fill={renk.metinSoluk} />
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Circle cx={5} cy={12} r={1.7} fill={c} />
+      <Circle cx={12} cy={12} r={1.7} fill={c} />
+      <Circle cx={19} cy={12} r={1.7} fill={c} />
     </Svg>
   )
 }

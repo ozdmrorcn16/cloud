@@ -37,7 +37,6 @@ import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
-import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { bolgeMetni } from '../../../lib/bolge'
@@ -157,6 +156,7 @@ const AVATAR_CAPI = 88
  */
 export default function KullaniciProfiliEkrani() {
   const stiller = useStiller(stilleriYap)
+  const renk = useRenk()
   const router = useRouter()
   const { t } = useDil()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -429,36 +429,27 @@ export default function KullaniciProfiliEkrani() {
       >
         <GeriIkonu />
       </Pressable>
-      {/* SAG UST: paylas + menu YAN YANA. Ikisi ayri cocuk olsaydi
-          `space-between` paylasi ortaya iterdi (olculdu). Paylas
-          kullanicinin tarifiyle 2026-09-13'te buraya gelmisti. */}
+      {/* SAG UST: TEK DUGME - uc nokta menusu (kullanicinin istegi
+          2026-09-17). Paylas ikonu buradan KALKTI, "Profili paylaş"
+          menunun ilk satiri oldu: ust cubukta iki ikon yan yana
+          dururken hangisinin ne yaptigi okunmuyordu.
+
+          Ikon SEFTALI DAIREDE ve daha koyu - kullanici "daha belirgin
+          bir hale getir" dedi; soluk gri uc nokta beyaz zeminde
+          kayboluyordu. Daire kesfetteki suzgec dugmesiyle ayni desen
+          (46 degil 40: ust cubukta geri okuyla ayni agirlikta
+          kalmali). */}
       {profil && (
-        <View style={stiller.ustSag}>
-          <Pressable
-            onPress={profiliPaylas}
-            accessibilityRole="button"
-            accessibilityLabel={t('kullanici.paylas')}
-            hitSlop={12}
-            testID="profili-paylas"
-          >
-            <PaylasIkonu boyut={24} />
-          </Pressable>
-          {/* SIKAYET VE ENGELLEME MENUDE (2026-09-17): sayfanin
-              dibindeki "Şikâyet et / Engelle" satiri kullanicinin
-              istegiyle kalkti. Ikisi de KALDIRILMADI - App Store
-              kullanici iceriigi olan uygulamalarda engelleme ve
-              sikayet yolunu SART kosuyor. Tek giris: menu; gizli
-              profilde de acik profilde de ayni yerde. */}
-          <Pressable
-            onPress={() => setGuvenlikMenusu(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('kullanici.secenekler')}
-            hitSlop={12}
-            testID="kullanici-menusu"
-          >
-            <UcNoktaIkonu />
-          </Pressable>
-        </View>
+        <Pressable
+          style={({ pressed }) => [stiller.menuDugmesi, pressed && stiller.menuDugmesiBasili]}
+          onPress={() => setGuvenlikMenusu(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('kullanici.secenekler')}
+          hitSlop={8}
+          testID="kullanici-menusu"
+        >
+          <UcNoktaIkonu boyut={24} renk={renk.metin} />
+        </Pressable>
       )}
     </View>
   )
@@ -773,6 +764,7 @@ export default function KullaniciProfiliEkrani() {
       <SecimPenceresi
         acikMi={guvenlikMenusu}
         secimler={[
+          { etiket: t('kullanici.paylas'), testID: 'menu-paylas', onSec: profiliPaylas },
           { etiket: t('kullanici.sikayetEt'), testID: 'menu-sikayet', onSec: sikayetEt },
           {
             etiket: t('kullanici.engelle'),
@@ -813,7 +805,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   /* Geri solda, paylas sagda. Ust pay kendi profildeki cubukla ayni
      hizada durmasi icin kok duzenin verdigi guvenli alanin ustune
      yalnizca kucuk bir pay. */
-  ustSag: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: bosluk.l },
+  menuDugmesi: {
+    width: 40,
+    height: 40,
+    borderRadius: yuvarlak.kart,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  menuDugmesiBasili: { backgroundColor: renk.cizgi },
   ustCubuk: {
     flexDirection: 'row',
     alignItems: 'center',

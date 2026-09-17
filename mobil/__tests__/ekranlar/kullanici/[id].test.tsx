@@ -526,11 +526,20 @@ describe('KullaniciProfiliEkrani', () => {
    * PAYLAS SAG USTTE (kullanicinin tarifi 2026-09-13): "yukari saga
    * paylas ikonu olucak ... bu profilini birine paylasmak icin".
    */
-  it('sag ustteki paylas ikonu profil baglantisini paylasir', async () => {
+  /**
+   * PAYLAS IKONU UST CUBUKTAN KALKTI (kullanicinin istegi 2026-09-17):
+   * "Profili paylaş" artik menunun ilk satiri. Ust cubukta tek dugme
+   * var - uc nokta.
+   */
+  it('menudeki "Profili paylaş" profil baglantisini paylasir; ust cubukta ikon YOK', async () => {
     const paylasSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByTestId('profili-paylas'))
+    await screen.findByText('Ada')
+    expect(screen.queryByTestId('profili-paylas')).toBeNull()
+
+    await fireEvent.press(screen.getByTestId('kullanici-menusu'))
+    await fireEvent.press(await screen.findByTestId('menu-paylas'))
 
     await waitFor(() => expect(paylasSpy).toHaveBeenCalled())
     const mesaj = (paylasSpy.mock.calls[0][0] as { message: string }).message

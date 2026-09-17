@@ -254,8 +254,10 @@ Yeni oturum bunlari bilerek baslar.
 
 **Son bitirilen is (2026-09-17, YAYINLANMADI):** GIZLI profil
 gorunumu sadelesti (karar 97) - o halde sayaclar butonlarin ustunde;
-acik profilin duzeni degismedi. Sikayet ve engelleme sayfanin
-dibinden ust cubuktaki uc nokta menusune tasindi (magaza sarti).
+acik profilin duzeni degismedi. Ust cubukta tek dugme kaldi:
+uc nokta (seftali daire). Menu = Profili paylaş / Şikâyet et /
+Engelle; sikayet ve engelleme sayfanin dibinden oraya tasindi (magaza
+sarti), paylas ikonu da menuye girdi.
 
 **Ayni gun daha once (YAYINLANMADI):** buyuk acilan
 fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor

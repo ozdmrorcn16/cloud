@@ -174,8 +174,16 @@ menusune (iki halde de ayni yer, tek giris). App Store kullanici
 iceriigi olan uygulamalarda engelleme ve sikayet yolunu SART kosuyor;
 sayfadan tamamen kaldirmak magaza reddi riskiydi. Menu testle kilitli.
 
-Ust cubukta paylas + menu AYNI kapsayicida: ayri cocuk olunca
-`space-between` paylas ikonunu ortaya itiyordu (olculdu). Yeni sozluk
+**UST CUBUKTA TEK DUGME: UC NOKTA** (kullanicinin istegi, ayni gun).
+Paylas ikonu oradan kalkti, "Profili paylaş" menunun ILK satiri oldu -
+yan yana iki ikon dururken hangisinin ne yaptigi okunmuyordu. Menu:
+Profili paylaş / Şikâyet et / Engelle (yikici en altta). Ikon SEFTALI
+DAIREDE (40 px, kesfetteki suzgec dugmesiyle ayni desen) ve `renk.metin`
+ile koyu: soluk gri uc nokta beyaz zeminde kayboluyordu.
+`UcNoktaIkonu` artik istege bagli `boyut`/`renk` aliyor; VARSAYILANLAR
+DEGISMEDI, yani akis kartindaki ve yorumlardaki menuler ayni.
+
+Yeni sozluk
 anahtari `kullanici.secenekler` yedi dilde; etiket "Profil
 seçenekleri" - kartin "Paylaşım seçenekleri" etiketiyle CAKISMASIN
 diye (jest `getByLabelText` tam eslesme ariyor, bir test bu yuzden
