@@ -35,11 +35,14 @@ mobil/gizli/
 node_modules
 
 # depo koku - derlemeyle ilgisiz
-docs/
-tasarim/
-site/
-panel/
-araclar/
+/docs/
+/tasarim/
+# KOK'E SABITLI (bastaki /): 2026-09-18'de iOS derlemesi "Unable to resolve
+# module ../../tasarim/tema" ile kirildi - `tasarim/` deseni kok klasoru
+# degil, `mobil/src/tasarim/` dahil o addaki HER dizini dislamisti.
+/site/
+/panel/
+/araclar/
 .claude/
 .superpowers/
 .worktrees/
