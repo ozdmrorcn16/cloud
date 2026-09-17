@@ -480,9 +480,10 @@ export default function KullaniciProfiliEkrani() {
   /*
    * EYLEM SATIRI: "Arkadaş ekle" + "Mesaj yaz", kendi profildeki
    * "Profili düzenle" olcusunde (yukseklik 40). Arkadas butonu baga
-   * gore uc halde: ekle / beklemede / arkadassin. Beklemede ve
-   * arkadassin BASILAMAZ - karar karsi tarafta ya da zaten verilmis;
-   * geri cekmek ve cikmak ikincil satirda.
+   * gore uc halde: ekle / beklemede / arkadassin. Ucu de BASILABILIR
+   * (kullanicinin istegi 2026-09-17): ekle dolu turuncu, istek gidince
+   * ayni dugme "Beklemede" olur ve ona tekrar basmak istegi geri ceker;
+   * ayri "Isteği geri cek" satiri yok. Arkadassin menu acar.
    */
   const eylemSatiri = (
     <View style={stiller.eylemler}>
@@ -496,17 +497,23 @@ export default function KullaniciProfiliEkrani() {
           <Text style={stiller.eylemArkadasYazi}>{t('kullanici.arkadassin')}</Text>
         </Pressable>
       ) : bagDurum?.takip === 'beklemede' ? (
-        <View style={[stiller.eylemButonu, stiller.eylemDurum]} testID="arkadas-durumu">
+        <Pressable
+          style={({ pressed }) => [stiller.eylemButonu, stiller.eylemDurum, pressed && stiller.eylemDurumBasili]}
+          onPress={takibiBirakEt}
+          accessibilityRole="button"
+          accessibilityLabel={t('kullanici.istegiGeriCek')}
+          testID="arkadas-durumu"
+        >
           <Text style={stiller.eylemDurumYazi}>{t('kullanici.istekBeklemede')}</Text>
-        </View>
+        </Pressable>
       ) : (
         <Pressable
-          style={({ pressed }) => [stiller.eylemButonu, pressed && stiller.eylemBasili]}
+          style={({ pressed }) => [stiller.eylemButonu, stiller.eylemBirincil, pressed && stiller.eylemBirincilBasili]}
           onPress={takipEt}
           accessibilityRole="button"
           testID="arkadas-ekle"
         >
-          <Text style={stiller.eylemYazi}>{t('kullanici.takipEt')}</Text>
+          <Text style={stiller.eylemBirincilYazi}>{t('kullanici.takipEt')}</Text>
         </Pressable>
       )}
       <Pressable
@@ -604,15 +611,6 @@ export default function KullaniciProfiliEkrani() {
           </>
         ) : (
           eylemSatiri
-        )}
-
-        {/* Ikincil bag eylemleri: yalnizca gerektiginde ciziliyor. */}
-        {bagDurum?.takip === 'beklemede' && (
-          <View style={stiller.ikincilSatir}>
-            <Pressable onPress={takibiBirakEt} accessibilityRole="button" hitSlop={8}>
-              <Text style={stiller.ikincilYazi}>{t('kullanici.istegiGeriCek')}</Text>
-            </Pressable>
-          </View>
         )}
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -887,14 +885,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  eylemYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  /* Basili hal: dolgu koyulasiyor (opaklik dusurmek "yukleniyor" gibi
-     okunuyordu, 2026-09-07 dersi). */
-  eylemBasili: { backgroundColor: renk.cizgi },
   /* MESAJ YAZ - birincil, dolu turuncu + beyaz yazi (kullanicinin
      istegi 2026-09-14: "daha belirgin bir renk"). */
   eylemBirincil: { backgroundColor: renk.turuncu },
@@ -905,21 +895,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemArkadas: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: renk.turuncu },
   eylemArkadasBasili: { backgroundColor: renk.turuncuZemin },
   eylemArkadasYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
-  /* DURUM (beklemede): basilamaz, dolgu notr. Turuncu birakip yalnizca
-     opaklik dusurmek "yukleniyor" gibi okunurdu. */
+  /* DURUM (beklemede): dolgu notr - karar karsi tarafta. Basilabilir:
+     tekrar basmak istegi geri ceker; basili hal biraz daha koyu. */
   eylemDurum: { backgroundColor: renk.cizgi },
+  eylemDurumBasili: { backgroundColor: renk.metinSoluk },
   eylemDurumYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,
     color: renk.metinIkincil,
   },
 
-  ikincilSatir: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.xl,
-    marginTop: bosluk.m,
-  },
   ikincilYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,

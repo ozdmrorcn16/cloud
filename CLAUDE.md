@@ -148,6 +148,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ARKADAS EKLE DOLU, BEKLEMEDE BASINCA GERI CEKER - 2026-09-17 GECE
+
+Kullanicinin istegi (ekran goruntusuyle): "Arkadaş ekle" DOLU turuncu
+(Mesaj yaz ile ayni agirlik); istek gidince ayni dugme "Beklemede"
+olur ve ona TEKRAR basmak istegi geri ceker; ayri "İsteği geri çek"
+satiri KALKTI. Onay penceresi yok - kullanici "tekrar basinca geri
+alinsin" dedi. Beklemede notr gri (`cizgi`), basili hali `metinSoluk`
+(opaklik degil - 2026-09-07 dersi). `kullanici.istegiGeriCek` anahtari
+sozlukte duruyor, dugmenin `accessibilityLabel`i.
+
+**Karsi taraftaki bildirim:** uygulama ici Bildirimler karti sunucudan
+bekleyen `takipler` satirini canli okuyor; `takibi_birak` satiri
+sildigi icin kart sekme acilinca KENDILIGINDEN dusuyor - kod
+degismedi. Telefona zaten dusmus PUSH afisi ise geri CEKILEMEZ (Expo
+Push'ta iptal yok; sessiz push + native arka plan kipi gerekir, yeni
+derleme). Kullaniciya soylendi.
+
+Jest 76 paket / 1007 test. Yayin: web `slooin--c4tf5cvqa6`, OTA grup
+`e2edee18-5a31-480d-a6c0-bd9c26ed32a0`.
+
 ### GIZLI PROFIL GORUNUMU SADELESTI - 2026-09-17
 
 Kullanicinin istegi (ekran goruntusuyle): sayac sutunu ile "Arkadaş

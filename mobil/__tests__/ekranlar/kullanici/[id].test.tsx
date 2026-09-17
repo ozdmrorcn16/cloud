@@ -273,7 +273,19 @@ describe('KullaniciProfiliEkrani', () => {
     await fireEvent.press(await screen.findByText('Arkadaş ekle'))
 
     await waitFor(() => expect(takipIstegiGonder).toHaveBeenCalledWith('kullanici-2'))
-    expect(await screen.findByText('İsteği geri çek')).toBeTruthy()
+    // Ayni dugme "Beklemede" olur; ayri "Istegi geri cek" satiri YOK
+    // (kullanicinin istegi 2026-09-17).
+    expect(await screen.findByText('Beklemede')).toBeTruthy()
+    expect(screen.queryByText('İsteği geri çek')).toBeNull()
+  })
+
+  it('"Arkadaş ekle" dolu turuncu + beyaz yazi (Mesaj yaz ile ayni agirlik)', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    const ekle = await screen.findByTestId('arkadas-ekle')
+    const stil = StyleSheet.flatten(typeof ekle.props.style === 'function' ? ekle.props.style({ pressed: false }) : ekle.props.style)
+    expect(stil.backgroundColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(screen.getByText('Arkadaş ekle').props.style).color).toBe('#FFFFFF')
   })
 
   // 2026-09-14 (kullanicinin istegi): "Arkadasliktan cikar" artik ayri
@@ -354,12 +366,13 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.getByText('Mesaj yaz')).toBeTruthy()
   })
 
-  it('takip beklemedeyken geri cek basinca takibiBirak cagirir ve takip et gosterir', async () => {
+  it('takip beklemedeyken "Beklemede" dugmesine basmak istegi geri ceker ve "Arkadaş ekle"ye doner', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'beklemede', sohbet: 'yok' })
     ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
 
     await render(<KullaniciProfiliEkrani />)
-    await fireEvent.press(await screen.findByText('İsteği geri çek'))
+    expect(screen.queryByText('İsteği geri çek')).toBeNull()
+    await fireEvent.press(await screen.findByText('Beklemede'))
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
