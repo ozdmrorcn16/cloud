@@ -252,10 +252,11 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17 gece, YAYINDA - web `slooin--c4tf5cvqa6`,
-OTA grup `e2edee18-5a31-480d-a6c0-bd9c26ed32a0`):** baskasinin profilinde
+**Son bitirilen is (2026-09-17 gece, YAYINDA - web `slooin--gc6zljnv9g`,
+OTA grup `ed4fc26c-486c-436d-bfa8-f58a4d111d4a`):** baskasinin profilinde
 "Arkadaş ekle" dolu turuncu; istek gidince ayni dugme "Beklemede", tekrar
-basinca istek geri cekiliyor (ayri "İsteği geri çek" satiri kalkti).
+basinca onay penceresi ("Arkadaşlık isteğini geri çekmek istiyor musun?")
+ve istek geri cekiliyor (ayri "İsteği geri çek" satiri kalkti).
 Karsi tarafin Bildirimler karti sunucudan dustugu icin kendiliginden
 kayboluyor; zaten dusmus push afisi geri cekilemiyor.
 

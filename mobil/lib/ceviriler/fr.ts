@@ -269,6 +269,8 @@ export default {
     takipEt: 'Ajouter en ami',
     istekBeklemede: 'En attente',
     istegiGeriCek: 'Retirer la demande',
+    geriCekOnayi: "Veux-tu retirer ta demande d'ami ?",
+    geriCekEvet: 'Oui, retirer',
     bagiKopar: 'Retirer des amis',
     gelenIstekAciklama: "Si tu acceptes, vous pourrez voir les check-ins l'un de l'autre et vous écrire.",
     kabulEt: 'Accepter',

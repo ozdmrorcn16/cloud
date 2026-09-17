@@ -269,6 +269,8 @@ export default {
     takipEt: 'Добавить в друзья',
     istekBeklemede: 'Ожидает',
     istegiGeriCek: 'Отозвать запрос',
+    geriCekOnayi: 'Отозвать запрос в друзья?',
+    geriCekEvet: 'Да, отозвать',
     bagiKopar: 'Удалить из друзей',
     gelenIstekAciklama: 'Если примешь, вы будете видеть чек-ины друг друга и сможете переписываться.',
     kabulEt: 'Принять',

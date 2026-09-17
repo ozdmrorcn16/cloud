@@ -269,6 +269,8 @@ export default {
     takipEt: 'إضافة صديق',
     istekBeklemede: 'قيد الانتظار',
     istegiGeriCek: 'سحب الطلب',
+    geriCekOnayi: 'هل تريد سحب طلب الصداقة؟',
+    geriCekEvet: 'نعم، اسحب',
     bagiKopar: 'إزالة الصديق',
     gelenIstekAciklama: 'إذا قبلت، فسيرى كل منكما تسجيلات حضور الآخر ويمكنكما التراسل.',
     kabulEt: 'قبول',

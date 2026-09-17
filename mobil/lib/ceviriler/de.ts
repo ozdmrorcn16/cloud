@@ -269,6 +269,8 @@ export default {
     takipEt: 'Freund hinzufügen',
     istekBeklemede: 'Ausstehend',
     istegiGeriCek: 'Anfrage zurückziehen',
+    geriCekOnayi: 'Möchtest du deine Freundschaftsanfrage zurückziehen?',
+    geriCekEvet: 'Ja, zurückziehen',
     bagiKopar: 'Freund entfernen',
     gelenIstekAciklama: 'Wenn du annimmst, seht ihr gegenseitig eure Check-ins und könnt euch schreiben.',
     kabulEt: 'Annehmen',

@@ -348,8 +348,13 @@ export default function KullaniciProfiliEkrani() {
   // harita dokusu saatin ardina kadar uzaniyor.
   const guvenliAlan = useSafeAreaInsets()
 
+  // "Beklemede"ye basinca once onay (kullanicinin istegi 2026-09-17):
+  // istek bir dokunusla kazara geri cekilmesin.
+  const [geriCekOnayi, setGeriCekOnayi] = useState(false)
+
   async function takibiBirakEt() {
     setArkadasMenusu(false)
+    setGeriCekOnayi(false)
     try {
       await takibiBirak(id)
       setBagDurum((onceki) => (onceki ? { ...onceki, takip: 'yok' } : onceki))
@@ -499,7 +504,7 @@ export default function KullaniciProfiliEkrani() {
       ) : bagDurum?.takip === 'beklemede' ? (
         <Pressable
           style={({ pressed }) => [stiller.eylemButonu, stiller.eylemDurum, pressed && stiller.eylemDurumBasili]}
-          onPress={takibiBirakEt}
+          onPress={() => setGeriCekOnayi(true)}
           accessibilityRole="button"
           accessibilityLabel={t('kullanici.istegiGeriCek')}
           testID="arkadas-durumu"
@@ -784,6 +789,15 @@ export default function KullaniciProfiliEkrani() {
           },
         ]}
         onKapat={() => setArkadasMenusu(false)}
+      />
+      <OnayPenceresi
+        acikMi={geriCekOnayi}
+        baslik={t('kullanici.istegiGeriCek')}
+        aciklama={t('kullanici.geriCekOnayi')}
+        eylemEtiketi={t('kullanici.geriCekEvet')}
+        yikici={false}
+        onOnay={takibiBirakEt}
+        onVazgec={() => setGeriCekOnayi(false)}
       />
       <OnayPenceresi
         acikMi={engelleOnayi}

@@ -356,6 +356,8 @@ export default {
     // Basilamaz: karar karsi tarafta.
     istekBeklemede: 'Beklemede',
     istegiGeriCek: 'İsteği geri çek',
+    geriCekOnayi: 'Arkadaşlık isteğini geri çekmek istiyor musun?',
+    geriCekEvet: 'Evet, geri çek',
     bagiKopar: 'Arkadaşlıktan çıkar',
     gelenIstekAciklama:
       "Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.",

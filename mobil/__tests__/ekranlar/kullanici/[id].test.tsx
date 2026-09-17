@@ -374,8 +374,25 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('İsteği geri çek')).toBeNull()
     await fireEvent.press(await screen.findByText('Beklemede'))
 
+    // Once ONAY (kullanicinin istegi 2026-09-17): pencere acilmadan
+    // sunucuya gidilmez.
+    expect(takibiBirak).not.toHaveBeenCalled()
+    expect(screen.getByText('Arkadaşlık isteğini geri çekmek istiyor musun?')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Evet, geri çek'))
+
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
+  })
+
+  it('geri cek onayinda "Vazgeç" istegi korur', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'beklemede', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('Beklemede'))
+    await fireEvent.press(screen.getByText('Vazgeç'))
+
+    expect(takibiBirak).not.toHaveBeenCalled()
+    expect(screen.getByText('Beklemede')).toBeTruthy()
+    expect(screen.queryByText('Arkadaşlık isteğini geri çekmek istiyor musun?')).toBeNull()
   })
 
   it('gelen takip istegi icin kabul et ve reddet butonlarini ve aciklamayi gosterir', async () => {

@@ -275,6 +275,8 @@ export default {
     takipEt: 'Add friend',
     istekBeklemede: 'Pending',
     istegiGeriCek: 'Withdraw request',
+    geriCekOnayi: 'Do you want to withdraw your friend request?',
+    geriCekEvet: 'Yes, withdraw',
     bagiKopar: 'Remove friend',
     gelenIstekAciklama: "If you accept, you can see each other's check-ins and message each other.",
     kabulEt: 'Accept',
