@@ -148,6 +148,13 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### MESAJLAR: GERI OKU KALKTI - 2026-09-18 GECE
+
+Kullanicinin istegi: "Mesajlar yazisinin yaninda geri cikma tusu
+olmasin". 2026-09-14'te konan sol ust ok kaldirildi - sekme ekrani,
+alt cubuktan aciliyor. Sohbet ekranindaki ok duruyor. Test
+"baslik satirinda geri oku YOK".
+
 ### UC KUCUK DUZELTME - 2026-09-18 GECE (kullanicinin telefondan bildirimleri)
 
 1. **Mekan sayfasi haritasi tam genislik**: "harita kenarlardan tam

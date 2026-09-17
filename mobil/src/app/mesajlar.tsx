@@ -12,7 +12,6 @@ import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { Avatar } from '../tasarim/Avatar'
 import { OnayPenceresi } from '../tasarim/OnayPenceresi'
-import { GeriOkIkonu } from '../tasarim/mekan-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
@@ -103,20 +102,10 @@ export default function MesajlarEkrani() {
             olmasa da duruyor, sayfa acildiginda bos durum metni
             gorunuyor. Yazi notr gri, dikkati sayi rozeti cekiyor. */}
         <View style={stiller.baslikSatiri}>
-          <View style={stiller.baslikSol}>
-            {/* GERI (kullanicinin istegi 2026-09-14): sekme ekrani ama
-                sohbetten/profilden de gelinebiliyor; gecmis yoksa ana
-                sayfaya. */}
-            <Pressable
-              onPress={() => (router.canGoBack() ? router.back() : router.push('/'))}
-              accessibilityRole="button"
-              accessibilityLabel={t('ortak.geri')}
-              hitSlop={12}
-            >
-              <GeriOkIkonu />
-            </Pressable>
-            <Text style={stiller.baslik}>{t('mesajlar.baslik')}</Text>
-          </View>
+          {/* GERI OKU YOK (kullanicinin istegi 2026-09-18): bu bir sekme
+              ekrani, alt cubuktan aciliyor; 2026-09-14'te konan ok
+              kaldirildi. Sohbet ekrani kendi okunu tasiyor. */}
+          <Text style={stiller.baslik}>{t('mesajlar.baslik')}</Text>
           <Pressable
             style={stiller.istekGirisi}
             onPress={() => router.push('/mesaj-istekleri')}
@@ -245,7 +234,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: bosluk.m,
   },
-  baslikSol: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m, flexShrink: 1 },
   istekGirisi: { flexDirection: 'row', alignItems: 'center', gap: bosluk.xs },
   // Notr gri: baslikla yarismiyor. Dikkati ceken sey yazi degil, yaninda
   // beliren turuncu sayi - yani "bakilacak bir sey oldugunda" one cikiyor.

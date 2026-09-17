@@ -349,16 +349,11 @@ describe('MesajlarEkrani - istekler girisi', () => {
     expect(screen.getByText('?')).toBeTruthy()
   })
 
-  // GERI OKU (kullanicinin istegi 2026-09-14): sol ustte.
-  it('sol ustteki geri oku onceki ekrana doner; gecmis yoksa ana sayfaya', async () => {
+  // GERI OKU YOK (kullanicinin istegi 2026-09-18): sekme ekrani.
+  it('baslik satirinda geri oku YOK', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
-    mockGeriGidilebilir = true
     await render(<MesajlarEkrani />)
-    await fireEvent.press(await screen.findByLabelText('Geri'))
-    expect(mockRouterBack).toHaveBeenCalled()
-
-    mockGeriGidilebilir = false
-    await fireEvent.press(screen.getByLabelText('Geri'))
-    expect(mockRouterPush).toHaveBeenCalledWith('/')
+    expect(await screen.findByText('Mesajlar')).toBeTruthy()
+    expect(screen.queryByLabelText('Geri')).toBeNull()
   })
 })
