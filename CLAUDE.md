@@ -148,29 +148,38 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
-### BASKASININ PROFILI SADELESTI - 2026-09-17
+### GIZLI PROFIL GORUNUMU SADELESTI - 2026-09-17
 
 Kullanicinin istegi (ekran goruntusuyle): sayac sutunu ile "Arkadaş
 ekle / Mesaj yaz" butonlarinin yeri degisti (once SAYACLAR, sonra
-butonlar); "Anılar / En sık" sekme hapi ve sayfanin dibindeki
-"Şikâyet et / Engelle" satiri TAMAMEN kalkti.
+butonlar); sayfanin dibindeki "Şikâyet et / Engelle" satiri kalkti.
 
-- Sekme kalkinca "En sık" listesi bu ekranda ulasilamaz hale geldi;
-  liste, hesabi ve `EN_SIK_GORUNEN` sabiti silindi (olu kod
-  birakilmadi). 2026-09-10'daki "baskasinin profilinde ilk bes yer"
-  karari bu ekran icin GECERSIZ. **Kendi profildeki "En sık"
-  DURUYOR** - kural yalnizca bu ekranin (kural 11).
-- **SIKAYET VE ENGELLEME SILINMEDI, TASINDI**: ust cubuktaki uc nokta
-  menusune. App Store kullanici iceriigi olan uygulamalarda engelleme
-  ve sikayet yolunu SART kosuyor; sayfadan tamamen kaldirmak magaza
-  reddi riskiydi. Menu testle kilitli.
-- Ust cubukta paylas + menu AYNI kapsayicida: ayri cocuk olunca
-  `space-between` paylas ikonunu ortaya itiyordu (olculdu).
-- Olu ceviri anahtarlari silindi (`kullanici.anilar/enSik/yerYok`),
-  yeni anahtar `kullanici.secenekler` yedi dile eklendi. Etiket
-  "Profil seçenekleri" - kartin "Paylaşım seçenekleri" etiketiyle
-  CAKISMASIN diye (jest `getByLabelText` tam eslesme ariyor ve bir
-  test bu yuzden kirilmisti).
+**KURAL YALNIZCA GIZLI PROFIL ICIN** (kullanicinin duzeltmesi, ayni
+gun: "bu gorunus profili gizli olan birinin goruntusu olucak"). Ilk
+uygulamada butun kullanici profillerine yayilmisti ve ACIK profilin
+duzeni de bozulmustu - geri alindi.
+
+| | Gizli profil | Acik profil |
+|---|---|---|
+| Sira | kimlik -> SAYACLAR -> butonlar -> kilit | kimlik -> butonlar -> sayaclar -> sekmeler (ESKISI) |
+| "Anılar / En sık" | yok (zaten cizilmiyordu) | VAR |
+
+Kod tarafinda iki blok (`eylemSatiri`, `sayacSatiri`) degisken olarak
+duruyor ve `kapali` durumuna gore siralaniyor; ikisi de ayni JSX,
+kopya yok. Sira testle kilitli - IKI test birden yazildi, cunku
+yalnizca biri olsaydi "her iki halde ayni sira" da yesil gecerdi.
+
+**SIKAYET VE ENGELLEME SILINMEDI, TASINDI**: ust cubuktaki uc nokta
+menusune (iki halde de ayni yer, tek giris). App Store kullanici
+iceriigi olan uygulamalarda engelleme ve sikayet yolunu SART kosuyor;
+sayfadan tamamen kaldirmak magaza reddi riskiydi. Menu testle kilitli.
+
+Ust cubukta paylas + menu AYNI kapsayicida: ayri cocuk olunca
+`space-between` paylas ikonunu ortaya itiyordu (olculdu). Yeni sozluk
+anahtari `kullanici.secenekler` yedi dilde; etiket "Profil
+seçenekleri" - kartin "Paylaşım seçenekleri" etiketiyle CAKISMASIN
+diye (jest `getByLabelText` tam eslesme ariyor, bir test bu yuzden
+kirilmisti).
 
 ### BUYUK ACILAN FOTOGRAFIN SOL ALTINDA PAYLASAN - 2026-09-17
 

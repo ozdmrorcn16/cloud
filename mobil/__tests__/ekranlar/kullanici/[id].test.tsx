@@ -590,26 +590,56 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.getByLabelText('0 Fotoğraf')).toBeTruthy()
   })
 
-  /**
-   * SEKME HAPI KALDIRILDI (kullanicinin istegi 2026-09-17: "altta
-   * anilar ve en sik yazan yan yana onlari tamamen kaldir"). Kendi
-   * profildeki sekmeler DURUYOR - kural yalnizca bu ekranin.
-   */
-  it('sekme hapi YOK: Anilar / En sik secicisi cizilmiyor', async () => {
+  it('sekme hapi var: Anilar ve En sik', async () => {
     await render(<KullaniciProfiliEkrani />)
-    await screen.findByText('Ada')
 
-    expect(screen.queryByText('Anılar')).toBeNull()
-    expect(screen.queryByText('En sık')).toBeNull()
-    expect(screen.queryByTestId('sekme-gostergesi')).toBeNull()
+    expect(await screen.findByText('Anılar')).toBeTruthy()
+    expect(screen.getByText('En sık')).toBeTruthy()
+    expect(screen.getByTestId('sekme-gostergesi')).toBeTruthy()
   })
 
   /**
-   * SIKAYET VE ENGELLEME SAYFADAN KALKTI ama islev DURUYOR: ust
-   * cubuktaki menude. Magaza kurali (App Store, kullanici icerigi)
-   * engelleme ve sikayet yolunu sart kosuyor.
+   * SIRA PROFILIN DURUMUNA GORE (kullanicinin istegi 2026-09-17):
+   * GIZLI profilde once sayaclar sonra butonlar; ACIK profilde eski
+   * duzen (once butonlar) AYNEN duruyor. Iki testi birden yazmak sart -
+   * yalnizca biri olsaydi "her iki halde de ayni sira" da yesil gecerdi.
    */
-  it('sayfanin dibinde Sikayet/Engelle satiri YOK, menude VAR', async () => {
+  it('GIZLI profilde once sayaclar, sonra butonlar', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByTestId('profil-kilitli')
+
+    const duzen = JSON.stringify(screen.toJSON())
+    expect(duzen.indexOf('Fotoğraf')).toBeLessThan(duzen.indexOf('Arkadaş ekle'))
+    // Sekme secici gizli profilde zaten cizilmiyordu.
+    expect(screen.queryByText('En sık')).toBeNull()
+  })
+
+  it('ACIK profilde once butonlar, sonra sayaclar ve sekmeler', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+    })
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Anılar')
+
+    const duzen = JSON.stringify(screen.toJSON())
+    expect(duzen.indexOf('Arkadaş ekle')).toBeLessThan(duzen.indexOf('Fotoğraf'))
+    expect(screen.getByText('En sık')).toBeTruthy()
+  })
+
+  /**
+   * SIKAYET VE ENGELLEME SAYFANIN DIBINDEN KALKTI (kullanicinin
+   * istegi 2026-09-17) ama islev DURUYOR: ust cubuktaki menude.
+   * Magaza kurali (App Store, kullanici icerigi) bu yolu sart kosuyor,
+   * bu yuzden test hem YOKLUGU hem VARLIGI olcuyor.
+   */
+  it('dipteki Sikayet/Engelle satiri YOK, menude VAR', async () => {
     await render(<KullaniciProfiliEkrani />)
     await screen.findByText('Ada')
 
@@ -731,25 +761,30 @@ describe('KullaniciProfiliEkrani duzen', () => {
   })
 
   /*
-   * ACIK PROFILDE AKIS DOGRUDAN GELIYOR: sekme secici hicbir halde
-   * cizilmiyor (2026-09-17), kilit de yok.
+   * ACIK PROFILDE HICBIR SEY DEGISMEDI: sekmeler duruyor, liste
+   * normal. Bu test sart - onsuz "sekmeyi herkese kapat" hali de
+   * yesil gecerdi.
    */
-  it('ACIK profilde kilit yok, akis dogrudan geliyor', async () => {
+  it('ACIK profilde sekme secici DURUYOR', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
       fotograflar: [], profilGizli: false, arkadasSayisi: 2,
     })
 
     await render(<KullaniciProfiliEkrani />)
-    await screen.findByText('Ada')
+    await screen.findByText('Anılar')
 
-    expect(screen.queryByText('En sık')).toBeNull()
+    expect(screen.getByText('En sık')).toBeTruthy()
     expect(screen.queryByTestId('profil-kilitli')).toBeNull()
   })
   /*
-   * "EN SIK" BU EKRANDAN KALKTI (kullanicinin istegi 2026-09-17).
-   * 2026-09-10'daki "ilk bes" siniri artik gecersiz - liste yok.
-   * Kendi profildeki "En sık" DURUYOR.
+   * "EN SIK" BASKASININ PROFILINDE ILK BESLE SINIRLI (kullanicinin
+   * karari 2026-09-10: "baskasi baskasinin profiline baktiginda en sik
+   * ilk 5'i gorebilsin sadece").
+   *
+   * Kendi profil ekraninda boyle bir sinir YOK - orasi kisinin kendi
+   * gecmisi. Buradaki liste bir TANITIM: "bu kisi genelde nereye
+   * gidiyor" sorusunu cevapliyor, tam bir ziyaret dokumu vermiyor.
    */
   /*
    * YENI DUZEN (kullanicinin tarifi 2026-09-13): kapali profilde akis
@@ -797,6 +832,42 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     expect(await screen.findByTestId('bos-avatar')).toBeTruthy()
     expect(screen.getByText('A')).toBeTruthy()
+  })
+
+  it('EN SIK listesinde en fazla BES yer gorunuyor', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+    })
+    // Yedi FARKLI mekan; en cok gidilen ustte olacak sekilde azalan
+    // sayida ani uretiliyor.
+    const anilar: unknown[] = []
+    for (let m = 0; m < 7; m += 1) {
+      for (let k = 0; k < 7 - m; k += 1) {
+        anilar.push({
+          id: `ani-${m}-${k}`,
+          mekanId: `mekan-${m}`,
+          mekanAdi: `Mekan ${m}`,
+          mekanSemti: 'Nilüfer',
+          olusturmaZamani: new Date().toISOString(),
+          notMetni: null,
+          fotografUrl: null,
+          etiketler: [],
+        })
+      }
+    }
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue(anilar)
+
+    await render(<KullaniciProfiliEkrani />)
+    await fireEvent.press(await screen.findByText('En sık'))
+
+    // Ilk bes: en cok gidilenden az gidilene.
+    for (let m = 0; m < 5; m += 1) {
+      expect(await screen.findByText(`Mekan ${m}`)).toBeTruthy()
+    }
+    // Altinci ve yedinci KESILIYOR.
+    expect(screen.queryByText('Mekan 5')).toBeNull()
+    expect(screen.queryByText('Mekan 6')).toBeNull()
   })
 
   // DUGME RENKLERI (kullanicinin istegi 2026-09-14: "daha belirgin"):

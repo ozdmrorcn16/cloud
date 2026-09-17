@@ -1287,13 +1287,13 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     yalnizca anlamli oldugu yerde: profil izgarasinda ad, galeride
     mekan baglantisi yok (zaten oradayiz).
 
-97. **BASKASININ PROFILI SADELESTI** (2026-09-17). Kullanici ekran
+97. **GIZLI PROFIL GORUNUMU SADELESTI** (2026-09-17). Kullanici ekran
     goruntusuyle: sayac sutunu ile "Arkadaş ekle / Mesaj yaz"
-    butonlarinin yeri degisti (once sayaclar), "Anılar / En sık" sekme
-    hapi ve alttaki "Şikâyet et / Engelle" satiri tamamen kalkti.
-    Sekme kalkinca "En sık" listesi ulasilamaz oldugu icin liste ve
-    hesabi da silindi - 2026-09-10'daki "ilk bes yer" karari bu ekran
-    icin gecersiz, kendi profildeki "En sık" duruyor. Sikayet ve
-    engelleme SILINMEDI, ust cubuktaki uc nokta menusune tasindi:
-    magaza kurali (App Store, kullanici icerigi) bu yolu sart kosuyor.
-
+    butonlarinin yeri degissin (once sayaclar), alttaki "Şikâyet et /
+    Engelle" satiri kalksin. Ilk uygulamada kural butun kullanici
+    profillerine yayildi; kullanici ayni gun duzeltti: "bu gorunus
+    profili gizli olan birinin goruntusu olucak". ACIK profilin duzeni
+    (once butonlar, sonra sayaclar, "Anılar / En sık" sekmeleri) eski
+    haline dondu; yeni sira yalnizca gizli profilde. Sikayet ve
+    engelleme SILINMEDI, ust cubuktaki uc nokta menusune tasindi (iki
+    halde de ayni yer): magaza kurali bu yolu sart kosuyor.

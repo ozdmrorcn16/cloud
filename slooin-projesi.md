@@ -252,10 +252,10 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17, YAYINLANMADI):** baskasinin profili
-sadelesti (karar 97) - sayaclar butonlarin ustune alindi, "Anılar /
-En sık" sekmeleri ve alttaki "Şikâyet et / Engelle" satiri kalkti;
-sikayet ve engelleme ust cubuktaki uc nokta menusunde (magaza sarti).
+**Son bitirilen is (2026-09-17, YAYINLANMADI):** GIZLI profil
+gorunumu sadelesti (karar 97) - o halde sayaclar butonlarin ustunde;
+acik profilin duzeni degismedi. Sikayet ve engelleme sayfanin
+dibinden ust cubuktaki uc nokta menusune tasindi (magaza sarti).
 
 **Ayni gun daha once (YAYINLANMADI):** buyuk acilan
 fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor
