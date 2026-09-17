@@ -256,7 +256,9 @@ Yeni oturum bunlari bilerek baslar.
 fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor
 (karar 96). Mekan galerisindeki altyazi `src/tasarim/FotografAltyazisi.tsx`
 bilesenine cikarildi; akis kartinin tam ekran gorunumu ve profildeki
-fotograf izgarasi da ayni satiri kullaniyor.
+fotograf izgarasi da ayni satiri kullaniyor. Altyazida uc dokunus
+hedefi var: avatar ve kullanici adi profili, mekan adi mekan sayfasini
+aciyor.
 
 **Ayni gun daha once (YAYINLANMADI):** check-in listesindeki
 kartlar tekduze hale getirildi ve karenin ici gercek harita oldu

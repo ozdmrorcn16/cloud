@@ -1280,5 +1280,10 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     Satir mekan sayfasinin galerisinde zaten vardi; akista ve profil
     izgarasinda yoktu. Yeni bir sey tasarlanmadi - galerinin altyazisi
     `FotografAltyazisi` bilesenine cikarilip ucunde de kullanildi.
-    Akista ada dokunmak profili aciyor; profilde baglanti yok.
+    Akista ada dokunmak profili aciyor; profilde baglanti yok. Ayni gun ikinci
+    istek: "profil resmine basinca, kullanici adina basinca o
+    kullanicinin profiline yonlendirir, konum ismine basinca konuma
+    yonlendirsin" - altyazi tek hedef degil uc ayri hedef oldu. Baglanti
+    yalnizca anlamli oldugu yerde: profil izgarasinda ad, galeride
+    mekan baglantisi yok (zaten oradayiz).
 

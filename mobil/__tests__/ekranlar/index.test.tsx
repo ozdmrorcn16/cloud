@@ -535,7 +535,16 @@ describe('AnaSayfa', () => {
     expect(within(altyazi).getByText('az önce')).toBeTruthy()
   })
 
-  it('altyazidaki kisiye dokununca profili aciliyor ve buyuk gorunum kapaniyor', async () => {
+  /**
+   * Kullanicinin istegi (2026-09-17): "profil resmine basinca, kullanici
+   * adina basinca o kullanicinin profiline yonlendirir, konum ismine
+   * basinca konuma yonlendirsin." Yani altyazi tek bir dokunus hedefi
+   * degil, UC AYRI hedef.
+   */
+  it.each([
+    ['avatar', 'akis-fotograf-altyazisi-avatar'],
+    ['kullanici adi', 'akis-fotograf-altyazisi-kisi'],
+  ])('altyazida %s profili aciyor ve buyuk gorunum kapaniyor', async (_ad, testId) => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([
       oge({ fotografUrl: 'https://imzali/foto.jpg', rumuz: 'byada' }),
     ])
@@ -543,11 +552,27 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
     await fireEvent.press(screen.getByTestId('akis-fotografi'))
-    const altyazi = await screen.findByTestId('akis-fotograf-altyazisi')
+    await screen.findByTestId('akis-fotograf-altyazisi')
 
-    await fireEvent.press(within(altyazi).getByLabelText('byada'))
+    await fireEvent.press(screen.getByTestId(testId))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
+  })
+
+  it('altyazidaki MEKAN ADI mekan sayfasini aciyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg', rumuz: 'byada' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(screen.getByTestId('akis-fotografi'))
+    await screen.findByTestId('akis-fotograf-altyazisi')
+
+    await fireEvent.press(screen.getByTestId('akis-fotograf-altyazisi-mekan'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
     expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
   })
 

@@ -163,8 +163,14 @@ kullaniliyor (galeri, akis karti tam ekran, profil izgarasi).
 - Renkler bilerek SABIT (#FFFFFF / #B3B3B3 / #333333), tema jetonu yok:
   zemin iki modda da siyah, tema metni acik modda siyah olurdu.
 - Mekan adinda BULUNMA EKI YOK (2026-09-13 karari): ad kendi satirinda.
-- Akista ada/avatara dokunmak profili aciyor ve buyuk gorunum
-  kapaniyor; profil izgarasinda baglanti yok - zaten o profildeyiz.
+- **UC AYRI DOKUNUS HEDEFI** (kullanicinin istegi, ayni gun): avatar
+  ve kullanici adi KISININ PROFILINE, mekan adi MEKAN SAYFASINA
+  gidiyor; her birinde buyuk gorunum once kapaniyor. Hedef yazinin
+  kendisi kadar (`alignSelf: 'flex-start'`) - satirin bos sagina
+  basmak bir sey acmiyor.
+- Baglanti yalnizca ANLAMLI oldugu yerde: profil izgarasinda ad
+  baglantisi yok (zaten o profildeyiz), mekan galerisinde mekan
+  baglantisi yok (zaten o mekanin sayfasindayiz).
 - Profil izgarasi state'i artik URL degil ANININ KENDISI tutuyor
   (altyazi bilgileri yalnizca orada).
 

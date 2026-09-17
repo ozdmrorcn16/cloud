@@ -215,6 +215,8 @@ export function MekanFotografGalerisi({ mekanId, mekanAdi, avatarlar, onKimlikle
               testID="galeri-altyazi"
               avatarUrl={avatarlar[acik.kullaniciId] ?? null}
               kullaniciAdi={acik.kullaniciAdi ?? t('mekanSayfasi.biri')}
+              /* Mekan adi BASILABILIR DEGIL: zaten o mekanin
+                 sayfasindayiz, baglanti kendine gitmek olurdu. */
               mekanAdi={mekanAdi}
               zamanYazisi={gorecelZaman(acik.olusturmaZamani, t)}
               onKisi={() => {

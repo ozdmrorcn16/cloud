@@ -1003,7 +1003,7 @@ export default function ProfilEkrani() {
             dokunmak fotografi kapatmasin. Profil kendi sayfamiz oldugu
             icin ada baglanti YOK - zaten buradayiz. */}
         {buyukFotograf && (
-          <View style={stiller.buyukAltyazi} pointerEvents="none">
+          <View style={stiller.buyukAltyazi}>
             <FotografAltyazisi
               testID="izgara-fotograf-altyazisi"
               /* Kendi profilimiz: avatar ve kullanici adi profilin
@@ -1012,6 +1012,11 @@ export default function ProfilEkrani() {
               kullaniciAdi={profil?.kullaniciAdi ?? buyukFotograf.kullaniciAdi}
               mekanAdi={buyukFotograf.mekanAdi}
               zamanYazisi={gorecelZaman(buyukFotograf.olusturmaZamani, t)}
+              onMekan={() => {
+                const mekanId = buyukFotograf.mekanId
+                setBuyukFotograf(null)
+                router.push(`/harita/${mekanId}` as never)
+              }}
             />
           </View>
         )}

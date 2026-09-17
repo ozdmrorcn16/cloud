@@ -124,6 +124,21 @@ describe('ProfilEkrani', () => {
     expect(within(altyazi).getByText('Sahil Kafe')).toBeTruthy()
   })
 
+  it('izgaradaki fotografin MEKAN ADI mekan sayfasini aciyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ fotografUrl: 'https://imzali/1.jpg' }),
+    ])
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Fotoğraf'))
+    await fireEvent.press(screen.getByLabelText('Sahil Kafe'))
+    await screen.findByTestId('izgara-fotograf-altyazisi')
+
+    await fireEvent.press(screen.getByTestId('izgara-fotograf-altyazisi-mekan'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
+  })
+
   it('kullanici adini, adi ve biyografiyi gosterir', async () => {
     await render(<ProfilEkrani />)
 

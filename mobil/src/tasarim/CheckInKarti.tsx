@@ -541,6 +541,10 @@ export function CheckInKarti({
                 setBuyukAcik(false)
                 router.push(kisiYolu as never)
               }}
+              onMekan={() => {
+                setBuyukAcik(false)
+                router.push(`/harita/${oge.mekanId}` as never)
+              }}
             />
           </View>
         </View>

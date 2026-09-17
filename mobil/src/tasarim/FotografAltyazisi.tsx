@@ -26,6 +26,7 @@ export function FotografAltyazisi({
   mekanAdi,
   zamanYazisi,
   onKisi,
+  onMekan,
   testID,
 }: {
   avatarUrl: string | null
@@ -35,8 +36,10 @@ export function FotografAltyazisi({
   mekanAdi: string | null
   /** "7 saat önce" gibi gorece zaman - bicimlendirmeyi cagiran yapar. */
   zamanYazisi: string
-  /** Verilirse avatar ve ad kisinin profiline gidiyor. */
+  /** Verilirse avatar VE ad kisinin profiline gidiyor. */
   onKisi?: () => void
+  /** Verilirse mekan adi mekan sayfasina gidiyor. */
+  onMekan?: () => void
   testID?: string
 }) {
   const basHarf = (kullaniciAdi ?? '?').trim().charAt(0).toUpperCase() || '?'
@@ -51,23 +54,58 @@ export function FotografAltyazisi({
   return (
     <View style={stiller.kok} testID={testID}>
       {onKisi ? (
-        <Pressable onPress={onKisi} accessibilityRole="button" accessibilityLabel={kullaniciAdi ?? ''}>
+        <Pressable
+          onPress={onKisi}
+          accessibilityRole="button"
+          accessibilityLabel={kullaniciAdi ?? ''}
+          testID={testID ? `${testID}-avatar` : undefined}
+        >
           {avatar}
         </Pressable>
       ) : (
         avatar
       )}
       <View style={stiller.metinler}>
-        {kullaniciAdi && (
-          <Text style={stiller.ad} numberOfLines={1}>
-            {kullaniciAdi}
-          </Text>
-        )}
-        {mekanAdi && (
-          <Text style={stiller.mekan} numberOfLines={2}>
-            {mekanAdi}
-          </Text>
-        )}
+        {/* AD ve MEKAN AYRI HEDEFLER (kullanicinin istegi 2026-09-17):
+            ad kisinin profiline, mekan adi mekan sayfasina gidiyor.
+            Dokunus hedefi YAZININ KENDISI kadar (`alignSelf: 'flex-start'`)
+            - satirin bos sagina basmak bir sey acmamali. */}
+        {kullaniciAdi &&
+          (onKisi ? (
+            <Pressable
+              onPress={onKisi}
+              accessibilityRole="button"
+              style={stiller.hedef}
+              hitSlop={6}
+              testID={testID ? `${testID}-kisi` : undefined}
+            >
+              <Text style={stiller.ad} numberOfLines={1}>
+                {kullaniciAdi}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={stiller.ad} numberOfLines={1}>
+              {kullaniciAdi}
+            </Text>
+          ))}
+        {mekanAdi &&
+          (onMekan ? (
+            <Pressable
+              onPress={onMekan}
+              accessibilityRole="button"
+              style={stiller.hedef}
+              hitSlop={6}
+              testID={testID ? `${testID}-mekan` : undefined}
+            >
+              <Text style={stiller.mekan} numberOfLines={2}>
+                {mekanAdi}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={stiller.mekan} numberOfLines={2}>
+              {mekanAdi}
+            </Text>
+          ))}
         <Text style={stiller.zaman}>{zamanYazisi}</Text>
       </View>
     </View>
@@ -87,6 +125,7 @@ const stiller = StyleSheet.create({
   avatarBos: { backgroundColor: '#333333', alignItems: 'center', justifyContent: 'center' },
   basHarf: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
   metinler: { flex: 1, gap: 2 },
+  hedef: { alignSelf: 'flex-start' },
   ad: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
   mekan: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFFFFF' },
   zaman: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#B3B3B3' },
