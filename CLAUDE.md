@@ -162,12 +162,17 @@ alt cubuktan aciliyor. Sohbet ekranindaki ok duruyor. Test
    `marginHorizontal: -bosluk.sayfa` (akis fotografiyla ayni desen).
 2. **Buyuk gorunumlerde × SOLDA**: gezgin zaten soldaydi; akis karti ve
    profil avatar buyuk gorunumu `right` -> `left: bosluk.sayfa`.
-3. **Kesfet atfi altta sabit**: "harita verileri ... goründügü
-   sayfalarda en alta sabitle". `kesfet.atif` ScrollView'den cikti,
-   `atifSeridi` (absolute, `bottom: ALT_GEZINME_PAYI - bosluk.m`, zemin
-   rengi); icerik alt payi +24. Karsilama ekranindaki ODbL atfi zaten
-   sayfanin dibinde, dokunulmadi. Ekran goruntusu
-   `tasarim/kesfet-atif-sabit.png`.
+3. **"Harita verisi" atfi ekranin altina sabit** - ILK YORUM YANLISTI:
+   kesfetteki "Mekan verileri: Foursquare..." satirini sabitlemistim;
+   kullanici "kesfet sayfasinda olmasin o veri, yanlis yapmissin,
+   hangi sayfalara eklediysen ayni sayfalarda en altta sabit" dedi.
+   Kastedilen KARSILAMA ekranindaki "Harita verisi © OpenStreetMap"
+   satiri (`karsilama.haritaAtfi`, tek kullanim yeri). Kesfet eski
+   haline dondu (atif listenin sonunda, kaydirmayla). Karsilamada kok
+   `View` + ScrollView + `atifSeridi` (absolute bottom 0, guvenli alan
+   payi), icerik alt payi + `ATIF_YUKSEKLIGI` 22. Ekran goruntusu
+   `tasarim/karsilama-atif-sabit.png`. Ders: "harita verileri" sozu
+   OSM atfini kastediyor, mekan atfini degil.
 
 ### AKIS KARTI: FOTOGRAF ALTTA DA KENARA YAPISIK - 2026-09-18
 

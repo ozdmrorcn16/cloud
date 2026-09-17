@@ -165,13 +165,14 @@ export default function KarsilamaEkrani() {
   }
 
   return (
-    // Guvenli alana bir TABAN veriliyor: web'de `insets.top` sifir
+    <View style={stiller.sayfa}>
+    {/* Guvenli alana bir TABAN veriliyor: web'de `insets.top` sifir
     // dondugu icin marka ekranin en tepesine yapisiyordu.
     // KAYDIRILABILIR, ama yalnizca GEREKIRSE: `flexGrow: 1` icerigi
     // ekrana yayiyor, dolayisiyla sigan ekranlarda kaydirma hic
     // olusmuyor. Kok duz bir `View` iken kucuk ekranlarda en alttaki
     // ODbL atfi disarida kaliyordu ve geri getirmenin yolu yoktu
-    // (kullanicinin ekran goruntusu; 390x751'de olcuIerek dogrulandi).
+    // (kullanicinin ekran goruntusu; 390x751'de olcuIerek dogrulandi). */}
     <ScrollView
       style={stiller.sayfa}
       bounces={false}
@@ -185,7 +186,8 @@ export default function KarsilamaEkrani() {
           // atfi telefonda ekranin disinda kaliyordu (kullanicinin
           // ekran goruntusu). Bu ekran kaydirilmiyor, yani tasan sey
           // geri getirilemiyor.
-          paddingBottom: Math.max(guvenliAlan.bottom, bosluk.s) + bosluk.s,
+          // + en alttaki sabit atif seridi (bir satir minik yazi).
+          paddingBottom: Math.max(guvenliAlan.bottom, bosluk.s) + bosluk.s + ATIF_YUKSEKLIGI,
         },
       ]}
     >
@@ -236,12 +238,24 @@ export default function KarsilamaEkrani() {
         </Text>
       </Pressable>
 
-      {/* ODbL ATFI - hukuken sart, tercih degil. Sahnedeki harita
-          OpenStreetMap verisinden turetilmis bir eser. */}
-      <Text style={stiller.atif}>{t('karsilama.haritaAtfi')}</Text>
     </ScrollView>
+
+    {/* ODbL ATFI - hukuken sart, tercih degil. Sahnedeki harita
+        OpenStreetMap verisinden turetilmis bir eser. EKRANIN EN ALTINA
+        SABIT (kullanicinin istegi 2026-09-18: "en altta sabit kalacak,
+        ekranla beraber hareket etmeyecek") - kaydirmanin disinda. */}
+    <View
+      style={[stiller.atifSeridi, { paddingBottom: Math.max(guvenliAlan.bottom, bosluk.s) }]}
+      pointerEvents="none"
+    >
+      <Text style={stiller.atif}>{t('karsilama.haritaAtfi')}</Text>
+    </View>
+    </View>
   )
 }
+
+/** Sabit atif seridinin kapladigi yukseklik; kaydirma icerigi bunun ustunde biter. */
+const ATIF_YUKSEKLIGI = 22
 
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
@@ -338,6 +352,7 @@ const stilleriYap = (renk: Renk) =>
     ikincilYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
     ikincilVurgu: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 
+    atifSeridi: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: bosluk.xs },
     atif: {
       fontFamily: yazi.govde,
       fontSize: olcek.minik,
