@@ -41,6 +41,7 @@ import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { bolgeMetni } from '../../../lib/bolge'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { AnilarSekmeIkonu, EnSikSekmeIkonu } from '../../tasarim/sekme-ikonlari'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { FotografGezgini } from '../../tasarim/FotografGezgini'
 import { FotografAltyazisi } from '../../tasarim/FotografAltyazisi'
@@ -717,8 +718,16 @@ export default function KullaniciProfiliEkrani() {
         {!kapali && (
           <SekmeHapi
             sekmeler={[
-              { anahtar: 'anilar' as const, etiket: t('kullanici.anilar') },
-              { anahtar: 'yerler' as const, etiket: t('kullanici.enSik') },
+              {
+                anahtar: 'anilar' as const,
+                etiket: t('kullanici.anilar'),
+                ikon: (renk) => <AnilarSekmeIkonu renk={renk} />,
+              },
+              {
+                anahtar: 'yerler' as const,
+                etiket: t('kullanici.enSik'),
+                ikon: (renk) => <EnSikSekmeIkonu renk={renk} />,
+              },
             ]}
             secili={sekme}
             onSec={setSekme}

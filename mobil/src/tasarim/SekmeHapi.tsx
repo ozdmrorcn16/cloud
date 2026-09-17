@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
 import { bosluk, olcek, yazi, type Renk } from './tema'
-import { useStiller } from './tema-baglami'
+import { useRenk, useStiller } from './tema-baglami'
 import { useHareket } from './hareket'
 
 /**
@@ -33,13 +33,18 @@ export function SekmeHapi<T extends string>({
   onSec,
   yanPay = bosluk.sayfa,
 }: {
-  sekmeler: { anahtar: T; etiket: string }[]
+  /**
+   * `ikon` verilirse etiketin SOLUNA cizilir; rengi etiketle ayni
+   * (secili turuncu, degilse soluk) - kullanicinin referansi 2026-09-18.
+   */
+  sekmeler: { anahtar: T; etiket: string; ikon?: (renk: string) => ReactNode }[]
   secili: T
   onSec: (anahtar: T) => void
   /** Baslangic genisligini ekrandan turetmek icin sayfanin yan payi. */
   yanPay?: number
 }) {
   const stiller = useStiller(stilleriYap)
+  const renk = useRenk()
   const hareket = useHareket()
   // Baslangic degeri EKRANDAN turetiliyor, sifirdan degil: sifirla
   // baslasa gosterge ilk karede hic cizilmez ve olcum gelince birden
@@ -105,6 +110,7 @@ export function SekmeHapi<T extends string>({
           accessibilityRole="button"
           accessibilityState={{ selected: s.anahtar === secili }}
         >
+          {s.ikon ? s.ikon(s.anahtar === secili ? renk.turuncuYazi : renk.metinSoluk) : null}
           <Text style={[stiller.yazi, s.anahtar === secili && stiller.yaziAktif]}>{s.etiket}</Text>
         </Pressable>
       ))}
@@ -122,7 +128,15 @@ const stilleriYap = (renk: Renk) =>
       borderBottomWidth: 1,
       borderBottomColor: renk.cizgi,
     },
-    sekme: { flex: 1, alignItems: 'center', paddingVertical: bosluk.m },
+    /* Ikon + etiket yan yana; ikon yoksa `gap` bir sey degistirmiyor. */
+    sekme: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: bosluk.s,
+      paddingVertical: bosluk.m,
+    },
     /* Gosterge tabandaki gri cizginin UZERINE biniyor (`bottom: -1`),
        yoksa ikisi alt alta iki cizgi gibi gorunurdu. */
     kayanButon: {

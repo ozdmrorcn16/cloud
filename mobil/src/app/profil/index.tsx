@@ -56,6 +56,7 @@ import { FotografGezgini } from '../../tasarim/FotografGezgini'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { AnilarSekmeIkonu, EnSikSekmeIkonu } from '../../tasarim/sekme-ikonlari'
 import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
@@ -830,8 +831,16 @@ export default function ProfilEkrani() {
             {(sekme === 'anilar' || sekme === 'yerler') && (
               <SekmeHapi
                 sekmeler={[
-                  { anahtar: 'anilar' as const, etiket: t('profil.sekmeAnilar') },
-                  { anahtar: 'yerler' as const, etiket: t('profil.sekmeYerler') },
+                  {
+                    anahtar: 'anilar' as const,
+                    etiket: t('profil.sekmeAnilar'),
+                    ikon: (renk) => <AnilarSekmeIkonu renk={renk} />,
+                  },
+                  {
+                    anahtar: 'yerler' as const,
+                    etiket: t('profil.sekmeYerler'),
+                    ikon: (renk) => <EnSikSekmeIkonu renk={renk} />,
+                  },
                 ]}
                 secili={sekme === 'yerler' ? 'yerler' : 'anilar'}
                 onSec={setSekme}

@@ -148,6 +148,27 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### PAYLAS IKONU + SEKME IKONLARI - 2026-09-18
+
+**Paylas ikonu:** kagit ucak -> kutu + yukari ok (iOS "Paylas"; kullanicinin
+secimi A, dort alternatif `tasarim/paylas-ikonu-secenekler.png`). Tek
+tanim `etkilesim-ikonlari.tsx`; profil dugmesi ve ani karti birlikte dondu.
+Gerekce: kagit ucak Instagram'da "DM ile gonder"; bizde dugme sistem
+paylasim penceresi aciyor.
+
+**Anılar / En sık sekme ikonlari** (kullanicinin referans gorseli,
+"birebir"): `src/tasarim/sekme-ikonlari.tsx` - Anılar = takvim icinde
+konum ignesi, En sık = ignenin cevresinde donen iki ok. `SekmeHapi`
+sekme ogesine istege bagli `ikon(renk)` aldi; renk etiketle ayni (secili
+`turuncuYazi`, degilse `metinSoluk`), satir `flexDirection: row` + gap.
+Iki profil ekrani da veriyor. Ekran goruntusu `tasarim/profil-sekme-
+ikonlari.png` (yerel `expo export` + `python -m http.server 8080 -d dist`
++ `araclar/ekran-goruntusu.mjs profil`, test hesabi test0@slooin.test).
+
+Yayin: web `slooin--h34snhhsx1`, OTA grup
+`da1a61f4-482b-4dd4-8573-963f3f0ac669` (paylas ikonu tek basina
+`a02d560e`).
+
 ### PROFIL HARITA DOKUSU: ANA YOL INCELDI - 2026-09-18
 
 Kullanici once profil arkasina Turkiye merkezli DUNYA HARITASI istedi;
