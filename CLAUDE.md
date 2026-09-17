@@ -148,6 +148,48 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### PROFIL PAYLASIMI: slooin.com/<kullanici_adi> + ONIZLEME KARTI - 2026-09-18
+
+Kullanicinin istegi ("profilimi paylastigim zaman daha profesyonel
+olsun"); Artifact `MtUWGFzCM1dQRCWpwuMKSM` ile sunuldu, "/u/" oneki
+soruldu, kullanici **oneksiz `slooin.com/byorcun`** secti.
+
+**Zincir:** uygulama `lib/paylasim.ts` `profilBaglantisi(ad)` ->
+`https://slooin.com/<ad>` -> Cloudflare Pages Function
+`site/functions/[ad].js` (sunucuda HTML + Open Graph; dil
+Accept-Language/cerez, 7 dil sozlugu fonksiyonun icinde) -> Supabase
+Edge Function `profil-karti` (verify_jwt KAPALI, service role ile
+imzali fotograf URL'si 24 saat) -> RPC `public.profil_karti(text)`
+(anon'a acik; migrasyon `20260918100000`). Sayfa: avatar + ad +
+@kullaniciadi + "Uygulamada aç" (`slooin://kullanici/<id>`, mevcut
+derlemede calisir) + "Slooin nedir?"; Expo web'e baglanti YOK.
+Genel OG gorseli `site/public/og-slooin.png` (1200x630).
+
+**GIZLILIK (KVKK listesi maddesi yazildi):** kart yalnizca ad,
+kullanici adi, ilk fotograf; `profil_gizli` VEYA `aramada_gorunsun=false`
+ise ad ve fotograf NULL (yalnizca @ad); aktif olmayan hesap 404.
+Service role Supabase icinde kaldi, Cloudflare'e yalnizca anon gitti.
+
+**YASAKLI KULLANICI ADLARI:** sitenin sayfa adlari (gizlilik, kosullar,
+destek, posta, _astro, slooin, admin, ...) DB check kisiti
+`profiller_kullanici_adi_yasakli` + istemci `kullaniciAdiGecerliMi`.
+
+**IKI CLOUDFLARE DERSI (olculdu):** (1) `_middleware.js` oneksiz yolu
+dile yonlendirir; profil yolu (`^/[a-z0-9._]{3,20}/?$`, site sayfasi
+degil) MUAF tutuldu, yoksa `/de/byorcun/` 404 olurdu. (2) **Pages'te
+fonksiyon rotasi statik varliktan ONCE eslesir**: ilk yayinda
+`/gizlilik/` ve `/og-slooin.png` fonksiyona dusup 404 oldu; fonksiyon
+artik once `env.ASSETS.fetch` deniyor, 404 degilse onu donduruyor.
+
+Canli olcum: tr/de basliklar dogru, robot taklidinde og:image var,
+olmayan ad 404, gizlilik/kosullar/ana sayfa/og gorseli 200, Almanca
+tarayici `/gizlilik` -> `/de/gizlilik/` 302 (eski davranis korundu).
+Metinler: `profil.paylasMetni` (yeni, 7 dil, "Slooin'de beni ekle 👋"),
+`kullanici.paylasMetni` @ ile. Jest 76 paket / 1015 test. Uygulama:
+web `slooin--gkekdg28wg`, OTA grup `67202e96-1aac-479f-ab3a-693d5805e510`.
+KALAN: magaza baglantilari gelince sayfadaki "yakinda" notu dugmeye
+donusecek.
+
 ### PAYLAS IKONU + SEKME IKONLARI - 2026-09-18
 
 **Paylas ikonu:** kagit ucak -> kutu + yukari ok (iOS "Paylas"; kullanicinin

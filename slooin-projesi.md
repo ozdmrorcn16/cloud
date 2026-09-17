@@ -252,7 +252,13 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--h34snhhsx1`, OTA grup
+**Son bitirilen is (2026-09-18 gece, YAYINDA - uygulama web `slooin--gkekdg28wg`,
+OTA grup `67202e96-1aac-479f-ab3a-693d5805e510`; site push ile):** profil
+paylasimi `https://slooin.com/<kullanici_adi>` - sitede sunucu tarafi kart
+sayfasi (Open Graph: avatar + ad + Slooin), Edge Function `profil-karti`,
+RPC `profil_karti`, yasakli kullanici adlari, KVKK maddesi. Canli olculdu.
+
+**Daha once ayni gun (web `slooin--h34snhhsx1`, OTA grup
 `da1a61f4-482b-4dd4-8573-963f3f0ac669`):** paylas ikonu kutu + yukari ok
 oldu (her yerde); profil sekmelerine ikon geldi (Anılar takvim+igne, En sık
 donen oklar+igne, `sekme-ikonlari.tsx`).
