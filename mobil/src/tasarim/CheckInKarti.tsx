@@ -63,6 +63,7 @@ export function CheckInKarti({
   onNotKaydet,
   onEtiketEkle,
   onEtiketKaldir,
+  onFotografAc,
 }: {
   oge: AkisOgesi
   /** "7 saat önce" gibi gorece zaman; kart bicimlendirmeyi ustlenmiyor. */
@@ -97,6 +98,13 @@ export function CheckInKarti({
   /** Yerinde duzenlemede secilen arkadaslari etiketler. */
   onEtiketEkle?: (id: string, kullaniciIdler: string[]) => Promise<void> | void
   onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
+  /**
+   * Verilirse fotografa dokunmak kartin KENDI tam ekranini acmaz, bunu
+   * cagirir: profil ekranlari butun fotograflari tek bir gezginde
+   * (saga-sola kaydirmali) aciyor (kullanicinin istegi 2026-09-18).
+   * Akista verilmiyor; kart tek fotografini kendisi acar.
+   */
+  onFotografAc?: () => void
 }) {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
@@ -476,7 +484,7 @@ export function CheckInKarti({
       {oge.fotografUrl && (
         <Pressable
           testID="akis-fotografi"
-          onPress={() => setBuyukAcik(true)}
+          onPress={() => (onFotografAc ? onFotografAc() : setBuyukAcik(true))}
           accessibilityRole="button"
           accessibilityLabel={t('anaSayfa.fotografiBuyut')}
           // NEGATIF PAY SARMALAYICIDA, gorselde DEGIL. Gorselde

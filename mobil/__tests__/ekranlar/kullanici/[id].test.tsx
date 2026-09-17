@@ -42,17 +42,21 @@ jest.mock('../../../lib/bag', () => ({
 const mockRouterPush = jest.fn()
 const mockRouterBack = jest.fn()
 const mockRouterReplace = jest.fn()
+const mockSetParams = jest.fn()
+let mockSekmeParam: string | undefined
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: mockRouterPush,
     back: mockRouterBack,
     replace: mockRouterReplace,
+    setParams: mockSetParams,
   }),
-  useLocalSearchParams: () => ({ id: 'kullanici-2' }),
+  useLocalSearchParams: () => ({ id: 'kullanici-2', sekme: mockSekmeParam }),
 }))
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockSekmeParam = undefined
   // Varsayilan: baktigim profil BENIM DEGIL. Kendi profilim senaryosu
   // bunu kendi testinde degistiriyor.
   ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('ben')
@@ -847,6 +851,33 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.queryByText('Sahil Kafe')).toBeNull()
     // Sayaclar yine de sayiyi soyluyor - kilit yalnizca AKISI kapatiyor.
     expect(screen.getByLabelText('1 Anı')).toBeTruthy()
+  })
+
+  it('kartin fotografina dokununca gezgin acilir: sayac ve kaydirma (2026-09-18)', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: null,
+        fotografUrl: 'https://imzali/1.jpg', olusturmaZamani: new Date().toISOString(),
+        canliMi: false, mekanSemti: null, etiketler: [] },
+      { id: 'checkin-2', mekanId: 'mekan-2', mekanAdi: 'Kent Meydanı', notMetni: null,
+        fotografUrl: 'https://imzali/2.jpg', olusturmaZamani: new Date().toISOString(),
+        canliMi: false, mekanSemti: null, etiketler: [] },
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+    const fotograflar = await screen.findAllByTestId('akis-fotografi')
+    await fireEvent.press(fotograflar[0])
+
+    await screen.findByTestId('kullanici-buyuk-gorunum')
+    expect(screen.getByTestId('kullanici-sayac')).toHaveTextContent('1 / 2')
+    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
+
+    const liste = screen.getByTestId('kullanici-sayfalar')
+    const genislik = require('react-native').Dimensions.get('window').width
+    await fireEvent(liste, 'momentumScrollEnd', {
+      nativeEvent: { contentOffset: { x: genislik, y: 0 } },
+    })
+    expect(screen.getByTestId('kullanici-sayac')).toHaveTextContent('2 / 2')
+    expect(screen.getByTestId('kullanici-fotograf-altyazisi')).toHaveTextContent(/Kent Meydanı/)
   })
 
   it('ACIK profilde paylasimlar KART olarak gorunur ve duzenleme menusu YOK', async () => {

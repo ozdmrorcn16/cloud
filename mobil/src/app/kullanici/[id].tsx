@@ -42,6 +42,9 @@ import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { bolgeMetni } from '../../../lib/bolge'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
+import { FotografGezgini } from '../../tasarim/FotografGezgini'
+import { FotografAltyazisi } from '../../tasarim/FotografAltyazisi'
+import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import {
@@ -154,6 +157,8 @@ const AVATAR_CAPI = 88
  * Engelleme iki adimli. Tek dokunusla engellemek geri alinamaz bir
  * eylemi kazayla tetikliyordu.
  */
+const KULLANICI_SEKMELERI = ['anilar', 'yerler'] as const
+
 export default function KullaniciProfiliEkrani() {
   const stiller = useStiller(stilleriYap)
   const renk = useRenk()
@@ -170,9 +175,12 @@ export default function KullaniciProfiliEkrani() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
   const [guvenlikMenusu, setGuvenlikMenusu] = useState(false)
+  // Ani kartindan acilan fotograf gezgini: bu kisinin fotografli
+  // anilari arasinda saga-sola kaydirma (kullanicinin istegi 2026-09-18).
+  const [acikFotografIndeksi, setAcikFotografIndeksi] = useState<number | null>(null)
   // Kendi profil ekranindaki gibi iki bakis: zaman sirasi ve en cok
-  // gidilen yerler.
-  const [sekme, setSekme] = useState<'anilar' | 'yerler'>('anilar')
+  // gidilen yerler. Secim rota parametresinde (geri donuste korunur).
+  const [sekme, setSekme] = useSekmeParametresi(KULLANICI_SEKMELERI, 'anilar')
   const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
   const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
   /** Sunucuya SORULMUS kimlikler; ayni istegi iki kez atmamak icin. */
@@ -423,6 +431,8 @@ export default function KullaniciProfiliEkrani() {
   const kapali = (profil?.profilGizli ?? false) && !bagVar
 
   const fotografUrl = fotografUrlleri[0] ?? null
+  // Gezginin listesi: yalnizca fotografli anilar, akistaki sirayla.
+  const fotografliAnilar = anilar.filter((a) => a.fotografUrl)
 
   const ustCubuk = (
     <View style={stiller.ustCubuk}>
@@ -751,6 +761,9 @@ export default function KullaniciProfiliEkrani() {
                 zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                 ozet={ozetler[ani.id]}
                 onBegen={begeniDegistir}
+                onFotografAc={() =>
+                  setAcikFotografIndeksi(fotografliAnilar.findIndex((f) => f.id === ani.id))
+                }
                 onYorumSayisi={(aniId, sayi) =>
                   setOzetler((mevcut) =>
                     mevcut[aniId] ? { ...mevcut, [aniId]: { ...mevcut[aniId], yorum: sayi } } : mevcut
@@ -789,6 +802,33 @@ export default function KullaniciProfiliEkrani() {
           },
         ]}
         onKapat={() => setArkadasMenusu(false)}
+      />
+      {/* ANI KARTINDAN ACILAN BUYUK GORUNUM: ortak gezgin. Ad ve avatar
+          basilabilir DEGIL - zaten bu kisinin profilindeyiz; mekan adi
+          mekan sayfasina gidiyor. */}
+      <FotografGezgini
+        testID="kullanici"
+        fotograflar={fotografliAnilar.map((a) => ({ id: a.id, url: a.fotografUrl as string }))}
+        acikIndeks={acikFotografIndeksi}
+        onIndeks={setAcikFotografIndeksi}
+        onKapat={() => setAcikFotografIndeksi(null)}
+        altyazi={(i) => {
+          const acik = fotografliAnilar[i]
+          return (
+            <FotografAltyazisi
+              testID="kullanici-fotograf-altyazisi"
+              avatarUrl={fotografUrl}
+              kullaniciAdi={profil?.kullaniciAdi ?? null}
+              mekanAdi={acik.mekanAdi}
+              zamanYazisi={gorecelZaman(acik.olusturmaZamani, t)}
+              onMekan={() => {
+                const mekanId = acik.mekanId
+                setAcikFotografIndeksi(null)
+                router.push(`/harita/${mekanId}` as never)
+              }}
+            />
+          )
+        }}
       />
       <OnayPenceresi
         acikMi={geriCekOnayi}

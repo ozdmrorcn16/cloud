@@ -55,8 +55,13 @@ jest.mock('../../../lib/akis', () => ({
 }))
 
 const mockRouterPush = jest.fn()
+const mockSetParams = jest.fn()
+// Rota parametresi: test icinde `mockSekmeParam = 'yerler'` diye
+// kurulunca ekran o sekmede acilir (geri donus senaryosu).
+let mockSekmeParam: string | undefined
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, setParams: mockSetParams }),
+  useLocalSearchParams: () => ({ sekme: mockSekmeParam }),
   useFocusEffect: (effect: () => void) => {
     require('react').useEffect(effect, [])
   },
@@ -88,6 +93,7 @@ function duzYazi(oge: { props: { style?: unknown } }): Record<string, unknown> {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockSekmeParam = undefined
   // Varsayilan: sayac yok. Kart eylem satirini ancak ozet gelince
   // ciziyor, yani bu deger verilmezse eski davranis olculur.
   ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({})
@@ -122,6 +128,53 @@ describe('ProfilEkrani', () => {
     const altyazi = await screen.findByTestId('izgara-fotograf-altyazisi')
     expect(within(altyazi).getByText('orcun')).toBeTruthy()
     expect(within(altyazi).getByText('Sahil Kafe')).toBeTruthy()
+  })
+
+  /*
+   * FOTOGRAF GEZGINI (kullanicinin istegi 2026-09-18): izgaradan ya da
+   * ani kartindan acilan buyuk gorunum TEK fotograf degil, profilin
+   * butun fotograflari - sayac var, saga-sola kaydirmayla geciliyor.
+   */
+  it('izgaradan acilan buyuk gorunumde sayac var ve kaydirinca sonraki fotografa gecer', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ id: 'ani-1', fotografUrl: 'https://imzali/1.jpg' }),
+      ani({ id: 'ani-2', fotografUrl: 'https://imzali/2.jpg', mekanAdi: 'Kent Meydanı' }),
+      ani({ id: 'ani-3', fotografUrl: null }),
+    ])
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Fotoğraf'))
+    await fireEvent.press(screen.getAllByLabelText('Sahil Kafe')[0])
+
+    await screen.findByTestId('izgara-buyuk-gorunum')
+    // Fotografsiz ani sayilmiyor: 2 fotograf.
+    expect(screen.getByTestId('izgara-sayac')).toHaveTextContent('1 / 2')
+
+    // Ikinci sayfaya kaydirma (genislik kadar ofset).
+    const liste = screen.getByTestId('izgara-sayfalar')
+    const genislik = require('react-native').Dimensions.get('window').width
+    await fireEvent(liste, 'momentumScrollEnd', {
+      nativeEvent: { contentOffset: { x: genislik, y: 0 } },
+    })
+    expect(screen.getByTestId('izgara-sayac')).toHaveTextContent('2 / 2')
+    expect(within(screen.getByTestId('izgara-fotograf-altyazisi')).getByText('Kent Meydanı')).toBeTruthy()
+  })
+
+  it('ani KARTINDAKI fotografa dokununca da ayni gezgin, o fotograftan acilir', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ id: 'ani-1', fotografUrl: 'https://imzali/1.jpg' }),
+      ani({ id: 'ani-2', fotografUrl: 'https://imzali/2.jpg', mekanAdi: 'Kent Meydanı' }),
+    ])
+
+    await render(<ProfilEkrani />)
+    // Anilar sekmesi (varsayilan): ikinci kartin fotografi.
+    const fotograflar = await screen.findAllByTestId('akis-fotografi')
+    await fireEvent.press(fotograflar[1])
+
+    await screen.findByTestId('izgara-buyuk-gorunum')
+    expect(screen.getByTestId('izgara-sayac')).toHaveTextContent('2 / 2')
+    // Kartin kendi tek fotografli penceresi ACILMADI.
+    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
   })
 
   it('izgaradaki fotografin MEKAN ADI mekan sayfasini aciyor', async () => {
@@ -266,6 +319,35 @@ describe('ProfilEkrani', () => {
     expect(await screen.findByText('2 kez')).toBeTruthy()
     expect(screen.getByText('1 kez')).toBeTruthy()
     expect(screen.getByText('Kent Meydanı')).toBeTruthy()
+  })
+
+  /*
+   * SEKME ROTA PARAMETRESINDE (kullanicinin bildirimi 2026-09-18):
+   * "En sık"tan bir mekana gidip geri gelince sekme "Anılar"a atiyordu
+   * - kok duzen Slot oldugu icin ekran yeniden kuruluyor. Secim
+   * `router.setParams` ile yaziliyor, donuste parametreden okunuyor.
+   */
+  it('sekme secimi rota parametresine yazilir', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('En sık'))
+    expect(mockSetParams).toHaveBeenCalledWith({ sekme: 'yerler' })
+  })
+
+  it('rota parametresi "yerler" ise ekran En sık sekmesinde acilir (geri donus)', async () => {
+    mockSekmeParam = 'yerler'
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani(), ani({ id: 'ani-2' })])
+    await render(<ProfilEkrani />)
+    // "2 kez" yalnizca En sık listesinde cizilir.
+    expect(await screen.findByText('2 kez')).toBeTruthy()
+  })
+
+  it('bilinmeyen rota parametresi varsayilan sekmeye duser', async () => {
+    mockSekmeParam = 'olmayan-sekme'
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani(), ani({ id: 'ani-2' })])
+    await render(<ProfilEkrani />)
+    await screen.findByText('En sık')
+    expect(screen.queryByText('2 kez')).toBeNull()
   })
 
   it('6 VE SONRASI duz rakamla ve OKUNUR bir tonda cizilir', async () => {

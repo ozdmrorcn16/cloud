@@ -148,6 +148,38 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SEKME GERI DONUSTE KORUNUR; FOTOGRAF GEZGINI - 2026-09-18
+
+**1. "En sık" sekmesi geri donuste kayboluyordu** (kullanicinin
+bildirimi). Kok duzen `Slot`: baska sayfaya gidince ekran KALDIRILIYOR,
+donuste sifirdan kuruluyor, `useState` varsayilana donuyor. Cozum
+`lib/sekme-parametresi.ts` (`useSekmeParametresi`): secim
+`router.setParams({ sekme })` ile rotanin parametresine yaziliyor,
+acilista `useLocalSearchParams`tan okunuyor, bilinen sekmelere
+suzuluyor. Geri donus ayni rota kaydina geldigi icin sekme korunur;
+alt cubuktan "Profil" parametresiz yeni rota actigi icin varsayilanda
+acilir. Modul duzeyi degisken BILEREK kullanilmadi - alt cubuktan gelen
+taze acilisi da son sekmeye kilitlerdi. Iki profil ekrani da kullaniyor.
+Test mock'lari: `useLocalSearchParams` artik `sekme` donduruyor
+(`mockSekmeParam`), `useRouter` `setParams` tasiyor.
+
+**2. Fotograf gezgini** (kullanicinin istegi: "buyuk acinca saga sola
+kaydirip fotograflar arasinda gezebileyim, kendi profilimde ya da
+baskasinin profilinde"). Mekan galerisinin buyuk gorunumu
+`src/tasarim/FotografGezgini.tsx` olarak cikarildi (siyah zemin, × ve
+"3 / 12" sayaci, sayfali yatay FlatList, iki parmak zoom, altyazi
+cagirandan). Uc yer kullaniyor: mekan galerisi (testID on eki `galeri`),
+kendi profil (`izgara` - izgara VE ani kartlari), baskasinin profili
+(`kullanici` - ani kartlari). Liste = fotografli anilar, akis sirasi.
+`CheckInKarti` yeni `onFotografAc` prop'u aldi: verilirse kart kendi tek
+fotografli penceresini ACMAZ, ekrana bildirir. **Akis (ana sayfa)
+DEGISMEDI** - orada prop verilmiyor, kart eskisi gibi tek fotograf acar.
+Baskasinin profilindeki PROFIL FOTOGRAFI SERIDI (ust blok) hala
+basilmiyor - istek ani fotograflari icindi.
+
+Jest 76 paket / 1013 test. Yayin: web `slooin--rjiewtmcm9`, OTA grup
+`85821a09-b1c1-4989-be07-b5da78061867`.
+
 ### CHECK-IN ILK KULLANIM EKRANI KALDIRILDI - 2026-09-18
 
 Kullanicinin istegi (ekran goruntusuyle): "Check-in yapmaya basinca bu

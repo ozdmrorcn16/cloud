@@ -252,7 +252,14 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--mqfme60uw0`, OTA grup
+**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--rjiewtmcm9`, OTA grup
+`85821a09-b1c1-4989-be07-b5da78061867`):** profilde secili sekme ("En sık")
+mekan sayfasindan geri donuste korunuyor (rota parametresi,
+`lib/sekme-parametresi.ts`); fotograf buyuk acilinca saga-sola kaydirmali
+gezgin (`FotografGezgini`) - mekan galerisi, kendi profil (izgara + kartlar)
+ve baskasinin profili (kartlar) ayni bileseni kullaniyor. Akis degismedi.
+
+**Ayni gun daha once (web `slooin--mqfme60uw0`, OTA grup
 `1500d276-7b6e-4ef3-8ded-e6944804692c`):** check-in formundan once cikan
 "Bu check-in ne paylasiyor?" bilgilendirme ekrani kaldirildi (aydinlatma
 gizlilik metninde duruyor). Yan sonuc: tek check-in'i gizli yapma yolu

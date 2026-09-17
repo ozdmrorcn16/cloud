@@ -52,9 +52,11 @@ import {
 } from '../../../lib/etkilesim'
 import { gorecelZaman } from '../../../lib/zaman'
 import { FotografAltyazisi } from '../../tasarim/FotografAltyazisi'
+import { FotografGezgini } from '../../tasarim/FotografGezgini'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
+import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { bolgeMetni } from '../../../lib/bolge'
@@ -218,6 +220,8 @@ const EN_FAZLA_YER = 20
  * ZORUNDAYDI: beyaz yazi acik bir gecisin uzerinde okunmuyor.
  */
 
+const PROFIL_SEKMELERI = ['anilar', 'yerler', 'fotograflar', 'arkadaslar'] as const
+
 export default function ProfilEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
@@ -231,8 +235,10 @@ export default function ProfilEkrani() {
   const [fotografUrl, setFotografUrl] = useState<string | null>(null)
   const [anilar, setAnilar] = useState<AniGorunumu[]>([])
   // Sekme (kullanicinin secimi 2026-08-29): ayni veriye iki bakis -
-  // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler).
-  const [sekme, setSekme] = useState<'anilar' | 'yerler' | 'fotograflar' | 'arkadaslar'>('anilar')
+  // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler). Secim
+  // rota parametresinde: mekana gidip geri gelince ayni sekme acilir
+  // (kullanicinin bildirimi 2026-09-18).
+  const [sekme, setSekme] = useSekmeParametresi(PROFIL_SEKMELERI, 'anilar')
   const [baglar, setBaglar] = useState<BagKisi[]>([])
   // ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
   // sagda "..." -> Arkadasliktan cikar / Engelle. Avatarlar listeden
@@ -271,7 +277,10 @@ export default function ProfilEkrani() {
    * Buyuk gorunumun altyazisi (kisi / mekan / zaman) 2026-09-17'de
    * eklendi ve o bilgiler yalnizca ogede duruyor.
    */
-  const [buyukFotograf, setBuyukFotograf] = useState<AniGorunumu | null>(null)
+  // Gezgindeki acik fotografin `fotograflar` icindeki sirasi; null kapali.
+  // Izgaradan da ani kartindan da ayni gezgin aciliyor, saga-sola
+  // kaydirmayla digerlerine geciliyor (kullanicinin istegi 2026-09-18).
+  const [acikFotografIndeksi, setAcikFotografIndeksi] = useState<number | null>(null)
   // Silme geri alinamaz: once onay. Deger, onayi acik olan aninin
   // kimligi (akis ekranindaki desenin aynisi).
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
@@ -885,7 +894,7 @@ export default function ProfilEkrani() {
                     <Pressable
                       key={a.id}
                       style={stiller.izgaraHucre}
-                      onPress={() => setBuyukFotograf(a)}
+                      onPress={() => setAcikFotografIndeksi(fotograflar.indexOf(a))}
                       accessibilityRole="imagebutton"
                       accessibilityLabel={a.mekanAdi}
                     >
@@ -954,6 +963,9 @@ export default function ProfilEkrani() {
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                     ozet={ozetler[ani.id]}
                     onBegen={begeniDegistir}
+                    onFotografAc={() =>
+                      setAcikFotografIndeksi(fotograflar.findIndex((f) => f.id === ani.id))
+                    }
                     // Yorumlar kartin ICINDE alttan aciliyor; ekranin
                     // tek isi sayaci tazelemek.
                     onYorumSayisi={(id, sayi) =>
@@ -975,52 +987,35 @@ export default function ProfilEkrani() {
         )}
       </ScrollView>
 
-      {/* IZGARADAN ACILAN BUYUK GORUNUM. Akis kartindaki desenle ayni;
-          "Kaldir" YOK - burada fotografi silmek anlamli degil, silme
-          check-in'in kendi menusunden yapiliyor. */}
-      <Modal
-        visible={buyukFotograf !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setBuyukFotograf(null)}
-      >
-        <Pressable
-          style={stiller.buyukZemin}
-          onPress={() => setBuyukFotograf(null)}
-          accessibilityRole="button"
-          accessibilityLabel={t('ortak.kapat')}
-        >
-          {buyukFotograf && (
-            <Image
-              source={{ uri: buyukFotograf.fotografUrl as string }}
-              style={stiller.izgaraBuyukFoto}
-              resizeMode="contain"
-            />
-          )}
-        </Pressable>
-        {/* SOL ALTTA paylasan kisi, mekan ve zaman (kullanicinin istegi
-            2026-09-17). Zemin Pressable'inin DISINDA: altyaziya
-            dokunmak fotografi kapatmasin. Profil kendi sayfamiz oldugu
-            icin ada baglanti YOK - zaten buradayiz. */}
-        {buyukFotograf && (
-          <View style={stiller.buyukAltyazi}>
+      {/* IZGARADAN VE ANI KARTINDAN ACILAN BUYUK GORUNUM: ortak gezgin
+          (kaydirma, sayac, zoom). "Kaldir" YOK - silme check-in'in kendi
+          menusunden yapiliyor. */}
+      <FotografGezgini
+        testID="izgara"
+        fotograflar={fotograflar.map((a) => ({ id: a.id, url: a.fotografUrl as string }))}
+        acikIndeks={acikFotografIndeksi}
+        onIndeks={setAcikFotografIndeksi}
+        onKapat={() => setAcikFotografIndeksi(null)}
+        altyazi={(i) => {
+          const acik = fotograflar[i]
+          return (
             <FotografAltyazisi
               testID="izgara-fotograf-altyazisi"
               /* Kendi profilimiz: avatar ve kullanici adi profilin
-                 kendisinden geliyor, anida tekrarlanmiyor. */
+                 kendisinden geliyor; ada baglanti YOK - zaten buradayiz. */
               avatarUrl={fotografUrl}
-              kullaniciAdi={profil?.kullaniciAdi ?? buyukFotograf.kullaniciAdi}
-              mekanAdi={buyukFotograf.mekanAdi}
-              zamanYazisi={gorecelZaman(buyukFotograf.olusturmaZamani, t)}
+              kullaniciAdi={profil?.kullaniciAdi ?? acik.kullaniciAdi}
+              mekanAdi={acik.mekanAdi}
+              zamanYazisi={gorecelZaman(acik.olusturmaZamani, t)}
               onMekan={() => {
-                const mekanId = buyukFotograf.mekanId
-                setBuyukFotograf(null)
+                const mekanId = acik.mekanId
+                setAcikFotografIndeksi(null)
                 router.push(`/harita/${mekanId}` as never)
               }}
             />
-          </View>
-        )}
-      </Modal>
+          )
+        }}
+      />
 
       {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
           Kapat, altta Kaldir. Kaldirma geri alinamaz, o yuzden iki
@@ -1328,7 +1323,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemBasili: { backgroundColor: renk.cizgi },
 
   // Buyuk gorunum
-  buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   buyukZemin: {
     flex: 1,
     backgroundColor: '#000000',
@@ -1447,7 +1441,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   izgaraHucre: { width: '33.333%', aspectRatio: 1, padding: 1 },
   izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
 
-  izgaraBuyukFoto: { width: '100%', height: '80%' },
 
   aniListesi: { marginHorizontal: -bosluk.sayfa },
 
