@@ -148,6 +148,51 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### BAGLANTI DOGRUDAN UYGULAMAYA + PAYLASIM KALKANI - 2026-09-18 GECE
+
+**1. Paylasim kalkani.** Kullanicinin bildirimi: iOS paylasim sayfasini
+disina dokunarak kapatinca dokunus arkadaki fotografa dusup buyuk
+gorunumu aciyordu; genellemesi "bir sey acikken arkada baska bir seye
+basilinca direkt acilmamali". Cozum TEK YERDE: `lib/paylasim.ts`
+`sistemPaylasimi` (butun `Share.share` cagrilari buradan; kapanis
+anini kaydeder + dinleyicilere haber verir) ve kok duzende
+`PaylasimKalkani` (kapanistan sonra 700 ms boyunca `absoluteFill`
+gorunmez katman, her seyin ustunde). Kartta yerel koruma BILEREK yok.
+`jest.setup.js` her testten once `paylasimKorumasiniSifirla()` - modul
+duzeyindeki an testler arasi tasiyordu (2 test kirilmisti).
+
+**2. slooin.com/<ad> dogrudan uygulamayi acar** (kullanicinin istegi:
+"siteye yonlendirmesin, direkt uygulamada o kisinin profili acilsin,
+yuklu degilse yuklemeye"). Uc parca:
+- **Site:** `public/.well-known/apple-app-site-association`
+  (appID `79QNZVGJC7.com.slooin.app`, site sayfalari ve dil onekleri
+  `exclude`), `assetlinks.json` (SHA-256 `6D:B8:0F:CB:...` - EAS
+  keystore; AAB'den `META-INF/*.RSA` + Android Studio'nun keytool'u ile
+  okundu, `eas credentials` etkilesimsiz calismiyor), `_headers`
+  (Content-Type application/json), middleware `/.well-known/` muaf.
+  Canli: 200 + application/json. Sayfa Android'de `intent://` ile
+  otomatik deniyor (yoksa sayfada kalir); iOS'ta OTOMATIK sema YOK
+  (uygulama yoksa Safari uyari verirdi) - iOS'ta is Universal Links'in.
+- **Uygulama:** `app.json` `ios.associatedDomains: [applinks:slooin.com]`,
+  `android.intentFilters` (autoVerify, https slooin.com, pathPrefix /).
+  Rota `src/app/[kullaniciAdi].tsx`: `profil_karti` RPC ile kullanici
+  adi -> kimlik -> `/kullanici/<id>` (kendi adiysa `/profil`); site
+  sayfa adlari (Android hepsini getirir) `expo-web-browser` ile
+  tarayicida. Bilinen sinir: oturum yoksa kok duzen karsilamaya atar,
+  baglanti kaybolur.
+- **NATIVE DERLEME SART** (entitlement + intent filter): iOS
+  `d2b63476-e681-47e8-8db8-0e491c6e8349`, Android
+  `6892d1ca-753f-4a5c-baa6-6e6953245fbc` baslatildi (production,
+  --no-wait). iOS bitince `eas submit --platform ios --latest` +
+  TestFlight'tan kur; **Universal Link ancak yeni derlemede calisir**,
+  Build 8'de baglanti Safari'de acilir (sayfa + "Uygulamada aç").
+  "Yuklu degilse magazaya": magaza baglantilari yokken sayfada
+  "yakinda" notu; cikinca `[ad].js` METIN.indir + intent
+  `S.browser_fallback_url` Play'e cevrilecek.
+
+OTA (kalkan + rota): grup `543abca5-5738-4439-a8a9-cf59b7796657`, web
+`slooin--jf21x16e2i`. Jest 77 paket / 1020 test.
+
 ### PROFIL PAYLASIMI: slooin.com/<kullanici_adi> + ONIZLEME KARTI - 2026-09-18
 
 Kullanicinin istegi ("profilimi paylastigim zaman daha profesyonel

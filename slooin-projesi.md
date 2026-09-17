@@ -252,7 +252,15 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18 gece, YAYINDA - uygulama web `slooin--gkekdg28wg`,
+**Son bitirilen is (2026-09-18 gece, DERLEME BEKLIYOR):** `slooin.com/<ad>`
+dogrudan uygulamayi acsin - AASA + assetlinks sitede canli,
+`associatedDomains`/`intentFilters` app.json'da, `[kullaniciAdi]` rotasi
+OTA'da (`543abca5`). iOS derlemesi `d2b63476`, Android `6892d1ca`
+baslatildi; iOS bitince `eas submit --platform ios --latest` ve
+TestFlight'tan kurulmali. Ayrica paylasim sayfasi kapanisindan sonraki
+dokunuslari yutan kok duzey kalkan (`PaylasimKalkani`).
+
+**Ayni gece (uygulama web `slooin--gkekdg28wg`,
 OTA grup `67202e96-1aac-479f-ab3a-693d5805e510`; site push ile):** profil
 paylasimi `https://slooin.com/<kullanici_adi>` - sitede sunucu tarafi kart
 sayfasi (Open Graph: avatar + ad + Slooin), Edge Function `profil-karti`,
