@@ -165,9 +165,14 @@ Iki profil ekrani da veriyor. Ekran goruntusu `tasarim/profil-sekme-
 ikonlari.png` (yerel `expo export` + `python -m http.server 8080 -d dist`
 + `araclar/ekran-goruntusu.mjs profil`, test hesabi test0@slooin.test).
 
-Yayin: web `slooin--h34snhhsx1`, OTA grup
-`da1a61f4-482b-4dd4-8573-963f3f0ac669` (paylas ikonu tek basina
-`a02d560e`).
+Duzeltme (ayni gece, kullanicinin bildirimi "En sık ikonu cok
+kucuk"): En sık cizimi viewBox `2 2 20 20` ile buyutuldu, cizgi 1,5 -
+takvimle ayni gorunur boy. Ders: iki ikon ayni `boyut` alsa da cizim
+kutuyu ne kadar dolduruyorsa o kadar buyuk gorunur.
+
+Yayin: web `slooin--h34snhhsx1` (+ boyut duzeltmesi sonraki dagitim),
+OTA grup `da1a61f4-482b-4dd4-8573-963f3f0ac669` ve ardindan boyut
+duzeltmesi (paylas ikonu tek basina `a02d560e`).
 
 ### PROFIL HARITA DOKUSU: ANA YOL INCELDI - 2026-09-18
 
