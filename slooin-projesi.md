@@ -252,14 +252,14 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17, YAYINLANMADI):** GIZLI profil
+**Son bitirilen is (2026-09-17, YAYINDA - web `slooin--vo1q6bhs9d`, OTA grup `66029f3f-c8a7-417b-ba6d-29294c8aa116`):** GIZLI profil
 gorunumu sadelesti (karar 97) - o halde sayaclar butonlarin ustunde;
 acik profilin duzeni degismedi. Ust cubukta tek dugme kaldi:
 uc nokta (seftali daire). Menu = Profili paylaş / Şikâyet et /
 Engelle; sikayet ve engelleme sayfanin dibinden oraya tasindi (magaza
 sarti), paylas ikonu da menuye girdi.
 
-**Ayni gun daha once (YAYINLANMADI):** buyuk acilan
+**Ayni gun daha once (ayni yayinda):** buyuk acilan
 fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor
 (karar 96). Mekan galerisindeki altyazi `src/tasarim/FotografAltyazisi.tsx`
 bilesenine cikarildi; akis kartinin tam ekran gorunumu ve profildeki
@@ -267,7 +267,7 @@ fotograf izgarasi da ayni satiri kullaniyor. Altyazida uc dokunus
 hedefi var: avatar ve kullanici adi profili, mekan adi mekan sayfasini
 aciyor.
 
-**Ayni gun daha once (YAYINLANMADI):** check-in listesindeki
+**Ayni gun daha once (ayni yayinda):** check-in listesindeki
 kartlar tekduze hale getirildi ve karenin ici gercek harita oldu
 (kullanicinin istegi; karar 95). Eylem satiri (Yol tarifi + Check-in
 yap) her kartta; turuncu cerceve yalnizca en yakinda.

@@ -254,9 +254,13 @@ cizdirildi, betik gecici oldugu icin depoya konmadi.
 `ekran-goruntusu.mjs` artik `SLOOIN_CHROME` ile Chrome yolu alabiliyor
 (Linux konteynerinde Windows yolu yok).
 
-**YAYIN BEKLIYOR:** bu oturumda EAS girisi yok, yani `npm run yayinla`
-ve `eas update` KOSULAMADI. Degisiklik telefonda ancak kullanici
-yayinlayinca gorunur.
+**YAYINLANDI (ayni gun aksam, yerel oturum):** bulut oturumunda EAS
+girisi olmadigi icin yayin yerelden yapildi. Jest 76 paket / 1006
+test, tsc uygulama kodunda 0 hata (bulutun test dosyasinda biraktigi
+bir mock tipi duzeltildi). Web `slooin--vo1q6bhs9d`, OTA grup
+`66029f3f-c8a7-417b-ba6d-29294c8aa116`. **DERS:** `eas update`
+`--non-interactive` ile `--environment production` ISTIYOR; bayraksiz
+cagri "update command failed" ile duser.
 
 ### SITEDE OTOMATIK DIL ALGILAMA + EMAIL_OFF - 2026-09-14
 

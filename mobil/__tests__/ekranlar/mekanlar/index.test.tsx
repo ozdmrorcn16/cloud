@@ -1506,7 +1506,7 @@ describe('MekanAramaEkrani - referans kart', () => {
     jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true)
     jest
       .spyOn(ActionSheetIOS, 'showActionSheetWithOptions')
-      .mockImplementation((_ayarlar: unknown, geriCagir: (i: number) => void) => geriCagir(1))
+      .mockImplementation((...args: unknown[]) => (args[1] as (i: number) => void)(1))
 
     await render(<MekanAramaEkrani />)
     await fireEvent.press(await screen.findByTestId('yol-tarifi-mola'))
