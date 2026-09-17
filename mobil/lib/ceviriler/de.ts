@@ -292,7 +292,7 @@ export default {
     mesajYaz: 'Nachricht',
     arkadassin: 'Befreundet',
     paylas: 'Profil teilen',
-    paylasMetni: '{{ad}} auf Slooin: {{kullaniciAdi}}',
+    paylasMetni: '{{ad}} auf Slooin: @{{kullaniciAdi}}',
   },
   profilDuzenle: {
     baslik: 'Profil bearbeiten',
@@ -364,6 +364,7 @@ export default {
     yerSayisi: 'Orte',
     duzenle: 'Profil bearbeiten',
     paylas: 'Teilen',
+    paylasMetni: 'Füg mich auf Slooin hinzu 👋',
     paylasilamadi: 'Teilen konnte auf diesem Gerät nicht geöffnet werden.',
     sekmeAnilar: 'Erinnerungen',
     sekmeYerler: 'Am häufigsten',

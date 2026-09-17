@@ -298,7 +298,7 @@ export default {
     mesajYaz: 'Message',
     arkadassin: 'Friends',
     paylas: 'Share profile',
-    paylasMetni: '{{ad}} on Slooin: {{kullaniciAdi}}',
+    paylasMetni: '{{ad}} on Slooin: @{{kullaniciAdi}}',
   },
   profilDuzenle: {
     baslik: 'Edit profile',
@@ -370,6 +370,7 @@ export default {
     yerSayisi: 'Places',
     duzenle: 'Edit profile',
     paylas: 'Share',
+    paylasMetni: 'Add me on Slooin 👋',
     paylasilamadi: 'Sharing could not be opened on this device.',
     sekmeAnilar: 'Memories',
     sekmeYerler: 'Most visited',

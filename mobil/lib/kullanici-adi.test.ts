@@ -31,6 +31,9 @@ describe('kullaniciAdiGecerliMi', () => {
 
   it('3 karakterden kisayi reddeder', () => {
     expect(kullaniciAdiGecerliMi('or')).toBe(false)
+    // Sitenin sayfa adlari yasakli (slooin.com/<ad> profil sayfasi, 2026-09-18).
+    expect(kullaniciAdiGecerliMi('gizlilik')).toBe(false)
+    expect(kullaniciAdiGecerliMi('kosullar')).toBe(false)
   })
 
   it('20 karakterden uzunu reddeder', () => {

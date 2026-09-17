@@ -292,7 +292,7 @@ export default {
     mesajYaz: 'مراسلة',
     arkadassin: 'أصدقاء',
     paylas: 'مشاركة الملف الشخصي',
-    paylasMetni: '{{ad}} على Slooin: {{kullaniciAdi}}',
+    paylasMetni: '{{ad}} على Slooin: @{{kullaniciAdi}}',
   },
   profilDuzenle: {
     baslik: 'تعديل الملف الشخصي',
@@ -364,6 +364,7 @@ export default {
     yerSayisi: 'الأماكن',
     duzenle: 'تعديل الملف الشخصي',
     paylas: 'مشاركة',
+    paylasMetni: 'أضفني على Slooin 👋',
     paylasilamadi: 'تعذّر فتح المشاركة على هذا الجهاز.',
     sekmeAnilar: 'الذكريات',
     sekmeYerler: 'الأكثر زيارة',

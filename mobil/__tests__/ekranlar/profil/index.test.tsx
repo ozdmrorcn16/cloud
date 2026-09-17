@@ -639,6 +639,18 @@ describe('ProfilEkrani', () => {
     expect(screen.getByTestId('profili-paylas')).toBeTruthy()
   })
 
+  it('Profili paylas: slooin.com/<kullanici_adi> baglantisi, UUID ve expo.app YOK (2026-09-18)', async () => {
+    const paylasSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never)
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByTestId('profili-paylas'))
+    await waitFor(() => expect(paylasSpy).toHaveBeenCalled())
+    const mesaj = (paylasSpy.mock.calls[0][0] as { message: string }).message
+    expect(mesaj).toContain("Slooin'de beni ekle")
+    expect(mesaj).toContain('https://slooin.com/orcun')
+    expect(mesaj).not.toContain('expo.app')
+    paylasSpy.mockRestore()
+  })
+
   it('Profili duzenle butonu duzenleme ekranini aciyor (TEK giris)', async () => {
     await render(<ProfilEkrani />)
     await screen.findByText('Orcun Ozdemir')

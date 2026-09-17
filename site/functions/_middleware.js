@@ -23,6 +23,8 @@
 const DILLER = ['tr', 'en', 'de', 'es', 'fr', 'ru', 'ar']
 const KOK_DIL = 'tr'
 const CEREZ = 'dil'
+// Sitenin kendi ust duzey sayfalari; `src/pages/[...dil]/` ile ayni tutulur.
+const SITE_SAYFALARI = ['gizlilik', 'kosullar', 'destek', 'hesap-sil', '404']
 const BIR_YIL = 60 * 60 * 24 * 365
 
 function cerezOku(baslik, ad) {
@@ -65,6 +67,15 @@ export async function onRequest({ request, next }) {
 
   // Dosya istekleri ve Astro varliklari: dokunma.
   if (/\.[a-z0-9]+$/i.test(yol) || yol.startsWith('/_astro/') || yol.startsWith('/posta/')) return next()
+
+  // PROFIL SAYFASI (`/byorcun`, 2026-09-18): tek parcali, sitenin
+  // sayfa adlarindan olmayan, kullanici adi bicimindeki yol
+  // `functions/[ad].js`e gider ve dilini KENDISI secer. Buradan
+  // yonlendirilseydi `/de/byorcun/`e duser, 404 olurdu. Statik dosya
+  // eslesmesi Pages'te fonksiyondan ONCE geldigi icin sitenin kendi
+  // sayfalari (gizlilik, kosullar...) bu daldan etkilenmiyor; ayrica o
+  // adlar veritabaninda kullanici adi olarak da YASAKLI.
+  if (/^\/[a-z0-9._]{3,20}\/?$/.test(yol) && !SITE_SAYFALARI.includes(ilkParca)) return next()
 
   // Alt seritten "Turkce" secildi (`?dil=tr`): cerezi yaz, sorguyu at.
   if (url.searchParams.get('dil') === KOK_DIL) {

@@ -509,6 +509,43 @@ bulunanlarin avatarlari. Dort soru:
 Gizlilik metninde degisiklik gerekmedi: check-in gorunurlugu bolumu bu
 durumu zaten anlatiyor.
 
+## Profil paylasim karti: slooin.com/<kullanici_adi> - 2026-09-18
+
+Kullanicinin istegi: "profilimi paylastigim zaman daha profesyonel
+gorunsun". Paylasilan baglanti `https://slooin.com/<kullanici_adi>`;
+sayfa sunucuda cizilip Open Graph etiketleriyle mesajlasma
+uygulamalarinda kart (avatar + ad + Slooin) cikariyor. Dort soru:
+
+- **Hangi veri:** ad, kullanici adi, ilk profil fotografi (24 saatlik
+  imzali baglanti). Biyografi, bolge, Instagram, anilar, sayaclar
+  YOK. Cagiran kimliksiz (WhatsApp onizleme robotu, tarayici).
+- **Dayanak:** kisinin kendi eylemi - baglantiyi kendisi uretip
+  kendisi gonderiyor (m.5/1 acik riza degil, m.5/2-c sozlesmenin
+  ifasi + kisinin alenilestirmesi m.5/2-d). Baskasinin profilini
+  paylasan icin: gosterilen veri o kisinin uygulamada ZATEN herkese
+  acik tuttugu veri (kisi arama ayni uc alani veriyor).
+- **Sure:** yeni saklama YOK; sayfa veriyi her istekte canli okur,
+  kenar onbellegi 5 dakika, fotograf imzasi 24 saat.
+- **Kim gorur:** baglantiya sahip herkes - AMA yalnizca kisi
+  gorunmeyi secmisse: `profil_gizli` VEYA `aramada_gorunsun = false`
+  ise kart YALNIZCA kullanici adini tasir (ad ve fotograf sunucuda
+  NULL doner - `public.profil_karti`). Askida/yasakli/silinmis hesap
+  404. Engelleme kimliksiz cagrida uygulanamiyor; engellenen kisi
+  tarayicidan yalnizca bu uc alani gorur.
+- **Sayim riski:** kullanici adi denenerek "boyle biri var mi"
+  ogrenilebilir; bu, uygulamadaki kisi aramanin zaten verdigi bilgi.
+  Ustteki iki ayar acikken ad ve yuz gelmedigi icin sizinti kullanici
+  adiyla sinirli - o da baglantinin kendisinde.
+- **Sifirlama yolu:** service role Supabase Edge Function'da
+  (`profil-karti`) kaliyor; Cloudflare'e yalnizca anon anahtar
+  gidiyor.
+
+Gizlilik metni: "kullanici adin ve profil fotografin diger
+kullanicilara gorunur" bolumu bunu zaten kapsiyor; paylasim
+baglantisi yeni bir alici sinifi acmiyor (kisi kendisi gonderiyor).
+Kullanici adlarindan sitenin sayfa adlari (gizlilik, kosullar, ...)
+yasaklandi - veritabani kisiti + istemci listesi.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

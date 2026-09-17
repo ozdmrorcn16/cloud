@@ -14,8 +14,21 @@ export function kullaniciAdiniNormallestir(ham: string): string {
   return ham.trim().toLowerCase()
 }
 
+/**
+ * YASAKLI ADLAR (2026-09-18): `slooin.com/<ad>` artik profil sayfasi;
+ * sitenin kendi yollariyla cakisan adlar alinamaz. Asil zorlayici
+ * veritabani kisiti (`profiller_kullanici_adi_yasakli`); buradaki liste
+ * onunla AYNI tutulur ve yalnizca erken geri bildirim icin.
+ */
+const YASAKLI = new Set([
+  'gizlilik', 'kosullar', 'destek', 'posta', '_astro', 'slooin', 'admin', 'moderasyon',
+  'api', 'www', 'giris', 'kayit', 'mekan', 'mekanlar', 'kullanici', 'profil', 'ayarlar',
+  'hakkinda', 'iletisim', 'indir', 'uygulama', 'app', '404', 'robots', 'sitemap',
+  'hesap_sil', 'kesfet', 'mesajlar', 'bildirimler',
+])
+
 export function kullaniciAdiGecerliMi(ad: string): boolean {
-  return DESEN.test(ad)
+  return DESEN.test(ad) && !YASAKLI.has(ad)
 }
 
 export async function kullaniciAdiMusaitMi(ad: string): Promise<boolean> {

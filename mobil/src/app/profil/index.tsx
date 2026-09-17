@@ -58,6 +58,7 @@ import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { AnilarSekmeIkonu, EnSikSekmeIkonu } from '../../tasarim/sekme-ikonlari'
 import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
+import { profilBaglantisi } from '../../../lib/paylasim'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { bolgeMetni } from '../../../lib/bolge'
@@ -527,10 +528,10 @@ export default function ProfilEkrani() {
   async function profiliPaylas() {
     if (!profil) return
     try {
-      // Baglanti giris istiyor; paylasilan sey bir davet, herkese acik
-      // bir sayfa degil. Metin bunu ima ediyor.
+      // Baglanti herkese acik bir kart sayfasi (slooin.com/<ad>): avatar,
+      // ad, "Uygulamada ac". Metin kisa; kartin kendisi tanitiyor.
       await Share.share({
-        message: `Slooin'de beni bul: ${profil.kullaniciAdi}\nhttps://slooin.expo.app/kullanici/${profil.id}`,
+        message: `${t('profil.paylasMetni')}\n${profilBaglantisi(profil.kullaniciAdi)}`,
       })
     } catch {
       // Web'de paylasim penceresi olmayabilir; akisi kilitlemiyoruz.

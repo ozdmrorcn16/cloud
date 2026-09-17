@@ -577,8 +577,11 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => expect(paylasSpy).toHaveBeenCalled())
     const mesaj = (paylasSpy.mock.calls[0][0] as { message: string }).message
-    expect(mesaj).toContain('ada123')
-    expect(mesaj).toContain('/kullanici/kullanici-2')
+    expect(mesaj).toContain('@ada123')
+    // Baglanti slooin.com/<kullanici_adi> (2026-09-18); UUID ve expo.app YOK.
+    expect(mesaj).toContain('https://slooin.com/ada123')
+    expect(mesaj).not.toContain('expo.app')
+    expect(mesaj).not.toContain('kullanici-2')
     paylasSpy.mockRestore()
   })
 

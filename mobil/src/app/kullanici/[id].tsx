@@ -46,6 +46,7 @@ import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { FotografGezgini } from '../../tasarim/FotografGezgini'
 import { FotografAltyazisi } from '../../tasarim/FotografAltyazisi'
 import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
+import { profilBaglantisi } from '../../../lib/paylasim'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import {
@@ -336,7 +337,7 @@ export default function KullaniciProfiliEkrani() {
     if (!profil) return
     try {
       await Share.share({
-        message: `${t('kullanici.paylasMetni', { ad: profil.ad, kullaniciAdi: profil.kullaniciAdi })}\nhttps://slooin.expo.app/kullanici/${profil.id}`,
+        message: `${t('kullanici.paylasMetni', { ad: profil.ad, kullaniciAdi: profil.kullaniciAdi })}\n${profilBaglantisi(profil.kullaniciAdi)}`,
       })
     } catch {
       // Web'de paylasim penceresi olmayabilir; akisi kilitlemiyoruz.

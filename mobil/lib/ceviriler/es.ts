@@ -292,7 +292,7 @@ export default {
     mesajYaz: 'Mensaje',
     arkadassin: 'Amigos',
     paylas: 'Compartir perfil',
-    paylasMetni: '{{ad}} en Slooin: {{kullaniciAdi}}',
+    paylasMetni: '{{ad}} en Slooin: @{{kullaniciAdi}}',
   },
   profilDuzenle: {
     baslik: 'Editar perfil',
@@ -364,6 +364,7 @@ export default {
     yerSayisi: 'Lugares',
     duzenle: 'Editar perfil',
     paylas: 'Compartir',
+    paylasMetni: 'Agrégame en Slooin 👋',
     paylasilamadi: 'No se pudo abrir la función de compartir en este dispositivo.',
     sekmeAnilar: 'Recuerdos',
     sekmeYerler: 'Más visitados',

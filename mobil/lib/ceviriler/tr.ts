@@ -383,7 +383,7 @@ export default {
     mesajYaz: 'Mesaj yaz',
     arkadassin: 'Arkadaşsın',
     paylas: 'Profili paylaş',
-    paylasMetni: '{{ad}} Slooin\'de: {{kullaniciAdi}}',
+    paylasMetni: '{{ad}} Slooin\'de: @{{kullaniciAdi}}',
   },
 
   profilDuzenle: {
@@ -492,6 +492,7 @@ export default {
     yerSayisi: 'Yer',
     duzenle: 'Profili düzenle',
     paylas: 'Paylaş',
+    paylasMetni: 'Slooin\'de beni ekle 👋',
     paylasilamadi: 'Paylaşım bu cihazda açılamadı.',
     sekmeAnilar: 'Anılar',
     // Sekme adi "Yerler" -> "En sık" (kullanicinin karari 2026-09-05).
