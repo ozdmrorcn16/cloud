@@ -252,7 +252,13 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17, YAYINLANMADI):** check-in listesindeki
+**Son bitirilen is (2026-09-17, YAYINLANMADI):** buyuk acilan
+fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor
+(karar 96). Mekan galerisindeki altyazi `src/tasarim/FotografAltyazisi.tsx`
+bilesenine cikarildi; akis kartinin tam ekran gorunumu ve profildeki
+fotograf izgarasi da ayni satiri kullaniyor.
+
+**Ayni gun daha once (YAYINLANMADI):** check-in listesindeki
 kartlar tekduze hale getirildi ve karenin ici gercek harita oldu
 (kullanicinin istegi; karar 95). Eylem satiri (Yol tarifi + Check-in
 yap) her kartta; turuncu cerceve yalnizca en yakinda.

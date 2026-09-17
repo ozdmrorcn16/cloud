@@ -51,6 +51,7 @@ import {
   type EtkilesimOzeti,
 } from '../../../lib/etkilesim'
 import { gorecelZaman } from '../../../lib/zaman'
+import { FotografAltyazisi } from '../../tasarim/FotografAltyazisi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
@@ -265,7 +266,12 @@ export default function ProfilEkrani() {
     }
   }
   // Izgaradan acilan buyuk gorunum; null ise kapali.
-  const [buyukFotograf, setBuyukFotograf] = useState<string | null>(null)
+  /*
+   * Izgaradan acilan fotograf: URL degil OGENIN KENDISI tutuluyor.
+   * Buyuk gorunumun altyazisi (kisi / mekan / zaman) 2026-09-17'de
+   * eklendi ve o bilgiler yalnizca ogede duruyor.
+   */
+  const [buyukFotograf, setBuyukFotograf] = useState<AniGorunumu | null>(null)
   // Silme geri alinamaz: once onay. Deger, onayi acik olan aninin
   // kimligi (akis ekranindaki desenin aynisi).
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
@@ -879,7 +885,7 @@ export default function ProfilEkrani() {
                     <Pressable
                       key={a.id}
                       style={stiller.izgaraHucre}
-                      onPress={() => setBuyukFotograf(a.fotografUrl)}
+                      onPress={() => setBuyukFotograf(a)}
                       accessibilityRole="imagebutton"
                       accessibilityLabel={a.mekanAdi}
                     >
@@ -986,12 +992,29 @@ export default function ProfilEkrani() {
         >
           {buyukFotograf && (
             <Image
-              source={{ uri: buyukFotograf }}
+              source={{ uri: buyukFotograf.fotografUrl as string }}
               style={stiller.izgaraBuyukFoto}
               resizeMode="contain"
             />
           )}
         </Pressable>
+        {/* SOL ALTTA paylasan kisi, mekan ve zaman (kullanicinin istegi
+            2026-09-17). Zemin Pressable'inin DISINDA: altyaziya
+            dokunmak fotografi kapatmasin. Profil kendi sayfamiz oldugu
+            icin ada baglanti YOK - zaten buradayiz. */}
+        {buyukFotograf && (
+          <View style={stiller.buyukAltyazi} pointerEvents="none">
+            <FotografAltyazisi
+              testID="izgara-fotograf-altyazisi"
+              /* Kendi profilimiz: avatar ve kullanici adi profilin
+                 kendisinden geliyor, anida tekrarlanmiyor. */
+              avatarUrl={fotografUrl}
+              kullaniciAdi={profil?.kullaniciAdi ?? buyukFotograf.kullaniciAdi}
+              mekanAdi={buyukFotograf.mekanAdi}
+              zamanYazisi={gorecelZaman(buyukFotograf.olusturmaZamani, t)}
+            />
+          </View>
+        )}
       </Modal>
 
       {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
@@ -1300,6 +1323,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemBasili: { backgroundColor: renk.cizgi },
 
   // Buyuk gorunum
+  buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   buyukZemin: {
     flex: 1,
     backgroundColor: '#000000',

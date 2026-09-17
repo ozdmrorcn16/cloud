@@ -19,6 +19,7 @@ import {
   YakinlastirilabilirGorsel,
   YakinlastirilabilirTamEkran,
 } from './YakinlastirilabilirGorsel'
+import { FotografAltyazisi } from './FotografAltyazisi'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -501,8 +502,10 @@ export function CheckInKarti({
       )}
 
       {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
-          Kapat. Profildeki buyuk gorunumun ayni deseni - orada ayrica
-          "Kaldir" var, burada yok: bu fotograf baskasinin olabilir. */}
+          Kapat, SOL ALTTA paylasan kisi (kullanicinin istegi
+          2026-09-17). Profildeki buyuk gorunumun ayni deseni - orada
+          ayrica "Kaldir" var, burada yok: bu fotograf baskasinin
+          olabilir. */}
       <Modal
         visible={buyukAcik && Boolean(oge.fotografUrl)}
         transparent={false}
@@ -524,6 +527,22 @@ export function CheckInKarti({
           {oge.fotografUrl && (
             <YakinlastirilabilirTamEkran uri={oge.fotografUrl} stil={stiller.buyukFotograf} />
           )}
+          {/* Altyazi fotografin USTUNDE duruyor (mutlak): fotograf
+              ekranin ortasinda ve %70 yuksekliginde, altta akisla
+              birlikte kayan bir satir olsaydi kadraj daralirdi. */}
+          <View style={stiller.buyukAltyazi}>
+            <FotografAltyazisi
+              testID="akis-fotograf-altyazisi"
+              avatarUrl={oge.avatarUrl}
+              kullaniciAdi={gosterilenAd || null}
+              mekanAdi={oge.mekanAdi}
+              zamanYazisi={zamanYazisi}
+              onKisi={() => {
+                setBuyukAcik(false)
+                router.push(kisiYolu as never)
+              }}
+            />
+          </View>
         </View>
       </Modal>
 
@@ -664,6 +683,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, right: bosluk.xl, zIndex: 1 },
   buyukKapatYazi: { fontFamily: yazi.govde, fontSize: 34, color: '#FFFFFF', lineHeight: 38 },
   buyukFotograf: { width: '100%', height: '70%' },
+  buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
     // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik

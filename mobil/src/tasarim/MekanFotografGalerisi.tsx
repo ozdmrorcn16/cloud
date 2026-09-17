@@ -17,6 +17,7 @@ import { mekanFotograflariniGetir, MEKAN_FOTOGRAF_SAYFA, type MekanFotografi } f
 import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { YakinlastirilabilirGorsel } from './YakinlastirilabilirGorsel'
+import { FotografAltyazisi } from './FotografAltyazisi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useStiller } from './tema-baglami'
 
@@ -210,35 +211,17 @@ export function MekanFotografGalerisi({ mekanId, mekanAdi, avatarlar, onKimlikle
           )}
 
           {acik && (
-            <View style={stiller.altyazi} testID="galeri-altyazi">
-              <Pressable
-                onPress={() => {
-                  setAcikIndeks(null)
-                  router.push(`/kullanici/${acik.kullaniciId}` as never)
-                }}
-                accessibilityRole="button"
-                style={stiller.altyaziAvatarKutu}
-              >
-                {avatarlar[acik.kullaniciId] ? (
-                  <Image source={{ uri: avatarlar[acik.kullaniciId]! }} style={stiller.altyaziAvatar} />
-                ) : (
-                  <View style={[stiller.altyaziAvatar, stiller.altyaziAvatarBos]}>
-                    <Text style={stiller.altyaziBasHarf}>
-                      {(acik.kullaniciAdi ?? '?').trim().charAt(0).toUpperCase() || '?'}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-              <View style={stiller.altyaziMetinler}>
-                <Text style={stiller.altyaziAd} numberOfLines={1}>
-                  {acik.kullaniciAdi ?? t('mekanSayfasi.biri')}
-                </Text>
-                <Text style={stiller.altyaziMekan} numberOfLines={2}>
-                  {mekanAdi}
-                </Text>
-                <Text style={stiller.altyaziZaman}>{gorecelZaman(acik.olusturmaZamani, t)}</Text>
-              </View>
-            </View>
+            <FotografAltyazisi
+              testID="galeri-altyazi"
+              avatarUrl={avatarlar[acik.kullaniciId] ?? null}
+              kullaniciAdi={acik.kullaniciAdi ?? t('mekanSayfasi.biri')}
+              mekanAdi={mekanAdi}
+              zamanYazisi={gorecelZaman(acik.olusturmaZamani, t)}
+              onKisi={() => {
+                setAcikIndeks(null)
+                router.push(`/kullanici/${acik.kullaniciId}` as never)
+              }}
+            />
           )}
         </GestureHandlerRootView>
       </Modal>
@@ -294,36 +277,4 @@ const stilleriYap = (renk: Renk) =>
       color: '#FFFFFF',
     },
     sayfalar: { flex: 1 },
-    altyazi: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: bosluk.m,
-      paddingHorizontal: bosluk.sayfa,
-      paddingTop: bosluk.m,
-      paddingBottom: 40,
-    },
-    altyaziAvatarKutu: {},
-    altyaziAvatar: { width: 40, height: 40, borderRadius: 20 },
-    altyaziAvatarBos: {
-      backgroundColor: '#333333',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    altyaziBasHarf: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
-    altyaziMetinler: { flex: 1, gap: 2 },
-    altyaziAd: {
-      fontFamily: yazi.govdeKalin,
-      fontSize: olcek.govde,
-      color: '#FFFFFF',
-    },
-    altyaziMekan: {
-      fontFamily: yazi.govde,
-      fontSize: olcek.kucuk,
-      color: '#FFFFFF',
-    },
-    altyaziZaman: {
-      fontFamily: yazi.govde,
-      fontSize: olcek.kucuk,
-      color: '#B3B3B3',
-    },
   })

@@ -1272,3 +1272,13 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     ekrana yakin kartlarda kuruluyor (liste 100 karta cikabiliyor);
     Android lite kip, iOS onbellekli kip. Web'de harita yok - kare
     igneli kutu olarak kaliyor.
+
+96. **BUYUK ACILAN FOTOGRAFIN ALTINDA PAYLASAN, MEKAN VE ZAMAN**
+    (2026-09-17). Kullanici bir Swarm ekran goruntusu gonderip
+    "paylasilan fotografin sol altinda paylasanin resmi, kullanici adi,
+    konumu ve tarihi gosterilsin fotograf buyuk acildigi zaman" dedi.
+    Satir mekan sayfasinin galerisinde zaten vardi; akista ve profil
+    izgarasinda yoktu. Yeni bir sey tasarlanmadi - galerinin altyazisi
+    `FotografAltyazisi` bilesenine cikarilip ucunde de kullanildi.
+    Akista ada dokunmak profili aciyor; profilde baglanti yok.
+

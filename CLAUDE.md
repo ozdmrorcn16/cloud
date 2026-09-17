@@ -148,6 +148,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### BUYUK ACILAN FOTOGRAFIN SOL ALTINDA PAYLASAN - 2026-09-17
+
+Kullanicinin istegi (Swarm ekran goruntusuyle): "paylasilan fotografin
+sol altinda paylasanin resmi, kullanici adi, konumu ve tarihi
+gosterilsin fotograf buyuk acildigi zaman."
+
+Satir MEKAN SAYFASININ galerisinde zaten vardi; akista ve profilde
+fotograf ciplak aciliyordu - ayni fotograf uc yerde uc turlu. Cozum
+yeni bir tasarim degil, TASIMA: galerinin ici
+`src/tasarim/FotografAltyazisi.tsx` olarak cikarildi ve uc yerde de o
+kullaniliyor (galeri, akis karti tam ekran, profil izgarasi).
+
+- Renkler bilerek SABIT (#FFFFFF / #B3B3B3 / #333333), tema jetonu yok:
+  zemin iki modda da siyah, tema metni acik modda siyah olurdu.
+- Mekan adinda BULUNMA EKI YOK (2026-09-13 karari): ad kendi satirinda.
+- Akista ada/avatara dokunmak profili aciyor ve buyuk gorunum
+  kapaniyor; profil izgarasinda baglanti yok - zaten o profildeyiz.
+- Profil izgarasi state'i artik URL degil ANININ KENDISI tutuyor
+  (altyazi bilgileri yalnizca orada).
+
 ### KART KARESI GERCEK HARITA, BUTUN KARTLAR AYNI - 2026-09-17
 
 Kullanicinin istegi: "butun konumlar ilk sutundaki gibi yap, kucuk map

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import { Share, StyleSheet } from 'react-native'
 import { acikRenk, koyuRenk, olcek } from '../../../src/tasarim/tema'
 import ProfilEkrani from '../../../src/app/profil/index'
@@ -105,6 +105,25 @@ beforeEach(() => {
 })
 
 describe('ProfilEkrani', () => {
+  /**
+   * Kullanicinin istegi (2026-09-17): buyuk acilan fotografin sol
+   * altinda paylasan, mekan ve zaman gorunsun. Izgaradan acilan
+   * gorunumde de ayni satir var - ayni kavram, ayni bilesen.
+   */
+  it('izgaradan acilan fotografin altinda kisi, mekan ve zaman yaziyor', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ fotografUrl: 'https://imzali/1.jpg' }),
+    ])
+
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Fotoğraf'))
+    await fireEvent.press(screen.getByLabelText('Sahil Kafe'))
+
+    const altyazi = await screen.findByTestId('izgara-fotograf-altyazisi')
+    expect(within(altyazi).getByText('orcun')).toBeTruthy()
+    expect(within(altyazi).getByText('Sahil Kafe')).toBeTruthy()
+  })
+
   it('kullanici adini, adi ve biyografiyi gosterir', async () => {
     await render(<ProfilEkrani />)
 

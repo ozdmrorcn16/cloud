@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
 import { acikRenk } from '../../src/tasarim/tema'
 import AnaSayfa from '../../src/app/index'
@@ -512,6 +512,43 @@ describe('AnaSayfa', () => {
     // Tek dokunus HALA tam ekrani aciyor.
     fireEvent.press(screen.getByTestId('akis-fotografi'))
     expect(await screen.findByTestId('fotograf-gorunumu')).toBeTruthy()
+  })
+
+  /**
+   * Kullanicinin istegi (2026-09-17, Swarm ornegiyle): "paylasilan
+   * fotografin sol altinda paylasanin resmi, kullanici adi, konumu ve
+   * tarihi gosterilsin fotograf buyuk acildigi zaman".
+   */
+  it('buyuk gorunumun SOL ALTINDA paylasan, mekan ve zaman yaziyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg', rumuz: 'byada' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(screen.getByTestId('akis-fotografi'))
+
+    const altyazi = await screen.findByTestId('akis-fotograf-altyazisi')
+    // Kartta oldugu gibi KULLANICI ADI yaziyor (karar 2026-08-30).
+    expect(within(altyazi).getByText('byada')).toBeTruthy()
+    expect(within(altyazi).getByText('Sahil Kafe')).toBeTruthy()
+    expect(within(altyazi).getByText('az önce')).toBeTruthy()
+  })
+
+  it('altyazidaki kisiye dokununca profili aciliyor ve buyuk gorunum kapaniyor', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ fotografUrl: 'https://imzali/foto.jpg', rumuz: 'byada' }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(screen.getByTestId('akis-fotografi'))
+    const altyazi = await screen.findByTestId('akis-fotograf-altyazisi')
+
+    await fireEvent.press(within(altyazi).getByLabelText('byada'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
   })
 
   it('buyuk gorunum kapatilabiliyor', async () => {
