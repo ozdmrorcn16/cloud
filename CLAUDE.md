@@ -180,12 +180,26 @@ yuklu degilse yuklemeye"). Uc parca:
   sayfa adlari (Android hepsini getirir) `expo-web-browser` ile
   tarayicida. Bilinen sinir: oturum yoksa kok duzen karsilamaya atar,
   baglanti kaybolur.
-- **NATIVE DERLEME SART** (entitlement + intent filter): iOS
-  `d2b63476-e681-47e8-8db8-0e491c6e8349`, Android
-  `6892d1ca-753f-4a5c-baa6-6e6953245fbc` baslatildi (production,
-  --no-wait). iOS bitince `eas submit --platform ios --latest` +
-  TestFlight'tan kur; **Universal Link ancak yeni derlemede calisir**,
-  Build 8'de baglanti Safari'de acilir (sayfa + "Uygulamada aç").
+- **NATIVE DERLEME YAPILDI:** iOS **1.0.0 (13)** (`f450a872`) App
+  Store Connect'e yuklendi, Android **versionCode 7** (`320ddc2a`, AAB
+  `https://expo.dev/artifacts/eas/I1zaHmo87R9egrCyeGdevUkyIuAZkQBFWNeo2vjcJMc.aab`).
+  **Universal Link ancak Build 13'te calisir** - TestFlight'tan kur.
+  YOLDA IKI KIRILMA: (1) `.easignore` `tasarim/` deseni
+  `mobil/src/tasarim/`i de disliyordu ("Unable to resolve
+  ../../tasarim/tema") - desenler koke sabitlendi (`/tasarim/`).
+  (2) Provisioning profile "Associated Domains" tasimiyordu (Sign in
+  with Apple'daki sinif). EAS'in Apple portal oturumu (~/.app-store)
+  SURESI DOLMUSTU; cozum: EAS'teki ASC API anahtari (T2DU3DFMW4,
+  APP_MANAGER) GraphQL `appStoreConnectApiKey.byId.keyP8` ile cekilip
+  `mobil/gizli/AuthKey_ASC_T2DU3DFMW4.p8` + `asc-issuer.txt`e yazildi
+  (gitignored) ve ham ASC API `POST /v1/bundleIdCapabilities`
+  (bundleId `V9N8HVCS7P`, ASSOCIATED_DOMAINS) ile yetenek eklendi;
+  eas-cli'nin `syncCapabilitiesForEntitlementsAsync`i "request entity
+  is not valid" verdi (settings gonderiyor). EAS sonraki derlemede
+  profile'i kendisi yeniledi. Derleme loglari EAS GraphQL
+  `builds.byId.logFiles` + `curl --compressed` (brotli) ile okunuyor;
+  `--non-interactive` metni gostermiyor. Fazladan baslatilan 2 iOS
+  derlemesi iptal edildi.
   "Yuklu degilse magazaya": magaza baglantilari yokken sayfada
   "yakinda" notu; cikinca `[ad].js` METIN.indir + intent
   `S.browser_fallback_url` Play'e cevrilecek.

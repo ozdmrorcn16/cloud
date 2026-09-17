@@ -252,7 +252,9 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18 gece, DERLEME BEKLIYOR):** `slooin.com/<ad>`
+**Son bitirilen is (2026-09-18 gece, DERLEMELER BITTI - iOS 1.0.0 (13)
+App Store Connect'te, Android versionCode 7 AAB hazir; kullanici TestFlight'tan
+Build 13'u kurup `slooin.com/byorcun` baglantisini WhatsApp'tan denemeli):** `slooin.com/<ad>`
 dogrudan uygulamayi acsin - AASA + assetlinks sitede canli,
 `associatedDomains`/`intentFilters` app.json'da, `[kullaniciAdi]` rotasi
 OTA'da (`543abca5`). iOS derlemesi `d2b63476`, Android `6892d1ca`
