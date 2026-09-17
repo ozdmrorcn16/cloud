@@ -853,6 +853,31 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.getByLabelText('1 Anı')).toBeTruthy()
   })
 
+  it('profil fotografina (avatar/serit) dokununca profil fotograflari gezgini acilir', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: ['kullanici-2/1.jpg', 'kullanici-2/2.jpg'], profilGizli: false, arkadasSayisi: 0,
+    })
+    ;(profilFotograflariUrl as jest.Mock).mockResolvedValue([
+      'https://ornek/imzali/kullanici-2/1.jpg',
+      'https://ornek/imzali/kullanici-2/2.jpg',
+    ])
+
+    await render(<KullaniciProfiliEkrani />)
+    await waitFor(() => expect(screen.getAllByTestId('profil-fotografi')).toHaveLength(2))
+
+    // Seritteki ilk fotograf listede 2. sirada (ilki avatar).
+    await fireEvent.press(screen.getAllByLabelText('Fotoğrafı büyüt')[1])
+    await screen.findByTestId('profil-fotograflari-buyuk-gorunum')
+    expect(screen.getByTestId('profil-fotograflari-sayac')).toHaveTextContent('2 / 2')
+    expect(screen.getByTestId('profil-fotograflari-altyazisi')).toHaveTextContent(/ada123/)
+
+    await fireEvent.press(screen.getByLabelText('Kapat'))
+    // Avatar 1. sirayi acar.
+    await fireEvent.press(screen.getAllByLabelText('Fotoğrafı büyüt')[0])
+    expect(screen.getByTestId('profil-fotograflari-sayac')).toHaveTextContent('1 / 2')
+  })
+
   it('kartin fotografina dokununca gezgin acilir: sayac ve kaydirma (2026-09-18)', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: null,

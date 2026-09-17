@@ -294,6 +294,7 @@ export default {
     engelleEvet: 'Yes, block',
     vazgec: 'Cancel',
     geri: 'Back',
+    fotografiAc: 'Open photo',
     mesajYaz: 'Message',
     arkadassin: 'Friends',
     paylas: 'Share profile',

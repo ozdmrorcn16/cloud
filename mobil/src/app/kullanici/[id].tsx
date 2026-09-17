@@ -178,6 +178,10 @@ export default function KullaniciProfiliEkrani() {
   // Ani kartindan acilan fotograf gezgini: bu kisinin fotografli
   // anilari arasinda saga-sola kaydirma (kullanicinin istegi 2026-09-18).
   const [acikFotografIndeksi, setAcikFotografIndeksi] = useState<number | null>(null)
+  // Profil fotograflari (avatar + serit) icin AYRI gezgin: liste
+  // farkli (kisinin profil fotograflari, anilar degil). Kullanicinin
+  // istegi 2026-09-18: "basinca buyuk acilsin o da".
+  const [acikProfilFotografi, setAcikProfilFotografi] = useState<number | null>(null)
   // Kendi profil ekranindaki gibi iki bakis: zaman sirasi ve en cok
   // gidilen yerler. Secim rota parametresinde (geri donuste korunur).
   const [sekme, setSekme] = useSekmeParametresi(KULLANICI_SEKMELERI, 'anilar')
@@ -584,11 +588,17 @@ export default function KullaniciProfiliEkrani() {
             onLayout={(o) => setKimlikYuksekligi(o.nativeEvent.layout.height)}
           >
             {fotografUrl ? (
-              <Image
-                testID="profil-fotografi"
-                source={{ uri: fotografUrl }}
-                style={stiller.avatar}
-              />
+              <Pressable
+                onPress={() => setAcikProfilFotografi(0)}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={t('kullanici.fotografiAc')}
+              >
+                <Image
+                  testID="profil-fotografi"
+                  source={{ uri: fotografUrl }}
+                  style={stiller.avatar}
+                />
+              </Pressable>
             ) : (
               <BasHarfAvatar
                 ad={profil.ad || profil.kullaniciAdi}
@@ -682,13 +692,20 @@ export default function KullaniciProfiliEkrani() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={stiller.serit}
           >
-            {fotografUrlleri.slice(1).map((url) => (
-              <Image
+            {fotografUrlleri.slice(1).map((url, i) => (
+              <Pressable
                 key={url}
-                testID="profil-fotografi"
-                source={{ uri: url }}
-                style={stiller.seritFotografi}
-              />
+                /* Seritteki i. fotograf listede i+1: ilki avatarda. */
+                onPress={() => setAcikProfilFotografi(i + 1)}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={t('kullanici.fotografiAc')}
+              >
+                <Image
+                  testID="profil-fotografi"
+                  source={{ uri: url }}
+                  style={stiller.seritFotografi}
+                />
+              </Pressable>
             ))}
           </ScrollView>
         )}
@@ -829,6 +846,25 @@ export default function KullaniciProfiliEkrani() {
             />
           )
         }}
+      />
+      {/* PROFIL FOTOGRAFLARI GEZGINI: avatar ya da seritten acilir,
+          kisinin butun profil fotograflari arasinda kaydirilir. Altyazi
+          yalnizca ad - mekan ve zaman bu fotograflara ait degil. */}
+      <FotografGezgini
+        testID="profil-fotograflari"
+        fotograflar={fotografUrlleri.map((url, i) => ({ id: String(i), url }))}
+        acikIndeks={acikProfilFotografi}
+        onIndeks={setAcikProfilFotografi}
+        onKapat={() => setAcikProfilFotografi(null)}
+        altyazi={() => (
+          <FotografAltyazisi
+            testID="profil-fotograflari-altyazisi"
+            avatarUrl={fotografUrl}
+            kullaniciAdi={profil?.kullaniciAdi ?? null}
+            mekanAdi={null}
+            zamanYazisi=""
+          />
+        )}
       />
       <OnayPenceresi
         acikMi={geriCekOnayi}

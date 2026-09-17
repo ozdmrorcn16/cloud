@@ -174,11 +174,14 @@ kendi profil (`izgara` - izgara VE ani kartlari), baskasinin profili
 `CheckInKarti` yeni `onFotografAc` prop'u aldi: verilirse kart kendi tek
 fotografli penceresini ACMAZ, ekrana bildirir. **Akis (ana sayfa)
 DEGISMEDI** - orada prop verilmiyor, kart eskisi gibi tek fotograf acar.
-Baskasinin profilindeki PROFIL FOTOGRAFI SERIDI (ust blok) hala
-basilmiyor - istek ani fotograflari icindi.
+Baskasinin profilindeki AVATAR ve PROFIL FOTOGRAFI SERIDI de basilinca
+ayni gezginde aciliyor (kullanicinin istegi, ayni gece: "basinca buyuk
+acilsin o da") - AYRI liste (profil fotograflari, anilar degil), testID
+on eki `profil-fotograflari`, altyazi yalnizca ad. Sozluk
+`kullanici.fotografiAc` 7 dil.
 
-Jest 76 paket / 1013 test. Yayin: web `slooin--rjiewtmcm9`, OTA grup
-`85821a09-b1c1-4989-be07-b5da78061867`.
+Jest 76 paket / 1014 test. Yayin: web `slooin--e5046r3ffg`, OTA grup
+`1a8f0143-59f5-4b8b-8b0e-118557184c4e` (bir onceki `85821a09`).
 
 ### CHECK-IN ILK KULLANIM EKRANI KALDIRILDI - 2026-09-18
 

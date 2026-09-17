@@ -379,6 +379,7 @@ export default {
     engelleEvet: 'Evet, engelle',
     vazgec: 'Vazgeç',
     geri: 'Geri',
+    fotografiAc: 'Fotoğrafı büyüt',
     mesajYaz: 'Mesaj yaz',
     arkadassin: 'Arkadaşsın',
     paylas: 'Profili paylaş',

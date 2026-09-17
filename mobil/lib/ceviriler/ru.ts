@@ -288,6 +288,7 @@ export default {
     engelleEvet: 'Да, заблокировать',
     vazgec: 'Отмена',
     geri: 'Назад',
+    fotografiAc: 'Открыть фото',
     mesajYaz: 'Написать',
     arkadassin: 'Друзья',
     paylas: 'Поделиться профилем',

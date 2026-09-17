@@ -288,6 +288,7 @@ export default {
     engelleEvet: 'Sí, bloquear',
     vazgec: 'Cancelar',
     geri: 'Atrás',
+    fotografiAc: 'Abrir foto',
     mesajYaz: 'Mensaje',
     arkadassin: 'Amigos',
     paylas: 'Compartir perfil',

@@ -288,6 +288,7 @@ export default {
     engelleEvet: 'نعم، حظر',
     vazgec: 'إلغاء',
     geri: 'رجوع',
+    fotografiAc: 'فتح الصورة',
     mesajYaz: 'مراسلة',
     arkadassin: 'أصدقاء',
     paylas: 'مشاركة الملف الشخصي',

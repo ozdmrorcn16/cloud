@@ -252,8 +252,9 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--rjiewtmcm9`, OTA grup
-`85821a09-b1c1-4989-be07-b5da78061867`):** profilde secili sekme ("En sık")
+**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--e5046r3ffg`, OTA grup
+`1a8f0143-59f5-4b8b-8b0e-118557184c4e`):** baskasinin profilinde avatar ve
+profil fotografi seridi de basinca gezginde buyuk aciliyor. Ayni gece: profilde secili sekme ("En sık")
 mekan sayfasindan geri donuste korunuyor (rota parametresi,
 `lib/sekme-parametresi.ts`); fotograf buyuk acilinca saga-sola kaydirmali
 gezgin (`FotografGezgini`) - mekan galerisi, kendi profil (izgara + kartlar)
