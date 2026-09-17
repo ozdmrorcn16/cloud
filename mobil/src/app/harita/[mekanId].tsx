@@ -964,11 +964,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.yikici,
   },
+  /* TAM GENISLIK (kullanicinin bildirimi 2026-09-18: "harita
+     kenarlardan tam sigmamis"): sayfanin yan payini negatif payla geri
+     aliyor, yuvarlak kose ve cerceve yok - akis kartindaki fotografla
+     ayni desen (kenara yapisan gorselde yuvarlak kose beyaz ucgenler
+     birakiyordu). */
   haritaCercevesi: {
-    borderRadius: yuvarlak.kart,
+    marginHorizontal: -bosluk.sayfa,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: renk.cizgi,
   },
   // Iki dugme dikey dizili, referanstaki gibi. Konteyner mutlak,
   // dugmelerin kendisi akista - boylece aralarindaki bosluk `gap` ile

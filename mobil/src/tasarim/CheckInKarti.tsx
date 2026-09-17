@@ -692,7 +692,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
   },
   buyukZemin: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' },
-  buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, right: bosluk.xl, zIndex: 1 },
+  // × SOLDA (kullanicinin istegi 2026-09-18: butun buyuk gorunumlerde ayni yer; gezginle ayni).
+  buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, left: bosluk.sayfa, zIndex: 1 },
   buyukKapatYazi: { fontFamily: yazi.govde, fontSize: 34, color: '#FFFFFF', lineHeight: 38 },
   buyukFotograf: { width: '100%', height: '70%' },
   buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },

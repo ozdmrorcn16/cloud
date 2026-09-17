@@ -148,6 +148,20 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### UC KUCUK DUZELTME - 2026-09-18 GECE (kullanicinin telefondan bildirimleri)
+
+1. **Mekan sayfasi haritasi tam genislik**: "harita kenarlardan tam
+   sigmamis". `haritaCercevesi` yuvarlak kose + cerceve yerine
+   `marginHorizontal: -bosluk.sayfa` (akis fotografiyla ayni desen).
+2. **Buyuk gorunumlerde × SOLDA**: gezgin zaten soldaydi; akis karti ve
+   profil avatar buyuk gorunumu `right` -> `left: bosluk.sayfa`.
+3. **Kesfet atfi altta sabit**: "harita verileri ... goründügü
+   sayfalarda en alta sabitle". `kesfet.atif` ScrollView'den cikti,
+   `atifSeridi` (absolute, `bottom: ALT_GEZINME_PAYI - bosluk.m`, zemin
+   rengi); icerik alt payi +24. Karsilama ekranindaki ODbL atfi zaten
+   sayfanin dibinde, dokunulmadi. Ekran goruntusu
+   `tasarim/kesfet-atif-sabit.png`.
+
 ### AKIS KARTI: FOTOGRAF ALTTA DA KENARA YAPISIK - 2026-09-18
 
 Kullanicinin bildirimi: "fotograflarin altinda cok az bos yer kaliyor".

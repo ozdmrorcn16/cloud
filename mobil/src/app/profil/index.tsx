@@ -1338,10 +1338,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // × SOLDA (kullanicinin istegi 2026-09-18: butun buyuk gorunumlerde
+  // ayni yerde; fotograf gezgini ve akis karti da solda).
   buyukKapat: {
     position: 'absolute',
     top: bosluk.xxl + bosluk.xl,
-    right: bosluk.xl,
+    left: bosluk.sayfa,
     zIndex: 1,
   },
   buyukFotograf: { width: '100%', aspectRatio: 1 },

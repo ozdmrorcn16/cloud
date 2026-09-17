@@ -1460,8 +1460,14 @@ export default function KesfetEkrani() {
           OpenStreetMap'ten turetildi. OSM'in lisansi (ODbL) atfi HUKUKEN
           sart kosuyor, Foursquare'inki (Apache 2.0) kosmuyor ama dogru
           kaynagi yazmak zaten gerekli. */}
-      <Text style={stiller.atif}>{t('kesfet.atif')}</Text>
     </ScrollView>
+
+    {/* ATIF SABIT (kullanicinin istegi 2026-09-18: "goründügü sayfalarda
+        en alta sabitle"): kaydirmanin DISINDA, alt gezinme cubugunun
+        hemen ustunde. Icerigin alt payi bunu da kapsiyor. */}
+    <View style={stiller.atifSeridi} pointerEvents="none">
+      <Text style={stiller.atif}>{t('kesfet.atif')}</Text>
+    </View>
 
     {/* Yol tarifi harita secimi - yalnizca web'de (iOS sistem sayfasini,
         Android tek secenegi dogrudan aciyor). */}
@@ -1922,7 +1928,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Referansta harita da dahil her sey kenarlardan iceride.
   icerik: {
     paddingTop: bosluk.m,
-    paddingBottom: ALT_GEZINME_PAYI,
+    // + sabit atif seridinin yuksekligi (bir satir minik yazi + dolgu).
+    paddingBottom: ALT_GEZINME_PAYI + 24,
     paddingHorizontal: bosluk.sayfa,
     gap: bosluk.m,
   },
@@ -2129,6 +2136,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfaGostergesi: { alignItems: 'center', paddingVertical: bosluk.l },
   ekleButonu: { alignItems: 'center', paddingVertical: bosluk.l, marginTop: bosluk.s },
   ekleButonuYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi },
+  atifSeridi: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: ALT_GEZINME_PAYI - bosluk.m,
+    paddingVertical: bosluk.xs,
+    backgroundColor: renk.zemin,
+  },
   atif: {
     fontFamily: yazi.govde,
     fontSize: olcek.minik,
