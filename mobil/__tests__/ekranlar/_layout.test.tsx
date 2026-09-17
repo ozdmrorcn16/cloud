@@ -101,8 +101,18 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     const { queryByTestId } = await render(<KokLayout />)
     expect(queryByTestId('paylasim-kalkani')).toBeNull()
 
+    // Sayfa ACIKKEN kalkan var (kapatma dokunusu sayfa kapanmadan dusuyor).
+    let cozul: () => void = () => {}
+    paylasSpy.mockReturnValue(new Promise<{ action: string }>((r) => { cozul = () => r({ action: 'dismissedAction' }) }) as never)
+    let bitti: Promise<void> = Promise.resolve()
     await act(async () => {
-      await sistemPaylasimi({ message: 'x' })
+      bitti = sistemPaylasimi({ message: 'x' })
+    })
+    expect(queryByTestId('paylasim-kalkani')).not.toBeNull()
+
+    await act(async () => {
+      cozul()
+      await bitti
     })
     expect(queryByTestId('paylasim-kalkani')).not.toBeNull()
 

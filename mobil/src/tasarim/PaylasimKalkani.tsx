@@ -23,10 +23,11 @@ export function PaylasimKalkani() {
   useEffect(() => {
     let zamanlayici: ReturnType<typeof setTimeout> | null = null
     const kapat = () => setAcik(false)
-    const abonelikIptal = paylasimDinle(() => {
-      setAcik(true)
+    const abonelikIptal = paylasimDinle((olay) => {
       if (zamanlayici) clearTimeout(zamanlayici)
-      zamanlayici = setTimeout(kapat, PAYLASIM_KORUMA_MS)
+      setAcik(true)
+      // Acilista kalkan sayfa kapanana kadar kalir; kapanista 700 ms daha.
+      if (olay === 'kapandi') zamanlayici = setTimeout(kapat, PAYLASIM_KORUMA_MS)
     })
     return () => {
       abonelikIptal()

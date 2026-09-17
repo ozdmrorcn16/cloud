@@ -31,24 +31,34 @@ export const SITE_KOKU = 'https://slooin.com'
  * sarmalayicidan gecmeli - dogrudan `Share.share` cagrisi korumayi atlar.
  */
 export const PAYLASIM_KORUMA_MS = 700
+let acikMi = false
 let sonKapanis = 0
-const dinleyiciler = new Set<() => void>()
+type Olay = 'acildi' | 'kapandi'
+const dinleyiciler = new Set<(olay: Olay) => void>()
 
+/**
+ * Kalkan sayfa ACILIRKEN kalkar (kullanicinin ikinci bildirimi
+ * 2026-09-18: kapanistan sonra acmak yetmedi - kapatma dokunusu sayfa
+ * daha kapanmadan uygulamaya dusuyor). Kapanistan sonra da 700 ms kalir.
+ */
 export async function sistemPaylasimi(icerik: ShareContent): Promise<void> {
+  acikMi = true
+  dinleyiciler.forEach((d) => d('acildi'))
   try {
     await Share.share(icerik)
   } finally {
+    acikMi = false
     sonKapanis = Date.now()
-    dinleyiciler.forEach((d) => d())
+    dinleyiciler.forEach((d) => d('kapandi'))
   }
 }
 
 export function paylasimSonrasiBaskiMi(simdi: number = Date.now()): boolean {
-  return simdi - sonKapanis < PAYLASIM_KORUMA_MS
+  return acikMi || simdi - sonKapanis < PAYLASIM_KORUMA_MS
 }
 
-/** Kapanis olayina abone ol; geri donen islev aboneligi kaldirir. */
-export function paylasimDinle(dinleyici: () => void): () => void {
+/** Acilis/kapanis olaylarina abone ol; geri donen islev aboneligi kaldirir. */
+export function paylasimDinle(dinleyici: (olay: Olay) => void): () => void {
   dinleyiciler.add(dinleyici)
   return () => {
     dinleyiciler.delete(dinleyici)
@@ -57,6 +67,7 @@ export function paylasimDinle(dinleyici: () => void): () => void {
 
 /** Testler icin: modul duzeyindeki kapanis ani dosyalar arasi tasinmasin. */
 export function paylasimKorumasiniSifirla(): void {
+  acikMi = false
   sonKapanis = 0
 }
 
