@@ -109,6 +109,15 @@ ${govde}
 }
 
 export async function onRequestGet({ request, params, env }) {
+  // STATIK DOSYA ONCE. Cloudflare Pages'te fonksiyon rotasi statik
+  // varliktan ONCE eslesir (ilk yayinda olculdu: /gizlilik/ ve
+  // /og-slooin.png bu fonksiyona dusup 404 oldu). Varlik varsa o
+  // doner; ancak yoksa (404) profil aranir.
+  if (env.ASSETS) {
+    const varlik = await env.ASSETS.fetch(request)
+    if (varlik.status !== 404) return varlik
+  }
+
   const ad = String(params.ad || '').toLowerCase()
   const dil = dilSec(request)
   const t = METIN[dil]
