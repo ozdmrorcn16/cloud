@@ -14,6 +14,7 @@ import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
+import { PaylasimKalkani } from '../tasarim/PaylasimKalkani'
 import { type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 
@@ -200,6 +201,9 @@ function YonlendirmeKontrolu() {
         {yukleniyor || hedef ? null : <Slot />}
       </View>
       {uygulamaIcinde && <AltGezinme />}
+      {/* Paylasim sayfasi kapanisindan sonraki dokunuslari yutan
+          gorunmez katman - agacin EN SONUNDA ki her seyin ustunde olsun. */}
+      <PaylasimKalkani />
     </View>
   )
 }

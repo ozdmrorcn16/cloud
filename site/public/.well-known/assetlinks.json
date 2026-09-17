@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.slooin.app",
+      "sha256_cert_fingerprints": [
+        "6D:B8:0F:CB:E4:C1:DF:4D:89:74:06:30:6F:6C:49:45:E6:21:85:F9:C9:6B:F2:D4:10:6B:F9:18:BF:0B:42:C1"
+      ]
+    }
+  }
+]

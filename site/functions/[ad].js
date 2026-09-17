@@ -170,8 +170,31 @@ export async function onRequestGet({ request, params, env }) {
 <h1>${kacir(gosterilenAd)}</h1>
 <p class="rumuz">${kacir(rumuz)}</p>
 <p class="aciklama">${kacir(t.aciklama)}</p>
-<a class="dugme" href="slooin://kullanici/${kacir(kart.id)}">${kacir(t.ac)}</a>
+<a class="dugme" id="uygulamada-ac" href="slooin://kullanici/${kacir(kart.id)}">${kacir(t.ac)}</a>
 <a class="ikincil" href="/">${kacir(t.nedir)}</a>
-<p class="not">${kacir(t.indir)}</p>`,
+<p class="not">${kacir(t.indir)}</p>
+<script>
+(function () {
+  /* DOGRUDAN UYGULAMAYA (kullanicinin istegi 2026-09-18). iOS'ta asil
+     yol Universal Links (.well-known/apple-app-site-association +
+     uygulamada associatedDomains): baglantiya dokunan kisi bu sayfayi
+     hic gormeden uygulamaya duser. Sayfa yalnizca uygulama yoksa ya da
+     eski derlemede acilir; orada dugme slooin:// semasini dener.
+     Android'de intent:// ile kendiliginden deneniyor: uygulama yoksa
+     tarayici sessizce bu sayfada kalir (S.browser_fallback_url) -
+     magaza baglantisi cikinca oraya doner. iOS'ta sema OTOMATIK
+     denenmiyor: uygulama yoksa Safari "sayfa acilamiyor" uyarisi
+     gosterir, bu da kotu bir ilk izlenim olurdu. */
+  var id = ${JSON.stringify(kart.id)};
+  var ua = navigator.userAgent || '';
+  var dugme = document.getElementById('uygulamada-ac');
+  if (/Android/i.test(ua)) {
+    var geri = encodeURIComponent(location.href);
+    var intent = 'intent://kullanici/' + id + '#Intent;scheme=slooin;package=com.slooin.app;S.browser_fallback_url=' + geri + ';end';
+    if (dugme) dugme.setAttribute('href', intent);
+    setTimeout(function () { location.replace(intent); }, 250);
+  }
+})();
+</script>`,
   })
 }

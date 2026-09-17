@@ -104,3 +104,10 @@ jest.mock('react-native-maps', () => {
     })
   return { __esModule: true, default: MapView, Marker, PROVIDER_GOOGLE: 'google' }
 })
+
+// PAYLASIM KAPANIS KORUMASI (lib/paylasim.ts) modul duzeyinde bir an
+// tutuyor; bir testte paylasim sayfasi acilip kapaninca sonraki testin
+// ilk 700 ms'lik basislari yutuluyordu. Her testten once sifirla.
+beforeEach(() => {
+  require('./lib/paylasim').paylasimKorumasiniSifirla()
+})

@@ -5,7 +5,6 @@ import {
   Image,
   ScrollView,
   Pressable,
-  Share,
   Modal,
   StyleSheet,
   Animated,
@@ -58,7 +57,7 @@ import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { AnilarSekmeIkonu, EnSikSekmeIkonu } from '../../tasarim/sekme-ikonlari'
 import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
-import { profilBaglantisi } from '../../../lib/paylasim'
+import { profilBaglantisi, sistemPaylasimi } from '../../../lib/paylasim'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { bolgeMetni } from '../../../lib/bolge'
@@ -530,7 +529,7 @@ export default function ProfilEkrani() {
     try {
       // Baglanti herkese acik bir kart sayfasi (slooin.com/<ad>): avatar,
       // ad, "Uygulamada ac". Metin kisa; kartin kendisi tanitiyor.
-      await Share.share({
+      await sistemPaylasimi({
         message: `${t('profil.paylasMetni')}\n${profilBaglantisi(profil.kullaniciAdi)}`,
       })
     } catch {

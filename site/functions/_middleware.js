@@ -66,7 +66,7 @@ export async function onRequest({ request, next }) {
   }
 
   // Dosya istekleri ve Astro varliklari: dokunma.
-  if (/\.[a-z0-9]+$/i.test(yol) || yol.startsWith('/_astro/') || yol.startsWith('/posta/')) return next()
+  if (/\.[a-z0-9]+$/i.test(yol) || yol.startsWith('/_astro/') || yol.startsWith('/posta/') || yol.startsWith('/.well-known/')) return next()
 
   // PROFIL SAYFASI (`/byorcun`, 2026-09-18): tek parcali, sitenin
   // sayfa adlarindan olmayan, kullanici adi bicimindeki yol

@@ -1,4 +1,4 @@
-import { Share } from 'react-native'
+import { sistemPaylasimi } from './paylasim'
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 
@@ -164,7 +164,7 @@ export async function yorumuSikayetEt(
  * gercek bir baglanti girer.
  */
 export async function paylas(mekanAdi: string, kim: string): Promise<void> {
-  await Share.share({
+  await sistemPaylasimi({
     message: `${kim}, Slooin'de ${mekanAdi} mekanında.`,
   })
 }

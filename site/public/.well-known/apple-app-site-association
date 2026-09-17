@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["79QNZVGJC7.com.slooin.app"],
+        "components": [
+          { "/": "/gizlilik*", "exclude": true },
+          { "/": "/kosullar*", "exclude": true },
+          { "/": "/destek*", "exclude": true },
+          { "/": "/hesap-sil*", "exclude": true },
+          { "/": "/posta/*", "exclude": true },
+          { "/": "/_astro/*", "exclude": true },
+          { "/": "/en/*", "exclude": true },
+          { "/": "/de/*", "exclude": true },
+          { "/": "/es/*", "exclude": true },
+          { "/": "/fr/*", "exclude": true },
+          { "/": "/ru/*", "exclude": true },
+          { "/": "/ar/*", "exclude": true },
+          { "/": "/", "exclude": true },
+          { "/": "/*" }
+        ]
+      }
+    ]
+  }
+}

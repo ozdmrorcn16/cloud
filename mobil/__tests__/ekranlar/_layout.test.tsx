@@ -84,6 +84,37 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     expect(mockRouterReplace).not.toHaveBeenCalled()
   })
 
+  /*
+   * PAYLASIM KALKANI (kullanicinin bildirimi 2026-09-18): iOS paylasim
+   * sayfasi disina dokunarak kapatilinca dokunus altta kalan ekrana
+   * dusuyordu. Kapanistan sonraki 700 ms boyunca her seyin ustunde
+   * gorunmez bir katman var; sonra kalkiyor.
+   */
+  it('paylasim sayfasi kapaninca 700 ms boyunca dokunus kalkani cizilir, sonra kalkar', async () => {
+    jest.useFakeTimers()
+    ;(useOturum as jest.Mock).mockReturnValue({ oturum: null, profilVarMi: null, yukleniyor: false })
+    mockSegments = ['(auth)', 'karsilama']
+    const { Share } = require('react-native')
+    const paylasSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'dismissedAction' })
+    const { sistemPaylasimi } = require('../../lib/paylasim')
+
+    const { queryByTestId } = await render(<KokLayout />)
+    expect(queryByTestId('paylasim-kalkani')).toBeNull()
+
+    await act(async () => {
+      await sistemPaylasimi({ message: 'x' })
+    })
+    expect(queryByTestId('paylasim-kalkani')).not.toBeNull()
+
+    await act(async () => {
+      jest.advanceTimersByTime(800)
+    })
+    expect(queryByTestId('paylasim-kalkani')).toBeNull()
+
+    paylasSpy.mockRestore()
+    jest.useRealTimers()
+  })
+
   it('oturum durumu yuklenirken hicbir ekran cizmez', async () => {
     ;(useOturum as jest.Mock).mockReturnValue({
       oturum: null,
