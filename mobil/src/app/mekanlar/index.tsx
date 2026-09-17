@@ -57,6 +57,7 @@ import {
   GeriOkIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
+import { MekanKapakHarita } from '../../tasarim/MekanKapakHarita'
 import { turSuzgeciniOku, turSuzgeciniYaz } from '../../../lib/tur-suzgeci-depo'
 import { turEtiketi } from '../../../lib/tur-etiketi'
 import { avatarlariGetir } from '../../../lib/akis'
@@ -235,6 +236,25 @@ export default function KesfetEkrani() {
   const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   // Yol tarifi secimi (web'de kendi penceremiz; iOS sistem sayfasi).
   const [tarifMekani, setTarifMekani] = useState<MekanYogunlukIle | null>(null)
+
+  /**
+   * HANGI KARTLARIN KUCUK HARITASI KURULACAK (2026-09-17).
+   *
+   * Kartin karesi artik gercek bir harita ve bu liste 100 karta kadar
+   * uzayabiliyor; yuz canli harita gorunumu telefonu yorar. Bu yuzden
+   * harita YALNIZCA ekrana yakin kartlarda kuruluyor, digerlerinde
+   * ayni olcude igneli kutu duruyor - hiza kaymiyor, kart disaridan
+   * ayni.
+   *
+   * Pencere kaydirma konumundan TAHMINLE hesaplaniyor, olcumle degil:
+   * yanlis tahminin bedeli yalnizca bir kartin haritasinin gec
+   * kurulmasi, o yuzden her karti onLayout ile olcup 100 tane olcum
+   * tutmaya degmez. Tahmin iki yonde de TEMKINLI (en kisa / en yuksek
+   * kart) ve iki uca da pay ekleniyor.
+   */
+  const [haritaPenceresi, setHaritaPenceresi] = useState({ bas: 0, son: ILK_HARITALI_KART })
+  /** Ilk kartin icerik icindeki y konumu - pencere hesabinin sifiri. */
+  const listeBasiY = useRef(0)
 
   async function kartEkleriniYukle(liste: MekanYogunlukIle[]) {
     const yollar = liste
@@ -455,9 +475,20 @@ export default function KesfetEkrani() {
    */
   function dibeYaklasinca(olay: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = olay.nativeEvent
+    haritaPenceresiniGuncelle(contentOffset.y, layoutMeasurement.height)
     const dibeUzaklik = contentSize.height - (contentOffset.y + layoutMeasurement.height)
     if (dibeUzaklik > layoutMeasurement.height) return
     void sonrakiSayfa()
+  }
+
+  /** Ekranda gorunen kart araligini kaydirma konumundan tahmin eder. */
+  function haritaPenceresiniGuncelle(kaydirma: number, ekranYuksekligi: number) {
+    const ust = kaydirma - listeBasiY.current
+    const bas = Math.floor(ust / KART_EN_YUKSEK) - HARITA_PENCERE_PAYI
+    const son = Math.ceil((ust + ekranYuksekligi) / KART_EN_KISA) + HARITA_PENCERE_PAYI
+    setHaritaPenceresi((onceki) =>
+      onceki.bas === bas && onceki.son === son ? onceki : { bas, son }
+    )
   }
 
   /*
@@ -1231,25 +1262,21 @@ export default function KesfetEkrani() {
         sakinler.map((item, sira) => {
           const d = mekanDurumu(item)
           /*
-           * ONE CIKAN KART = LISTENIN ILKI, yani EN YAKIN mekan
-           * (referans gorsel: turuncu cerceveli kart, altinda "Yol
-           * tarifi" + "Check-in yap" satiri). Digerleri kompakt:
-           * Check-in butonu kisi satirinin sagina giriyor. Siralama
-           * sunucudan geldigi ve sabit oldugu icin (2026-09-01) "ilk"
-           * her zaman en yakin demek.
+           * ONE CIKAN KART = LISTENIN ILKI, yani EN YAKIN mekan:
+           * turuncu cerceveli. Siralama sunucudan geldigi ve sabit
+           * oldugu icin (2026-09-01) "ilk" her zaman en yakin demek.
+           *
+           * Cerceve DISINDA butun kartlar ayni (2026-09-17).
            */
           const oneCikan = sira === 0
           const kisiler = bulunanlar[item.id] ?? []
           const kapak = item.kapakFotograf ? kapakUrller[item.kapakFotograf] : undefined
-          const checkInDugmesi = (genis: boolean) => (
+          // Ekrana yakin kartlarda gercek harita, uzaktakilerde ayni
+          // olcude igneli kutu (bkz. `haritaPenceresi`).
+          const haritasiCizilsin = sira >= haritaPenceresi.bas && sira <= haritaPenceresi.son
+          const checkInDugmesi = () => (
             <Pressable
-              style={({ pressed }) => [
-                stiller.kartCheckIn,
-                // Kompakt kartta SAGA yaslanir (referans): kisi
-                // satiri bos olsa bile buton sagda durmali.
-                genis ? stiller.kartCheckInGenis : stiller.kartCheckInSag,
-                pressed && stiller.kartCheckInBasili,
-              ]}
+              style={({ pressed }) => [stiller.kartCheckIn, pressed && stiller.kartCheckInBasili]}
               onPress={() => router.push(`/check-in/${item.id}`)}
               accessibilityRole="button"
               accessibilityLabel={t('kesfet.checkInEtiketi', { ad: item.ad })}
@@ -1265,15 +1292,31 @@ export default function KesfetEkrani() {
             key={item.id}
             style={[stiller.mekanKarti, oneCikan && stiller.mekanKartiOneCikan]}
             testID={`mekan-karti-${item.id}`}
+            /* Yalnizca ILK kart olculuyor: listenin icerik icindeki
+               baslangici. Harita penceresi bu sifira gore hesaplanan
+               bir tahmin. */
+            onLayout={
+              oneCikan
+                ? (olay) => {
+                    listeBasiY.current = olay.nativeEvent.layout.y
+                  }
+                : undefined
+            }
           >
             <View style={stiller.kartUst}>
-              {/* KAPAK FOTOGRAFI (referans gorsel, 2026-09-14). Dis
-                  kaynaktan gorsel cekilmiyor (2026-08-24 karari
-                  duruyor); yalnizca moderatorden gecmis
-                  `kapak_fotograf` var. Fotograf yoksa ayni olcude
-                  sessiz bir kutu ve igne - kartlarin hizasi
-                  fotografli/fotografsiz ayni kalsin. Ikisi de mekan
-                  sayfasini aciyor, ad gibi. */}
+              {/* KARENIN ICI: onayli KAPAK FOTOGRAFI varsa o, yoksa
+                  mekanin GERCEK KUCUK HARITASI (kullanicinin istegi
+                  2026-09-17: "kucuk map goruntusunde de gercek
+                  haritadaki yeri gorunsun").
+
+                  Bugun hicbir mekanda kapak fotografi YOK (canlida
+                  olculdu), yani pratikte her kartta harita gorunuyor;
+                  fotograf yolu duruyor cunku o da kullanicinin karari
+                  (2026-09-14) ve bir mekanin kendi fotografi kucuk
+                  haritadan daha cok sey anlatir. Dis kaynaktan gorsel
+                  cekilmiyor (2026-08-24 karari duruyor).
+
+                  Ikisi de mekan sayfasini aciyor, ad gibi. */}
               <Pressable
                 onPress={() => router.push(`/harita/${item.id}` as never)}
                 accessibilityRole="button"
@@ -1288,9 +1331,12 @@ export default function KesfetEkrani() {
                     testID={`kapak-${item.id}`}
                   />
                 ) : (
-                  <View style={[stiller.kapak, stiller.kapakYok]} testID={`kapak-yok-${item.id}`}>
-                    <IgneIkonu boyut={26} renk={renk.turuncu} />
-                  </View>
+                  <MekanKapakHarita
+                    konum={item.konum}
+                    olcu={KAPAK_OLCUSU}
+                    cizilsin={haritasiCizilsin}
+                    testID={`kapak-harita-${item.id}`}
+                  />
                 )}
               </Pressable>
 
@@ -1332,8 +1378,9 @@ export default function KesfetEkrani() {
                     Avatarlar yalnizca SANA GORUNEN check-in'lerden
                     (satir guvenligi, mekan sayfasiyla ayni kapi);
                     sayi ise kimliksiz toplam - avatar sayisi sayidan
-                    kucuk olabilir. Kimse yoksa satir cizilmiyor;
-                    kompakt kartta Check-in yine bu satirin saginda. */}
+                    kucuk olabilir. Kimse yoksa satir bos kaliyor ama
+                    KALIYOR: karenin altiyla eylem satirinin arasi
+                    butun kartlarda ayni. */}
                 <View style={stiller.kartKisiSatiri}>
                   {item.kisiSayisi > 0 && (
                     <View style={stiller.kisiAlani}>
@@ -1360,28 +1407,31 @@ export default function KesfetEkrani() {
                       </Text>
                     </View>
                   )}
-                  {!oneCikan && checkInDugmesi(false)}
                 </View>
               </View>
             </View>
 
-            {/* ONE CIKAN KARTIN EYLEM SATIRI: Yol tarifi (cerceveli)
-                + Check-in yap (dolu). Yol tarifi mekan sayfasindaki
-                dugmeyle AYNI yardimcilari kullaniyor (lib/yol-tarifi). */}
-            {oneCikan && (
-              <View style={stiller.kartEylemler}>
-                <Pressable
-                  style={({ pressed }) => [stiller.yolTarifi, pressed && stiller.yolTarifiBasili]}
-                  onPress={() => yolTarifiAc(item)}
-                  accessibilityRole="button"
-                  testID={`yol-tarifi-${item.id}`}
-                >
-                  <NavigasyonIkonu boyut={18} />
-                  <Text style={stiller.yolTarifiYazi}>{t('kesfet.yolTarifi')}</Text>
-                </Pressable>
-                {checkInDugmesi(true)}
-              </View>
-            )}
+            {/* EYLEM SATIRI HER KARTTA: Yol tarifi (cerceveli) +
+                Check-in yap (dolu). Kullanicinin istegi 2026-09-17:
+                "butun konumlar ilk sutundaki gibi yap" - onceden bu
+                satir yalnizca en yakin kartta vardi, digerlerinde
+                Check-in kisi satirinin sagina sikisiyordu ve ayni
+                liste iki farkli kart tasiyordu.
+
+                Yol tarifi mekan sayfasindaki dugmeyle AYNI
+                yardimcilari kullaniyor (lib/yol-tarifi). */}
+            <View style={stiller.kartEylemler}>
+              <Pressable
+                style={({ pressed }) => [stiller.yolTarifi, pressed && stiller.yolTarifiBasili]}
+                onPress={() => yolTarifiAc(item)}
+                accessibilityRole="button"
+                testID={`yol-tarifi-${item.id}`}
+              >
+                <NavigasyonIkonu boyut={18} />
+                <Text style={stiller.yolTarifiYazi}>{t('kesfet.yolTarifi')}</Text>
+              </Pressable>
+              {checkInDugmesi()}
+            </View>
           </View>
           )
         })
@@ -1442,6 +1492,23 @@ export default function KesfetEkrani() {
 const KART_GENISLIK = 256
 /** Karttaki kare kapak fotografinin kenari (referans gorsel). */
 const KAPAK_OLCUSU = 96
+
+/*
+ * KART YUKSEKLIGI TAHMINLERI - yalnizca "hangi kartin kucuk haritasi
+ * kurulsun" hesabi icin. Kart: 12 pay + 96 kare + 12 aralik + ~44
+ * eylem satiri + 12 pay + 12 kartlar arasi bosluk ~ 190 px; adi iki
+ * satira kirilan kartta ~215 px.
+ *
+ * Alt sinir KISA, ust sinir YUKSEK tutuluyor: boylece pencere iki
+ * yonde de gercekten gorunen kartlari kapsiyor, hata yalnizca
+ * "gereginden fazla harita" yonunde oluyor.
+ */
+const KART_EN_KISA = 170
+const KART_EN_YUKSEK = 240
+/** Pencerenin iki ucuna eklenen kart payi. */
+const HARITA_PENCERE_PAYI = 4
+/** Ilk cizimde harita kurulan kart sayisi (bir ekran + pay). */
+const ILK_HARITALI_KART = 9
 const KART_YUKSEKLIK = 316
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
@@ -1701,10 +1768,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // --- mekan karti ---
   /**
    * MEKAN KARTI - kullanicinin referans gorseline gore (2026-09-14):
-   * solda kare kapak, sagda ad + durum rozeti / "Kafe • 120 m" /
-   * avatar yigini + "4 kisi burada"; en yakin (ilk) kart turuncu
-   * cerceveli ve altinda "Yol tarifi" + "Check-in yap" satiri, diger
-   * kartlarda Check-in kisi satirinin saginda.
+   * solda kare kapak (fotograf yoksa mekanin gercek kucuk haritasi,
+   * 2026-09-17), sagda ad + durum rozeti / "Kafe • 120 m" / avatar
+   * yigini + "4 kisi burada", altinda "Yol tarifi" + "Check-in yap".
+   *
+   * BUTUN KARTLAR AYNI (kullanicinin istegi 2026-09-17). Farkli olan
+   * tek sey EN YAKIN kartin turuncu cercevesi: o bir bilgi, "en
+   * yakini bu" demek - kaldirilsa ya da hepsine verilse liste o
+   * bilgiyi kaybeder.
    *
    * Beyaz zemin uzerinde beyaz kart: ayrimi golge + ince cizgi
    * tasiyor (2026-08-27 kurali); one cikan kartta cizgi turuncu.
@@ -1730,11 +1801,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     height: KAPAK_OLCUSU,
     borderRadius: yuvarlak.kart,
   },
-  kapakYok: {
-    backgroundColor: renk.turuncuZemin,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   kartGovde: { flex: 1, minWidth: 0, gap: 4, minHeight: KAPAK_OLCUSU },
   kartBaslikSatiri: {
     flexDirection: 'row',
@@ -1755,17 +1821,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
   },
   // Kisi satiri govdenin DIBINE itiliyor (`marginTop: 'auto'`):
-  // kapak sabit yukseklikte oldugu icin satir referanstaki gibi
-  // fotografin alt kenariyla hizalaniyor.
+  // kare sabit yukseklikte oldugu icin satir referanstaki gibi
+  // karenin alt kenariyla hizalaniyor.
+  //
+  // 2026-09-17: Check-in butonu bu satirdan cikti (artik her kartta
+  // alttaki eylem satirinda), yani satirda yalnizca avatarlar ve sayi
+  // kaldi - eski "sigmazsa sar" kurali da gereksizlesti.
   kartKisiSatiri: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    // SARIYOR: 390 px'lik telefonda avatar yigini + "18 kişi burada"
-    // + Check-in yap ayni satira sigmiyor (olculdu: ~300 px'e karsi
-    // ~240 px). Sigmayinca buton alt satira, yine saga yasli iner;
-    // referanstaki gibi yazi kirpilmiyor.
-    flexWrap: 'wrap',
     gap: bosluk.s,
     marginTop: 'auto',
     paddingTop: bosluk.s,
@@ -1823,16 +1887,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
    * degistirilmez`), yazi kalin oldugu icin okunuyor.
    */
   kartCheckIn: {
+    // Yol tarifi ile satiri paylasiyor; genis olan bu (referans
+    // gorseldeki oran). 2026-09-17'den beri HER kartta ayni.
+    flex: 1.3,
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // One cikan kartta Yol tarifi ile satiri paylasiyor; genis olan bu.
-  kartCheckInGenis: { flex: 1.3, paddingVertical: 12 },
-  kartCheckInSag: { marginLeft: 'auto' },
   // Basili hal DOLGUYU KOYULASTIRIYOR: dolu bir butonda opaklik
   // dusurmek "pasif" okunuyor.
   kartCheckInBasili: { backgroundColor: renk.turuncuBasili },

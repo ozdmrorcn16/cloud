@@ -250,9 +250,26 @@ Yeni oturum bunlari bilerek baslar.
 16. **Oturumlar arasi hafiza hep bir sonrakine aktarilir**: is
     bitmeden/kesilmeden once CLAUDE.md + gunluk + bu dosya guncel olsun.
 
-## 8. Kaldigi yer (2026-09-14, 20:00 TR)
+## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is:** Check-in ekranindaki "Yakinindaki mekanlar"
+**Son bitirilen is (2026-09-17, YAYINLANMADI):** check-in listesindeki
+kartlar tekduze hale getirildi ve karenin ici gercek harita oldu
+(kullanicinin istegi; karar 95). Eylem satiri (Yol tarifi + Check-in
+yap) her kartta; turuncu cerceve yalnizca en yakinda.
+`src/tasarim/MekanKapakHarita.native.tsx` iOS'ta Apple, Android'de
+Google Haritalar ciziyor (buyuk haritayla ayni motor, `harita-ortak.ts`);
+web'de igneli kutu kaliyor. Harita yalnizca ekrana yakin kartlarda
+kuruluyor. Jest 76 paket / 997 test, tsc'de yeni hata yok.
+
+**YAYIN BORCU:** bu is BULUT oturumunda yapildi, orada EAS girisi ve
+`mobil/.env` yok - `npm run yayinla` ve `eas update` KOSULMADI.
+Telefonda gorunmesi icin kullanicinin makinesinden yayinlanmali:
+`cd mobil && npm run yayinla` + `npx eas-cli update --channel
+production --platform all --environment production --message "..."
+--non-interactive`. Gercek harita ancak TELEFONDA gorulur (web'de
+react-native-maps yok).
+
+**Bir onceki is:** Check-in ekranindaki "Yakinindaki mekanlar"
 listesi kullanicinin referans gorseline gore yeniden yazildi (commit
 `ac800f7`; web `slooin--6nj44gwuyk`, OTA grup
 `bf373ed7-9d37-4e01-bc56-4e6c2dd2022f`):

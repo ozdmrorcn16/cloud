@@ -19,7 +19,10 @@
  */
 import puppeteer from 'puppeteer-core'
 
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+// Kullanicinin makinesinde Windows Chrome; bulut oturumunda (Linux)
+// sistemde Chrome yok, o yuzden yol SLOOIN_CHROME ile verilebiliyor.
+const CHROME =
+  process.env.SLOOIN_CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 const [, , hamYol = '/', cikti = 'ekran.png', gen = '390', yuk = '844'] = process.argv
 
 // Git Bash (MSYS) "/giris" gibi bir argumani Windows yoluna ceviriyor

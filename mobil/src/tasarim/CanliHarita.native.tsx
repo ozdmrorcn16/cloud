@@ -7,6 +7,7 @@ import { yazi, olcek, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { mekanDurumu, type MekanDurumu } from '../../lib/mekan'
 import type { HaritaMekani } from './CanliHarita'
+import { GOOGLE_HARITA_STILI, bolgeUret } from './harita-ortak'
 
 export type { HaritaMekani } from './CanliHarita'
 
@@ -93,26 +94,6 @@ const EN_FAZLA_KAPSAMA_METRE = 25000
  */
 const KAYDIRMA_SURESI_MS = 350
 
-/**
- * Google'in kendi ilgi noktasi etiketleri kapatiliyor: bizim mekan
- * ignelerimizle ayni yerde ikinci bir isim gorunuyordu. Yalnizca
- * Android'de gecerli (Google saglayici); iOS bunu prop ile yapiyor.
- */
-const GOOGLE_HARITA_STILI = [
-  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-]
-
-/** Merkez ve gosterim yaricapindan (metre) harita bolgesi uretir. */
-function bolgeUret(merkez: { lat: number; lng: number }, gosterimMetre: number): Region {
-  const enlemRadyan = (merkez.lat * Math.PI) / 180
-  return {
-    latitude: merkez.lat,
-    longitude: merkez.lng,
-    latitudeDelta: (gosterimMetre * 2) / 110540,
-    longitudeDelta: (gosterimMetre * 2) / (111320 * Math.cos(enlemRadyan)),
-  }
-}
 
 /**
  * IGNE RENKLERI - kesfet listesindeki rozetlerle AYNI degerler.

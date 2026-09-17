@@ -72,7 +72,19 @@ jest.mock('react-native-maps', () => {
   const { View, Pressable } = require('react-native')
   const MapView = React.forwardRef((props, ref) => {
     React.useImperativeHandle(ref, () => ({ animateToRegion: jest.fn() }))
-    return React.createElement(View, { testID: props.testID }, props.children)
+    // Cerceve ve kart kucuk haritasinin kipi testlerden okunabilsin
+    // diye tasiniyor: gercek harita jest'te cizilmiyor, dogrulanabilen
+    // tek sey MapView'e NE VERILDIGI.
+    return React.createElement(
+      View,
+      {
+        testID: props.testID,
+        initialRegion: props.initialRegion,
+        liteMode: props.liteMode,
+        cacheEnabled: props.cacheEnabled,
+      },
+      props.children
+    )
   })
   // Marker'in COCUKLARI RENDER EDILMIYOR - bilerek.
   //

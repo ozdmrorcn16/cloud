@@ -148,6 +148,49 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### KART KARESI GERCEK HARITA, BUTUN KARTLAR AYNI - 2026-09-17
+
+Kullanicinin istegi: "butun konumlar ilk sutundaki gibi yap, kucuk map
+goruntusunde de gercek haritadaki yeri gorunsun."
+
+- **Eylem satiri artik HER kartta** (Yol tarifi + Check-in yap).
+  Onceden yalnizca en yakin karttaydi, digerlerinde Check-in kisi
+  satirinin sagina sikisiyordu. **Turuncu cerceve yalnizca EN YAKIN
+  kartta kaldi** - o bir bilgi ("en yakini bu"), hepsine verilse ya da
+  kaldirilsa liste onu kaybeder.
+- **Karenin ici gercek harita** (`src/tasarim/MekanKapakHarita`):
+  iOS Apple, Android Google - buyuk haritayla AYNI motor ve stil
+  (`harita-ortak.ts`, `CanliHarita.native` de oradan okuyor). Ucuncu
+  servis, anahtar, tekrarlayan gider YOK. `Marker` kullanilmiyor:
+  harita zaten koordinatta merkezli, igne ustune SVG olarak ciziliyor.
+- **Kapak fotografi yolu DURUYOR**: fotograf varsa o gorunur, yoksa
+  harita. Canlida kapakli mekan sayisi 0 (olculdu), yani bugun her
+  kartta harita var.
+- **Web'de harita YOK** (react-native-maps web'i desteklemiyor,
+  2026-08-30 karari): kare igneli kutu olarak kaliyor.
+- **PERFORMANS: harita yalnizca ekrana yakin kartlarda kuruluyor.**
+  Liste 100 karta cikabiliyor; yuz canli harita telefonu yorar.
+  Pencere kaydirma konumundan TAHMINLE hesaplaniyor (kart yuksekligi
+  170-240 px, iki uca 4 kart pay), olcum tutulmuyor - yanlis tahminin
+  bedeli yalnizca bir karenin gec dolmasi. Kip platforma gore:
+  Android `liteMode`, iOS `cacheEnabled` (ikisi ayni anda VERILMEZ).
+
+**ORTAM TUZAGI - BULUT OTURUMUNDA supabase.co KAPALI.** Bu oturum
+Claude Code on the web'de kostu ve ag politikasi
+`swpiibyuoffykbmirvgq.supabase.co:443` CONNECT'ini 403 ile reddediyor
+(`curl -sS "$HTTPS_PROXY/__agentproxy/status"` ile gorulur). Sonuc:
+`araclar/ekran-goruntusu.mjs` giris yapamiyor, ekran hep karsilama
+sayfasinda kaliyor. Supabase MCP calisiyor (o baska yoldan gidiyor).
+Cozum: puppeteer'da `setRequestInterception` ile Supabase cevaplarini
+sahte vermek ve oturumu `localStorage`a sahte jetonla koymak - boyle
+cizdirildi, betik gecici oldugu icin depoya konmadi.
+`ekran-goruntusu.mjs` artik `SLOOIN_CHROME` ile Chrome yolu alabiliyor
+(Linux konteynerinde Windows yolu yok).
+
+**YAYIN BEKLIYOR:** bu oturumda EAS girisi yok, yani `npm run yayinla`
+ve `eas update` KOSULAMADI. Degisiklik telefonda ancak kullanici
+yayinlayinca gorunur.
+
 ### SITEDE OTOMATIK DIL ALGILAMA + EMAIL_OFF - 2026-09-14
 
 Kullanicinin istegi: "otomatik dil algilayici koy". Cloudflare Pages

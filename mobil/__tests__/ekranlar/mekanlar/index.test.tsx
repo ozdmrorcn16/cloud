@@ -1386,20 +1386,22 @@ describe('MekanAramaEkrani - referans kart', () => {
     ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
   })
 
-  it('EN YAKIN kart turuncu cerceveli, altinda Yol tarifi + Check-in yap; digeri kompakt', async () => {
+  it('BUTUN kartlarda Yol tarifi + Check-in yap; yalnizca en yakini turuncu cerceveli', async () => {
     await render(<MekanAramaEkrani />)
     const ilk = await screen.findByTestId('mekan-karti-mola')
     const ikinci = screen.getByTestId('mekan-karti-park')
 
+    // Cerceve tek fark: "en yakini bu" bilgisini o tasiyor.
     expect(StyleSheet.flatten(ilk.props.style).borderColor).toBe(acikRenk.turuncu)
     expect(StyleSheet.flatten(ikinci.props.style).borderColor).not.toBe(acikRenk.turuncu)
 
+    // Kullanicinin istegi 2026-09-17: butun konumlar ilk kart gibi.
+    for (const kart of [ilk, ikinci]) {
+      expect(within(kart).getByText('Yol tarifi')).toBeTruthy()
+      expect(within(kart).getByText('Check-in yap')).toBeTruthy()
+    }
     expect(within(ilk).getByTestId('yol-tarifi-mola')).toBeTruthy()
-    expect(within(ilk).getByText('Yol tarifi')).toBeTruthy()
-    expect(within(ilk).getByText('Check-in yap')).toBeTruthy()
-    // Kompakt kartta yol tarifi yok, Check-in yap var.
-    expect(within(ikinci).queryByTestId('yol-tarifi-park')).toBeNull()
-    expect(within(ikinci).getByText('Check-in yap')).toBeTruthy()
+    expect(within(ikinci).getByTestId('yol-tarifi-park')).toBeTruthy()
   })
 
   it('kullanicinin ekledigi mekanda "Kafe • Nilüfer, Bursa • 240 m", dis kaynaklida tur yok', async () => {
@@ -1415,7 +1417,7 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(within(screen.getByTestId('mekan-karti-park')).getByText('Sakin')).toBeTruthy()
   })
 
-  it('kapak fotografi imzalanip cizilir; fotografsiz kartta igneli kutu', async () => {
+  it('kapak fotografi imzalanip cizilir; fotografsiz kartta mekanin GERCEK kucuk haritasi', async () => {
     ;(mekanFotografiUrlleri as jest.Mock).mockResolvedValue({
       'kisi-1/mola.jpg': 'https://imzali/mola.jpg',
     })
@@ -1423,9 +1425,42 @@ describe('MekanAramaEkrani - referans kart', () => {
 
     const kapak = await screen.findByTestId('kapak-mola')
     expect(kapak.props.source).toEqual([{ uri: 'https://imzali/mola.jpg' }])
-    expect(screen.getByTestId('kapak-yok-park')).toBeTruthy()
+    // Fotografsiz kartta kare bos degil: gercek harita kuruluyor
+    // (kullanicinin istegi 2026-09-17).
+    expect(screen.getByTestId('kapak-harita-park')).toBeTruthy()
+    expect(screen.getByTestId('kapak-harita-park-harita')).toBeTruthy()
     // Yalnizca fotografi olan mekanin yolu imzalatiliyor.
     expect(mekanFotografiUrlleri).toHaveBeenCalledWith(['kisi-1/mola.jpg'])
+  })
+
+  /**
+   * Kart sayisi 100'e cikabiliyor ve karenin ici artik GERCEK harita.
+   * Yuz canli harita gorunumu telefonu yorar; harita yalnizca ekrana
+   * yakin kartlarda kuruluyor, uzaktakinde ayni olcude igneli kutu
+   * duruyor - kartin hizasi degismiyor.
+   */
+  it('uzaktaki kartin haritasi KURULMUYOR, karesi yine de ayni olcude duruyor', async () => {
+    const uzunListe = Array.from({ length: 20 }, (_, i) => ({
+      id: `m${i}`,
+      ad: `Mekan ${i}`,
+      tur: 'kafe',
+      adres: null,
+      osmId: i,
+      semt: 'Nilüfer',
+      il: 'Bursa',
+      konum: { lat: 41.015 + i * 0.0001, lng: 28.979 },
+      kisiSayisi: 0,
+      toplamCheckIn: 0,
+      kapakFotograf: null,
+    }))
+    ;(yakinMekanlariYogunlukIleGetir as jest.Mock).mockResolvedValue(uzunListe)
+    await render(<MekanAramaEkrani />)
+
+    // Bastaki kartlarda harita var...
+    expect(await screen.findByTestId('kapak-harita-m0-harita')).toBeTruthy()
+    // ...cok asagidakinde yok, ama kare (ve dolayisiyla hiza) duruyor.
+    expect(screen.getByTestId('kapak-harita-m19')).toBeTruthy()
+    expect(screen.queryByTestId('kapak-harita-m19-harita')).toBeNull()
   })
 
   it('kalabalik mekanda gorunen kisilerin avatarlari yigin halinde, sayi yaninda', async () => {

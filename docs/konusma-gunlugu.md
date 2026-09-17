@@ -1258,3 +1258,17 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     aynasina kondu; `origin` artik iki uzak depoya birden push ediyor.
     Kural: her yayindan sonra dosyanin "Kaldigi yer" bolumu guncellenir.
 
+95. **KART KARESI GERCEK HARITA; BUTUN KARTLAR AYNI** (2026-09-17).
+    Kullanici check-in listesinin ekran goruntusunu gonderip "butun
+    konumlar ilk sutundaki gibi yap, kucuk map goruntusunde de gercek
+    haritadaki yeri gorunsun" dedi. Eylem satiri (Yol tarifi +
+    Check-in yap) artik her kartta; kompakt kart bicimi kalkti.
+    Turuncu cerceve YALNIZCA en yakin kartta kaldi - bilgi tasidigi
+    icin (hepsine verilse ya da kaldirilsa "en yakin" gorunmez olur).
+    Karenin ici `MekanKapakHarita`: iOS Apple, Android Google
+    Haritalar, buyuk haritayla ayni motor ve stil; ucuncu servis ya da
+    tekrarlayan gider yok. Onayli kapak fotografi yolu duruyor
+    (fotograf varsa o), ama canlida kapakli mekan yok. Harita yalnizca
+    ekrana yakin kartlarda kuruluyor (liste 100 karta cikabiliyor);
+    Android lite kip, iOS onbellekli kip. Web'de harita yok - kare
+    igneli kutu olarak kaliyor.
