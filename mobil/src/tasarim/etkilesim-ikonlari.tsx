@@ -39,12 +39,20 @@ export function YorumIkonu({ boyut = 22 }: { boyut?: number }) {
   )
 }
 
+/**
+ * PAYLAS: kutu + yukari ok (iOS'un standart "Paylas" simgesi; Android'de
+ * de yaygin). Kullanicinin secimi 2026-09-18 (secenek A, dort alternatif
+ * arasindan - `tasarim/paylas-ikonu-secenekler.png`). Onceki KAGIT UCAK
+ * Instagram'da "DM ile gonder" demek; bizde dugme sistemin paylasim
+ * penceresini aciyor, ikon o eylemi soylemeliydi. Tek tanim: profil
+ * dugmesi ve ani karti ayni bileseni cizer.
+ */
 export function PaylasIkonu({ boyut = 22 }: { boyut?: number }) {
   const renk = useRenk()
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path
-        d="M21 3L10.5 13.5M21 3l-6.8 18-3.7-7.5L3 9.8 21 3z"
+        d="M12 3v13M8 7l4-4 4 4M5 11v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"
         fill="none"
         stroke={renk.metinIkincil}
         strokeWidth={1.8}
