@@ -148,6 +148,23 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### PROFIL HARITA DOKUSU: ANA YOL INCELDI - 2026-09-18
+
+Kullanici once profil arkasina Turkiye merkezli DUNYA HARITASI istedi;
+iki secenek gorsel olarak hazirlandi (`tasarim/profil-dunya-haritasi-
+secenekler.png`, Natural Earth 1:50m kamu mali, Mercator, uretim betigi
+gecici). Sonra "su anki hali kalsin, sadece ortadan gecen kalin yol
+yaziya engel olmasin" dedi; dort secenek cizildi
+(`tasarim/profil-harita-anayol-secenekler.png`) ve **A secildi**: ana
+yol 6,5 -> 3,4 px (orta yollarla ayni), renk duruyor. Tek satir,
+`ProfilHaritaZemini.tsx`; karsilama ekrani degismedi (orada yazi yok).
+Dunya haritasi FIKRI reddedilmedi, ertelendi - istenirse uretim
+`scratchpad/dunya-harita.py` deseniyle 10 dakikalik is (85 KB yol
+verisi, sadelestirme 0,35 px).
+
+Yayin: web `slooin--wyx4c1zh3s`, OTA grup
+`a0d6ca15-46fc-4f05-b447-3d5377f84e38`.
+
 ### SEKME GERI DONUSTE KORUNUR; FOTOGRAF GEZGINI - 2026-09-18
 
 **1. "En sık" sekmesi geri donuste kayboluyordu** (kullanicinin

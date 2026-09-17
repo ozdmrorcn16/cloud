@@ -252,7 +252,12 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--e5046r3ffg`, OTA grup
+**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--wyx4c1zh3s`, OTA grup
+`a0d6ca15-46fc-4f05-b447-3d5377f84e38`):** profil arkasindaki harita
+dokusunda ana yol inceldi (6,5 -> 3,4 px; kullanicinin secimi A). Dunya
+haritasi secenegi gorsel olarak hazirlandi, uygulanmadi.
+
+**Ayni gece (web `slooin--e5046r3ffg`, OTA grup
 `1a8f0143-59f5-4b8b-8b0e-118557184c4e`):** baskasinin profilinde avatar ve
 profil fotografi seridi de basinca gezginde buyuk aciliyor. Ayni gece: profilde secili sekme ("En sık")
 mekan sayfasindan geri donuste korunuyor (rota parametresi,

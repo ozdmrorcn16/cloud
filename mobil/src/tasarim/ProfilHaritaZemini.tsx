@@ -67,8 +67,13 @@ export function ProfilHaritaZemini({
         {ORTA_YOLLAR.map((d, i) => (
           <Path key={`o${i}`} d={d} stroke={renk.haritaYolOrta} strokeWidth={3.4} fill="none" />
         ))}
+        {/* ANA YOL INCE (kullanicinin secimi 2026-09-18, secenek A):
+            6,5 px'lik bant biyografi satirlarinin tam arkasindan
+            geciyor ve yaziya engel oluyordu. Orta yollarla ayni
+            kalinlik; renk (bir ton koyu) duruyor ki arter yine
+            secilsin. Karsilama ekrani DEGISMEDI - orada yazi yok. */}
         {ANA_YOLLAR.map((d, i) => (
-          <Path key={`a${i}`} d={d} stroke={renk.haritaYolAna} strokeWidth={6.5} fill="none" />
+          <Path key={`a${i}`} d={d} stroke={renk.haritaYolAna} strokeWidth={3.4} fill="none" />
         ))}
       </Svg>
 
