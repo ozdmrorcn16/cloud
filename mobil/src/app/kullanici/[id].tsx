@@ -38,13 +38,11 @@ import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
-import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { bolgeMetni } from '../../../lib/bolge'
-import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -110,7 +108,6 @@ function KilitIkonu() {
  * dokumu vermiyor - iki sey arasindaki dogru denge kullanicinin karari
  * (2026-09-10). KENDI profilinde boyle bir sinir YOK.
  */
-const EN_SIK_GORUNEN = 5
 
 /**
  * Akista ILK ACILISTA kac kart cizilir; kaydirdikca pencere buyur.
@@ -169,9 +166,7 @@ export default function KullaniciProfiliEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
-  // Kendi profil ekranindaki gibi iki bakis: zaman sirasi ve en cok
-  // gidilen yerler.
-  const [sekme, setSekme] = useState<'anilar' | 'yerler'>('anilar')
+  const [guvenlikMenusu, setGuvenlikMenusu] = useState(false)
   const [gorunenAdet, setGorunenAdet] = useState(ILK_CIZIM_ADEDI)
   const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
   /** Sunucuya SORULMUS kimlikler; ayni istegi iki kez atmamak icin. */
@@ -390,25 +385,6 @@ export default function KullaniciProfiliEkrani() {
     bagDurum?.gelenSohbet === 'kabul'
 
   /**
-   * "En sik" gorunumu: ayni anilardan gruplaniyor, sunucuda yeni bir
-   * sorgu yok. BASKASININ PROFILINDE YALNIZCA ILK BES (kullanicinin
-   * karari 2026-09-10). SINIR ISTEMCIDE ve bu bir GIZLILIK SINIRI
-   * DEGIL - anilarin gercek korumasi `check_inler` RLS'inde.
-   */
-  const yerler = (() => {
-    const sayac = new Map<string, { ad: string; semt: string | null; adet: number }>()
-    anilar.forEach((a) => {
-      const mevcut = sayac.get(a.mekanId)
-      if (mevcut) mevcut.adet += 1
-      else sayac.set(a.mekanId, { ad: a.mekanAdi, semt: a.mekanSemti, adet: 1 })
-    })
-    return [...sayac.entries()]
-      .map(([mekanId, v]) => ({ mekanId, ...v }))
-      .sort((a, b) => b.adet - a.adet || a.ad.localeCompare(b.ad, 'tr'))
-      .slice(0, EN_SIK_GORUNEN)
-  })()
-
-  /**
    * KAPALI PROFIL. Kisi "profilim gizli" demis ve aranizda bag yok.
    * Ust blok AYNI kaliyor, akisin yerinde buyuk bir kilit duruyor.
    * Bu bir GORUNUM karari, guvenlik siniri degil: anilarin gercek
@@ -428,19 +404,35 @@ export default function KullaniciProfiliEkrani() {
       >
         <GeriIkonu />
       </Pressable>
-      {/* PAYLAS SAG USTTE (kullanicinin tarifi 2026-09-13) - kendi
-          profildeki dislinin yerinde. Ust cubukta baslik YOK: kendi
-          profilde de yok, kullanici adi avatarin yaninda. */}
+      {/* SAG UST: paylas + menu YAN YANA. Ikisi ayri cocuk olsaydi
+          `space-between` paylasi ortaya iterdi (olculdu). */}
       {profil && (
-        <Pressable
-          onPress={profiliPaylas}
-          accessibilityRole="button"
-          accessibilityLabel={t('kullanici.paylas')}
-          hitSlop={12}
-          testID="profili-paylas"
-        >
-          <PaylasIkonu boyut={24} />
-        </Pressable>
+        <View style={stiller.ustSag}>
+          <Pressable
+            onPress={profiliPaylas}
+            accessibilityRole="button"
+            accessibilityLabel={t('kullanici.paylas')}
+            hitSlop={12}
+            testID="profili-paylas"
+          >
+            <PaylasIkonu boyut={24} />
+          </Pressable>
+          {/* SIKAYET VE ENGELLEME ARTIK BURADA (kullanicinin istegi
+              2026-09-17: sayfanin altindaki "Şikâyet et / Engelle"
+              satiri kalkti). Ikisi de KALDIRILMADI, menuye tasindi:
+              App Store kullanici iceriigi olan uygulamalarda engelleme
+              ve sikayet yolunu SART kosuyor (projenin 2026-08-11'den
+              beri bilinen kisidi). */}
+          <Pressable
+            onPress={() => setGuvenlikMenusu(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('kullanici.secenekler')}
+            hitSlop={12}
+            testID="kullanici-menusu"
+          >
+            <UcNoktaIkonu />
+          </Pressable>
+        </View>
       )}
     </View>
   )
@@ -518,45 +510,58 @@ export default function KullaniciProfiliEkrani() {
             </View>
           </View>
 
-          {/* EYLEM SATIRI: "Arkadas ekle" + "Mesaj yaz", kendi
-              profildeki "Profili duzenle" olcusunde (yukseklik 40).
-              Arkadas butonu baga gore uc halde: ekle / beklemede /
-              arkadassin. Beklemede ve arkadassin BASILAMAZ - karar
-              karsi tarafta ya da zaten verilmis; geri cekmek ve
-              cikmak asagidaki ikincil satirda. */}
-          <View style={stiller.eylemler}>
-            {bagDurum?.takip === 'kabul' ? (
-              <Pressable
-                style={({ pressed }) => [stiller.eylemButonu, stiller.eylemArkadas, pressed && stiller.eylemArkadasBasili]}
-                onPress={() => setArkadasMenusu(true)}
-                accessibilityRole="button"
-                testID="arkadas-durumu"
-              >
-                <Text style={stiller.eylemArkadasYazi}>{t('kullanici.arkadassin')}</Text>
-              </Pressable>
-            ) : bagDurum?.takip === 'beklemede' ? (
-              <View style={[stiller.eylemButonu, stiller.eylemDurum]} testID="arkadas-durumu">
-                <Text style={stiller.eylemDurumYazi}>{t('kullanici.istekBeklemede')}</Text>
-              </View>
-            ) : (
-              <Pressable
-                style={({ pressed }) => [stiller.eylemButonu, pressed && stiller.eylemBasili]}
-                onPress={takipEt}
-                accessibilityRole="button"
-                testID="arkadas-ekle"
-              >
-                <Text style={stiller.eylemYazi}>{t('kullanici.takipEt')}</Text>
-              </Pressable>
-            )}
+        </View>
+
+        {/* SIRA: once SAYACLAR, sonra EYLEMLER (kullanicinin istegi
+            2026-09-17: "sutunla butonlarin yerini degistir, alt ust
+            yap"). Sayaclar kimlik blogunun devami - kim oldugunu
+            anlatiyor; butonlar ondan sonra gelen KARAR. */}
+        <ProfilSayaclari
+          sayilar={{
+            anilar: anilar.length,
+            fotograflar: fotografUrlleri.length,
+            arkadaslar: profil.arkadasSayisi,
+          }}
+        />
+
+        {/* EYLEM SATIRI: "Arkadas ekle" + "Mesaj yaz", kendi
+            profildeki "Profili duzenle" olcusunde (yukseklik 40).
+            Arkadas butonu baga gore uc halde: ekle / beklemede /
+            arkadassin. Beklemede ve arkadassin BASILAMAZ - karar
+            karsi tarafta ya da zaten verilmis; geri cekmek ve
+            cikmak asagidaki ikincil satirda. */}
+        <View style={stiller.eylemler}>
+          {bagDurum?.takip === 'kabul' ? (
             <Pressable
-              style={({ pressed }) => [stiller.eylemButonu, stiller.eylemBirincil, pressed && stiller.eylemBirincilBasili]}
-              onPress={() => router.push(`/sohbet/${id}`)}
+              style={({ pressed }) => [stiller.eylemButonu, stiller.eylemArkadas, pressed && stiller.eylemArkadasBasili]}
+              onPress={() => setArkadasMenusu(true)}
               accessibilityRole="button"
-              testID="mesaj-yaz"
+              testID="arkadas-durumu"
             >
-              <Text style={stiller.eylemBirincilYazi}>{t('kullanici.mesajYaz')}</Text>
+              <Text style={stiller.eylemArkadasYazi}>{t('kullanici.arkadassin')}</Text>
             </Pressable>
-          </View>
+          ) : bagDurum?.takip === 'beklemede' ? (
+            <View style={[stiller.eylemButonu, stiller.eylemDurum]} testID="arkadas-durumu">
+              <Text style={stiller.eylemDurumYazi}>{t('kullanici.istekBeklemede')}</Text>
+            </View>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [stiller.eylemButonu, pressed && stiller.eylemBasili]}
+              onPress={takipEt}
+              accessibilityRole="button"
+              testID="arkadas-ekle"
+            >
+              <Text style={stiller.eylemYazi}>{t('kullanici.takipEt')}</Text>
+            </Pressable>
+          )}
+          <Pressable
+            style={({ pressed }) => [stiller.eylemButonu, stiller.eylemBirincil, pressed && stiller.eylemBirincilBasili]}
+            onPress={() => router.push(`/sohbet/${id}`)}
+            accessibilityRole="button"
+            testID="mesaj-yaz"
+          >
+            <Text style={stiller.eylemBirincilYazi}>{t('kullanici.mesajYaz')}</Text>
+          </Pressable>
         </View>
 
         {/* Ikincil bag eylemleri: yalnizca gerektiginde ciziliyor. */}
@@ -633,59 +638,12 @@ export default function KullaniciProfiliEkrani() {
           </ScrollView>
         )}
 
-        {/* SAYACLAR YALNIZCA SAYI (kullanicinin tarifi 2026-09-13):
-            `onSec` verilmedigi icin satir salt okunur, bolum secmiyor. */}
-        <ProfilSayaclari
-          sayilar={{
-            anilar: anilar.length,
-            fotograflar: fotografUrlleri.length,
-            arkadaslar: profil.arkadasSayisi,
-          }}
-        />
-
-        {/* SEKME HAPI KAPALI PROFILDE CIZILMIYOR: secilecek bir sey
-            yokken secici gostermek bozuk bir kontrol sunar. */}
-        {!kapali && (
-          <SekmeHapi
-            sekmeler={[
-              { anahtar: 'anilar' as const, etiket: t('kullanici.anilar') },
-              { anahtar: 'yerler' as const, etiket: t('kullanici.enSik') },
-            ]}
-            secili={sekme}
-            onSec={setSekme}
-          />
-        )}
-
         {kapali ? (
           <View style={stiller.kilitAlani} testID="profil-kilitli">
             <KilitIkonu />
             <Text style={stiller.bosBaslik}>{t('kullanici.profilKapali')}</Text>
             <Text style={stiller.bosAciklama}>{t('kullanici.profilKapaliAciklama')}</Text>
           </View>
-        ) : sekme === 'yerler' ? (
-          yerler.length === 0 ? (
-            <View style={stiller.bosAlan}>
-              <Text style={stiller.bosBaslik}>{t('kullanici.yerYok')}</Text>
-            </View>
-          ) : (
-            yerler.map((yer, i) => (
-              <Pressable
-                key={yer.mekanId}
-                style={stiller.yerSatiri}
-                onPress={() => router.push(`/harita/${yer.mekanId}` as never)}
-                accessibilityRole="button"
-              >
-                <SiraRozeti sira={i + 1} />
-                <View style={stiller.yerOrta}>
-                  <Text style={stiller.yerAd} numberOfLines={1}>
-                    {yer.ad}
-                  </Text>
-                  {yer.semt ? <Text style={stiller.yerSemt}>{yer.semt}</Text> : null}
-                </View>
-                <Text style={stiller.yerAdet}>{t('profil.kezSayisi', { sayi: yer.adet })}</Text>
-              </Pressable>
-            ))
-          )
         ) : anilar.length === 0 ? (
           <View style={stiller.bosAlan}>
             <Text style={stiller.bosBaslik}>{t('kullanici.aniYok')}</Text>
@@ -720,18 +678,25 @@ export default function KullaniciProfiliEkrani() {
           </View>
         )}
 
-        {/* SIKAYET VE ENGELLEME en altta: yikici eylemler kompozisyonda
-            once gelmemeli. Engelleme iki adimli - geri alinamaz. */}
-        <View style={stiller.guvenlikAlani}>
-          <Pressable onPress={sikayetEt} accessibilityRole="button" hitSlop={8}>
-            <Text style={stiller.guvenlikYazi}>{t('kullanici.sikayetEt')}</Text>
-          </Pressable>
-          <Pressable onPress={() => setEngelleOnayi(true)} accessibilityRole="button" hitSlop={8}>
-            <Text style={stiller.guvenlikYazi}>{t('kullanici.engelle')}</Text>
-          </Pressable>
-        </View>
       </ScrollView>
 
+      <SecimPenceresi
+        acikMi={guvenlikMenusu}
+        secimler={[
+          {
+            etiket: t('kullanici.sikayetEt'),
+            testID: 'menu-sikayet',
+            onSec: sikayetEt,
+          },
+          {
+            etiket: t('kullanici.engelle'),
+            testID: 'menu-engelle',
+            yikici: true,
+            onSec: () => setEngelleOnayi(true),
+          },
+        ]}
+        onKapat={() => setGuvenlikMenusu(false)}
+      />
       <SecimPenceresi
         acikMi={arkadasMenusu}
         secimler={[
@@ -762,6 +727,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   /* Geri solda, paylas sagda. Ust pay kendi profildeki cubukla ayni
      hizada durmasi icin kok duzenin verdigi guvenli alanin ustune
      yalnizca kucuk bir pay. */
+  ustSag: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: bosluk.l },
   ustCubuk: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -940,49 +906,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   /* "En sik" satirlari - kendi profildeki desenin aynisi. */
-  yerSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
-  yerOrta: { flex: 1 },
-  yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
-  yerSemt: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 1,
-  },
-  yerAdet: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.turuncuYazi,
-    backgroundColor: renk.turuncuZemin,
-    borderRadius: yuvarlak.hap,
-    paddingVertical: 4,
-    paddingHorizontal: bosluk.m,
-    overflow: 'hidden',
-  },
 
   /* Kartlar sayfa payinin disinda, ana sayfadaki gibi tam genislikte. */
   aniListesi: { marginHorizontal: -bosluk.sayfa },
 
-  guvenlikAlani: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: bosluk.l,
-    marginTop: bosluk.xxl,
-  },
-  guvenlikYazi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    // metinSoluk denendi ve birakildi: sayfa zemininde kontrast ~2.3:1
-    // kaliyordu. Sikayet ve engelleme guvenlik eylemleri; sessiz
-    // durabilirler ama okunmaz olamazlar.
-    color: renk.metinIkincil,
-  },
 })

@@ -252,7 +252,12 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17, YAYINLANMADI):** buyuk acilan
+**Son bitirilen is (2026-09-17, YAYINLANMADI):** baskasinin profili
+sadelesti (karar 97) - sayaclar butonlarin ustune alindi, "Anılar /
+En sık" sekmeleri ve alttaki "Şikâyet et / Engelle" satiri kalkti;
+sikayet ve engelleme ust cubuktaki uc nokta menusunde (magaza sarti).
+
+**Ayni gun daha once (YAYINLANMADI):** buyuk acilan
 fotografin sol altinda paylasan kisi, mekan ve zaman gosteriliyor
 (karar 96). Mekan galerisindeki altyazi `src/tasarim/FotografAltyazisi.tsx`
 bilesenine cikarildi; akis kartinin tam ekran gorunumu ve profildeki

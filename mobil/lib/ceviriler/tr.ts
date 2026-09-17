@@ -361,14 +361,12 @@ export default {
       "Kabul edersen birbirinizin check-in'lerini görebilir ve mesajlaşabilirsiniz.",
     kabulEt: 'Kabul et',
     reddet: 'Reddet',
-    anilar: 'Anılar',
-    enSik: 'En sık',
     aniYok: 'Henüz bir anısı yok',
     // KAPALI PROFIL: kisi "profilim gizli" demis ve aranizda arkadaslik
     // yok. Ekran duzeni AYNI kaliyor, yalnizca icerik kapali.
     profilKapali: 'Bu profil kapalı',
     profilKapaliAciklama: 'Anılarını görmek için arkadaş olmalısın.',
-    yerYok: 'Henüz bir yeri yok',
+    secenekler: 'Profil seçenekleri',
     sikayetEt: 'Şikayet et',
     engelle: 'Engelle',
     engelleOnayi:
