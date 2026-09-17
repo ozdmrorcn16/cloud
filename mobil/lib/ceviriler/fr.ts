@@ -459,10 +459,6 @@ export default {
   checkIn: {
     baslik: 'Nouveau check-in',
     notYerTutucu: 'Ajoute une note (facultatif)',
-    ilkUyariBaslik: 'Que partage ce check-in ?',
-    ilkUyariMetin: "Quand tu fais un check-in, le lieu où tu es et ta note (s'il y en a une) deviennent visibles pour tes amis. Il se ferme tout seul quand le check-in expire ou dès que tu dis « Je suis parti ». Si tu veux, tu peux rendre ce check-in masqué et le garder seulement sur ton propre profil.",
-    anladim: 'Compris',
-    gizliYap: 'Rendre masqué',
     arkadasEkle: 'Ajouter des amis (facultatif)',
     arkadasEkleSecili: 'Ajouter des amis ({{sayi}} sélectionnés)',
     etiketiKaldir: 'Retirer le tag de {{ad}}',

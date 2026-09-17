@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk, NOT_EN_FAZLA } from '../../../lib/checkin'
@@ -13,7 +12,6 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
-import { kendiKullaniciIdim } from '../../../lib/profil'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
@@ -21,14 +19,12 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 import { useDil } from '../../../lib/dil'
 
 /*
- * HESABA BAGLI (2026-09-13): tek anahtar ayni telefondaki ikinci
- * hesabin "bu check-in ne paylasiyor?" uyarisini HIC gormemesine yol
- * aciyordu (tur suzgecinde yasanan devretme kusurunun kardesi). Uyari
- * bir aydinlatma; her yeni hesap kendi uyarisini gormeli.
+ * "Bu check-in ne paylasiyor?" ilk kullanim ekrani KALDIRILDI
+ * (kullanicinin istegi 2026-09-18). Aydinlatma gizlilik metninde
+ * duruyor; kayitta onaylaniyor. Onunla birlikte tek check-in'i
+ * "gizli" yapma yolu da kalkti - paylasimi daraltmanin tek kontrolu
+ * ayarlardaki "Profilim gizli" (2026-09-12 karariyla ayni cizgi).
  */
-const ILK_UYARI_ANAHTARI = 'ilk-checkin-uyarisi-gosterildi'
-const ilkUyariAnahtari = (kimlik: string | null) =>
-  kimlik ? `${ILK_UYARI_ANAHTARI}.${kimlik}` : ILK_UYARI_ANAHTARI
 
 export default function CheckInEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -48,52 +44,25 @@ export default function CheckInEkrani() {
   // yayinlanmamali - o kademe artik yalnizca "bu mekandakiler" degil,
   // mekan ARTI HER YERDEKI butun takipciler demek.
   const [bulunurluk, setBulunurluk] = useState<Bulunurluk | null>(null)
-  const [ilkKullanimUyarisi, setIlkKullanimUyarisi] = useState(false)
   // Etiketlenebilecek kisiler: YALNIZCA karsilikli bagli oldugun
   // arkadaslar. Ayni kisit veritabani politikasinda da var; buradaki
   // liste kullaniciya secenek gostermek icin.
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [etiketlenenler, setEtiketlenenler] = useState<string[]>([])
   const [arkadasSecimi, setArkadasSecimi] = useState(false)
-  // Kullanici bulunurluk tercihini elle degistirdiyse (secenek satiri veya ilk
-  // kullanim uyarisindaki "Gizli yap"), gec gelen varsayilanBulunurluguGetir()
-  // yaniti bu secimin uzerine yazmasin.
-  const bulunurlukManuelDegisti = useRef(false)
-  const uyariAnahtari = useRef(ILK_UYARI_ANAHTARI)
-
+  // Bulunurluk ekranda SECILMIYOR (secenek satiri 2026-09-12'de, ilk
+  // kullanim ekranindaki "Gizli yap" 2026-09-18'de kalkti); deger
+  // profilin varsayilanindan geliyor.
   useEffect(() => {
     varsayilanBulunurluguGetir()
-      .then((deger) => {
-        if (!bulunurlukManuelDegisti.current) setBulunurluk(deger)
-      })
+      .then(setBulunurluk)
       .catch(() => {
         // Profil okumasi basarisiz oldu: sessizce en genis degerde
-        // birakmak yerine en dar degere (gizli) dusuyoruz. Kullanici
-        // isterse elle genisletebilir, ama varsayilan asla onun
-        // secmedigi bir yayin genisligine kaymamali.
-        if (!bulunurlukManuelDegisti.current) setBulunurluk('gizli')
+        // birakmak yerine en dar degere (gizli) dusuyoruz - varsayilan
+        // asla kullanicinin secmedigi bir yayin genisligine kaymamali.
+        setBulunurluk('gizli')
       })
-    kendiKullaniciIdim()
-      .then((kimlik) => {
-        uyariAnahtari.current = ilkUyariAnahtari(kimlik)
-        return AsyncStorage.getItem(uyariAnahtari.current)
-      })
-      .then((deger) => {
-        if (!deger) setIlkKullanimUyarisi(true)
-      })
-      .catch(() => {})
   }, [])
-
-  function bulunurlukDegistir(deger: Bulunurluk) {
-    bulunurlukManuelDegisti.current = true
-    setBulunurluk(deger)
-  }
-
-  async function ilkUyariKapat(gizliSecildi: boolean) {
-    if (gizliSecildi) bulunurlukDegistir('gizli')
-    setIlkKullanimUyarisi(false)
-    await AsyncStorage.setItem(uyariAnahtari.current, 'true')
-  }
 
   /**
    * FOTOGRAF: once KAYNAK sorulur (kullanicinin istegi 2026-09-08:
@@ -207,21 +176,6 @@ export default function CheckInEkrani() {
     } finally {
       setGonderiliyor(false)
     }
-  }
-
-  if (ilkKullanimUyarisi) {
-    return (
-      <View style={stiller.kapsayici}>
-        <Text style={stiller.baslik}>{t('checkIn.ilkUyariBaslik')}</Text>
-        <Text style={stiller.uyariMetni}>{t('checkIn.ilkUyariMetin')}</Text>
-        <Pressable style={stiller.buton} onPress={() => ilkUyariKapat(false)}>
-          <Text style={stiller.butonYazi}>{t('checkIn.anladim')}</Text>
-        </Pressable>
-        <Pressable style={stiller.ikincilButon} onPress={() => ilkUyariKapat(true)}>
-          <Text style={stiller.ikincilButonYazi}>{t('checkIn.gizliYap')}</Text>
-        </Pressable>
-      </View>
-    )
   }
 
   return (
@@ -350,13 +304,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },
-  baslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-    marginBottom: bosluk.l,
-  },
   girdi: {
     backgroundColor: renk.yuzey,
     borderWidth: 1,
@@ -397,19 +344,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginBottom: bosluk.m,
   },
   fotoButonuYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metin,
-  },
-  uyariMetni: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    lineHeight: 23,
-    color: renk.metinIkincil,
-    marginBottom: bosluk.xxl,
-  },
-  ikincilButon: { paddingVertical: 14, alignItems: 'center', marginTop: bosluk.m },
-  ikincilButonYazi: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
     color: renk.metin,

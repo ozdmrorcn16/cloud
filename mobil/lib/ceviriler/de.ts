@@ -459,10 +459,6 @@ export default {
   checkIn: {
     baslik: 'Neuer Check-in',
     notYerTutucu: 'Notiz hinzufügen (optional)',
-    ilkUyariBaslik: 'Was teilt dieser Check-in?',
-    ilkUyariMetin: 'Wenn du dich eincheckst, werden der Ort, an dem du bist, und deine Notiz (falls vorhanden) für deine Freunde sichtbar. Er endet von selbst, wenn der Check-in abläuft oder sobald du „Ich bin weg“ sagst. Wenn du willst, kannst du diesen Check-in versteckt machen und nur in deinem eigenen Profil behalten.',
-    anladim: 'Verstanden',
-    gizliYap: 'Versteckt machen',
     arkadasEkle: 'Freunde hinzufügen (optional)',
     arkadasEkleSecili: 'Freunde hinzufügen ({{sayi}} ausgewählt)',
     etiketiKaldir: 'Markierung von {{ad}} entfernen',

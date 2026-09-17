@@ -606,15 +606,10 @@ export default {
   },
 
   // CHECK-IN EKRANI - metinler 2026-09-13'e kadar koda gomuluydu
-  // (i18n turu). Ilk kullanim uyarisi bir aydinlatma metni.
+  // (i18n turu). Ilk kullanim uyarisi 2026-09-18'de kaldirildi.
   checkIn: {
     baslik: 'Yeni check-in',
     notYerTutucu: 'Bir not ekle (opsiyonel)',
-    ilkUyariBaslik: 'Bu check-in ne paylaşıyor?',
-    ilkUyariMetin:
-      'Check-in yaptığında bulunduğun mekan ve varsa yazdığın not arkadaşlarına görünür olur. Check-in süresi dolunca ya da "ayrıldım" dediğin anda kendiliğinden kapanır. İstersen bu check-in’i gizli yaparak sadece kendi profilinde tutabilirsin.',
-    anladim: 'Anladım',
-    gizliYap: 'Gizli yap',
     arkadasEkle: 'Arkadaş ekle (opsiyonel)',
     arkadasEkleSecili: 'Arkadaş ekle ({{sayi}} seçili)',
     etiketiKaldir: '{{ad}} etiketini kaldır',

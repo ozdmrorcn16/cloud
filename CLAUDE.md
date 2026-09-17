@@ -148,6 +148,29 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### CHECK-IN ILK KULLANIM EKRANI KALDIRILDI - 2026-09-18
+
+Kullanicinin istegi (ekran goruntusuyle): "Check-in yapmaya basinca bu
+ekran cikiyor, bunu sil." Hesap basina bir kez gosterilen "Bu check-in
+ne paylasiyor?" bilgilendirme ekrani (Anladim / Gizli yap) KALKTI:
+`src/app/check-in/[mekanId].tsx`ten ekran, AsyncStorage bayragi
+(`ilk-checkin-uyarisi-gosterildi.<kimlik>`) ve `bulunurlukDegistir`
+yolu; 7 sozlukten `checkIn.ilkUyariBaslik/ilkUyariMetin/anladim/gizliYap`.
+
+**KVKK:** aydinlatma kaybolmadi - ayni bilgi gizlilik metninde
+(check-in gorunurlugu, sure, aniya donusme) ve kayitta onaylaniyor.
+Bu ekran onun tekrariydi; "onaylar tek yerde" cizgisiyle uyumlu.
+
+**YAN SONUC - bilerek:** tek bir check-in'i "gizli" yapmanin son
+yolu da bu ekrandi (formda secici yok; ayarlardaki varsayilan satiri
+2026-09-12'de kalkmisti). Artik bulunurluk HER ZAMAN profilin
+varsayilani; paylasimi daraltmanin tek kontrolu "Profilim gizli".
+Sunucu tarafi ('gizli' degeri, eski gizli check-in'lerin anilari)
+DOKUNULMADI - veri modeli ayni, yalnizca giris yolu yok.
+
+Jest 76 paket / 1007 test. Yayin: web `slooin--mqfme60uw0`, OTA grup
+`1500d276-7b6e-4ef3-8ded-e6944804692c`.
+
 ### ARKADAS EKLE DOLU, BEKLEMEDE BASINCA GERI CEKER - 2026-09-17 GECE
 
 Kullanicinin istegi (ekran goruntusuyle): "Arkadaş ekle" DOLU turuncu

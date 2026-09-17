@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import CheckInEkrani from '../../../src/app/check-in/[mekanId]'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap } from '../../../lib/checkin'
@@ -36,9 +35,6 @@ beforeEach(async () => {
   ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
   ;(etiketleriKaydet as jest.Mock).mockResolvedValue(undefined)
-  // Varsayilan olarak ilk kullanim uyarisi daha once gosterilmis kabul edilir;
-  // sadece bunu test eden senaryo bu bayragi acikca temizler.
-  await AsyncStorage.setItem('ilk-checkin-uyarisi-gosterildi.kullanici-1', 'true')
 })
 
 describe('CheckInEkrani', () => {
@@ -188,41 +184,14 @@ describe('CheckInEkrani', () => {
     })
   })
 
-  /*
-   * UYARI HESABA BAGLI (2026-09-13): baska bir hesap ayni telefonda
-   * bayragi kapatmis olsa bile bu hesap uyariyi GORUR. Tek anahtarla
-   * ikinci hesap aydinlatmayi hic gormuyordu.
-   */
-  it('baska hesabin kapattigi uyari bu hesapta yine gorunuyor', async () => {
-    // beforeEach bu hesabin bayragini kapali kuruyor; burada acik olmali.
-    await AsyncStorage.removeItem('ilk-checkin-uyarisi-gosterildi.kullanici-1')
-    await AsyncStorage.setItem('ilk-checkin-uyarisi-gosterildi', 'true')
-    await AsyncStorage.setItem('ilk-checkin-uyarisi-gosterildi.baska-kisi', 'true')
-    ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
-
+  // "Bu check-in ne paylasiyor?" ilk kullanim ekrani KALDIRILDI
+  // (kullanicinin istegi 2026-09-18): form dogrudan aciliyor, hicbir
+  // AsyncStorage bayragi okunmuyor.
+  it('ilk kullanim ekrani yok: form dogrudan acilir', async () => {
     await render(<CheckInEkrani />)
-    await waitFor(() => {
-      expect(screen.getByText('Bu check-in ne paylaşıyor?')).toBeTruthy()
-    })
-  })
-
-  it('ilk check-in uyarisini gosterir ve oradan gizliye cevrilebilir', async () => {
-    await AsyncStorage.removeItem('ilk-checkin-uyarisi-gosterildi.kullanici-1')
-    ;(varsayilanBulunurluguGetir as jest.Mock).mockResolvedValue('herkese_acik')
-    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1' })
-
-    await render(<CheckInEkrani />)
-    await waitFor(() => {
-      expect(screen.getByText('Bu check-in ne paylaşıyor?')).toBeTruthy()
-    })
-    await fireEvent.press(screen.getByText('Gizli yap'))
-    await fireEvent.press(screen.getByText('Check-in yap'))
-
-    await waitFor(() => {
-      expect(checkInYap).toHaveBeenCalledWith(
-        'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli'
-      )
-    })
+    expect(await screen.findByText('Check-in yap')).toBeTruthy()
+    expect(screen.queryByText('Bu check-in ne paylaşıyor?')).toBeNull()
+    expect(screen.queryByText('Gizli yap')).toBeNull()
   })
 })
 

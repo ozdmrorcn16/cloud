@@ -252,7 +252,13 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-17 gece, YAYINDA - web `slooin--gc6zljnv9g`,
+**Son bitirilen is (2026-09-18, YAYINDA - web `slooin--mqfme60uw0`, OTA grup
+`1500d276-7b6e-4ef3-8ded-e6944804692c`):** check-in formundan once cikan
+"Bu check-in ne paylasiyor?" bilgilendirme ekrani kaldirildi (aydinlatma
+gizlilik metninde duruyor). Yan sonuc: tek check-in'i gizli yapma yolu
+kalmadi, bulunurluk hep profil varsayilani.
+
+**Bir onceki (2026-09-17 gece, web `slooin--gc6zljnv9g`,
 OTA grup `ed4fc26c-486c-436d-bfa8-f58a4d111d4a`):** baskasinin profilinde
 "Arkadaş ekle" dolu turuncu; istek gidince ayni dugme "Beklemede", tekrar
 basinca onay penceresi ("Arkadaşlık isteğini geri çekmek istiyor musun?")
