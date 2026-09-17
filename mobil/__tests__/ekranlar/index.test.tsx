@@ -492,6 +492,15 @@ describe('AnaSayfa', () => {
     expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
+  it('fotograf kabi kartin alt dolgusunu geri alir - altinda bos serit yok (2026-09-18)', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ fotografUrl: 'https://imzali/foto.jpg' })])
+    await render(<AnaSayfa />)
+    const kap = await screen.findByTestId('akis-fotografi')
+    const stil = StyleSheet.flatten(typeof kap.props.style === 'function' ? kap.props.style({ pressed: false }) : kap.props.style)
+    expect(stil.marginBottom).toBeLessThan(0)
+    expect(stil.marginHorizontal).toBeLessThan(0)
+  })
+
   it('fotograf hem kartta hem tam ekranda YAKINLASTIRILABILIR', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ fotografUrl: 'https://imzali/1.jpg' })])
     await render(<AnaSayfa />)

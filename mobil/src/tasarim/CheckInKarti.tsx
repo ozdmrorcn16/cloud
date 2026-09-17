@@ -781,6 +781,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   fotografKabi: {
     marginHorizontal: -bosluk.l,
     marginTop: bosluk.m,
+    // ALTTA DA KENARA YAPISIK (kullanicinin istegi 2026-09-18: "altinda
+    // cok az bos yer kaliyor, o bosluk kalmasin"). Fotograf kartin son
+    // ogesi; kartin alt dolgusunu geri aliyor, ayirici cizgi fotografin
+    // hemen altinda.
+    marginBottom: -bosluk.m,
   },
   fotograf: {
     // Kose yuvarlamasi YOK: kenara yapisan bir gorselde yuvarlak kose,

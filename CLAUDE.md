@@ -148,6 +148,16 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### AKIS KARTI: FOTOGRAF ALTTA DA KENARA YAPISIK - 2026-09-18
+
+Kullanicinin bildirimi: "fotograflarin altinda cok az bos yer kaliyor".
+Fotograf kartin son ogesi ama kartin `paddingVertical` alt dolgusu
+altinda ince beyaz serit birakiyordu. `fotografKabi`ye `marginBottom:
+-bosluk.m` (yanlardaki negatif payin alt kardesi); ayirici cizgi artik
+fotografin hemen altinda. Test: ana sayfa "fotograf kabi kartin alt
+dolgusunu geri alir". Ayni kart profil ve baskasinin profilinde de
+kullanildigi icin uc ekran birden.
+
 ### BAGLANTI DOGRUDAN UYGULAMAYA + PAYLASIM KALKANI - 2026-09-18 GECE
 
 **1. Paylasim kalkani.** Kullanicinin bildirimi: iOS paylasim sayfasini
