@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi } from '../../lib/zaman'
-import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
 import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPenceresi'
@@ -20,6 +20,8 @@ import {
   YakinlastirilabilirTamEkran,
 } from './YakinlastirilabilirGorsel'
 import { FotografAltyazisi } from './FotografAltyazisi'
+import { Avatar } from './Avatar'
+import Svg, { Path, Circle } from 'react-native-svg'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -228,59 +230,28 @@ export function CheckInKarti({
           )}
         </Pressable>
 
-        {/* TEK SATIR: ad - MEKAN (turuncu) - etiketlenenler.
-            2026-09-07'de mekan adi bir alt satira, ikincil metin tonuna
-            indirilmisti (hiyerarsi gerekcesiyle); kullanici AYNI GUN geri
-            aldirdi: "konumlar ismin yaninda yine turuncu gorunsun".
-            Mekan adinin turuncu ve adin yaninda olmasi bir tercih degil,
-            verilmis bir karar.
-
-            Ayni denetimden gelen TEK sey korundu: adin altindaki tekrar
-            eden tam tarih ("06.09.2026 22:54") kaldirilmisti ve
-            kaldirilmis kaliyor - sagdaki gorece zamanla ayni bilgiyi iki
-            ayri bicimde soyluyordu. */}
+        {/* REFERANS DUZENI (kullanicinin gorseli 2026-09-18): avatar
+            solda; sagda KULLANICI ADI, altinda gorece zaman (ya da
+            "su an burada"); uc nokta sag ustte. Mekan adi bir alt
+            satirda igne ikonuyla, turuncu (marka tonu). Etiketler
+            "Birlikte" satirinda YALNIZCA avatar olarak - ad yazmiyor,
+            avatara basinca profil aciliyor (kullanicinin karari). */}
         <View style={stiller.orta}>
-          <Text style={stiller.satir}>
-            <Text
-              style={stiller.kullaniciAdi}
-              onPress={() => router.push(kisiYolu as never)}
-            >
-              {gosterilenAd}
-            </Text>
-            <Text style={stiller.ayirac}> - </Text>
-            <Text
-              style={stiller.mekanAdi}
-              // Mekan adi KONUM EKRANINI aciyor (kullanicinin karari
-              // 2026-08-30). Onceden yeni check-in formunu aciyordu;
-              // konum etiketine basan kisi orayi gormek istiyor, oraya
-              // check-in yapmak degil.
-              //
-              // 2026-09-04'ten beri haritanin TEK kapisi bu; kartin kok
-              // Pressable'i kaldirildigi icin erisilebilirlik etiketi de
-              // buraya tasindi.
-              accessibilityRole="link"
-              accessibilityLabel={t('anaSayfa.haritadaGor', { ad: oge.mekanAdi })}
-              onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
-            >
-              {oge.mekanAdi}
-            </Text>
-            {oge.etiketler.length > 0 && (
-              <>
-                <Text style={stiller.ayirac}> - </Text>
-                {oge.etiketler.map((etiket, sira) => (
-                  <Text key={etiket.kullaniciId}>
-                    {sira > 0 ? <Text style={stiller.ayirac}>, </Text> : null}
-                    <Text
-                      style={stiller.etiket}
-                      onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
-                    >
-                      {etiket.ad ?? ''}
-                    </Text>
-                  </Text>
-                ))}
-              </>
-            )}
+          <Text
+            style={stiller.kullaniciAdi}
+            numberOfLines={1}
+            onPress={() => router.push(kisiYolu as never)}
+          >
+            {gosterilenAd}
           </Text>
+          {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
+            <View style={stiller.canliSatir}>
+              <View style={stiller.canliNokta} />
+              <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
+            </View>
+          ) : (
+            <Text style={stiller.zaman}>{zamanYazisi}</Text>
+          )}
         </View>
 
         {menuVar && (
@@ -294,19 +265,48 @@ export function CheckInKarti({
             <UcNoktaIkonu />
           </Pressable>
         )}
-
-        {/* "Şu an burada" yalnizca canlilik penceresinde (30 dk); sonra
-            gorece zaman. Turuncunun mesru kullanimi: "su an oluyor".
-            Yalnizca nokta yetmiyor - renk tek basina anlam tasimamali. */}
-        {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
-          <View style={stiller.canliRozet}>
-            <View style={stiller.canliNokta} />
-            <Text style={stiller.canliYazi}>{t('anaSayfa.suAnBurada')}</Text>
-          </View>
-        ) : (
-          <Text style={stiller.zaman}>{zamanYazisi}</Text>
-        )}
       </View>
+
+      {/* MEKAN SATIRI: igne + ad, turuncu ve basilabilir. Mekan adi
+          KONUM EKRANINI aciyor (kullanicinin karari 2026-08-30) - haritanin
+          tek kapisi bu. */}
+      <View style={stiller.mekanSatiri}>
+        {/* Dokunma hedefi yazi kadar (satirin bos sagina basmak bir sey
+            acmaz); uzun ad tek satirda kirpilir. */}
+        <Pressable
+          style={stiller.mekanDugmesi}
+          accessibilityRole="link"
+          accessibilityLabel={t('anaSayfa.haritadaGor', { ad: oge.mekanAdi })}
+          onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
+          hitSlop={4}
+        >
+          <MekanIgnesi />
+          <Text style={stiller.mekanAdi} numberOfLines={1}>{oge.mekanAdi}</Text>
+        </Pressable>
+      </View>
+
+      {oge.etiketler.length > 0 && (
+        <View style={stiller.birlikteSatiri} testID="birlikte-satiri">
+          <Text style={stiller.birlikteEtiket}>{t('anaSayfa.birlikte')}</Text>
+          {oge.etiketler.map((etiket) => (
+            <Pressable
+              key={etiket.kullaniciId}
+              onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+              accessibilityRole="button"
+              accessibilityLabel={etiket.ad ?? ''}
+              hitSlop={4}
+              testID={`birlikte-${etiket.kullaniciId}`}
+            >
+              <Avatar
+                fotografUrl={etiket.avatarUrl}
+                ad={etiket.ad}
+                kullaniciAdi={etiket.ad ?? ''}
+                cap={ETIKET_AVATAR_CAPI}
+              />
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       {/* NOT ONCE, FOTOGRAF ALTINDA (kullanicinin istegi 2026-08-30). */}
       {duzenleAcik ? (
@@ -428,6 +428,34 @@ export function CheckInKarti({
         oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>
       )}
 
+      {oge.fotografUrl && (
+        <Pressable
+          testID="akis-fotografi"
+          onPress={() => (onFotografAc ? onFotografAc() : setBuyukAcik(true))}
+          accessibilityRole="button"
+          accessibilityLabel={t('anaSayfa.fotografiBuyut')}
+          // NEGATIF PAY SARMALAYICIDA, gorselde DEGIL. Gorselde
+          // oldugunda `Pressable` kartin ic genisliginde kaliyor ve
+          // gorsel yalnizca SOLA tasiyordu; sagda kartin dolgusu kadar
+          // (16 px) beyaz bir serit kaliyordu - kullanicinin bildirdigi
+          // kusur (2026-09-08).
+          style={stiller.fotografKabi}
+        >
+          {/* KART ICINDE DE ZOOM (kullanicinin istegi 2026-09-08: "tam
+              ekran acilmadan da zoom yapma ekle"). Parmak kalkinca 1x'e
+              donuyor - kart sabit yukseklikte ve listenin icinde, kalici
+              zoom komsu kartlarin uzerine tasardi.
+
+              TEK DOKUNUS hala tam ekrani aciyor: `Pressable` disarida,
+              hareketler icerideki katmanda. */}
+          <YakinlastirilabilirGorsel
+            uri={oge.fotografUrl}
+            stil={stiller.fotograf}
+            birakincaSifirla
+          />
+        </Pressable>
+      )}
+
       {/* EYLEM SATIRI FOTOGRAFIN USTUNDE (kullanicinin karari
           2026-09-02, "A" duzeni). Onceden fotografin ALTINDAYDI; harita
           ekran goruntusu gibi uzun bir gorselde kart ekrani tasiyor ve
@@ -470,7 +498,7 @@ export function CheckInKarti({
           </Pressable>
 
           <Pressable
-            style={stiller.eylem}
+            style={[stiller.eylem, stiller.eylemSag]}
             onPress={() => onPaylas?.(oge.id)}
             accessibilityRole="button"
             accessibilityLabel={t('etkilesim.paylas')}
@@ -479,34 +507,6 @@ export function CheckInKarti({
             <PaylasIkonu />
           </Pressable>
         </View>
-      )}
-
-      {oge.fotografUrl && (
-        <Pressable
-          testID="akis-fotografi"
-          onPress={() => (onFotografAc ? onFotografAc() : setBuyukAcik(true))}
-          accessibilityRole="button"
-          accessibilityLabel={t('anaSayfa.fotografiBuyut')}
-          // NEGATIF PAY SARMALAYICIDA, gorselde DEGIL. Gorselde
-          // oldugunda `Pressable` kartin ic genisliginde kaliyor ve
-          // gorsel yalnizca SOLA tasiyordu; sagda kartin dolgusu kadar
-          // (16 px) beyaz bir serit kaliyordu - kullanicinin bildirdigi
-          // kusur (2026-09-08).
-          style={stiller.fotografKabi}
-        >
-          {/* KART ICINDE DE ZOOM (kullanicinin istegi 2026-09-08: "tam
-              ekran acilmadan da zoom yapma ekle"). Parmak kalkinca 1x'e
-              donuyor - kart sabit yukseklikte ve listenin icinde, kalici
-              zoom komsu kartlarin uzerine tasardi.
-
-              TEK DOKUNUS hala tam ekrani aciyor: `Pressable` disarida,
-              hareketler icerideki katmanda. */}
-          <YakinlastirilabilirGorsel
-            uri={oge.fotografUrl}
-            stil={stiller.fotograf}
-            birakincaSifirla
-          />
-        </Pressable>
       )}
 
       {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
@@ -617,7 +617,20 @@ export function CheckInKarti({
   )
 }
 
-const AVATAR_CAPI = 40
+const AVATAR_CAPI = 52
+/** "Birlikte" satirindaki etiket avatarlari. */
+const ETIKET_AVATAR_CAPI = 36
+
+/** Mekan satirindaki turuncu dolu igne (referans). */
+function MekanIgnesi() {
+  const renk = useRenk()
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" fill={renk.turuncu} />
+      <Circle cx={12} cy={10} r={2.6} fill="#FFFFFF" />
+    </Svg>
+  )
+}
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   // YERINDE DUZENLEME (kullanicinin istegi 2026-09-05). Ayri bir
@@ -682,14 +695,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemler: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: bosluk.xl,
+    gap: bosluk.xxl,
     marginTop: bosluk.m,
   },
-  eylem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  eylem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Paylas sag uca (referans).
+  eylemSag: { marginLeft: 'auto' },
   sayac: {
     fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
+    fontSize: olcek.govde,
+    color: renk.metin,
   },
   buyukZemin: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' },
   // × SOLDA (kullanicinin istegi 2026-09-18: butun buyuk gorunumlerde ayni yer; gezginle ayni).
@@ -699,17 +714,47 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
-    // YANLARDAN SINIR YOK (kullanicinin istegi 2026-09-02). Kart artik
-    // ekranin tam genisliginde: yuvarlak kose ve golge kalkti, cunku
-    // ikisi de kartin kenarini gorunur kiliyordu. Kartlari birbirinden
-    // ayiran tek sey alttaki ince cizgi - Instagram akisindaki desen.
+    // REFERANS KARTI (2026-09-18): yuvarlak koseli, kenardan payli,
+    // ince cerceveli beyaz kart. 2026-09-02'nin "tam genislik, yalnizca
+    // alt cizgi" duzeni bu referansla degisti. Beyaz zeminde karti
+    // gorunur kilan cerceve + hafif golge (2026-08-27 notu).
     backgroundColor: renk.yuzey,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    marginHorizontal: bosluk.sayfa,
+    marginTop: bosluk.m,
     paddingHorizontal: bosluk.l,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
+    paddingVertical: bosluk.l,
+    ...golge.kart,
   },
   kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  mekanSatiri: {
+    flexDirection: 'row',
+    // Avatar sutununun yanindan baslar (referans: igne adin altinda).
+    marginLeft: AVATAR_CAPI + bosluk.m - 4,
+    marginTop: bosluk.s,
+  },
+  mekanDugmesi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 1,
+    maxWidth: '100%',
+  },
+  birlikteSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.s,
+    marginTop: bosluk.m,
+    flexWrap: 'wrap',
+  },
+  birlikteEtiket: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    color: renk.metinIkincil,
+    marginRight: bosluk.xs,
+  },
 
   avatar: {
     width: AVATAR_CAPI,
@@ -728,39 +773,35 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   orta: { flex: 1 },
-  satir: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    lineHeight: 21,
+  kullaniciAdi: {
+    fontFamily: yazi.ekranBasligi,
+    fontSize: olcek.govde + 3,
     color: renk.metin,
+    letterSpacing: -0.2,
   },
-  kullaniciAdi: { fontFamily: yazi.govdeKalin, color: renk.metin },
-  ayirac: { color: renk.metinSoluk },
   // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
   // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
-  mekanAdi: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
-  etiket: { fontFamily: yazi.govdeOrta, color: renk.metin },
+  mekanAdi: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.govde + 2,
+    color: renk.turuncuYazi,
+    flexShrink: 1,
+  },
 
   silDugmesi: { padding: 4, marginRight: 2 },
 
   zaman: {
     fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    color: renk.metinSoluk,
+    fontSize: olcek.kucuk + 1,
+    color: renk.metinIkincil,
+    marginTop: 2,
   },
-  canliRozet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: renk.turuncuZemin,
-    borderRadius: yuvarlak.hap,
-    paddingHorizontal: bosluk.s,
-    paddingVertical: 4,
-  },
+  // "Su an burada" adin altinda, zamanin yerinde: turuncu nokta + yazi.
+  canliSatir: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
   canliNokta: { width: 7, height: 7, borderRadius: 4, backgroundColor: renk.turuncu },
   canliYazi: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.minik,
+    fontSize: olcek.kucuk + 1,
     color: renk.turuncuYazi,
   },
 
@@ -779,20 +820,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Pay SARMALAYICIDA: gorselde oldugunda `Pressable` kartin ic
   // genisliginde kaliyor ve gorsel yalnizca sola tasiyor, sagda 16 px
   // beyaz serit kaliyordu.
+  // REFERANS (2026-09-18): fotograf kartin ICINDE, yuvarlak koseli ve
+  // YATAY sabit oranli (16:7) - akista referanstaki boyutta gorunur;
+  // basilinca acilan buyuk gorunum fotografi KENDI oraninda gosterir
+  // (`contain`). 2026-09-02/18'in kenara yapisik tam genislik deseni bu
+  // referansla degisti.
   fotografKabi: {
-    marginHorizontal: -bosluk.l,
     marginTop: bosluk.m,
-    // ALTTA DA KENARA YAPISIK (kullanicinin istegi 2026-09-18: "altinda
-    // cok az bos yer kaliyor, o bosluk kalmasin"). Fotograf kartin son
-    // ogesi; kartin alt dolgusunu geri aliyor, ayirici cizgi fotografin
-    // hemen altinda.
-    marginBottom: -bosluk.m,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   fotograf: {
-    // Kose yuvarlamasi YOK: kenara yapisan bir gorselde yuvarlak kose,
-    // altindaki beyazi ucgen parcalar halinde gosteriyor.
     width: '100%',
-    aspectRatio: 4 / 5,
+    aspectRatio: 16 / 7,
     backgroundColor: renk.cizgi,
   },
 })

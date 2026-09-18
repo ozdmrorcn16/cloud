@@ -1438,6 +1438,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
 
 
+  // Kart artik kendi yan payini tasiyor (referans duzeni 2026-09-18);
+  // sayfanin yan dolgusu geri aliniyor ki pay ikiye katlanmasin.
   aniListesi: { marginHorizontal: -bosluk.sayfa },
 
   yerOrta: { flex: 1 },

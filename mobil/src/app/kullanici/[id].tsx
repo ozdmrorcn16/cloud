@@ -1096,6 +1096,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   /* Kartlar sayfa payinin disinda, ana sayfadaki gibi tam genislikte. */
+  // Kart artik kendi yan payini tasiyor (referans duzeni 2026-09-18);
+  // sayfanin yan dolgusu geri aliniyor ki pay ikiye katlanmasin.
   aniListesi: { marginHorizontal: -bosluk.sayfa },
 
 })

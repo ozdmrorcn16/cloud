@@ -172,6 +172,36 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### AKIS KARTI REFERANS DUZENINE GECTI; "BIRLIKTE" YALNIZCA AVATAR - 2026-09-18 GECE
+
+Kullanicinin referans gorseli: "ana sayfa paylasim akisi ayni bu
+duzene gore olacak; Birlikte yazan kismin yaninda etiketlenen kisiler,
+ama kullanici adlari yazmayacak, sadece profil resimleri; basinca
+profiline gidilecek" + "fotograflar akista referanstaki boyutta, buyuk
+acilinca kendi boyutunda". `CheckInKarti` (uc ekranda ortak) yeniden:
+- Kart: yuvarlak (20) + ince cerceve + hafif golge, yanlardan
+  `bosluk.sayfa` payli. Avatar 52; sagda kullanici adi (kalin 18),
+  altinda gorece zaman ya da "su an burada" (nokta + turuncu yazi);
+  uc nokta sag ustte. Mekan adi bir alt satirda dolu turuncu igne ile
+  (`MekanIgnesi`), turuncu marka tonu, tek satir kirpilir; dokunma
+  hedefi yazi kadar (`mekanDugmesi` flexShrink + maxWidth).
+- "Birlikte" satiri: etiket gruplari 36'lik `Avatar` (ad YAZMAZ), her
+  biri `/kullanici/<id>` (testID `birlikte-<id>`). `Etiket` tipine
+  `avatarUrl` girdi: `etiketleriGetir` `profiller(ad, fotograflar)`
+  cekip kisi basina bir kez imzaliyor.
+- Fotograf kartin ICINDE, yuvarlak (14), **16:7 yatay** sabit oran
+  (referans olcusu); buyuk gorunum zaten `contain` - kendi oraninda.
+- Eylem satiri fotografin ALTINDA, paylas sagda (marginLeft auto);
+  sayilar govde boyunda koyu.
+GERI ALINAN ESKI KARARLAR (referansla): 2026-09-02 "tam genislik,
+yalnizca alt cizgi" karti ve "eylemler fotografin ustunde (A)";
+2026-09-08/18 kenara yapisik 4:5 fotograf. Sebep: yeni referans;
+eylemler artik 16:7 ile her zaman gorunur. Profil listelerinin
+`aniListesi: -bosluk.sayfa` payi duruyor (kart kendi payini tasiyor).
+Sozluk `anaSayfa.birlikte` 7 dil. Goruntu `tasarim/akis-referans.png`.
+Jest 77 paket / 1039 test. Yayin: web guncel, OTA grup
+`27c8511f-24c7-4d5d-9e4b-c399c76a51ca`.
+
 ### SIKAYET AKISI REFERANS TASARIMA GORE - 2026-09-18 GECE
 
 Kullanicinin referans gorseli ("bu iki ekranin aynisini yap, hicbir

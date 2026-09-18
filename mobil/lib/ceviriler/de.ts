@@ -246,6 +246,7 @@ export default {
     silinmisKullanici: 'Gelöschter Nutzer',
   },
   anaSayfa: {
+    birlikte: 'Mit',
     aramaYerTutucu: 'Suchen',
     suAnDisarida: 'Gerade unterwegs',
     disaridaSayi: '{{sayi}} Personen',

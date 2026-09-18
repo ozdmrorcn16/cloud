@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { profilFotografiUrl } from './fotograf-url'
 
 /**
  * CHECK-IN'DE ARKADAS ETIKETLEME.
@@ -24,6 +25,13 @@ export type Etiket = {
   kullaniciId: string
   /** Etiketlenen kisinin adi; profiller'den okunuyor. */
   ad: string | null
+  /**
+   * Profil fotografi (imzali adres) - akis kartindaki "Birlikte"
+   * satiri yalnizca avatar gosteriyor (kullanicinin karari 2026-09-18:
+   * "kullanici adlari yazmayacak, sadece profil resimleri"). Yoksa
+   * bas harf cizilir.
+   */
+  avatarUrl: string | null
 }
 
 /** Bildirim ekranindaki bekleyen etiket istegi. */
@@ -36,10 +44,11 @@ export type BekleyenEtiket = {
   olusturuldu: string
 }
 
+type EtiketProfili = { ad: string; fotograflar: string[] | null }
 type EtiketSatiri = {
   check_in_id: string
   kullanici_id: string
-  profiller: { ad: string } | { ad: string }[] | null
+  profiller: EtiketProfili | EtiketProfili[] | null
 }
 
 /**
@@ -58,17 +67,30 @@ export async function etiketleriGetir(
   // istedigimiz sey ise yalnizca onaylanmis olan.
   const { data, error } = await supabase
     .from('check_in_etiketleri')
-    .select('check_in_id, kullanici_id, profiller(ad)')
+    .select('check_in_id, kullanici_id, profiller(ad, fotograflar)')
     .in('check_in_id', checkInIdler)
     .eq('durum', 'onaylandi')
   if (error) throw new Error(hataMetni(error))
 
   const gruplar: Record<string, Etiket[]> = {}
+  // Avatar adresleri kisi basina BIR kez imzalaniyor - ayni kisi bircok
+  // check-in'de etiketli olabilir.
+  const avatarlar: Record<string, Promise<string | null>> = {}
   for (const satir of (data ?? []) as unknown as EtiketSatiri[]) {
     const profil = Array.isArray(satir.profiller) ? satir.profiller[0] : satir.profiller
+    const yol = profil?.fotograflar?.[0] ?? null
+    if (yol && !(satir.kullanici_id in avatarlar)) {
+      avatarlar[satir.kullanici_id] = profilFotografiUrl(yol).catch(() => null)
+    }
     const liste = gruplar[satir.check_in_id] ?? []
-    liste.push({ kullaniciId: satir.kullanici_id, ad: profil?.ad ?? null })
+    liste.push({ kullaniciId: satir.kullanici_id, ad: profil?.ad ?? null, avatarUrl: null })
     gruplar[satir.check_in_id] = liste
+  }
+  const cozulen = Object.fromEntries(
+    await Promise.all(Object.entries(avatarlar).map(async ([id, p]) => [id, await p] as const))
+  )
+  for (const liste of Object.values(gruplar)) {
+    for (const e of liste) e.avatarUrl = cozulen[e.kullaniciId] ?? null
   }
   return gruplar
 }

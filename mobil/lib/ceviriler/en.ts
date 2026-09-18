@@ -252,6 +252,7 @@ export default {
     silinmisKullanici: 'Deleted user',
   },
   anaSayfa: {
+    birlikte: 'With',
     aramaYerTutucu: 'Search',
     suAnDisarida: 'Out right now',
     disaridaSayi: '{{sayi}} people',

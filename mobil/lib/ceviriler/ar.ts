@@ -246,6 +246,7 @@ export default {
     silinmisKullanici: 'مستخدم محذوف',
   },
   anaSayfa: {
+    birlikte: 'مع',
     aramaYerTutucu: 'بحث',
     suAnDisarida: 'بالخارج الآن',
     disaridaSayi: '{{sayi}} أشخاص',

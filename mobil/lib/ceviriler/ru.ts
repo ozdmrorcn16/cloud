@@ -246,6 +246,7 @@ export default {
     silinmisKullanici: 'Удалённый пользователь',
   },
   anaSayfa: {
+    birlikte: 'Вместе с',
     aramaYerTutucu: 'Поиск',
     suAnDisarida: 'Сейчас на месте',
     disaridaSayi: '{{sayi}} чел.',
