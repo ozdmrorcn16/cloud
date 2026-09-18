@@ -916,7 +916,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   icerik: {
-    paddingHorizontal: bosluk.sayfa,
+    // Yan pay 8: akis kartiyla ayni hiza (kullanicinin istegi 2026-09-18).
+    paddingHorizontal: bosluk.s,
     paddingBottom: ALT_GEZINME_PAYI,
   },
 
@@ -1098,7 +1099,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   /* Kartlar sayfa payinin disinda, ana sayfadaki gibi tam genislikte. */
   // Kart artik kendi yan payini tasiyor (referans duzeni 2026-09-18);
   // sayfanin yan dolgusu geri aliniyor ki pay ikiye katlanmasin.
-  aniListesi: { marginHorizontal: -bosluk.sayfa },
+  aniListesi: { marginHorizontal: -bosluk.s },
 
 })
 

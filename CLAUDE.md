@@ -201,6 +201,11 @@ commit'te; davranis ayni).
   onaylanana kadar gorunmez, tahmin edilmiyor). Profil ekranina da
   `onEtiketEkle` baglandi (eksikti; dugme oradaki duzenlemede de var).
   OTA grup `8420667c-722a-4249-8dd4-66214df6a0ee`.
+- **Profil ust blogu kartla ayni hizada (ayni gece, kullanicinin
+  istegi "ust kisimlari alttaki sutunlara orantila"):** iki profil
+  ekraninda `icerik.paddingHorizontal` 16 -> 8 (`bosluk.s`),
+  `izgara`/`aniListesi` negatif paylari da -8. Goruntu
+  `tasarim/profil-hiza.png`. OTA grup `7cb67fff-470f-4de6-978c-fb54d9dc967d`.
 
 ### AKIS KARTI REFERANS DUZENINE GECTI; "BIRLIKTE" YALNIZCA AVATAR - 2026-09-18 GECE
 

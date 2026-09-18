@@ -1175,7 +1175,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   sayfa: { flex: 1 },
   icerik: {
-    paddingHorizontal: bosluk.sayfa,
+    // YAN PAY 8 (kullanicinin istegi 2026-09-18: "ust kisimlari alttaki
+    // sutunlara orantila" - akis karti 8 px payli, ust blok da ayni
+    // hizada olsun diye sayfa payi 16 -> 8).
+    paddingHorizontal: bosluk.s,
     // Ust pay 44 -> 16 (kullanicinin istegi 2026-08-29: "biraz daha
     // kucultup yukari tasi"). Durum cubugunun altindaki bosluk
     // gereginden genisti.
@@ -1445,7 +1448,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // Sayfa payi `bosluk.sayfa` (16); eskiden `xl` (24) yaziyordu ve
     // 2026-09-06'da pay 16'ya inince izgara her iki yandan 8 px
     // tasiyordu (2026-09-13'te fark edildi).
-    marginHorizontal: -bosluk.sayfa,
+    marginHorizontal: -bosluk.s,
   },
   izgaraHucre: { width: '33.333%', aspectRatio: 1, padding: 1 },
   izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
@@ -1453,7 +1456,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   // Kart artik kendi yan payini tasiyor (referans duzeni 2026-09-18);
   // sayfanin yan dolgusu geri aliniyor ki pay ikiye katlanmasin.
-  aniListesi: { marginHorizontal: -bosluk.sayfa },
+  aniListesi: { marginHorizontal: -bosluk.s },
 
   yerOrta: { flex: 1 },
   yerAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
