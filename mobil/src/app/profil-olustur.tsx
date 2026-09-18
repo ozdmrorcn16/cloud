@@ -81,9 +81,9 @@ export default function ProfilOlusturEkrani() {
   // OTURDUGUN BOLGE (kullanicinin istegi 2026-09-18): ulke -> il -> ilce,
   // ZORUNLU. Il/ilce yalnizca Turkiye'de (liste `public.ilceler`, OSM
   // poligonlarindan); baska ulkede yalnizca ulke kaydedilir, serbest
-  // metin YOK (2026-09-11 kurali). Ulke varsayilani Turkiye. Profilde
-  // VARSAYILAN GIZLI (`bolge_gizli` true); ayarlardan acilinca il/ilce
-  // gorunur, ulke hicbir zaman gorunmez.
+  // metin YOK (2026-09-11 kurali). Ulke varsayilani Turkiye. HICBIR
+  // PROFILDE GOSTERILMEZ, gizleme ayari yok (2026-09-18 aksam karari):
+  // secim yalnizca hesapla birlikte saklanir; tek giris noktasi bu adim.
   const [ulke, setUlke] = useState<string>(TURKIYE)
   const [il, setIl] = useState<string | null>(null)
   const [ilce, setIlce] = useState<string | null>(null)
@@ -543,9 +543,7 @@ export default function ProfilOlusturEkrani() {
             )}
             {alanHatalari.bolge ? (
               <Text style={stiller.alanHatasi}>{alanHatalari.bolge}</Text>
-            ) : (
-              <Text style={stiller.ipucu}>{t('profilOlustur.bolgeIpucu')}</Text>
-            )}
+            ) : null}
           </>
         )}
 

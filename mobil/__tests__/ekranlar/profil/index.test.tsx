@@ -225,11 +225,10 @@ describe('ProfilEkrani', () => {
   })
 
   /*
-   * YASADIGI BOLGE (kullanicinin istegi 2026-09-11): "secerse
-   * profilinde biyografi kisimlarinin orada gorunur". Opsiyonel -
-   * secilmemisse satir HIC cizilmiyor.
+   * OTURDUGU BOLGE PROFILDE GOSTERILMEZ (kullanicinin karari 2026-09-18
+   * aksam). Kayitta deger olsa bile satir cizilmez.
    */
-  it('bolge secilmisse biyografinin altinda gosteriliyor', async () => {
+  it('bolge kayitta olsa bile profilde cizilmiyor', async () => {
     ;(kendiProfilimiGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-1',
       kullaniciAdi: 'orcun',
@@ -242,16 +241,10 @@ describe('ProfilEkrani', () => {
     })
 
     await render(<ProfilEkrani />)
-
-    expect(await screen.findByTestId('profil-bolgesi')).toBeTruthy()
-    expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy()
-  })
-
-  it('bolge secilmemisse satir hic cizilmiyor', async () => {
-    await render(<ProfilEkrani />)
     await screen.findByText('@orcun')
 
     expect(screen.queryByTestId('profil-bolgesi')).toBeNull()
+    expect(screen.queryByText('Nilüfer, Bursa')).toBeNull()
   })
 
   it('instagram yoksa satir hic cizilmiyor', async () => {

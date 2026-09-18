@@ -13,7 +13,7 @@ const en: HukukiMetin = {
       baslik: '1. Which of your data we process',
       paragraflar: [
         'Your e-mail address - today the PRIMARY identifier of your account. It is used when you sign up and sign in, and the verification code is sent there.',
-        "Where you live: country, and in Türkiye also province and district. Asked when you create your account; never read from your device, you choose it yourself. Your province and district appear on your profile only if you turn on \"Show my region on profile\" in settings; your country is never shown.",
+        "Where you live: country, and in Türkiye also province and district. Asked when you create your account; never read from your device, you choose it yourself. It is never shown on your profile or anywhere else in the app and never passed to other users; it is only stored with your account and included in your \"Download my data\" file. Purpose: knowing in which regions to develop the service.",
         'Your name, username, date of birth, bio and profile photos.',
         'Your location - in three different ways: when you search for a place or add a place, your device location is sent to the server but not stored; while a check-in is active your coordinates are stored; when the check-in turns into a memory (after 1 hour or as soon as you tap "I left") the coordinates are deleted and only the place you were at remains (full details below, in section 3).',
         'The content of the messages you send and receive.',

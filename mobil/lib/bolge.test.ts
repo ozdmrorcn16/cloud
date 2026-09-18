@@ -1,27 +1,22 @@
-import { bolgeMetni } from './bolge'
+import { ulkeleriGetir, ulkeAdi, TURKIYE } from './bolge'
 
 /**
- * "YASADIGIN BOLGE" profilde tek satirda gorunuyor.
- *
- * IKISI BIRDEN ya da HICBIRI: yalnizca ilce secilmis bir profil
- * anlamsiz olurdu ("Nilüfer" hangi ilde?). Kural sunucuda bir CHECK
- * kisitiyla da zorlaniyor; buradaki fonksiyon ayni kurali GOSTERIM
- * tarafinda uyguluyor - eksik veri gelirse satiri hic cizmiyor.
+ * `bolgeMetni` KALDIRILDI (kullanicinin karari 2026-09-18 aksam): bolge
+ * hicbir profilde gosterilmiyor, yalnizca hesap olusturmada seciliyor.
+ * Geriye ulke listesi kaldi; o listenin iki kurali burada kilitli.
  */
-describe('bolgeMetni', () => {
-  it('ilce ve ili birlestiriyor', () => {
-    expect(bolgeMetni('Bursa', 'Nilüfer')).toBe('Nilüfer, Bursa')
+describe('ulkeleriGetir', () => {
+  it('Turkiye listenin basinda, kalanlar alfabetik', () => {
+    const liste = ulkeleriGetir('tr')
+    expect(liste[0].kod).toBe(TURKIYE)
+    const kalan = liste.slice(1).map((u) => u.ad)
+    expect(kalan).toEqual([...kalan].sort((a, b) => a.localeCompare(b, 'tr')))
   })
 
-  it('ilce yoksa satir cizilmiyor', () => {
-    expect(bolgeMetni('Bursa', null)).toBeNull()
-  })
-
-  it('il yoksa satir cizilmiyor', () => {
-    expect(bolgeMetni(null, 'Nilüfer')).toBeNull()
-  })
-
-  it('ikisi de yoksa satir cizilmiyor', () => {
-    expect(bolgeMetni(null, null)).toBeNull()
+  it('ulke adi secilen dilde, bilinmeyen kod oldugu gibi', () => {
+    expect(ulkeAdi('DE', 'tr')).toBe('Almanya')
+    expect(ulkeAdi('DE', 'en')).toBe('Germany')
+    expect(ulkeAdi(null, 'tr')).toBeNull()
+    expect(ulkeAdi('ZZ', 'tr')).toBe('ZZ')
   })
 })

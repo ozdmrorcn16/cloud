@@ -27,7 +27,7 @@ const tr: HukukiMetin = {
       baslik: '1. Hangi verilerini işliyoruz',
       paragraflar: [
         'E-posta adresin - bugün hesabının BİRİNCİL kimliği. Hesap açarken ve giriş yaparken kullanılır, doğrulama kodu buraya gönderilir.',
-        "Oturduğun bölge: ülke, Türkiye'de ayrıca il ve ilçe. Hesap açarken sorulur. Cihazından okunmaz, kendin seçersin. İl ve ilçen profilinde yalnızca ayarlardan \"Bölgemi profilde göster\" dersen görünür; ülken hiçbir zaman gösterilmez.",
+        "Oturduğun bölge: ülke, Türkiye'de ayrıca il ve ilçe. Hesap açarken sorulur. Cihazından okunmaz, kendin seçersin. Profilinde ya da uygulamanın başka bir yerinde hiçbir zaman gösterilmez, başka kullanıcılara aktarılmaz; yalnızca hesabınla birlikte saklanır ve \"Verilerimi indir\" dosyanda yer alır. Amaç: hizmeti hangi bölgelerde geliştireceğimizi bilmek.",
         'Adın, kullanıcı adın, doğum tarihin, biyografin, profil fotoğrafların.',
         'Konumun - üç farklı şekilde: mekan ararken ve mekan eklerken cihaz konumun sunucuya gönderilir ama saklanmaz; check-in aktifken koordinatın saklanır, check-in anıya dönüşünce (1 saat sonra ya da hemen "ayrıldım" dediğinde) koordinat silinir ve geriye yalnızca hangi mekanda olduğun kalır (tam ayrıntı aşağıda, 3. maddede).',
         'Gönderdiğin ve aldığın mesajların içeriği.',

@@ -43,9 +43,12 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   gonderilir.
 - Adin, kullanici adin, dogum tarihin, biyografin, profil fotograflarin
 - **Oturdugun bolge** - ulke, Turkiye'de ayrica il ve ilce. Hesap
-  acarken sorulur; cihazdan OKUNMAZ, kendin secersin. Il ve ilcen
-  profilinde yalnizca ayarlardan "Bolgemi profilde goster" dersen
-  gorunur; ulken HICBIR ZAMAN gosterilmez (2026-09-18).
+  acarken sorulur; cihazdan OKUNMAZ, kendin secersin. Profilinde ya da
+  uygulamanin baska bir yerinde HICBIR ZAMAN gosterilmez, baska
+  kullanicilara aktarilmaz; yalnizca hesabinla birlikte saklanir ve
+  "Verilerimi indir" dosyanda yer alir. Amac: hizmeti hangi bolgelerde
+  gelistirecegimizi bilmek (2026-09-18 aksam; sabahki "ayarlardan
+  goster" modeli ayni gun kaldirildi).
 - **Konumun** - UC farkli sekilde: mekan ararken ve mekan eklerken
   cihaz konumun sunucuya GONDERILIR ama SAKLANMAZ; check-in aktifken
   koordinatin saklanir, check-in aniya donusunce (1 SAAT sonra ya da

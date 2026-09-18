@@ -172,6 +172,37 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### OTURDUGUN BOLGE: PROFILDE HIC YOK, AYAR YOK, YALNIZCA VERI - 2026-09-18 AKSAM
+
+Kullanicinin karari (sabahki modeli ayni gun degistirdi): "Oturdugun
+bolge kismini kaldir; bu secim sadece hesap olusturma adiminda olacak,
+profilde gorunmeyecek, gizleme secenegine de gerek kalmayacak; secim
+veri olarak saklanacak sadece." Yukaridaki "HESAP OLUSTURMA: OTURDUGUN
+BOLGE" bolumundeki `bolge_gizli` / "Bolgemi profilde goster" /
+profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
+
+- **Kalan tek giris noktasi:** hesap olusturma 3. adimi (zorunlu, ulke
+  + TR'de il/ilce). Alt yazi "Profilinde gosterilmez; yalnizca
+  hesabinla birlikte saklanir." (7 dil); `bolgeIpucu` anahtarlari
+  kalkti.
+- **Kalkanlar:** profil-duzenle bolge blogu (`profiliGuncelle` bolge
+  alanlarina DOKUNMUYOR - kayittaki deger korunur, testle kilitli),
+  ayarlardaki anahtar + `bolgeGosterGetir/Ayarla`, iki profil
+  ekranindaki satir, `bolgeMetni`, `BaskaProfil/KendiProfil`
+  bolge alanlari, `profilDuzenle.bolge*` ve `ayarlar.bolgeGoster*`
+  sozluk anahtarlari.
+- **Sunucu (migrasyon `20260918200000`, uygulandi):**
+  `baskasinin_profili` il/ilceyi hic dondurmuyor (drop + create),
+  `bolge_gizli` sutunu dustu, `verilerimi_disa_aktar` profil bloguna
+  `yasadigi_ulke` girdi. Veri sutunlari DURUYOR; RLS zaten baskasina
+  kapali.
+- **KVKK:** amac = hizmeti hangi bolgelerde gelistirecegimizi bilmek
+  (mesru menfaat); gizlilik metni 7 dilde + docs + KVKK listesi
+  guncellendi. Ders: "sadece saklanacak" veri icin bile amac yazilir.
+
+Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
+`870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
+
 ### SOHBETTE AVATAR VE AD PROFILE GIDER - 2026-09-18 AKSAM
 
 Kullanicinin istegi: "mesajlarda sohbette kullanicinin profil resmine

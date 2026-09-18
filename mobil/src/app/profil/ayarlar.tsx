@@ -7,8 +7,6 @@ import {
   aramadaGorunsunAyarla,
   profilGizliGetir,
   profilGizliAyarla,
-  bolgeGosterGetir,
-  bolgeGosterAyarla,
   etiketOnayiGerekliGetir,
   etiketOnayiGerekliAyarla,
 } from '../../../lib/ayarlar'
@@ -24,7 +22,6 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import {
   EngelIkonu,
   GozIkonu,
-  KonumIkonu,
   AramaIkonu,
   EtiketIkonu,
   DurdurIkonu,
@@ -77,7 +74,6 @@ export default function AyarlarEkrani() {
   const { t } = useDil()
   const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
   const [profilGizli, setProfilGizli] = useState(false)
-  const [bolgeGoster, setBolgeGoster] = useState(false)
   const [etiketOnayi, setEtiketOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
@@ -88,7 +84,6 @@ export default function AyarlarEkrani() {
     try {
       setAramadaGorunsun(await aramadaGorunsunGetir())
       setProfilGizli(await profilGizliGetir())
-      setBolgeGoster(await bolgeGosterGetir())
       setEtiketOnayi(await etiketOnayiGerekliGetir())
       setHata(null)
     } catch (e) {
@@ -110,18 +105,6 @@ export default function AyarlarEkrani() {
    * donuyor. Aksi halde ekran "gizli" gorunurken paylasimlar aslinda
    * herkese acik kalirdi - gizlilik ayarinda bu kabul edilemez.
    */
-  async function bolgeGosterDegisti(deger: boolean) {
-    const onceki = bolgeGoster
-    setBolgeGoster(deger)
-    try {
-      await bolgeGosterAyarla(deger)
-      setHata(null)
-    } catch (e) {
-      setBolgeGoster(onceki)
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
   async function profilGizliDegisti(deger: boolean) {
     const oncekiDeger = profilGizli
     setProfilGizli(deger)
@@ -227,23 +210,8 @@ export default function AyarlarEkrani() {
               />
             }
           />
-          {/* OTURDUGU BOLGE (2026-09-18): varsayilan KAPALI, acinca il ve
-              ilce baskalarinin gordugu profile girer; ulke hic girmez. */}
-          <Satir
-            ikon={<KonumIkonu />}
-            etiket={t('ayarlar.bolgeGoster')}
-            aciklama={t('ayarlar.bolgeGosterAciklama')}
-            sagBilesen={
-              <Switch
-                accessibilityLabel={t('ayarlar.bolgeGoster')}
-                value={bolgeGoster}
-                onValueChange={bolgeGosterDegisti}
-                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
-                thumbColor={renk.yuzey}
-                {...({ activeThumbColor: renk.yuzey } as object)}
-              />
-            }
-          />
+          {/* "Bolgemi profilde goster" anahtari KALKTI (2026-09-18 aksam):
+              bolge hicbir profilde gosterilmiyor, gizlenecek bir sey yok. */}
           <Satir
             ikon={<EtiketIkonu />}
             etiket={t('ayarlar.etiketOnayi')}

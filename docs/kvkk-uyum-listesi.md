@@ -158,6 +158,24 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   profilde goster" derse il/ilce profili gorebilen herkes; ULKE HICBIR
   ZAMAN baskasina gosterilmez (`baskasinin_profili` sutunu hic
   dondurmuyor - kural sunucuda). Gizlilik metni 7 dilde guncellendi.
+  **GUNCELLEME 2026-09-18 AKSAM - PROFILDE HIC GOSTERILMEZ, AYAR YOK:**
+  kullanicinin karari ("profilde gorunmeyecek, gizleme secenegine de
+  gerek kalmayacak, veri olarak saklanacak sadece"). Profil duzenle
+  ekranindan kalkti, "Bolgemi profilde goster" anahtari ve `bolge_gizli`
+  sutunu dustu, `baskasinin_profili` il/ilceyi de artik HIC dondurmuyor
+  (migrasyon `20260918200000`). Dort soru yeniden: hangi veri = ulke +
+  ilce duzeyinde kaba konum (kisinin BEYANI, cihazdan okunmuyor);
+  dayanak = mesru menfaat (m.5/2-f) - hizmetin hangi bolgelerde
+  gelistirilecegini bilmek; kisi bazinda hicbir gosterim ya da esleme
+  yok, yani kisinin hak ve ozgurluklerine etkisi asgari; sure = hesap
+  silinene kadar (hesap silme satiri siliyor); kim gorur = HIC KIMSE
+  (ne baska kullanici ne panel ekrani; yalnizca kisinin kendisi
+  "Verilerimi indir" dosyasinda - `yasadigi_ulke` de o dosyaya bu
+  migrasyonla girdi, sabah eksik kalmisti). Aydinlatma: gizlilik metni
+  7 dilde "hicbir zaman gosterilmez, yalnizca hesabinla saklanir, amac
+  ..." diye guncellendi; hesap olusturma adiminin alt yazisi da ayni
+  seyi soyluyor. TUZAK: "sadece saklanacak" bir veri icin bile AMAC
+  yazilmak zorunda (m.4 amacla sinirlilik); metinde amac acikca var.
 - **Profildeki Instagram kullanici adi** (2026-09-11). Kisi profiline
   Instagram kullanici adini yaziyor; profilinde tiklanabilir bir
   baglanti olarak herkese gorunuyor. Dort soru: hangi veri = kisinin

@@ -38,7 +38,6 @@ import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
-import { bolgeMetni } from '../../../lib/bolge'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
 import { AnilarSekmeIkonu, EnSikSekmeIkonu } from '../../tasarim/sekme-ikonlari'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
@@ -607,11 +606,8 @@ export default function KullaniciProfiliEkrani() {
                 @{profil.kullaniciAdi}
               </Text>
               {profil.biyografi ? <Text style={stiller.biyografi}>{profil.biyografi}</Text> : null}
-              {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce) ? (
-                <Text style={stiller.bolge} testID="profil-bolgesi">
-                  {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce)}
-                </Text>
-              ) : null}
+              {/* Oturdugu bolge GOSTERILMEZ (2026-09-18 aksam); sunucu
+                  zaten dondurmuyor. */}
               {/* INSTAGRAM BEYANI - KAPALI PROFILDE DE gorunuyor:
                   biyografi gibi kisinin kendi yayinladigi bir bilgi;
                   gizlilik ayari AKISI kapatiyor, kimlik satirini degil. */}
@@ -961,14 +957,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinIkincil,
     marginTop: 4,
   },
-  bolge: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-    marginTop: 2,
-  },
-
   /* EYLEM SATIRI: iki esit buton, kendi profildeki olcude (40). */
   eylemler: { flexDirection: 'row' as const, gap: bosluk.s, marginTop: bosluk.m },
   eylemButonu: {

@@ -3,7 +3,6 @@ import ProfilDuzenleEkrani from '../../../src/app/profil/duzenle'
 import { kendiProfilimiGetir, profiliGuncelle } from '../../../lib/profil'
 import { kullaniciAdiniDegistir } from '../../../lib/kullanici-adi'
 import { kullaniciAdiDurumunuGetir } from '../../../lib/ayarlar'
-import { illeriGetir, ilceleriGetir } from '../../../lib/bolge'
 
 jest.mock('../../../lib/profil', () => ({
   kendiProfilimiGetir: jest.fn(),
@@ -19,13 +18,6 @@ jest.mock('../../../lib/kullanici-adi', () => ({
 jest.mock('../../../lib/ayarlar', () => ({
   kullaniciAdiDurumunuGetir: jest.fn(),
 }))
-// `bolgeMetni` GERCEK kaliyor: saf bir birlestirme ve mock'lamak
-// testin kendi varsayimini dogrulamasina yol acardi.
-jest.mock('../../../lib/bolge', () => ({
-  ...jest.requireActual('../../../lib/bolge'),
-  illeriGetir: jest.fn(),
-  ilceleriGetir: jest.fn(),
-}))
 
 const PROFIL = {
   id: 'kullanici-1',
@@ -33,11 +25,6 @@ const PROFIL = {
   ad: 'Orcun Ozdemir',
   biyografi: 'merhaba',
   instagram: null,
-  // Bolge ZORUNLU (2026-09-18): ornek profil dolu geliyor ki diger
-  // testlerde "Kaydet" bolge hatasina takilmasin.
-  yasadigiUlke: 'TR',
-  yasadigiIl: 'Bursa',
-  yasadigiIlce: 'Nilüfer',
   fotograflar: [],
 }
 
@@ -50,8 +37,6 @@ beforeEach(() => {
     kullaniciAdi: 'orcun',
     sonrakiDegisimTarihi: null,
   })
-  ;(illeriGetir as jest.Mock).mockResolvedValue(['Bursa', 'İstanbul'])
-  ;(ilceleriGetir as jest.Mock).mockResolvedValue(['Nilüfer', 'Osmangazi'])
 })
 
 /**
@@ -219,79 +204,32 @@ describe('ProfilDuzenleEkrani - kullanici adi', () => {
 })
 
 /**
- * YASADIGIN BOLGE (kullanicinin istegi 2026-09-11).
- *
- * IL VE ILCE SECILIYOR, YAZILMIYOR: liste `public.ilceler`
- * tablosundan geliyor ve o tablo OSM idari sinir poligonlariyla
- * uretildi. Serbest metin olsaydi "Bursaa" ya da "Marmara Bölgesi"
- * gibi degerler profilde gercek bilgi gibi dururdu.
+ * OTURDUGU BOLGE BU EKRANDA YOK (kullanicinin karari 2026-09-18 aksam):
+ * bolge yalnizca hesap olusturmada secilir, profilde gosterilmez ve
+ * gizleme ayari yok. Ekran bolgeyi ne cizer ne kaydeder - kaydetmede
+ * bolge alani GONDERILMIYOR ki hesap olusturmada yazilan deger ezilmesin.
  */
-describe('ProfilDuzenleEkrani - yasadigin bolge', () => {
-  // Ornek profil Bursa/Nilufer ile geliyor; testler baska ile geciyor
-  // ki kutudaki metinle listedeki secenek karismasin.
-  it('il secilince o ilin ilceleri cekiliyor', async () => {
+describe('ProfilDuzenleEkrani - oturdugun bolge yok', () => {
+  it('bolge secicileri cizilmiyor', async () => {
     await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-il')
+    await screen.findByDisplayValue('orcun')
 
-    await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('İstanbul'))
-
-    await waitFor(() => expect(ilceleriGetir).toHaveBeenCalledWith('İstanbul'))
-  })
-
-  it('il ve ilce secilince ikisi birden (ve ulke) kaydediliyor', async () => {
-    await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-il')
-
-    await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('İstanbul'))
-    await fireEvent.press(screen.getByTestId('bolge-ilce'))
-    await fireEvent.press(await screen.findByText('Osmangazi'))
-    await fireEvent.press(screen.getByText('Kaydet'))
-
-    await waitFor(() =>
-      expect(profiliGuncelle).toHaveBeenCalledWith(
-        expect.objectContaining({ yasadigiUlke: 'TR', yasadigiIl: 'İstanbul', yasadigiIlce: 'Osmangazi' })
-      )
-    )
-  })
-
-  /*
-   * BOLGE ZORUNLU (2026-09-18): il secilip ilce secilmezse KAYDEDILMEZ,
-   * hata gosterilir ("bosa is yaptirma": sunucudaki CHECK zaten
-   * reddederdi ama kullanici sebebini goremezdi).
-   */
-  it('il secilip ilce secilmezse kaydetmez, hata gosterir', async () => {
-    await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-il')
-
-    await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('İstanbul'))
-    await fireEvent.press(screen.getByText('Kaydet'))
-
-    expect(await screen.findByText('İl ve ilçeni seç.')).toBeTruthy()
-    expect(profiliGuncelle).not.toHaveBeenCalled()
-  })
-
-  it('"Bolgeyi kaldir" dugmesi YOK - bolge zorunlu, gizlemek ayarlarda', async () => {
-    await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-il')
-    expect(screen.queryByTestId('bolgeyi-kaldir')).toBeNull()
-  })
-
-  it('baska ulke secilince il/ilce kalkar ve yalnizca ulke kaydedilir', async () => {
-    await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-ulke')
-
-    await fireEvent.press(screen.getByTestId('bolge-ulke'))
-    await fireEvent.press(await screen.findByText('Almanya'))
+    expect(screen.queryByTestId('bolge-ulke')).toBeNull()
     expect(screen.queryByTestId('bolge-il')).toBeNull()
+    expect(screen.queryByTestId('bolge-ilce')).toBeNull()
+    expect(screen.queryByText('Oturduğun bölge')).toBeNull()
+  })
+
+  it('kaydetmede bolge alanlari gonderilmiyor (kayittaki deger korunur)', async () => {
+    await render(<ProfilDuzenleEkrani />)
+    await screen.findByDisplayValue('orcun')
+
     await fireEvent.press(screen.getByText('Kaydet'))
 
-    await waitFor(() =>
-      expect(profiliGuncelle).toHaveBeenCalledWith(
-        expect.objectContaining({ yasadigiUlke: 'DE', yasadigiIl: null, yasadigiIlce: null })
-      )
-    )
+    await waitFor(() => expect(profiliGuncelle).toHaveBeenCalled())
+    const gonderilen = (profiliGuncelle as jest.Mock).mock.calls[0][0]
+    expect(gonderilen).not.toHaveProperty('yasadigiUlke')
+    expect(gonderilen).not.toHaveProperty('yasadigiIl')
+    expect(gonderilen).not.toHaveProperty('yasadigiIlce')
   })
 })

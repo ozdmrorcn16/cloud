@@ -60,7 +60,6 @@ import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
 import { profilBaglantisi, sistemPaylasimi } from '../../../lib/paylasim'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
-import { bolgeMetni } from '../../../lib/bolge'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 
@@ -741,14 +740,9 @@ export default function ProfilEkrani() {
                   {profil.biyografi && (
                     <Text style={stiller.biyografi}>{profil.biyografi}</Text>
                   )}
-                  {/* YASADIGI BOLGE (2026-09-11) - biyografinin hemen
-                      altinda, kullanicinin istegi uzerine. Opsiyonel:
-                      secilmemisse satir HIC cizilmiyor. */}
-                  {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce) && (
-                    <Text style={stiller.bolge} testID="profil-bolgesi">
-                      {bolgeMetni(profil.yasadigiIl, profil.yasadigiIlce)}
-                    </Text>
-                  )}
+                  {/* OTURDUGU BOLGE BURADA YOK (2026-09-18 aksam,
+                      kullanicinin karari): profilde gosterilmez, yalnizca
+                      hesap olusturmada secilir ve veri olarak saklanir. */}
                   {/* INSTAGRAM BEYANI (2026-09-11) - biyografinin
                       altinda, cunku ikisi de "bu kisi kim" bilgisi.
                       Ortak bilesen: baskasinin profili ayni satiri
@@ -1214,15 +1208,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metinIkincil,
     marginTop: 1,
-  },
-  /* Bolge satiri biyografiyle AYNI dilde: ikisi de "bu kisi kim"
-     bilgisi ve ikisi de ikincil. */
-  bolge: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-    marginTop: 2,
   },
 
   hata: {

@@ -47,8 +47,6 @@ describe('baskasininProfiliniGetir', () => {
       instagram: null,
       // YASADIGI BOLGE (2026-09-11). Opsiyonel; sunucu gondermezse
       // null - ikisi birden dolu ya da ikisi birden bos.
-      yasadigiIl: null,
-      yasadigiIlce: null,
       fotograflar: ['a.jpg'],
       // 2026-09-08'de eklendi: gizlilik ayari sunucudan geliyordu ama
       // istemci okumuyordu; arkadas sayisi ise yeni.
@@ -108,9 +106,6 @@ describe('kendiProfilimiGetir', () => {
       ad: 'Orcun',
       biyografi: 'merhaba',
       instagram: null,
-      yasadigiUlke: null,
-      yasadigiIl: null,
-      yasadigiIlce: null,
       fotograflar: ['a.jpg'],
     })
   })

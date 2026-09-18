@@ -3,10 +3,13 @@ import { hataMetni } from './hata-metni'
 import { ULKELER, type Ulke } from './ulkeler-veri'
 
 /**
- * IL VE ILCE LISTESI - profildeki "yasadigin bolge" secimi icin.
+ * IL VE ILCE LISTESI - hesap olusturmadaki "oturdugun bolge" adimi icin.
  *
  * Kullanicinin istegi (2026-09-11): "profili duzenlemeye yasadigin
  * bolge diye bir sey ekleyelim, il ilce secilsin, sadece opsiyonel."
+ * 2026-09-18 aksam karari: bolge YALNIZCA hesap olusturmada secilir,
+ * hicbir profilde gosterilmez, gizleme ayari yok; secim veri olarak
+ * saklanir. `bolgeMetni` bu yuzden kaldirildi.
  *
  * LISTE TURETILMIS DEGIL, GERCEK KAYIT. Kullanicinin kurali geregi
  * (`turetilmis-veri-degil-gercek-kayit`) ilce listesi `mekanlar.semt`
@@ -71,18 +74,4 @@ export function ulkeAdi(kod: string | null, dil: UlkeDili): string | null {
   if (!kod) return null
   const u = ULKELER.find((x) => x.kod === kod)
   return u ? (u[dil] ?? u.en) : kod
-}
-
-/**
- * Profilde gosterilen bicim: "Nilüfer, Bursa". Il/ilce yalnizca ikisi
- * birden doluysa yazilir (2026-09-11 kurali).
- *
- * ULKE HICBIR ZAMAN GOSTERILMEZ (kullanicinin karari 2026-09-18:
- * "sadece ulke hep gizli kalacak"): kayit icin toplaniyor, profilde
- * yazilmiyor - ne kendi profilinde ne baskasininkinde. Turkiye
- * disindaki bir kullanicinin profilinde bolge satiri bos kalir.
- */
-export function bolgeMetni(il: string | null, ilce: string | null): string | null {
-  if (!il || !ilce) return null
-  return `${ilce}, ${il}`
 }

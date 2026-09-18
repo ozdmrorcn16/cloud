@@ -13,17 +13,11 @@ export type BaskaProfil = {
    * kapatti; ayrinti `lib/instagram.ts` basinda.
    */
   instagram: string | null
-  /**
-   * YASADIGI BOLGE (2026-09-11). Opsiyonel; ikisi birden dolu ya da
-   * ikisi birden bos - yalnizca ilce secilmis bir profil anlamsiz
-   * olurdu ("Nilüfer" hangi ilde?). Kisit sunucuda.
+  /*
+   * OTURDUGU BOLGE BURADA YOK (2026-09-18 aksam): sunucu
+   * `baskasinin_profili` ile ulke/il/ilceyi hic dondurmuyor. Bolge
+   * yalnizca hesap olusturmada secilir ve veri olarak saklanir.
    */
-  /**
-   * Il/ilce yalnizca kisi "bolgemi profilde goster" demisse gelir;
-   * ULKE HIC GELMEZ (sunucu dondurmuyor, 2026-09-18).
-   */
-  yasadigiIl: string | null
-  yasadigiIlce: string | null
   fotograflar: string[]
   /**
    * Kisinin "profilim gizli" ayari. Sunucu bunu 2026-09-02'den beri
@@ -44,8 +38,6 @@ type SunucuProfili = {
   ad: string
   biyografi: string | null
   instagram: string | null
-  yasadigi_il: string | null
-  yasadigi_ilce: string | null
   fotograflar: string[]
   profil_gizli: boolean | null
   arkadas_sayisi: number | null
@@ -89,8 +81,6 @@ export async function baskasininProfiliniGetir(
     ad: satir.ad,
     biyografi: satir.biyografi,
     instagram: satir.instagram ?? null,
-    yasadigiIl: satir.yasadigi_il ?? null,
-    yasadigiIlce: satir.yasadigi_ilce ?? null,
     fotograflar: satir.fotograflar,
     profilGizli: satir.profil_gizli ?? false,
     arkadasSayisi: satir.arkadas_sayisi ?? 0,
@@ -103,10 +93,8 @@ export type KendiProfil = {
   ad: string
   biyografi: string | null
   instagram: string | null
-  /** ISO 3166-1 alpha-2 (2026-09-18); null = eski kayit (TR sayilir). Profilde gosterilmez. */
-  yasadigiUlke: string | null
-  yasadigiIl: string | null
-  yasadigiIlce: string | null
+  /* Bolge sutunlari BILEREK okunmuyor (2026-09-18 aksam): hicbir ekran
+     gostermiyor; kisi kendi kaydini "Verilerimi indir" ile gorur. */
   fotograflar: string[]
 }
 
@@ -128,23 +116,20 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
   const { data, error } = await supabase
     .from('profiller')
     .select(
-      'id, kullanici_adi, ad, biyografi, instagram, yasadigi_ulke, yasadigi_il, yasadigi_ilce, fotograflar'
+      'id, kullanici_adi, ad, biyografi, instagram, fotograflar'
     )
     .eq('id', kullaniciId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
   if (!data) return null
 
-  const satir = data as SunucuProfili & { yasadigi_ulke?: string | null }
+  const satir = data as SunucuProfili
   return {
     id: satir.id,
     kullaniciAdi: satir.kullanici_adi,
     ad: satir.ad,
     biyografi: satir.biyografi,
     instagram: satir.instagram ?? null,
-    yasadigiUlke: satir.yasadigi_ulke ?? null,
-    yasadigiIl: satir.yasadigi_il ?? null,
-    yasadigiIlce: satir.yasadigi_ilce ?? null,
     fotograflar: satir.fotograflar,
   }
 }
@@ -262,13 +247,6 @@ export async function profiliGuncelle(alanlar: {
    * baglantisini kaldirabilmeli.
    */
   instagram?: string | null
-  /**
-   * Yasadigi bolge. IKISI BIRDEN ya da IKISI BIRDEN null - sunucuda
-   * bir CHECK kisiti bunu zorluyor.
-   */
-  yasadigiUlke?: string | null
-  yasadigiIl?: string | null
-  yasadigiIlce?: string | null
 }): Promise<void> {
   const { data: kullaniciVerisi } = await supabase.auth.getUser()
   const kullaniciId = kullaniciVerisi.user?.id
@@ -280,9 +258,8 @@ export async function profiliGuncelle(alanlar: {
       ad: alanlar.ad,
       biyografi: alanlar.biyografi,
       instagram: alanlar.instagram ?? null,
-      yasadigi_ulke: alanlar.yasadigiUlke ?? null,
-      yasadigi_il: alanlar.yasadigiIl ?? null,
-      yasadigi_ilce: alanlar.yasadigiIlce ?? null,
+      // Bolge sutunlarina DOKUNULMUYOR (2026-09-18 aksam): hesap
+      // olusturmada yazilan deger oldugu gibi kalir.
     })
     .eq('id', kullaniciId)
   if (error) throw new Error(hataMetni(error))

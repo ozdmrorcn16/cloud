@@ -8,7 +8,6 @@ import {
   kullaniciAdiniDegistir,
 } from '../../../lib/kullanici-adi'
 import { kullaniciAdiDurumunuGetir } from '../../../lib/ayarlar'
-import { illeriGetir, ilceleriGetir, ulkeleriGetir, TURKIYE } from '../../../lib/bolge'
 import {
   instagramNormallestir,
   instagramGecerliMi,
@@ -18,7 +17,6 @@ import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import { ListeSecici } from '../../tasarim/ListeSecici'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 
@@ -59,7 +57,7 @@ function tarihiBicimlendir(tarih: Date): string {
 export default function ProfilDuzenleEkrani() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
-  const { t, dil } = useDil()
+  const { t } = useDil()
 
   const [ad, setAd] = useState('')
   const [biyografi, setBiyografi] = useState('')
@@ -79,20 +77,11 @@ export default function ProfilDuzenleEkrani() {
    */
   const [ilkKullaniciAdi, setIlkKullaniciAdi] = useState('')
   const [sonrakiDegisim, setSonrakiDegisim] = useState<Date | null>(null)
-  /*
-   * OTURDUGU BOLGE (2026-09-11 istege bagli; 2026-09-18 ZORUNLU ve ulke
-   * eklendi). Ulke her zaman dolu (varsayilan TR); Turkiye'de il VE
-   * ilce sart - sunucudaki CHECK yarim secimi zaten reddeder. Baska
-   * ulkede il/ilce yok. Profilde gosterilip gosterilmemesi AYARLARDA
-   * ("bolgemi profilde goster"); ulke hicbir zaman gosterilmez.
-   */
-  const [ulke, setUlke] = useState<string>(TURKIYE)
-  const [il, setIl] = useState<string | null>(null)
-  const [ilce, setIlce] = useState<string | null>(null)
-  const [iller, setIller] = useState<string[]>([])
-  const [ilceler, setIlceler] = useState<string[]>([])
-  const [secici, setSecici] = useState<'ulke' | 'il' | 'ilce' | null>(null)
-  const ulkeler = ulkeleriGetir(dil)
+  /* OTURDUGU BOLGE BU EKRANDA YOK (kullanicinin karari 2026-09-18 aksam):
+     bolge yalnizca hesap olusturma adiminda secilir, profilde
+     gosterilmez, gizleme ayari yok; secim veri olarak saklanir. Bu
+     ekran o sutunlari ne okur ne yazar - `profiliGuncelle` bolge
+     alanlarina dokunmaz. */
   const [odakli, setOdakli] = useState<string | null>(null)
   const [hata, setHata] = useState<string | null>(null)
   const [bilgi, setBilgi] = useState<string | null>(null)
@@ -108,9 +97,6 @@ export default function ProfilDuzenleEkrani() {
         setInstagram(profil.instagram ?? '')
         setKullaniciAdi(profil.kullaniciAdi)
         setIlkKullaniciAdi(profil.kullaniciAdi)
-        setUlke(profil.yasadigiUlke ?? TURKIYE)
-        setIl(profil.yasadigiIl)
-        setIlce(profil.yasadigiIlce)
       })
       .catch((e) => {
         if (gecerli) setHata(hataMetni(e))
@@ -125,15 +111,6 @@ export default function ProfilDuzenleEkrani() {
       .catch(() => {
         // Sayaci okuyamamak formu bloke etmemeli; kurali sunucu zaten
         // uyguluyor.
-      })
-    // IL LISTESI BIR KEZ cekiliyor: 81 satir ve degismiyor. Secici
-    // acildiginda cekmek, pencereyi bos acip sonra doldurmak demekti.
-    illeriGetir()
-      .then((d) => {
-        if (gecerli) setIller(d)
-      })
-      .catch(() => {
-        // Liste gelmezse secici bos kalir; alan zaten opsiyonel.
       })
     return () => {
       gecerli = false
@@ -178,12 +155,6 @@ export default function ProfilDuzenleEkrani() {
       return
     }
 
-    // BOLGE ZORUNLU: Turkiye'de il ve ilce secilmeden kaydedilmez.
-    if (ulke === TURKIYE && (!il || !ilce)) {
-      setHata(t('profilDuzenle.bolgeHata'))
-      return
-    }
-
     setKaydediliyor(true)
     try {
       if (kadDegisti) {
@@ -195,10 +166,6 @@ export default function ProfilDuzenleEkrani() {
         ad: ad.trim(),
         biyografi: biyografi.trim() || null,
         instagram: instagramSade || null,
-        yasadigiUlke: ulke,
-        // Il/ilce yalnizca Turkiye'de ve ikisi birden.
-        yasadigiIl: ulke === TURKIYE && il && ilce ? il : null,
-        yasadigiIlce: ulke === TURKIYE && il && ilce ? ilce : null,
       })
       // Normallesmis hali ekrana yaziliyor: kisi ne kaydedildigini
       // gorsun, "@" ile yazdiysa onun duestuegunu anlasin.
@@ -312,66 +279,6 @@ export default function ProfilDuzenleEkrani() {
         </View>
         <Text style={stiller.ipucu}>{t('profilDuzenle.instagramIpucu')}</Text>
 
-        {/* YASADIGIN BOLGE (kullanicinin istegi 2026-09-11).
-            OPSIYONEL - ipucu da bunu soyluyor; kimse konumunu
-            paylasmak zorunda degil.
-
-            IL VE ILCE SECILIYOR, YAZILMIYOR: liste `public.ilceler`
-            tablosundan geliyor ve o tablo OSM idari sinir
-            poligonlariyla uretildi (968 cift, Bursa'da tam 17 ilce).
-            Serbest metin olsaydi "Bursaa" ya da "Marmara Bölgesi"
-            gibi degerler profilde gercek bilgi gibi dururdu. */}
-        <Text style={stiller.etiket}>{t('profilDuzenle.bolgeEtiket')}</Text>
-        {/* ULKE (2026-09-18): liste ICU'dan 7 dilde; Turkiye basta. */}
-        <Pressable
-          style={[stiller.girdi, stiller.secimAlani, stiller.ulkeAlani]}
-          onPress={() => setSecici('ulke')}
-          accessibilityRole="button"
-          accessibilityLabel={t('profilDuzenle.bolgeUlkeSec')}
-          testID="bolge-ulke"
-        >
-          <Text style={stiller.secimYazi}>{ulkeler.find((u) => u.kod === ulke)?.ad ?? ulke}</Text>
-        </Pressable>
-        {ulke !== TURKIYE && (
-          <Text style={stiller.ipucu}>{t('profilDuzenle.bolgeYalnizcaUlke')}</Text>
-        )}
-        {ulke === TURKIYE && (
-        <View style={stiller.ikili}>
-          <Pressable
-            style={[stiller.girdi, stiller.yariAlan, stiller.secimAlani]}
-            onPress={() => setSecici('il')}
-            accessibilityRole="button"
-            accessibilityLabel={t('profilDuzenle.bolgeIlSec')}
-            testID="bolge-il"
-          >
-            <Text style={[stiller.secimYazi, !il && stiller.secimBos]}>
-              {il ?? t('profilDuzenle.bolgeIlSec')}
-            </Text>
-          </Pressable>
-          {/* ILCE SECICI IL SECILMEDEN KAPALI: ilceler ile bagli ve
-              "once il" demek, bos bir liste acmaktan iyi. */}
-          <Pressable
-            style={[
-              stiller.girdi,
-              stiller.yariAlan,
-              stiller.secimAlani,
-              !il && stiller.secimKapali,
-            ]}
-            onPress={() => il && setSecici('ilce')}
-            disabled={!il}
-            accessibilityRole="button"
-            accessibilityLabel={t('profilDuzenle.bolgeIlceSec')}
-            testID="bolge-ilce"
-          >
-            <Text style={[stiller.secimYazi, !ilce && stiller.secimBos]}>
-              {ilce ?? t('profilDuzenle.bolgeIlceSec')}
-            </Text>
-          </Pressable>
-        </View>
-        )}
-        {/* "Bolgeyi kaldir" KALKTI: bolge zorunlu (2026-09-18). Gizlemek
-            ayarlarda. */}
-        <Text style={stiller.ipucu}>{t('profilDuzenle.bolgeIpucu')}</Text>
 
         <Pressable
           style={stiller.birincil}
@@ -385,60 +292,6 @@ export default function ProfilDuzenleEkrani() {
         </Pressable>
       </ScrollView>
 
-      <ListeSecici
-        acikMi={secici === 'ulke'}
-        baslik={t('profilDuzenle.bolgeUlkeSec')}
-        secenekler={ulkeler.map((u) => u.ad)}
-        secili={ulkeler.find((u) => u.kod === ulke)?.ad ?? null}
-        onSec={(ad) => {
-          const secilen = ulkeler.find((u) => u.ad === ad)
-          if (secilen) {
-            setUlke(secilen.kod)
-            if (secilen.kod !== TURKIYE) {
-              setIl(null)
-              setIlce(null)
-            }
-          }
-          setSecici(null)
-          setBilgi(null)
-        }}
-        onKapat={() => setSecici(null)}
-      />
-      <ListeSecici
-        acikMi={secici === 'il'}
-        baslik={t('profilDuzenle.bolgeIlSec')}
-        secenekler={iller}
-        secili={il}
-        onSec={(secilen) => {
-          setIl(secilen)
-          // IL DEGISINCE ILCE SIFIRLANIYOR: eski ilce yeni ilde
-          // bulunmuyor olabilir ve sunucudaki yabanci anahtar onu
-          // reddederdi.
-          setIlce(null)
-          setIlceler([])
-          setSecici(null)
-          setBilgi(null)
-          ilceleriGetir(secilen)
-            .then(setIlceler)
-            .catch(() => {
-              // Liste gelmezse ilce secici bos acilir; alan opsiyonel.
-            })
-        }}
-        onKapat={() => setSecici(null)}
-      />
-
-      <ListeSecici
-        acikMi={secici === 'ilce'}
-        baslik={t('profilDuzenle.bolgeIlceSec')}
-        secenekler={ilceler}
-        secili={ilce}
-        onSec={(secilen) => {
-          setIlce(secilen)
-          setSecici(null)
-          setBilgi(null)
-        }}
-        onKapat={() => setSecici(null)}
-      />
     </View>
   )
 }
@@ -504,18 +357,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: bosluk.xs,
     flex: 1,
   },
-  ikili: { flexDirection: 'row' as const, gap: bosluk.m },
-  yariAlan: { flex: 1 },
-  /* Secim alani bir GIRDI gibi gorunuyor ama metin girilmiyor:
-     dikey dolgu `girdi` ile ayni tutuldu ki iki alan yan yana ayni
-     yukseklikte dursun. */
-  secimAlani: { justifyContent: 'center' as const },
-  secimYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metin },
-  /* Secilmemis hal YER TUTUCU gibi okunuyor - dolu bir degerle
-     karistirilmasin. */
-  secimBos: { color: renk.metinIkincil },
-  secimKapali: { backgroundColor: renk.zemin },
-  ulkeAlani: { marginBottom: bosluk.m },
 
   hata: {
     fontFamily: yazi.govdeOrta,
