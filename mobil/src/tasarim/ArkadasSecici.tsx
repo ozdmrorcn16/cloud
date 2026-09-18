@@ -3,6 +3,7 @@ import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'r
 import type { BagKisi } from '../../lib/bag'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { Avatar } from './Avatar'
 
 /**
  * ARKADAS SECICI - alttan acilan, aranabilir, COKLU secim.
@@ -91,9 +92,18 @@ export function ArkadasSecici({
                     accessibilityState={{ checked: isaretli }}
                     accessibilityLabel={item.ad}
                   >
+                    {/* PROFIL RESMI + KULLANICI ADI (kullanicinin istegi
+                        2026-09-18); ad altta ikincil. Arama ikisinde de. */}
+                    <Avatar
+                      fotografUrl={item.avatarUrl ?? null}
+                      ad={item.ad}
+                      kullaniciAdi={item.kullaniciAdi}
+                      cap={40}
+                      testID={`arkadas-avatar-${item.id}`}
+                    />
                     <View style={stiller.satirMetin}>
-                      <Text style={[stiller.ad, isaretli && stiller.adSecili]}>{item.ad}</Text>
-                      <Text style={stiller.kullaniciAdi}>{item.kullaniciAdi}</Text>
+                      <Text style={[stiller.kullaniciAdi, isaretli && stiller.adSecili]}>{item.kullaniciAdi}</Text>
+                      <Text style={stiller.ad}>{item.ad}</Text>
                     </View>
                     <View style={[stiller.kutu, isaretli && stiller.kutuSecili]}>
                       {isaretli && <Text style={stiller.tik}>✓</Text>}
@@ -153,14 +163,15 @@ const stilleriYap = (renk: Renk) =>
     satir: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 12,
+      gap: bosluk.m,
+      paddingVertical: 10,
       borderBottomWidth: 1,
       borderBottomColor: renk.cizgi,
     },
     satirMetin: { flex: 1 },
-    ad: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metin },
-    adSecili: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
-    kullaniciAdi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
+    kullaniciAdi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+    adSecili: { color: renk.turuncuYazi },
+    ad: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
     kutu: {
       width: 22,
       height: 22,

@@ -4,6 +4,7 @@ import {
   gidenIstekleriGetir,
   takipcilerimiGetir,
 } from './bag-listeleri'
+import { avatarlariGetir } from './akis'
 
 jest.mock('./supabase', () => ({
   supabase: {
@@ -12,6 +13,10 @@ jest.mock('./supabase', () => ({
     auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'ben' } } }) },
   },
 }))
+
+// Avatarlar ayri yoldan (akis_profilleri) geliyor; burada mock, bu
+// testler ad/kimlik cozumunu olcuyor. Avatar ikincil: okunamazsa null.
+jest.mock('./akis', () => ({ avatarlariGetir: jest.fn().mockResolvedValue({}) }))
 
 const mockRpc = supabase.rpc as jest.Mock
 
@@ -35,7 +40,7 @@ describe('gelenIstekleriGetir', () => {
     })
 
     await expect(gelenIstekleriGetir()).resolves.toEqual({
-      takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O' }],
+      takip: [{ id: 'k1', kullaniciAdi: 'orcun', ad: 'Orcun O', avatarUrl: null }],
       sohbet: [],
     })
     expect(mockRpc).toHaveBeenCalledWith('bag_kisileri', { p_kimlikler: ['k1'] })
@@ -62,7 +67,7 @@ describe('gidenIstekleriGetir', () => {
     })
 
     await expect(gidenIstekleriGetir()).resolves.toEqual({
-      takip: [{ id: 'k4', kullaniciAdi: 'mert', ad: 'Mert D' }],
+      takip: [{ id: 'k4', kullaniciAdi: 'mert', ad: 'Mert D', avatarUrl: null }],
       sohbet: [],
     })
     expect(mockRpc).toHaveBeenCalledWith('bag_kisileri', { p_kimlikler: ['k4'] })
@@ -87,7 +92,7 @@ describe('takipcilerimiGetir', () => {
     })
 
     await expect(takipcilerimiGetir()).resolves.toEqual([
-      { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y' },
+      { id: 'k2', kullaniciAdi: 'ayse', ad: 'Ayse Y', avatarUrl: null },
     ])
   })
 

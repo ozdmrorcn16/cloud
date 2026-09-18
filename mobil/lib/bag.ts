@@ -7,6 +7,8 @@ export type BagKisi = {
   id: string
   kullaniciAdi: string
   ad: string
+  /** Profil fotografi (imzali); listeler avatar cizer (2026-09-18). Yoksa bas harf. */
+  avatarUrl?: string | null
 }
 
 async function kendiKullaniciId(): Promise<string> {

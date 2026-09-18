@@ -172,6 +172,29 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### "ARKADAS ETIKETLE" DUGMESI + ARANABILIR LISTE - 2026-09-18 GECE
+
+Kullanicinin istegi: yerinde duzenlemede "Arkadas etiketle" butonu;
+basinca profil resmi + kullanici adi ile arkadas listesi, ad ya da
+kullanici adiyla arama; etiket onayi acik degilse hemen, acıksa onaya
+gider ve onaylaninca kartta gorunur.
+- `CheckInKarti` duzenleme: 2026-09-05'in satir ici "+ ad" cipleri
+  KALKTI; hayalet "Arkadas etiketle" dugmesi (`arkadas-etiketle`)
+  mevcut `ArkadasSecici`yi aciyor (zaten etiketli olanlar listede yok).
+  Secilenler ve mevcut etiketler avatarli cip; Kaydet'e kadar sunucuya
+  gitmez (eski kural).
+- `ArkadasSecici` satirlari: `Avatar` 40 + kullanici adi (kalin) +
+  ad (ikincil); arama zaten ikisinde. `BagKisi.avatarUrl` eklendi
+  (`kisileriCoz` -> `avatarlariGetir`, okunamazsa null). Check-in
+  formundaki ayni secici de boylece avatarli oldu.
+- Onay kurali DEGISMEDI: sunucudaki trigger (20260906090000) karsi
+  tarafin `etiket_onayi_gerekli` ayarina gore 'onaylandi' / 'bekliyor'
+  yaziyor; akis yalnizca onaylananlari cizer, onaylaninca (odak
+  yenilemesi) gorunur.
+Jest 78 paket / 1043 test. Yayin: web guncel, OTA grup
+`846d9eee-5390-44a1-bd5e-c7f4f4c4aafe` (test duzeltmesi sonraki
+commit'te; davranis ayni).
+
 ### AKIS KARTI REFERANS DUZENINE GECTI; "BIRLIKTE" YALNIZCA AVATAR - 2026-09-18 GECE
 
 Kullanicinin referans gorseli: "ana sayfa paylasim akisi ayni bu

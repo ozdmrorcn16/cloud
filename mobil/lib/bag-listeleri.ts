@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import type { BagKisi } from './bag'
 import { hataMetni } from './hata-metni'
+import { avatarlariGetir } from './akis'
 
 type SunucuKisi = { id: string; kullanici_adi: string; ad: string }
 
@@ -23,10 +24,15 @@ async function kisileriCoz(kimlikler: string[]): Promise<BagKisi[]> {
   const { data, error } = await supabase.rpc('bag_kisileri', { p_kimlikler: kimlikler })
   if (error) throw new Error(hataMetni(error))
 
-  return (data as SunucuKisi[]).map((satir) => ({
+  // Avatarlar ikincil bilgi: okunamazsa liste yine gelir, bas harf cizilir.
+  const satirlar = data as SunucuKisi[]
+  const avatarlar = await avatarlariGetir(satirlar.map((s) => s.id)).catch(() => ({}) as Record<string, string | null>)
+
+  return satirlar.map((satir) => ({
     id: satir.id,
     kullaniciAdi: satir.kullanici_adi,
     ad: satir.ad,
+    avatarUrl: avatarlar[satir.id] ?? null,
   }))
 }
 

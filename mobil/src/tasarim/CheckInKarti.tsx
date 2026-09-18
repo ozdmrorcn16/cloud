@@ -21,6 +21,7 @@ import {
 } from './YakinlastirilabilirGorsel'
 import { FotografAltyazisi } from './FotografAltyazisi'
 import { Avatar } from './Avatar'
+import { ArkadasSecici } from './ArkadasSecici'
 import Svg, { Path, Circle } from 'react-native-svg'
 
 /**
@@ -128,6 +129,7 @@ export function CheckInKarti({
   // sunucuya HICBIR SEY gitmiyor - Vazgec gercekten vazgeciyor.
   const [kaldirilan, setKaldirilan] = useState<string[]>([])
   const [eklenen, setEklenen] = useState<string[]>([])
+  const [seciciAcik, setSeciciAcik] = useState(false)
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [kaydediliyor, setKaydediliyor] = useState(false)
   const [duzenleHatasi, setDuzenleHatasi] = useState<string | null>(null)
@@ -340,6 +342,7 @@ export function CheckInKarti({
                     accessibilityRole="button"
                     accessibilityLabel={t('checkIn.etiketiKaldir', { ad: e.ad ?? '' })}
                   >
+                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.ad ?? ''} cap={22} />
                     <Text style={stiller.cipYazi}>{e.ad ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
                   </Pressable>
@@ -347,38 +350,22 @@ export function CheckInKarti({
             </View>
           )}
 
-          {/* ARKADAS ETIKETLEME (kullanicinin istegi 2026-09-05).
-              Onceki pencerede yalnizca KALDIRMA vardi; artik eklemek de
-              buradan yapiliyor. Listede zaten etiketli olanlar yok. */}
-          {arkadaslar.filter(
-            (a) =>
-              !oge.etiketler.some((e) => e.kullaniciId === a.id && !kaldirilan.includes(a.id)) &&
-              !eklenen.includes(a.id)
-          ).length > 0 && (
-            <>
-              <Text style={stiller.duzenleEtiket}>{t('anaSayfa.arkadasEtiketle')}</Text>
-              <View style={stiller.cipler}>
-                {arkadaslar
-                  .filter(
-                    (a) =>
-                      !oge.etiketler.some(
-                        (e) => e.kullaniciId === a.id && !kaldirilan.includes(a.id)
-                      ) && !eklenen.includes(a.id)
-                  )
-                  .map((a) => (
-                    <Pressable
-                      key={a.id}
-                      style={[stiller.cip, stiller.cipEkle]}
-                      onPress={() => setEklenen((m) => [...m, a.id])}
-                      accessibilityRole="button"
-                      accessibilityLabel={a.ad}
-                    >
-                      <Text style={stiller.cipEkleYazi}>+ {a.ad}</Text>
-                    </Pressable>
-                  ))}
-              </View>
-            </>
-          )}
+          {/* ARKADAS ETIKETLE DUGMESI (kullanicinin istegi 2026-09-18):
+              basinca alttan aranabilir arkadas listesi (profil resmi +
+              kullanici adi) aciliyor; secilenler altta cip olarak duruyor
+              ve Kaydet'e basilana kadar sunucuya gitmiyor. Etiket, karsi
+              tarafin "etiket onayi" ayarina gore sunucuda ya hemen
+              onaylaniyor ya da onaya dusuyor (trigger, 2026-09-06);
+              onaylaninca akis yenilenince kartta gorunur.
+              2026-09-05'ten kalan satir ici "+ ad" cipleri kalkti. */}
+          <Pressable
+            style={stiller.etiketleDugmesi}
+            onPress={() => setSeciciAcik(true)}
+            accessibilityRole="button"
+            testID="arkadas-etiketle"
+          >
+            <Text style={stiller.etiketleDugmesiYazi}>{t('anaSayfa.arkadasEtiketle')}</Text>
+          </Pressable>
 
           {/* Eklenmek uzere secilenler */}
           {eklenen.length > 0 && (
@@ -393,6 +380,12 @@ export function CheckInKarti({
                     accessibilityRole="button"
                     accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi?.ad ?? '' })}
                   >
+                    <Avatar
+                      fotografUrl={kisi?.avatarUrl ?? null}
+                      ad={kisi?.ad}
+                      kullaniciAdi={kisi?.kullaniciAdi ?? ''}
+                      cap={22}
+                    />
                     <Text style={stiller.cipYazi}>{kisi?.ad ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
                   </Pressable>
@@ -508,6 +501,19 @@ export function CheckInKarti({
           </Pressable>
         </View>
       )}
+
+      {/* Arkadas secici: zaten etiketli olanlar listede yok. */}
+      <ArkadasSecici
+        acikMi={seciciAcik}
+        arkadaslar={arkadaslar.filter(
+          (a) => !oge.etiketler.some((e) => e.kullaniciId === a.id && !kaldirilan.includes(a.id))
+        )}
+        secili={eklenen}
+        onDegistir={(id) =>
+          setEklenen((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]))
+        }
+        onKapat={() => setSeciciAcik(false)}
+      />
 
       {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
           Kapat, SOL ALTTA paylasan kisi (kullanicinin istegi
@@ -668,17 +674,26 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   cip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: bosluk.s,
-    paddingVertical: 5,
+    gap: 6,
+    paddingLeft: 4,
+    paddingRight: bosluk.s,
+    paddingVertical: 4,
     borderRadius: yuvarlak.hap,
     backgroundColor: renk.turuncuZemin,
   },
   cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.turuncuYazi },
   cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
-  // Eklenebilir arkadaslar: dolu degil hayalet - henuz secilmediler.
-  cipEkle: { backgroundColor: 'transparent', borderWidth: 1, borderColor: renk.cizgi },
-  cipEkleYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
+  // "Arkadas etiketle" dugmesi: check-in formundaki "Arkadas ekle" ile
+  // ayni dil (hayalet, cerceveli).
+  etiketleDugmesi: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 9,
+  },
+  etiketleDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metin },
   duzenleHata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici },
   duzenleEylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.xs },
   duzenleDugme: {

@@ -385,6 +385,48 @@ describe('AnaSayfa', () => {
     expect(screen.getByText('guzel bir aksam')).toBeTruthy()
   })
 
+  /*
+   * ARKADAS ETIKETLE (kullanicinin istegi 2026-09-18): duzenlemede buton,
+   * basinca aranabilir liste (profil resmi + kullanici adi); secim
+   * Kaydet'e kadar cip olarak durur, Kaydet etiketleri sunucuya yazar.
+   * Onay kurali sunucuda (karsi tarafin ayari) - burada olculmez.
+   */
+  it('"Arkadaş etiketle" listeden secilen arkadasi Kaydet ile etiketler', async () => {
+    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-9', kullaniciAdi: 'denizy', ad: 'Deniz Yılmaz', avatarUrl: 'https://x/d.jpg' },
+      { id: 'k-8', kullaniciAdi: 'mert', ad: 'Mert Can', avatarUrl: null },
+    ])
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+
+    // Satir ici "+ ad" cipleri YOK; buton var.
+    expect(screen.queryByText('+ Deniz Yılmaz')).toBeNull()
+    await fireEvent.press(screen.getByTestId('arkadas-etiketle'))
+    expect(await screen.findByTestId('arkadas-secici')).toBeTruthy()
+    // Liste: profil resmi + kullanici adi.
+    expect(screen.getByTestId('arkadas-avatar-k-9')).toBeTruthy()
+    expect(screen.getByText('denizy')).toBeTruthy()
+
+    // Arama kullanici adiyla da calisiyor.
+    await fireEvent.changeText(screen.getByTestId('arkadas-secici-arama'), 'mer')
+    expect(screen.queryByText('denizy')).toBeNull()
+    expect(screen.getByText('mert')).toBeTruthy()
+    await fireEvent.changeText(screen.getByTestId('arkadas-secici-arama'), '')
+
+    await fireEvent.press(screen.getByLabelText('Deniz Yılmaz'))
+    await fireEvent.press(screen.getByText('Tamam (1)'))
+    // Secim cip olarak duruyor, sunucuya HENUZ gitmedi.
+    expect(screen.getByLabelText('Deniz Yılmaz etiketini kaldır')).toBeTruthy()
+    expect(etiketleriKaydet).not.toHaveBeenCalled()
+
+    await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
+    await waitFor(() => expect(etiketleriKaydet).toHaveBeenCalledWith('checkin-1', ['k-9']))
+  })
+
   it('etiketi kaldirinca sunucuya yaziyor ve karttan dusuyor', async () => {
     ;(etiketiKaldir as jest.Mock).mockResolvedValue(undefined)
     ;(akisiGetir as jest.Mock).mockResolvedValue([
