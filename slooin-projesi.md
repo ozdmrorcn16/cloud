@@ -252,7 +252,15 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-17)
 
-**Son bitirilen is (2026-09-18 gece, DERLEMELER BITTI - iOS 1.0.0 (13)
+**Son bitirilen is (2026-09-18 sabah, YAYINDA - web `slooin--o8bilmr5r0`, OTA
+grup `1ca32176-e68d-43b6-bd5e-bc23ce6587f7`):** hesap olusturmaya 3. adim
+"Oturdugun bolge" (ulke -> Turkiye'de il + ilce, ZORUNLU); profilde
+varsayilan GIZLI, ayarlarda "Bolgemi profilde goster"; ulke hicbir zaman
+gosterilmez (kural sunucuda). Profil duzenlemede ulke secici. Ayrica
+moderasyon paneli yeniden tasarlandi ve CANLIDA: https://panel.slooin.com
+(`cd panel && npm run deploy`).
+
+**Daha once (2026-09-18 gece, DERLEMELER BITTI - iOS 1.0.0 (13)
 App Store Connect'te, Android versionCode 7 AAB hazir; kullanici TestFlight'tan
 Build 13'u kurup `slooin.com/byorcun` baglantisini WhatsApp'tan denemeli):** `slooin.com/<ad>`
 dogrudan uygulamayi acsin - AASA + assetlinks sitede canli,
