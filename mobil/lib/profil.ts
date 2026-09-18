@@ -18,6 +18,10 @@ export type BaskaProfil = {
    * ikisi birden bos - yalnizca ilce secilmis bir profil anlamsiz
    * olurdu ("Nilüfer" hangi ilde?). Kisit sunucuda.
    */
+  /**
+   * Il/ilce yalnizca kisi "bolgemi profilde goster" demisse gelir;
+   * ULKE HIC GELMEZ (sunucu dondurmuyor, 2026-09-18).
+   */
   yasadigiIl: string | null
   yasadigiIlce: string | null
   fotograflar: string[]
@@ -99,6 +103,8 @@ export type KendiProfil = {
   ad: string
   biyografi: string | null
   instagram: string | null
+  /** ISO 3166-1 alpha-2 (2026-09-18); null = eski kayit (TR sayilir). Profilde gosterilmez. */
+  yasadigiUlke: string | null
   yasadigiIl: string | null
   yasadigiIlce: string | null
   fotograflar: string[]
@@ -122,20 +128,21 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
   const { data, error } = await supabase
     .from('profiller')
     .select(
-      'id, kullanici_adi, ad, biyografi, instagram, yasadigi_il, yasadigi_ilce, fotograflar'
+      'id, kullanici_adi, ad, biyografi, instagram, yasadigi_ulke, yasadigi_il, yasadigi_ilce, fotograflar'
     )
     .eq('id', kullaniciId)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
   if (!data) return null
 
-  const satir = data as SunucuProfili
+  const satir = data as SunucuProfili & { yasadigi_ulke?: string | null }
   return {
     id: satir.id,
     kullaniciAdi: satir.kullanici_adi,
     ad: satir.ad,
     biyografi: satir.biyografi,
     instagram: satir.instagram ?? null,
+    yasadigiUlke: satir.yasadigi_ulke ?? null,
     yasadigiIl: satir.yasadigi_il ?? null,
     yasadigiIlce: satir.yasadigi_ilce ?? null,
     fotograflar: satir.fotograflar,
@@ -259,6 +266,7 @@ export async function profiliGuncelle(alanlar: {
    * Yasadigi bolge. IKISI BIRDEN ya da IKISI BIRDEN null - sunucuda
    * bir CHECK kisiti bunu zorluyor.
    */
+  yasadigiUlke?: string | null
   yasadigiIl?: string | null
   yasadigiIlce?: string | null
 }): Promise<void> {
@@ -272,6 +280,7 @@ export async function profiliGuncelle(alanlar: {
       ad: alanlar.ad,
       biyografi: alanlar.biyografi,
       instagram: alanlar.instagram ?? null,
+      yasadigi_ulke: alanlar.yasadigiUlke ?? null,
       yasadigi_il: alanlar.yasadigiIl ?? null,
       yasadigi_ilce: alanlar.yasadigiIlce ?? null,
     })

@@ -147,6 +147,17 @@ Uc aktarim var ve ucu de bugun belgelenmemis:
   Deger serbest metin DEGIL, `public.ilceler` listesinden seciliyor
   (OSM idari sinir poligonlarindan uretilmis 968 il/ilce cifti); yani
   profilde uydurma bir yer adi gorunemiyor.
+  **GUNCELLEME 2026-09-18 - "oturdugun bolge", ZORUNLU + ULKE:**
+  kullanicinin karari. Hesap acmanin 3. adiminda ulke (ISO-2, 242 ulke,
+  ICU listesi) ve Turkiye'de il+ilce ZORUNLU; baska ulkede yalnizca
+  ulke (il/ilce listesi yok, serbest metin alinmiyor). Dort soru
+  yeniden: hangi veri = ulke + kaba konum (ilce); dayanak = sozlesmenin
+  ifasi (m.5/2-c) - bolge, yakindakileri esleme urununun parcasi; ama
+  GOSTERIM kisinin elinde; sure = hesap silinene kadar; kim gorur =
+  VARSAYILAN HIC KIMSE (`bolge_gizli` true), kisi ayarlardan "Bolgemi
+  profilde goster" derse il/ilce profili gorebilen herkes; ULKE HICBIR
+  ZAMAN baskasina gosterilmez (`baskasinin_profili` sutunu hic
+  dondurmuyor - kural sunucuda). Gizlilik metni 7 dilde guncellendi.
 - **Profildeki Instagram kullanici adi** (2026-09-11). Kisi profiline
   Instagram kullanici adini yaziyor; profilinde tiklanabilir bir
   baglanti olarak herkese gorunuyor. Dort soru: hangi veri = kisinin

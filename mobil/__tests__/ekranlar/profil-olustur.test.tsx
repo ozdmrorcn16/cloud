@@ -16,6 +16,13 @@ jest.mock('../../lib/supabase', () => ({
   },
 }))
 
+// BOLGE (2026-09-18): il/ilce listeleri sunucudan; testte sabit.
+jest.mock('../../lib/bolge', () => ({
+  ...jest.requireActual('../../lib/bolge'),
+  illeriGetir: jest.fn().mockResolvedValue(['Ankara', 'Bursa', 'İzmir']),
+  ilceleriGetir: jest.fn().mockResolvedValue(['Nilüfer', 'Osmangazi']),
+}))
+
 jest.mock('../../lib/kullanici-adi', () => ({
   ...jest.requireActual('../../lib/kullanici-adi'),
   kullaniciAdiMusaitMi: jest.fn(),
@@ -50,16 +57,26 @@ async function adim2(kullaniciAdi = 'Orcun') {
   await fireEvent.press(screen.getByText('Devam'))
 }
 
-async function adim3(sifre = 'sifre1234', tekrar = sifre) {
+/** 3. adim: oturdugun bolge (ZORUNLU, 2026-09-18) - Turkiye, il, ilce. */
+async function adim3(il = 'Bursa', ilce = 'Nilüfer') {
+  await fireEvent.press(await screen.findByTestId('bolge-il'))
+  await fireEvent.press(await screen.findByText(il))
+  await fireEvent.press(screen.getByTestId('bolge-ilce'))
+  await fireEvent.press(await screen.findByText(ilce))
+  await fireEvent.press(screen.getByText('Devam'))
+}
+
+async function adim4(sifre = 'sifre1234', tekrar = sifre) {
   await fireEvent.changeText(screen.getByPlaceholderText('En az 8 karakter'), sifre)
   await fireEvent.changeText(screen.getByPlaceholderText('Aynı şifreyi bir kez daha'), tekrar)
 }
 
-/** Uc adimi da gecerli degerlerle doldurur; son adimda bekletir. */
+/** Dort adimi da gecerli degerlerle doldurur; son adimda bekletir. */
 async function formuDoldur() {
   await adim1()
   await adim2()
   await adim3()
+  await adim4()
 }
 
 describe('ProfilOlusturEkrani', () => {
@@ -148,7 +165,8 @@ describe('ProfilOlusturEkrani', () => {
     await render(<ProfilOlusturEkrani />)
     await adim1()
     await adim2()
-    await adim3('sifre1234', 'baskasifre')
+    await adim3()
+    await adim4('sifre1234', 'baskasifre')
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(
@@ -161,7 +179,8 @@ describe('ProfilOlusturEkrani', () => {
     await render(<ProfilOlusturEkrani />)
     await adim1()
     await adim2()
-    await adim3('kisa')
+    await adim3()
+    await adim4('kisa')
     await fireEvent.press(screen.getByText('Hesabı oluştur'))
 
     expect(await screen.findByText('Şifre en az 8 karakter olmalı.')).toBeTruthy()
@@ -207,7 +226,59 @@ describe('ProfilOlusturEkrani', () => {
     expect(screen.getByPlaceholderText('Örn. Deniz Yılmaz')).toBeTruthy()
     expect(screen.queryByPlaceholderText('Kullanıcı adı')).toBeNull()
     expect(screen.queryByPlaceholderText('En az 8 karakter')).toBeNull()
-    expect(screen.getByText('Adım 1 / 3')).toBeTruthy()
+    expect(screen.getByText('Adım 1 / 4')).toBeTruthy()
+  })
+
+  /*
+   * OTURDUGUN BOLGE ADIMI (kullanicinin istegi 2026-09-18): ulke -> il
+   * -> ilce, ZORUNLU; kayitta yasadigi_ulke/il/ilce yaziliyor.
+   */
+  describe('bolge adimi', () => {
+    it('ucuncu adimda ulke Turkiye secili, il ve ilce sorulur', async () => {
+      await render(<ProfilOlusturEkrani />)
+      await adim1()
+      await adim2()
+      expect(screen.getByText('Adım 3 / 4')).toBeTruthy()
+      expect(screen.getByText('Oturduğun bölge')).toBeTruthy()
+      expect(screen.getByTestId('bolge-ulke')).toHaveTextContent('Türkiye')
+      expect(screen.getByTestId('bolge-il')).toBeTruthy()
+    })
+
+    it('Turkiye icin il ve ilce secilmeden ILERLENMEZ', async () => {
+      await render(<ProfilOlusturEkrani />)
+      await adim1()
+      await adim2()
+      await fireEvent.press(screen.getByText('Devam'))
+      expect(screen.getByText('İl ve ilçeni seç.')).toBeTruthy()
+      expect(screen.getByText('Adım 3 / 4')).toBeTruthy()
+    })
+
+    it('baska ulke secilince il/ilce sorulmaz, yalnizca ulke kaydedilir', async () => {
+      await render(<ProfilOlusturEkrani />)
+      await adim1()
+      await adim2()
+      await fireEvent.press(screen.getByTestId('bolge-ulke'))
+      await fireEvent.press(await screen.findByText('Almanya'))
+      expect(screen.queryByTestId('bolge-il')).toBeNull()
+      await fireEvent.press(screen.getByText('Devam'))
+      expect(screen.getByText('Adım 4 / 4')).toBeTruthy()
+      await adim4()
+      await fireEvent.press(screen.getByText('Hesabı oluştur'))
+      await waitFor(() => expect(mockInsert).toHaveBeenCalled())
+      expect(mockInsert.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ yasadigi_ulke: 'DE', yasadigi_il: null, yasadigi_ilce: null })
+      )
+    })
+
+    it('Turkiye + il + ilce kayda yazilir', async () => {
+      await render(<ProfilOlusturEkrani />)
+      await formuDoldur()
+      await fireEvent.press(screen.getByText('Hesabı oluştur'))
+      await waitFor(() => expect(mockInsert).toHaveBeenCalled())
+      expect(mockInsert.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ yasadigi_ulke: 'TR', yasadigi_il: 'Bursa', yasadigi_ilce: 'Nilüfer' })
+      )
+    })
   })
 
   it('18 YAS KURALI ONCEDEN yaziyor, hata beklemeden', async () => {
@@ -221,11 +292,11 @@ describe('ProfilOlusturEkrani', () => {
   it('adimlar arasinda GERI bir onceki adima doner, oturumu KAPATMAZ', async () => {
     await render(<ProfilOlusturEkrani />)
     await adim1()
-    expect(screen.getByText('Adım 2 / 3')).toBeTruthy()
+    expect(screen.getByText('Adım 2 / 4')).toBeTruthy()
 
     await fireEvent.press(screen.getByLabelText('Geri'))
 
-    expect(screen.getByText('Adım 1 / 3')).toBeTruthy()
+    expect(screen.getByText('Adım 1 / 4')).toBeTruthy()
     expect(supabase.auth.signOut).not.toHaveBeenCalled()
     // Girilen ad kayboldu mu? Kaybolmamali.
     expect(screen.getByDisplayValue('Orçun Özdemir')).toBeTruthy()
@@ -250,7 +321,7 @@ describe('ProfilOlusturEkrani', () => {
    * gidiyor; ikinci adimda not HIC yok.
    */
   describe('sozlesme notu', () => {
-    it('ikinci adimda not yok, ucuncu adimda iki baglantiyla var', async () => {
+    it('ikinci adimda not yok, SON (dorduncu) adimda iki baglantiyla var', async () => {
       await render(<ProfilOlusturEkrani />)
       await adim1()
       expect(screen.queryByTestId('sozlesme-notu')).toBeNull()
@@ -259,6 +330,9 @@ describe('ProfilOlusturEkrani', () => {
       expect(screen.queryByText(/İnsanlar seni bu adla bulacak/)).toBeNull()
 
       await adim2()
+      // Ucuncu adim (bolge) - not yok.
+      expect(screen.queryByTestId('sozlesme-notu')).toBeNull()
+      await adim3()
       expect(screen.getByTestId('sozlesme-notu')).toBeTruthy()
       await fireEvent.press(screen.getByTestId('baglanti-kosullar'))
       expect(mockRouterPush).toHaveBeenCalledWith('/kosullar')

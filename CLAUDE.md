@@ -148,6 +148,46 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### HESAP OLUSTURMA: "OTURDUGUN BOLGE" ADIMI - 2026-09-18 SABAH
+
+Kullanicinin istekleri, sirayla (hepsi ayni saat icinde): "hesap
+olusturma adimina yasadigin bolge diye bir adim ekle; il, ilce, ulke
+secimi olsun" -> "yasadigin degil OTURDUGUN bolge" -> "ZORUNLU
+secilecek ama ayarlarda gizleyebilecek" -> "ilk etapta GIZLI; profilde
+goster yaparsa il/ilce gorunecek; ULKE HEP GIZLI kalacak".
+
+- **Akis 4 adim oldu:** kimlik, kullanici adi, OTURDUGUN BOLGE, sifre.
+  Ulke (varsayilan Turkiye) -> Turkiye'de il + ilce (ZORUNLU, `bolgeHata`);
+  baska ulkede yalnizca ulke (il/ilce listesi yok, serbest metin YOK -
+  2026-09-11 kurali). `ListeSecici` aramali. Insert `yasadigi_ulke/il/ilce`.
+- **Ulke listesi** `lib/ulkeler-veri.ts`: Node/ICU `Intl.DisplayNames`
+  ile 7 dilde uretildi (242 ulke; tarihsel/takma kodlar DD, UK, SU...
+  ve EU/UN/Antarktika disarida; ~40 KB). `ulkeleriGetir(dil)` Turkiye'yi
+  basa aliyor. Uretim komutu bu bolumun altinda.
+- **Sunucu** (migrasyon `20260918120000`): `profiller.yasadigi_ulke`
+  (ISO-2, check), `bolge_gizli boolean default TRUE`, kisit "il dolu ise
+  ulke TR ya da null". `baskasinin_profili` il/ilceyi YALNIZCA
+  `bolge_gizli=false` iken donduruyor, ULKEYI HIC DONDURMUYOR - kural
+  sunucuda. Mevcut 7 profil de varsayilan gizli oldu.
+- **Ayarlar:** "Bolgemi profilde goster" anahtari (`bolgeGosterGetir/
+  Ayarla`, sutun `bolge_gizli`in tersi), `KonumIkonu`.
+- **Profil duzenle:** ulke secici eklendi, "Bolgeyi kaldir" KALKTI
+  (zorunlu), il+ilce eksikse kaydetmez. `bolgeMetni(il, ilce)` ulkeyi
+  hic yazmiyor (kendi profilinde de).
+- **Gizlilik metni 7 dilde** + `docs/gizlilik-metni.md` + KVKK listesi
+  ("oturdugun bolge" maddesi, dort soru yeniden cevaplandi).
+- TUZAK: sozluk uretirken `adim3Aciklama` ilk once KARSILAMA blogunda
+  eslesti (orada da adim3 var) - profilOlustur blogunu index ile
+  sinirlayarak duzeltildi. Tirnak: Fransizca/Turkce kesmeli metinler
+  cift tirnaga alindi.
+
+Ulke listesi uretimi (Node):
+`new Intl.DisplayNames([dil],{type:'region'}).of(kod)` AA..ZZ tarayip
+`of(k) !== k` olanlar; ESKI/ozel kod listesi kod icinde.
+
+Jest 77 paket / 1026 test. Yayin: web `slooin--o8bilmr5r0`, OTA grup
+`1ca32176-e68d-43b6-bd5e-bc23ce6587f7`; site push ile (hukuki metin).
+
 ### MODERASYON PANELI YENIDEN TASARLANDI - 2026-09-18 GECE
 
 Kullanicinin istegi: "moderator sayfasini profesyonel kurallara uygun

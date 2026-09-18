@@ -64,6 +64,23 @@ export const EngelIkonu = () => {
   )
 }
 
+/** Konum ignesi - "oturdugum bolge" ayari (2026-09-18). */
+export const KonumIkonu = () => {
+  const renk = useRenk()
+  return govde(
+    <>
+      <Path
+        d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"
+        stroke={renk.metin}
+        strokeWidth={K}
+        fill="none"
+        strokeLinejoin="round"
+      />
+      <Circle cx={12} cy={10} r={2.4} stroke={renk.metin} strokeWidth={K} fill="none" />
+    </>
+  )
+}
+
 export const GozIkonu = () => {
   const renk = useRenk()
   return govde(

@@ -33,8 +33,11 @@ const PROFIL = {
   ad: 'Orcun Ozdemir',
   biyografi: 'merhaba',
   instagram: null,
-  yasadigiIl: null,
-  yasadigiIlce: null,
+  // Bolge ZORUNLU (2026-09-18): ornek profil dolu geliyor ki diger
+  // testlerde "Kaydet" bolge hatasina takilmasin.
+  yasadigiUlke: 'TR',
+  yasadigiIl: 'Bursa',
+  yasadigiIlce: 'Nilüfer',
   fotograflar: [],
 }
 
@@ -224,57 +227,71 @@ describe('ProfilDuzenleEkrani - kullanici adi', () => {
  * gibi degerler profilde gercek bilgi gibi dururdu.
  */
 describe('ProfilDuzenleEkrani - yasadigin bolge', () => {
+  // Ornek profil Bursa/Nilufer ile geliyor; testler baska ile geciyor
+  // ki kutudaki metinle listedeki secenek karismasin.
   it('il secilince o ilin ilceleri cekiliyor', async () => {
     await render(<ProfilDuzenleEkrani />)
     await screen.findByTestId('bolge-il')
 
     await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('Bursa'))
+    await fireEvent.press(await screen.findByText('İstanbul'))
 
-    await waitFor(() => expect(ilceleriGetir).toHaveBeenCalledWith('Bursa'))
+    await waitFor(() => expect(ilceleriGetir).toHaveBeenCalledWith('İstanbul'))
   })
 
-  it('il ve ilce secilince ikisi birden kaydediliyor', async () => {
+  it('il ve ilce secilince ikisi birden (ve ulke) kaydediliyor', async () => {
     await render(<ProfilDuzenleEkrani />)
     await screen.findByTestId('bolge-il')
 
     await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('Bursa'))
+    await fireEvent.press(await screen.findByText('İstanbul'))
     await fireEvent.press(screen.getByTestId('bolge-ilce'))
-    await fireEvent.press(await screen.findByText('Nilüfer'))
+    await fireEvent.press(await screen.findByText('Osmangazi'))
     await fireEvent.press(screen.getByText('Kaydet'))
 
     await waitFor(() =>
       expect(profiliGuncelle).toHaveBeenCalledWith(
-        expect.objectContaining({ yasadigiIl: 'Bursa', yasadigiIlce: 'Nilüfer' })
+        expect.objectContaining({ yasadigiUlke: 'TR', yasadigiIl: 'İstanbul', yasadigiIlce: 'Osmangazi' })
       )
     )
   })
 
   /*
-   * IL SECILIP ILCE SECILMEDIYSE BOLGE HIC KAYDEDILMIYOR: sunucudaki
-   * CHECK kisiti yarim bir secimi zaten reddeder ve kullanici
-   * sebebini goremezdi ("bosa is yaptirma").
+   * BOLGE ZORUNLU (2026-09-18): il secilip ilce secilmezse KAYDEDILMEZ,
+   * hata gosterilir ("bosa is yaptirma": sunucudaki CHECK zaten
+   * reddederdi ama kullanici sebebini goremezdi).
    */
-  it('yalnizca il secilmisse bolge kaydedilmiyor', async () => {
+  it('il secilip ilce secilmezse kaydetmez, hata gosterir', async () => {
     await render(<ProfilDuzenleEkrani />)
     await screen.findByTestId('bolge-il')
 
     await fireEvent.press(screen.getByTestId('bolge-il'))
-    await fireEvent.press(await screen.findByText('Bursa'))
+    await fireEvent.press(await screen.findByText('İstanbul'))
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(await screen.findByText('İl ve ilçeni seç.')).toBeTruthy()
+    expect(profiliGuncelle).not.toHaveBeenCalled()
+  })
+
+  it('"Bolgeyi kaldir" dugmesi YOK - bolge zorunlu, gizlemek ayarlarda', async () => {
+    await render(<ProfilDuzenleEkrani />)
+    await screen.findByTestId('bolge-il')
+    expect(screen.queryByTestId('bolgeyi-kaldir')).toBeNull()
+  })
+
+  it('baska ulke secilince il/ilce kalkar ve yalnizca ulke kaydedilir', async () => {
+    await render(<ProfilDuzenleEkrani />)
+    await screen.findByTestId('bolge-ulke')
+
+    await fireEvent.press(screen.getByTestId('bolge-ulke'))
+    await fireEvent.press(await screen.findByText('Almanya'))
+    expect(screen.queryByTestId('bolge-il')).toBeNull()
     await fireEvent.press(screen.getByText('Kaydet'))
 
     await waitFor(() =>
       expect(profiliGuncelle).toHaveBeenCalledWith(
-        expect.objectContaining({ yasadigiIl: null, yasadigiIlce: null })
+        expect.objectContaining({ yasadigiUlke: 'DE', yasadigiIl: null, yasadigiIlce: null })
       )
     )
-  })
-
-  it('bolge secili degilken kaldirma dugmesi cizilmiyor', async () => {
-    await render(<ProfilDuzenleEkrani />)
-    await screen.findByTestId('bolge-il')
-
-    expect(screen.queryByTestId('bolgeyi-kaldir')).toBeNull()
   })
 })

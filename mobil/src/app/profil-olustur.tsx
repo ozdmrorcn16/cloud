@@ -14,6 +14,8 @@ import {
   kullaniciAdiMusaitMi,
 } from '../../lib/kullanici-adi'
 import { TarihSecici, type Tarih } from '../tasarim/TarihSecici'
+import { ListeSecici } from '../tasarim/ListeSecici'
+import { illeriGetir, ilceleriGetir, ulkeleriGetir, TURKIYE } from '../../lib/bolge'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { hataMetni } from '../../lib/hata-metni'
@@ -76,11 +78,27 @@ export default function ProfilOlusturEkrani() {
   const [sifreTekrar, setSifreTekrar] = useState('')
   const [sifreGorunur, setSifreGorunur] = useState(false)
 
-  // UC ADIM (kullanicinin secimi 2026-09-04). Onceden bes alan tek
-  // ekranda duruyordu; her adimda tek is olunca "doldurulacak cok sey
-  // var" hissi kayboluyor ve 18 yas engeli ILK adimda cikiyor - yani
-  // 18'inden kucuk biri bosuna kullanici adi secip sifre dusunmuyor.
-  const [adim, setAdim] = useState<1 | 2 | 3>(1)
+  // OTURDUGUN BOLGE (kullanicinin istegi 2026-09-18): ulke -> il -> ilce,
+  // ZORUNLU. Il/ilce yalnizca Turkiye'de (liste `public.ilceler`, OSM
+  // poligonlarindan); baska ulkede yalnizca ulke kaydedilir, serbest
+  // metin YOK (2026-09-11 kurali). Ulke varsayilani Turkiye. Profilde
+  // VARSAYILAN GIZLI (`bolge_gizli` true); ayarlardan acilinca il/ilce
+  // gorunur, ulke hicbir zaman gorunmez.
+  const [ulke, setUlke] = useState<string>(TURKIYE)
+  const [il, setIl] = useState<string | null>(null)
+  const [ilce, setIlce] = useState<string | null>(null)
+  const [iller, setIller] = useState<string[]>([])
+  const [ilceler, setIlceler] = useState<string[]>([])
+  const [bolgeSecici, setBolgeSecici] = useState<'ulke' | 'il' | 'ilce' | null>(null)
+  const ulkeler = ulkeleriGetir(dil)
+
+  // DORT ADIM (2026-09-04'te uc; 2026-09-18'de bolge adimi eklendi).
+  // Onceden bes alan tek ekranda duruyordu; her adimda tek is olunca
+  // "doldurulacak cok sey var" hissi kayboluyor ve 18 yas engeli ILK
+  // adimda cikiyor - yani 18'inden kucuk biri bosuna kullanici adi
+  // secip sifre dusunmuyor. Sira: kimlik, kullanici adi, bolge, sifre.
+  const [adim, setAdim] = useState<1 | 2 | 3 | 4>(1)
+  const SON_ADIM = 4
 
   const [alanHatalari, setAlanHatalari] = useState<Record<string, string | null>>({})
   const [hata, setHata] = useState<string | null>(null)
@@ -89,6 +107,11 @@ export default function ProfilOlusturEkrani() {
 
   // Gec donen musaitlik cevaplarini elemek icin sira numarasi.
   const sorguSirasi = useRef(0)
+
+  useEffect(() => {
+    if (adim !== 3 || iller.length > 0 || ulke !== TURKIYE) return
+    illeriGetir().then(setIller).catch(() => {})
+  }, [adim, iller.length, ulke])
 
   const buYil = new Date().getFullYear()
   const enGecYil = buYil - EN_AZ_YAS
@@ -112,7 +135,7 @@ export default function ProfilOlusturEkrani() {
     // Adimlar arasindayken geri, bir onceki adima doner - girilenler
     // durur. Yalnizca ILK adimda ekrandan cikiyor.
     if (adim > 1) {
-      setAdim((adim - 1) as 1 | 2 | 3)
+      setAdim((adim - 1) as 1 | 2 | 3 | 4)
       return
     }
     await supabase.auth.signOut()
@@ -172,7 +195,7 @@ export default function ProfilOlusturEkrani() {
   }
 
   /** O adimin alanlarini dogrular; bos nesne donerse adim gecerli. */
-  function adiminHatalari(hangi: 1 | 2 | 3): Record<string, string | null> {
+  function adiminHatalari(hangi: 1 | 2 | 3 | 4): Record<string, string | null> {
     const hatalar: Record<string, string | null> = {}
 
     if (hangi === 1) {
@@ -193,7 +216,14 @@ export default function ProfilOlusturEkrani() {
       }
     }
 
+    // 3. adim (bolge) ZORUNLU (kullanicinin duzeltmesi 2026-09-18): ulke
+    // her zaman secili (varsayilan TR); Turkiye'de il VE ilce sart. Baska
+    // ulkede liste olmadigi icin yalnizca ulke yeterli.
     if (hangi === 3) {
+      if (ulke === TURKIYE && (!il || !ilce)) hatalar.bolge = t('profilOlustur.bolgeHata')
+    }
+
+    if (hangi === 4) {
       if (sifre.length < EN_AZ_SIFRE) {
         hatalar.sifre = t('profilOlustur.hataSifreKisa', { adet: EN_AZ_SIFRE })
       } else if (sifre !== sifreTekrar) {
@@ -218,7 +248,7 @@ export default function ProfilOlusturEkrani() {
     setAlanHatalari(hatalar)
     if (Object.values(hatalar).some(Boolean)) return
     setHata(null)
-    setAdim((adim + 1) as 1 | 2 | 3)
+    setAdim((adim + 1) as 1 | 2 | 3 | 4)
   }
 
   async function tamamla() {
@@ -229,12 +259,15 @@ export default function ProfilOlusturEkrani() {
     // kullanici geri gidip bir alani bozmus olabilir. Hata varsa o
     // alanin bulundugu adima geri donuluyor, yoksa kullanici gorunmeyen
     // bir hata yuzunden takilip kalirdi.
-    const hatalar = { ...adiminHatalari(1), ...adiminHatalari(2), ...adiminHatalari(3) }
+    const hatalar = {
+      ...adiminHatalari(1), ...adiminHatalari(2), ...adiminHatalari(3), ...adiminHatalari(4),
+    }
 
     setAlanHatalari(hatalar)
     if (Object.values(hatalar).some(Boolean)) {
       if (hatalar.ad || hatalar.dogum) setAdim(1)
       else if (hatalar.kullaniciAdi) setAdim(2)
+      else if (hatalar.bolge) setAdim(3)
       return
     }
 
@@ -265,6 +298,11 @@ export default function ProfilOlusturEkrani() {
         ad: ad.trim(),
         kullanici_adi: kullaniciAdiNormal,
         dogum_tarihi: isoTarih(dogum as Tarih),
+        // Bolge: il/ilce yalnizca ikisi birden ve Turkiye'de; ulke her
+        // zaman (varsayilan TR).
+        yasadigi_ulke: ulke,
+        yasadigi_il: ulke === TURKIYE && il && ilce ? il : null,
+        yasadigi_ilce: ulke === TURKIYE && il && ilce ? ilce : null,
       })
 
       if (error) {
@@ -324,12 +362,12 @@ export default function ProfilOlusturEkrani() {
             Adim sayaci ayrica YAZIYLA da veriliyor - ekran okuyucu
             renkli bir cizgiyi okuyamaz. */}
         <View style={stiller.ilerleme}>
-          {[1, 2, 3].map((no) => (
+          {[1, 2, 3, 4].map((no) => (
             <View key={no} style={[stiller.ilerlemeParca, no <= adim && stiller.ilerlemeDolu]} />
           ))}
         </View>
         <Text style={stiller.adimSayaci}>
-          {t('profilOlustur.adimSayaci', { simdiki: adim, toplam: 3 })}
+          {t('profilOlustur.adimSayaci', { simdiki: adim, toplam: SON_ADIM })}
         </Text>
 
         <Text style={stiller.baslik}>{t(`profilOlustur.adim${adim}Baslik`)}</Text>
@@ -457,6 +495,62 @@ export default function ProfilOlusturEkrani() {
 
         {adim === 3 && (
           <>
+            <Text style={stiller.etiketIlk}>{t('profilOlustur.bolgeUlkeEtiket')}</Text>
+            <Pressable
+              style={[stiller.girdi, stiller.secimAlani]}
+              onPress={() => setBolgeSecici('ulke')}
+              accessibilityRole="button"
+              accessibilityLabel={t('profilOlustur.bolgeUlkeSec')}
+              testID="bolge-ulke"
+            >
+              <Text style={stiller.secimYazi}>
+                {ulkeler.find((u) => u.kod === ulke)?.ad ?? ulke}
+              </Text>
+            </Pressable>
+
+            {ulke === TURKIYE ? (
+              <>
+                <Text style={stiller.etiket}>{t('profilOlustur.bolgeIlEtiket')}</Text>
+                <View style={stiller.ikili}>
+                  <Pressable
+                    style={[stiller.girdi, stiller.yariAlan, stiller.secimAlani, Boolean(alanHatalari.bolge) && stiller.girdiHatali]}
+                    onPress={() => setBolgeSecici('il')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('profilOlustur.bolgeIlSec')}
+                    testID="bolge-il"
+                  >
+                    <Text style={[stiller.secimYazi, !il && stiller.secimBos]}>
+                      {il ?? t('profilOlustur.bolgeIlSec')}
+                    </Text>
+                  </Pressable>
+                  {/* ILCE, IL SECILMEDEN KAPALI: ilceler ile bagli. */}
+                  <Pressable
+                    style={[stiller.girdi, stiller.yariAlan, stiller.secimAlani, !il && stiller.secimKapali]}
+                    onPress={() => il && setBolgeSecici('ilce')}
+                    disabled={!il}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('profilOlustur.bolgeIlceSec')}
+                    testID="bolge-ilce"
+                  >
+                    <Text style={[stiller.secimYazi, !ilce && stiller.secimBos]}>
+                      {ilce ?? t('profilOlustur.bolgeIlceSec')}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <Text style={stiller.ipucu}>{t('profilOlustur.bolgeYalnizcaUlke')}</Text>
+            )}
+            {alanHatalari.bolge ? (
+              <Text style={stiller.alanHatasi}>{alanHatalari.bolge}</Text>
+            ) : (
+              <Text style={stiller.ipucu}>{t('profilOlustur.bolgeIpucu')}</Text>
+            )}
+          </>
+        )}
+
+        {adim === 4 && (
+          <>
             <Text style={stiller.etiketIlk}>{t('profilOlustur.sifreEtiket')}</Text>
             <View
               style={[
@@ -534,12 +628,12 @@ export default function ProfilOlusturEkrani() {
         <View style={stiller.altBlok}>
           <Pressable
             style={[stiller.birincil, !adimTamam && stiller.birincilPasif]}
-            onPress={adim === 3 ? tamamla : ileri}
+            onPress={adim === SON_ADIM ? tamamla : ileri}
             disabled={gonderiliyor}
             accessibilityRole="button"
           >
             <Text style={[stiller.birincilYazi, !adimTamam && stiller.birincilYaziPasif]}>
-              {adim < 3
+              {adim < SON_ADIM
                 ? t('profilOlustur.devam')
                 : gonderiliyor
                   ? t('profilOlustur.gonderiliyor')
@@ -547,7 +641,7 @@ export default function ProfilOlusturEkrani() {
             </Text>
           </Pressable>
 
-          {adim === 3 && (
+          {adim === SON_ADIM && (
             <Text style={stiller.onayNotu} testID="sozlesme-notu">
               {t('profilOlustur.sozlesmeNotuOn')}
               <Text
@@ -573,6 +667,50 @@ export default function ProfilOlusturEkrani() {
         </View>
       </ScrollView>
 
+      <ListeSecici
+        acikMi={bolgeSecici === 'ulke'}
+        baslik={t('profilOlustur.bolgeUlkeSec')}
+        secenekler={ulkeler.map((u) => u.ad)}
+        secili={ulkeler.find((u) => u.kod === ulke)?.ad ?? null}
+        onSec={(ad) => {
+          const secilen = ulkeler.find((u) => u.ad === ad)
+          if (secilen) {
+            setUlke(secilen.kod)
+            // Ulke degisince il/ilce sifirlanir: liste yalnizca Turkiye icin.
+            if (secilen.kod !== TURKIYE) {
+              setIl(null)
+              setIlce(null)
+            }
+          }
+          setBolgeSecici(null)
+        }}
+        onKapat={() => setBolgeSecici(null)}
+      />
+      <ListeSecici
+        acikMi={bolgeSecici === 'il'}
+        baslik={t('profilOlustur.bolgeIlSec')}
+        secenekler={iller}
+        secili={il}
+        onSec={(secilen) => {
+          setIl(secilen)
+          setIlce(null)
+          setIlceler([])
+          ilceleriGetir(secilen).then(setIlceler).catch(() => {})
+          setBolgeSecici(null)
+        }}
+        onKapat={() => setBolgeSecici(null)}
+      />
+      <ListeSecici
+        acikMi={bolgeSecici === 'ilce'}
+        baslik={t('profilOlustur.bolgeIlceSec')}
+        secenekler={ilceler}
+        secili={ilce}
+        onSec={(secilen) => {
+          setIlce(secilen)
+          setBolgeSecici(null)
+        }}
+        onKapat={() => setBolgeSecici(null)}
+      />
       <TarihSecici
         gorunur={seciciAcik}
         baslangic={seciciBaslangici}
@@ -661,6 +799,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metin,
   },
   girdiOdakli: { borderColor: renk.turuncu },
+  /* Bolge secim alanlari - profil duzenlemedekiyle AYNI olculer. */
+  ikili: { flexDirection: 'row' as const, gap: bosluk.m },
+  yariAlan: { flex: 1 },
+  secimAlani: { justifyContent: 'center' as const },
+  secimBos: { color: renk.metinIkincil },
+  secimKapali: { backgroundColor: renk.zemin },
   girdiHatali: { borderColor: renk.yikici },
 
   // Tarih satiri bir girdi gibi duruyor ama basilinca tekerlek aciliyor.

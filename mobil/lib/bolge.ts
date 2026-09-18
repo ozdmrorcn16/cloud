@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { ULKELER, type Ulke } from './ulkeler-veri'
 
 /**
  * IL VE ILCE LISTESI - profildeki "yasadigin bolge" secimi icin.
@@ -48,7 +49,39 @@ export async function ilceleriGetir(il: string): Promise<string[]> {
   return (data as { ilce: string }[]).map((s) => s.ilce)
 }
 
-/** Profilde gosterilen bicim: "Nilüfer, Bursa". */
+/** Turkiye: bu ulkede il/ilce listesi var, digerlerinde yalnizca ulke. */
+export const TURKIYE = 'TR'
+
+export type UlkeDili = keyof Omit<Ulke, 'kod'>
+
+/**
+ * ULKE LISTESI (2026-09-18, hesap olusturmadaki "yasadigin bolge"
+ * adimi). `lib/ulkeler-veri.ts` ICU'dan uretildi: 242 ulke, 7 dilde ad.
+ * Secilen dilde alfabetik; Turkiye listenin basinda (kullanicilarin
+ * buyuk cogunlugu) - aramayla da bulunur.
+ */
+export function ulkeleriGetir(dil: UlkeDili): { kod: string; ad: string }[] {
+  const liste = ULKELER.map((u) => ({ kod: u.kod, ad: u[dil] ?? u.en }))
+    .sort((a, b) => a.ad.localeCompare(b.ad, dil))
+  const tr = liste.find((u) => u.kod === TURKIYE)
+  return tr ? [tr, ...liste.filter((u) => u.kod !== TURKIYE)] : liste
+}
+
+export function ulkeAdi(kod: string | null, dil: UlkeDili): string | null {
+  if (!kod) return null
+  const u = ULKELER.find((x) => x.kod === kod)
+  return u ? (u[dil] ?? u.en) : kod
+}
+
+/**
+ * Profilde gosterilen bicim: "Nilüfer, Bursa". Il/ilce yalnizca ikisi
+ * birden doluysa yazilir (2026-09-11 kurali).
+ *
+ * ULKE HICBIR ZAMAN GOSTERILMEZ (kullanicinin karari 2026-09-18:
+ * "sadece ulke hep gizli kalacak"): kayit icin toplaniyor, profilde
+ * yazilmiyor - ne kendi profilinde ne baskasininkinde. Turkiye
+ * disindaki bir kullanicinin profilinde bolge satiri bos kalir.
+ */
 export function bolgeMetni(il: string | null, ilce: string | null): string | null {
   if (!il || !ilce) return null
   return `${ilce}, ${il}`

@@ -179,8 +179,20 @@ export default {
     adim2Aciklama: '3-20 karakter; küçük harf, rakam, nokta ve alt çizgi içerebilir.',
     kullaniciAdiEtiket: 'Kullanıcı adın',
 
-    adim3Baslik: 'Şifreni belirle',
-    adim3Aciklama: 'Hesabına bu şifreyle gireceksin.',
+    // BOLGE ADIMI (kullanicinin istegi 2026-09-18): ulke -> il -> ilce; ZORUNLU, ayarlardan gizlenebilir.
+    adim3Baslik: 'Oturduğun bölge',
+    adim3Aciklama: 'Profilinde varsayılan olarak gizli; istersen ayarlardan gösterebilirsin. Ülke hiçbir zaman gösterilmez.',
+    bolgeUlkeEtiket: 'Ülke',
+    bolgeUlkeSec: 'Ülke seç',
+    bolgeIlEtiket: 'İl ve ilçe',
+    bolgeIlSec: 'İl seç',
+    bolgeIlceSec: 'İlçe seç',
+    bolgeYalnizcaUlke: 'Bu ülke için il ve ilçe listesi yok; yalnızca ülke kaydedilir.',
+    bolgeIpucu: 'Profilinden değiştirebilir, ayarlardan gizleyebilirsin.',
+    bolgeHata: 'İl ve ilçeni seç.',
+
+    adim4Baslik: 'Şifreni belirle',
+    adim4Aciklama: 'Hesabına bu şifreyle gireceksin.',
     sifreUygun: 'Şifre yeterince uzun.',
     sifrelerAyni: 'Şifreler eşleşiyor.',
 
@@ -407,12 +419,14 @@ export default {
       'Bağlantı da yapıştırabilirsin. Doğrulanmaz; profilinde bağlantı olarak görünür.',
     // YASADIGIN BOLGE (2026-09-11). OPSIYONEL ve bu ekranda da
     // yaziyor: kisi konumunu paylasmak zorunda degil.
-    bolgeEtiket: 'Yaşadığın bölge',
+    bolgeEtiket: 'Oturduğun bölge',
+    bolgeUlkeSec: 'Ülke seç',
+    bolgeYalnizcaUlke: 'Bu ülke için il ve ilçe listesi yok; yalnızca ülke kaydedilir.',
+    bolgeHata: 'İl ve ilçeni seç.',
     bolgeSecilmedi: 'Seçilmedi',
-    bolgeIpucu: 'İsteğe bağlı. Seçersen profilinde görünür.',
+    bolgeIpucu: 'Profilde gösterilip gösterilmeyeceği ayarlarda. Ülke hiçbir zaman gösterilmez.',
     bolgeIlSec: 'İl seç',
     bolgeIlceSec: 'İlçe seç',
-    bolgeKaldir: 'Bölgeyi kaldır',
     instagramHata:
       'Instagram kullanıcı adı harf, rakam, nokta ve alt çizgiden oluşur; nokta ile başlayamaz ya da bitemez.',
     kaydediliyor: 'Kaydediliyor…',
@@ -424,6 +438,8 @@ export default {
     geri: 'Geri',
 
     profilGizli: 'Profilim gizli',
+    bolgeGoster: 'Bölgemi profilde göster',
+    bolgeGosterAciklama: 'Kapalıyken il ve ilçen başkalarına görünmez. Ülke hiçbir zaman gösterilmez.',
     profilGizliAciklama:
       'Açıkken anıların ve check-in’lerin yalnızca arkadaşlarına görünür. Adın, kullanıcı adın ve fotoğrafın herkese açık kalır; böylece seni bulup arkadaşlık isteği gönderebilirler.',
     // ERISIM HAKKI (KVKK m.11, 2026-09-11). Gizlilik metninin hemen

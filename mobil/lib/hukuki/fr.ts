@@ -13,6 +13,7 @@ const fr: HukukiMetin = {
       baslik: '1. Quelles données te concernant nous traitons',
       paragraflar: [
         "Ton adresse e-mail : aujourd'hui l'identifiant PRINCIPAL de ton compte. Elle est utilisée à l'inscription et à la connexion, et le code de vérification y est envoyé.",
+        "Où tu habites : pays et, en Türkiye, province et district. Demandé à la création du compte ; jamais lu sur l'appareil, tu le choisis toi-même. Province et district n'apparaissent sur ton profil que si tu actives « Afficher ma région sur le profil » dans les réglages ; le pays n'est jamais affiché.",
         'Ton nom, ton nom d\'utilisateur, ta date de naissance, ta bio et tes photos de profil.',
         "Ta position, de trois manières différentes : lors d'une recherche de lieu et de l'ajout d'un lieu, la position de l'appareil est envoyée au serveur mais n'est pas conservée ; pendant qu'un check-in est actif, tes coordonnées sont conservées ; lorsque le check-in devient un souvenir (après 1 heure ou dès que tu appuies sur « Je suis parti »), les coordonnées sont supprimées et il ne reste que le lieu où tu étais (détails ci-dessous, section 3).",
         'Le contenu des messages que tu envoies et reçois.',

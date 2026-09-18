@@ -13,6 +13,7 @@ const de: HukukiMetin = {
       baslik: '1. Welche deiner Daten wir verarbeiten',
       paragraflar: [
         'Deine E-Mail-Adresse - heute die PRIMÄRE Kennung deines Kontos. Sie wird bei der Registrierung und Anmeldung verwendet; der Bestätigungscode wird dorthin gesendet.',
+        "Dein Wohnort: Land, in der Türkei zusätzlich Provinz und Bezirk. Wird beim Erstellen des Kontos abgefragt; nie vom Gerät gelesen, du wählst selbst. Provinz und Bezirk erscheinen nur, wenn du in den Einstellungen „Region im Profil zeigen“ aktivierst; das Land wird nie angezeigt.",
         'Dein Name, Benutzername, Geburtsdatum, deine Bio und Profilfotos.',
         'Dein Standort - auf drei verschiedene Arten: bei der Ortssuche und beim Hinzufügen eines Ortes wird der Gerätestandort an den Server gesendet, aber nicht gespeichert; während ein Check-in aktiv ist, werden deine Koordinaten gespeichert; wird der Check-in zu einer Erinnerung (nach 1 Stunde oder sobald du „Ich bin gegangen“ tippst), werden die Koordinaten gelöscht und es bleibt nur, an welchem Ort du warst (Details unten in Abschnitt 3).',
         'Der Inhalt der Nachrichten, die du sendest und empfängst.',

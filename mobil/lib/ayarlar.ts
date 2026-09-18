@@ -71,6 +71,34 @@ export async function profilGizliAyarla(deger: boolean): Promise<void> {
 }
 
 /**
+ * OTURDUGU BOLGEYI PROFILDE GOSTER (kullanicinin karari 2026-09-18).
+ *
+ * Sunucudaki sutun `bolge_gizli` (varsayilan TRUE: yeni hesap bolgeyi
+ * gostermez). Ekranda anahtar "goster" diye okunuyor - kisi acinca
+ * il/ilce baskasinin profil gorunumune girer. Ulke bu ayardan bagimsiz
+ * HIC gosterilmez. Kural `baskasinin_profili` RPC'sinde.
+ */
+export async function bolgeGosterGetir(): Promise<boolean> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('bolge_gizli')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  return !(data?.bolge_gizli ?? true)
+}
+
+export async function bolgeGosterAyarla(goster: boolean): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase
+    .from('profiller')
+    .update({ bolge_gizli: !goster })
+    .eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}
+
+/**
  * ETIKET ONAYI (kullanicinin karari 2026-09-06).
  *
  * false (varsayilan): karsilikli arkadasin seni DIREK etiketler.

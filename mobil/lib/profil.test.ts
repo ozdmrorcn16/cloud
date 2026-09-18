@@ -108,6 +108,7 @@ describe('kendiProfilimiGetir', () => {
       ad: 'Orcun',
       biyografi: 'merhaba',
       instagram: null,
+      yasadigiUlke: null,
       yasadigiIl: null,
       yasadigiIlce: null,
       fotograflar: ['a.jpg'],
