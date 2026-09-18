@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slooin - Yon C: Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="ortak.css" />
+<style>
+  /* Imza: radar. Merkezde sen; halkalar 250 m / 500 m / 1 km - uygulamanin
+     gercek kurali. Tarama kolu doner, mekanlar mesafesine gore "ping"
+     olur. Uc renk: beyaz, murekkep, turuncu. Beyaz zemin, dekorasyon yok. */
+  .ust { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; position: relative; z-index: 3; }
+  .ust img { height: 30px; }
+  .ust nav { display: flex; gap: 26px; font-weight: 500; font-size: 15px; color: var(--ikincil); }
+  .ust .eylem { padding: 12px 20px; font-size: 15px; }
+
+  .radar-bolum { position: relative; min-height: 900px; overflow: hidden; }
+  .radar { position: absolute; left: 50%; top: 56%; width: 820px; height: 820px; transform: translate(-50%,-50%); }
+  .radar .halka { position: absolute; border-radius: 50%; border: 1px solid var(--cizgi); inset: 0; }
+  .radar .halka.h2 { inset: 17%; }
+  .radar .halka.h3 { inset: 34%; }
+  .radar .halka.h4 { inset: 43%; border-color: #E4DDD6; }
+  .radar .etiket { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--soluk); font-weight: 600; background: #fff; padding: 0 8px; }
+  .radar .etiket.e1 { top: -8px; }
+  .radar .etiket.e2 { top: calc(17% - 8px); }
+  .radar .etiket.e3 { top: calc(34% - 8px); }
+  .radar .kol { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(254,120,19,.14) 0deg, rgba(254,120,19,.0) 70deg, transparent 70deg); animation: don 7s linear infinite; }
+  @keyframes don { to { transform: rotate(360deg) } }
+  .radar .sen { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: var(--metin); transform: translate(-50%,-50%); box-shadow: 0 0 0 5px #fff, 0 0 0 6px var(--cizgi); }
+  .ping { position: absolute; display: flex; align-items: center; gap: 8px; transform: translate(-7px,-7px); animation: belir .5s ease-out both; animation-delay: var(--g, 0s); }
+  .ping .nokta { width: 14px; height: 14px; }
+  .ping .ad { font-size: 14px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; background: #fff; padding: 2px 6px; border-radius: 6px; }
+  .ping .ad small { display: block; font-weight: 500; color: var(--ikincil); font-size: 12px; }
+  @keyframes belir { from { opacity: 0; transform: translate(-7px,-7px) scale(.7) } to { opacity: 1; transform: translate(-7px,-7px) } }
+
+  .radar-bolum .telefon { position: absolute; left: 50%; top: 56%; transform: translate(-50%,-50%); }
+  .radar-bolum .baslik { position: absolute; left: 32px; top: 120px; z-index: 3; max-width: 380px; }
+  .radar-bolum .baslik h1 { font-size: 58px; line-height: 1; letter-spacing: -.035em; margin: 0 0 18px; }
+  .radar-bolum .baslik p { color: var(--ikincil); font-size: 18px; margin: 0 0 26px; }
+  .radar-bolum .eylemler { position: absolute; right: 32px; bottom: 90px; z-index: 3; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+  .radar-bolum .canli { position: absolute; right: 32px; top: 130px; z-index: 3; text-align: right; }
+  .radar-bolum .canli b { display: block; font-size: 64px; letter-spacing: -.04em; line-height: 1; }
+  .radar-bolum .canli span { color: var(--ikincil); font-size: 15px; display: inline-flex; gap: 8px; align-items: center; }
+
+  /* mesafe hikayesi: uc kural, uc satir */
+  .kurallar { border-top: 1px solid var(--cizgi); }
+  .kural { display: grid; grid-template-columns: 260px 1fr 1fr; gap: 40px; padding: 56px 0; border-bottom: 1px solid var(--cizgi); align-items: start; }
+  .kural .olcu { font-size: 88px; letter-spacing: -.05em; line-height: .9; font-weight: 700; }
+  .kural .olcu small { display: block; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--soluk); margin-top: 14px; font-weight: 600; }
+  .kural h3 { font-size: 26px; letter-spacing: -.025em; margin: 6px 0 10px; }
+  .kural p { margin: 0; color: var(--ikincil); font-size: 17px; }
+  .kural .ekran img { width: 100%; max-width: 360px; height: 320px; object-fit: cover; object-position: top; border-radius: 22px; border: 1px solid var(--cizgi); }
+
+  .akis { padding: 110px 0 40px; }
+  .akis h2 { font-size: 44px; letter-spacing: -.03em; margin: 0 0 40px; line-height: 1.05; }
+  .akis ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(5,1fr); gap: 20px; counter-reset: a; }
+  .akis li { border: 1px solid var(--cizgi); border-radius: 20px; padding: 22px; counter-increment: a; }
+  .akis li::before { content: counter(a); display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--metin); font-weight: 700; font-size: 14px; margin-bottom: 18px; }
+  .akis li.simdi { border-color: var(--turuncu); background: var(--turuncu-zemin); }
+  .akis li.simdi::before { background: var(--turuncu); border-color: var(--turuncu); color: #fff; }
+  .akis li b { display: block; font-size: 18px; letter-spacing: -.02em; margin-bottom: 6px; }
+  .akis li span { color: var(--ikincil); font-size: 14px; }
+
+  .cta { padding: 100px 0 110px; text-align: center; }
+  .cta h2 { font-size: 56px; letter-spacing: -.035em; margin: 0 0 12px; line-height: 1; }
+  .cta p { color: var(--ikincil); font-size: 19px; margin: 0 0 36px; }
+  .cta .rozetler { justify-content: center; }
+</style>
+</head>
+<body>
+<section class="radar-bolum">
+  <div class="kap">
+    <header class="ust">
+      <img src="marka-yazisi-koyu.png" alt="Slooin" />
+      <nav><a href="#">Nasıl çalışır</a><a href="#">Gizlilik</a><a href="#">Destek</a></nav>
+      <a class="eylem" href="#">Uygulamayı indir</a>
+    </header>
+  </div>
+
+  <div class="radar" aria-hidden="true">
+    <div class="kol"></div>
+    <div class="halka h1"></div><div class="halka h2"></div><div class="halka h3"></div><div class="halka h4"></div>
+    <span class="etiket e1">1 km</span><span class="etiket e2">500 m</span><span class="etiket e3">250 m</span>
+    <div class="sen"></div>
+    <div class="ping" style="left:72%; top:26%; --g:.4s"><span class="nokta"></span><span class="ad">Hozee<small>420 m · 3 kişi</small></span></div>
+    <div class="ping" style="left:14%; top:38%; --g:1.3s"><span class="nokta"></span><span class="ad">Kütüphane Kafe<small>310 m · 5 kişi</small></span></div>
+    <div class="ping" style="left:26%; top:80%; --g:2.1s"><span class="nokta"></span><span class="ad">Kumsaati<small>780 m · 2 kişi</small></span></div>
+    <div class="ping" style="left:78%; top:70%; --g:2.9s"><span class="nokta"></span><span class="ad">Setbaşı<small>960 m · 7 kişi</small></span></div>
+  </div>
+
+  <div class="baslik">
+    <h1>Bir kilometre içinde kim var?</h1>
+    <p>Slooin, aynı anda aynı mekânda olanları birbirine gösterir. Sen ortadasın; halkalar yakınındaki mekânlar.</p>
+    <a class="eylem" href="#">Uygulamayı indir</a>
+  </div>
+  <div class="canli"><b>17</b><span><i class="nokta"></i>kişi şu an 1 km içinde</span></div>
+  <div class="telefon"><img src="../../site/public/ekran-kesfet.png" alt="Slooin keşfet ekranı" /></div>
+  <div class="eylemler"><a class="hayalet" href="#">Nasıl çalışır?</a></div>
+</section>
+
+<section class="kap kurallar">
+  <div class="kural">
+    <div class="olcu">1 km<small>yarıçap</small></div>
+    <div><h3>Yalnızca yakınındakiler.</h3><p>Liste ve harita bir kilometreyle sınırlı, sıralama her zaman en yakından uzağa. Şehrin öbür ucundaki kalabalık seni ilgilendirmez.</p></div>
+    <div class="ekran"><img src="../../site/public/ekran-kesfet.png" alt="" /></div>
+  </div>
+  <div class="kural">
+    <div class="olcu">1 saat<small>görünürlük</small></div>
+    <div><h3>Check-in geçici.</h3><p>Girişte "şu an burada" görünürsün; bir saat sonra etiket düşer, koordinat silinir, check-in anıya döner.</p></div>
+    <div class="ekran"><img src="../../site/public/ekran-mekan.png" alt="" /></div>
+  </div>
+  <div class="kural">
+    <div class="olcu">0<small>canlı konum</small></div>
+    <div><h3>Kimse seni izlemez.</h3><p>Slooin canlı konum paylaşmaz. Paylaştığın şey bir mekân ve bir an; gizli profil, engelleme ve şikâyet her ekranda.</p></div>
+    <div></div>
+  </div>
+</section>
+
+<section class="kap akis">
+  <h2>Beş adım.</h2>
+  <ol>
+    <li><b>Check-in yap</b><span>Mekâna girdin, bir dokunuş.</span></li>
+    <li class="simdi"><b>Görünür ol</b><span>Bir saat "şu an burada".</span></li>
+    <li><b>Popüler yerleri keşfet</b><span>1 km, en yakından uzağa.</span></li>
+    <li><b>Yakınındakilerle tanış</b><span>Arkadaşlık isteği gönder.</span></li>
+    <li><b>Sohbet et</b><span>Arkadaş olunca birebir yaz.</span></li>
+  </ol>
+</section>
+
+<section class="cta">
+  <div class="kap">
+    <h2>Radar açık.</h2>
+    <p>İndir, check-in yap, halkaları doldur.</p>
+    <div class="rozetler">
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.7.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1 2.6-2 .8-1.2 1.2-2.3 1.2-2.4-.1 0-2.2-.9-2.2-3.5zM14.2 5.9c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">App Store'da</span></span></a>
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24"><path fill="#34A853" d="M4.6 2.3 14 11.7l-2.4 2.4L4 6.5V3.7c0-.6.2-1.1.6-1.4z"/><path fill="#FBBC04" d="M17.6 9.3 14 11.7l2.4 2.4 3.4-1.9c.9-.5.9-1.8 0-2.3l-2.2-1.2z"/><path fill="#EA4335" d="M4.6 2.3 16.4 9l-2.4 2.7L4.6 2.3z"/><path fill="#4285F4" d="M4.6 21.1 14 11.7l2.4 2.4L4.6 21.1z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">Google Play'de</span></span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="alt-bilgi"><div class="kap"><span>© 2026 Slooin</span><nav><a href="#">Gizlilik</a><a href="#">Koşullar</a><a href="#">Destek</a><a href="#">Hesabı sil</a></nav><span>Türkçe · English · Deutsch</span></div></footer>
+</body>
+</html>

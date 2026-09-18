@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slooin - Yon 0: ui-ux-pro-max onerisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="ortak.css" />
+<style>
+  /* Becerinin recetesi: Vibrant & Block-based, Russo One / Chakra Petch,
+     48px+ bloklar, 32px+ yazi, geometrik sekiller, duotone.
+     Palet: birincil MARKA TURUNCUSU (kural), ikincil mor #7C3AED ve
+     vurgu pembe #EC4899 becerinin dedigi gibi. */
+  :root { --mor: #7C3AED; --pembe: #EC4899; --gece: #0F172A; }
+  body { font-family: 'Chakra Petch', var(--govde); }
+  h1, h2, h3, .sayi { font-family: 'Russo One', var(--govde); font-weight: 400; letter-spacing: -.01em; }
+
+  .ust { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .ust img { height: 30px; }
+  .ust nav { display: flex; gap: 28px; font-weight: 600; }
+  .ust .eylem { padding: 12px 20px; font-size: 15px; }
+
+  .kahraman { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; padding: 48px 0 96px; position: relative; }
+  .kahraman h1 { font-size: 64px; line-height: 1.02; margin: 0 0 22px; }
+  .kahraman h1 em { font-style: normal; color: var(--turuncu); }
+  .kahraman p { font-size: 20px; color: var(--ikincil); margin: 0 0 32px; max-width: 520px; }
+  .eylemler { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .sahne { position: relative; height: 620px; }
+  .sahne .blok { position: absolute; border-radius: 28px; }
+  .sahne .b1 { width: 320px; height: 320px; background: var(--turuncu); right: 40px; top: 20px; transform: rotate(8deg); }
+  .sahne .b2 { width: 220px; height: 220px; background: var(--mor); left: 10px; bottom: 60px; transform: rotate(-12deg); }
+  .sahne .b3 { width: 120px; height: 120px; border-radius: 50%; background: var(--pembe); right: 0; bottom: 120px; }
+  .sahne .telefon { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-4deg); }
+
+  .blok-bolum { padding: 96px 0; }
+  .blok-bolum.koyu { background: var(--gece); color: #fff; }
+  .blok-bolum.koyu .ust-yazi { color: #94A3B8; }
+  .blok-bolum h2 { font-size: 44px; margin: 0 0 16px; line-height: 1.1; }
+  .blok-bolum .giris { font-size: 20px; color: var(--ikincil); max-width: 640px; margin-bottom: 48px; }
+  .koyu .giris { color: #CBD5E1; }
+
+  .izgara { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
+  .kart { background: #fff; border: 2px solid var(--gece); border-radius: 24px; padding: 32px; box-shadow: 8px 8px 0 var(--gece); }
+  .koyu .kart { background: #1E293B; border-color: #334155; box-shadow: 8px 8px 0 var(--mor); color: #fff; }
+  .kart .ikon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 22px; }
+  .kart .ikon svg { width: 28px; height: 28px; }
+  .kart h3 { font-size: 22px; margin: 0 0 10px; }
+  .kart p { margin: 0; color: var(--ikincil); font-size: 16px; }
+  .koyu .kart p { color: #CBD5E1; }
+
+  .problem { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .problem .sayi { font-size: 120px; line-height: 1; color: var(--pembe); }
+  .problem .sayi small { display: block; font-family: 'Chakra Petch'; font-size: 20px; color: #CBD5E1; margin-top: 8px; }
+
+  .yorumlar { position: relative; }
+  .yer-tutucu { position: absolute; inset: -16px; border: 2px dashed var(--pembe); border-radius: 28px; pointer-events: none; }
+  .yer-tutucu span { position: absolute; top: -14px; left: 24px; background: var(--pembe); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .1em; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+  .yorum { display: grid; grid-template-columns: 56px 1fr; gap: 16px; }
+  .yorum .avatar { width: 56px; height: 56px; border-radius: 50%; background: repeating-linear-gradient(45deg, #E2E8F0 0 6px, #F8FAFC 6px 12px); }
+  .yorum .satir { height: 12px; border-radius: 6px; background: #E2E8F0; margin-bottom: 10px; }
+  .yorum .satir.kisa { width: 60%; }
+  .kaydirici { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; color: var(--ikincil); font-size: 14px; }
+  .kaydirici .dug { display: flex; gap: 10px; }
+  .kaydirici .dug span { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gece); display: grid; place-items: center; font-weight: 700; }
+
+  .cta { background: var(--turuncu); color: #fff; padding: 96px 0; text-align: center; position: relative; overflow: hidden; }
+  .cta h2 { font-size: 52px; margin: 0 0 16px; }
+  .cta p { font-size: 20px; margin: 0 0 36px; opacity: .92; }
+  .cta .rozetler { justify-content: center; }
+  .cta .sekil { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: var(--pembe); opacity: .35; right: -80px; top: -120px; }
+  .cta .sekil2 { position: absolute; width: 260px; height: 260px; border-radius: 40px; background: var(--mor); opacity: .35; left: -60px; bottom: -100px; transform: rotate(20deg); }
+</style>
+</head>
+<body>
+<div class="kap">
+  <header class="ust">
+    <img src="marka-yazisi-koyu.png" alt="Slooin" />
+    <nav><a href="#">Nasıl çalışır</a><a href="#">Gizlilik</a><a href="#">Destek</a></nav>
+    <a class="eylem" href="#">Uygulamayı indir</a>
+  </header>
+
+  <section class="kahraman">
+    <div>
+      <h1>Aynı yerdesiniz.<br /><em>Birbirinizi</em> fark edin.</h1>
+      <p>Slooin, aynı anda aynı mekânda olan insanların birbirini görmesini sağlar. Check-in yap, yakınındakilerle tanış.</p>
+      <div class="eylemler">
+        <a class="eylem" href="#">Uygulamayı indir</a>
+        <a class="hayalet" href="#">Nasıl çalışır?</a>
+      </div>
+    </div>
+    <div class="sahne">
+      <div class="blok b1"></div><div class="blok b2"></div><div class="blok b3"></div>
+      <div class="telefon"><img src="../../site/public/ekran-kesfet.png" alt="Slooin keşfet ekranı" /></div>
+    </div>
+  </section>
+</div>
+
+<section class="blok-bolum koyu">
+  <div class="kap problem">
+    <div>
+      <div class="ust-yazi">Sorun</div>
+      <h2>Aynı kafede oturuyorsunuz, birbirinizi hiç görmüyorsunuz.</h2>
+      <p class="giris">Şehir kalabalık ama tanışmak zor. İnsanlar yan masada, ekrana bakıyor. Slooin bunu tersine çevirir: kim o an nerede, göster.</p>
+    </div>
+    <div class="sayi">1 km<small>yakınındaki mekânlar, şu an kim var</small></div>
+  </div>
+</section>
+
+<section class="blok-bolum">
+  <div class="kap">
+    <div class="ust-yazi">Çözüm</div>
+    <h2>Beş adımda tanış.</h2>
+    <p class="giris">Uygulamanın tamamı bu akış üzerine kurulu.</p>
+    <div class="izgara">
+      <div class="kart"><div class="ikon" style="background:var(--turuncu-zemin)"><svg viewBox="0 0 24 24" fill="none" stroke="#FE7813" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h3>Check-in yap</h3><p>Bulunduğun mekâna bir dokunuşla giriş yap.</p></div>
+      <div class="kart"><div class="ikon" style="background:#F3E8FF"><svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/></svg></div><h3>Görünür ol</h3><p>Bir saat boyunca "şu an burada" listesindesin.</p></div>
+      <div class="kart"><div class="ikon" style="background:#FCE7F3"><svg viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div><h3>Popüler yerleri keşfet</h3><p>Yakınında kimin nerede olduğunu haritada gör.</p></div>
+      <div class="kart"><div class="ikon" style="background:var(--turuncu-zemin)"><svg viewBox="0 0 24 24" fill="none" stroke="#FE7813" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 20c0-2.5 1.5-4.5 4-5"/></svg></div><h3>Yakınındakilerle tanış</h3><p>Aynı mekândaki kişilere arkadaşlık isteği gönder.</p></div>
+      <div class="kart"><div class="ikon" style="background:#F3E8FF"><svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg></div><h3>Sohbet et</h3><p>Arkadaş olduktan sonra birebir yaz.</p></div>
+      <div class="kart"><div class="ikon" style="background:#FCE7F3"><svg viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Konumun sende kalır</h3><p>Koordinat en fazla bir saat saklanır, sonra silinir.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="blok-bolum">
+  <div class="kap yorumlar">
+    <div class="yer-tutucu"><span>Yer tutucu · gerçek yorumlar TestFlight'tan gelecek</span></div>
+    <div class="ust-yazi">Kullananlar ne diyor</div>
+    <h2>Beta testçileri</h2>
+    <div class="izgara" style="margin-top:40px">
+      <div class="kart"><div class="yorum"><div class="avatar"></div><div><div class="satir"></div><div class="satir"></div><div class="satir kisa"></div></div></div></div>
+      <div class="kart"><div class="yorum"><div class="avatar"></div><div><div class="satir"></div><div class="satir"></div><div class="satir kisa"></div></div></div></div>
+      <div class="kart"><div class="yorum"><div class="avatar"></div><div><div class="satir"></div><div class="satir"></div><div class="satir kisa"></div></div></div></div>
+    </div>
+    <div class="kaydirici"><span>1 / 3 · Otomatik dönüş yok</span><div class="dug"><span>‹</span><span>›</span></div></div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="sekil"></div><div class="sekil2"></div>
+  <div class="kap">
+    <h2>Şu an nerede insan var?</h2>
+    <p>İndir, check-in yap, gör.</p>
+    <div class="rozetler">
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.7.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1 2.6-2 .8-1.2 1.2-2.3 1.2-2.4-.1 0-2.2-.9-2.2-3.5zM14.2 5.9c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">App Store'da</span></span></a>
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24"><path fill="#34A853" d="M4.6 2.3 14 11.7l-2.4 2.4L4 6.5V3.7c0-.6.2-1.1.6-1.4z"/><path fill="#FBBC04" d="M17.6 9.3 14 11.7l2.4 2.4 3.4-1.9c.9-.5.9-1.8 0-2.3l-2.2-1.2z"/><path fill="#EA4335" d="M4.6 2.3 16.4 9l-2.4 2.7L4.6 2.3z"/><path fill="#4285F4" d="M4.6 21.1 14 11.7l2.4 2.4L4.6 21.1z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">Google Play'de</span></span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="alt-bilgi"><div class="kap"><span>© 2026 Slooin</span><nav><a href="#">Gizlilik</a><a href="#">Koşullar</a><a href="#">Destek</a><a href="#">Hesabı sil</a></nav><span>Türkçe · English · Deutsch</span></div></footer>
+</body>
+</html>

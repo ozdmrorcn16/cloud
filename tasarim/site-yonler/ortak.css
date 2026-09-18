@@ -1,0 +1,77 @@
+/* Slooin site yonleri - ortak jetonlar. Degerler mobil/src/tasarim/tema.ts
+   ile ayni; marka turuncusu #FE7813 degistirilmez. */
+:root {
+  --turuncu: #FE7813;
+  --turuncu-basili: #E06509;
+  --turuncu-zemin: #FFF3E8;
+  --metin: #17130F;
+  --ikincil: #6E6660;
+  --soluk: #A39B93;
+  --cizgi: #EFEAE5;
+  --beyaz: #FFFFFF;
+  --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --marka: 'Bricolage Grotesque', var(--govde);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--govde);
+  color: var(--metin);
+  background: var(--beyaz);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+.kap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+/* birincil eylem - uygulamadaki hap buton */
+.eylem {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--turuncu); color: #fff; font-weight: 600;
+  padding: 16px 26px; border-radius: 999px; font-size: 17px;
+  box-shadow: 0 12px 30px -12px rgba(254,120,19,.6);
+}
+.eylem:hover { background: var(--turuncu-basili); }
+.hayalet {
+  display: inline-flex; align-items: center; gap: 10px;
+  border: 1.5px solid currentColor; padding: 14px 24px; border-radius: 999px; font-weight: 600;
+}
+
+/* magaza rozetleri */
+.rozetler { display: flex; gap: 12px; flex-wrap: wrap; }
+.rozet {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #111014; color: #fff; border-radius: 10px; padding: 9px 16px 9px 13px;
+  min-width: 190px; border: 1px solid rgba(255,255,255,.14);
+}
+.rozet svg { width: 22px; height: 22px; flex: none; }
+.rozet .yazi { display: flex; flex-direction: column; line-height: 1.15; }
+.rozet .ust { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: #BDB8B2; }
+.rozet .alt { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+
+/* telefon cercevesi */
+.telefon {
+  border-radius: 38px; background: #16151a; padding: 10px;
+  box-shadow: 0 40px 70px -30px rgba(23,19,15,.55), 0 8px 20px -10px rgba(23,19,15,.3);
+  width: max-content;
+}
+.telefon img { width: 262px; height: 536px; object-fit: cover; object-position: top; border-radius: 30px; background: #fff; }
+
+/* canlilik noktasi */
+.nokta { width: 10px; height: 10px; border-radius: 50%; background: var(--turuncu); position: relative; flex: none; }
+.nokta::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid var(--turuncu); opacity: 0; animation: nabiz 2s ease-out infinite;
+}
+@keyframes nabiz { 0% { transform: scale(.5); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
+
+.ust-yazi { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ikincil); font-weight: 600; }
+
+/* alt bilgi */
+.alt-bilgi { padding: 40px 0 48px; border-top: 1px solid var(--cizgi); color: var(--ikincil); font-size: 14px; }
+.alt-bilgi .kap { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.alt-bilgi nav { display: flex; gap: 22px; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

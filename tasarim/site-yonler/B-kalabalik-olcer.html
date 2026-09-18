@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slooin - Yon B: Kalabalik olcer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="ortak.css" />
+<style>
+  /* Imza: tipografi. Beyaz sayfa, ekrani boydan boya kesen dev kelime;
+     kelimenin icinde canli sayac. Altinda sehrin check-in akisi bir
+     serit gibi akiyor. Marka fontu Bricolage YALNIZCA dev basliklarda
+     (marka ogesi); govde Instrument Sans. */
+  .ust { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  .ust img { height: 30px; }
+  .ust nav { display: flex; gap: 26px; font-weight: 500; font-size: 15px; color: var(--ikincil); }
+  .ust .eylem { padding: 12px 20px; font-size: 15px; }
+
+  .dev { padding: 40px 0 0; overflow: hidden; }
+  .dev .satir1 { font-family: var(--marka); font-weight: 800; font-size: clamp(90px, 15.5vw, 236px); line-height: .86; letter-spacing: -.05em; margin: 0; white-space: nowrap; }
+  .dev .satir1 .sayac { display: inline-block; color: var(--turuncu); font-variant-numeric: tabular-nums; min-width: 1.05em; }
+  .dev .satir2 { font-family: var(--marka); font-weight: 500; font-size: clamp(36px, 5.4vw, 80px); letter-spacing: -.035em; line-height: 1; margin: 12px 0 0; color: var(--ikincil); }
+  .dev .satir2 b { color: var(--metin); font-weight: 700; }
+
+  .dev-alt { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: end; padding: 40px 0 0; }
+  .dev-alt p { font-size: 20px; color: var(--ikincil); max-width: 44ch; margin: 0 0 28px; }
+  .dev-alt .eylemler { display: flex; gap: 14px; align-items: center; }
+  .dev-alt .canli { display: inline-flex; gap: 10px; align-items: center; font-size: 14px; color: var(--ikincil); margin-bottom: 18px; }
+
+  /* serit: sehrin akisi */
+  .serit { border-top: 2px solid var(--metin); border-bottom: 2px solid var(--metin); margin-top: 56px; overflow: hidden; white-space: nowrap; padding: 14px 0; font-size: 15px; font-weight: 500; }
+  .serit .ic { display: inline-flex; gap: 0; animation: ak 38s linear infinite; }
+  .serit span { display: inline-flex; align-items: center; gap: 10px; padding: 0 28px; border-right: 1px solid var(--cizgi); }
+  .serit .saat { color: var(--soluk); font-variant-numeric: tabular-nums; }
+  .serit .n { color: var(--turuncu); font-weight: 700; }
+  @keyframes ak { to { transform: translateX(-50%) } }
+
+  /* polaroidler */
+  .polaroid { padding: 120px 0 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .polaroid .yigin { position: relative; height: 640px; }
+  .polaroid .telefon { position: absolute; }
+  .polaroid .t1 { left: 0; top: 20px; transform: rotate(-9deg); }
+  .polaroid .t2 { left: 290px; top: 70px; transform: rotate(6deg); }
+  .polaroid h2 { font-family: var(--marka); font-weight: 700; font-size: 60px; letter-spacing: -.04em; line-height: .95; margin: 0 0 22px; }
+  .polaroid p { color: var(--ikincil); font-size: 19px; margin: 0 0 14px; }
+
+  /* bolumler: bes adim, dev rakamlar */
+  .adimlar { border-top: 2px solid var(--metin); }
+  .adim { display: grid; grid-template-columns: 200px 1fr 1fr; gap: 32px; padding: 40px 0; border-bottom: 1px solid var(--cizgi); align-items: baseline; }
+  .adim .no { font-family: var(--marka); font-weight: 800; font-size: 96px; line-height: .8; letter-spacing: -.05em; color: var(--cizgi); }
+  .adim.simdi .no { color: var(--turuncu); }
+  .adim h3 { font-size: 30px; letter-spacing: -.03em; margin: 0; }
+  .adim p { margin: 0; color: var(--ikincil); font-size: 17px; }
+
+  .cta { padding: 120px 0 100px; }
+  .cta h2 { font-family: var(--marka); font-weight: 800; font-size: clamp(60px, 9vw, 130px); letter-spacing: -.05em; line-height: .9; margin: 0 0 30px; }
+  .cta h2 span { color: var(--turuncu); }
+  .cta .rozetler { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="kap">
+  <header class="ust">
+    <img src="marka-yazisi-koyu.png" alt="Slooin" />
+    <nav><a href="#">Nasıl çalışır</a><a href="#">Gizlilik</a><a href="#">Destek</a></nav>
+    <a class="eylem" href="#">Uygulamayı indir</a>
+  </header>
+
+  <section class="dev">
+    <h1 class="satir1">ŞU AN <span class="sayac" id="sayac">41</span></h1>
+    <p class="satir2">kişi <b>Bursa'da görünür.</b> Sen nerede oturuyorsun?</p>
+    <div class="dev-alt">
+      <div>
+        <div class="canli"><span class="nokta"></span>Sayı canlı — check-in yapanlarla değişir</div>
+        <p>Slooin, aynı anda aynı mekânda olanları birbirine gösterir. Check-in yap, bir saat görünür ol, yanındakini fark et.</p>
+        <div class="eylemler"><a class="eylem" href="#">Uygulamayı indir</a><a class="hayalet" href="#">Nasıl çalışır?</a></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="serit" aria-hidden="true">
+  <div class="ic" id="serit">
+    <span><i class="saat">19:41</i> Hozee <i class="n">3 kişi</i></span>
+    <span><i class="saat">19:40</i> Kütüphane Kafe <i class="n">5 kişi</i></span>
+    <span><i class="saat">19:38</i> Deniz check-in yaptı · Nilüfer</span>
+    <span><i class="saat">19:35</i> Kumsaati <i class="n">2 kişi</i></span>
+    <span><i class="saat">19:31</i> Ece ve Mert arkadaş oldu</span>
+    <span><i class="saat">19:29</i> Setbaşı Köprüsü <i class="n">7 kişi</i></span>
+    <span><i class="saat">19:22</i> Kaan check-in yaptı · Osmangazi</span>
+  </div>
+</div>
+
+<div class="kap">
+  <section class="polaroid">
+    <div class="yigin">
+      <div class="telefon t1"><img src="../../site/public/ekran-kesfet.png" alt="Slooin keşfet ekranı" /></div>
+      <div class="telefon t2"><img src="../../site/public/ekran-mekan.png" alt="Slooin mekân sayfası" /></div>
+    </div>
+    <div>
+      <div class="ust-yazi">Ne görüyorsun</div>
+      <h2>Mekân, saat, kim var.</h2>
+      <p>Harita değil, liste değil: kalabalık ölçer. Yakınındaki mekânlar en yakından uzağa; her birinin yanında şu an kaç kişinin olduğu.</p>
+      <p>Konum canlı paylaşılmaz. Sen check-in yaparsın, koordinat bir saat sonra silinir.</p>
+    </div>
+  </section>
+
+  <section class="adimlar">
+    <div class="adim"><div class="no">1</div><h3>Check-in yap</h3><p>Mekâna girdin, bir dokunuş. Konum yalnızca o an kullanılır.</p></div>
+    <div class="adim simdi"><div class="no">2</div><h3>Görünür ol</h3><p>Bir saat boyunca mekânın "şu an burada" listesindesin.</p></div>
+    <div class="adim"><div class="no">3</div><h3>Popüler yerleri keşfet</h3><p>1 km içinde kim nerede, en yakından uzağa.</p></div>
+    <div class="adim"><div class="no">4</div><h3>Yakınındakilerle tanış</h3><p>Aynı mekândakine arkadaşlık isteği; açık profilde anında.</p></div>
+    <div class="adim"><div class="no">5</div><h3>Sohbet et</h3><p>Arkadaş olduktan sonra birebir yaz.</p></div>
+  </section>
+
+  <section class="cta">
+    <h2>Aynı yerdesiniz.<br /><span>Birbirinizi fark edin.</span></h2>
+    <div class="rozetler">
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.7.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1 2.6-2 .8-1.2 1.2-2.3 1.2-2.4-.1 0-2.2-.9-2.2-3.5zM14.2 5.9c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">App Store'da</span></span></a>
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24"><path fill="#34A853" d="M4.6 2.3 14 11.7l-2.4 2.4L4 6.5V3.7c0-.6.2-1.1.6-1.4z"/><path fill="#FBBC04" d="M17.6 9.3 14 11.7l2.4 2.4 3.4-1.9c.9-.5.9-1.8 0-2.3l-2.2-1.2z"/><path fill="#EA4335" d="M4.6 2.3 16.4 9l-2.4 2.7L4.6 2.3z"/><path fill="#4285F4" d="M4.6 21.1 14 11.7l2.4 2.4L4.6 21.1z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">Google Play'de</span></span></a>
+    </div>
+  </section>
+</div>
+
+<footer class="alt-bilgi"><div class="kap"><span>© 2026 Slooin</span><nav><a href="#">Gizlilik</a><a href="#">Koşullar</a><a href="#">Destek</a><a href="#">Hesabı sil</a></nav><span>Türkçe · English · Deutsch</span></div></footer>
+
+<script>
+  // serit sonsuz aksin diye icerik ikilenir
+  const s = document.getElementById('serit'); s.innerHTML += s.innerHTML;
+  // sayac: canli veriyi taklit eder (uretimde akis_ozet RPC'den gelir)
+  const el = document.getElementById('sayac'); let n = 41;
+  setInterval(() => { n += Math.random() < .5 ? 1 : -1; el.textContent = n; }, 2600);
+</script>
+</body>
+</html>
