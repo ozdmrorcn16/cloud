@@ -880,6 +880,52 @@ async function main() {
     esitMi(kaydetHatasi !== null, true, 'moderasyon.kaydet public RPC olarak cagrilamaz')
   }
 
+  console.log('\n--- Guvenlik taramasi 2026-09-19: anon kapisi ---')
+  const bosId = '00000000-0000-0000-0000-000000000000'
+  // Postgres public semasindaki yeni fonksiyona PUBLIC'e EXECUTE verir;
+  // 27 fonksiyon bu yuzden anon'a acik kalmisti. Migrasyon
+  // 20260919100000 hepsini kapatti ve varsayilan yetkiyi degistirdi.
+  // Burada anon'un ONCEDEN cagirabildigi temsilci fonksiyonlar 42501
+  // ile reddedilmeli; bilerek acik birakilan uc fonksiyon ise
+  // calismali. Ileride biri yeni bir fonksiyona `grant ... to anon`
+  // yazarsa bu blok degil, o migrasyonun kendisi kararini aciklar.
+  for (const [ad, parametreler] of [
+    ['mekan_puan_ozeti', { p_mekan_id: bosId }],
+    ['akis_profilleri', { p_kimlikler: [] }],
+    ['yorumlari_getir', { p_check_in_id: bosId }],
+    ['mesaj_isteklerim', {}],
+    ['yakin_mekanlar', { p_lat: 0, p_lng: 0, p_arama: 'x' }],
+    ['etkilesim_ozetleri', { p_check_in_ids: [] }],
+  ] as const) {
+    const { error } = await anon.rpc(ad, parametreler)
+    esitMi(error?.code, '42501', `kimliksiz ${ad} cagrisi reddediliyor`)
+  }
+
+  // Bitmis veri isi ve eski asiri yukleme dusuruldu: fonksiyon YOK.
+  const { error: mahalleHatasi } = await anon.rpc('mahalle_aktarim_adimi')
+  esitMi(mahalleHatasi?.code, 'PGRST202', 'mahalle_aktarim_adimi artik yok')
+
+  // Bilerek kimliksiz: kayit ekrani ve paylasim sayfasi.
+  const { error: epostaHatasi } = await anon.rpc('eposta_kayitli_mi', {
+    p_eposta: 'sema-dogrula@example.com',
+    p_cihaz: 'sema-dogrula',
+  })
+  esitMi(epostaHatasi, null, 'kimliksiz eposta_kayitli_mi calisiyor (kayit ekrani)')
+  const { error: kartHatasi } = await anon.rpc('profil_karti', { p_kullanici_adi: 'olmayan.ad' })
+  esitMi(kartHatasi, null, 'kimliksiz profil_karti calisiyor (paylasim sayfasi)')
+
+  // Referans verisi yalnizca giris yapana.
+  const { error: illerAnonHatasi } = await anon.from('iller').select('ad').limit(1)
+  esitMi(illerAnonHatasi?.code, '42501', 'kimliksiz iller okunamiyor')
+  const { error: illerHatasi } = await a.from('iller').select('ad').limit(1)
+  esitMi(illerHatasi, null, 'giris yapan iller okuyabiliyor')
+
+  // Kova sinirlari: tur ve boyut. Yanlis turde yukleme 415 ile duser.
+  const { error: mimeHatasi } = await a.storage
+    .from('profil-fotograflari')
+    .upload(`${aId}/sema-dogrula-${Date.now()}.txt`, Buffer.from('x'), { contentType: 'text/plain' })
+  esitMi(mimeHatasi?.message, 'mime type text/plain is not supported', 'kova yalnizca gorsel kabul ediyor')
+
   sonucuBildirVeCik()
 }
 

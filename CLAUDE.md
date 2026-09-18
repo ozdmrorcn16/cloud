@@ -148,6 +148,63 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### GUVENLIK TARAMASI: BASTAN SONA - 2026-09-19
+
+Kullanicinin istegi: "uygulamayi bastan sona tara, hatalari duzelt,
+guvenlik aciklari varsa coz". gstack `/cso` yontemiyle (sir arkeolojisi,
+bagimlilik, CI, Supabase danismanlari, RLS/yetki/kova, Edge Function,
+site/panel, OWASP) tarandi; her bulgu CANLIDA olculdu. Rapor (yerel,
+gitignored): `.gstack/security-reports/2026-09-19-guvenlik-taramasi.json`.
+
+**Duzeltilenler (migrasyon `20260919100000`, uygulandi):**
+1. **GERCEK ACIK - check_in_yap `p_fotograf` sahipligine bakmiyordu.**
+   Storage okuma politikasi `exists (check_inler.fotograf = name)` ile
+   calistigi icin biri BASKASININ fotograf yolunu kendi check-in'ine
+   yazip o dosyayi (engellenmis/gizli profil olsa da) acabiliyordu.
+   Artik yol `<kendi id>/<dosya>` olmak zorunda. `profiller.fotograflar`
+   icin de tetikleyici (`gizli.profil_fotograf_yollarini_dogrula`).
+   Canli senaryo **61b** bunu kilitliyor.
+2. **anon 27 SECURITY DEFINER fonksiyonu cagirabiliyordu** (Postgres
+   yeni fonksiyona PUBLIC'e EXECUTE verir; `revoke ... from public, anon`
+   unutulan her migrasyon bunu aciyordu). Hepsi `auth.uid() is null`
+   kontrolu tasidigi icin sizinti OLCULMEDI ama kapatildi ve
+   **VARSAYILAN YETKI DEGISTI**: `alter default privileges for role
+   postgres in schema public` - yeni fonksiyon otomatik olarak yalnizca
+   authenticated + service_role. **YENI KURAL: kimliksiz cagri isteyen
+   fonksiyona acikca `grant execute ... to anon` yaz** (bugun yalnizca
+   eposta_kayitli_mi, telefon_kayitli_mi, profil_karti). `test:sema`
+   sonundaki "anon kapisi" blogu bunu olcuyor.
+3. `mahalle_aktarim_adimi()` (bitmis veri isi, anon'a acik) ve eski
+   4 parametreli `yakin_mekanlar` asiri yuklemesi DUSURULDU.
+4. Kovalara sinir: fotograf kovalari 10 MB + image/jpeg|png|webp,
+   `veri-disa-aktarim` 50 MB + application/json. **Canli test
+   yuklemeleri artik `image/jpeg` gondermeli** (text/plain 415 alir -
+   `calistir.ts` duzeltildi).
+5. `iller` ve `mekan_turleri` yalnizca authenticated.
+6. Performans (`20260919103000`): 5 FK indeksi + cift indeks
+   `check_inler_mekan_idx` dustu.
+7. Supabase Auth "Prevent use of leaked passwords" (HaveIBeenPwned)
+   ACILDI (opencli ile panelden; `weak_password` metni 7 dilde zaten
+   vardi). Kayitta sizmis parola artik reddedilir.
+8. Depo: `mobil/gizli/asc-issuer.txt` public depoya girmisti (ASC
+   issuer id - tek basina sir degil, anahtar + key id gerekir; rotasyon
+   gerekmedi); `mobil/gizli/` gitignore'a eklendi, izlemeden cikti.
+   `.github/workflows/mekan-tazele.yml` (Overture, kaynak 08-30'da
+   degisti; secret yok, varsayilan dalda degil) silindi.
+
+**Temiz cikanlar:** git gecmisinde sir yok (yalnizca anon JWT ve test
+kaliplari); Edge Function'lar (hesap-sil JWT + taze giris kapisi,
+bildirim-gonder sir + kaynak dogrulama, profil-karti); site `[ad].js`
+kacisi tam; panel service-role yok, AAL2 DB'de; kovalar private; RLS
+her tabloda; npm audit: panel/site 0, mobil'de yalnizca derleme araci
+(metro/xmldom/js-yaml, cihazda calismaz).
+
+**ONERI, YAPILMADI (native derleme ister):** oturum jetonlari
+AsyncStorage'da; `expo-secure-store` ile sifreli saklama magaza oncesi
+degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
+`auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
+`tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
+
 ### BASKASININ PROFILINDE UST CUBUK KALKTI - 2026-09-18
 
 Kullanicinin istegi: "sol ustteki geri dugmesini kaldir; kendi

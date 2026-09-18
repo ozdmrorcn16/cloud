@@ -717,12 +717,12 @@ async function main() {
     const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
     if (kaldirErr) throw new Error(`onceki blok kaldirilamadi: ${kaldirErr.message}`)
 
-    const dosyaYolu = `${aId}/gorunurluk-test-${Date.now()}.txt`
+    const dosyaYolu = `${aId}/gorunurluk-test-${Date.now()}.jpg`
     const icerik = Buffer.from('gorunurluk-testi')
 
     const { error: yukleHata } = await a.storage
       .from('profil-fotograflari')
-      .upload(dosyaYolu, icerik, { contentType: 'text/plain' })
+      .upload(dosyaYolu, icerik, { contentType: 'image/jpeg' })
     if (yukleHata) throw new Error(`fotograf yukleme hatasi: ${yukleHata.message}`)
 
     // Dosya PROFILE BAGLANIYOR. Politika (20260826210000) yalnizca
@@ -794,11 +794,11 @@ async function main() {
     // eskisi Storage'da kaliyordu ve okuma politikasi dosyanin hala
     // kullanimda olup olmadigina BAKMIYORDU. Yani baskasi, kisinin
     // klasorunu listeleyip degistirdigi fotograflari da cekebiliyordu.
-    const dosyaYolu = `${aId}/gorunurluk-test-eski-${Date.now()}.txt`
+    const dosyaYolu = `${aId}/gorunurluk-test-eski-${Date.now()}.jpg`
 
     const { error: yukleHata } = await a.storage
       .from('profil-fotograflari')
-      .upload(dosyaYolu, Buffer.from('eski fotograf'), { contentType: 'text/plain' })
+      .upload(dosyaYolu, Buffer.from('eski fotograf'), { contentType: 'image/jpeg' })
     if (yukleHata) throw new Error(`fotograf yukleme hatasi: ${yukleHata.message}`)
 
     try {
@@ -2960,18 +2960,18 @@ async function main() {
     // acilmiyordu (fazla dar), buna karsilik aniya donusmus HER fotograf
     // yolunu bilen herkese aciliyordu (fazla genis). Politika artik
     // satira devrediyor; bu senaryo iki yonu de olcuyor.
-    const dosyaAcik = `${aId}/senaryo61-acik-${Date.now()}.txt`
-    const dosyaGizli = `${aId}/senaryo61-gizli-${Date.now()}.txt`
+    const dosyaAcik = `${aId}/senaryo61-acik-${Date.now()}.jpg`
+    const dosyaGizli = `${aId}/senaryo61-gizli-${Date.now()}.jpg`
     const icerik = Buffer.from('senaryo-61')
 
     const { error: yukleAcikHata } = await a.storage
       .from('check-in-fotograflari')
-      .upload(dosyaAcik, icerik, { contentType: 'text/plain' })
+      .upload(dosyaAcik, icerik, { contentType: 'image/jpeg' })
     esitMi(yukleAcikHata, null, '61 kurulum: A acik check-in fotografini yukleyebiliyor')
 
     const { error: yukleGizliHata } = await a.storage
       .from('check-in-fotograflari')
-      .upload(dosyaGizli, icerik, { contentType: 'text/plain' })
+      .upload(dosyaGizli, icerik, { contentType: 'image/jpeg' })
     esitMi(yukleGizliHata, null, '61 kurulum: A gizli check-in fotografini yukleyebiliyor')
 
     // Karsilikli bag kuruluyor: B, A'yi takip ediyor olacak ama B HICBIR
@@ -3055,6 +3055,62 @@ async function main() {
         console.error(`  61 temizlik: test dosyalari silinemedi: ${silHata.message}`)
       }
     }
+  })
+
+  await senaryo('61b - Baskasinin fotograf yolu check-in\'e ve profile yazilamaz', async () => {
+    // 2026-09-19 guvenlik taramasinda bulunan acik: check_in_yap
+    // `p_fotograf` yolunun sahibine bakmiyordu. Storage okuma politikasi
+    // `exists (check_inler.fotograf = name)` oldugu icin biri BASKASININ
+    // fotograf yolunu kendi check-in'ine yazip o dosyaya erisim
+    // aciyordu. Ayni kural profiller.fotograflar icin tetikleyiciyle
+    // konuldu. Bu senaryo iki kapiyi da olcuyor; yolun gercekten var
+    // olmasi gerekmiyor - kural sahipligi olcuyor, varligi degil.
+    const yabanciYol = `${bId}/senaryo61b-${Date.now()}.jpg`
+
+    const { error: checkInHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
+      p_lat: MEKAN_1.lat,
+      p_lng: MEKAN_1.lng,
+      p_fotograf: yabanciYol,
+      p_bulunurluk: 'herkese_acik',
+    })
+    esitMi(
+      checkInHata?.message ?? null,
+      'Bu fotograf sana ait degil',
+      '61b: A, B\'nin klasorundeki yolu kendi check-in\'ine yazamiyor'
+    )
+
+    const { error: kokYolHata } = await a.rpc('check_in_yap', {
+      p_mekan_id: mekan1,
+      p_lat: MEKAN_1.lat,
+      p_lng: MEKAN_1.lng,
+      p_fotograf: 'dosya.jpg',
+      p_bulunurluk: 'herkese_acik',
+    })
+    esitMi(
+      kokYolHata?.message ?? null,
+      'Bu fotograf sana ait degil',
+      '61b: klasorsuz yol da reddediliyor'
+    )
+
+    const { error: profilHata } = await a
+      .from('profiller')
+      .update({ fotograflar: [yabanciYol] })
+      .eq('id', aId)
+    esitMi(
+      profilHata?.message ?? null,
+      'Bu fotograf sana ait degil',
+      '61b: A, B\'nin klasorundeki yolu kendi profil fotografi yapamiyor'
+    )
+
+    // Yan etki yok: A'nin profil fotografi listesi degismedi ve yabanci
+    // yolu tasiyan bir check-in satiri olusmadi.
+    const { data: sonSatirlar } = await a
+      .from('check_inler')
+      .select('id')
+      .eq('kullanici_id', aId)
+      .eq('fotograf', yabanciYol)
+    esitMi((sonSatirlar ?? []).length, 0, '61b: yabanci yollu check-in satiri olusmadi')
   })
 
   await senaryo('62 - Engellenenler listesi adlariyla donuyor', async () => {

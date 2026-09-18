@@ -56,3 +56,6 @@ araclar/*.log
 # OSM Turkiye kesiti (614 MB) ve GDAL yapilandirmasi
 araclar/*.pbf
 araclar/osmconf.ini
+
+# Apple/ASC anahtarlari ve kimlikleri (2026-09-19: asc-issuer.txt bir kez depoya girmisti)
+mobil/gizli/

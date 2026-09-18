@@ -1324,3 +1324,18 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     `kullanici.geri` ceviri anahtari 7 dilde DURUYOR - kullanilmiyor
     ama silinmedi (her dilde birden fazla `geri` anahtari var, yanlis
     bolumu silme riski kazanctan buyuk).
+
+
+99. **GUVENLIK TARAMASI VE VARSAYILAN YETKI KURALI** (2026-09-19).
+    Kullanici: "slooin uygulamasini suanki asamasina kadarki kismini
+    bastan sona tara, hatalar varsa duzelt, guvenlik aciklari var mi
+    kontrol et, varsa coz." Tek gercek acik bulundu ve kapatildi:
+    `check_in_yap` fotograf yolunun sahibine bakmiyordu, Storage okuma
+    politikasi satira devrettigi icin baskasinin fotografi kendi
+    check-in'ine yazilip acilabiliyordu (migrasyon 20260919100000,
+    canli senaryo 61b). Kalici karar: `public` semasinda yeni
+    fonksiyonlar artik VARSAYILAN olarak anon'a KAPALI (alter default
+    privileges); kimliksiz cagri isteyen fonksiyon migrasyonunda acikca
+    `grant ... to anon` yazar. Kovalara boyut/tur siniri kondu, Supabase
+    "leaked password protection" acildi, `mobil/gizli/` izlemeden cikti,
+    Overture iş akisi silindi. Ayrinti CLAUDE.md "GUVENLIK TARAMASI".

@@ -252,6 +252,20 @@ Yeni oturum bunlari bilerek baslar.
 
 ## 8. Kaldigi yer (2026-09-19)
 
+**Son bitirilen is (2026-09-19, sunucu tarafi CANLI - OTA/web gerekmedi,
+istemci kodu degismedi):** BASTAN SONA GUVENLIK TARAMASI. Tek gercek
+acik: `check_in_yap` fotograf yolunun sahibini kontrol etmiyordu
+(baskasinin fotografi kendi check-in'ine yazilip okunabiliyordu) -
+kapatildi, `profiller.fotograflar` icin tetikleyici, canli senaryo 61b.
+anon'a acik kalmis 27 fonksiyon kapatildi ve VARSAYILAN YETKI degisti
+(yeni fonksiyon otomatik yalnizca authenticated + service_role; anon
+isteyen acikca grant yazar). Kova boyut/tur sinirlari, 5 FK indeksi,
+Supabase "leaked password protection" ACIK, `mobil/gizli/` izlemeden
+cikti. Migrasyonlar `20260919100000`, `20260919103000`. Jest 81/1064,
+test:sema 160, test:gorunurluk tam yesil. Ayrinti CLAUDE.md "GUVENLIK
+TARAMASI". Yapilmayan oneri: oturum jetonlari icin expo-secure-store
+(native derleme ister).
+
 **Son bitirilen is (2026-09-19, YAYINDA - web `slooin--z5dovg5pl5`, OTA
 grup `2f1481d3-984a-49a9-a263-eb17edccafed`; commit `1d96bb1`):** AYARLAR
 BASTAN - hub + 17 alt ekran (Hesap ve guvenlik: e-posta/sifre/oturumlar;
