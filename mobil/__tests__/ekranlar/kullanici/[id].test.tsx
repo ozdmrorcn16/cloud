@@ -756,11 +756,11 @@ describe('KullaniciProfiliEkrani duzen', () => {
     await render(<KullaniciProfiliEkrani />)
     await screen.findByText('Ada')
 
-    expect(screen.queryByText('Şikayet et')).toBeNull()
+    expect(screen.queryByText('Şikâyet et')).toBeNull()
     expect(screen.queryByText('Engelle')).toBeNull()
 
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    expect(await screen.findByText('Şikayet et')).toBeTruthy()
+    expect(await screen.findByText('Şikâyet et')).toBeTruthy()
     expect(screen.getByText('Engelle')).toBeTruthy()
   })
 

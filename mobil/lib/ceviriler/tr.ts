@@ -383,7 +383,7 @@ export default {
     profilKapaliAciklama: 'Anılarını görmek için arkadaş olmalısın.',
     yerYok: 'Henüz bir yeri yok',
     secenekler: 'Profil seçenekleri',
-    sikayetEt: 'Şikayet et',
+    sikayetEt: 'Şikâyet et',
     engelle: 'Engelle',
     engelleOnayi:
       'Engellersen birbirinizi hiçbir yerde göremezsiniz ve aranızdaki bütün mesajlar kalıcı olarak silinir. Bu işlem geri alınamaz.',
@@ -585,12 +585,24 @@ export default {
   // SIKAYET EKRANI (i18n turu 2026-09-13). Sebep etiketleri anahtara
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.
   sikayet: {
-    baslik: 'Şikayet et',
     sebepSec: 'Bir sebep seç',
-    alindi: 'Şikayetin alındı',
-    tesekkur: 'Bildirimin için teşekkürler.',
     mesajBaglami: 'İncelemede bu mesajın çevresindeki mesajlar da moderasyona açılır.',
-    aciklamaYerTutucu: 'Eklemek istediğin bir şey var mı?',
+    baslik: 'Şikâyet et',
+    kahramanBaslik: 'Bize ne olduğunu anlat',
+    altBaslikHesap: 'Bu hesabı neden şikâyet ediyorsun?',
+    altBaslikMesaj: 'Bu mesajı neden şikâyet ediyorsun?',
+    ekAciklama: 'Ek açıklama',
+    istegeBagli: 'İsteğe bağlı',
+    aciklamaYerTutucu: 'Durumu kısaca açıklayabilirsin.',
+    aciklamaIpucu: 'Paylaştığın bilgiler değerlendirmemize yardımcı olur.',
+    gonder: 'Şikâyeti gönder',
+    alindi: 'Şikâyetin alındı',
+    tesekkur: 'Bize bildirdiğin için teşekkürler.\nŞikâyetin incelenmek üzere iletildi.',
+    engelleSoru: 'Bu hesabı engellemek ister misin?',
+    engelleAciklama: 'Sana mesaj göndermesini ve seninle etkileşime geçmesini engelleyebilirsin.',
+    hesabiEngelle: 'Hesabı engelle',
+    engellendi: 'Hesap engellendi',
+    tamam: 'Tamam',
     sebepler: {
       taciz: 'Taciz veya rahatsız etme',
       uygunsuz_icerik: 'Uygunsuz içerik',

@@ -172,6 +172,32 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### SIKAYET AKISI REFERANS TASARIMA GORE - 2026-09-18 GECE
+
+Kullanicinin referans gorseli ("bu iki ekranin aynisini yap, hicbir
+seyi degistirme"): `src/app/sikayet.tsx` bastan, ikonlar
+`src/tasarim/sikayet-ikonlari.tsx` (kalkan, kalkan-tik, bes sebep,
+kisi-yasak, carpi).
+- **01 Sikayet olustur:** ortali "Sikâyet et" (kendi ust cubugu -
+  ortak `UstCubuk` sola yaslar), seftali kalkan rozeti, "Bize ne
+  oldugunu anlat" + alt baslik (hesap/mesaj'a gore), TEK kartta bes
+  sebep (ikon + etiket + radyo; secili satir seftali zemin, ikon
+  turuncu, radyo dolu turuncu + beyaz ic halka), "Ek aciklama / Istege
+  bagli", 0/500 sayacli kutu (maxLength 500), ipucu, "Sikâyeti gonder".
+  Mesaj sikayetinde karar 76 baglam notu alt basligin altinda duruyor.
+- **02 Gonderim sonrasi:** sag ustte x, 190'lik seftali daire + dolu
+  kalkan-tik, "Sikâyetin alindi", iki satir tesekkur, "Bu hesabi
+  engellemek ister misin?" karti (cerceveli "Hesabi engelle" ->
+  `OnayPenceresi` -> `engelle`; sonra "Hesap engellendi"), "Tamam".
+  Kart yalnizca engellenecek hesap biliniyorsa: kullanici sikayetinde
+  hedef, mesaj sikayetinde sohbetin gonderdigi yeni `kullaniciId`
+  parametresi.
+- Zemin BEYAZ (2026-08-27 karari; referansin kremi kanvas). Sozluk
+  `sikayet` blogu 7 dilde bastan; `kullanici.sikayetEt` de "Sikâyet
+  et" (sapkali, referans yazimi). Ekran goruntusu
+  `tasarim/sikayet-01.png`. Jest 77 paket / 1038 test. Yayin: web
+  guncel, OTA grup `cb9c939a-68de-4e01-8819-fc1e97b74340`.
+
 ### ACIK PROFILDE DOGRUDAN ARKADAS, "ARKADASSIN" TIKLI; IKI CANLI HATA - 2026-09-18 GECE
 
 Kullanicinin istegi: "Arkadassin yazisinin yanina tik; profili herkese

@@ -183,7 +183,7 @@ describe('SohbetEkrani', () => {
   // mesaj" sorusunu cevaplayamiyordu (Plan 2 Task 6, karar 62).
   it('ust bardaki sikayet dugmesi daima kullaniciyi sikayet eder', async () => {
     await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Şikayet et'))
+    await fireEvent.press(await screen.findByText('Şikâyet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
@@ -192,7 +192,7 @@ describe('SohbetEkrani', () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
 
     await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Şikayet et'))
+    await fireEvent.press(await screen.findByText('Şikâyet et'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
@@ -205,7 +205,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     await fireEvent(await screen.findByText('Kotu soz'), 'longPress')
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=m42')
+    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=m42&kullaniciId=kullanici-2')
   })
 
   it('kendi mesajina uzun basmak sikayet acmaz', async () => {

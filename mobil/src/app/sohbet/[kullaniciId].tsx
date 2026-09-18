@@ -380,7 +380,7 @@ export default function SohbetEkrani() {
                   onLongPress={
                     benimMi
                       ? undefined
-                      : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}`)
+                      : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}&kullaniciId=${kullaniciId}`)
                   }
                   style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
                 >
