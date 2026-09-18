@@ -7,7 +7,7 @@ import path from 'node:path'
 
 const kok = path.dirname(fileURLToPath(import.meta.url))
 const CHROME = process.env.SLOOIN_CHROME ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-const yonler = ['0-beceri-onerisi', 'A-sehir-uyaniyor', 'B-kalabalik-olcer', 'C-radar']
+const yonler = process.argv.slice(2).length ? process.argv.slice(2) : ['0-beceri-onerisi', 'A-sehir-uyaniyor', 'B-kalabalik-olcer', 'C-radar', 'D-apple']
 
 const tarayici = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--allow-file-access-from-files'] })
 for (const ad of yonler) {

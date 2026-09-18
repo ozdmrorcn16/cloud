@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slooin - Yon D: Apple dili</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="ortak.css" />
+<style>
+  /* Apple urun sayfasi dili: tek mesaj = tek ekran, ortalanmis dev baslik,
+     bol bosluk, beyaz / #F5F5F7 / siyah bolumler, bento kutular, ince ust
+     cubuk. Renk yok; turuncu yalnizca baglanti ve eylemde. */
+  :root { --gri: #F5F5F7; --gri-yazi: #6E6E73; --siyah: #000; }
+  body { font-size: 17px; }
+  .kap { max-width: 1024px; }
+
+  .cubuk { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.8); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); }
+  .cubuk .ic { max-width: 1024px; margin: 0 auto; padding: 0 22px; height: 48px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .cubuk img { height: 20px; }
+  .cubuk nav { display: flex; gap: 34px; color: rgba(0,0,0,.8); }
+  .cubuk .indir { background: var(--turuncu); color: #fff; padding: 5px 13px; border-radius: 999px; font-weight: 500; }
+
+  .baglanti { color: var(--turuncu); font-size: 21px; display: inline-flex; align-items: center; gap: 4px; }
+  .baglanti::after { content: '›'; font-size: 24px; line-height: 1; }
+  .baglantilar { display: flex; gap: 34px; justify-content: center; }
+
+  /* kahraman */
+  .kahraman { text-align: center; padding: 120px 0 0; overflow: hidden; }
+  .kahraman .ust-yazi { color: var(--gri-yazi); letter-spacing: 0; text-transform: none; font-size: 21px; font-weight: 500; }
+  .kahraman h1 { font-size: 96px; letter-spacing: -.045em; line-height: 1.02; margin: 8px 0 18px; font-weight: 700; }
+  .kahraman .alt { font-size: 28px; letter-spacing: -.01em; color: var(--metin); margin: 0 0 22px; font-weight: 500; }
+  .kahraman .telefon { margin: 76px auto 0; transform: translateY(0); box-shadow: 0 60px 100px -40px rgba(0,0,0,.35); }
+  .kahraman .telefon img { width: 330px; height: 676px; border-radius: 40px; }
+  .kahraman .telefon { border-radius: 50px; padding: 12px; }
+
+  /* siyah bolum */
+  .siyah { background: var(--siyah); color: #fff; text-align: center; padding: 150px 0 0; margin-top: 140px; overflow: hidden; }
+  .siyah h2 { font-size: 80px; letter-spacing: -.04em; line-height: 1.04; margin: 0 0 20px; }
+  .siyah h2 span { color: var(--turuncu); }
+  .siyah p.alt { font-size: 24px; color: rgba(255,255,255,.7); max-width: 34em; margin: 0 auto 26px; }
+  .siyah .sahne { position: relative; margin-top: 80px; height: 560px; }
+  .siyah .telefon { position: absolute; left: 50%; bottom: -120px; transform: translateX(-50%); background: #2a2a2e; box-shadow: none; }
+  .siyah .telefon img { width: 330px; height: 676px; border-radius: 40px; }
+  .siyah .telefon { border-radius: 50px; padding: 12px; }
+  .siyah .not { position: absolute; top: 40px; text-align: left; max-width: 240px; }
+  .siyah .not b { display: block; font-size: 22px; letter-spacing: -.02em; margin-bottom: 6px; }
+  .siyah .not span { color: rgba(255,255,255,.65); font-size: 15px; }
+  .siyah .not.sol { left: 40px; }
+  .siyah .not.sag { right: 40px; top: 200px; }
+
+  /* sayilar */
+  .sayilar { padding: 150px 0 110px; text-align: center; }
+  .sayilar h2 { font-size: 56px; letter-spacing: -.035em; margin: 0 0 12px; line-height: 1.05; }
+  .sayilar p.alt { color: var(--gri-yazi); font-size: 21px; margin: 0 0 80px; }
+  .sayilar .satir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .sayilar .sayi b { display: block; font-size: 88px; letter-spacing: -.05em; line-height: .95; }
+  .sayilar .sayi b em { font-style: normal; color: var(--turuncu); }
+  .sayilar .sayi span { display: block; font-size: 17px; color: var(--metin); margin-top: 14px; font-weight: 500; }
+  .sayilar .sayi small { display: block; color: var(--gri-yazi); font-size: 15px; margin-top: 4px; }
+
+  /* bento */
+  .bento-bolum { background: var(--gri); padding: 120px 0 130px; }
+  .bento-bolum h2 { font-size: 56px; letter-spacing: -.035em; text-align: center; margin: 0 0 60px; line-height: 1.05; }
+  .bento { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 300px; gap: 16px; }
+  .kutu { background: #fff; border-radius: 28px; padding: 40px; position: relative; overflow: hidden; }
+  .kutu h3 { font-size: 30px; letter-spacing: -.03em; margin: 0 0 10px; line-height: 1.1; }
+  .kutu p { margin: 0; color: var(--gri-yazi); font-size: 17px; max-width: 30ch; }
+  .kutu .baglanti { position: absolute; left: 40px; bottom: 34px; font-size: 17px; }
+  .kutu.genis { grid-column: span 4; }
+  .kutu.genis p, .kutu.genis h3 { max-width: 22ch; }
+  .kutu.dar { grid-column: span 2; }
+  .kutu.uzun { grid-column: span 3; grid-row: span 1; }
+  .kutu.koyu { background: var(--metin); color: #fff; }
+  .kutu.koyu p { color: rgba(255,255,255,.65); }
+  .kutu .ekran { position: absolute; right: 32px; bottom: -180px; width: 230px; border-radius: 30px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.4); }
+  .kutu .halkalar { position: absolute; right: -60px; bottom: -80px; width: 320px; height: 320px; border-radius: 50%; border: 1px solid var(--cizgi); }
+  .kutu .halkalar::before, .kutu .halkalar::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid var(--cizgi); inset: 25%; }
+  .kutu .halkalar::after { inset: 45%; background: var(--turuncu); border: 0; }
+  .kutu .balon { position: absolute; right: 36px; bottom: 36px; background: var(--gri); border-radius: 18px 18px 4px 18px; padding: 12px 16px; font-size: 15px; }
+  .kutu .balon + .balon { right: auto; left: 40px; bottom: 100px; background: var(--turuncu); color: #fff; border-radius: 18px 18px 18px 4px; }
+  .kutu .avatarlar { position: absolute; right: 40px; bottom: 40px; display: flex; }
+  .kutu .avatarlar span { width: 56px; height: 56px; border-radius: 50%; border: 3px solid #fff; background: var(--turuncu-zemin); color: var(--turuncu); display: grid; place-items: center; font-weight: 700; margin-left: -14px; font-size: 18px; }
+  .kutu .avatarlar span:first-child { margin-left: 0; }
+  .kutu .avatarlar span.canli { background: var(--turuncu); color: #fff; }
+
+  /* gizlilik */
+  .gizlilik { text-align: center; padding: 150px 0 140px; }
+  .gizlilik .kilit { width: 72px; height: 72px; margin: 0 auto 30px; }
+  .gizlilik h2 { font-size: 72px; letter-spacing: -.04em; line-height: 1.02; margin: 0 0 20px; }
+  .gizlilik p.alt { font-size: 21px; color: var(--gri-yazi); max-width: 36em; margin: 0 auto 26px; }
+
+  /* indirme */
+  .indirme { background: var(--gri); text-align: center; padding: 110px 0; }
+  .indirme h2 { font-size: 48px; letter-spacing: -.035em; margin: 0 0 10px; }
+  .indirme p { color: var(--gri-yazi); font-size: 19px; margin: 0 0 32px; }
+  .indirme .rozetler { justify-content: center; }
+
+  .alt-bilgi { background: var(--gri); border-top: 1px solid rgba(0,0,0,.08); color: var(--gri-yazi); font-size: 12px; padding: 20px 0 40px; }
+  .alt-bilgi .kap { display: block; }
+  .alt-bilgi .ince { max-width: 1024px; padding-bottom: 14px; border-bottom: 1px solid rgba(0,0,0,.08); margin-bottom: 14px; line-height: 1.5; }
+  .alt-bilgi .satir { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .alt-bilgi nav { display: flex; gap: 18px; }
+</style>
+</head>
+<body>
+<div class="cubuk"><div class="ic">
+  <img src="marka-yazisi-koyu.png" alt="Slooin" />
+  <nav><a href="#">Nasıl çalışır</a><a href="#">Gizlilik</a><a href="#">Destek</a></nav>
+  <a class="indir" href="#">İndir</a>
+</div></div>
+
+<section class="kahraman">
+  <div class="kap">
+    <div class="ust-yazi">Slooin</div>
+    <h1>Şu an nerede<br />insan var?</h1>
+    <p class="alt">Aynı yerdesiniz. Birbirinizi fark edin.</p>
+    <div class="baglantilar"><a class="baglanti" href="#">Nasıl çalışır</a><a class="baglanti" href="#">Uygulamayı indir</a></div>
+  </div>
+  <div class="telefon"><img src="../../site/public/ekran-kesfet.png" alt="Slooin keşfet ekranı" /></div>
+</section>
+
+<section class="siyah">
+  <div class="kap">
+    <h2>Check-in yap.<br /><span>Görünür ol.</span></h2>
+    <p class="alt">Mekâna girdin, bir dokunuş. Bir saat boyunca oradaki herkes seni "şu an burada" listesinde görür; sen de onları.</p>
+    <a class="baglanti" href="#">Check-in nasıl çalışır</a>
+    <div class="sahne">
+      <div class="not sol"><b>Bir saat.</b><span>Sonra etiket düşer, koordinat silinir, check-in anıya döner.</span></div>
+      <div class="not sag"><b>Sen seçersin.</b><span>Gizli profilde yalnızca arkadaşların görür.</span></div>
+      <div class="telefon"><img src="../../site/public/ekran-mekan.png" alt="Slooin mekân sayfası" /></div>
+    </div>
+  </div>
+</section>
+
+<section class="sayilar">
+  <div class="kap">
+    <h2>Yakın. Kısa. Gerçek.</h2>
+    <p class="alt">Slooin'in üç kuralı, tasarımın kendisi.</p>
+    <div class="satir">
+      <div class="sayi"><b>1 <em>km</em></b><span>Yalnızca yakınındaki mekânlar.</span><small>Sıralama her zaman en yakından uzağa.</small></div>
+      <div class="sayi"><b>1 <em>saat</em></b><span>"Şu an burada" etiketi.</span><small>Sonra check-in anıya döner.</small></div>
+      <div class="sayi"><b>0</b><span>Canlı konum paylaşımı.</span><small>Paylaştığın şey bir mekân ve bir an.</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="bento-bolum">
+  <div class="kap">
+    <h2>Bir akşamda tanış.</h2>
+    <div class="bento">
+      <div class="kutu genis">
+        <h3>Popüler yerleri keşfet.</h3>
+        <p>1 km içindeki mekânlar, her birinin yanında şu an kaç kişi olduğu.</p>
+        <a class="baglanti" href="#">Keşfet'e bak</a>
+        <img class="ekran" src="../../site/public/ekran-kesfet.png" alt="" />
+      </div>
+      <div class="kutu dar">
+        <h3>Yakınındakilerle tanış.</h3>
+        <p>Aynı mekândakine arkadaşlık isteği gönder.</p>
+        <div class="avatarlar"><span>D</span><span>E</span><span class="canli">+3</span></div>
+      </div>
+      <div class="kutu uzun koyu">
+        <h3>Sohbet et.</h3>
+        <p>Arkadaş olduktan sonra birebir yaz. Grup yok, oda yok; iki kişi.</p>
+        <div class="balon">Aynı kafedeymişiz, fark etmedim 😄</div>
+        <div class="balon">Masaya gel!</div>
+      </div>
+      <div class="kutu uzun">
+        <h3>En yakından uzağa.</h3>
+        <p>Liste ve harita bir kilometreyle sınırlı; şehrin öbür ucu seni ilgilendirmez.</p>
+        <div class="halkalar"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gizlilik">
+  <div class="kap">
+    <svg class="kilit" viewBox="0 0 48 48" fill="none" stroke="#17130F" stroke-width="2.5"><rect x="9" y="20" width="30" height="22" rx="6"/><path d="M16 20v-5a8 8 0 0 1 16 0v5"/><circle cx="24" cy="31" r="2.5" fill="#FE7813" stroke="none"/></svg>
+    <h2>Gizlilik. Slooin'in<br />parçası.</h2>
+    <p class="alt">Konumun bir saat sonra silinir. Mesajlarını sen ve karşı taraf okur. Verilerini tek dokunuşla indirir, hesabını tek dokunuşla silersin. 18 yaş altı hesap yok.</p>
+    <a class="baglanti" href="#">Gizlilik politikasını oku</a>
+  </div>
+</section>
+
+<section class="indirme">
+  <div class="kap">
+    <h2>Slooin'i indir.</h2>
+    <p>iPhone ve Android için. Yakında.</p>
+    <div class="rozetler">
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.5 0-2.8.8-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.7.7 1 1.6 2.2 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.2 0 1.9-1 2.6-2 .8-1.2 1.2-2.3 1.2-2.4-.1 0-2.2-.9-2.2-3.5zM14.2 5.9c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">App Store'da</span></span></a>
+      <a class="rozet" href="#"><svg viewBox="0 0 24 24"><path fill="#34A853" d="M4.6 2.3 14 11.7l-2.4 2.4L4 6.5V3.7c0-.6.2-1.1.6-1.4z"/><path fill="#FBBC04" d="M17.6 9.3 14 11.7l2.4 2.4 3.4-1.9c.9-.5.9-1.8 0-2.3l-2.2-1.2z"/><path fill="#EA4335" d="M4.6 2.3 16.4 9l-2.4 2.7L4.6 2.3z"/><path fill="#4285F4" d="M4.6 21.1 14 11.7l2.4 2.4L4.6 21.1z"/></svg><span class="yazi"><span class="ust">Yakında</span><span class="alt">Google Play'de</span></span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="alt-bilgi"><div class="kap">
+  <div class="ince">Check-in görünürlüğü bir saattir; süre dolunca konum koordinatı silinir. Mekân verileri Foursquare (Apache 2.0) ve OpenStreetMap (ODbL) kaynaklıdır. Slooin 18 yaş ve üzeri içindir.</div>
+  <div class="satir"><span>© 2026 Slooin. Tüm hakları saklıdır.</span><nav><a href="#">Gizlilik Politikası</a><a href="#">Kullanım Koşulları</a><a href="#">Destek</a><a href="#">Hesabı sil</a></nav><span>Türkiye · Türkçe</span></div>
+</div></footer>
+</body>
+</html>
