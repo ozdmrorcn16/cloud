@@ -134,7 +134,9 @@ async function kaynakDogrula(yonetici: SupabaseClient, olay: Olay): Promise<bool
       return (data ?? []).length > 0
     }
 
-    if (olay.olay === 'takip_istegi' || olay.olay === 'takip_kabul') {
+    if (olay.olay === 'takip_istegi' || olay.olay === 'takip_kabul' || olay.olay === 'takip_eklendi') {
+      // takip_eklendi de 'kabul' satiriyla dogrulanir: dogrudan ekleme
+      // satiri baslangictan 'kabul' yazar.
       const { data, error } = await yonetici
         .from('takipler')
         .select('durum')

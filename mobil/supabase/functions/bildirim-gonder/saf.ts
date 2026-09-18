@@ -17,6 +17,9 @@ export type Olay =
   | { olay: 'mesaj'; mesaj_id: string; konusma_id: string; gonderen_id: string; aktor_id: string | null }
   | { olay: 'takip_istegi'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
   | { olay: 'takip_kabul'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
+  // DOGRUDAN EKLEME (2026-09-18): acik profilde "Arkadas ekle" istek
+  // gondermez, bagi hemen kurar; eklenen kisiye bu olay gider.
+  | { olay: 'takip_eklendi'; takip_eden_id: string; takip_edilen_id: string; aktor_id: string | null }
   | { olay: 'sohbet_istegi'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
   | { olay: 'sohbet_kabul'; gonderen_id: string; hedef_id: string; aktor_id: string | null }
   // ETIKET (kullanicinin istegi 2026-09-06). Iki ayri olay, cunku
@@ -81,6 +84,7 @@ export function govdeyiCozumle(ham: unknown): Olay | null {
 
     case 'takip_istegi':
     case 'takip_kabul':
+    case 'takip_eklendi':
       if (!uuidMi(k.takip_eden_id) || !uuidMi(k.takip_edilen_id)) return null
       return {
         olay: k.olay,
@@ -145,6 +149,7 @@ export type Hedef = {
  *   mesaj         -> alici: konusmanin diger uyeleri, karsi taraf: gonderen
  *   takip_istegi  -> alici: takip_edilen, karsi taraf: takip_eden
  *   takip_kabul   -> alici: takip_eden (istegi gonderen), karsi taraf: takip_edilen
+ *   takip_eklendi -> alici: takip_edilen (eklenen), karsi taraf: takip_eden (ekleyen)
  *   sohbet_istegi -> alici: hedef,      karsi taraf: gonderen
  *   sohbet_kabul  -> alici: gonderen,   karsi taraf: hedef
  *
@@ -155,6 +160,7 @@ export function hedefleriBelirle(olay: Olay, konusmaDigerUyeleri: string[]): Hed
     case 'mesaj':
       return konusmaDigerUyeleri.map((uye) => ({ aliciId: uye, karsiTarafId: olay.gonderen_id }))
     case 'takip_istegi':
+    case 'takip_eklendi':
       return [{ aliciId: olay.takip_edilen_id, karsiTarafId: olay.takip_eden_id }]
     case 'takip_kabul':
       return [{ aliciId: olay.takip_eden_id, karsiTarafId: olay.takip_edilen_id }]
@@ -205,6 +211,8 @@ export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
       return `${ad} sana arkadaşlık isteği gönderdi`
     case 'takip_kabul':
       return `${ad} arkadaşlık isteğini kabul etti`
+    case 'takip_eklendi':
+      return `${ad} seni arkadaş olarak ekledi`
     case 'sohbet_istegi':
       return `${ad} sana sohbet isteği gönderdi`
     case 'sohbet_kabul':

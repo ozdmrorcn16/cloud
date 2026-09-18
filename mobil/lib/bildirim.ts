@@ -35,6 +35,11 @@ function rotaUret(data: BildirimData | undefined | null): string | null {
   if (data.tur === 'mesaj' && data.kullaniciId) {
     return `/sohbet/${data.kullaniciId}`
   }
+  // Dogrudan ekleme (2026-09-18): bekleyen istek yok, "Baglar"da
+  // gorunecek bir sey de yok - ekleyenin profiline gider.
+  if (data.tur === 'takip_eklendi' && data.kullaniciId) {
+    return `/kullanici/${data.kullaniciId}`
+  }
   if (
     data.tur === 'takip_istegi' ||
     data.tur === 'takip_kabul' ||

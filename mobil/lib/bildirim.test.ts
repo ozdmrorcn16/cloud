@@ -147,6 +147,14 @@ describe('bildirimeDokunmaDinle', () => {
     expect(yonlendir).toHaveBeenNthCalledWith(2, '/baglar')
   })
 
+  it('dogrudan eklemede (takip_eklendi) ekleyenin profiline yonlendirir', () => {
+    const yonlendir = jest.fn()
+    mockDinle.mockReturnValue({ remove: jest.fn() })
+    bildirimeDokunmaDinle(yonlendir)
+    dinleyiciyiCalistir({ tur: 'takip_eklendi', kullaniciId: 'kisi-3' })
+    expect(yonlendir).toHaveBeenCalledWith('/kullanici/kisi-3')
+  })
+
   it('bilinmeyen turde yonlendirme yapmaz', () => {
     const yonlendir = jest.fn()
     mockDinle.mockReturnValue({ remove: jest.fn() })

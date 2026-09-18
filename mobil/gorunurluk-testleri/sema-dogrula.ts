@@ -1133,10 +1133,11 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
       'mesaj_bildirimi',
       'sohbet_istegi_bildirimi',
       'sohbet_kabul_bildirimi',
+      'takip_eklendi_bildirimi',
       'takip_istegi_bildirimi',
       'takip_kabul_bildirimi',
     ],
-    'tam olarak alti bildirim tetikleyicisi kayitli'
+    'tam olarak yedi bildirim tetikleyicisi kayitli'
   )
 }
 

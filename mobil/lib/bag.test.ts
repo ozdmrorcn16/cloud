@@ -51,10 +51,21 @@ beforeEach(() => {
 })
 
 describe('takipIstegiGonder', () => {
-  it('RPC-yi dogru parametreyle cagirir', async () => {
-    mockRpc.mockResolvedValue({ error: null })
-    await takipIstegiGonder('kisi-1')
+  it('RPC-yi dogru parametreyle cagirir; gizli profilde "beklemede" doner', async () => {
+    mockRpc.mockResolvedValue({ data: 'beklemede', error: null })
+    await expect(takipIstegiGonder('kisi-1')).resolves.toBe('beklemede')
     expect(mockRpc).toHaveBeenCalledWith('takip_istegi_gonder', { p_kullanici_id: 'kisi-1' })
+  })
+
+  // ACIK PROFIL (2026-09-18): sunucu bagi hemen kurar ve 'kabul' doner.
+  it('acik profilde sunucunun dondurdugu "kabul" oldugu gibi gelir', async () => {
+    mockRpc.mockResolvedValue({ data: 'kabul', error: null })
+    await expect(takipIstegiGonder('kisi-1')).resolves.toBe('kabul')
+  })
+
+  it('bilinmeyen donus istek sayilir (eski sunucu, void)', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null })
+    await expect(takipIstegiGonder('kisi-1')).resolves.toBe('beklemede')
   })
 
   it('sunucu hatasini oldugu gibi firlatir', async () => {

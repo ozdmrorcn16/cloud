@@ -172,6 +172,51 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### ACIK PROFILDE DOGRUDAN ARKADAS, "ARKADASSIN" TIKLI; IKI CANLI HATA - 2026-09-18 GECE
+
+Kullanicinin istegi: "Arkadassin yazisinin yanina tik; profili herkese
+acik birini arkadas ekleye basinca istek gonderilmeden arkadas olur,
+gizli profile basinca istek gonderilir."
+
+- **Sunucu (migrasyon `20260918210000`, uygulandi):**
+  `takip_istegi_gonder` artik TEXT doner - hedef `profil_gizli`
+  ise 'beklemede' satiri (eski akis), ACIKSA iki yonde 'kabul' satiri
+  ve 'kabul' doner (drop + create; on kontroller ve gunluk 50 siniri
+  aynen). Karsi tarafta bekleyen istek varsa on conflict ile 'kabul'e
+  cekilir (o gecis zaten `takip_kabul` push'u uretir).
+- **Bildirim:** yeni olay `takip_eklendi` ("X seni arkadas olarak
+  ekledi"; dokununca ekleyenin profili). Tetikleyici
+  `takip_eklendi_bildirimi` (INSERT + 'kabul'); `bildirim.olay_gonder`
+  YALNIZCA RPC'nin koydugu islem-yerel `bag.dogrudan_ekleme` ayari
+  varken ve satir aktorun kendi yonuyken olay uretir - yanitla'nin ayna
+  insert'i boylece cift bildirim uretmez. Edge Function `bildirim-gonder`
+  SURUM 5 (MCP; verify_jwt kapali), deno 13/13.
+- **Istemci:** `takipIstegiGonder` donen degeri veriyor; ekran ona gore
+  "Beklemede" ya da "Arkadassin" (+ arkadas sayaci +1). "Arkadassin"
+  dugmesinde turuncu tik (`ArkadasTikIkonu`, testID `arkadas-tik`).
+
+**CANLI test:gorunurluk IKI GERCEK HATA YAKALADI** (sunucu davranisi
+degisince kosuldu - 2026-09-02 dersi):
+1. **"Profilim gizli" anahtari 2 Eylul'den beri HIC KAYDEDILEMIYORDU:**
+   `profil_gizli` sutunu `authenticated` UPDATE yetki listesinde yoktu
+   ("permission denied for table profiller"); canlida 7 profilin sifiri
+   gizliydi. Migrasyon `20260918213000` yetkiyi verdi. DERS: profiller'e
+   sutun ekleyen her migrasyon `grant update (sutun)` tasimali.
+2. **`konusmalarim` bekleyen istek suzgecini kaybetmisti:** 09-01'de
+   MCP ile canliya konan kosul dosyada yoktu; 09-14'te konusmayi_sil
+   fonksiyonu 08-22 dosyasindan kopyalayinca dustu - yabancinin ilk
+   mesaji Istekler'e dusuyor AMA Mesajlar listesinde de gorunuyordu (4
+   gun). Migrasyon `20260918214000` tam govdeyle geri koydu. DERS:
+   "ayni dosyadan kopyala" demeden once `pg_get_functiondef` ile canli
+   tanimi karsilastir.
+
+Senaryolar yeni kurala gore: `bagKur` (on kosul, acik profil, 'kabul'
+olculur) ve `istekYolu` (hedefi gecici gizli yapar; 19/20/21/26/32/48),
+yeni senaryo 19b (acik profilde dogrudan bag). Test hesaplari acik
+profil. `sema-dogrula` yedi tetikleyici bekliyor. Canli: gorunurluk ve
+sema paketleri TAMAMEN yesil; jest 77 paket / 1031 test. Yayin: web
+guncel, OTA grup `8528eaaf-7dad-48f5-9434-df80e12bd7c8`.
+
 ### PROFIL DUZENLE: "KAYDEDILDI" DUGMENIN HEMEN USTUNDE - 2026-09-18 AKSAM
 
 Kullanicinin istegi: "kaydete basinca kaydedildigi hemen ustunde yazsin,

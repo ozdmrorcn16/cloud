@@ -216,6 +216,34 @@ async function konusmaTemizleVeDogrula(konusmaId: string) {
   esitMi(kalan, [], 'temizlik: konusma gercekten silinmis (dogrulama, sessiz birakilmiyor)')
 }
 
+// ACIK PROFILDE DOGRUDAN ARKADAS (2026-09-18): `takip_istegi_gonder`
+// hedef profil ACIKSA bagi hemen kurar ve 'kabul' doner; istek yalnizca
+// GIZLI profile gider ('beklemede'). Test hesaplarinin ucu de acik.
+// Bu yuzden iki yardimci var:
+//   bagKur    -> "arkadas olsunlar" diyen ON KOSULLAR icin (tek cagri,
+//                donus 'kabul' olculur; eskiden gonder + yanitla idi)
+//   istekYolu -> ISTEK akisini olcen senaryolar icin: hedefi gecici
+//                gizli yapar, senaryo bitince geri acar (finally).
+async function profilGizliAyarla(istemci: SupabaseClient, kimlik: string, gizli: boolean) {
+  const { error } = await istemci.from('profiller').update({ profil_gizli: gizli }).eq('id', kimlik)
+  if (error) throw new Error(`profil_gizli ayarlanamadi: ${error.message}`)
+}
+
+async function istekYolu<T>(hedef: SupabaseClient, hedefId: string, fn: () => Promise<T>): Promise<T> {
+  await profilGizliAyarla(hedef, hedefId, true)
+  try {
+    return await fn()
+  } finally {
+    await profilGizliAyarla(hedef, hedefId, false)
+  }
+}
+
+async function bagKur(gonderen: SupabaseClient, hedefId: string, etiket: string) {
+  const { data, error } = await gonderen.rpc('takip_istegi_gonder', { p_kullanici_id: hedefId })
+  esitMi(error, null, `${etiket}: acik profile arkadas ekleme basarili`)
+  esitMi(data, 'kabul', `${etiket}: acik profilde bag HEMEN kuruldu (istek degil)`)
+}
+
 async function senaryo(isim: string, fn: () => Promise<void>) {
   // SLOOIN_SENARYO=66 (ya da "41,66") verilince yalnizca o numarali
   // senaryolar kosar; on kosul kurulumlari her senaryonun icinde oldugu
@@ -816,9 +844,10 @@ async function main() {
     throw new Error(`senaryo 19 oncesi engeli_kaldir hatasi: ${bagOncesiKaldirErr.message}`)
   }
 
-  await senaryo('19 - Istek gonderilir', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+  await senaryo('19 - Istek gonderilir (gizli profile)', async () => await istekYolu(b, bId, async () => {
+    const { data: gonderSonuc, error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
     esitMi(gonderHata, null, 'A istegi gonderebiliyor')
+    esitMi(gonderSonuc, 'beklemede', "gizli profile giden cagri 'beklemede' doner")
 
     const { data: aGorusu, error: aHata } = await a
       .from('takipler')
@@ -848,9 +877,38 @@ async function main() {
     // burada hemen temizleniyor (final temizle()'ye birakilmiyor).
     const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
     esitMi(temizlikHatasi, null, 'senaryo 19 kendi istegini temizleyebiliyor')
+  }))
+
+  // Kullanicinin karari (2026-09-18): "profili herkese acik birisini
+  // arkadas ekleye bastiginda istek gonderilmesine gerek kalmadan arkadas
+  // olarak eklemis olur". Istek satiri hic olusmaz, iki yon 'kabul'.
+  await senaryo('19b - Acik profilde dogrudan arkadas', async () => {
+    const oncesi = await ikiYonTakipSatirlari(a, aId, bId)
+    esitMi(oncesi, [], 'on kosul: A-B arasinda takip satiri yok')
+
+    const { data: sonuc, error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(gonderHata, null, 'A acik profile ekleyebiliyor')
+    esitMi(sonuc, 'kabul', "acik profilde donus 'kabul'")
+
+    const { data: satirlar, error: satirHata } = await a
+      .from('takipler')
+      .select('durum')
+      .or(`and(takip_eden_id.eq.${aId},takip_edilen_id.eq.${bId}),and(takip_eden_id.eq.${bId},takip_edilen_id.eq.${aId})`)
+    if (satirHata) throw new Error(`takip sorgu hatasi: ${satirHata.message}`)
+    esitMi((satirlar ?? []).map((r) => r.durum).sort(), ['kabul', 'kabul'], 'iki yon de kabul, beklemede satiri yok')
+
+    const { error: yanitHata } = await b.rpc('takip_istegini_yanitla', { p_kullanici_id: aId, p_kabul: true })
+    esitMi(yanitHata !== null, true, 'kabul edilecek istek YOK (bag zaten kurulu)')
+
+    const { error: tekrarHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
+    esitMi(tekrarHata !== null, true, 'ikinci ekleme reddedilir (zaten bagli)')
+
+    const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    esitMi(temizlikHatasi, null, 'senaryo 19b bagi temizleyebiliyor')
+    esitMi(await ikiYonTakipSatirlari(a, aId, bId), [], 'temizlik sonrasi iki yon de gitti')
   })
 
-  await senaryo('20 - Kabul edilmeden uzaktan gorunmez', async () => {
+  await senaryo('20 - Kabul edilmeden uzaktan gorunmez', async () => await istekYolu(b, bId, async () => {
     // B mekan-1'de canli; A hicbir yere check-in yapmamis, yani "uzakta".
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
     t.checkInler.push({ istemci: b, id: bCi })
@@ -873,9 +931,9 @@ async function main() {
     // ortaya cikan gercek bir senaryolar-arasi durum sizintisiydi).
     const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: bId })
     esitMi(temizlikHatasi, null, 'senaryo 20 kendi istegini temizleyebiliyor')
-  })
+  }))
 
-  await senaryo('21 - Kabul edilince uzaktan gorunur', async () => {
+  await senaryo('21 - Kabul edilince uzaktan gorunur', async () => await istekYolu(b, bId, async () => {
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'herkese_acik')
     t.checkInler.push({ istemci: b, id: bCi })
 
@@ -900,7 +958,7 @@ async function main() {
       true,
       "kabulden sonra A, B'nin canli check-in'ini mekana gitmeden goruyor"
     )
-  })
+  }))
 
   // Senaryo 21'in sonunda A -> B takibi 'kabul' durumunda ve kalici;
   // senaryo 22/23/24 bu takibi kullaniyor. Ucuncu hesap yalnizca burada
@@ -1015,7 +1073,7 @@ async function main() {
     )
   })
 
-  await senaryo('26 - Baskasinin istegi kabul edilemez', async () => {
+  await senaryo('26 - Baskasinin istegi kabul edilemez', async () => await istekYolu(c, cId, async () => {
     const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: cId })
     esitMi(gonderHata, null, "A, C'ye istek gonderebiliyor")
 
@@ -1027,7 +1085,7 @@ async function main() {
 
     const { error: temizlikHatasi } = await a.rpc('takibi_birak', { p_kullanici_id: cId })
     esitMi(temizlikHatasi, null, 'senaryo 26 kendi istegini temizleyebiliyor')
-  })
+  }))
 
   await senaryo('27 - Ani donusumu genisletmez', async () => {
     const bTakipCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
@@ -1076,14 +1134,7 @@ async function main() {
     const { error: kaldirErr } = await a.rpc('engeli_kaldir', { p_kullanici_id: bId })
     if (kaldirErr) throw new Error(`engeli_kaldir hatasi: ${kaldirErr.message}`)
 
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    if (gonderHata) throw new Error(`takip_istegi_gonder hatasi: ${gonderHata.message}`)
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    if (kabulHata) throw new Error(`takip_istegini_yanitla hatasi: ${kabulHata.message}`)
+    await bagKur(a, bId, 'senaryo 28 on kosul')
 
     const bCi = await checkInYap(b, mekan1, MEKAN_1.lat, MEKAN_1.lng, 'takipcilerim')
     t.checkInler.push({ istemci: b, id: bCi })
@@ -1221,7 +1272,7 @@ async function main() {
   // ayni hatayi verir).
   let bagsizHataMetni: string | null = null
 
-  await senaryo('32 - Kabul iki satir yazar', async () => {
+  await senaryo('32 - Kabul iki satir yazar', async () => await istekYolu(b, bId, async () => {
     // Pozitif kontrol / on kosul: bu iddianin degerli olmasi icin
     // basta gercekten HICBIR takip satiri olmamali - aksi halde
     // asagidaki "iki satir" sayimi onceki bir kosumdan kalan satirlari
@@ -1257,7 +1308,7 @@ async function main() {
       ['kabul'],
       "B->A ayna satiri da kendiliginden 'kabul' durumunda yazildi (karar 42)"
     )
-  })
+  }))
 
   await senaryo('33 - Bagi koparmak iki satiri da siler', async () => {
     // Senaryo 32'nin biraktigi karsilikli bagi (iki 'kabul' satiri)
@@ -1277,14 +1328,7 @@ async function main() {
   })
 
   await senaryo('34 - Karsilikli takipliler yazabilir', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor (karsilikli bag kuruldu)')
+    await bagKur(a, bId, 'on kosul (karsilikli bag kuruldu)')
 
     const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
@@ -1577,14 +1621,7 @@ async function main() {
   })
 
   await senaryo('38 - Engelleme konusmayi gizler', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+    await bagKur(a, bId, 'on kosul')
 
     const { data: konusmaId, error: aMesajHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
@@ -1655,14 +1692,7 @@ async function main() {
   })
 
   await senaryo('39 - Bag kopunca salt-okunur', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+    await bagKur(a, bId, 'on kosul')
 
     const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
@@ -1784,14 +1814,7 @@ async function main() {
     esitMi(mesaj1Hata, null, 'sohbet istegi yoluyla mesaj gonderiliyor')
 
     // Yol 2: ayrica takiples (karsilikli bag).
-    const { error: takipGonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(takipGonderHata, null, 'A ayrica takip istegi de gonderebiliyor')
-
-    const { error: takipKabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(takipKabulHata, null, 'B takip istegini de kabul edebiliyor')
+    await bagKur(a, bId, 'senaryo 40: A ayrica arkadas da ekliyor')
 
     const { data: konusmaId2, error: mesaj2Hata } = await b.rpc('mesaj_gonder', {
       p_kullanici_id: aId,
@@ -1829,14 +1852,7 @@ async function main() {
   })
 
   await senaryo('41 - Gizlenen konusma geri gelir', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+    await bagKur(a, bId, 'on kosul')
 
     const { data: konusmaId, error: mesajHata } = await a.rpc('mesaj_gonder', {
       p_kullanici_id: bId,
@@ -1888,14 +1904,7 @@ async function main() {
   })
 
   await senaryo('42 - Okunmamis sayisi dogru', async () => {
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+    await bagKur(a, bId, 'on kosul')
 
     const { data: konusmaId, error: mesaj1Hata } = await b.rpc('mesaj_gonder', {
       p_kullanici_id: aId,
@@ -2085,7 +2094,7 @@ async function main() {
     await hesapDurumunuTemizle([aId])
   })
 
-  await senaryo('48 - Askidaki kullanici istek kabul edemez', async () => {
+  await senaryo('48 - Askidaki kullanici istek kabul edemez', async () => await istekYolu(b, bId, async () => {
     const yonetici = yoneticiIstemcisi()
     if (!yonetici) {
       console.log('  ATLANDI: SUPABASE_SERVICE_ROLE_KEY yok')
@@ -2175,7 +2184,7 @@ async function main() {
     // bakmadan iki yonu de sildigi icin hem kirmizi hem yesil kosumda
     // dogru toparlar.
     await b.rpc('takibi_birak', { p_kullanici_id: aId })
-  })
+  }))
 
   await senaryo('49 - Askidaki kullanici profilini degistiremez', async () => {
     const yonetici = yoneticiIstemcisi()
@@ -2968,13 +2977,7 @@ async function main() {
     // Karsilikli bag kuruluyor: B, A'yi takip ediyor olacak ama B HICBIR
     // yere check-in yapmiyor - yani A ile ayni mekanda degil. Duzeltmeden
     // once tam bu durumda fotograf acilmiyordu.
-    const { error: istekHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(istekHata, null, '61 kurulum: A takip istegi gonderebiliyor')
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', {
-      p_kullanici_id: aId,
-      p_kabul: true,
-    })
-    esitMi(kabulHata, null, '61 kurulum: B istegi kabul edebiliyor')
+    await bagKur(a, bId, '61 kurulum')
     t.takipler.push({ istemci: a, hedefId: bId })
 
     let acikCheckIn: string | null = null
@@ -3128,8 +3131,7 @@ async function main() {
     // rastlantiyla ayni sonucu verdigi de dogru olabilirdi.
     let bag = await ikiYonTakipSatirlari(a, aId, bId)
     if (bag.length !== 2) {
-      await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-      await b.rpc('takip_istegini_yanitla', { p_kullanici_id: aId, p_kabul: true })
+      await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId }) // acik profil: bag hemen kurulur
       t.takipler.push({ istemci: a, hedefId: bId })
       bag = await ikiYonTakipSatirlari(a, aId, bId)
     }
@@ -3502,10 +3504,9 @@ async function main() {
     // Kullanicinin karari 2026-09-14: "Sil'e basinca benden silinir,
     // karsi tarafta kalir." Gizle (senaryo 41) gecmisi geri getiriyordu;
     // Sil silme anindan oncekileri bir daha GOSTERMEZ.
-    const { error: gonderHata } = await a.rpc('takip_istegi_gonder', { p_kullanici_id: bId })
-    esitMi(gonderHata, null, 'on kosul: A istegi gonderebiliyor')
-    const { error: kabulHata } = await b.rpc('takip_istegini_yanitla', { p_kullanici_id: aId, p_kabul: true })
-    esitMi(kabulHata, null, 'on kosul: B istegi kabul edebiliyor')
+    // 61/63 bagi final temizlige birakiyor; 66 kendi taze bagini kurar.
+    await a.rpc('takibi_birak', { p_kullanici_id: bId })
+    await bagKur(a, bId, 'on kosul')
 
     const { data: konusmaId, error: m1Hata } = await a.rpc('mesaj_gonder', { p_kullanici_id: bId, p_metin: 'senaryo 66 - eski 1' })
     esitMi(m1Hata, null, 'A ilk mesaji gonderebiliyor')

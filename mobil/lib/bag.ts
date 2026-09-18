@@ -21,8 +21,16 @@ async function rpcCagir(ad: string, parametreler: Record<string, unknown>): Prom
   if (error) throw new Error(hataMetni(error))
 }
 
-export async function takipIstegiGonder(kullaniciId: string): Promise<void> {
-  await rpcCagir('takip_istegi_gonder', { p_kullanici_id: kullaniciId })
+/**
+ * "Arkadas ekle". Sunucu hedefin profiline gore karar verir
+ * (2026-09-18): ACIK profilde istek yok, bag hemen kurulur ve 'kabul'
+ * doner; GIZLI profilde istek gider, 'beklemede' doner. Ekran donen
+ * degere gore "Arkadassin" ya da "Beklemede" gosterir - tahmin etmez.
+ */
+export async function takipIstegiGonder(kullaniciId: string): Promise<'beklemede' | 'kabul'> {
+  const { data, error } = await supabase.rpc('takip_istegi_gonder', { p_kullanici_id: kullaniciId })
+  if (error) throw new Error(hataMetni(error))
+  return data === 'kabul' ? 'kabul' : 'beklemede'
 }
 
 export async function takipIsteginiYanitla(kullaniciId: string, kabul: boolean): Promise<void> {

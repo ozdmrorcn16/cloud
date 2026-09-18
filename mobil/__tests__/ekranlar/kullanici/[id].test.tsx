@@ -269,9 +269,10 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByText('Sohbet iste')).toBeNull()
   })
 
-  it('takip istegi gonderir ve durumu gunceller', async () => {
+  it('GIZLI profilde takip istegi gonderir ve dugme "Beklemede" olur', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
-    ;(takipIstegiGonder as jest.Mock).mockResolvedValue(undefined)
+    // Sunucu gizli profilde 'beklemede' doner (2026-09-18).
+    ;(takipIstegiGonder as jest.Mock).mockResolvedValue('beklemede')
 
     await render(<KullaniciProfiliEkrani />)
     await fireEvent.press(await screen.findByText('Arkadaş ekle'))
@@ -281,6 +282,33 @@ describe('KullaniciProfiliEkrani', () => {
     // (kullanicinin istegi 2026-09-17).
     expect(await screen.findByText('Beklemede')).toBeTruthy()
     expect(screen.queryByText('İsteği geri çek')).toBeNull()
+  })
+
+  /*
+   * ACIK PROFIL (kullanicinin istegi 2026-09-18): "istek gonderilmesine
+   * gerek kalmadan arkadas olarak eklemis olur". Sunucu 'kabul' doner;
+   * dugme dogrudan "Arkadassin" (tikli) olur, Beklemede hic gorunmez,
+   * arkadas sayaci bir artar.
+   */
+  it('ACIK profilde "Arkadaş ekle" dogrudan arkadas yapar: Beklemede yok, Arkadassin + tik, sayac +1', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'yok', sohbet: 'yok' })
+    ;(takipIstegiGonder as jest.Mock).mockResolvedValue('kabul')
+
+    await render(<KullaniciProfiliEkrani />)
+    expect(await screen.findByText('4')).toBeTruthy()
+    await fireEvent.press(await screen.findByText('Arkadaş ekle'))
+
+    expect(await screen.findByText('Arkadaşsın')).toBeTruthy()
+    expect(screen.getByTestId('arkadas-tik')).toBeTruthy()
+    expect(screen.queryByText('Beklemede')).toBeNull()
+    expect(screen.getByText('5')).toBeTruthy()
+  })
+
+  it('"Arkadassin" dugmesinde tik var (arkadas oldugunu belli eder)', async () => {
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({ takip: 'kabul', sohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Arkadaşsın')
+    expect(screen.getByTestId('arkadas-tik')).toBeTruthy()
   })
 
   it('"Arkadaş ekle" dolu turuncu + beyaz yazi (Mesaj yaz ile ayni agirlik)', async () => {

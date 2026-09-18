@@ -39,6 +39,10 @@ Deno.test('govdeyiCozumle: bes olayin hepsini cozuyor', () => {
     { olay: 'takip_kabul', takip_eden_id: A, takip_edilen_id: B, aktor_id: B }
   )
   assertEquals(
+    govdeyiCozumle({ olay: 'takip_eklendi', takip_eden_id: A, takip_edilen_id: B, aktor_id: A }),
+    { olay: 'takip_eklendi', takip_eden_id: A, takip_edilen_id: B, aktor_id: A }
+  )
+  assertEquals(
     govdeyiCozumle({ olay: 'sohbet_istegi', gonderen_id: A, hedef_id: B, aktor_id: A }),
     { olay: 'sohbet_istegi', gonderen_id: A, hedef_id: B, aktor_id: A }
   )
@@ -129,6 +133,10 @@ Deno.test('hedefleriBelirle: istek aliciya, kabul istegi GONDERENE gider', () =>
   const kabul: Olay = { olay: 'takip_kabul', takip_eden_id: A, takip_edilen_id: B, aktor_id: B }
   assertEquals(hedefleriBelirle(kabul, []), [{ aliciId: A, karsiTarafId: B }])
 
+  // Dogrudan ekleme (2026-09-18): alici EKLENEN, karsi taraf ekleyen.
+  const eklendi: Olay = { olay: 'takip_eklendi', takip_eden_id: A, takip_edilen_id: B, aktor_id: A }
+  assertEquals(hedefleriBelirle(eklendi, []), [{ aliciId: B, karsiTarafId: A }])
+
   const sIstek: Olay = { olay: 'sohbet_istegi', gonderen_id: A, hedef_id: B, aktor_id: A }
   assertEquals(hedefleriBelirle(sIstek, []), [{ aliciId: B, karsiTarafId: A }])
 
@@ -194,6 +202,10 @@ Deno.test('bildirimGovdesi: bes kalip', () => {
   assertEquals(
     bildirimGovdesi('takip_kabul', 'Deniz'),
     'Deniz arkadaşlık isteğini kabul etti'
+  )
+  assertEquals(
+    bildirimGovdesi('takip_eklendi', 'Deniz'),
+    'Deniz seni arkadaş olarak ekledi'
   )
   assertEquals(
     bildirimGovdesi('sohbet_istegi', 'Deniz'),

@@ -336,8 +336,14 @@ export default function KullaniciProfiliEkrani() {
 
   async function takipEt() {
     try {
-      await takipIstegiGonder(id)
-      setBagDurum((onceki) => (onceki ? { ...onceki, takip: 'beklemede' } : onceki))
+      // Sunucu karar verir (2026-09-18): ACIK profilde istek yok, bag
+      // hemen kurulur ('kabul'); GIZLI profilde istek gider ('beklemede').
+      const sonuc = await takipIstegiGonder(id)
+      setBagDurum((onceki) => (onceki ? { ...onceki, takip: sonuc } : onceki))
+      if (sonuc === 'kabul') {
+        // Arkadas sayaci da aninda bir artar; yeniden cekmeye gerek yok.
+        setProfil((onceki) => (onceki ? { ...onceki, arkadasSayisi: onceki.arkadasSayisi + 1 } : onceki))
+      }
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -504,6 +510,9 @@ export default function KullaniciProfiliEkrani() {
           accessibilityRole="button"
           testID="arkadas-durumu"
         >
+          {/* TIK (kullanicinin istegi 2026-09-18): "arkadas oldugunu belli
+              etsin". Yaziyla ayni turuncu, ayni satirda. */}
+          <ArkadasTikIkonu />
           <Text style={stiller.eylemArkadasYazi}>{t('kullanici.arkadassin')}</Text>
         </Pressable>
       ) : bagDurum?.takip === 'beklemede' ? (
@@ -974,7 +983,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   eylemBirincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
   /* ARKADASSIN - turuncu cerceve + turuncu yazi: kurulu bir bag, ama
      basilabilir (menu acar). Dolu turuncuyla yarismasin diye cerceveli. */
-  eylemArkadas: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: renk.turuncu },
+  eylemArkadas: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: renk.turuncu, flexDirection: 'row', gap: 6 },
   eylemArkadasBasili: { backgroundColor: renk.turuncuZemin },
   eylemArkadasYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
   /* DURUM (beklemede): dolgu notr - karar karsi tarafta. Basilabilir:
@@ -1090,3 +1099,20 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   aniListesi: { marginHorizontal: -bosluk.sayfa },
 
 })
+
+/** "Arkadassin" dugmesindeki tik - yaziyla ayni turuncu. */
+function ArkadasTikIkonu() {
+  const renk = useRenk()
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24" testID="arkadas-tik">
+      <Path
+        d="M5 12.5l4.5 4.5L19 7.5"
+        fill="none"
+        stroke={renk.turuncuYazi}
+        strokeWidth={2.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}

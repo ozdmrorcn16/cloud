@@ -1,0 +1,17 @@
+-- "PROFILIM GIZLI" ANAHTARI HIC KAYDEDILEMIYORDU (2026-09-18 aksam,
+-- canli test:gorunurluk yakaladi).
+--
+-- `profiller` uzerinde UPDATE yetkisi SUTUN BAZINDA veriliyor
+-- (20260819123253). 20260902120000 `profil_gizli` sutununu ekledi ama
+-- yetki listesine KOYMADI; istemci (`lib/ayarlar.ts` profilGizliAyarla)
+-- dogrudan `.update({ profil_gizli })` yaptigi icin PostgREST
+-- "permission denied for table profiller" donduruyordu. Ekran iyimser
+-- guncellemeyi geri aliyor ve hata gosteriyordu - ama kimse bildirmedi;
+-- canlida 7 profilin SIFIRI gizli (olculdu). Ayni siniftan: etiket
+-- (20260906090000) ve instagram (20260911140000) kendi yetkilerini
+-- vermisti, gizlilik vermemisti.
+--
+-- DERS: profiller'e yeni sutun ekleyen her migrasyon `grant update
+-- (sutun)` satirini da tasimali; jest mock'ladigi icin yetki eksigi
+-- yalnizca canlida gorunur.
+grant update (profil_gizli) on public.profiller to authenticated;
