@@ -148,24 +148,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
-### BASKASININ PROFILINDE GERI OKU KALKTI - 2026-09-18
+### BASKASININ PROFILINDE UST CUBUK KALKTI - 2026-09-18
 
 Kullanicinin istegi: "sol ustteki geri dugmesini kaldir; kendi
 profilimde ne nerede hangi olcude duruyorsa butun profillerin
-yerlesimi oyle gorunecek". `kullanici/[id]` ust cubugundan geri oku ve
-`GeriIkonu` bileseni silindi; hizalama `space-between` -> `flex-end`
-+ `gap: bosluk.m` (kendi profildeki ayarlar dislisiyle ayni desen -
-tek cocukla `space-between` menuyu sola yapistirirdi, ayni ders
-2026-09-11'de kendi profilde ogrenilmisti). Kalan olculer zaten
-esitti: avatar 88, kimlik paddingTop 0 / paddingBottom `l`, ad
-`altBaslik`, ust pay 16 + 4.
+yerlesimi oyle gorunecek". Uygulamayi PARALEL BIR OTURUM yapti
+(cloud-1f, commit `bf535da`): geri oku ve ust cubugun TAMAMI kalkti,
+kimlik blogu yukari alindi, uc nokta menusu kosede mutlak konumda
+(`MENU_CAPI` 40, `KIMLIK_UST_PAYI` 16). Kullaniciya dort dizilim
+secenegi sunulmus, secim "sira ayni, sadece yukari kaysin" olmus.
 
-Geri donus: iOS kenardan kaydirma, Android sistem geri tusu. Sohbet ve
-mesajlar ekranlarindaki oklar DURUYOR - kural yalnizca profiller icin.
-Test: "ust cubukta geri oku YOK, yalnizca uc nokta menusu var".
-
-Jest 77 paket / 1027 test. Yayin: web `slooin--klguiqze94`, OTA grup
-`36f78e0a-2e4f-4dd1-bf5c-d076cf41f2b4`.
+**ORTAM DERSI - IKI OTURUM AYNI ISTEGI ISLEDI.** Bu oturum ayni isi
+daha dar yapti (yalnizca oku kaldirip cubugu birakti) ve once cloud
+deposuna push etti; otekinin commit'i AYNA depoya (`slooin-projesi`)
+gitmisti. `origin` iki push URL'si tasidigi icin ikinci push yalnizca
+aynada reddedildi ve bolunme boyle gorundu. Cozum force-push DEGIL
+birlestirme: `git merge` + cakisan dosyada `--theirs` (kullanicinin
+secim yaptigi surum kazanir), sonra tek push ile iki depo esitlendi.
+Yeni oturum kurali: ayni dalda calisan baska bir oturum olabilir;
+push reddedilirse once `git ls-remote` ile HANGI ucun ayri oldugu
+olculur.
 
 ### HESAP OLUSTURMA: "OTURDUGUN BOLGE" ADIMI - 2026-09-18 SABAH
 

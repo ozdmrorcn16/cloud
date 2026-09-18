@@ -1305,3 +1305,21 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     satiri oldu ve uc nokta seftali daire icinde koyu renkle belirgin
     hale getirildi.
 
+
+98. **BASKASININ PROFILINDE GERI DUGMESI KALKTI** (2026-09-18).
+    Kullanici ekran goruntusuyle: "baskasinin profiline bakinca ustte
+    soldaki geri gitme dugmesini kaldir ve dizilimi tekrar duzenle
+    sayfanin". Dizilim icin dort secenek suruldu; kullanici "sira ayni,
+    sadece yukari kaysin" dedi - blok SIRASI degismedi.
+    Ust cubuk tamamen kaldirildi (geri oku gidince orada tek basina
+    duran uc nokta 60 px'lik bos bir serit tutuyordu); uc nokta menusu
+    kimlik blogunun sag ust kosesine MUTLAK konumlandi, boylece kimlik
+    blogu ve arkasindaki harita dokusu yukari kaydi. Ad ve
+    @kullanici_adi dugmenin altina girmesin diye sagdan 48 px iceride;
+    biyografi ve bolge dugmenin ALTINDA kaldigi icin tam genislikte.
+    Geri donus sistemin kendi yollarina birakildi (iOS kenardan
+    kaydirma, Android donanim tusu, web tarayici geri); ekran alt
+    gezinmenin uzerinde durdugu icin kimse sayfada kilitli kalmiyor.
+    `kullanici.geri` ceviri anahtari 7 dilde DURUYOR - kullanilmiyor
+    ama silinmedi (her dilde birden fazla `geri` anahtari var, yanlis
+    bolumu silme riski kazanctan buyuk).

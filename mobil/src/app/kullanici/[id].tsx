@@ -116,6 +116,13 @@ const HARITA_KUYRUGU = 50
 const HARITA_UST_TASMA = 96
 const KIMLIK_VARSAYILAN = 94
 const AVATAR_CAPI = 88
+/* Uc nokta dugmesinin capi. Eskiden ust cubuktaydi ve geri okuyla ayni
+   agirlikta olsun diye 40 idi; cubuk kalkinca olcu korundu. */
+const MENU_CAPI = 40
+/* Ust cubuk kalktiktan sonra kimlik blogunun guvenli alandan payi.
+   Hem `kimlik` hem de kosedeki menu bunu kullaniyor ki avatarla dugme
+   ayni hizada bassin. */
+const KIMLIK_UST_PAYI = 16
 
 /**
  * Baskasinin profili.
@@ -424,49 +431,44 @@ export default function KullaniciProfiliEkrani() {
   const fotografliAnilar = anilar.filter((a) => a.fotografUrl)
 
   /*
-   * UST CUBUK: yalnizca sagda uc nokta menusu.
+   * UST CUBUK YOK ARTIK (kullanicinin istegi 2026-09-18): "ustte soldaki
+   * geri gitme dugmesini kaldir ve dizilimi tekrar duzenle".
    *
-   * GERI OKU KALKTI (kullanicinin istegi 2026-09-18): "butun
-   * profillerin yerlesimi kendi profilimdeki gibi gorunecek". Kendi
-   * profilde de yalnizca sag ustte tek dugme (ayarlar) var; iki ekran
-   * artik ayni hizada, ayni olcude. Geri donus icin iOS'ta kenardan
-   * kaydirma, Android'de sistem geri tusu zaten calisiyor.
+   * Geri oku kalkinca cubukta tek basina uc nokta kaliyordu ve o
+   * cubuk sayfanin tepesinde 60 px'lik bos bir serit tutuyordu. Cubuk
+   * tamamen kaldirildi; uc nokta kimlik blogunun SAG UST kosesine
+   * MUTLAK konumlandi, boylece kimlik blogu (ve arkasindaki harita
+   * dokusu) yukari kaydi. Blok SIRASI degismedi - kullanicinin secimi
+   * "sira ayni, sadece yukari kaysin" idi.
    *
-   * Cubuk tek oge tasidigi icin hizalama `space-between` DEGIL
-   * `flex-end`: tek cocukla `space-between` menuyu SOLA yapistirirdi
-   * (ayni ders kendi profilde 2026-09-11'de ogrenilmisti).
+   * Geri donus: iOS'ta kenardan kaydirma, Android'de donanim tusu,
+   * web'de tarayici geri. Ekran alt gezinmenin uzerinde durdugu icin
+   * kimse sayfada kilitli kalmiyor.
+   *
+   * Ikon SEFTALI DAIREDE ve koyu (2026-09-17): soluk gri uc nokta
+   * beyaz zeminde kayboluyordu. Daire kesfetteki suzgec dugmesiyle
+   * ayni desen, 40 px.
    */
-  const ustCubuk = (
-    <View style={stiller.ustCubuk}>
-      {/* SAG UST: TEK DUGME - uc nokta menusu (kullanicinin istegi
-          2026-09-17). Paylas ikonu buradan KALKTI, "Profili paylaş"
-          menunun ilk satiri oldu: ust cubukta iki ikon yan yana
-          dururken hangisinin ne yaptigi okunmuyordu.
-
-          Ikon SEFTALI DAIREDE ve daha koyu - kullanici "daha belirgin
-          bir hale getir" dedi; soluk gri uc nokta beyaz zeminde
-          kayboluyordu. Daire kesfetteki suzgec dugmesiyle ayni desen
-          (46 degil 40: ust cubukta geri okuyla ayni agirlikta
-          kalmali). */}
-      {profil && (
-        <Pressable
-          style={({ pressed }) => [stiller.menuDugmesi, pressed && stiller.menuDugmesiBasili]}
-          onPress={() => setGuvenlikMenusu(true)}
-          accessibilityRole="button"
-          accessibilityLabel={t('kullanici.secenekler')}
-          hitSlop={8}
-          testID="kullanici-menusu"
-        >
-          <UcNoktaIkonu boyut={24} renk={renk.metin} />
-        </Pressable>
-      )}
-    </View>
+  const menuKosesi = profil && (
+    <Pressable
+      style={({ pressed }) => [
+        stiller.menuKosesi,
+        stiller.menuDugmesi,
+        pressed && stiller.menuDugmesiBasili,
+      ]}
+      onPress={() => setGuvenlikMenusu(true)}
+      accessibilityRole="button"
+      accessibilityLabel={t('kullanici.secenekler')}
+      hitSlop={8}
+      testID="kullanici-menusu"
+    >
+      <UcNoktaIkonu boyut={24} renk={renk.metin} />
+    </Pressable>
   )
 
   if (!profil) {
     return (
       <View style={[stiller.kok, { paddingTop: guvenliAlan.top }]}>
-        {ustCubuk}
         <View style={stiller.icerik}>
           {hata && <Text style={stiller.hata}>{hata}</Text>}
           {!yukleniyor && <Text style={stiller.durum}>{t('kullanici.bulunamadi')}</Text>}
@@ -559,19 +561,19 @@ export default function KullaniciProfiliEkrani() {
         scrollEventThrottle={160}
         onScroll={dibeYaklasinca}
       >
-        {/* Ust cubuk KAYDIRMANIN ICINDE (kendi profildeki disli gibi):
-            doku onun da arkasindan gecip saatin ardina uzaniyor. */}
-        {ustCubuk}
-
         {/* KIMLIK BLOGU - kendi profille AYNI: avatar solda, bilgiler
             saginda, arkada isimsiz harita dokusu. Doku kimlik blogunun
             OLCUELEN yuksekligine gore uzuyor (biyografi 1-5 satir).
-            Ust tasma guvenli alani da kapsiyor: kenar ekranin DISINDA. */}
+            Ust tasma guvenli alani da kapsiyor: kenar ekranin DISINDA.
+            Uc nokta menusu bu kabin sag ust kosesinde duruyor (ust
+            cubuk kalktigi icin); doku onun da arkasindan geciyor. */}
         <View style={stiller.kimlikKap}>
           <ProfilHaritaZemini
             yukseklik={kimlikYuksekligi + HARITA_KUYRUGU}
             ustTasma={HARITA_UST_TASMA + guvenliAlan.top}
           />
+
+          {menuKosesi}
 
           <View
             style={stiller.kimlik}
@@ -888,32 +890,24 @@ export default function KullaniciProfiliEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
 
-  /* Geri solda, paylas sagda. Ust pay kendi profildeki cubukla ayni
-     hizada durmasi icin kok duzenin verdigi guvenli alanin ustune
-     yalnizca kucuk bir pay. */
   menuDugmesi: {
-    width: 40,
-    height: 40,
+    width: MENU_CAPI,
+    height: MENU_CAPI,
     borderRadius: yuvarlak.kart,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
   menuDugmesiBasili: { backgroundColor: renk.cizgi },
-  ustCubuk: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // Tek oge (uc nokta) kaldi - kendi profildeki ayarlar dislisiyle
-    // ayni hizalama.
-    justifyContent: 'flex-end',
-    gap: bosluk.m,
-    paddingTop: bosluk.l,
-    paddingBottom: bosluk.xs,
-    // Kaydirmanin icinde: yatay pay `icerik`ten geliyor. Paylas ikonu
-    // sag kenardan "cok az" iceride - kendi profildeki disliyle ayni.
-    paddingRight: 6,
-    // Dokunun ustunde kalsin.
-    zIndex: 1,
+  /* Uc nokta, kimlik kabinin sag ust kosesinde MUTLAK: akista yer
+     kaplamadigi icin kimlik blogu yukari kayabiliyor. Ust hizasi
+     avatarin ust hizasiyla ayni (`kimlik` ile ayni paddingTop). Sag
+     kenardan 6 px iceride - eski ust cubuktaki ile ayni. */
+  menuKosesi: {
+    position: 'absolute' as const,
+    top: KIMLIK_UST_PAYI,
+    right: 6,
+    zIndex: 2,
   },
 
   icerik: {
@@ -927,7 +921,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'flex-start' as const,
     gap: bosluk.l,
-    paddingTop: 0,
+    // Ust cubuk kalkti; durum cubugunun altinda nefes payi birakan
+    // tek pay bu. Menu dugmesi de ayni degeri kullaniyor ki avatarla
+    // ayni hizada dursun.
+    paddingTop: KIMLIK_UST_PAYI,
     paddingBottom: bosluk.l,
   },
   kimlikBilgi: { flex: 1, minWidth: 0 },
@@ -939,17 +936,23 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderWidth: 4,
     borderColor: '#FFFFFF',
   },
+  /* AD ve @kullanici_adi kosedeki menu dugmesiyle AYNI hizada duruyor,
+     o yuzden ikisi de dugmenin genisligi kadar sagdan iceride kaliyor -
+     yoksa uzun bir ad dugmenin altina girer. Biyografi ve bolge
+     dugmenin ALTINDA kaldigi icin tam genislikte. */
   ad: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
+    paddingRight: MENU_CAPI + bosluk.s,
   },
   kullaniciAdi: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     color: renk.metinIkincil,
     marginTop: 1,
+    paddingRight: MENU_CAPI + bosluk.s,
   },
   biyografi: {
     fontFamily: yazi.govde,
