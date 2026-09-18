@@ -169,6 +169,9 @@ Yeni oturum kurali: ayni dalda calisan baska bir oturum olabilir;
 push reddedilirse once `git ls-remote` ile HANGI ucun ayri oldugu
 olculur.
 
+Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
+`d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
+
 ### HESAP OLUSTURMA: "OTURDUGUN BOLGE" ADIMI - 2026-09-18 SABAH
 
 Kullanicinin istekleri, sirayla (hepsi ayni saat icinde): "hesap
