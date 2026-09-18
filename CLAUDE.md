@@ -560,6 +560,11 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 
 Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
 OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
+- **DUZELTME (kullanicinin bildirimi "ikonlar yazilar birbirine
+  girmis"):** `Liste.tsx` `ikon` kabi `width: 22` SABITTI; 44'luk
+  seftali kutular tasip yaziya biniyordu (web goruntusunde fark
+  edilmemisti - overflow gorunur). Artik `minWidth: 22`, icerige gore
+  buyur; Satir kullanan HER ekran duzeldi. Sonraki OTA/web asagida.
 
 ### MODERASYON PANELI YENIDEN TASARLANDI - 2026-09-18 GECE
 

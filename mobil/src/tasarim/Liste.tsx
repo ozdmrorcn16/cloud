@@ -187,7 +187,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   satirCizgili: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
   satirVurgulu: { backgroundColor: renk.turuncuZemin },
-  ikon: { width: 22, alignItems: 'center' },
+  // Genislik SABIT DEGIL (2026-09-19, kullanicinin bildirimi "ikonlar
+  // yazilar birbirine girmis"): 44'luk seftali ikon kutulari 22'lik
+  // sabit kaba sigmiyor, tasan 11 px yazinin ustune biniyordu. Kap
+  // icerigine gore buyur; ciplak 20'lik ikonlar icin alt sinir kalir.
+  ikon: { minWidth: 22, alignItems: 'center', justifyContent: 'center' },
   etiket: {
     flex: 1,
     fontFamily: yazi.govdeOrta,
