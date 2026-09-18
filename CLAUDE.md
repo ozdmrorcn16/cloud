@@ -3037,10 +3037,13 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   degismez; beceri yerlesim, UX kurali ve tipografi icin kullanilir.
   Kurulum tuzagi: `uipro` komutu Git Bash'te yol cevirisiyle kiriliyor
   (Program Files/Git/Users/... diye arar), PowerShell'den kosulur.
-  Ayni kurulum ISTENMEDEN alti beceri daha birakti (banner-design,
-  brand, design, design-system, slides, ui-styling; Gemini anahtari
-  ortam degiskeninden okunur, sir yok) - depoya alinip alinmayacagi
-  kullanicinin karari.
+  Ayni kurulum alti beceri daha birakti ve HEPSI DEPODA (kullanici
+  karari bana birakti): brand (marka sesi - magaza metni), banner-design
+  (magaza/sosyal gorseller), design (logo/simge/CIP, Gemini anahtari
+  GEMINI_API_KEY ortam degiskeninden), design-system (jeton mimarisi),
+  slides ve ui-styling (shadcn/Tailwind - bizde yok, muhtemelen
+  kullanilmaz). banner-design'in andigi ai-artist / ai-multimodal
+  becerileri KURULU DEGIL.
 - `gstack` (garrytan/gstack) — market eklentisi **degil**;
   `~/.claude/skills/gstack` altina klonlanip `./setup` ile kurulur. 54 beceri,
   hepsi `gstack-` onekli (`/gstack-qa`, `/gstack-ship`, `/gstack-review`...).
