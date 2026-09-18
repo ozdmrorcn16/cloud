@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { sikayetGonder, SIKAYET_SEBEPLERI, type SikayetHedefTuru } from '../../lib/sikayet'
@@ -117,9 +117,11 @@ export default function SikayetEkrani() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={stiller.teyitIcerik} showsVerticalScrollIndicator={false}>
+        {/* KAYDIRMASIZ (kullanicinin istegi 2026-09-18): rozet, metin ve
+            kart dikeyde ortalanir; Tamam altta, gezinme cubugunun ustunde. */}
+        <View style={stiller.teyitIcerik}>
           <View style={stiller.buyukRozet}>
-            <KalkanTikIkonu boyut={104} />
+            <KalkanTikIkonu boyut={84} />
           </View>
           <Text style={stiller.teyitBaslik}>{t('sikayet.alindi')}</Text>
           <Text style={stiller.teyitMetni}>{t('sikayet.tesekkur')}</Text>
@@ -154,11 +156,11 @@ export default function SikayetEkrani() {
           )}
 
           {hata && <Text style={stiller.hata}>{hata}</Text>}
-        </ScrollView>
+        </View>
 
-        <View style={[stiller.altButonAlani, { paddingBottom: Math.max(guvenliAlan.bottom, bosluk.l) }]}>
+        <View style={[stiller.altButonAlani, { paddingBottom: ALT_GEZINME_PAYI }]}>
           <Pressable
-            style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
+            style={({ pressed }) => [stiller.birincil, stiller.birincilTeyit, pressed && stiller.birincilBasili]}
             onPress={() => router.back()}
             accessibilityRole="button"
             testID="sikayet-tamam"
@@ -209,13 +211,13 @@ export default function SikayetEkrani() {
         </Text>
       </View>
 
-      <ScrollView
-        contentContainerStyle={stiller.icerik}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      {/* KAYDIRMASIZ (kullanicinin istegi 2026-09-18: "asagi kaydirmaya
+          gerek kalmadan oldugu alana sigdir"): ScrollView yok; dikey
+          boslular sikilastirildi, aciklama kutusu kalan yeri dolduruyor
+          (flex), dugme en altta gezinme cubugunun ustunde. */}
+      <View style={stiller.icerik}>
         <View style={stiller.rozet}>
-          <KalkanIkonu boyut={34} />
+          <KalkanIkonu boyut={28} />
         </View>
         <Text style={stiller.kahramanBaslik}>{t('sikayet.kahramanBaslik')}</Text>
         <Text style={stiller.kahramanAlt}>
@@ -284,8 +286,9 @@ export default function SikayetEkrani() {
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
+        <View style={stiller.esnekBosluk} />
         <Pressable
-          style={({ pressed }) => [stiller.birincil, pressed && stiller.birincilBasili]}
+          style={({ pressed }) => [stiller.birincil, stiller.birincilAltta, pressed && stiller.birincilBasili]}
           onPress={gonder}
           disabled={gonderiliyor}
           accessibilityRole="button"
@@ -295,7 +298,7 @@ export default function SikayetEkrani() {
             {gonderiliyor ? t('ortak.gonderiliyor') : t('sikayet.gonder')}
           </Text>
         </Pressable>
-      </ScrollView>
+      </View>
     </View>
   )
 }
@@ -303,15 +306,17 @@ export default function SikayetEkrani() {
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
+    flex: 1,
     paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },
+  esnekBosluk: { flexGrow: 1, minHeight: bosluk.s },
+  birincilAltta: { marginTop: bosluk.m },
 
   // Ust cubuk: ok solda, baslik mutlak konumla ortada.
   ustCubuk: {
-    height: 48,
+    height: 44,
     justifyContent: 'center',
-    marginBottom: bosluk.s,
   },
   geriDugmesi: {
     position: 'absolute',
@@ -331,30 +336,30 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Kahraman: rozet + baslik + alt baslik, ortali.
   rozet: {
     alignSelf: 'center',
-    width: 76,
-    height: 76,
-    borderRadius: 22,
+    width: 60,
+    height: 60,
+    borderRadius: 18,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: bosluk.s,
-    marginBottom: bosluk.l,
+    marginTop: bosluk.xs,
+    marginBottom: bosluk.m,
   },
   kahramanBaslik: {
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
+    fontSize: olcek.baslik - 2,
     color: renk.metin,
     letterSpacing: -0.5,
   },
   kahramanAlt: {
     textAlign: 'center',
     fontFamily: yazi.govde,
-    fontSize: olcek.govde + 1,
-    lineHeight: 22,
+    fontSize: olcek.govde,
+    lineHeight: 20,
     color: renk.metinIkincil,
-    marginTop: bosluk.s,
-    marginBottom: bosluk.xl,
+    marginTop: bosluk.xs,
+    marginBottom: bosluk.l,
   },
   baglamBildirimi: {
     textAlign: 'center',
@@ -362,8 +367,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     lineHeight: 18,
     color: renk.metinIkincil,
-    marginTop: -bosluk.m,
-    marginBottom: bosluk.xl,
+    marginTop: -bosluk.s,
+    marginBottom: bosluk.l,
   },
 
   // Sebep karti: tek cerceve, satirlar ayirici cizgiyle.
@@ -377,9 +382,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   sebepSatiri: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: bosluk.l,
+    gap: bosluk.m,
     paddingHorizontal: bosluk.l,
-    paddingVertical: 18,
+    paddingVertical: 11,
     backgroundColor: renk.yuzey,
   },
   sebepSatiriAyirici: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
@@ -394,9 +399,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Radyo: bos halde ince gri halka; secili halde turuncu dolu, icinde
   // beyaz halka (referans).
   radyo: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: renk.cizgi,
     alignItems: 'center',
@@ -404,9 +409,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   radyoSecili: { borderColor: renk.turuncu, backgroundColor: renk.turuncu },
   radyoIc: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 2.5,
     borderColor: '#FFFFFF',
   },
@@ -416,8 +421,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
-    marginTop: bosluk.xl,
-    marginBottom: bosluk.m,
+    marginTop: bosluk.l,
+    marginBottom: bosluk.s,
   },
   etiket: {
     fontFamily: yazi.ekranBasligi,
@@ -434,19 +439,21 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     backgroundColor: renk.yuzey,
-    minHeight: 150,
+    // Kalan dikey alani kutu dolduruyor; en az iki satir.
+    flexGrow: 1,
+    flexShrink: 1,
+    minHeight: 72,
     paddingHorizontal: bosluk.l,
-    paddingTop: bosluk.l,
-    paddingBottom: 30,
+    paddingTop: bosluk.m,
+    paddingBottom: 26,
   },
   girdi: {
     flex: 1,
     fontFamily: yazi.govde,
-    fontSize: olcek.govde + 1,
-    lineHeight: 22,
+    fontSize: olcek.govde,
+    lineHeight: 20,
     color: renk.metin,
     padding: 0,
-    minHeight: 96,
   },
   sayac: {
     position: 'absolute',
@@ -460,14 +467,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
-    marginTop: bosluk.m,
+    marginTop: bosluk.s,
   },
   hata: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.yikici,
     textAlign: 'center',
-    marginTop: bosluk.l,
+    marginTop: bosluk.s,
   },
 
   // Birincil dugme (iki ekranda da ayni).
@@ -488,41 +495,42 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   // 02 / Gonderim sonrasi
   kapatSatiri: {
-    height: 48,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingHorizontal: bosluk.sayfa,
   },
   teyitIcerik: {
+    flex: 1,
     paddingHorizontal: bosluk.sayfa,
     alignItems: 'center',
-    paddingTop: bosluk.xxl,
-    paddingBottom: bosluk.xl,
+    justifyContent: 'center',
+    paddingBottom: bosluk.m,
   },
   buyukRozet: {
-    width: 190,
-    height: 190,
-    borderRadius: 95,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: bosluk.xxl,
+    marginBottom: bosluk.xl,
   },
   teyitBaslik: {
     textAlign: 'center',
     fontFamily: yazi.ekranBasligi,
-    fontSize: 30,
+    fontSize: 28,
     color: renk.metin,
     letterSpacing: -0.6,
-    marginBottom: bosluk.m,
+    marginBottom: bosluk.s,
   },
   teyitMetni: {
     textAlign: 'center',
     fontFamily: yazi.govde,
-    fontSize: olcek.govde + 1,
-    lineHeight: 24,
+    fontSize: olcek.govde,
+    lineHeight: 22,
     color: renk.metinIkincil,
-    marginBottom: bosluk.xxl,
+    marginBottom: bosluk.xl,
   },
   engelKarti: {
     alignSelf: 'stretch',
@@ -532,11 +540,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     backgroundColor: renk.yuzey,
     padding: bosluk.l,
   },
-  engelUst: { flexDirection: 'row', gap: bosluk.l, marginBottom: bosluk.l },
+  engelUst: { flexDirection: 'row', gap: bosluk.m, marginBottom: bosluk.m },
   engelIkonDairesi: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: renk.karsilamaZemini,
     alignItems: 'center',
     justifyContent: 'center',
@@ -559,7 +567,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderWidth: 1.5,
     borderColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 15,
+    paddingVertical: 13,
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
@@ -572,4 +580,5 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   cerceveliButonYaziPasif: { color: renk.metinSoluk },
   altButonAlani: { paddingHorizontal: bosluk.sayfa },
+  birincilTeyit: { marginTop: 0 },
 })

@@ -48,6 +48,34 @@ try {
   await baglam.overridePermissions(tabanAdres, ['geolocation'])
 
   const sayfa = await tarayici.newPage()
+
+  // SLOOIN_SAHTE_RPC="sikayet_gonder,engelle" verilirse o RPC'lere
+  // giden istekler sunucuya ULASMADAN 200/null ile cevaplanir. Yazma
+  // yapan bir ekranin "sonra" halini (sikayet teyidi gibi) canli
+  // veriye dokunmadan cizdirmek icin (2026-09-18).
+  const sahteRpcler = (process.env.SLOOIN_SAHTE_RPC ?? '').split(',').filter(Boolean)
+  if (sahteRpcler.length > 0) {
+    await sayfa.setRequestInterception(true)
+    sayfa.on('request', (istek) => {
+      const sahte = sahteRpcler.find((ad) => istek.url().includes(`/rest/v1/rpc/${ad}`))
+      if (sahte) {
+        // Tarayici once OPTIONS (CORS on istegi) atar; o da burada
+        // cevaplanmazsa istek "ag hatasi" olarak duser.
+        istek.respond({
+          status: istek.method() === 'OPTIONS' ? 204 : 200,
+          contentType: 'application/json',
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-headers': '*',
+            'access-control-allow-methods': 'POST, OPTIONS',
+          },
+          body: istek.method() === 'OPTIONS' ? '' : 'null',
+        })
+      } else {
+        istek.continue()
+      }
+    })
+  }
   // Cihaz dili taklidi: uygulamanin cihaz dilini gercekten okuyup
   // okumadigini dogrulamak icin. SLOOIN_TEST_DIL=en-US verilince
   // tarayici Ingilizce bir cihaz gibi davraniyor.

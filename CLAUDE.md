@@ -194,9 +194,19 @@ kisi-yasak, carpi).
   parametresi.
 - Zemin BEYAZ (2026-08-27 karari; referansin kremi kanvas). Sozluk
   `sikayet` blogu 7 dilde bastan; `kullanici.sikayetEt` de "Sikâyet
-  et" (sapkali, referans yazimi). Ekran goruntusu
-  `tasarim/sikayet-01.png`. Jest 77 paket / 1038 test. Yayin: web
-  guncel, OTA grup `cb9c939a-68de-4e01-8819-fc1e97b74340`.
+  et" (sapkali, referans yazimi). Jest 77 paket / 1038 test.
+- **KAYDIRMASIZ (kullanicinin istegi, ayni gece):** iki ekranda da
+  ScrollView yok; 01'de rozet 60, satir dolgusu 11, aciklama kutusu
+  kalan yeri dolduruyor (flexGrow, minHeight 72), dugme en altta;
+  02'de icerik dikeyde ortali (rozet 150), Tamam altta. 390x844'te
+  ikisi de tasmadan siniyor: `tasarim/sikayet-01.png`, `sikayet-02.png`.
+  ARAC: `ekran-goruntusu.mjs` `SLOOIN_SAHTE_RPC=sikayet_gonder` ile o
+  RPC'yi (OPTIONS dahil) 200/null cevapliyor - yazan bir ekranin
+  "sonra" hali canli veriye dokunmadan cizdirilebiliyor. TUZAK: python
+  `http.server` SPA yolu (/sikayet) icin 404 verir; bu kez portta baska
+  bir sunucu oldugu icin daha once "calismis gibi" gorunmustu. SPA
+  geri donuslu kucuk node sunucusu gerekiyor (scratchpad'de yazildi).
+  Yayin: web guncel, OTA grup `2d6f28d0-ccdd-4acd-b359-1943e871c503`.
 
 ### ACIK PROFILDE DOGRUDAN ARKADAS, "ARKADASSIN" TIKLI; IKI CANLI HATA - 2026-09-18 GECE
 
