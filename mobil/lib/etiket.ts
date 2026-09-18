@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
-import { profilFotografiUrl } from './fotograf-url'
+import { profilOzetleriniGetir } from './akis'
 
 /**
  * CHECK-IN'DE ARKADAS ETIKETLEME.
@@ -44,11 +44,9 @@ export type BekleyenEtiket = {
   olusturuldu: string
 }
 
-type EtiketProfili = { ad: string; fotograflar: string[] | null }
 type EtiketSatiri = {
   check_in_id: string
   kullanici_id: string
-  profiller: EtiketProfili | EtiketProfili[] | null
 }
 
 /**
@@ -65,32 +63,34 @@ export async function etiketleriGetir(
   // Yalnizca ONAYLANMIS etiketler cekiliyor. Politika bekleyen
   // etiketi iki tarafa gosteriyor; akista ve profilde gostermek
   // istedigimiz sey ise yalnizca onaylanmis olan.
+  //
+  // PROFIL GOMULU SORGUYLA DEGIL, RPC ILE (2026-09-18 gece, kullanicinin
+  // "etiket gorunmuyor" bildirimi): `kullanici_id` auth.users'a bagli,
+  // profiller'e degil; PostgREST `profiller(ad)` gomusunu "relationship
+  // not found" ile reddediyordu ve hata akista yutuldugu icin etiketler
+  // HIC gorunmuyordu. Profiller `akis_profilleri` RPC'sinden (kim gorunur
+  // kurali orada) geliyor.
   const { data, error } = await supabase
     .from('check_in_etiketleri')
-    .select('check_in_id, kullanici_id, profiller(ad, fotograflar)')
+    .select('check_in_id, kullanici_id')
     .in('check_in_id', checkInIdler)
     .eq('durum', 'onaylandi')
   if (error) throw new Error(hataMetni(error))
 
+  const satirlar = (data ?? []) as EtiketSatiri[]
+  const kimlikler = [...new Set(satirlar.map((s) => s.kullanici_id))]
+  const profiller = await profilOzetleriniGetir(kimlikler).catch(() => ({}) as Awaited<ReturnType<typeof profilOzetleriniGetir>>)
+
   const gruplar: Record<string, Etiket[]> = {}
-  // Avatar adresleri kisi basina BIR kez imzalaniyor - ayni kisi bircok
-  // check-in'de etiketli olabilir.
-  const avatarlar: Record<string, Promise<string | null>> = {}
-  for (const satir of (data ?? []) as unknown as EtiketSatiri[]) {
-    const profil = Array.isArray(satir.profiller) ? satir.profiller[0] : satir.profiller
-    const yol = profil?.fotograflar?.[0] ?? null
-    if (yol && !(satir.kullanici_id in avatarlar)) {
-      avatarlar[satir.kullanici_id] = profilFotografiUrl(yol).catch(() => null)
-    }
+  for (const satir of satirlar) {
     const liste = gruplar[satir.check_in_id] ?? []
-    liste.push({ kullaniciId: satir.kullanici_id, ad: profil?.ad ?? null, avatarUrl: null })
+    const profil = profiller[satir.kullanici_id]
+    liste.push({
+      kullaniciId: satir.kullanici_id,
+      ad: profil?.ad ?? null,
+      avatarUrl: profil?.avatarUrl ?? null,
+    })
     gruplar[satir.check_in_id] = liste
-  }
-  const cozulen = Object.fromEntries(
-    await Promise.all(Object.entries(avatarlar).map(async ([id, p]) => [id, await p] as const))
-  )
-  for (const liste of Object.values(gruplar)) {
-    for (const e of liste) e.avatarUrl = cozulen[e.kullaniciId] ?? null
   }
   return gruplar
 }

@@ -199,8 +199,19 @@ yalnizca alt cizgi" karti ve "eylemler fotografin ustunde (A)";
 eylemler artik 16:7 ile her zaman gorunur. Profil listelerinin
 `aniListesi: -bosluk.sayfa` payi duruyor (kart kendi payini tasiyor).
 Sozluk `anaSayfa.birlikte` 7 dil. Goruntu `tasarim/akis-referans.png`.
-Jest 77 paket / 1039 test. Yayin: web guncel, OTA grup
-`27c8511f-24c7-4d5d-9e4b-c399c76a51ca`.
+
+**ETIKETLER HIC GORUNMUYORMUS (kullanicinin bildirimi, ayni gece):**
+`check_in_etiketleri.kullanici_id` auth.users'a bagli, profiller'e
+DEGIL; `etiketleriGetir`in `profiller(ad)` gomusu PostgREST'te
+"Could not find a relationship" veriyordu ve akis `.catch(() => ({}))`
+ile yuttugu icin etiket satiri hic cizilmiyordu (canli test hesabiyla
+olculdu). Duzeltme: satirlar duz cekiliyor, profiller
+`profilOzetleriniGetir` (akis_profilleri RPC). `lib/etiket.test.ts`
+yeni (3 test; gomulu profil yasak). DERS: sessizce yutulan bir hata
+ozelligi "calisiyor" gosterir - gomulu sorgu yazarken FK'nin hangi
+tabloya gittigine bak. Kart yanlara uzadi (`marginHorizontal: bosluk.s`).
+Jest 78 paket / 1042 test. Yayin: web guncel, OTA grup
+`31132a52-f122-4093-914b-41c0f3eecb26`.
 
 ### SIKAYET AKISI REFERANS TASARIMA GORE - 2026-09-18 GECE
 

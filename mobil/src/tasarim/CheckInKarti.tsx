@@ -722,7 +722,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: renk.cizgi,
-    marginHorizontal: bosluk.sayfa,
+    // YANLARA UZATILDI (kullanicinin istegi 2026-09-18: "sutunlari saga
+    // ve sola uzat"): pay sayfa payinin yarisi.
+    marginHorizontal: bosluk.s,
     marginTop: bosluk.m,
     paddingHorizontal: bosluk.l,
     paddingVertical: bosluk.l,
