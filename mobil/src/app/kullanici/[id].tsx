@@ -56,22 +56,6 @@ import {
   sohbetIsteginiYanitla,
 } from '../../../lib/bag'
 
-function GeriIkonu() {
-  const renk = useRenk()
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24">
-      <Path
-        d="M15 5l-7 7 7 7"
-        stroke={renk.metin}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  )
-}
-
 /**
  * KAPALI PROFIL KILIDI - BUYUK.
  *
@@ -439,16 +423,21 @@ export default function KullaniciProfiliEkrani() {
   // Gezginin listesi: yalnizca fotografli anilar, akistaki sirayla.
   const fotografliAnilar = anilar.filter((a) => a.fotografUrl)
 
+  /*
+   * UST CUBUK: yalnizca sagda uc nokta menusu.
+   *
+   * GERI OKU KALKTI (kullanicinin istegi 2026-09-18): "butun
+   * profillerin yerlesimi kendi profilimdeki gibi gorunecek". Kendi
+   * profilde de yalnizca sag ustte tek dugme (ayarlar) var; iki ekran
+   * artik ayni hizada, ayni olcude. Geri donus icin iOS'ta kenardan
+   * kaydirma, Android'de sistem geri tusu zaten calisiyor.
+   *
+   * Cubuk tek oge tasidigi icin hizalama `space-between` DEGIL
+   * `flex-end`: tek cocukla `space-between` menuyu SOLA yapistirirdi
+   * (ayni ders kendi profilde 2026-09-11'de ogrenilmisti).
+   */
   const ustCubuk = (
     <View style={stiller.ustCubuk}>
-      <Pressable
-        onPress={() => router.back()}
-        accessibilityRole="button"
-        accessibilityLabel={t('kullanici.geri')}
-        hitSlop={12}
-      >
-        <GeriIkonu />
-      </Pressable>
       {/* SAG UST: TEK DUGME - uc nokta menusu (kullanicinin istegi
           2026-09-17). Paylas ikonu buradan KALKTI, "Profili paylaş"
           menunun ilk satiri oldu: ust cubukta iki ikon yan yana
@@ -914,7 +903,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ustCubuk: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    // Tek oge (uc nokta) kaldi - kendi profildeki ayarlar dislisiyle
+    // ayni hizalama.
+    justifyContent: 'flex-end',
+    gap: bosluk.m,
     paddingTop: bosluk.l,
     paddingBottom: bosluk.xs,
     // Kaydirmanin icinde: yatay pay `icerik`ten geliyor. Paylas ikonu

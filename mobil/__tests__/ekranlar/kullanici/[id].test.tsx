@@ -636,6 +636,18 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.getByLabelText('0 Fotoğraf')).toBeTruthy()
   })
 
+  /*
+   * GERI OKU YOK (kullanicinin istegi 2026-09-18): butun profillerin
+   * yerlesimi kendi profildeki gibi - ust cubukta yalnizca sag ustteki
+   * uc nokta menusu var.
+   */
+  it('ust cubukta geri oku YOK, yalnizca uc nokta menusu var', async () => {
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByTestId('kullanici-menusu')
+    expect(screen.queryByLabelText('Geri')).toBeNull()
+    expect(mockRouterBack).not.toHaveBeenCalled()
+  })
+
   it('sekme hapi var: Anilar ve En sik', async () => {
     await render(<KullaniciProfiliEkrani />)
 

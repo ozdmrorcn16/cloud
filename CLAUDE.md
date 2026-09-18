@@ -148,6 +148,25 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### BASKASININ PROFILINDE GERI OKU KALKTI - 2026-09-18
+
+Kullanicinin istegi: "sol ustteki geri dugmesini kaldir; kendi
+profilimde ne nerede hangi olcude duruyorsa butun profillerin
+yerlesimi oyle gorunecek". `kullanici/[id]` ust cubugundan geri oku ve
+`GeriIkonu` bileseni silindi; hizalama `space-between` -> `flex-end`
++ `gap: bosluk.m` (kendi profildeki ayarlar dislisiyle ayni desen -
+tek cocukla `space-between` menuyu sola yapistirirdi, ayni ders
+2026-09-11'de kendi profilde ogrenilmisti). Kalan olculer zaten
+esitti: avatar 88, kimlik paddingTop 0 / paddingBottom `l`, ad
+`altBaslik`, ust pay 16 + 4.
+
+Geri donus: iOS kenardan kaydirma, Android sistem geri tusu. Sohbet ve
+mesajlar ekranlarindaki oklar DURUYOR - kural yalnizca profiller icin.
+Test: "ust cubukta geri oku YOK, yalnizca uc nokta menusu var".
+
+Jest 77 paket / 1027 test. Yayin: web `slooin--klguiqze94`, OTA grup
+`36f78e0a-2e4f-4dd1-bf5c-d076cf41f2b4`.
+
 ### HESAP OLUSTURMA: "OTURDUGUN BOLGE" ADIMI - 2026-09-18 SABAH
 
 Kullanicinin istekleri, sirayla (hepsi ayni saat icinde): "hesap
