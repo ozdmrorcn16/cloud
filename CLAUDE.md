@@ -541,7 +541,8 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
   `SLOOIN_TEST_SEMA=light` ver. Goruntuler `tasarim/ayar-*.png`,
   `topluluk-kurallari.png`, `ayar-gorunum-koyu.png`.
 
-Jest 81 paket / 1064 test, tsc temiz.
+Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
+OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
 
 ### MODERASYON PANELI YENIDEN TASARLANDI - 2026-09-18 GECE
 
