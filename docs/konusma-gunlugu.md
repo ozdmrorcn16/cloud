@@ -30,6 +30,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-18 — [2026-09-18-25faa7a8.md](oturumlar/2026-09-18-25faa7a8.md) — Yerelde oturumda login sorunu çıktı halledebiliyormusun
 - 2026-08-09 — [2026-08-09-9b839baa.md](oturumlar/2026-08-09-9b839baa.md) — daha önce bir uygulama fikrinden bahsettim hatırlıyormusun
 
 <!-- oturumlar:bitis -->
@@ -40,3 +41,13 @@ icinde `/hooks` menusunden devre disi birak.
   yoktu (commit, dal, issue, PR yok). Bu yuzden kalici hafiza katmani kuruldu.
 - **2026-08-09** — Uygulama fikri henuz yazili degil. Anlatildiginda
   `CLAUDE.md` icindeki "Uygulama fikri" bolumu doldurulacak.
+- **2026-09-18** — Uygulama fikri bulundu: **Slooin**. Bu depoda degil,
+  `ozdmrorcn16/slooin-projesi` deposunda (dal
+  `claude/plan2-moderasyon-paneli`) ve canlida. Kullanici "Slooin
+  projesine devam edicez" dedigine kadar bu depoda hicbir iz yoktu;
+  hesabin depo listesinde bulundu. Bir daha aranmasin diye `CLAUDE.md`
+  "Uygulama fikri" bolumune yazildi.
+- **2026-09-18** — Yereldeki Claude Code giris sorunu icin
+  `docs/sorun-giderme-login.md` eklendi (temiz yeniden giris, OAuth
+  callback, token suresi, `ANTHROPIC_API_KEY` onceligi, kimlik bilgisi
+  konumlari).

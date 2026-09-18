@@ -32,10 +32,23 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
 - **Calisma dali:** `claude/uygulama-fikri-o3tuda`
 - **Asama:** Fikir asamasi. Uygulama fikrinin icerigi henuz kayitli degil.
 
-## Uygulama fikri
+## Uygulama fikri — SLOOIN (asil is baska depoda)
 
-> Henuz doldurulmadi. Fikir anlatildiginda buraya yazilacak:
-> ne ise yariyor, kime hitap ediyor, platform, teknoloji secimi.
+Fikir bu depoda degil. Proje **Slooin** adiyla ayri bir depoda yasiyor ve
+canlida:
+
+- **Depo:** `ozdmrorcn16/slooin-projesi` — calisma dali
+  `claude/plan2-moderasyon-paneli`
+- **Ne:** konum tabanli sosyal mobil uygulama (check-in yap, gorunur ol,
+  populer yerleri kesfet, yakinindaki insanlarla tanis, sohbet et).
+  Expo/React Native + Supabase; site `slooin.com` (Astro), moderasyon
+  paneli `panel.slooin.com` (Vite + React).
+- **Nereden devam edilir:** o deponun kokundeki `slooin-projesi.md`
+  (tek dosya devir belgesi, "Kaldigi yer" bolumu), sonra oradaki
+  `CLAUDE.md` ve `docs/konusma-gunlugu.md`.
+
+Bu depo (`cloud`) yalnizca hafiza iskeleti; Slooin kodu burada YOK.
+Oturuma eklemek icin: `add_repo` ile `ozdmrorcn16/slooin-projesi`.
 
 ## Eklentiler
 
