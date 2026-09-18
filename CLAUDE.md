@@ -513,10 +513,27 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 **Kararlar / dersler:**
 - E-posta degistirme: mevcut adrese kod (signInWithOtp) -> yeni adrese
   kod (`updateUser({email})` + `verifyOtp type email_change`).
-  **PANEL ISI (kullanicida):** Supabase "Change Email Address" sablonu
-  `{{ .Token }}` tasimali (`docs/posta-sablonu-eposta-degisikligi.html`)
-  ve "Secure email change" KAPALI olmali; yoksa akis yeni adreste
-  tamamlanamaz. Sablon canlida DOGRULANMADI.
+  **PANEL ISI YAPILDI (2026-09-19, ben yaptim):** Supabase "Change
+  Email Address" sablonu `docs/posta-sablonu-eposta-degisikligi.html`
+  (konu `Slooin kodun: {{ .Token }}`), "Secure email change" KAPATILDI
+  (Sign In / Providers > Email). Yeniden yukleyip okuyarak dogrulandi;
+  canli `araclar/eposta-degistir-canli-test.py` **9/9** (kod
+  `generate_link(type=email_change_new)` ile; yalnizca yeni adresin
+  koduyla adres degisiyor, eski adresle giris reddediliyor).
+  **CHROME ERISIMI: `opencli browser`** (agent-reach'in Browser Bridge
+  eklentisi, kullanicinin GERCEK Chrome'u, ozdmrorcn16 oturumu).
+  `claude-in-chrome` araci bu oturumda YOKTU; kullanici "senin chrome
+  erisimin var" deyince bulundu. Kullanim: `export PATH=$PATH:$APPDATA/npm`;
+  `opencli doctor` (eklenti "not connected" derse `opencli daemon
+  restart`, 4 sn bekle); `opencli browser sb open <url>`; `... eval
+  "<js>"` (uzun JS'i dosyadan `$(cat)` ile); `... click --role button
+  --name "Save"`; `... screenshot <yol>`. Supabase paneli 2026-09-19'da
+  YENI YERLESIMDE: sablonlar `auth/templates/<slug>` alt sayfasi
+  (monaco `getModels()[0].setValue` + subject input native setter + Save
+  changes), saglayici ayarlari `auth/providers` > "Email" satiri
+  (`div[role=button]`) > yan panel, anahtarlar `button[role=switch]`,
+  panel altinda "Save". Sekme ARKA PLANDA da calisti (opencli CDP
+  kullanmiyor).
 - Sifre degistirme en az 12 karakter (`EN_AZ_YENI_SIFRE`), kayitta 8
   (`EN_AZ_SIFRE`) - referans ekran 12 diyordu; ikisi ayri sabit.
   Degisince diger cihazlar dusuruluyor.
