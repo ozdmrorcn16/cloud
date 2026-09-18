@@ -233,3 +233,32 @@ describe('ProfilDuzenleEkrani - oturdugun bolge yok', () => {
     expect(gonderilen).not.toHaveProperty('yasadigiIlce')
   })
 })
+
+/**
+ * SONUC MESAJI KAYDET'IN HEMEN USTUNDE (kullanicinin istegi 2026-09-18:
+ * "kaydedildigi hemen ustunde yazsin, en ustte solda degil"). Sira
+ * agactan olculuyor: mesaj Instagram ipucundan SONRA, dugmeden ONCE.
+ */
+describe('ProfilDuzenleEkrani - sonuc mesajinin yeri', () => {
+  it('"Kaydedildi" dugmenin hemen ustunde ve ortali', async () => {
+    await render(<ProfilDuzenleEkrani />)
+    await screen.findByDisplayValue('orcun')
+
+    await fireEvent.press(screen.getByText('Kaydet'))
+    const mesaj = await screen.findByTestId('kaydet-bilgi')
+
+    expect(mesaj.props.children).toBe('Profilin güncellendi.')
+    const duz = Array.isArray(mesaj.props.style) ? Object.assign({}, ...mesaj.props.style) : mesaj.props.style
+    expect(duz.textAlign).toBe('center')
+
+    // Agactaki sira: ipucu -> mesaj -> Kaydet (JSON ciktisinda metin
+    // sirasi = ekran sirasi; ayni yontem ayarlar testinde de var).
+    const agac = JSON.stringify(screen.toJSON())
+    const ipucuSira = agac.indexOf('Bağlantı da yapıştırabilirsin')
+    const mesajSira = agac.indexOf('"kaydet-bilgi"')
+    const dugmeSira = agac.indexOf('"Kaydet"')
+    expect(ipucuSira).toBeGreaterThan(-1)
+    expect(mesajSira).toBeGreaterThan(ipucuSira)
+    expect(dugmeSira).toBeGreaterThan(mesajSira)
+  })
+})

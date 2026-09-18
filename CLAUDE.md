@@ -172,6 +172,16 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### PROFIL DUZENLE: "KAYDEDILDI" DUGMENIN HEMEN USTUNDE - 2026-09-18 AKSAM
+
+Kullanicinin istegi: "kaydete basinca kaydedildigi hemen ustunde yazsin,
+en ustte solda degil". Hata ve bilgi satiri ScrollView'in tepesinden
+Kaydet dugmesinin hemen ustune tasindi, ortali (testID `kaydet-bilgi`
+/ `kaydet-hata`). Sira testle kilitli (`toJSON` metin sirasi: ipucu ->
+mesaj -> Kaydet; RNTL 14'te `UNSAFE_getAllByType` yok, `toJSON` deseni
+ayarlar testindekiyle ayni). Yayin: web guncel, OTA grup
+`521803af-4986-4112-b2d5-96f779718eea`.
+
 ### OTURDUGUN BOLGE: PROFILDE HIC YOK, AYAR YOK, YALNIZCA VERI - 2026-09-18 AKSAM
 
 Kullanicinin karari (sabahki modeli ayni gun degistirdi): "Oturdugun

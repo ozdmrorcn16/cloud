@@ -183,9 +183,6 @@ export default function ProfilDuzenleEkrani() {
       <UstCubuk baslik={t('profilDuzenle.baslik')} geriEtiketi={t('ortak.geri')} />
 
       <ScrollView contentContainerStyle={stiller.icerik} keyboardShouldPersistTaps="handled">
-        {hata && <Text style={stiller.hata}>{hata}</Text>}
-        {bilgi && !hata && <Text style={stiller.bilgi}>{bilgi}</Text>}
-
         <Text style={stiller.etiket}>{t('profilDuzenle.adEtiket')}</Text>
         <TextInput
           style={[stiller.girdi, odakli === 'ad' && stiller.girdiOdakli]}
@@ -279,6 +276,13 @@ export default function ProfilDuzenleEkrani() {
         </View>
         <Text style={stiller.ipucu}>{t('profilDuzenle.instagramIpucu')}</Text>
 
+        {/* SONUC MESAJI KAYDET'IN HEMEN USTUNDE, ORTALI (kullanicinin
+            istegi 2026-09-18: "kaydedildigi hemen ustunde yazsin, en
+            ustte solda degil"). Onceden listenin tepesindeydi; uzun formda
+            dugmeye basan kisi mesaji gormek icin yukari kaydirmak zorunda
+            kaliyordu. Hata da ayni yerde - ikisi de dugmenin cevabi. */}
+        {hata && <Text style={stiller.hata} testID="kaydet-hata">{hata}</Text>}
+        {bilgi && !hata && <Text style={stiller.bilgi} testID="kaydet-bilgi">{bilgi}</Text>}
 
         <Pressable
           style={stiller.birincil}
@@ -362,13 +366,17 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.yikici,
-    marginTop: bosluk.m,
+    textAlign: 'center',
+    marginTop: bosluk.l,
+    marginBottom: -bosluk.s,
   },
   bilgi: {
     fontFamily: yazi.govdeOrta,
     fontSize: olcek.kucuk,
     color: renk.turuncuYazi,
-    marginTop: bosluk.m,
+    textAlign: 'center',
+    marginTop: bosluk.l,
+    marginBottom: -bosluk.s,
   },
 
   birincil: {
