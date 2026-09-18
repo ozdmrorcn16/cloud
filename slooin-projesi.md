@@ -250,7 +250,25 @@ Yeni oturum bunlari bilerek baslar.
 16. **Oturumlar arasi hafiza hep bir sonrakine aktarilir**: is
     bitmeden/kesilmeden once CLAUDE.md + gunluk + bu dosya guncel olsun.
 
-## 8. Kaldigi yer (2026-09-17)
+## 8. Kaldigi yer (2026-09-19)
+
+**Son bitirilen is (2026-09-19, YAYINDA - web `slooin--z5dovg5pl5`, OTA
+grup `2f1481d3-984a-49a9-a263-eb17edccafed`; commit `1d96bb1`):** AYARLAR
+BASTAN - hub + 17 alt ekran (Hesap ve guvenlik: e-posta/sifre/oturumlar;
+Gizlilik: profil/arama/etiketler/mesaj izinleri/engellenenler; Konum ve
+check-in; Bildirimler; Uygulama: Gorunum (tema cihazda), Yardim merkezi
+(SSS + mailto destek), Slooin hakkinda (topluluk kurallari + hukuki);
+Hesap yonetimi: dondur/sil/verilerimi indir). Sunucu: oturumlarim RPC,
+mesaj_izni, bildirim tercihleri + gece sessizi + ani hatirlatma cron, EF
+bildirim-gonder v7. Supabase panelinde "Change Email Address" sablonu
+ve "Secure email change" KAPALI - ben yaptim (opencli ile Chrome), canli
+`araclar/eposta-degistir-canli-test.py` 9/9. Ayrinti CLAUDE.md
+"AYARLAR YENIDEN" bolumu. Baska bir oturum ayni gun site maketleri
+uzerinde calisiyor (`tasarim(site): D` commit'leri).
+
+**ACIK:** kullanici telefonda yeni ayarlari denememis; bildirimde
+"ikonlar yazilar birbirine girmis" duzeltildi (Liste.tsx ikon kabi),
+baska geri bildirim bekleniyor. Ekran metinleri 7 dilde tamam.
 
 **Son bitirilen is (2026-09-18 sabah, YAYINDA - web `slooin--o8bilmr5r0`, OTA
 grup `1ca32176-e68d-43b6-bd5e-bc23ce6587f7`):** hesap olusturmaya 3. adim
