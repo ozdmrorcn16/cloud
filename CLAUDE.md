@@ -148,6 +148,49 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### MODERASYON PANELI YENIDEN TASARLANDI - 2026-09-18 GECE
+
+Kullanicinin istegi: "moderator sayfasini profesyonel kurallara uygun
+duzenle". Oneri Artifact `8spWPc4TAhWbq3CnvWEW7t` ile sunuldu, "Yap"
+dendi. `panel/` bastan yazildi (13 dosya, +1.450/-910; islev ayni,
+kabuk ve butun ekranlar yeni):
+
+- **Kabuk:** sol kenar cubugu (Ozet / Sikayetler+rozet / Kullanicilar /
+  Duzenleme talepleri+rozet / Denetim izi), altta moderator e-postasi +
+  "TOTP dogrulandi · AAL2", dar ekranda ust sekmeler. 30 dk
+  hareketsizlikte otomatik cikis (yalnizca ekran; kapi DB'de).
+- **Ozet (yeni):** RPC `public.moderasyon_ozet()` (migrasyon
+  `20260918110000`; bekleyen sikayet + en eskisi, bugun/7 gun karar,
+  askida/yasakli, bekleyen talep) + en eski bes bekleyen. Kabuk
+  rozetleri her rota degisiminde tazeleniyor.
+- **Tek durum dili:** `SikayetRozeti` (Yeni turuncu / Incelendi sari /
+  Islem yapildi yesil / Reddedildi gri), `HesapRozeti`, `TalepRozeti`,
+  `HedefEtiketi` (ikon + ad), `sebepMetni` - hepsi `ortak/Durum.tsx`.
+- **Sikayet detayi:** iki sutun; sagda yapiskan KARAR karti - gerekce
+  ZORUNLU (bos ise dugme pasif; onceden istege bagliydi), "Yeni"ye
+  geri donus secenegi kaldirildi; ayri kirmizi "hesap ve icerik
+  islemleri" bolgesi, yikici dugme birincil turuncuyla yan yana degil.
+  `GerekceSor` pencere; onay gerektiren eylemde dugme kirmizi, Esc
+  kapatir, textarea otomatik odak.
+- **Sikayetler:** filtre cipleri, adreste `?durum=&hedef=&sira=&sayfa=`
+  (detaydan donunce filtre kalir), varsayilan Bekleyen + once eski;
+  satirin tamami tiklanir, Enter ile acilir.
+- **Denetim izi:** eylem gruplari (Okumalar/Kararlar/Hesap), hedef
+  baglantili, moderator sutunu; okuma satirlari turuncu zemin.
+  Eylem kodlari migrasyonlardan dogrulandi.
+- **Sahte veri kipi:** `VITE_SAHTE=1 npx vite` -> `src/sahte.ts`
+  (uydurma veri); `supabase.ts` dinamik import ile yalnizca DEV'de
+  yukler - statik import uretim paketine sizdi (olculdu), dinamik ile
+  0. Ekran goruntusu betigi `panel/araclar/ekran-goruntusu.mjs`
+  (puppeteer-core `mobil/node_modules`ta; betik oradan kosuluyor).
+  Goruntuler `tasarim/panel/` (acik mod; koyu mod da olculdu).
+- Degismeyen: service-role yok, AAL2 kapisi DB'de, her erisim
+  `moderasyon_*` RPC.
+
+Panel hala YALNIZCA YERELDE (`npm run dev`); canli adresi yok.
+`panel.slooin.com` icin Cloudflare Pages projesi acilmasi gerekir
+(kullaniciya soruldu, karar bekleniyor).
+
 ### MESAJLAR: GERI OKU KALKTI - 2026-09-18 GECE
 
 Kullanicinin istegi: "Mesajlar yazisinin yaninda geri cikma tusu

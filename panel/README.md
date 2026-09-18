@@ -26,6 +26,27 @@ VITE_SUPABASE_ANON_KEY=...
 Ikisi de `mobil/.env` icindeki `EXPO_PUBLIC_SUPABASE_URL` ve
 `EXPO_PUBLIC_SUPABASE_ANON_KEY` ile aynidir.
 
+## Tasarim ve sahte veri kipi (2026-09-18)
+
+Panel 2026-09-18'de yeniden tasarlandi: sol kenar cubugu (dar ekranda
+ust sekmeler), Ozet sayfasi (`moderasyon_ozet` RPC), tek durum dili
+(rozetler), iki sutunlu detay ekranlari (sagda yapiskan Karar karti,
+ayri kirmizi "tehlike bolgesi"), gerekce ZORUNLU karar, bos/yukleniyor/
+hata halleri, koyu mod, 30 dk hareketsizlikte otomatik cikis. Jetonlar
+`src/stil.css` basinda; uygulamayla ayni turuncu ve yazi ailesi.
+
+Ekranlar uzerinde calisirken her seferinde TOTP ile girmek yerine:
+
+```bash
+VITE_SAHTE=1 npx vite --port 5199        # ornek veriyle, oturumsuz
+node araclar/ekran-goruntusu.mjs ../tasarim/panel   # (mobil/node_modules'taki puppeteer-core ile)
+```
+
+`src/sahte.ts` UYDURMA veri dondurur; `supabase.ts` onu yalnizca
+`import.meta.env.DEV && VITE_SAHTE === '1'` iken ve dinamik import'la
+yukler - uretim paketine girmez (olculdu). Ekran goruntuleri
+`tasarim/panel/`.
+
 ## Neden service-role anahtari YOK
 
 Bu, panelin en onemli tasarim karari (spec karar 55) ve ilerideki bir

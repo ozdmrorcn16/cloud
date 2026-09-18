@@ -17,8 +17,6 @@ type Adim = 'parola' | 'kod'
  * numarasi" diyordu ama Supabase'in TOTP'si QR uretirken hesap adi
  * olarak e-postayi kullaniyor; telefon-only hesapta enroll
  * "AccountName must be set" ile 500 doner (auth loglarinda dogrulandi).
- * E-posta ayrica daha uygun: moderator hesabi zaten uygulamadan ayri
- * ve telefon dogrulamasi bos yere SMS maliyeti getiriyordu.
  */
 export function Giris({ onGirildi }: { onGirildi: () => void }) {
   const [adim, setAdim] = useState<Adim>('parola')
@@ -103,8 +101,6 @@ export function Giris({ onGirildi }: { onGirildi: () => void }) {
       // panelin kendi karari degil.
       const { data: yetkili } = await supabase.rpc('moderator_muyum')
       if (yetkili !== true) {
-        // Sebebi gizlemek bir guvenlik kazanci saglamaz, yalnizca hata
-        // ayiklamayi zorlastirir.
         setHata('Bu hesap moderatör değil.')
         await supabase.auth.signOut()
         setAdim('parola')
@@ -120,75 +116,88 @@ export function Giris({ onGirildi }: { onGirildi: () => void }) {
   }
 
   return (
-    <div className="giris">
-      <h1>Slooin moderasyon</h1>
+    <div className="giris-sayfa">
+      <div className="giris">
+        <div className="marka">
+          <span className="marka-isaret" aria-hidden>S</span> Slooin
+        </div>
+        <h1>Moderasyon paneli</h1>
+        <p className="alt">
+          {adim === 'parola'
+            ? 'Yalnızca moderatör hesapları. Her erişim denetim izine yazılır.'
+            : 'İkinci adım: doğrulayıcı uygulamandaki altı haneli kod.'}
+        </p>
 
-      {adim === 'parola' && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            girisYap()
-          }}
-        >
-          <label htmlFor="eposta">E-posta</label>
-          <input
-            id="eposta"
-            type="email"
-            value={eposta}
-            onChange={(e) => setEposta(e.target.value)}
-            placeholder="moderator@slooin.app"
-            autoComplete="username"
-          />
+        {adim === 'parola' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              girisYap()
+            }}
+          >
+            <label className="alan" htmlFor="eposta">E-posta</label>
+            <input
+              id="eposta"
+              type="email"
+              value={eposta}
+              onChange={(e) => setEposta(e.target.value)}
+              placeholder="moderator@slooin.com"
+              autoComplete="username"
+              autoFocus
+            />
 
-          <label htmlFor="parola">Parola</label>
-          <input
-            id="parola"
-            type="password"
-            value={parola}
-            onChange={(e) => setParola(e.target.value)}
-            autoComplete="current-password"
-          />
+            <label className="alan" htmlFor="parola">Parola</label>
+            <input
+              id="parola"
+              type="password"
+              value={parola}
+              onChange={(e) => setParola(e.target.value)}
+              autoComplete="current-password"
+            />
 
-          <button type="submit" className="birincil" disabled={calisiyor}>
-            {calisiyor ? 'Giriş yapılıyor…' : 'Devam et'}
-          </button>
-        </form>
-      )}
+            <button type="submit" className="birincil genis" disabled={calisiyor}>
+              {calisiyor ? 'Giriş yapılıyor…' : 'Devam et'}
+            </button>
+          </form>
+        )}
 
-      {adim === 'kod' && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            koduDogrula()
-          }}
-        >
-          {qr && (
-            <div className="qr">
-              <p>
-                Bu, bu hesap için ilk kurulum. Aşağıdaki kodu doğrulayıcı
-                uygulamana ekle, sonra ürettiği altı haneli kodu gir.
-              </p>
-              <img src={qr} alt="TOTP kurulum kodu" />
-            </div>
-          )}
+        {adim === 'kod' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              koduDogrula()
+            }}
+          >
+            {qr && (
+              <div className="qr">
+                <p>
+                  Bu hesap için ilk kurulum. Kodu doğrulayıcı uygulamana
+                  (Google Authenticator, 1Password…) ekle, sonra ürettiği
+                  altı haneli kodu gir.
+                </p>
+                <img src={qr} alt="TOTP kurulum kodu" />
+              </div>
+            )}
 
-          <label htmlFor="kod">Doğrulama kodu</label>
-          <input
-            id="kod"
-            value={kod}
-            onChange={(e) => setKod(e.target.value)}
-            inputMode="numeric"
-            placeholder="123456"
-            autoComplete="one-time-code"
-          />
+            <label className="alan" htmlFor="kod">Doğrulama kodu</label>
+            <input
+              id="kod"
+              value={kod}
+              onChange={(e) => setKod(e.target.value)}
+              inputMode="numeric"
+              placeholder="123456"
+              autoComplete="one-time-code"
+              autoFocus
+            />
 
-          <button type="submit" className="birincil" disabled={calisiyor}>
-            {calisiyor ? 'Doğrulanıyor…' : 'Giriş yap'}
-          </button>
-        </form>
-      )}
+            <button type="submit" className="birincil genis" disabled={calisiyor}>
+              {calisiyor ? 'Doğrulanıyor…' : 'Giriş yap'}
+            </button>
+          </form>
+        )}
 
-      <Hata mesaj={hata} />
+        <Hata mesaj={hata} />
+      </div>
     </div>
   )
 }

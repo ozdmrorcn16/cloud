@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
-import { Hata, Yukleniyor, hataMetni, zaman } from '../ortak/Durum'
+import { Bilgi, Hata, HesapRozeti, Yukleniyor, hataMetni, zaman } from '../ortak/Durum'
 import { GerekceSor } from '../ortak/GerekceSor'
 import type { KullaniciDetayi as Detay } from '../tipler'
 
 type AcikKutu = 'askiya_al' | 'yasakla' | 'kaldir' | null
 
+/**
+ * KULLANICI DETAYI. Bu ekrani acmak denetim izine yazilir (karar 61):
+ * kisisel veriye erisim. Ust serit bunu her zaman gorunur tutar.
+ * Sag sutun: hesap durumu + islemler (kirmizi bolge). Sol: sayilar,
+ * check-in gecmisi, konusma ust verisi (icerik AYRI erisim).
+ */
 export function KullaniciDetayi() {
   const { id } = useParams<{ id: string }>()
   const [detay, setDetay] = useState<Detay | null>(null)
@@ -20,11 +26,7 @@ export function KullaniciDetayi() {
     setYukleniyor(true)
     setHata(null)
     try {
-      // Bu cagri denetim izine bir satir yazar (karar 61): kisisel
-      // veriye erisim kaydedilir.
-      const { data, error } = await supabase.rpc('moderasyon_kullanici_detayi', {
-        p_kullanici_id: id,
-      })
+      const { data, error } = await supabase.rpc('moderasyon_kullanici_detayi', { p_kullanici_id: id })
       if (error) throw error
       setDetay(data as Detay)
     } catch (e) {
@@ -40,6 +42,7 @@ export function KullaniciDetayi() {
 
   async function aksiyon(rpc: string, parametre: Record<string, unknown>) {
     setHata(null)
+    setBilgi(null)
     try {
       const { error } = await supabase.rpc(rpc, parametre)
       if (error) throw error
@@ -52,117 +55,152 @@ export function KullaniciDetayi() {
     }
   }
 
-  if (yukleniyor) return <Yukleniyor ne="Kullanıcı" />
-  if (!detay) return <Hata mesaj={hata ?? 'Kullanıcı bulunamadı'} />
+  if (yukleniyor && !detay) {
+    return (
+      <section>
+        <Link to="/kullanicilar" className="geri">← Kullanıcılar</Link>
+        <div className="blok"><Yukleniyor satir={6} /></div>
+      </section>
+    )
+  }
+  if (!detay) {
+    return (
+      <section>
+        <Link to="/kullanicilar" className="geri">← Kullanıcılar</Link>
+        <Hata mesaj={hata ?? 'Kullanıcı bulunamadı'} onTekrar={yukle} />
+      </section>
+    )
+  }
 
   const p = detay.profil
+  const h = detay.hesap_durumu
 
   return (
     <section>
-      <Link to="/kullanicilar">← Kullanıcılar</Link>
+      <Link to="/kullanicilar" className="geri">← Kullanıcılar</Link>
+      <div className="sayfa-ust">
+        <div>
+          <h2>{p ? p.ad : 'Profili silinmiş kullanıcı'}</h2>
+          <div className="alt">{p ? `@${p.kullanici_adi}` : id}</div>
+        </div>
+        <HesapRozeti durum={h?.durum ?? null} />
+      </div>
 
-      {/* Sunucu bu goruntulemeyi zaten ize yazdi; uyari o gercegin
+      {/* Sunucu bu goruntulemeyi zaten ize yazdi; serit o gercegin
           arayuzdeki karsiligi. */}
       <p className="uyari-serit">Bu görüntüleme denetim izine kaydedildi.</p>
 
-      <h2>{p ? `${p.ad} (@${p.kullanici_adi})` : 'Profili silinmiş kullanıcı'}</h2>
-
       <Hata mesaj={hata} />
-      {bilgi && <p className="durum bilgi">{bilgi}</p>}
+      <Bilgi mesaj={bilgi} />
 
-      <h3>Hesap durumu</h3>
-      {detay.hesap_durumu ? (
-        <dl className="ozet">
-          <dt>Durum</dt><dd>{detay.hesap_durumu.durum}</dd>
-          <dt>Bitiş</dt><dd>{zaman(detay.hesap_durumu.aski_bitisi)}</dd>
-          <dt>Gerekçe</dt><dd>{detay.hesap_durumu.gerekce}</dd>
-        </dl>
-      ) : (
-        <p>Aktif (kısıt yok).</p>
-      )}
+      <div className="iki-sutun">
+        <div>
+          <div className="kartlar">
+            <div className="kart"><div className="kart-etiket">Hakkında şikayet</div><div className={`kart-sayi${detay.sikayet_ozeti.hakkinda > 0 ? ' vurgu' : ''}`}>{detay.sikayet_ozeti.hakkinda}</div></div>
+            <div className="kart"><div className="kart-etiket">Açtığı şikayet</div><div className="kart-sayi">{detay.sikayet_ozeti.actigi}</div></div>
+            <div className="kart"><div className="kart-etiket">Arkadaş</div><div className="kart-sayi">{detay.takipler.length}</div><div className="kart-not">engellediği {detay.engelledikleri.length} · onu engelleyen {detay.onu_engelleyenler.length}</div></div>
+            <div className="kart"><div className="kart-etiket">Sohbet isteği</div><div className="kart-sayi">{detay.sohbet_istekleri.length}</div><div className="kart-not">bugün {detay.bugunku_istek_sayisi} · cihaz {detay.bildirim_cihazi}</div></div>
+          </div>
 
-      <div className="aksiyonlar">
-        <button onClick={() => setKutu('askiya_al')}>Askıya al (7 gün)</button>
-        <button className="yikici" onClick={() => setKutu('yasakla')}>Yasakla</button>
-        {detay.hesap_durumu && (
-          <button onClick={() => setKutu('kaldir')}>Kısıtı kaldır</button>
-        )}
+          {p?.biyografi && (
+            <div className="blok"><h3>Biyografi</h3><div className="icerik-kutu">{p.biyografi}</div></div>
+          )}
+
+          <div className="blok">
+            <h3>Check-in ve anı geçmişi <span className="sayac">{detay.check_inler.length}</span></h3>
+            {detay.check_inler.length === 0 ? (
+              <p className="k">Henüz check-in yok.</p>
+            ) : (
+              <div className="tablo-kap" style={{ border: 0 }}>
+                <table>
+                  <thead>
+                    <tr><th>Zaman</th><th>Mekân</th><th>Not</th><th>Tür</th><th>Durum</th></tr>
+                  </thead>
+                  <tbody>
+                    {detay.check_inler.map((c) => (
+                      <tr key={c.id} className={c.moderasyon_gizli ? 'gizlenmis' : ''}>
+                        <td>{zaman(c.olusturma_zamani)}</td>
+                        <td>{c.mekan_adi}</td>
+                        <td>{c.not_metni ?? <span className="k">—</span>}</td>
+                        <td>{c.canli_mi ? <span className="rozet turuncu">Canlı</span> : <span className="rozet gri noktasiz">Anı</span>}</td>
+                        <td>{c.moderasyon_gizli ? <span className="rozet kirmizi">Gizlendi</span> : <span className="k">görünür</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="blok">
+            <h3>Konuşmalar <span className="sayac">{detay.konusmalar.length}</span></h3>
+            <p className="ipucu" style={{ margin: '0 0 8px' }}>
+              Burada yalnızca üst veri var; içerik ayrı bir erişimdir, gerekçe ister ve denetim izine ayrı yazılır.
+            </p>
+            {detay.konusmalar.length === 0 ? (
+              <p className="k">Konuşma yok.</p>
+            ) : (
+              <div className="tablo-kap" style={{ border: 0 }}>
+                <table>
+                  <thead>
+                    <tr><th>Karşı taraf</th><th>Mesaj</th><th>İlk</th><th>Son</th><th /></tr>
+                  </thead>
+                  <tbody>
+                    {detay.konusmalar.map((k) => (
+                      <tr key={k.konusma_id}>
+                        <td>
+                          {k.karsi_taraf ? (
+                            <Link to={`/kullanicilar/${k.karsi_taraf}`}><code>{k.karsi_taraf.slice(0, 8)}</code></Link>
+                          ) : <span className="k">silinmiş</span>}
+                        </td>
+                        <td>{k.mesaj_sayisi}</td>
+                        <td>{zaman(k.ilk_mesaj)}</td>
+                        <td>{zaman(k.son_mesaj)}</td>
+                        <td className="sag">
+                          {/* Buradan acilan her konusma KADEME 2'dir: ortada
+                              sikayet baglami yok (karar 75). */}
+                          <Link to={`/konusma/${k.konusma_id}`} className="dugme kucuk">Tüm konuşmayı aç</Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="yapiskan">
+          <div className="blok">
+            <h3>Hesap durumu</h3>
+            {h ? (
+              <dl className="ozet">
+                <dt>Durum</dt><dd><HesapRozeti durum={h.durum} /></dd>
+                <dt>Bitiş</dt><dd>{h.aski_bitisi ? zaman(h.aski_bitisi) : 'süresiz'}</dd>
+                <dt>Gerekçe</dt><dd>"{h.gerekce}"</dd>
+                <dt>Güncellendi</dt><dd>{zaman(h.guncellendi)}</dd>
+              </dl>
+            ) : (
+              <p className="k">Aktif · kısıt yok.</p>
+            )}
+          </div>
+
+          <div className="blok tehlike">
+            <h3>Hesap işlemleri</h3>
+            <div className="satir">
+              {h && <button type="button" onClick={() => setKutu('kaldir')}>Kısıtı kaldır</button>}
+              <button type="button" onClick={() => setKutu('askiya_al')}>Askıya al · 7 gün</button>
+              <button type="button" className="yikici" onClick={() => setKutu('yasakla')}>Yasakla</button>
+            </div>
+            <p className="ipucu" style={{ marginTop: 10 }}>Her işlem onay penceresi ve gerekçe ister; geçmiş denetim izinde kalır.</p>
+          </div>
+        </div>
       </div>
-
-      <h3>Şikayet özeti</h3>
-      <p>
-        Hakkında: <strong>{detay.sikayet_ozeti.hakkinda}</strong> · Açtığı:{' '}
-        <strong>{detay.sikayet_ozeti.actigi}</strong>
-      </p>
-
-      <h3>Check-in ve anı geçmişi ({detay.check_inler.length})</h3>
-      <table>
-        <thead>
-          <tr><th>Zaman</th><th>Mekan</th><th>Not</th><th>Tür</th><th>Gizli</th></tr>
-        </thead>
-        <tbody>
-          {detay.check_inler.map((c) => (
-            <tr key={c.id} className={c.moderasyon_gizli ? 'gizlenmis' : ''}>
-              <td>{zaman(c.olusturma_zamani)}</td>
-              <td>{c.mekan_adi}</td>
-              <td>{c.not_metni ?? '—'}</td>
-              <td>{c.canli_mi ? 'canlı' : 'anı'}</td>
-              <td>{c.moderasyon_gizli ? 'evet' : 'hayır'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Bağlar</h3>
-      <p>
-        Takip: <strong>{detay.takipler.length}</strong> · Engellediği:{' '}
-        <strong>{detay.engelledikleri.length}</strong> · Onu engelleyen:{' '}
-        <strong>{detay.onu_engelleyenler.length}</strong> · Sohbet isteği:{' '}
-        <strong>{detay.sohbet_istekleri.length}</strong>
-      </p>
-      <p>
-        Bugünkü istek sayısı: <strong>{detay.bugunku_istek_sayisi}</strong> ·
-        Kayıtlı bildirim cihazı: <strong>{detay.bildirim_cihazi}</strong>
-      </p>
-
-      <h3>Konuşmalar ({detay.konusmalar.length})</h3>
-      <p className="not">
-        Burada yalnızca üst veri var; içerik ayrı bir erişimdir ve denetim
-        izine ayrı olarak yazılır.
-      </p>
-      <table>
-        <thead>
-          <tr><th>Karşı taraf</th><th>Mesaj</th><th>İlk</th><th>Son</th><th></th></tr>
-        </thead>
-        <tbody>
-          {detay.konusmalar.map((k) => (
-            <tr key={k.konusma_id}>
-              <td>
-                {k.karsi_taraf ? (
-                  <Link to={`/kullanicilar/${k.karsi_taraf}`}>
-                    {k.karsi_taraf.slice(0, 8)}
-                  </Link>
-                ) : (
-                  'silinmiş'
-                )}
-              </td>
-              <td>{k.mesaj_sayisi}</td>
-              <td>{zaman(k.ilk_mesaj)}</td>
-              <td>{zaman(k.son_mesaj)}</td>
-              <td>
-                {/* Buradan acilan her konusma KADEME 2'dir: ortada
-                    sikayet baglami yok (karar 75). */}
-                <Link to={`/konusma/${k.konusma_id}`}>Tüm konuşmayı aç</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
       {kutu === 'askiya_al' && id && (
         <GerekceSor
-          baslik="Hesabı askıya al"
-          aciklama="Askı süresi boyunca kullanıcı hiçbir şey yazamaz ve kimseye görünmez."
+          baslik="Hesabı askıya al · 7 gün"
+          aciklama="Askı süresince kullanıcı hiçbir şey yazamaz ve kimseye görünmez."
           eylemEtiketi="7 gün askıya al"
           onayGerekli
           onIptal={() => setKutu(null)}
@@ -184,12 +222,7 @@ export function KullaniciDetayi() {
           onayGerekli
           onayMetni="Bu hesabı süresiz yasaklamak istediğimi onaylıyorum."
           onIptal={() => setKutu(null)}
-          onSonuc={(gerekce) =>
-            aksiyon('moderasyon_hesabi_yasakla', {
-              p_kullanici_id: id,
-              p_gerekce: gerekce,
-            })
-          }
+          onSonuc={(gerekce) => aksiyon('moderasyon_hesabi_yasakla', { p_kullanici_id: id, p_gerekce: gerekce })}
         />
       )}
 
@@ -199,12 +232,7 @@ export function KullaniciDetayi() {
           aciklama="Hesap yeniden aktif olur. Geçmiş denetim izinde kalır."
           eylemEtiketi="Kaldır"
           onIptal={() => setKutu(null)}
-          onSonuc={(gerekce) =>
-            aksiyon('moderasyon_hesap_durumunu_kaldir', {
-              p_kullanici_id: id,
-              p_gerekce: gerekce,
-            })
-          }
+          onSonuc={(gerekce) => aksiyon('moderasyon_hesap_durumunu_kaldir', { p_kullanici_id: id, p_gerekce: gerekce })}
         />
       )}
     </section>

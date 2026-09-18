@@ -41,34 +41,44 @@ export function Konusma() {
       })
       if (error) throw error
       setIcerik(data as KonusmaIcerigi)
-      setKutuAcik(false)
-      setGenisKutuAcik(false)
     } catch (e) {
       setHata(hataMetni(e))
+    } finally {
       setKutuAcik(false)
       setGenisKutuAcik(false)
     }
   }
 
+  // Uyeleri sirayla renklendirmek yerine ilk uyeyi solda, digerini
+  // sagda hizala: kimin ne dedigi bir bakista okunsun.
+  const ilkUye = icerik?.uyeler[0]
+
   return (
     <section>
-      <Link to="/sikayetler">← Şikayetler</Link>
-      <h2>Konuşma</h2>
+      <Link to="/sikayetler" className="geri">← Şikayetler</Link>
+      <div className="sayfa-ust">
+        <div>
+          <h2>Konuşma</h2>
+          <div className="alt">Salt okunur. Panel mesajlara asla yazmaz.</div>
+        </div>
+        {icerik && (
+          <span className={icerik.kademe === 2 ? 'rozet kirmizi' : 'rozet turuncu'}>
+            {icerik.kademe === 1 ? 'Şikayet bağlamı' : 'Tüm konuşma'}
+          </span>
+        )}
+      </div>
 
       <Hata mesaj={hata} />
 
       {!icerik && (
         <div className="kapi">
-          <p>
-            İçerik gerekçe girilmeden yüklenmez. Bu erişim denetim izine
-            kaydedilir.
-          </p>
+          <p>İçerik gerekçe girilmeden yüklenmez. Bu erişim moderatör kimliğinle denetim izine yazılır.</p>
           {merkez ? (
-            <button className="birincil" onClick={() => setKutuAcik(true)}>
-              Şikayet bağlamını aç (bu mesajın çevresi)
+            <button type="button" className="birincil" onClick={() => setKutuAcik(true)}>
+              Şikayet bağlamını aç · bu mesajın çevresi
             </button>
           ) : (
-            <button className="birincil" onClick={() => setGenisKutuAcik(true)}>
+            <button type="button" className="yikici" onClick={() => setGenisKutuAcik(true)}>
               Tüm konuşmayı aç
             </button>
           )}
@@ -80,13 +90,13 @@ export function Konusma() {
           <p className={icerik.kademe === 2 ? 'uyari-serit genis' : 'uyari-serit'}>
             {icerik.kademe === 1
               ? 'Şikayet bağlamı: yalnızca bu mesajın çevresi açıldı.'
-              : 'Tüm konuşma açıldı — bu erişim denetim izinde ayrı olarak görünür.'}
+              : 'Tüm konuşma açıldı — bu erişim denetim izinde ayrı türde görünür.'}
           </p>
 
           {icerik.kademe === 1 && (
-            <p>
-              <button onClick={() => setGenisKutuAcik(true)}>
-                Tüm konuşmayı aç (ayrı gerekçe ister)
+            <p style={{ margin: '0 0 14px' }}>
+              <button type="button" className="kucuk" onClick={() => setGenisKutuAcik(true)}>
+                Tüm konuşmayı aç · ayrı gerekçe ister
               </button>
             </p>
           )}
@@ -96,10 +106,11 @@ export function Konusma() {
               <li
                 key={m.id}
                 className={m.id === merkez ? 'mesaj vurgulu' : 'mesaj'}
+                style={m.gonderen_id && m.gonderen_id !== ilkUye ? { marginLeft: 'auto' } : undefined}
               >
                 <span className="mesaj-ust">
-                  {m.gonderen_id ? m.gonderen_id.slice(0, 8) : 'silinmiş'} ·{' '}
-                  {zaman(m.olusturuldu)}
+                  {m.gonderen_id ? <code>{m.gonderen_id.slice(0, 8)}</code> : 'silinmiş hesap'} · {zaman(m.olusturuldu)}
+                  {m.id === merkez && <> · <b>şikayet edilen mesaj</b></>}
                 </span>
                 <span className="mesaj-metin">{m.metin}</span>
               </li>
@@ -121,7 +132,7 @@ export function Konusma() {
       {genisKutuAcik && (
         <GerekceSor
           baslik="Tüm konuşmayı aç"
-          aciklama="Bu, şikayet bağlamından daha geniş bir erişimdir: konuşmanın tamamı açılır ve denetim izinde ayrı türde görünür."
+          aciklama="Şikayet bağlamından daha geniş bir erişim: konuşmanın tamamı açılır ve denetim izinde ayrı türde görünür."
           eylemEtiketi="Tüm konuşmayı aç"
           onayGerekli
           onayMetni="Bu kişinin bütün konuşmasını açtığımı ve bunun kaydedildiğini biliyorum."

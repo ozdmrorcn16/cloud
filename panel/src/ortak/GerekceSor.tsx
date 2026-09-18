@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Pencere } from './Durum'
 
 type Props = {
   baslik: string
   aciklama?: string
   eylemEtiketi: string
-  /** Yikici eylemlerde ayri bir onay adimi cikar. */
+  /** Yikici eylemlerde ayri bir onay adimi cikar ve dugme kirmizi olur. */
   onayGerekli?: boolean
   onayMetni?: string
   onIptal: () => void
@@ -18,7 +19,8 @@ type Props = {
  *
  * Yikici eylemlerde (askiya alma, yasaklama, gizleme, tum konusmayi
  * acma) `onayGerekli` ile ikinci bir adim eklenir: gerekce yazmak tek
- * basina yeterli degil, ayrica onaylamak gerekir.
+ * basina yeterli degil, ayrica onaylamak gerekir. Dugme de kirmizi -
+ * birincil turuncuyla ayni gorunmesin, refleksle basilmasin.
  */
 export function GerekceSor({
   baslik,
@@ -32,6 +34,11 @@ export function GerekceSor({
   const [gerekce, setGerekce] = useState('')
   const [onaylandi, setOnaylandi] = useState(false)
   const [calisiyor, setCalisiyor] = useState(false)
+  const alan = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    alan.current?.focus()
+  }, [])
 
   const gerekceYeterli = gerekce.trim().length >= 3
   const gonderilebilir = gerekceYeterli && (!onayGerekli || onaylandi) && !calisiyor
@@ -47,48 +54,46 @@ export function GerekceSor({
   }
 
   return (
-    <div className="kaplama">
-      <div className="kutu">
-        <h3>{baslik}</h3>
-        {aciklama && <p className="kutu-aciklama">{aciklama}</p>}
+    <Pencere baslik={baslik} aciklama={aciklama} onKapat={calisiyor ? () => {} : onIptal}>
+      <label className="alan" htmlFor="gerekce">Gerekçe · denetim izine yazılır</label>
+      <textarea
+        id="gerekce"
+        ref={alan}
+        value={gerekce}
+        onChange={(e) => setGerekce(e.target.value)}
+        rows={3}
+        placeholder="Bu erişimin ya da işlemin sebebi"
+      />
+      {!gerekceYeterli && gerekce.length > 0 ? (
+        <p className="ipucu hata">En az 3 karakter yaz.</p>
+      ) : (
+        <p className="ipucu">Gerekçe, kaydın yanında moderatör kimliğinle birlikte kalıcı olarak saklanır.</p>
+      )}
 
-        <label htmlFor="gerekce">Gerekçe (denetim izine yazılır)</label>
-        <textarea
-          id="gerekce"
-          value={gerekce}
-          onChange={(e) => setGerekce(e.target.value)}
-          rows={3}
-          placeholder="Bu erişimin ya da işlemin sebebi"
-        />
-        {!gerekceYeterli && gerekce.length > 0 && (
-          <p className="ipucu">En az 3 karakter yaz.</p>
-        )}
+      {onayGerekli && (
+        <label className="onay-satiri">
+          <input
+            type="checkbox"
+            checked={onaylandi}
+            onChange={(e) => setOnaylandi(e.target.checked)}
+          />
+          <span>{onayMetni ?? 'Bu işlemi yapmak istediğimi onaylıyorum.'}</span>
+        </label>
+      )}
 
-        {onayGerekli && (
-          <label className="onay">
-            <input
-              type="checkbox"
-              checked={onaylandi}
-              onChange={(e) => setOnaylandi(e.target.checked)}
-            />
-            {onayMetni ?? 'Bu işlemi yapmak istediğimi onaylıyorum.'}
-          </label>
-        )}
-
-        <div className="kutu-dugmeler">
-          <button type="button" onClick={onIptal} disabled={calisiyor}>
-            Vazgeç
-          </button>
-          <button
-            type="button"
-            className="birincil"
-            onClick={gonder}
-            disabled={!gonderilebilir}
-          >
-            {calisiyor ? 'Çalışıyor…' : eylemEtiketi}
-          </button>
-        </div>
+      <div className="pencere-dugmeler">
+        <button type="button" className="hayalet" onClick={onIptal} disabled={calisiyor}>
+          Vazgeç
+        </button>
+        <button
+          type="button"
+          className={onayGerekli ? 'yikici' : 'birincil'}
+          onClick={gonder}
+          disabled={!gonderilebilir}
+        >
+          {calisiyor ? 'Çalışıyor…' : eylemEtiketi}
+        </button>
       </div>
-    </div>
+    </Pencere>
   )
 }

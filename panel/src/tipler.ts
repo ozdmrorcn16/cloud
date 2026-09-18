@@ -149,3 +149,14 @@ export type IzSatiri = {
   ayrinti: Record<string, unknown> | null
   olusturuldu: string
 }
+
+/** `moderasyon_ozet` - kabuktaki rozetler ve Ozet sayfasi. */
+export type Ozet = {
+  bekleyen_sikayet: number
+  en_eski_bekleyen: string | null
+  bugun_karar: number
+  yedi_gun_karar: number
+  askida_hesap: number
+  yasakli_hesap: number
+  bekleyen_talep: number
+}
