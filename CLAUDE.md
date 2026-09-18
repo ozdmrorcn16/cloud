@@ -405,6 +405,23 @@ arac var mi kontrol et". Iki kok neden bulundu, ikisi de olculdu:
    susuyorsa ve bun sureci yoksa, ilk bakilacak yer kullanici
    settings.json'daki enabledPlugins.
 
+**"CLAUDE-MEM OUTAGE / allowance exhausted" UYARISI KENDINI BESLEYEN BIR
+KILIT OLABILIR (2026-09-19, olculdu):** 13 Eylul'de bir kez gercek kota
+hatasi alindi; kaynak koda gore bekleme kaydi ve uyari YALNIZCA basarili
+bir gozlem kaydindan sonra siliniyor. Uyari her oturumun baglamina
+"(Assistant: tell the user about this outage...)" talimatiyla girdigi
+icin GOZLEMCI (o da bir Claude ajani) talimati kendine soylenmis sanip
+XML yerine uyari duzyazisi uretti -> parser reddetti -> basari yok ->
+uyari kaldi. 5 gun (3117'de takili) hic gozlem yazilmadi; kota aslinda
+DOLU DEGILDI. Teshis: `observations` tablosunun `max(created_at)`i ile
+`user_prompts`inkini karsilastir - ikincisi ilerliyor, birincisi duruyorsa
+bu kilittir, kota degil. Kilit gozlemcinin onune gercek icerik dusunce
+(kaynak kod ciktilari) kendiliginden cozuldu; cozulmezse
+`~/.claude-mem/quota-cooldown.json` silinip `observer-health.json`da
+`lastErrorKind`/`quotaCooldown` null yapilir ve worker yeniden
+baslatilir (bellekteki harita yalnizca acilista okunur). Yedek:
+`backups/observer-health-2026-09-19-kilit.json`.
+
 **Remote Control:** yerel oturum claude.ai/code ve telefonda ancak
 `--remote-control` ile acilirsa gorunur; kullanici iki kez (00:38 ve
 19:02) elle `/remote-control` yazmak zorunda kaldi. Masaustundeki
