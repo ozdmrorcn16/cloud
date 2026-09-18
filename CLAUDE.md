@@ -172,6 +172,19 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### SOHBETTE AVATAR VE AD PROFILE GIDER - 2026-09-18 AKSAM
+
+Kullanicinin istegi: "mesajlarda sohbette kullanicinin profil resmine
+ve kullanici adina basinca onun profiline gitsin". Onceden yalnizca ust
+bardaki avatar gidiyordu. Sohbet ekraninda (`sohbet/[kullaniciId]`)
+ust barda avatar + ad TEK `Pressable` (`kimlikDugmesi`, flex 1 - adin
+sagindaki bosluk da hedef; testID `sohbet-ad`), her karsi balonun
+yanindaki avatar da `Pressable` (`balon-avatar-dugmesi-<id>`); hepsi
+`profiliAc` -> `/kullanici/<id>`. Mesajlar LISTESI degismedi (satir
+sohbeti acar). Jest 77 paket / 1031 test. Yayin: web guncel (pakette
+`balon-avatar-dugmesi` dogrulandi), OTA grup
+`8ab51f07-2679-445c-a40c-f9aec472a8ab`.
+
 ### CLAUDE-MEM 4 GUN SESSIZ KAPALIYDI; REMOTE CONTROL KISAYOLDA - 2026-09-18 AKSAM
 
 Kullanicinin istegi: "claude mem calisir hale getir, baska calismayan

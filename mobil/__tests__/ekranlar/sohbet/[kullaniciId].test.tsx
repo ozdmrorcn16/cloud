@@ -469,6 +469,27 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
   })
 
+  it('ust bardaki ADA basinca da profil acilir (kullanicinin istegi 2026-09-18)', async () => {
+    await render(<SohbetEkrani />)
+    await screen.findByText('Ada')
+
+    await fireEvent.press(screen.getByTestId('sohbet-ad'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+  })
+
+  it('karsi balonun yanindaki avatara basinca profil acilir', async () => {
+    ;(mesajlariGetir as jest.Mock).mockResolvedValue([
+      mesaj({ id: 'm1', gonderenId: 'kullanici-2', metin: 'Karsi 1' }),
+    ])
+    await render(<SohbetEkrani />)
+    await screen.findByText('Karsi 1')
+
+    await fireEvent.press(screen.getByTestId('balon-avatar-dugmesi-m1'))
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kullanici-2')
+  })
+
   it('"Teslim edildi" yalnizca EN SON kendi mesajimin altinda, karsi tarafinkinde hic', async () => {
     ;(mesajlariGetir as jest.Mock).mockResolvedValue([
       mesaj({ id: 'm3', gonderenId: 'kullanici-2', metin: 'Karsi son' }),

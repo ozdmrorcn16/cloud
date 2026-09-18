@@ -180,6 +180,8 @@ export default function SohbetEkrani() {
   // (kullanicinin karari) ve sunucudaki mesaj_gonder bunu kendisi
   // isliyor - istegi 'kabul'e cekip mesaji yaziyor.
   const yazilabilirMi = istekMi ? true : konusmaSatiri ? konusmaSatiri.yazilabilirMi : true
+  // Ust bardaki avatar/ad ve her karsi balonun avatari ayni yere gider.
+  const profiliAc = () => router.push(`/kullanici/${kullaniciId}`)
 
   async function istegiKabulEt() {
     try {
@@ -281,11 +283,15 @@ export default function SohbetEkrani() {
         >
           <GeriOkIkonu />
         </Pressable>
+        {/* Avatar + ad TEK dokunus hedefi, ikisi de karsi tarafin
+            profiline gider (kullanicinin istegi 2026-09-18: "profil
+            resmine ve kullanici adina basinca onun profiline gitsin"). */}
         <Pressable
           testID="sohbet-avatar-dugmesi"
-          onPress={() => router.push(`/kullanici/${kullaniciId}`)}
+          onPress={profiliAc}
           accessibilityRole="button"
           accessibilityLabel={konusmaSatiri?.ad ?? t('sohbet.baslik')}
+          style={stiller.kimlikDugmesi}
         >
           <Avatar
             fotografUrl={avatarUrl}
@@ -294,8 +300,10 @@ export default function SohbetEkrani() {
             cap={UST_BAR_AVATAR_CAPI}
             testID="sohbet-avatar"
           />
+          <Text style={stiller.baslik} numberOfLines={1} testID="sohbet-ad">
+            {konusmaSatiri?.ad ?? t('sohbet.baslik')}
+          </Text>
         </Pressable>
-        <Text style={stiller.baslik} numberOfLines={1}>{konusmaSatiri?.ad ?? t('sohbet.baslik')}</Text>
         <Pressable onPress={() => router.push(`/sikayet?hedefTur=kullanici&hedefId=${kullaniciId}`)}>
           <Text style={stiller.sikayetButonu}>{t('sikayet.baslik')}</Text>
         </Pressable>
@@ -352,13 +360,21 @@ export default function SohbetEkrani() {
               )}
               <View style={benimMi ? stiller.kendiSatiri : stiller.karsiSatiri}>
                 {!benimMi && (
-                  <Avatar
-                    fotografUrl={avatarUrl}
-                    ad={konusmaSatiri?.ad}
-                    kullaniciAdi={konusmaSatiri?.kullaniciAdi ?? ''}
-                    cap={BALON_AVATAR_CAPI}
-                    testID={`balon-avatar-${item.id}`}
-                  />
+                  <Pressable
+                    onPress={profiliAc}
+                    accessibilityRole="button"
+                    accessibilityLabel={konusmaSatiri?.ad ?? t('sohbet.baslik')}
+                    hitSlop={6}
+                    testID={`balon-avatar-dugmesi-${item.id}`}
+                  >
+                    <Avatar
+                      fotografUrl={avatarUrl}
+                      ad={konusmaSatiri?.ad}
+                      kullaniciAdi={konusmaSatiri?.kullaniciAdi ?? ''}
+                      cap={BALON_AVATAR_CAPI}
+                      testID={`balon-avatar-${item.id}`}
+                    />
+                  </Pressable>
                 )}
                 <Pressable
                   onLongPress={
@@ -479,6 +495,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.m,
     marginBottom: bosluk.m,
   },
+  // Avatar + ad birlikte; flex: 1 ile sikayet dugmesine kadar uzanir,
+  // yani adin sagindaki bosluk da dokunus hedefi.
+  kimlikDugmesi: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   baslik: {
     flex: 1,
     fontFamily: yazi.ekranBasligi,
