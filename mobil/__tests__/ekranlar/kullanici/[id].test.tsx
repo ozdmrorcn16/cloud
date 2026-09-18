@@ -585,6 +585,33 @@ describe('KullaniciProfiliEkrani', () => {
     paylasSpy.mockRestore()
   })
 
+  /**
+   * GERI DUGMESI KALKTI (kullanicinin istegi 2026-09-18): "baskasinin
+   * profiline bakinca ustte soldaki geri gitme dugmesini kaldir ve
+   * dizilimi tekrar duzenle". Ust cubuk tamamen kalkti; sag ustteki uc
+   * nokta menusu kimlik blogunun kosesine tasindi ve YERINDE DURUYOR.
+   * Geri donus sistemin kendi yollarina birakildi (iOS kaydirma,
+   * Android donanim tusu, web tarayici) - ekran alt gezinmenin
+   * uzerinde durdugu icin kimse sayfada kilitli kalmiyor.
+   */
+  it('ust soldaki geri dugmesi YOK; uc nokta menusu yerinde duruyor', async () => {
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Ada')
+
+    expect(screen.queryByLabelText('Geri')).toBeNull()
+    expect(screen.getByTestId('kullanici-menusu')).toBeTruthy()
+    expect(mockRouterBack).not.toHaveBeenCalled()
+  })
+
+  it('profil bulunamadiginda da geri dugmesi YOK', async () => {
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue(null)
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Bu profil bulunamadı')
+
+    expect(screen.queryByLabelText('Geri')).toBeNull()
+  })
+
   it('arkadasken "Mesaj yaz" sohbet rotasina yonlendirir, buton "Arkadaşsın" durumunu gosterir', async () => {
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
