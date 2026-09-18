@@ -3,7 +3,7 @@ import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'r
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
-import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
+import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
 import {
@@ -236,9 +236,15 @@ export default function AnaSayfa() {
 
   async function etiketEkle(id: string, kullaniciIdler: string[]) {
     await etiketleriKaydet(id, kullaniciIdler)
-    // Yeni etiket ONAY BEKLIYOR (karar 2026-08-29), yani karta hemen
-    // eklenmiyor - onaylanana kadar kimseye gorunmuyor. Ekran yalnizca
-    // sunucuya yaziyor; liste bir sonraki yenilemede dogru geliyor.
+    // KAYDEDINCE HEMEN GORUNSUN (kullanicinin istegi 2026-09-18): sunucu
+    // karsi tarafin ayarina gore etiketi ya hemen onayliyor ya onaya
+    // dusuruyor; hangisi oldugunu tahmin etmek yerine o check-in'in
+    // onayli etiketleri yeniden okunup karta yaziliyor. Onaya dusen
+    // etiket onaylanana kadar gorunmez (eski kural).
+    const guncel = await etiketleriGetir([id]).catch(() => null)
+    if (guncel) {
+      setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, etiketler: guncel[id] ?? [] } : o)))
+    }
   }
 
   async function etiketiSil(id: string, kullaniciId: string) {

@@ -44,10 +44,10 @@ describe('etiketleriGetir', () => {
     // Ayni kisi iki check-in'de olsa da profil BIR kez isteniyor.
     expect(profilOzetleriniGetir).toHaveBeenCalledWith(['k-1', 'k-2'])
     expect(sonuc['ci-1']).toEqual([
-      { kullaniciId: 'k-1', ad: 'Deniz', avatarUrl: 'https://x/deniz.jpg' },
-      { kullaniciId: 'k-2', ad: null, avatarUrl: null },
+      { kullaniciId: 'k-1', ad: 'Deniz', kullaniciAdi: 'deniz', avatarUrl: 'https://x/deniz.jpg' },
+      { kullaniciId: 'k-2', ad: null, kullaniciAdi: null, avatarUrl: null },
     ])
-    expect(sonuc['ci-2']).toEqual([{ kullaniciId: 'k-1', ad: 'Deniz', avatarUrl: 'https://x/deniz.jpg' }])
+    expect(sonuc['ci-2']).toEqual([{ kullaniciId: 'k-1', ad: 'Deniz', kullaniciAdi: 'deniz', avatarUrl: 'https://x/deniz.jpg' }])
   })
 
   it('profil ozeti okunamazsa etiketler yine doner (adsiz, avatarsiz)', async () => {
@@ -61,6 +61,6 @@ describe('etiketleriGetir', () => {
     ;(profilOzetleriniGetir as jest.Mock).mockRejectedValue(new Error('ag'))
 
     const sonuc = await etiketleriGetir(['ci-1'])
-    expect(sonuc['ci-1']).toEqual([{ kullaniciId: 'k-1', ad: null, avatarUrl: null }])
+    expect(sonuc['ci-1']).toEqual([{ kullaniciId: 'k-1', ad: null, kullaniciAdi: null, avatarUrl: null }])
   })
 })

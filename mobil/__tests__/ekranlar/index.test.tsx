@@ -6,7 +6,7 @@ import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
-import { etiketiKaldir, etiketleriKaydet } from '../../lib/etiket'
+import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
 
@@ -28,6 +28,7 @@ jest.mock('../../lib/checkin', () => ({
 jest.mock('../../lib/etiket', () => ({
   etiketiKaldir: jest.fn(),
   etiketleriKaydet: jest.fn(),
+  etiketleriGetir: jest.fn().mockResolvedValue({}),
 }))
 // Yerinde duzenleme acilinca kart arkadas listesini cekiyor; gercek
 // modul supabase'e gider.
@@ -419,18 +420,26 @@ describe('AnaSayfa', () => {
 
     await fireEvent.press(screen.getByLabelText('Deniz Yılmaz'))
     await fireEvent.press(screen.getByText('Tamam (1)'))
-    // Secim cip olarak duruyor, sunucuya HENUZ gitmedi.
-    expect(screen.getByLabelText('Deniz Yılmaz etiketini kaldır')).toBeTruthy()
+    // Secim cip olarak duruyor (KULLANICI ADIYLA, ad-soyad degil), sunucuya HENUZ gitmedi.
+    expect(screen.getByLabelText('denizy etiketini kaldır')).toBeTruthy()
+    expect(screen.getByText('denizy')).toBeTruthy()
+    expect(screen.queryByText('Deniz Yılmaz')).toBeNull()
     expect(etiketleriKaydet).not.toHaveBeenCalled()
 
+    // Sunucu (onay ayari kapali) etiketi hemen onayladi: yeniden okunup
+    // karta yaziliyor - "Birlikte" satiri Kaydet'ten hemen sonra gorunur.
+    ;(etiketleriGetir as jest.Mock).mockResolvedValue({
+      'checkin-1': [{ kullaniciId: 'k-9', ad: 'Deniz Yılmaz', kullaniciAdi: 'denizy', avatarUrl: null }],
+    })
     await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
     await waitFor(() => expect(etiketleriKaydet).toHaveBeenCalledWith('checkin-1', ['k-9']))
+    expect(await screen.findByTestId('birlikte-k-9')).toBeTruthy()
   })
 
   it('etiketi kaldirinca sunucuya yaziyor ve karttan dusuyor', async () => {
     ;(etiketiKaldir as jest.Mock).mockResolvedValue(undefined)
     ;(akisiGetir as jest.Mock).mockResolvedValue([
-      oge({ benimMi: true, etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', avatarUrl: null }] }),
+      oge({ benimMi: true, etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', kullaniciAdi: 'denizy', avatarUrl: null }] }),
     ])
 
     await render(<AnaSayfa />)
@@ -442,7 +451,7 @@ describe('AnaSayfa', () => {
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-duzenle'))
-    await fireEvent.press(screen.getByLabelText('Deniz etiketini kaldır'))
+    await fireEvent.press(screen.getByLabelText('denizy etiketini kaldır'))
     await fireEvent.press(screen.getByText('Kaydet'))
 
     expect(etiketiKaldir).toHaveBeenCalledWith('checkin-1', 'kisi-9')
@@ -554,7 +563,7 @@ describe('AnaSayfa', () => {
 
   it('"Birlikte" satirindaki avatara basinca etiketlenen kisinin profili acilir', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([
-      oge({ etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', avatarUrl: null }] }),
+      oge({ etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', kullaniciAdi: 'denizy', avatarUrl: null }] }),
     ])
     await render(<AnaSayfa />)
     expect(await screen.findByText('Birlikte')).toBeTruthy()

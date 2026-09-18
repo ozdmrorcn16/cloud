@@ -27,7 +27,7 @@ import {
   type AktifCheckIn,
 } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
-import { etiketiKaldir } from '../../../lib/etiket'
+import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../../lib/etiket'
 import type { BagKisi } from '../../../lib/bag'
 import { profilFotografiniDegistir, profilFotografiniKaldir } from '../../../lib/profil'
 import { useDil } from '../../../lib/dil'
@@ -459,6 +459,18 @@ export default function ProfilEkrani() {
     setAnilar((mevcut) =>
       mevcut.map((a) => (a.id === checkInId ? { ...a, notMetni: temiz === '' ? null : temiz } : a))
     )
+  }
+
+  // Ana sayfadaki etiketEkle ile ayni: kaydet, onayli etiketleri yeniden
+  // oku, karta yaz (kullanicinin istegi 2026-09-18: hemen gorunsun).
+  async function etiketEkle(checkInId: string, kullaniciIdler: string[]) {
+    await etiketleriKaydet(checkInId, kullaniciIdler)
+    const guncel = await etiketleriGetir([checkInId]).catch(() => null)
+    if (guncel) {
+      setAnilar((mevcut) =>
+        mevcut.map((a) => (a.id === checkInId ? { ...a, etiketler: guncel[checkInId] ?? [] } : a))
+      )
+    }
   }
 
   async function etiketiSil(checkInId: string, kisiId: string) {
@@ -982,6 +994,7 @@ export default function ProfilEkrani() {
                     onSil={aniyiSil}
                     onNotKaydet={notuKaydet}
                     onEtiketKaldir={etiketiSil}
+                    onEtiketEkle={etiketEkle}
                   />
                 ))}
               </View>

@@ -25,6 +25,8 @@ export type Etiket = {
   kullaniciId: string
   /** Etiketlenen kisinin adi; profiller'den okunuyor. */
   ad: string | null
+  /** Kullanici adi (rumuz) - duzenleme cipleri bunu yazar (kullanicinin karari 2026-09-18). */
+  kullaniciAdi: string | null
   /**
    * Profil fotografi (imzali adres) - akis kartindaki "Birlikte"
    * satiri yalnizca avatar gosteriyor (kullanicinin karari 2026-09-18:
@@ -88,6 +90,7 @@ export async function etiketleriGetir(
     liste.push({
       kullaniciId: satir.kullanici_id,
       ad: profil?.ad ?? null,
+      kullaniciAdi: profil?.rumuz ?? null,
       avatarUrl: profil?.avatarUrl ?? null,
     })
     gruplar[satir.check_in_id] = liste

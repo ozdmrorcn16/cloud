@@ -340,10 +340,11 @@ export function CheckInKarti({
                     style={stiller.cip}
                     onPress={() => setKaldirilan((m) => [...m, e.kullaniciId])}
                     accessibilityRole="button"
-                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: e.ad ?? '' })}
+                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: e.kullaniciAdi ?? e.ad ?? '' })}
                   >
-                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.ad ?? ''} cap={22} />
-                    <Text style={stiller.cipYazi}>{e.ad ?? ''}</Text>
+                    {/* CIPTE KULLANICI ADI, ad-soyad DEGIL (kullanicinin karari 2026-09-18). */}
+                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.kullaniciAdi ?? e.ad ?? ''} cap={22} />
+                    <Text style={stiller.cipYazi}>{e.kullaniciAdi ?? e.ad ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
                   </Pressable>
                 ))}
@@ -378,7 +379,7 @@ export function CheckInKarti({
                     style={stiller.cip}
                     onPress={() => setEklenen((m) => m.filter((x) => x !== id))}
                     accessibilityRole="button"
-                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi?.ad ?? '' })}
+                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi?.kullaniciAdi ?? '' })}
                   >
                     <Avatar
                       fotografUrl={kisi?.avatarUrl ?? null}
@@ -386,7 +387,7 @@ export function CheckInKarti({
                       kullaniciAdi={kisi?.kullaniciAdi ?? ''}
                       cap={22}
                     />
-                    <Text style={stiller.cipYazi}>{kisi?.ad ?? ''}</Text>
+                    <Text style={stiller.cipYazi}>{kisi?.kullaniciAdi ?? ''}</Text>
                     <Text style={stiller.cipCarpi}>×</Text>
                   </Pressable>
                 )

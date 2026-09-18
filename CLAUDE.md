@@ -194,6 +194,13 @@ gider ve onaylaninca kartta gorunur.
 Jest 78 paket / 1043 test. Yayin: web guncel, OTA grup
 `846d9eee-5390-44a1-bd5e-c7f4f4c4aafe` (test duzeltmesi sonraki
 commit'te; davranis ayni).
+- **Ek (ayni gece, kullanicinin duzeltmesi):** ciplerde AD-SOYAD DEGIL
+  KULLANICI ADI (`Etiket.kullaniciAdi` eklendi, rumuz); Kaydet'ten
+  sonra `etiketleriGetir([id])` yeniden okunup karta yaziliyor - onay
+  ayari kapali kisilerde etiket ANINDA "Birlikte" satirinda (onaya dusen
+  onaylanana kadar gorunmez, tahmin edilmiyor). Profil ekranina da
+  `onEtiketEkle` baglandi (eksikti; dugme oradaki duzenlemede de var).
+  OTA grup `8420667c-722a-4249-8dd4-66214df6a0ee`.
 
 ### AKIS KARTI REFERANS DUZENINE GECTI; "BIRLIKTE" YALNIZCA AVATAR - 2026-09-18 GECE
 
