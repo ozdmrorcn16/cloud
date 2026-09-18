@@ -187,9 +187,18 @@ kabuk ve butun ekranlar yeni):
 - Degismeyen: service-role yok, AAL2 kapisi DB'de, her erisim
   `moderasyon_*` RPC.
 
-Panel hala YALNIZCA YERELDE (`npm run dev`); canli adresi yok.
-`panel.slooin.com` icin Cloudflare Pages projesi acilmasi gerekir
-(kullaniciya soruldu, karar bekleniyor).
+**CANLI: https://panel.slooin.com** (kullanici "Al" dedi). Cloudflare
+Workers statik varlik, `panel/wrangler.toml` (`name slooin-panel`,
+`routes` custom_domain). Kimlik: `npx wrangler login` OAuth -
+Cloudflare girisini Chrome'da Google ile (slooinapp@gmail.com, "Last
+used") yaptim, OAuth onayini DOM'dan tikladim; sekme arka plandayken
+ekran goruntusu zaman asimina dusuyor ama `javascript_tool` ile DOM
+okunup tiklanabiliyor (React-select formlari haric - API token
+sayfasi bu yuzden birakildi, OAuth daha kolay). Wrangler oturumu
+`%APPDATA%/xdg.config/.wrangler`. Uc tuzak `panel/README.md`de
+(jsonc toml'u eziyor, _redirects dongu, routes ust duzeyde).
+Yanlislikla olusan "panel" adli Worker silindi. Canli olcum: 200,
+SPA yollari 200, giris ekrani goruntusu `tasarim/panel/panel-giris-canli.png`.
 
 ### MESAJLAR: GERI OKU KALKTI - 2026-09-18 GECE
 

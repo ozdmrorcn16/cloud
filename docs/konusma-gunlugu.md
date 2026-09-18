@@ -42,6 +42,7 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-18 — [2026-09-18-1552d3d8.md](oturumlar/2026-09-18-1552d3d8.md) — bugün yapılan değişiklikleri biliyormusun
 - 2026-09-17 — [2026-09-17-f4305683.md](oturumlar/2026-09-17-f4305683.md) — merhaba
 - 2026-09-17 — [2026-09-17-1552d3d8.md](oturumlar/2026-09-17-1552d3d8.md) — bugün yapılan değişiklikleri biliyormusun
 - 2026-09-14 — [2026-09-14-e70637b0.md](oturumlar/2026-09-14-e70637b0.md) — burdan devam et

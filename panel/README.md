@@ -26,6 +26,29 @@ VITE_SUPABASE_ANON_KEY=...
 Ikisi de `mobil/.env` icindeki `EXPO_PUBLIC_SUPABASE_URL` ve
 `EXPO_PUBLIC_SUPABASE_ANON_KEY` ile aynidir.
 
+## Canli adres: https://panel.slooin.com (2026-09-18)
+
+Cloudflare Workers (statik varliklar) uzerinde, `wrangler.toml` ile.
+Dagitim:
+
+```bash
+npx wrangler login      # bir kez; OAuth, slooinapp@gmail.com
+npm run deploy          # build + wrangler deploy
+```
+
+Ozel alan adi `panel.slooin.com` wrangler.toml'daki `routes` ile;
+DNS kaydini ve sertifikayi Cloudflare kendisi acti. `dist/` ve
+`.wrangler/` gitignored. Pakette yalnizca anon anahtar var (VITE_*
+derlemede gomulur); service-role yok.
+
+TUZAKLAR (yasandi): (1) `wrangler pages project create` artik Pages'i
+Workers'a devrediyor ve projeye `@cloudflare/vite-plugin` + bir
+`wrangler.jsonc` ekliyor - jsonc `wrangler.toml`u EZIYOR, silindi.
+(2) `_redirects` dosyasi Workers varliklariyla "infinite loop" hatasi
+veriyor; SPA icin `not_found_handling = "single-page-application"`
+yeter. (3) `routes` TOML'da `[assets]` tablosundan ONCE, ust duzeyde
+durmali; altina yazilinca sessizce yok sayiliyor.
+
 ## Tasarim ve sahte veri kipi (2026-09-18)
 
 Panel 2026-09-18'de yeniden tasarlandi: sol kenar cubugu (dar ekranda

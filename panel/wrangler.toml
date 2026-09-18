@@ -1,0 +1,15 @@
+# Moderasyon paneli - Cloudflare Workers (statik varliklar). 2026-09-18.
+# Dagitim: `npm run deploy` (once `npx wrangler login`).
+# Panel yalnizca statik dosya + anon anahtar; sir yok (README).
+# TUZAK: `routes` [assets] tablosunun ALTINA yazilinca assets.routes
+# sayilip yok sayiliyor; ust duzeyde, tablolardan ONCE durmali.
+name = "slooin-panel"
+compatibility_date = "2026-09-01"
+routes = [
+  { pattern = "panel.slooin.com", custom_domain = true }
+]
+
+[assets]
+directory = "./dist"
+# SPA: bilinmeyen yol index.html'e, tarayici yonlendirmesi react-router'da.
+not_found_handling = "single-page-application"
