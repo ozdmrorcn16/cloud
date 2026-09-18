@@ -3027,6 +3027,20 @@ konteynerde kendiliginden geri gelir. Nasil eklendigi: `docs/eklenti-ekleme.md`.
   beceri. Repoya dogrudan kopyalandi: `.claude/skills/no-ai-slop/`. Yaziyi 20+
   "AI slop" kalibindan temizler, sesini korur. `/no-ai-slop <metin>` duzeltir,
   `/no-ai-slop is this slop? <metin>` sadece tespit eder.
+- `ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill, 2026-09-19) -
+  market eklentisi **degil**; `uipro init --ai claude` ile depoya kuruldu:
+  `.claude/skills/ui-ux-pro-max/` (SKILL.md + CSV veri + Python arama
+  betikleri; 3,6 MB). Kendiliginden tetiklenir; elle:
+  `python .claude/skills/ui-ux-pro-max/scripts/search.py "<konu>"
+  --design-system -p "Slooin"`. **KURAL:** onerdigi renk paletleri
+  Slooin jetonlarina TABIDIR - marka turuncusu #FE7813 ve tema jetonlari
+  degismez; beceri yerlesim, UX kurali ve tipografi icin kullanilir.
+  Kurulum tuzagi: `uipro` komutu Git Bash'te yol cevirisiyle kiriliyor
+  (Program Files/Git/Users/... diye arar), PowerShell'den kosulur.
+  Ayni kurulum ISTENMEDEN alti beceri daha birakti (banner-design,
+  brand, design, design-system, slides, ui-styling; Gemini anahtari
+  ortam degiskeninden okunur, sir yok) - depoya alinip alinmayacagi
+  kullanicinin karari.
 - `gstack` (garrytan/gstack) — market eklentisi **degil**;
   `~/.claude/skills/gstack` altina klonlanip `./setup` ile kurulur. 54 beceri,
   hepsi `gstack-` onekli (`/gstack-qa`, `/gstack-ship`, `/gstack-review`...).
