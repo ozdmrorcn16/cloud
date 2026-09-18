@@ -172,6 +172,45 @@ olculur.
 Yayin (birlesik surum): web `slooin--z62qooo6kg`, OTA grup
 `d7170e92-a11c-4b58-9107-eceafa443162`. Jest 77 paket / 1029 test.
 
+### CLAUDE-MEM 4 GUN SESSIZ KAPALIYDI; REMOTE CONTROL KISAYOLDA - 2026-09-18 AKSAM
+
+Kullanicinin istegi: "claude mem calisir hale getir, baska calismayan
+arac var mi kontrol et". Iki kok neden bulundu, ikisi de olculdu:
+
+1. **`~/.claude/plugins/installed_plugins.json` BOZUK JSON'du** (14 Eylul
+   19:59'da yarim yazilmis; claude-mem girdisi kesik). O tarihten beri
+   `claude plugin list` alti eklentiyi de gosteremiyordu. Dosya elle
+   yeniden yazildi (yedek: `plugins/backups-installed_plugins-bozuk-
+   2026-09-18.json`); alti eklenti (claude-mem 13.24.23, code-review,
+   frontend-design, security-guidance, iki superpowers) "enabled".
+2. **Worker 13.24.x'ten beri `~/.claude/settings.json` icinde
+   `claude-mem@thedotmack: false` gorunce LOG YAZMADAN cikis 0 veriyor**
+   (`Ow()` fonksiyonu; proje ayari true olsa bile). O `false` 19
+   Agustos'taki kapatmadan kalan "ikinci emniyet"ti; 1 Eylul'de eklenti
+   acilirken kaldirilmamisti ve 13.18.0 buna bakmiyordu. Satir silindi.
+   Nobetci (`claude-mem-nobetci.ps1`) artik bu ayari gorurse acikca
+   soyluyor. Olcum: `user_prompts` 545 -> 546, chroma bagli.
+   **TESHIS DERSI:** worker "Cached ... at boot" satirlarindan sonra
+   susuyorsa ve bun sureci yoksa, ilk bakilacak yer kullanici
+   settings.json'daki enabledPlugins.
+
+**Remote Control:** yerel oturum claude.ai/code ve telefonda ancak
+`--remote-control` ile acilirsa gorunur; kullanici iki kez (00:38 ve
+19:02) elle `/remote-control` yazmak zorunda kaldi. Masaustundeki
+`Claude - cloud projesi.bat` artik `--remote-control` ile aciyor.
+
+**Login sorunu (19:00):** debug gunlugu yok, kesin sebep bilinmiyor;
+sabah 05:39'da Claude Code 2.1.275 -> 2.1.276 otomatik guncellendi,
+kimlik dosyasi 19:02'de `/login` ile yenilendi. Tekrarlarsa
+`claude --debug` ile acilip gunluk okunmali.
+
+Diger araclar temiz: EAS (byorcun), Wrangler (slooinapp), gh
+(ozdmrorcn16) girisleri acik; hook'lar yerinde. Tek dis ariza claude.ai
+tarafindaki **n8n MCP bagayicisi 404** - bu makineden duzeltilemez.
+Yayin durumu: paralel oturum bugunku birlesik surumu 19:22'de
+yayinlamisti (web `slooin--z62qooo6kg`, OTA `d7170e92`); canli pakette
+bugunun anahtarlari dogrulandi, site ve panel 200. Yeni yayin gerekmedi.
+
 ### HESAP OLUSTURMA: "OTURDUGUN BOLGE" ADIMI - 2026-09-18 SABAH
 
 Kullanicinin istekleri, sirayla (hepsi ayni saat icinde): "hesap

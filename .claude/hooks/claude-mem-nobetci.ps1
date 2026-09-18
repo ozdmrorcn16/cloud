@@ -45,6 +45,22 @@ try {
         exit 0
     }
 
+    # IKINCI TUZAK (2026-09-18, olculdu): worker 13.24.x'ten beri
+    # ~/.claude/settings.json icinde "claude-mem@thedotmack": false
+    # gorurse HIC LOG YAZMADAN cikis 0 veriyor - proje ayari true olsa
+    # bile. 19 Agustos'taki kapatmadan kalan o satir yuzunden hafiza
+    # 14-18 Eylul arasi sessizce kapali kaldi. Burada acikca soyleniyor.
+    $kullaniciAyar = Join-Path $env:USERPROFILE '.claude\settings.json'
+    try {
+        if (Test-Path $kullaniciAyar) {
+            $ayar = Get-Content $kullaniciAyar -Raw | ConvertFrom-Json
+            $deger = $ayar.enabledPlugins.'claude-mem@thedotmack'
+            if ($deger -eq $false) {
+                Write-Output 'claude-mem: ~/.claude/settings.json icinde claude-mem@thedotmack FALSE - worker bu ayarla sessizce cikar. Satiri sil (proje ayari zaten true).'
+            }
+        }
+    } catch { Write-Output "claude-mem: kullanici ayari okunamadi: $($_.Exception.Message)" }
+
     $esik = (Get-Date).AddSeconds(-60)
     $oldurulen = 0
 
