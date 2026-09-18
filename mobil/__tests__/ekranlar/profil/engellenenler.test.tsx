@@ -18,7 +18,7 @@ beforeEach(() => {
 })
 
 describe('EngellenenlerEkrani', () => {
-  it('engellenen kisileri adi ve kullanici adiyla listeler', async () => {
+  it('engellenen kisileri adi ve "Engellendi" durumuyla listeler', async () => {
     ;(engellediklerimiListele as jest.Mock).mockResolvedValue([
       { id: 'k2', kullaniciAdi: 'ada123', ad: 'Ada', engellendi: '2026-08-20T10:00:00Z' },
     ])
@@ -26,7 +26,9 @@ describe('EngellenenlerEkrani', () => {
     await render(<EngellenenlerEkrani />)
 
     expect(await screen.findByText('Ada')).toBeTruthy()
-    expect(screen.getByText('@ada123')).toBeTruthy()
+    // Referans (2026-09-18): kullanici adi degil "Engellendi" durumu yaziyor.
+    expect(screen.queryByText('@ada123')).toBeNull()
+    expect(screen.getByText('Engellendi')).toBeTruthy()
   })
 
   it('engeli kaldirinca dogru id ile cagirir ve satir listeden cikar', async () => {

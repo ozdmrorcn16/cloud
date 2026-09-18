@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useColorScheme, type StyleSheet } from 'react-native'
 import { acikRenk, koyuRenk, type Renk } from './tema'
+import { useTemaTercihi } from '../../lib/tema-tercihi'
 
 /**
  * KOYU MOD (kullanicinin istegi 2026-09-03): "telefonların koyu moduna
@@ -23,7 +24,11 @@ import { acikRenk, koyuRenk, type Renk } from './tema'
  */
 export function useRenk(): Renk {
   const sema = useColorScheme()
-  return sema === 'dark' ? koyuRenk : acikRenk
+  // GORUNUM AYARI (2026-09-19): "Sistemle ayni" cihazi takip eder,
+  // "Acik"/"Koyu" cihazi ezer. Tercih cihazda saklanir (lib/tema-tercihi).
+  const tercih = useTemaTercihi()
+  const koyu = tercih === 'koyu' || (tercih === 'sistem' && sema === 'dark')
+  return koyu ? koyuRenk : acikRenk
 }
 
 /**

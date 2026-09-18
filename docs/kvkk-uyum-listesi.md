@@ -575,6 +575,42 @@ baglantisi yeni bir alici sinifi acmiyor (kisi kendisi gonderiyor).
 Kullanici adlarindan sitenin sayfa adlari (gizlilik, kosullar, ...)
 yasaklandi - veritabani kisiti + istemci listesi.
 
+## Ayarlar yeniden tasarimi: oturumlar, bildirim tercihleri, mesaj izni - 2026-09-19
+
+Ayarlar hub oldu (Hesabin / Gizlilik ve etkilesim / Uygulama / Hesap
+islemleri). Kisisel veriye dokunan yeni parcalar ve dort soru:
+
+- **Acik oturumlar** (`public.oturumlarim`, `oturumu_kapat`): kisi
+  YALNIZCA KENDI `auth.sessions` satirlarini gorur (cihaz user-agent,
+  IP, son etkinlik). Veri zaten Supabase Auth tarafindan tutuluyordu;
+  yeni toplama yok, yeni bir GORME ve KAPATMA yolu var (m.11 erisim +
+  guvenlik). Sure: Supabase oturum omru; kapatilan satir silinir.
+  Gizlilik metnine madde yazildi (7 dil + docs).
+- **E-posta degistirme**: once mevcut adrese, sonra yeni adrese kod;
+  yeni adres dogrulanana kadar giris adresi degismez. Iki kod da 10
+  dakika (Supabase OTP ayari). Yeni veri yok.
+- **Sifre degistirme**: mevcut sifre `signInWithPassword` ile
+  dogrulanir, degisince DIGER cihazlarin oturumlari kapatilir
+  (`signOut({ scope: 'others' })`) - ele gecirilmis oturumu dusurmek
+  icin.
+- **Bildirim tercihleri** (`profiller.bildirim_*`, `sessiz_gece`,
+  `saat_dilimi`): tercih verisi + IANA saat dilimi (gece sessizi
+  yerel saatle calissin diye). Dayanak sozlesmenin ifasi (kisinin
+  kendi tercihi). Edge Function gondermeden once okur; sunucudaki
+  gonderim kaydi degismedi. Ani hatirlatmasi gunluk cron ile
+  "bir yil once bugun" - yalnizca kisinin KENDI check-in'i, baskasi
+  gormez; kisi kapatabilir (varsayilan KAPALI).
+- **Mesaj izni** (`profiller.mesaj_izni`): herkes / yalnizca
+  arkadaslar / hic kimse. Sunucuda `mesaj_gonder` icinde zorlanir;
+  ret metni engellemeyle AYNI ("Bu kullanici bulunamadi") - sessizlik
+  ilkesi korunuyor.
+- **Gorunum (tema)**: CIHAZDA (AsyncStorage), sunucuya gitmez;
+  kisisel veri islenmiyor.
+- **Yardim merkezi "Sorun bildir"**: `mailto:destek@slooin.com` -
+  posta Gmail'e duser (Resend maddesindeki not gecerli).
+- **Topluluk kurallari** uygulama icinde okunur (App Store 1.2 UGC
+  sarti); sikayet ve engelleme yolunu gosteriyor.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

@@ -13,6 +13,9 @@ import {
   hedefleriBelirle,
   ozBildirimMi,
   type Olay,
+  gonderilsinMi,
+  tercihAnahtari,
+  yerelSaat,
 } from './saf.ts'
 
 const A = '11111111-1111-4111-8111-111111111111'
@@ -223,4 +226,45 @@ Deno.test('bildirimGovdesi: hicbir metin mesaj icerigi tasimiyor (karar 48)', ()
   const govde = bildirimGovdesi('mesaj', 'Deniz')
   assertEquals(govde.includes('Deniz'), true)
   assertEquals(govde, 'Deniz sana mesaj gönderdi')
+})
+
+Deno.test('bildirim tercihleri: olay dogru anahtara bagli, ana anahtar ve gece sessizi', () => {
+  assertEquals(tercihAnahtari('mesaj'), 'bildirim_mesaj')
+  assertEquals(tercihAnahtari('sohbet_istegi'), 'bildirim_mesaj')
+  assertEquals(tercihAnahtari('takip_istegi'), 'bildirim_arkadas')
+  assertEquals(tercihAnahtari('takip_eklendi'), 'bildirim_arkadas')
+  assertEquals(tercihAnahtari('etiket_istegi'), 'bildirim_ani')
+  assertEquals(tercihAnahtari('ani_hatirlatma'), 'bildirim_ani_hatirlatma')
+
+  const acik = {
+    bildirim_anlik: true, bildirim_mesaj: true, bildirim_arkadas: true, bildirim_ani: true,
+    bildirim_ani_hatirlatma: true, sessiz_gece: false, saat_dilimi: 'Europe/Istanbul',
+  }
+  assertEquals(gonderilsinMi('mesaj', { ...acik, bildirim_mesaj: false }), false)
+  assertEquals(gonderilsinMi('takip_istegi', { ...acik, bildirim_mesaj: false }), true)
+  // Ana anahtar kapali: hicbiri gitmez.
+  assertEquals(gonderilsinMi('takip_istegi', { ...acik, bildirim_anlik: false }), false)
+  // Tercih okunamadi: gider.
+  assertEquals(gonderilsinMi('mesaj', null), true)
+
+  // Gece sessizi: Istanbul'da 23:30 (UTC 20:30) -> gitmez; 12:00 -> gider.
+  const gece = new Date('2026-09-19T20:30:00Z')
+  const gunduz = new Date('2026-09-19T09:00:00Z')
+  assertEquals(gonderilsinMi('mesaj', { ...acik, sessiz_gece: true }, gece), false)
+  assertEquals(gonderilsinMi('mesaj', { ...acik, sessiz_gece: true }, gunduz), true)
+  assertEquals(gonderilsinMi('mesaj', { ...acik, sessiz_gece: false }, gece), true)
+  // Saat dilimi bilinmiyorsa Istanbul varsayilir.
+  assertEquals(yerelSaat(null, gece), 23)
+  assertEquals(yerelSaat('America/New_York', gece), 16)
+})
+
+Deno.test('ani hatirlatmasi: govde cozumlenir, alici sahibi, metin mekan adiyla', () => {
+  const CI = '11111111-2222-4333-8444-555555555555'
+  assertEquals(
+    govdeyiCozumle({ olay: 'ani_hatirlatma', kullanici_id: A, check_in_id: CI, aktor_id: null }),
+    { olay: 'ani_hatirlatma', kullanici_id: A, check_in_id: CI, aktor_id: null }
+  )
+  const olay: Olay = { olay: 'ani_hatirlatma', kullanici_id: A, check_in_id: CI, aktor_id: null }
+  assertEquals(hedefleriBelirle(olay, []), [{ aliciId: A, karsiTarafId: A }])
+  assertEquals(bildirimGovdesi('ani_hatirlatma', 'Hozee'), 'Bir yıl önce bugün: Hozee')
 })

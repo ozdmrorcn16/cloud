@@ -12,6 +12,7 @@ import {
 } from '@expo-google-fonts/instrument-sans'
 import { OturumSaglayici, useOturum } from '../../lib/oturum'
 import { DilSaglayici, useDil } from '../../lib/dil'
+import { temaTercihiniYukle } from '../../lib/tema-tercihi'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
 import { PaylasimKalkani } from '../tasarim/PaylasimKalkani'
@@ -223,6 +224,12 @@ export default function KokLayout() {
     InstrumentSans_600SemiBold,
     InstrumentSans_700Bold,
   })
+
+  // Gorunum tercihi (sistem/acik/koyu) cihazdan bir kez okunur;
+  // okunana kadar sistem temasi gecerli (lib/tema-tercihi).
+  useEffect(() => {
+    temaTercihiniYukle()
+  }, [])
 
   if (!yaziHazir) return null
 

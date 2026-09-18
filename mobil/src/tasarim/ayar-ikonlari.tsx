@@ -141,8 +141,11 @@ export const CopIkonu = () => {
   )
 }
 
-export const CikisIkonu = () => {
-  const renk = useRenk()
+// Istege bagli renk: ayarlardaki seftali "Cikis yap" satiri turuncu
+// istiyor (referans 2026-09-19); varsayilan degismedi.
+export const CikisIkonu = ({ renk: verilen }: { renk?: string } = {}) => {
+  const tema = useRenk()
+  const renk = { metin: verilen ?? tema.metin }
   return govde(
     <>
       <Path

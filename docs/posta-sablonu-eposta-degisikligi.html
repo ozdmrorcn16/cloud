@@ -1,0 +1,46 @@
+<!-- SUPABASE > Authentication > Email Templates > "Change Email Address" sablonu (2026-09-19).
+     Konu satiri: Slooin kodun: {{ .Token }}
+     Uygulamadaki E-posta adresi ekrani (Ayarlar > Hesap ve guvenlik) yeni adrese giden
+     bu 6 haneli kodu `verifyOtp({ type: 'email_change' })` ile dogrular; sablonda
+     {{ .Token }} YOKSA kullanici bir baglanti alir ve akis tamamlanamaz.
+     Ayrica "Secure email change" KAPALI olmali: eski adres uygulamada zaten ayri bir
+     kodla dogrulaniyor; acik kalirsa Supabase iki adresin de onayini ister. -->
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>Slooin kodun</title>
+</head>
+<body style="margin:0;padding:0;background:#ffffff;">
+<!-- Onizleme metni: gelen kutusunda konunun altinda gorunur -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Slooin kodun: {{ .Token }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
+  <tr>
+    <td align="center" style="padding:40px 24px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:420px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+        <tr>
+          <td style="padding:0 0 26px 0;">
+            <img src="https://slooin.com/posta/simge.png" width="44" height="44" alt="Slooin" style="display:block;width:44px;height:44px;border-radius:11px;border:0;">
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 10px 0;font-size:17px;line-height:24px;color:#17130F;">Merhaba, Slooin e-posta de&#287;i&#351;ikli&#287;i kodun:</td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 18px 0;font-size:44px;line-height:52px;font-weight:700;letter-spacing:6px;color:#FE7813;">{{ .Token }}</td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 30px 0;font-size:14px;line-height:21px;color:#6E6660;">Bu kodu sen istemediysen hi&ccedil;bir &#351;ey yapman gerekmiyor; adresin de&#287;i&#351;mez.</td>
+        </tr>
+        <tr>
+          <td style="border-top:1px solid #EFEAE5;padding:14px 0 0 0;font-size:12px;line-height:18px;color:#A39B93;">Slooin &middot; <a href="https://slooin.com" style="color:#A39B93;text-decoration:none;">slooin.com</a> &middot; <a href="mailto:destek@slooin.com" style="color:#A39B93;text-decoration:none;">destek@slooin.com</a></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

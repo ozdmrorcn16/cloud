@@ -1,16 +1,7 @@
 import { useCallback, useState } from 'react'
-import { View, Switch, ScrollView, StyleSheet, Text, Pressable, Linking } from 'react-native'
+import { View, ScrollView, StyleSheet, Text } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
-import { verilerimiDisaAktar } from '../../../lib/veri-disa-aktar'
-import {
-  aramadaGorunsunGetir,
-  aramadaGorunsunAyarla,
-  profilGizliGetir,
-  profilGizliAyarla,
-  etiketOnayiGerekliGetir,
-  etiketOnayiGerekliAyarla,
-} from '../../../lib/ayarlar'
-import { hesabiDondur } from '../../../lib/hesap'
+import { profilGizliGetir } from '../../../lib/ayarlar'
 import { bildirimJetonunuSil } from '../../../lib/bildirim'
 import { supabase } from '../../../lib/supabase'
 import { useDil } from '../../../lib/dil'
@@ -18,152 +9,54 @@ import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
+import { AnahtarIkonu, KalkanTikCizgiIkonu } from '../../tasarim/hesap-ikonlari'
+import { ZilIkonu } from '../../tasarim/zil-ikonu'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-import {
-  EngelIkonu,
-  GozIkonu,
-  AramaIkonu,
-  EtiketIkonu,
-  DurdurIkonu,
-  CopIkonu,
-  CikisIkonu,
-} from '../../tasarim/ayar-ikonlari'
+import { KonumIkonu } from '../../tasarim/ayar-ikonlari'
+import { GunesAyIkonu, SoruIkonu, BilgiIkonu, KisiDisliIkonu } from '../../tasarim/uygulama-ikonlari'
+import { CikisIkonu } from '../../tasarim/ayar-ikonlari'
 
 /**
- * Ayarlar.
+ * Ayarlar - YALNIZCA YONLENDIRME EKRANI (kullanicinin referans
+ * gorselleri 2026-09-18/19). Her satir kendi alt ekranina gider; hicbir
+ * anahtar ya da eylem burada durmuyor (Cikis yap haric). Dort bolum:
  *
- * Kullanicinin karari (2026-08-25): duzen Instagram ayarlarindaki gibi
- * gruplanmis satirlar olsun. Onceki hali serbest yerlesimli dugmeler
- * yiginiydi; kullanici adi girdisi, gorunurluk cipleri ve hesap
- * eylemleri ayni duzlemde duruyordu.
+ *   Hesabin                -> Hesap ve guvenlik
+ *   Gizlilik ve etkilesim  -> Gizlilik / Konum ve check-in / Bildirimler
+ *   Uygulama               -> Gorunum / Yardim merkezi / Slooin hakkinda
+ *   Hesap islemleri        -> Hesap yonetimi (dondur, sil, verilerimi
+ *                             indir) / Cikis yap (seftali satir)
  *
- * Deger secen iki ayar (check-in gorunurlugu ve ani gorunurlugu) kendi
- * ekranlarina tasindi. Sebep yalnizca duzen degil: ikisinin de bir
- * aciklamasi var ve o aciklama satir icinde okunmuyordu. Kullanici adi
- * da ayri bir ekrana gitti - metin girdisi olan bir alan, liste
- * satirinin icinde durmamali (klavye acilinca liste kayiyor).
+ * Onceki "Gizlilik metni" ve "Verilerimi indir" duz baglantilari KALKTI:
+ * gizlilik metni "Slooin hakkinda"da, veri indirme "Hesap yonetimi"nde.
+ * Kullanicinin karari (2026-08-25): Instagram ayarlari gibi gruplu
+ * satirlar.
  */
 export default function AyarlarEkrani() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
-
-  /*
-   * VERILERIMI INDIR. Sunucu JSON'u uretiyor, istemci onu kovaya
-   * yukleyip IMZALI BAGLANTIYI aciyor.
-   *
-   * CIFT DOKUNUS KORUNUYOR (`disaAktariliyor`): islem birkac saniye
-   * surebiliyor ve ikinci dokunus ikinci bir dosya uretirdi.
-   */
-  async function verilerimiIndir() {
-    if (disaAktariliyor) return
-    setDisaAktariliyor(true)
-    setDisaAktarimHatasi(false)
-    try {
-      const adres = await verilerimiDisaAktar()
-      await Linking.openURL(adres)
-    } catch {
-      // Hata SATIRIN ALTINDA gosteriliyor: `Alert` react-native-web'de
-      // sessizce hicbir sey yapmiyor ve uygulama tarayicidan da
-      // aciliyor (ayni gerekce OnayPenceresi'nde de var).
-      setDisaAktarimHatasi(true)
-    } finally {
-      setDisaAktariliyor(false)
-    }
-  }
-
   const { t } = useDil()
-  const [aramadaGorunsun, setAramadaGorunsun] = useState(true)
+  // Gizlilik satirinin sagindaki deger ("Herkese acik" / "Sadece
+  // arkadaslar"); anahtarlarin kendisi Gizlilik ekraninda (2026-09-18).
   const [profilGizli, setProfilGizli] = useState(false)
-  const [etiketOnayi, setEtiketOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
-  const [dondurmaOnayi, setDondurmaOnayi] = useState(false)
-  const [disaAktariliyor, setDisaAktariliyor] = useState(false)
-  const [disaAktarimHatasi, setDisaAktarimHatasi] = useState(false)
 
   async function ayarlariYukle() {
     try {
-      setAramadaGorunsun(await aramadaGorunsunGetir())
       setProfilGizli(await profilGizliGetir())
-      setEtiketOnayi(await etiketOnayiGerekliGetir())
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
 
-  // Alt ekranlardan (kullanici adi, gorunurluk) donunce satirdaki deger
-  // guncel olmali; useEffect yalnizca ilk acilista cekerdi.
+  // Alt ekranlardan donunce satirdaki deger guncel olmali; useEffect
+  // yalnizca ilk acilista cekerdi.
   useFocusEffect(
     useCallback(() => {
       ayarlariYukle()
     }, [])
   )
-
-  /**
-   * Iyimser guncelleme, HATADA GERI ALINIYOR: anahtar once yeni haline
-   * geciyor (dokunusa aninda cevap), sunucu reddederse eski degerine
-   * donuyor. Aksi halde ekran "gizli" gorunurken paylasimlar aslinda
-   * herkese acik kalirdi - gizlilik ayarinda bu kabul edilemez.
-   */
-  async function profilGizliDegisti(deger: boolean) {
-    const oncekiDeger = profilGizli
-    setProfilGizli(deger)
-    try {
-      await profilGizliAyarla(deger)
-      setHata(null)
-    } catch (e) {
-      setProfilGizli(oncekiDeger)
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  /**
-   * ETIKET ONAYI (kullanicinin karari 2026-09-06).
-   *
-   * Kapaliyken karsilikli arkadasin seni DIREK etiketliyor; aciksa
-   * once sana soruluyor ve onaylayana kadar etiket kimseye
-   * gorunmuyor.
-   *
-   * Digger gizlilik anahtarlarindaki desen: hata olursa ekran ESKI
-   * degere doner. Ayar gizlilikle ilgili oldugu icin ekranin
-   * sunucudan farkli bir sey gostermesi kabul edilemez.
-   */
-  async function etiketOnayiDegisti(deger: boolean) {
-    const oncekiDeger = etiketOnayi
-    setEtiketOnayi(deger)
-    try {
-      await etiketOnayiGerekliAyarla(deger)
-      setHata(null)
-    } catch (e) {
-      setEtiketOnayi(oncekiDeger)
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function aramadaGorunsunDegisti(deger: boolean) {
-    const oncekiDeger = aramadaGorunsun
-    setAramadaGorunsun(deger)
-    try {
-      await aramadaGorunsunAyarla(deger)
-      setHata(null)
-    } catch (e) {
-      setAramadaGorunsun(oncekiDeger)
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function hesabiDondurmayiOnayla() {
-    try {
-      await hesabiDondur()
-      // Dondurmadan hemen sonra cikis: aksi halde kullanici dondurulmus
-      // ama girisli bir ara durumda kalirdi (spec karar 66).
-      await supabase.auth.signOut()
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    } finally {
-      setDondurmaOnayi(false)
-    }
-  }
 
   async function cikisYap() {
     // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
@@ -179,175 +72,138 @@ export default function AyarlarEkrani() {
       <ScrollView contentContainerStyle={stiller.icerik} showsVerticalScrollIndicator={false}>
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-        <Bolum baslik={t('ayarlar.bolumGorunurluk')}>
-          {/* "Yeni check-in'lerim" satiri KALDIRILDI (kullanicinin
-              istegi 2026-09-12). Tek girisi buydu; ekran
-              (`/profil/check-in-gorunurlugu`) oksuz kaldigi icin
-              SILINDI. Sonucu: varsayilan bulunurluk artik kullanici
-              tarafindan degistirilemiyor, sunucudaki varsayilan
-              (herkese_acik) gecerli; paylasimlari daraltmanin tek
-              kontrolu asagidaki "Profilim gizli" anahtari. */}
-          {/* "Gecmis anilarim" satiri KALDIRILDI (kullanicinin karari
-              2026-08-30). Ekran (`/profil/ani-gorunurlugu`) duruyor ama
-              artik menuden erisilmiyor; ani gorunurlugu, check-in
-              yapilirken secilen bulunurlugun aniya donusmesiyle
-              belirleniyor. */}
-          {/* PROFIL GIZLILIGI (kullanicinin istegi 2026-09-02). Aramada
-              gorunmenin USTUNDE duruyor: once "paylasimlarimi kim
-              gorsun", sonra "beni aramada bulabilsinler mi". */}
+        {/* HESAP VE GUVENLIK - EN USTTE (kullanicinin istegi 2026-09-18). */}
+        <Bolum baslik={t('hesapGuvenlik.bolumHesabin')}>
           <Satir
-            ikon={<GozIkonu />}
-            etiket={t('ayarlar.profilGizli')}
-            aciklama={t('ayarlar.profilGizliAciklama')}
-            sagBilesen={
-              <Switch
-                accessibilityLabel={t('ayarlar.profilGizli')}
-                value={profilGizli}
-                onValueChange={profilGizliDegisti}
-                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
-                thumbColor={renk.yuzey}
-                {...({ activeThumbColor: renk.yuzey } as object)}
-              />
-            }
-          />
-          {/* "Bolgemi profilde goster" anahtari KALKTI (2026-09-18 aksam):
-              bolge hicbir profilde gosterilmiyor, gizlenecek bir sey yok. */}
-          <Satir
-            ikon={<EtiketIkonu />}
-            etiket={t('ayarlar.etiketOnayi')}
-            aciklama={t('ayarlar.etiketOnayiAciklama')}
-            sagBilesen={
-              <Switch
-                accessibilityLabel={t('ayarlar.etiketOnayi')}
-                value={etiketOnayi}
-                onValueChange={etiketOnayiDegisti}
-                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
-                thumbColor={renk.yuzey}
-                {...({ activeThumbColor: renk.yuzey } as object)}
-              />
-            }
-          />
-          <Satir
-            ikon={<AramaIkonu />}
-            etiket={t('ayarlar.aramadaGorun')}
-            sonuncu
-            sagBilesen={
-              <Switch
-                accessibilityLabel={t('ayarlar.aramadaGorunEtiket')}
-                value={aramadaGorunsun}
-                onValueChange={aramadaGorunsunDegisti}
-                trackColor={{ true: renk.turuncu, false: renk.cizgi }}
-                // Web'de varsayilan dugme YESIL geliyor ve kimlikte yesil
-                // yok. `thumbColor` react-native-web'de karsiligi olmayan
-                // bir prop; RNW kendi `activeThumbColor`ini bekliyor, o da
-                // RN'in tip tanimlarinda olmadigi icin ayri geciliyor.
-                thumbColor={renk.yuzey}
-                {...({ activeThumbColor: renk.yuzey } as object)}
-              />
-            }
-          />
-        </Bolum>
-
-        <Bolum baslik={t('ayarlar.bolumKisiler')}>
-          {/* Engelleme bu satir eklenmeden once TEK YONLU bir kapiydi:
-              engelleyebiliyordun ama kimi engelledigini goremiyor, geri
-              de alamiyordun (kullanicinin istegi, 2026-08-25). */}
-          <Satir
-            ikon={<EngelIkonu />}
-            etiket={t('ayarlar.engellenenler')}
-            sonuncu
-            onPress={() => router.push('/profil/engellenenler')}
-          />
-        </Bolum>
-
-        {/* GIZLILIK METNI ve VERILERIMI INDIR - DUZ BAGLANTI, KART DEGIL
-            (kullanicinin istegi 2026-09-12: "en altta Hesap kategorisinin
-            uzerine, sutunsuz, sadece uzerine basilabilir sekilde").
-            Onceden en ustte "Hesabin" karti icindeydiler; ekranin ilk
-            gordugu sey iki hukuki satirdi. Ikisi de gunluk kullanimda
-            nadiren basilan seyler - ekranin sonunda, ayar kartlarinin
-            dilinden ayri, kucuk baglanti olarak durmalari dogru.
-
-            VERILERIMI INDIR (KVKK m.11 erisim hakki, 2026-09-11): dosya
-            bir KOVAYA yuklenip IMZALI BAGLANTI aciliyor; ayrinti
-            `lib/veri-disa-aktar.ts`. Hata baglantinin altinda yaziyor,
-            `Alert` ile degil (web'de sessiz). */}
-        <View style={stiller.baglantilar} testID="ayar-baglantilari">
-          <Pressable
-            onPress={() => router.push('/gizlilik')}
-            accessibilityRole="link"
-            hitSlop={6}
-            style={stiller.baglanti}
-          >
-            <Text style={stiller.baglantiYazi}>{t('ayarlar.gizlilikMetni')}</Text>
-          </Pressable>
-          <Pressable
-            onPress={verilerimiIndir}
-            accessibilityRole="link"
-            hitSlop={6}
-            style={stiller.baglanti}
-            disabled={disaAktariliyor}
-          >
-            <Text style={stiller.baglantiYazi}>
-              {disaAktariliyor
-                ? t('ayarlar.verilerimiIndirHazirlaniyor')
-                : t('ayarlar.verilerimiIndir')}
-            </Text>
-          </Pressable>
-          {disaAktarimHatasi && (
-            <Text style={stiller.baglantiHata}>{t('ayarlar.verilerimiIndirHata')}</Text>
-          )}
-        </View>
-
-        <Bolum baslik={t('ayarlar.bolumHesapIslemleri')}>
-          <Satir
-            ikon={<DurdurIkonu />}
-            etiket={t('ayarlar.dondur')}
-            okYok
-            onPress={() => setDondurmaOnayi(true)}
-          />
-          {dondurmaOnayi && (
-            <View style={stiller.onay}>
-              <Text style={stiller.onayMetni}>{t('ayarlar.dondurAciklama')}</Text>
-              <View style={stiller.onayButonlari}>
-                <Text
-                  style={stiller.onayEvet}
-                  accessibilityRole="button"
-                  onPress={hesabiDondurmayiOnayla}
-                >
-                  {t('ayarlar.dondurEvet')}
-                </Text>
-                <Text
-                  style={stiller.onayVazgec}
-                  accessibilityRole="button"
-                  onPress={() => setDondurmaOnayi(false)}
-                >
-                  {t('ayarlar.vazgec')}
-                </Text>
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <AnahtarIkonu />
               </View>
-            </View>
-          )}
+            }
+            etiket={t('hesapGuvenlik.satirBaslik')}
+            aciklama={t('hesapGuvenlik.satirAciklama')}
+            sonuncu
+            onPress={() => router.push('/profil/hesap-guvenlik')}
+          />
+        </Bolum>
+
+        {/* GIZLILIK VE ETKILESIM (2026-09-18): uc satir, her biri kendi
+            ekranina. Profil gorunurlugu satiri mevcut degeri gosterir. */}
+        <Bolum baslik={t('gizlilikEtkilesim.bolum')}>
           <Satir
-            ikon={<CopIkonu />}
-            etiket={t('ayarlar.hesabiSil')}
-            tehlikeli
-            onPress={() => router.push('/profil/hesabi-sil')}
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <KalkanTikCizgiIkonu />
+              </View>
+            }
+            etiket={t('gizlilikEtkilesim.gizlilik')}
+            aciklama={t('gizlilikEtkilesim.gizlilikAciklama')}
+            deger={profilGizli ? t('gizlilikEtkilesim.sadeceArkadaslar') : t('gizlilikEtkilesim.herkeseAcik')}
+            onPress={() => router.push('/profil/gizlilik-ayarlari')}
           />
           <Satir
-            ikon={<CikisIkonu />}
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <KonumIkonu />
+              </View>
+            }
+            etiket={t('gizlilikEtkilesim.konum')}
+            aciklama={t('gizlilikEtkilesim.konumAciklama')}
+            onPress={() => router.push('/profil/konum-checkin')}
+          />
+          <Satir
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <ZilIkonu />
+              </View>
+            }
+            etiket={t('gizlilikEtkilesim.bildirimler')}
+            aciklama={t('gizlilikEtkilesim.bildirimlerAciklama')}
+            sonuncu
+            onPress={() => router.push('/profil/bildirim-ayarlari')}
+          />
+        </Bolum>
+
+        {/* UYGULAMA (kullanicinin istegi 2026-09-19, uc referans gorsel):
+            Gorunum (tema), Yardim merkezi (SSS + sorun bildir), Slooin
+            hakkinda (topluluk kurallari + hukuki metinler). */}
+        <Bolum baslik={t('uygulama.bolum')}>
+          <Satir
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <GunesAyIkonu />
+              </View>
+            }
+            etiket={t('uygulama.gorunum')}
+            aciklama={t('uygulama.gorunumAciklama')}
+            onPress={() => router.push('/profil/gorunum')}
+          />
+          <Satir
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <SoruIkonu />
+              </View>
+            }
+            etiket={t('uygulama.yardim')}
+            aciklama={t('uygulama.yardimAciklama')}
+            onPress={() => router.push('/profil/yardim')}
+          />
+          <Satir
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <BilgiIkonu />
+              </View>
+            }
+            etiket={t('uygulama.hakkinda')}
+            aciklama={t('uygulama.hakkindaAciklama')}
+            sonuncu
+            onPress={() => router.push('/profil/hakkinda')}
+          />
+        </Bolum>
+
+        {/* HESAP ISLEMLERI (referans 2026-09-19): Hesap yonetimi satiri
+            (dondurma, silme, veri indirme oraya tasindi) ve seftali
+            zeminli "Cikis yap" - ikon kutusuz, turuncu cikis oku. */}
+        <Bolum baslik={t('hesapYonetimi.bolum')}>
+          <Satir
+            ikon={
+              <View style={stiller.ikonKutusu}>
+                <KisiDisliIkonu />
+              </View>
+            }
+            etiket={t('hesapYonetimi.satirBaslik')}
+            aciklama={t('hesapYonetimi.satirAciklama')}
+            onPress={() => router.push('/profil/hesap-yonetimi')}
+          />
+          <Satir
+            ikon={
+              <View style={stiller.cikisIkonu}>
+                <CikisIkonu renk={renk.turuncu} />
+              </View>
+            }
             etiket={t('ayarlar.cikisYap')}
             sonuncu
-            okYok
+            vurgulu
             onPress={cikisYap}
           />
         </Bolum>
       </ScrollView>
-
     </View>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
+  ikonKutusu: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: renk.turuncuZemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Cikis satirinin ikonu kutusuz ama digerleriyle ayni hizada dursun
+  // diye ayni genislikte bos kap.
+  cikisIkonu: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   kok: { flex: 1, backgroundColor: renk.zemin },
   icerik: {
     paddingHorizontal: bosluk.sayfa,
@@ -358,45 +214,5 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.yikici,
     marginTop: bosluk.m,
-  },
-
-  // Duz baglantilar: kart yok, ikon yok, ok yok. Kartlarin yan
-  // payiyla hizali dursunlar diye ayni ic pay.
-  baglantilar: { paddingHorizontal: bosluk.l, marginTop: bosluk.s, marginBottom: bosluk.xs },
-  baglanti: { alignSelf: 'flex-start', paddingVertical: bosluk.s + 2 },
-  baglantiYazi: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-  },
-  baglantiHata: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.yikici,
-    marginTop: bosluk.xs,
-  },
-
-  onay: {
-    paddingHorizontal: bosluk.l,
-    paddingBottom: bosluk.l,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
-  onayMetni: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.metinIkincil,
-  },
-  onayButonlari: { flexDirection: 'row', gap: bosluk.xl, marginTop: bosluk.m },
-  onayEvet: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.yikici,
-  },
-  onayVazgec: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
   },
 })

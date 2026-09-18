@@ -30,10 +30,12 @@
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
   bildirimGovdesi,
+  gonderilsinMi,
   govdeyiCozumle,
   hedefleriBelirle,
   ozBildirimMi,
   VARSAYILAN_AD,
+  type BildirimTercihleri,
   type Olay,
 } from './saf.ts'
 
@@ -173,6 +175,18 @@ async function kaynakDogrula(yonetici: SupabaseClient, olay: Olay): Promise<bool
       return (checkIn ?? []).length > 0
     }
 
+    if (olay.olay === 'ani_hatirlatma') {
+      // Check-in gercekten bu kisinin mi.
+      const { data, error } = await yonetici
+        .from('check_inler')
+        .select('id')
+        .eq('id', olay.check_in_id)
+        .eq('kullanici_id', olay.kullanici_id)
+        .limit(1)
+      if (error) throw error
+      return (data ?? []).length > 0
+    }
+
     // sohbet_istegi / sohbet_kabul. Tablodaki sutun adi `alan_id`,
     // sozlesmedeki alan adi `hedef_id`.
     const { data, error } = await yonetici
@@ -220,6 +234,34 @@ async function konusmaDigerUyeleri(
     return []
   }
   return (data ?? []).map((s: { kullanici_id: string }) => s.kullanici_id)
+}
+
+/**
+ * Alicinin bildirim tercihleri (2026-09-18). Okunamazsa null -> gonderilir
+ * (varsayilan acik); tercih yuzunden bildirim kaybetmektense fazladan
+ * bir bildirim.
+ */
+async function tercihleriOku(yonetici: SupabaseClient, aliciId: string): Promise<BildirimTercihleri | null> {
+  const { data, error } = await yonetici
+    .from('profiller')
+    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, sessiz_gece, saat_dilimi')
+    .eq('id', aliciId)
+    .maybeSingle()
+  if (error || !data) return null
+  return data as BildirimTercihleri
+}
+
+/** Ani hatirlatmasinda "ad" mekan adi: check-in'in mekani okunur. */
+async function mekanAdiniOku(yonetici: SupabaseClient, checkInId: string): Promise<string> {
+  const { data, error } = await yonetici
+    .from('check_inler')
+    .select('mekanlar(ad)')
+    .eq('id', checkInId)
+    .maybeSingle()
+  if (error || !data) return VARSAYILAN_AD
+  const m = (data as { mekanlar: { ad: string } | { ad: string }[] | null }).mekanlar
+  const ad = Array.isArray(m) ? m[0]?.ad : m?.ad
+  return ad && ad.trim().length > 0 ? ad : VARSAYILAN_AD
 }
 
 /** Karsi tarafin gorunen adi; profil yoksa notr karsilik. */
@@ -438,7 +480,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // 5) Metin. Karsi taraf butun hedeflerde ayni kisi, ad bir kez okunuyor.
-  const ad = await adiOku(yonetici, gonderilecekler[0].karsiTarafId)
+  const ad =
+    olay.olay === 'ani_hatirlatma'
+      ? await mekanAdiniOku(yonetici, olay.check_in_id)
+      : await adiOku(yonetici, gonderilecekler[0].karsiTarafId)
   const govde = bildirimGovdesi(olay.olay, ad)
 
   let toplamJeton = 0
@@ -446,6 +491,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let hataVar = false
 
   for (const hedef of gonderilecekler) {
+    // Alici bu turu kapattiysa push yok (uygulama ici liste etkilenmez).
+    if (!gonderilsinMi(olay.olay, await tercihleriOku(yonetici, hedef.aliciId))) {
+      console.log('bildirim-gonder: alici bu turu kapatmis', { olay: olay.olay, alici: hedef.aliciId })
+      continue
+    }
     const jetonlar = await jetonlariOku(yonetici, hedef.aliciId)
     if (jetonlar.length === 0) {
       console.log('bildirim-gonder: jeton yok', { olay: olay.olay, alici: hedef.aliciId })

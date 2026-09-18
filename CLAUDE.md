@@ -479,6 +479,70 @@ Ulke listesi uretimi (Node):
 Jest 77 paket / 1026 test. Yayin: web `slooin--o8bilmr5r0`, OTA grup
 `1ca32176-e68d-43b6-bd5e-bc23ce6587f7`; site push ile (hukuki metin).
 
+### AYARLAR YENIDEN: HUB + 17 ALT EKRAN - 2026-09-18/19
+
+Kullanicinin referans gorselleriyle (yaklasik 20 ekran goruntusu, hepsi
+"bunu ekle / basinca bu gelsin") ayarlar bastan kuruldu. `ayarlar.tsx`
+artik YALNIZCA yonlendirme: dort bolum, her satir kendi ekranina.
+
+| Bolum | Satirlar -> ekran |
+|---|---|
+| Hesabin | Hesap ve guvenlik -> `hesap-guvenlik` (E-posta adresi `eposta-degistir`, Sifreyi degistir `sifre-degistir`, Acik oturumlar `oturumlar`) |
+| Gizlilik ve etkilesim | Gizlilik `gizlilik-ayarlari` (Profil gorunurlugu, Aramada gorunurluk, Etiketler + `bekleyen-etiketler`, Mesaj izinleri, Engellenen kisiler), Konum ve check-in `konum-checkin`, Bildirimler `bildirim-ayarlari` |
+| Uygulama | Gorunum `gorunum`, Yardim merkezi `yardim`, Slooin hakkinda `hakkinda` (-> `/topluluk-kurallari`, `/gizlilik`, `/kosullar`) |
+| Hesap islemleri | Hesap yonetimi `hesap-yonetimi` (dondur, sil, Verilerimi indir), Cikis yap (seftali satir, `Satir vurgulu`) |
+
+Ortak iskelet `src/tasarim/AyarSayfasi.tsx` (AyarSayfasi, AyarBolumBasligi,
+IkonKutusu, BilgiKarti, RadyoKarti); ikonlar `hesap-ikonlari.tsx`,
+`uygulama-ikonlari.tsx`, `zil-ikonu.tsx`. "Gizlilik metni" ve
+"Verilerimi indir" duz baglantilari hub'dan KALKTI (hakkinda / hesap
+yonetimi icinde).
+
+**Sunucu (hepsi canli, MCP ile):** `20260918230000` oturumlarim() +
+oturumu_kapat(uuid) (auth.sessions, yalnizca kendi); `20260918233000`
+bildirim_mesaj/arkadas/ani; `20260918234000` `profiller.mesaj_izni`
+(herkes|arkadaslar|hic_kimse) + `mesaj_gonder` yeniden ('hic_kimse'
+arkadasin da yeni konusma acmasini engeller, ret metni engellemeyle
+ayni); `20260919000000` bildirim_anlik, bildirim_ani_hatirlatma,
+sessiz_gece, saat_dilimi + `bildirim.ani_hatirlatmalarini_gonder()`
+cron `0 7 * * *` (UTC). Edge Function `bildirim-gonder` SURUM 7:
+tercihleri okur (`gonderilsinMi`: ana anahtar -> olay anahtari -> gece
+sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
+<mekan>"). Deno 15/15. `test:gorunurluk` ve `test:sema` KOSULDU, gecti.
+
+**Kararlar / dersler:**
+- E-posta degistirme: mevcut adrese kod (signInWithOtp) -> yeni adrese
+  kod (`updateUser({email})` + `verifyOtp type email_change`).
+  **PANEL ISI (kullanicida):** Supabase "Change Email Address" sablonu
+  `{{ .Token }}` tasimali (`docs/posta-sablonu-eposta-degisikligi.html`)
+  ve "Secure email change" KAPALI olmali; yoksa akis yeni adreste
+  tamamlanamaz. Sablon canlida DOGRULANMADI.
+- Sifre degistirme en az 12 karakter (`EN_AZ_YENI_SIFRE`), kayitta 8
+  (`EN_AZ_SIFRE`) - referans ekran 12 diyordu; ikisi ayri sabit.
+  Degisince diger cihazlar dusuruluyor.
+- Bildirimler: "Mekan onerileri" anahtari BILEREK YOK (oneri motoru
+  yok, sahte anahtar yaklasik olurdu). Ani hatirlatmasi GERCEK (cron).
+- Gorunum: tema tercihi CIHAZDA (`lib/tema-tercihi.ts`, AsyncStorage,
+  `useSyncExternalStore`); `useRenk` ona abone, kok duzen acilista
+  yukler. "Hareket tercihleri" icin denetim istenmedi, yok.
+- Yardim: SSS cevaplari gercek davranisi anlatiyor (sozluk
+  `uygulama.cevapN`) - kural degisirse cevap da degismeli. "Sorun
+  bildir" = mailto destek@slooin.com.
+- Topluluk kurallari 6 madde, 7 dil (`toplulukKurallari`), ekran
+  `src/app/topluluk-kurallari.tsx`.
+- Oturumlar: `cihazAdi(ua)` "iPhone · Slooin" / "Safari · Mac"; IP
+  gosterilmiyor ama RPC donduruyor. Gizlilik metni (7 dil + docs) ve
+  KVKK listesi guncellendi.
+- TUZAK (uc kez): RNTL'de `fireEvent.changeText` art arda AWAIT'siz
+  cagrilinca "overlapping act()" ve sonraki degerler DUSUYOR - her
+  fireEvent await edilmeli. Bash heredoc'la tsx yazmak yine kirildi
+  ("unexpected EOF"); Write araci kullanildi.
+- Ekran goruntusu araci tarayici koyu moddaysa koyu cizer;
+  `SLOOIN_TEST_SEMA=light` ver. Goruntuler `tasarim/ayar-*.png`,
+  `topluluk-kurallari.png`, `ayar-gorunum-koyu.png`.
+
+Jest 81 paket / 1064 test, tsc temiz.
+
 ### MODERASYON PANELI YENIDEN TASARLANDI - 2026-09-18 GECE
 
 Kullanicinin istegi: "moderator sayfasini profesyonel kurallara uygun

@@ -1,48 +1,24 @@
 import { useEffect, useState } from 'react'
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
-import Svg, { Path } from 'react-native-svg'
-import {
-  engellediklerimiListele,
-  engeliKaldir,
-  type EngelliKisi,
-} from '../../../lib/engelleme'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { engellediklerimiListele, engeliKaldir, type EngelliKisi } from '../../../lib/engelleme'
 import { useDil } from '../../../lib/dil'
+import { AyarSayfasi } from '../../tasarim/AyarSayfasi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
-import { useRenk, useStiller } from '../../tasarim/tema-baglami'
-import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
-
-function GeriIkonu() {
-  const renk = useRenk()
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24">
-      <Path
-        d="M15 5l-7 7 7 7"
-        stroke={renk.metin}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  )
-}
+import { useStiller } from '../../tasarim/tema-baglami'
+import { useHataStili } from '../../tasarim/hata-stili'
 
 /**
- * Engellenenler listesi.
+ * ENGELLENEN KISILER (kullanicinin referans gorseli 2026-09-18).
+ * Baslik + "Engelledigin kisiler sana mesaj veya arkadaslik istegi
+ * gonderemez." + tek kartta satirlar: seftali karede bas harf, ad,
+ * "Engellendi", sagda cerceveli "Engeli kaldir".
  *
- * Kullanicinin istegi (2026-08-25): engellenenler ayarlarin altinda bir
- * liste olarak dursun. Bu ekran olmadan engelleme TEK YONLU bir kapiydi
- * - engelleyebiliyordun ama kimi engelledigini goremiyor, geri de
- * alamiyordun.
- *
- * Isimler ayri bir RPC'den (engellediklerim) geliyor: profiller'in
- * RLS'i baskasinin satirini gostermiyor ve kimlikleri ada ceviren
- * bag_kisileri engellenmisleri bilerek eliyor.
+ * Liste ve kaldirma 2026-08 tasarimindaki gibi (`engellediklerimiListele`,
+ * `engeliKaldir`); degisen yalnizca gorunum.
  */
 export default function EngellenenlerEkrani() {
   const stiller = useStiller(stilleriYap)
-  const router = useRouter()
+  const hataStili = useHataStili()
   const { t } = useDil()
   const [kisiler, setKisiler] = useState<EngelliKisi[]>([])
   const [hata, setHata] = useState<string | null>(null)
@@ -61,11 +37,9 @@ export default function EngellenenlerEkrani() {
 
   useEffect(() => {
     yukle()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Iyimser guncelleme YOK: satir yalnizca sunucu onayladiktan sonra
-  // listeden kalkiyor. Basarisiz bir kaldirma, engel kalkmis gibi
-  // gostermemeli.
   async function kaldir(kullaniciId: string) {
     try {
       await engeliKaldir(kullaniciId)
@@ -77,146 +51,95 @@ export default function EngellenenlerEkrani() {
   }
 
   return (
-    <View style={stiller.kok}>
-      <View style={stiller.ustCubuk}>
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel={t('engellenenler.geri')}
-          hitSlop={12}
-        >
-          <GeriIkonu />
-        </Pressable>
-        <Text style={stiller.baslik} accessibilityRole="header">
-          {t('engellenenler.baslik')}
-        </Text>
-      </View>
+    <AyarSayfasi baslik={t('engellenenler.baslik')} altBaslik={t('engellenenler.altBaslik')}>
+      {hata && <Text style={hataStili}>{hata}</Text>}
 
-      <FlatList
-        data={kisiler}
-        keyExtractor={(k) => k.id}
-        contentContainerStyle={stiller.liste}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={hata ? <Text style={stiller.hata}>{hata}</Text> : null}
-        renderItem={({ item }) => (
-          <View style={stiller.satir}>
-            <View style={stiller.avatar}>
-              <Text style={stiller.basHarf}>
-                {(item.ad || item.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase()}
-              </Text>
-            </View>
-            <View style={stiller.satirOrta}>
-              <Text style={stiller.ad} numberOfLines={1}>
-                {item.ad}
-              </Text>
-              <Text style={stiller.kullaniciAdi} numberOfLines={1}>
-                @{item.kullaniciAdi}
-              </Text>
-            </View>
-            <Pressable onPress={() => kaldir(item.id)} accessibilityRole="button" hitSlop={8}>
-              <Text style={stiller.kaldirYazi}>{t('engellenenler.engeliKaldir')}</Text>
-            </Pressable>
-          </View>
-        )}
-        ListEmptyComponent={
-          yukleniyor ? null : (
-            <View style={stiller.bosAlan}>
-              <Text style={stiller.bosBaslik}>{t('engellenenler.bosBaslik')}</Text>
-              <Text style={stiller.bosAciklama}>{t('engellenenler.bosAciklama')}</Text>
-            </View>
-          )
-        }
-      />
+      {!yukleniyor && kisiler.length === 0 && (
+        <View style={stiller.bosAlan}>
+          <Text style={stiller.bosBaslik}>{t('engellenenler.bosBaslik')}</Text>
+          <Text style={stiller.bosAciklama}>{t('engellenenler.bosAciklama')}</Text>
+        </View>
+      )}
 
-    </View>
+      {kisiler.length > 0 && (
+        <View style={stiller.kart}>
+          {kisiler.map((item, sira) => (
+            <View
+              key={item.id}
+              style={[stiller.satir, sira < kisiler.length - 1 && stiller.satirCizgili]}
+              testID={`engelli-${item.id}`}
+            >
+              <View style={stiller.basHarfKutusu}>
+                <Text style={stiller.basHarf}>
+                  {(item.ad || item.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')}
+                </Text>
+              </View>
+              <View style={stiller.metin}>
+                <Text style={stiller.ad} numberOfLines={1}>
+                  {item.ad || item.kullaniciAdi}
+                </Text>
+                <Text style={stiller.durum}>{t('engellenenler.engellendi')}</Text>
+              </View>
+              <Pressable
+                style={({ pressed }) => [stiller.kaldirDugmesi, pressed && stiller.basili]}
+                onPress={() => kaldir(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('engellenenler.engeliKaldir')} · ${item.ad || item.kullaniciAdi}`}
+              >
+                <Text style={stiller.kaldirYazi}>{t('engellenenler.engeliKaldir')}</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      )}
+    </AyarSayfasi>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  kok: { flex: 1, backgroundColor: renk.zemin },
-
-  ustCubuk: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingHorizontal: bosluk.sayfa,
-    paddingTop: bosluk.xxl + bosluk.m,
-    paddingBottom: bosluk.m,
+  kart: {
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.kart + 4,
+    backgroundColor: renk.yuzey,
+    overflow: 'hidden',
   },
-  baslik: {
-    flexShrink: 1,
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-  },
-
-  liste: { paddingHorizontal: bosluk.sayfa, paddingBottom: ALT_GEZINME_PAYI },
-  hata: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.yikici,
-    marginBottom: bosluk.m,
-  },
-
   satir: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: bosluk.l,
   },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    // Engellenen kisinin avatari turuncu DEGIL: turuncu eylem ve
-    // canlilik demek, burada ikisi de yok.
-    backgroundColor: renk.cizgi,
+  satirCizgili: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
+  basHarfKutusu: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  basHarf: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.metinIkincil,
-  },
-  satirOrta: { flex: 1 },
-  ad: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-  kullaniciAdi: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
-    marginTop: 1,
-  },
-  kaldirYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.metin,
+  basHarf: { fontFamily: yazi.ekranBasligi, fontSize: olcek.govde + 3, color: renk.turuncuYazi },
+  metin: { flex: 1 },
+  ad: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 2, color: renk.metin },
+  durum: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil, marginTop: 2 },
+  kaldirDugmesi: {
     borderWidth: 1,
     borderColor: renk.cizgi,
-    borderRadius: yuvarlak.hap,
-    paddingHorizontal: bosluk.m,
-    paddingVertical: 7,
-    overflow: 'hidden',
+    borderRadius: yuvarlak.kart,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 10,
+    backgroundColor: renk.zemin,
   },
-
-  bosAlan: { paddingTop: bosluk.xl },
-  bosBaslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
-    color: renk.metin,
-    letterSpacing: -0.3,
-  },
+  basili: { opacity: 0.7 },
+  kaldirYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  bosAlan: { paddingVertical: bosluk.xl },
+  bosBaslik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 2, color: renk.metin },
   bosAciklama: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
+    fontSize: olcek.govde,
+    lineHeight: 22,
     color: renk.metinIkincil,
     marginTop: bosluk.xs,
   },

@@ -58,6 +58,12 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - Bag bilgin: kimi takip ettigin, kimlerle sohbet istegi alisverisinde
   bulundugun, kimi engelledigin
 - Bildirim gonderebilmemiz icin cihazinin bildirim jetonu
+- Bildirim tercihlerin (hangi bildirimler gelsin, gece sessizi) ve gece
+  sessizi icin cihazinin saat dilimi. Giris yaptigin cihazlarin oturum
+  kayitlari: cihaz turu, IP adresi ve son etkinlik zamani; bunlari
+  Ayarlar > Hesap ve guvenlik > Acik oturumlar bolumunden gorup tek tek
+  kapatabilirsin. Gorunum (tema) tercihin yalnizca cihazinda saklanir,
+  sunucuya gitmez.
 - Sikayet ettigin ya da hakkinda sikayet edilen bilgiler
 - Mekanlara verdigin puanlar (Kotu / Iyi / Harika). Herkes yalnizca
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.

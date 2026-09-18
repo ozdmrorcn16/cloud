@@ -137,3 +137,105 @@ export async function aniGorunurlugunuAyarla(
   const { error } = await supabase.rpc('ani_gorunurlugunu_ayarla', { p_deger: deger })
   if (error) throw new Error(hataMetni(error))
 }
+
+// ---------------------------------------------------------------------
+// GIZLILIK VE ETKILESIM (kullanicinin referans gorselleri 2026-09-18)
+// ---------------------------------------------------------------------
+
+export type MesajIzni = 'herkes' | 'arkadaslar' | 'hic_kimse'
+
+/**
+ * "Sana kimler mesaj gonderebilir?" - 'herkes' (varsayilan: yabanci tek
+ * mesajla istek acar), 'arkadaslar' (yeni istek yolu kapali) ya da
+ * 'hic_kimse' (arkadas bile yeni konusma acamaz; mevcut konusmalar
+ * surer). Kural sunucuda (`mesaj_gonder`, migrasyon 20260918234000).
+ */
+export async function mesajIzniGetir(): Promise<MesajIzni> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase.from('profiller').select('mesaj_izni').eq('id', id).maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  return (data?.mesaj_izni ?? 'herkes') as MesajIzni
+}
+
+export async function mesajIzniAyarla(deger: MesajIzni): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase.from('profiller').update({ mesaj_izni: deger }).eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}
+
+export type BildirimTercihleri = {
+  /** Ana anahtar - "Anlik bildirimler". Kapaliysa hicbir push gitmez. */
+  anlik: boolean
+  /** Mesajlar: yeni mesaj + mesaj istekleri. */
+  mesaj: boolean
+  /** Arkadaslik istekleri: istek, kabul, dogrudan ekleme. */
+  arkadas: boolean
+  /** Etiketler: etiket istegi ve onayi. */
+  ani: boolean
+  /** Ani hatirlatmalari: "bir yil once bugun" (gunluk cron). */
+  aniHatirlatma: boolean
+  /** Gece sessize al: 22.00-08.00 yerel saat. */
+  sessizGece: boolean
+}
+
+const TERCIH_SUTUNU: Record<keyof BildirimTercihleri, string> = {
+  anlik: 'bildirim_anlik',
+  mesaj: 'bildirim_mesaj',
+  arkadas: 'bildirim_arkadas',
+  ani: 'bildirim_ani',
+  aniHatirlatma: 'bildirim_ani_hatirlatma',
+  sessizGece: 'sessiz_gece',
+}
+
+/**
+ * Push tercihleri (referans ekran 2026-09-19). Edge Function
+ * `bildirim-gonder` gondermeden once okur (surum 7). Uygulama ici
+ * Bildirimler sekmesi etkilenmez.
+ */
+export async function bildirimTercihleriniGetir(): Promise<BildirimTercihleri> {
+  const id = await kendiKullaniciId()
+  const { data, error } = await supabase
+    .from('profiller')
+    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, sessiz_gece')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  return {
+    anlik: data?.bildirim_anlik ?? true,
+    mesaj: data?.bildirim_mesaj ?? true,
+    arkadas: data?.bildirim_arkadas ?? true,
+    ani: data?.bildirim_ani ?? true,
+    aniHatirlatma: data?.bildirim_ani_hatirlatma ?? false,
+    sessizGece: data?.sessiz_gece ?? false,
+  }
+}
+
+/**
+ * Tek anahtari yazar. Gece sessizi acilirken cihazin SAAT DILIMI de
+ * yazilir (ekrandaki not: "cihazinin yerel saatine gore calisir") -
+ * Edge Function yerel saati bununla hesaplar.
+ */
+export async function bildirimTercihiAyarla(anahtar: keyof BildirimTercihleri, deger: boolean): Promise<void> {
+  const id = await kendiKullaniciId()
+  const guncelleme: Record<string, unknown> = { [TERCIH_SUTUNU[anahtar]]: deger }
+  if (anahtar === 'sessizGece' && deger) {
+    try {
+      guncelleme.saat_dilimi = Intl.DateTimeFormat().resolvedOptions().timeZone ?? null
+    } catch {
+      guncelleme.saat_dilimi = null
+    }
+  }
+  const { error } = await supabase.from('profiller').update(guncelleme).eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}
+
+/**
+ * Varsayilan bulunurlugu yazar (Konum ve check-in > "Mekanda
+ * gorunurluk"). 2026-09-12'de ayar ekrani kalkmisti; 2026-09-18
+ * referansiyla geri geldi - bu kez "Konum ve check-in" altinda.
+ */
+export async function varsayilanBulunurluguAyarla(deger: Bulunurluk): Promise<void> {
+  const id = await kendiKullaniciId()
+  const { error } = await supabase.from('profiller').update({ varsayilan_bulunurluk: deger }).eq('id', id)
+  if (error) throw new Error(hataMetni(error))
+}

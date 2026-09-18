@@ -36,6 +36,7 @@ export function Satir({
   sonuncu = false,
   tehlikeli = false,
   okYok = false,
+  vurgulu = false,
   onPress,
 }: {
   ikon?: ReactNode
@@ -58,11 +59,16 @@ export function Satir({
   okYok?: boolean
   /** Hesabi silmek gibi geri donusu olmayan eylemler icin. */
   tehlikeli?: boolean
+  /**
+   * Seftali zeminli satir (referans 2026-09-19: "Cikis yap"). Kartin
+   * icinde bir satiri digerlerinden ayirir; ikon kutusuz cizilir.
+   */
+  vurgulu?: boolean
   onPress?: () => void
 }) {
   const stiller = useStiller(stilleriYap)
   const govde = (
-    <View style={[stiller.satir, !sonuncu && stiller.satirCizgili]}>
+    <View style={[stiller.satir, !sonuncu && stiller.satirCizgili, vurgulu && stiller.satirVurgulu]}>
       {ikon && <View style={stiller.ikon}>{ikon}</View>}
       <View style={stiller.metinAlani}>
         <Text
@@ -180,6 +186,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingHorizontal: bosluk.l,
   },
   satirCizgili: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
+  satirVurgulu: { backgroundColor: renk.turuncuZemin },
   ikon: { width: 22, alignItems: 'center' },
   etiket: {
     flex: 1,
