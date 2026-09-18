@@ -88,10 +88,15 @@ def main():
         hata = e
     # "same password" reddi de ayarin ACIK olmadigini gosterir; asil
     # korkulan sey reauthentication istegi (secure password change).
+    # 2026-09-19: "leaked password protection" acildi; test hesabinin
+    # parolasi (test1234) HaveIBeenPwned listesinde oldugu icin GoTrue
+    # `weak_password` (pwned) doner - o da reauthentication DEGIL,
+    # kapi gecilmis demektir.
     mesaj = str(hata).lower() if hata else ''
     kontrol(
         'updateUser reauthentication ISTEMIYOR',
-        hata is None or 'different' in mesaj or 'same' in mesaj,
+        hata is None or 'different' in mesaj or 'same' in mesaj
+        or 'weak' in mesaj or 'pwned' in mesaj,
         mesaj[:80],
     )
     anon.auth.sign_out()

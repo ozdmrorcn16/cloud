@@ -185,7 +185,12 @@ gitignored): `.gstack/security-reports/2026-09-19-guvenlik-taramasi.json`.
    `check_inler_mekan_idx` dustu.
 7. Supabase Auth "Prevent use of leaked passwords" (HaveIBeenPwned)
    ACILDI (opencli ile panelden; `weak_password` metni 7 dilde zaten
-   vardi). Kayitta sizmis parola artik reddedilir.
+   vardi). Kayitta sizmis parola artik reddedilir. **DIKKAT: admin
+   API `create_user` ve `updateUser` de reddediyor** (olculdu) - canli
+   test betikleri gecici hesaplara `test1234` gibi sizmis parola
+   VEREMEZ (mevcut betikler rastgele/ozgun parola kullaniyor;
+   `sifre-sifirla-canli-test.py` iddiasi `weak/pwned`i kabul edecek
+   sekilde guncellendi). Mevcut test hesaplarina GIRIS etkilenmiyor.
 8. Depo: `mobil/gizli/asc-issuer.txt` public depoya girmisti (ASC
    issuer id - tek basina sir degil, anahtar + key id gerekir; rotasyon
    gerekmedi); `mobil/gizli/` gitignore'a eklendi, izlemeden cikti.
