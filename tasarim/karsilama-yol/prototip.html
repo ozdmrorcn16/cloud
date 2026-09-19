@@ -1,0 +1,176 @@
+<title>Slooin Yol Açılışı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Karsilama ekrani acilis animasyonu - WEB PROTOTIPI.
+     Referans: kullanicinin 2026-09-16 tarihli ekran kaydi (simge S kivrimli
+     yolda ilerler, gectigi iz renklenir, donemeclerde baslik+altyazi
+     belirir, sonda simge ortaya oturur ve buton gelir).
+     Slooin uyarlamasi: iz TURUNCU (canlilik), simge uygulama simgesi,
+     dort donemec = karsilamanin dort tanitim karti.
+     Matematik (cubic Bezier ornekleme + uzunluk tablosu) RN'e 1:1 tasinir. */
+  :root {
+    --zemin: #FAF7F3; --metin: #17130F; --ikincil: #6E6660; --soluk: #A39B93;
+    --cizgi: #E2DAD2; --turuncu: #FE7813; --turuncu-basili: #E06509; --beyaz: #fff;
+    --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --zemin: #FAF7F3; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #2A2521; font-family: var(--govde); color: var(--metin); min-height: 100%; display: grid; place-items: center; padding: 24px 16px; }
+  .cihaz { width: min(390px, 100%); height: 844px; max-height: calc(100vh - 48px); background: var(--zemin); border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 40px 80px -30px rgba(0,0,0,.7), inset 0 0 0 10px #16151a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ekran { position: absolute; inset: 10px; border-radius: 36px; overflow: hidden; background: var(--zemin); }
+
+  /* dunya: kamera bunu kaydirir */
+  .dunya { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
+  .dunya svg { display: block; width: 100%; height: auto; }
+  .simge { position: absolute; width: 62px; height: 62px; border-radius: 16px; box-shadow: 0 14px 28px -12px rgba(23,19,15,.45); transform: translate(-50%,-50%); will-change: transform; }
+  .simge img { width: 100%; height: 100%; display: block; border-radius: 16px; }
+  .etiket { position: absolute; width: 150px; opacity: 0; transform: translateY(8px); transition: opacity .45s ease, transform .45s ease; }
+  .etiket.acik { opacity: 1; transform: none; }
+  .etiket b { display: block; font-size: 18px; letter-spacing: -.3px; line-height: 1.15; }
+  .etiket span { display: block; font-size: 13px; color: var(--ikincil); margin-top: 3px; line-height: 1.3; }
+  .etiket.sag { text-align: left; }
+  .etiket.sol { text-align: right; }
+
+  /* son durum */
+  .son { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+  .son.acik { opacity: 1; pointer-events: auto; }
+  .son .yer { height: 78px; }
+  .son img.marka { width: 148px; margin-top: 22px; }
+  .son h1 { font-size: 22px; letter-spacing: -.4px; margin: 10px 0 0; font-weight: 700; }
+  .son h1 em { font-style: normal; color: var(--turuncu); }
+  .son .eylem { margin-top: 34px; display: inline-flex; align-items: center; gap: 10px; background: var(--turuncu); color: #fff; font-weight: 600; font-size: 16px; padding: 16px 28px; border-radius: 999px; box-shadow: 0 14px 30px -14px rgba(254,120,19,.7); text-decoration: none; transform: translateY(10px); opacity: 0; transition: all .5s ease .25s; }
+  .son.acik .eylem { transform: none; opacity: 1; }
+  .son .ikincil { margin-top: 18px; font-size: 14px; color: var(--ikincil); opacity: 0; transition: opacity .5s ease .5s; }
+  .son.acik .ikincil { opacity: 1; }
+  .son .ikincil b { color: var(--metin); font-weight: 600; }
+  .atif { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 10px; color: var(--soluk); }
+  .atla { position: absolute; right: 22px; top: 22px; font-size: 13px; color: var(--ikincil); background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 999px; z-index: 5; }
+  .atla.gizli { opacity: 0; pointer-events: none; }
+  .yeniden { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 13px; color: #CFC6BD; background: rgba(255,255,255,.08); padding: 8px 14px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; }
+  @media (prefers-reduced-motion: reduce) { .etiket, .son, .son .eylem, .son .ikincil { transition: none; } }
+</style>
+
+<div class="cihaz" id="cihaz" role="button" aria-label="Animasyonu atla">
+  <div class="ekran">
+    <div class="atla" id="atla">Atla</div>
+    <div class="dunya" id="dunya">
+      <svg id="yol" viewBox="0 0 390 1900" aria-hidden="true">
+        <path id="yolGri" fill="none" stroke="#E2DAD2" stroke-width="1.6" />
+        <path id="yolTuruncu" fill="none" stroke="#FE7813" stroke-width="3.2" stroke-linecap="round" />
+        <g id="noktalar"></g>
+      </svg>
+      <div class="simge" id="simge"><img src="varlik/icon-192.png" alt="Slooin" /></div>
+      <div class="etiket sol" id="e0"><b>Check-in Yap</b><span>Bulunduğun mekânda görün</span></div>
+      <div class="etiket sag" id="e1"><b>Yakınında kimler var</b><span>Aynı yerdeki insanları keşfet</span></div>
+      <div class="etiket sol" id="e2"><b>Sohbet Et</b><span>Yeni insanlarla tanış</span></div>
+      <div class="etiket sag" id="e3"><b>Popüler yerleri keşfet</b><span>Şehrindeki trend mekânları gör</span></div>
+    </div>
+    <div class="son" id="son">
+      <div class="yer"></div>
+      <img class="marka" src="varlik/marka-yazisi-koyu.png" alt="Slooin" />
+      <h1>Yakınında kim var, <em>keşfet.</em></h1>
+      <a class="eylem" href="#">Hesap oluştur <span>→</span></a>
+      <div class="ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+    </div>
+  </div>
+</div>
+<button class="yeniden" id="yeniden" type="button">↻ Yeniden oynat</button>
+
+<script>
+  // ---------- yol: bes cubic parca, asagidan yukariya ----------
+  const PARCALAR = [
+    [[195,1850],[195,1750],[300,1720],[300,1600]],
+    [[300,1600],[300,1480],[90,1470],[90,1350]],
+    [[90,1350],[90,1230],[300,1220],[300,1100]],
+    [[300,1100],[300,980],[90,970],[90,850]],
+    [[90,850],[90,730],[195,700],[195,600]],
+  ]
+  // donemecler: parca sonlari (ilk dort); etiket yolun KARSI tarafinda
+  const DONEMEC = [
+    { p: [300,1600], taraf: 'sol' }, { p: [90,1350], taraf: 'sag' },
+    { p: [300,1100], taraf: 'sol' }, { p: [90,850], taraf: 'sag' },
+  ]
+  function bez(P, t) { const u = 1 - t; return [
+    u*u*u*P[0][0] + 3*u*u*t*P[1][0] + 3*u*t*t*P[2][0] + t*t*t*P[3][0],
+    u*u*u*P[0][1] + 3*u*u*t*P[1][1] + 3*u*t*t*P[2][1] + t*t*t*P[3][1] ] }
+  // ornekle + uzunluk tablosu
+  const NOKTA = [], UZ = [0]
+  for (const P of PARCALAR) for (let i = 0; i <= 60; i++) { if (NOKTA.length && i === 0) continue; NOKTA.push(bez(P, i / 60)) }
+  for (let i = 1; i < NOKTA.length; i++) { const a = NOKTA[i-1], b = NOKTA[i]; UZ.push(UZ[i-1] + Math.hypot(b[0]-a[0], b[1]-a[1])) }
+  const TOPLAM = UZ[UZ.length - 1]
+  function noktaAt(ilerleme) { // 0..1 -> [x,y], indeks
+    const hedef = ilerleme * TOPLAM; let lo = 0, hi = UZ.length - 1
+    while (lo < hi) { const m = (lo + hi) >> 1; if (UZ[m] < hedef) lo = m + 1; else hi = m }
+    const i = Math.max(1, lo), a = NOKTA[i-1], b = NOKTA[i], s = (UZ[i] - UZ[i-1]) || 1, k = (hedef - UZ[i-1]) / s
+    return { x: a[0] + (b[0]-a[0]) * k, y: a[1] + (b[1]-a[1]) * k, i }
+  }
+  // donemeclerin ilerleme degeri
+  const DONEMEC_ILERLEME = DONEMEC.map(d => { let en = 0, enUz = 1e9; NOKTA.forEach((n, i) => { const u = Math.hypot(n[0]-d.p[0], n[1]-d.p[1]); if (u < enUz) { enUz = u; en = i } }); return UZ[en] / TOPLAM })
+
+  const d = 'M' + NOKTA.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L')
+  document.getElementById('yolGri').setAttribute('d', d)
+  const noktalar = document.getElementById('noktalar')
+  DONEMEC.forEach(k => { const c = document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx', k.p[0]); c.setAttribute('cy', k.p[1]); c.setAttribute('r', 4); c.setAttribute('fill', '#FAF7F3'); c.setAttribute('stroke', '#E2DAD2'); c.setAttribute('stroke-width', 1.6); noktalar.appendChild(c) })
+  DONEMEC.forEach((k, i) => { const e = document.getElementById('e' + i); if (k.taraf === 'sol') { e.style.right = (390 - k.p[0] + 44) + 'px'; } else { e.style.left = (k.p[0] + 44) + 'px' } e.style.top = (k.p[1] - 64) + 'px' })
+
+  // ---------- zamanlama ----------
+  const ekran = document.querySelector('.ekran'), dunya = document.getElementById('dunya'), simge = document.getElementById('simge')
+  const turuncu = document.getElementById('yolTuruncu'), son = document.getElementById('son'), atla = document.getElementById('atla')
+  const SURE = 6400, BEKLE = 500 // ms
+  const azHareket = matchMedia('(prefers-reduced-motion: reduce)').matches
+  let bas = 0, bitti = false, raf = 0
+  const olcek = () => ekran.clientWidth / 390
+  const easeInOut = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2
+
+  function ciz(ilerleme) {
+    const { x, y, i } = noktaAt(ilerleme), o = olcek()
+    simge.style.left = (x * o) + 'px'; simge.style.top = (y * o) + 'px'
+    // gecilen iz: baslangictan simgeye
+    const iz = NOKTA.slice(0, i).concat([[x, y]])
+    turuncu.setAttribute('d', iz.length > 1 ? 'M' + iz.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L') : '')
+    // kamera: simge ekranin %58'inde dursun
+    const hedefY = ekran.clientHeight * 0.58
+    let ty = hedefY - y * o
+    ty = Math.min(0, Math.max(ekran.clientHeight - 1900 * o, ty))
+    dunya.style.transform = `translateY(${ty}px)`
+    // etiketler: donemece yaklasinca acilir, gecince kapanir
+    DONEMEC_ILERLEME.forEach((p, k) => { document.getElementById('e' + k).classList.toggle('acik', ilerleme > p - 0.075 && ilerleme < p + 0.11) })
+  }
+
+  function adim(ts) {
+    if (!bas) bas = ts
+    const t = Math.min(1, Math.max(0, (ts - bas - BEKLE) / SURE))
+    ciz(easeInOut(t))
+    if (t < 1) raf = requestAnimationFrame(adim); else bitir()
+  }
+
+  function bitir() {
+    if (bitti) return; bitti = true; cancelAnimationFrame(raf)
+    ciz(1)
+    // simge ortaya suzulur, yol soner, son durum belirir
+    const o = olcek(), hedefX = ekran.clientWidth / 2, hedefY = ekran.clientHeight / 2 - 150
+    const { x, y } = noktaAt(1); const m = new DOMMatrix(getComputedStyle(dunya).transform); const suanY = y * o + m.f
+    dunya.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s ease'
+    dunya.style.transform = `translateY(${m.f + (hedefY - suanY)}px)`
+    simge.style.transition = 'left .8s cubic-bezier(.2,.8,.2,1), width .8s, height .8s'
+    simge.style.left = hedefX + 'px'; simge.style.width = simge.style.height = '78px'
+    document.getElementById('yol').style.transition = 'opacity .6s ease'; document.getElementById('yol').style.opacity = 0
+    DONEMEC.forEach((_, k) => document.getElementById('e' + k).classList.remove('acik'))
+    setTimeout(() => son.classList.add('acik'), 350)
+    atla.classList.add('gizli')
+  }
+
+  function basla() {
+    bitti = false; bas = 0; son.classList.remove('acik'); atla.classList.remove('gizli')
+    dunya.style.transition = ''; simge.style.transition = ''; simge.style.width = simge.style.height = '62px'
+    document.getElementById('yol').style.transition = ''; document.getElementById('yol').style.opacity = 1
+    if (azHareket) { bitir(); return }
+    raf = requestAnimationFrame(adim)
+  }
+  document.getElementById('cihaz').addEventListener('click', (e) => { if (!bitti) { e.preventDefault(); bitir() } })
+  document.getElementById('yeniden').addEventListener('click', basla)
+  addEventListener('resize', () => { if (!bitti) ciz(0) })
+  basla()
+</script>
