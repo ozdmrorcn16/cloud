@@ -460,6 +460,8 @@ export default {
     vazgec: 'Vazgeç',
     hesabiSil: 'Hesabımı sil',
     cikisYap: 'Çıkış yap',
+    cikisOnayBaslik: 'Çıkış yapılsın mı?',
+    cikisOnayAciklama: 'Hesabından çıkış yapacaksın. İstediğin zaman tekrar giriş yapabilirsin.',
 
     aniHerkeseAcik: 'Herkes görsün',
     aniTakipcilerim: 'Sadece takipçilerim görsün',

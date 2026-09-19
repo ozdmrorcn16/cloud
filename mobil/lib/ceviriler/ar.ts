@@ -345,6 +345,8 @@ export default {
     vazgec: 'إلغاء',
     hesabiSil: 'حذف حسابي',
     cikisYap: 'تسجيل الخروج',
+    cikisOnayBaslik: 'هل تريد تسجيل الخروج؟',
+    cikisOnayAciklama: 'سيتم تسجيل خروجك من حسابك. يمكنك تسجيل الدخول مجددًا في أي وقت.',
     aniHerkeseAcik: 'الجميع',
     aniTakipcilerim: 'متابعيّ فقط',
     aniKimse: 'لا أحد',

@@ -622,6 +622,11 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 
 Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
 OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
+- **CIKIS ONAYLI (2026-09-19, kullanicinin istegi "cikis yap basinca
+  hemen cikis yapmasin, once sorsun"):** ayarlar hub'inda "Cikis yap"
+  `OnayPenceresi` aciyor (`ayarlar.cikisOnayBaslik/cikisOnayAciklama`
+  7 dil, `yikici={false}` - geri giris mumkun); jeton silme + signOut
+  yalnizca onaydan sonra, testle kilitli (vazgecince hicbiri cagrilmaz).
 - **DUZELTME 2 (2026-09-19, kullanicinin istegi "yazilar biraz daha
   belirgin, iki ikonda sorun var"):** `Liste.tsx` ortak: bolum basligi
   14, satir etiketi 600/16 (500/15'ti), aciklama 14/20 - butun ayar

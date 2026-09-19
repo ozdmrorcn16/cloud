@@ -345,6 +345,8 @@ export default {
     vazgec: 'Annuler',
     hesabiSil: 'Supprimer mon compte',
     cikisYap: 'Se déconnecter',
+    cikisOnayBaslik: 'Se déconnecter ?',
+    cikisOnayAciklama: 'Tu vas être déconnecté de ton compte. Tu peux te reconnecter à tout moment.',
     aniHerkeseAcik: 'Tout le monde',
     aniTakipcilerim: 'Seulement mes abonnés',
     aniKimse: 'Personne',

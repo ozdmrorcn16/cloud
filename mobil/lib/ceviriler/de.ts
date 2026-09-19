@@ -345,6 +345,8 @@ export default {
     vazgec: 'Abbrechen',
     hesabiSil: 'Mein Konto löschen',
     cikisYap: 'Abmelden',
+    cikisOnayBaslik: 'Abmelden?',
+    cikisOnayAciklama: 'Du wirst von deinem Konto abgemeldet. Du kannst dich jederzeit wieder anmelden.',
     aniHerkeseAcik: 'Alle',
     aniTakipcilerim: 'Nur meine Follower',
     aniKimse: 'Niemand',

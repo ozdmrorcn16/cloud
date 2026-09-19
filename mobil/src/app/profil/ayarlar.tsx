@@ -9,6 +9,7 @@ import { yazi, olcek, bosluk, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
 import { Bolum, Satir } from '../../tasarim/Liste'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { AnahtarIkonu, KalkanTikCizgiIkonu } from '../../tasarim/hesap-ikonlari'
 import { ZilIkonu } from '../../tasarim/zil-ikonu'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
@@ -40,6 +41,9 @@ export default function AyarlarEkrani() {
   // arkadaslar"); anahtarlarin kendisi Gizlilik ekraninda (2026-09-18).
   const [profilGizli, setProfilGizli] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
+  // Cikis ONAYLA calisir (kullanicinin istegi 2026-09-19: "hemen cikis
+  // yapmasin, once sorsun"). Yikici degil - geri giris her zaman mumkun.
+  const [cikisOnayi, setCikisOnayi] = useState(false)
 
   async function ayarlariYukle() {
     try {
@@ -59,6 +63,7 @@ export default function AyarlarEkrani() {
   )
 
   async function cikisYap() {
+    setCikisOnayi(false)
     // Cikistan once bu cihazin push jetonunu sil ki bir sonraki
     // kullaniciya ait bildirimler bu cihaza dusmesin.
     await bildirimJetonunuSil()
@@ -184,10 +189,20 @@ export default function AyarlarEkrani() {
             etiket={t('ayarlar.cikisYap')}
             sonuncu
             vurgulu
-            onPress={cikisYap}
+            onPress={() => setCikisOnayi(true)}
           />
         </Bolum>
       </ScrollView>
+
+      <OnayPenceresi
+        acikMi={cikisOnayi}
+        baslik={t('ayarlar.cikisOnayBaslik')}
+        aciklama={t('ayarlar.cikisOnayAciklama')}
+        eylemEtiketi={t('ayarlar.cikisYap')}
+        yikici={false}
+        onOnay={cikisYap}
+        onVazgec={() => setCikisOnayi(false)}
+      />
     </View>
   )
 }

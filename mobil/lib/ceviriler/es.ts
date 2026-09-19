@@ -345,6 +345,8 @@ export default {
     vazgec: 'Cancelar',
     hesabiSil: 'Eliminar mi cuenta',
     cikisYap: 'Cerrar sesión',
+    cikisOnayBaslik: '¿Cerrar sesión?',
+    cikisOnayAciklama: 'Cerrarás la sesión de tu cuenta. Puedes volver a iniciar sesión cuando quieras.',
     aniHerkeseAcik: 'Todos',
     aniTakipcilerim: 'Solo mis seguidores',
     aniKimse: 'Nadie',

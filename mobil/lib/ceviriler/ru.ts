@@ -345,6 +345,8 @@ export default {
     vazgec: 'Отмена',
     hesabiSil: 'Удалить аккаунт',
     cikisYap: 'Выйти',
+    cikisOnayBaslik: 'Выйти из аккаунта?',
+    cikisOnayAciklama: 'Ты выйдешь из своего аккаунта. Войти снова можно в любой момент.',
     aniHerkeseAcik: 'Все',
     aniTakipcilerim: 'Только мои подписчики',
     aniKimse: 'Никто',

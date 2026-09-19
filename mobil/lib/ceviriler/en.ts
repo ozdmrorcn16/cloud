@@ -351,6 +351,8 @@ export default {
     vazgec: 'Cancel',
     hesabiSil: 'Delete my account',
     cikisYap: 'Sign out',
+    cikisOnayBaslik: 'Sign out?',
+    cikisOnayAciklama: "You'll be signed out of your account. You can sign back in anytime.",
     aniHerkeseAcik: 'Everyone',
     aniTakipcilerim: 'Only my followers',
     aniKimse: 'No one',

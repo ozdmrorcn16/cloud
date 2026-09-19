@@ -129,7 +129,21 @@ describe('AyarlarEkrani', () => {
 
     await render(<AyarlarEkrani />)
     await fireEvent.press(await screen.findByText('Çıkış yap'))
+    // Satira basmak HEMEN cikarmaz, once sorar (2026-09-19).
+    expect(sira).toEqual([])
+    expect(await screen.findByText('Çıkış yapılsın mı?')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     await waitFor(() => expect(sira).toEqual(['jeton', 'cikis']))
+  })
+
+  it('cikis onayinda vazgecince oturum acik kalir', async () => {
+    await render(<AyarlarEkrani />)
+    await fireEvent.press(await screen.findByText('Çıkış yap'))
+    await fireEvent.press(await screen.findByText('Vazgeç'))
+
+    await waitFor(() => expect(screen.queryByText('Çıkış yapılsın mı?')).toBeNull())
+    expect(sahteCikis).not.toHaveBeenCalled()
+    expect(bildirimJetonunuSil).not.toHaveBeenCalled()
   })
 })
