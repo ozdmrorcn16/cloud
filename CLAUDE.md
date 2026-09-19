@@ -204,6 +204,18 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   artik mavi nokta ciziyor, `renk` prop'u yok sayilir; anchor 0.5/0.5).
   Testler: isaretci sayimlari etiketleri de iceriyor (`/ etiketi$/`
   suzgeci).
+- **ETIKET GENISLIGI OLCULUYOR (2026-09-20 gece, OTA `8b075a0f`):**
+  sabit 136'lik kutu + `centerOffset x: 68` etiketi kullanicinin ekran
+  goruntusunde ~30 pt fazla SAGA atiyordu - iOS `reactSetFrame`
+  isaretci cercevesini Yoga'nin verdigi ICERIK boyutundan kuruyor ve
+  koordinata ortaliyor. Artik `etiketKabi` genisliksiz (16 px sol
+  bosluk + hap), hapin genisligi `onLayout` ile `etiketEnleri` state'ine
+  yaziliyor, `centerOffset x = (16 + olculen) / 2` (ilk kare icin 80
+  varsayilan). Kutuphane kaynagindan dogrulandi: iOS
+  `tracksViewChanges`'i hic okumuyor (Android'e ozgu), ozel gorunumlu
+  isaretci canli UIView, `centerOffset` prop'u dogrudan
+  `MKAnnotationView.centerOffset`e gidiyor - olcum sonrasi guncelleme
+  yansir. TELEFONDA DOGRULANMADI; kullanici bakacak.
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
