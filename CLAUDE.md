@@ -622,6 +622,14 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 
 Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
 OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
+- **AYNI ANDA TEK KART DUZENLENIR (2026-09-19, kullanicinin ekran
+  goruntusu: akista iki kart birden duzenlemedeydi; "bir duzenleme
+  kapanmadan obur duzenleme acilmasin"):** `lib/duzenleme-kilidi.ts`
+  modul duzeyi kilit (`useSyncExternalStore`, tema-tercihi deseni).
+  `CheckInKarti` acarken kilidi ister; Vazgec/Kaydet/unmount birakir;
+  baska kart acikken menude "Duzenle" HIC GORUNMEZ (Sil duruyor).
+  Uc ekranda ortak, ekranlara prop tasinmadi. `jest.setup.js` her
+  testten once sifirliyor (paylasim korumasi gibi modul durumu).
 - **CIKIS ONAYLI (2026-09-19, kullanicinin istegi "cikis yap basinca
   hemen cikis yapmasin, once sorsun"):** ayarlar hub'inda "Cikis yap"
   `OnayPenceresi` aciyor (`ayarlar.cikisOnayBaslik/cikisOnayAciklama`

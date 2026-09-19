@@ -386,6 +386,38 @@ describe('AnaSayfa', () => {
     expect(screen.getByText('guzel bir aksam')).toBeTruthy()
   })
 
+  it('bir kart duzenlenirken obur kartin menusunde Duzenle YOK; kapaninca geri gelir', async () => {
+    // Kullanicinin istegi 2026-09-19 (ekran goruntusuyle: iki kart ayni
+    // anda acikti): "bir duzenleme kapanmadan obur duzenleme acilmasin".
+    ;(akisiGetir as jest.Mock).mockResolvedValue([
+      oge({ id: 'checkin-1', mekanAdi: 'Sahil Kafe', benimMi: true }),
+      oge({ id: 'checkin-2', mekanAdi: 'Tepe Kafe', benimMi: true }),
+    ])
+
+    await render(<AnaSayfa />)
+    await screen.findByText('Tepe Kafe')
+
+    const menuler = screen.getAllByLabelText('Paylaşım seçenekleri')
+    await fireEvent.press(menuler[0])
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    expect(screen.getAllByTestId('yerinde-duzenle')).toHaveLength(1)
+
+    // Ikinci kartin menusu aciliyor ama Duzenle secenegi yok.
+    await fireEvent.press(menuler[1])
+    expect(screen.queryByTestId('menu-duzenle')).toBeNull()
+    expect(screen.getByTestId('menu-sil')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('menu-sil'))
+    // Silme onayi ekranin; vazgec.
+    await fireEvent.press(screen.getAllByText('Vazgeç').pop()!)
+
+    // Ilk duzenlemeden vazgecince kilit kalkiyor: ikinci kart acilabiliyor.
+    await fireEvent.press(screen.getByTestId('duzenle-vazgec'))
+    expect(screen.queryByTestId('yerinde-duzenle')).toBeNull()
+    await fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[1])
+    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    expect(screen.getAllByTestId('yerinde-duzenle')).toHaveLength(1)
+  })
+
   /*
    * ARKADAS ETIKETLE (kullanicinin istegi 2026-09-18): duzenlemede buton,
    * basinca aranabilir liste (profil resmi + kullanici adi); secim
