@@ -164,6 +164,7 @@ export function CanliHarita({
   konumDugmesiAltPayi = 16,
   doldur = false,
   altPay = 0,
+  onBosaDokun,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
@@ -178,6 +179,8 @@ export function CanliHarita({
   doldur?: boolean
   /** Alttaki panelin yuksekligi: radar merkezi gorunen alanin ortasina kayar. */
   altPay?: number
+  /** Native ile ayni sozlesme: bos yere dokunma. */
+  onBosaDokun?: () => void
   /**
    * Merkez ignesinin durumu; verilmezse turuncu kaliyor. Native
    * surumle AYNI sozlesme - ekranlar hangi platformda calistigini
@@ -261,8 +264,10 @@ export function CanliHarita({
   const yaricapPx = Math.min(olcu.en, gorunenBoy) / 2 - 26
 
   return (
-    <View
+    <Pressable
       style={doldur ? stiller.kokDolu : [stiller.kok, { height: yukseklik }]}
+      onPress={onBosaDokun}
+      accessible={false}
       onLayout={(o) =>
         setOlcu({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })
       }
@@ -407,7 +412,7 @@ export function CanliHarita({
           </Text>
         </View>
       )}
-    </View>
+    </Pressable>
   )
 }
 

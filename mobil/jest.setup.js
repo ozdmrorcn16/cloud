@@ -79,6 +79,8 @@ jest.mock('react-native-maps', () => {
       View,
       {
         testID: props.testID,
+        // Haritanin bos yerine dokunma (klavye kapatma) testten olculebilsin.
+        onPress: props.onPress,
         initialRegion: props.initialRegion,
         liteMode: props.liteMode,
         cacheEnabled: props.cacheEnabled,

@@ -1068,8 +1068,14 @@ export default function KesfetEkrani() {
   )
 
   /** Arama kutusu + tur suzgeci + oneriler + secili tur cipleri + durum cipleri. */
+  // BOS ALANA DOKUNMAK KLAVYEYI KAPATIR (kullanicinin bildirimi
+  // 2026-09-19: "mekan araya bastiktan sonra klavye aciliyor, bosluga
+  // basinca kapansin"). Ust blok, panel ve haritanin kendisi
+  // (`onBosaDokun`) dismiss cagiriyor; icteki dugmeler kendi dokunusunu
+  // yakaladigi icin etkilenmiyor. `accessible={false}` sart - ekran
+  // okuyucu blogu tek dugme sanmasin (KlavyeKapatan kurali).
   const ustBlok = (
-    <View style={stiller.ustBlok}>
+    <Pressable style={stiller.ustBlok} onPress={Keyboard.dismiss} accessible={false}>
       {hata && <Text style={stiller.hataSeridi}>{hata}</Text>}
       <View style={stiller.aramaSatiri}>
         <View style={stiller.aramaKutusu}>
@@ -1205,7 +1211,7 @@ export default function KesfetEkrani() {
           )}
         </View>
       )}
-    </View>
+    </Pressable>
   )
 
   const bolumBasligi = (
@@ -1355,11 +1361,12 @@ export default function KesfetEkrani() {
           konumDugmesi
           konumDugmesiAltPayi={panelYuksekligi + 12}
           altPay={panelYuksekligi}
+          onBosaDokun={Keyboard.dismiss}
         />
 
         {/* PANEL: kapaliyken dogal yuksekligi, acikken harita alaninin
             neredeyse tamami. LayoutAnimation gecisi yumusatiyor. */}
-        <View
+        <Pressable
           style={[
             stiller.panel,
             panelAcik && haritaAlaniYuksekligi > 0 && { height: haritaAlaniYuksekligi - PANEL_UST_BOSLUK },
@@ -1367,6 +1374,8 @@ export default function KesfetEkrani() {
           onLayout={(o) => {
             if (!panelAcik) setPanelYuksekligi(o.nativeEvent.layout.height)
           }}
+          onPress={Keyboard.dismiss}
+          accessible={false}
           testID="mekan-paneli"
         >
           <View style={stiller.tutamacAlani} {...tutamacSurukleme.panHandlers}>
@@ -1412,7 +1421,7 @@ export default function KesfetEkrani() {
               )}
             </View>
           )}
-        </View>
+        </Pressable>
       </View>
       {pencereler}
     </View>

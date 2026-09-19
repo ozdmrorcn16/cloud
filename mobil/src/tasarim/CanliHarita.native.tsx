@@ -191,6 +191,7 @@ export function CanliHarita({
   konumDugmesiAltPayi = 16,
   doldur = false,
   altPay = 0,
+  onBosaDokun,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
@@ -227,6 +228,8 @@ export function CanliHarita({
    * cerceve GORUNEN alana gore hesaplanir, panelin arkasina dusmez.
    */
   altPay?: number
+  /** Haritanin ignesiz bir yerine dokunma (ekran klavyeyi kapatmak icin kullaniyor). */
+  onBosaDokun?: () => void
 }) {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
@@ -327,6 +330,7 @@ export function CanliHarita({
         style={StyleSheet.absoluteFill}
         initialRegion={bolge}
         mapPadding={{ top: 0, right: 0, bottom: altPay, left: 0 }}
+        onPress={onBosaDokun}
         onRegionChangeComplete={setGorunurBolge}
         scrollEnabled
         zoomEnabled

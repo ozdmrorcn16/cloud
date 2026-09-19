@@ -1526,6 +1526,21 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(screen.getByTestId('mekan-karti-mola')).toBeTruthy()
   })
 
+  it('bos alana (panel, ust blok, harita) dokununca klavye kapanir', async () => {
+    // Kullanicinin bildirimi 2026-09-19: arama kutusundan sonra bosluga
+    // basinca klavye kapanmiyordu.
+    const { Keyboard } = require('react-native')
+    const kapat = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {})
+    await render(<MekanAramaEkrani />)
+    await screen.findByTestId('mekan-karti-mola')
+
+    await fireEvent.press(screen.getByTestId('mekan-paneli'))
+    expect(kapat).toHaveBeenCalledTimes(1)
+    await fireEvent.press(screen.getByTestId('canli-harita'))
+    expect(kapat).toHaveBeenCalledTimes(2)
+    kapat.mockRestore()
+  })
+
   it('haritada konuma don dugmesi var; kompakt cipler tek satirda', async () => {
     await render(<MekanAramaEkrani />)
     expect(await screen.findByTestId('konuma-don')).toBeTruthy()
