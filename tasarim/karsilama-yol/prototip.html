@@ -6,6 +6,9 @@
      Referans: kullanicinin 2026-09-16 tarihli ekran kaydi (simge S kivrimli
      yolda ilerler, gectigi iz renklenir, donemeclerde baslik+altyazi
      belirir, sonda simge ortaya oturur ve buton gelir).
+     Kullanicinin duzeltmeleri (2026-09-20): daha yavas, her donemecte
+     kisa duraklama, etiketler cizginin sag/solunda ve uzak, baslangic
+     referans gibi (simge tek basina -> yol belirir, iz asagiya uzar).
      Slooin uyarlamasi: iz TURUNCU (canlilik), simge uygulama simgesi,
      dort donemec = karsilamanin dort tanitim karti.
      Matematik (cubic Bezier ornekleme + uzunluk tablosu) RN'e 1:1 tasinir. */
@@ -25,9 +28,10 @@
   .dunya svg { display: block; width: 100%; height: auto; }
   .simge { position: absolute; width: 62px; height: 62px; border-radius: 16px; box-shadow: 0 14px 28px -12px rgba(23,19,15,.45); transform: translate(-50%,-50%); will-change: transform; }
   .simge img { width: 100%; height: 100%; display: block; border-radius: 16px; }
-  .etiket { position: absolute; width: 150px; opacity: 0; transform: translateY(8px); transition: opacity .45s ease, transform .45s ease; }
+  .etiket { position: absolute; opacity: 0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+  .etiket i { display: block; font-style: normal; font-size: 11px; letter-spacing: .08em; color: var(--soluk); font-weight: 600; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
   .etiket.acik { opacity: 1; transform: none; }
-  .etiket b { display: block; font-size: 18px; letter-spacing: -.3px; line-height: 1.15; }
+  .etiket b { display: block; font-size: 19px; letter-spacing: -.3px; line-height: 1.15; }
   .etiket span { display: block; font-size: 13px; color: var(--ikincil); margin-top: 3px; line-height: 1.3; }
   .etiket.sag { text-align: left; }
   .etiket.sol { text-align: right; }
@@ -55,16 +59,16 @@
   <div class="ekran">
     <div class="atla" id="atla">Atla</div>
     <div class="dunya" id="dunya">
-      <svg id="yol" viewBox="0 0 390 1900" aria-hidden="true">
+      <svg id="yol" viewBox="0 0 390 2200" aria-hidden="true">
         <path id="yolGri" fill="none" stroke="#E2DAD2" stroke-width="1.6" />
         <path id="yolTuruncu" fill="none" stroke="#FE7813" stroke-width="3.2" stroke-linecap="round" />
         <g id="noktalar"></g>
       </svg>
       <div class="simge" id="simge"><img src="varlik/icon-192.png" alt="Slooin" /></div>
-      <div class="etiket sol" id="e0"><b>Check-in Yap</b><span>Bulunduğun mekânda görün</span></div>
-      <div class="etiket sag" id="e1"><b>Yakınında kimler var</b><span>Aynı yerdeki insanları keşfet</span></div>
-      <div class="etiket sol" id="e2"><b>Sohbet Et</b><span>Yeni insanlarla tanış</span></div>
-      <div class="etiket sag" id="e3"><b>Popüler yerleri keşfet</b><span>Şehrindeki trend mekânları gör</span></div>
+      <div class="etiket sol" id="e0"><i>01 / 04</i><b>Check-in Yap</b><span>Bulunduğun mekânda görün</span></div>
+      <div class="etiket sag" id="e1"><i>02 / 04</i><b>Yakınında kimler var</b><span>Aynı yerdeki insanları keşfet</span></div>
+      <div class="etiket sol" id="e2"><i>03 / 04</i><b>Sohbet Et</b><span>Yeni insanlarla tanış</span></div>
+      <div class="etiket sag" id="e3"><i>04 / 04</i><b>Popüler yerleri keşfet</b><span>Şehrindeki trend mekânları gör</span></div>
     </div>
     <div class="son" id="son">
       <div class="yer"></div>
@@ -79,15 +83,18 @@
 <button class="yeniden" id="yeniden" type="button">↻ Yeniden oynat</button>
 
 <script>
-  // ---------- yol: bes cubic parca, asagidan yukariya ----------
+  // ---------- yol: duz bir giris parcasi + bes cubic kivrim, asagidan yukariya ----------
+  // Ilk parca DUZ (195,2150)->(195,1850): referansta iz simgeden asagiya
+  // dumduz uzuyor; simge o parcanin ucunda (P0) baslar.
   const PARCALAR = [
+    [[195,2150],[195,2050],[195,1950],[195,1850]],
     [[195,1850],[195,1750],[300,1720],[300,1600]],
     [[300,1600],[300,1480],[90,1470],[90,1350]],
     [[90,1350],[90,1230],[300,1220],[300,1100]],
     [[300,1100],[300,980],[90,970],[90,850]],
     [[90,850],[90,730],[195,700],[195,600]],
   ]
-  // donemecler: parca sonlari (ilk dort); etiket yolun KARSI tarafinda
+  // donemecler: kivrim uclari; etiket yolun KARSI tarafinda, cizgiden uzak
   const DONEMEC = [
     { p: [300,1600], taraf: 'sol' }, { p: [90,1350], taraf: 'sag' },
     { p: [300,1100], taraf: 'sol' }, { p: [90,850], taraf: 'sag' },
@@ -95,82 +102,102 @@
   function bez(P, t) { const u = 1 - t; return [
     u*u*u*P[0][0] + 3*u*u*t*P[1][0] + 3*u*t*t*P[2][0] + t*t*t*P[3][0],
     u*u*u*P[0][1] + 3*u*u*t*P[1][1] + 3*u*t*t*P[2][1] + t*t*t*P[3][1] ] }
-  // ornekle + uzunluk tablosu
   const NOKTA = [], UZ = [0]
   for (const P of PARCALAR) for (let i = 0; i <= 60; i++) { if (NOKTA.length && i === 0) continue; NOKTA.push(bez(P, i / 60)) }
   for (let i = 1; i < NOKTA.length; i++) { const a = NOKTA[i-1], b = NOKTA[i]; UZ.push(UZ[i-1] + Math.hypot(b[0]-a[0], b[1]-a[1])) }
   const TOPLAM = UZ[UZ.length - 1]
-  function noktaAt(ilerleme) { // 0..1 -> [x,y], indeks
-    const hedef = ilerleme * TOPLAM; let lo = 0, hi = UZ.length - 1
-    while (lo < hi) { const m = (lo + hi) >> 1; if (UZ[m] < hedef) lo = m + 1; else hi = m }
-    const i = Math.max(1, lo), a = NOKTA[i-1], b = NOKTA[i], s = (UZ[i] - UZ[i-1]) || 1, k = (hedef - UZ[i-1]) / s
+  function indeksAt(ilerleme) { const hedef = ilerleme * TOPLAM; let lo = 0, hi = UZ.length - 1
+    while (lo < hi) { const m = (lo + hi) >> 1; if (UZ[m] < hedef) lo = m + 1; else hi = m } return Math.max(1, lo) }
+  function noktaAt(ilerleme) {
+    const hedef = ilerleme * TOPLAM, i = indeksAt(ilerleme), a = NOKTA[i-1], b = NOKTA[i], s = (UZ[i] - UZ[i-1]) || 1, k = Math.min(1, Math.max(0, (hedef - UZ[i-1]) / s))
     return { x: a[0] + (b[0]-a[0]) * k, y: a[1] + (b[1]-a[1]) * k, i }
   }
-  // donemeclerin ilerleme degeri
-  const DONEMEC_ILERLEME = DONEMEC.map(d => { let en = 0, enUz = 1e9; NOKTA.forEach((n, i) => { const u = Math.hypot(n[0]-d.p[0], n[1]-d.p[1]); if (u < enUz) { enUz = u; en = i } }); return UZ[en] / TOPLAM })
+  const enYakinIlerleme = (p) => { let en = 0, enUz = 1e9; NOKTA.forEach((n, i) => { const u = Math.hypot(n[0]-p[0], n[1]-p[1]); if (u < enUz) { enUz = u; en = i } }); return UZ[en] / TOPLAM }
+  const P0 = enYakinIlerleme([195,1850])                 // simgenin baslangici (duz parcanin ucu)
+  const DONEMEC_ILERLEME = DONEMEC.map(d => enYakinIlerleme(d.p))
+  const yolDizisi = (nok) => nok.length > 1 ? 'M' + nok.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L') : ''
 
-  const d = 'M' + NOKTA.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L')
-  document.getElementById('yolGri').setAttribute('d', d)
+  const ekran = document.querySelector('.ekran'), olcek = () => ekran.clientWidth / 390
+  const svgYol = document.getElementById('yol'), yolGri = document.getElementById('yolGri'), turuncu = document.getElementById('yolTuruncu')
+  yolGri.setAttribute('d', yolDizisi(NOKTA))
   const noktalar = document.getElementById('noktalar')
   DONEMEC.forEach(k => { const c = document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx', k.p[0]); c.setAttribute('cy', k.p[1]); c.setAttribute('r', 4); c.setAttribute('fill', '#FAF7F3'); c.setAttribute('stroke', '#E2DAD2'); c.setAttribute('stroke-width', 1.6); noktalar.appendChild(c) })
-  DONEMEC.forEach((k, i) => { const e = document.getElementById('e' + i); if (k.taraf === 'sol') { e.style.right = (390 - k.p[0] + 44) + 'px'; } else { e.style.left = (k.p[0] + 44) + 'px' } e.style.top = (k.p[1] - 64) + 'px' })
+  // etiketler: cizgiden 58 px uzakta, donemecin hizasinda dikey ortali
+  // Koordinatlar SVG birimindedir (390 genislik); ekran daha darsa
+  // ayni oranla olceklenir - yoksa etiket simgeden asagi kayar (olculdu).
+  function etiketleriYerlestir() { const o = olcek()
+    DONEMEC.forEach((k, i) => { const e = document.getElementById('e' + i)
+      if (k.taraf === 'sol') { e.style.right = ((390 - k.p[0] + 58) * o) + 'px'; e.style.left = ''; e.style.width = ((k.p[0] - 58 - 20) * o) + 'px' }
+      else { e.style.left = ((k.p[0] + 58) * o) + 'px'; e.style.right = ''; e.style.width = ((390 - k.p[0] - 58 - 20) * o) + 'px' }
+      e.style.top = ((k.p[1] - 32) * o) + 'px' }) }
 
-  // ---------- zamanlama ----------
-  const ekran = document.querySelector('.ekran'), dunya = document.getElementById('dunya'), simge = document.getElementById('simge')
-  const turuncu = document.getElementById('yolTuruncu'), son = document.getElementById('son'), atla = document.getElementById('atla')
-  const SURE = 6400, BEKLE = 500 // ms
+  // ---------- zamanlama: giris, sonra bacak + duraklama ----------
+  const GIRIS_TEK = 900, GIRIS_IZ = 700, BACAK = 1500, DURAK = 850
+  // anahtar kareler: [baslangicMs, bitisMs, ilerlemeBas, ilerlemeSon]
+  const KARELER = []; let t = GIRIS_TEK + GIRIS_IZ, onceki = P0
+  const hedefler = [...DONEMEC_ILERLEME, 1]
+  hedefler.forEach((h, i) => { KARELER.push([t, t + BACAK, onceki, h]); t += BACAK; onceki = h; if (i < hedefler.length - 1) { KARELER.push([t, t + DURAK, h, h]); t += DURAK } })
+  const TOPLAM_SURE = t
+  const easeInOut = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2
+  const easeOut = x => 1 - Math.pow(1 - x, 3)
+  function ilerlemeAt(ms) { if (ms < KARELER[0][0]) return P0
+    for (const [b, e, p, q] of KARELER) if (ms < e) return p + (q - p) * easeInOut((ms - b) / (e - b))
+    return 1 }
+
+  const dunya = document.getElementById('dunya'), simge = document.getElementById('simge')
+  const son = document.getElementById('son'), atla = document.getElementById('atla')
   const azHareket = matchMedia('(prefers-reduced-motion: reduce)').matches
   let bas = 0, bitti = false, raf = 0
-  const olcek = () => ekran.clientWidth / 390
-  const easeInOut = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2
 
-  function ciz(ilerleme) {
+  function ciz(ilerleme, izBas, yolOpak) {
     const { x, y, i } = noktaAt(ilerleme), o = olcek()
     simge.style.left = (x * o) + 'px'; simge.style.top = (y * o) + 'px'
-    // gecilen iz: baslangictan simgeye
-    const iz = NOKTA.slice(0, i).concat([[x, y]])
-    turuncu.setAttribute('d', iz.length > 1 ? 'M' + iz.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L') : '')
-    // kamera: simge ekranin %58'inde dursun
-    const hedefY = ekran.clientHeight * 0.58
-    let ty = hedefY - y * o
-    ty = Math.min(0, Math.max(ekran.clientHeight - 1900 * o, ty))
+    // gecilen iz: izBas'tan simgeye (giriste izBas P0'dan 0'a iner - asagiya dogru cizilir)
+    const iB = indeksAt(izBas), nb = noktaAt(izBas)
+    const iz = [[nb.x, nb.y]].concat(NOKTA.slice(iB, i)).concat([[x, y]])
+    turuncu.setAttribute('d', izBas < ilerleme - 1e-4 ? yolDizisi(iz) : '')
+    yolGri.style.opacity = yolOpak; noktalar.style.opacity = yolOpak
+    // kamera: simge ekranin %52'sinde
+    const ty = ekran.clientHeight * 0.52 - y * o
     dunya.style.transform = `translateY(${ty}px)`
-    // etiketler: donemece yaklasinca acilir, gecince kapanir
-    DONEMEC_ILERLEME.forEach((p, k) => { document.getElementById('e' + k).classList.toggle('acik', ilerleme > p - 0.075 && ilerleme < p + 0.11) })
+    DONEMEC_ILERLEME.forEach((p, k) => { document.getElementById('e' + k).classList.toggle('acik', ilerleme > p - 0.045 && ilerleme < p + 0.09) })
   }
 
   function adim(ts) {
     if (!bas) bas = ts
-    const t = Math.min(1, Math.max(0, (ts - bas - BEKLE) / SURE))
-    ciz(easeInOut(t))
-    if (t < 1) raf = requestAnimationFrame(adim); else bitir()
+    const ms = ts - bas
+    if (ms < GIRIS_TEK) ciz(P0, P0, 0)
+    else if (ms < GIRIS_TEK + GIRIS_IZ) { const k = easeOut((ms - GIRIS_TEK) / GIRIS_IZ); ciz(P0, P0 * (1 - k), k) }
+    else ciz(ilerlemeAt(ms), 0, 1)
+    if (ms < TOPLAM_SURE) raf = requestAnimationFrame(adim); else bitir()
   }
 
   function bitir() {
     if (bitti) return; bitti = true; cancelAnimationFrame(raf)
-    ciz(1)
-    // simge ortaya suzulur, yol soner, son durum belirir
+    ciz(1, 0, 1)
     const o = olcek(), hedefX = ekran.clientWidth / 2, hedefY = ekran.clientHeight / 2 - 150
-    const { x, y } = noktaAt(1); const m = new DOMMatrix(getComputedStyle(dunya).transform); const suanY = y * o + m.f
-    dunya.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s ease'
+    const { y } = noktaAt(1); const m = new DOMMatrix(getComputedStyle(dunya).transform); const suanY = y * o + m.f
+    dunya.style.transition = 'transform .9s cubic-bezier(.2,.8,.2,1)'
     dunya.style.transform = `translateY(${m.f + (hedefY - suanY)}px)`
-    simge.style.transition = 'left .8s cubic-bezier(.2,.8,.2,1), width .8s, height .8s'
+    simge.style.transition = 'left .9s cubic-bezier(.2,.8,.2,1), width .9s, height .9s'
     simge.style.left = hedefX + 'px'; simge.style.width = simge.style.height = '78px'
-    document.getElementById('yol').style.transition = 'opacity .6s ease'; document.getElementById('yol').style.opacity = 0
+    svgYol.style.transition = 'opacity .7s ease'; svgYol.style.opacity = 0
     DONEMEC.forEach((_, k) => document.getElementById('e' + k).classList.remove('acik'))
-    setTimeout(() => son.classList.add('acik'), 350)
+    setTimeout(() => son.classList.add('acik'), 400)
     atla.classList.add('gizli')
   }
 
   function basla() {
     bitti = false; bas = 0; son.classList.remove('acik'); atla.classList.remove('gizli')
     dunya.style.transition = ''; simge.style.transition = ''; simge.style.width = simge.style.height = '62px'
-    document.getElementById('yol').style.transition = ''; document.getElementById('yol').style.opacity = 1
+    svgYol.style.transition = ''; svgYol.style.opacity = 1
+    etiketleriYerlestir()
     if (azHareket) { bitir(); return }
+    ciz(P0, P0, 0)
     raf = requestAnimationFrame(adim)
   }
   document.getElementById('cihaz').addEventListener('click', (e) => { if (!bitti) { e.preventDefault(); bitir() } })
   document.getElementById('yeniden').addEventListener('click', basla)
-  addEventListener('resize', () => { if (!bitti) ciz(0) })
+  addEventListener('resize', etiketleriYerlestir)
   basla()
 </script>

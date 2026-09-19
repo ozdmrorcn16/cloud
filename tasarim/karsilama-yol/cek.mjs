@@ -11,7 +11,7 @@ const tarayici = await puppeteer.launch({ executablePath: CHROME, headless: true
 const sayfa = await tarayici.newPage()
 await sayfa.setViewport({ width: 430, height: 900 })
 await sayfa.goto(pathToFileURL(path.join(kok, 'prototip.html')).href, { waitUntil: 'networkidle0' })
-for (const [ad, ms] of [['a1', 1400], ['a2', 2600], ['a3', 2200], ['a4', 2200]]) {
+for (const [ad, ms] of [['a1', 300], ['a2', 900], ['a3', 1900], ['a4', 4700], ['a5', 6500]]) {
   await new Promise((r) => setTimeout(r, ms))
   await sayfa.screenshot({ path: path.join(kok, `kare-${ad}.png`) })
   console.log(ad)
