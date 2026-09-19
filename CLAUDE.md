@@ -180,6 +180,20 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   mekani SECER ve paneli kapatir. Eylemler YALNIZCA secili satirda.
 - **Kompakt cipler:** tek satir hap; Tumu dolu turuncu, Sakin/Yogun
   renkli nokta, Populer yildiz.
+- **KOK NEDEN BULUNDU (2026-09-20 gece, dort kor OTA'dan sonra):**
+  react-native-maps belgesi: `anchor` YALNIZCA Android/Google'da,
+  `centerOffset` YALNIZCA iOS/Apple'da calisir; Apple ozel gorunumlu
+  isaretciyi koordinata ORTALAR. Bugune kadar butun igneler yalnizca
+  `anchor` ile konumlaniyordu, yani iOS'ta igne ucu hic noktaya
+  basmiyordu ve igne+ad tek gorunum oldugu icin igne gercek noktanin
+  SOLUNA kayiyordu. Simdi her isaretcide IKISI BIRDEN: igne
+  `centerOffset {0,-13}` (26 px), merkez mekan ignesi `{0,-15}` (30 px),
+  ad etiketi sabit 136x26 kutu (`ETIKET_KUTU_EN/BOY`) + `centerOffset
+  {68,-13}` + Android icin `anchor {0,1}` ve ic bosluk; kullanici mavi
+  noktasi ortali (0). Igne isaretcisinde artik gorunmez etiket YOK.
+  DERS (hafizaya da yazildi): native'e ozgu gorseli telefonda
+  goremiyorum - once kutuphane kaynagini oku, tek gerekceli cozum
+  yayinla, "duzeldi" degil "dogrular misin" de.
 - **AD ETIKETI BASILABILIR + MAVI NOKTA (ayni gece, sonraki istek):**
   ignenin yanindaki ad AYRI bir `Marker` (`centerOffset` 16/-13,
   `igne-etiket-<id>`, `harita.adEtiketi` 7 dil) - iOS'ta ozel gorunumlu

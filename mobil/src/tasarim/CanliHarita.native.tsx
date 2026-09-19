@@ -162,6 +162,14 @@ const noktaStilleri = StyleSheet.create({
   },
 })
 
+/**
+ * Ad etiketi isaretcisinin SABIT kutusu: 16 px sol bosluk (ignenin
+ * yarisi 13 + aralik 3) + 120 px etiket; 26 px yuksek (igne ile ayni).
+ * Sabit olmasi sart: iOS konumu kutunun olculen boyutundan hesapliyor.
+ */
+const ETIKET_KUTU_EN = 136
+const ETIKET_KUTU_BOY = 26
+
 /** Konuma don dugmesindeki nisan simgesi. */
 function NisanIkonu({ renk: c }: { renk: string }) {
   return (
@@ -388,7 +396,12 @@ export function CanliHarita({
               <Marker
                 key={mekan.id}
                 coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
+                /* IKI PLATFORM IKI PROP (react-native-maps belgesi):
+                   `anchor` yalnizca Android/Google, `centerOffset` yalnizca
+                   iOS/Apple. Apple ozel gorunumu koordinata ORTALAR;
+                   ucun noktaya basmasi icin yarim yukseklik yukari. */
                 anchor={{ x: 0.5, y: 1 }}
+                centerOffset={{ x: 0, y: -13 }}
                 // Ozel gorunumlu igne her karede yeniden cizilmesin:
                 // sinir kalkinca sayi yuze cikabiliyor.
                 tracksViewChanges={false}
@@ -400,59 +413,20 @@ export function CanliHarita({
                     : `${mekan.ad}, ${durumEtiketi(d)}`
                 }
               >
-                <View style={stiller.igneKutu}>
-                  <Svg width={26} height={26} viewBox="0 0 24 24">
-                    <Path
-                      d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-                      fill={DURUM_RENGI[d]}
-                      stroke="#FFFFFF"
-                      strokeWidth={1.6}
-                    />
-                    <Circle cx={12} cy={9.4} r={2.8} fill="#FFFFFF" />
-                  </Svg>
-                  {/* HER IGNEDE AD VAR (kullanicinin kurali 2026-09-09:
-                      "igneler bir konumu gosteriyor, isimleri olmasi
-                      gerek").
-
-                      Eleme kurali TAMAMEN KALKTI. Once sayi siniri,
-                      sonra metre esigi, sonra piksel kutusu denendi;
-                      ucunde de bazi igneler adsiz kaliyordu ve
-                      kullanici uc kez bildirdi. Adsiz bir igne
-                      haritada "burada bir sey var ama ne oldugunu
-                      soylemiyorum" demek - bu, ignenin var olma
-                      sebebine aykiri.
-
-                      Cakisma riski KABUL EDILDI ve azaltildi: ad tek
-                      satir, en fazla 84 px, arkasinda zemin renginde
-                      halo var; harita etkilesimli oldugu icin
-                      yakinlastirinca adlar birbirinden ayriliyor. */}
-                  {/* AD ETIKETI ASAGIDA AYRI BIR MARKER (2026-09-19 gece,
-                      kullanicinin istegi "konumun isim etiketine de
-                      basilabilsin"): iOS'ta ozel gorunumlu bir
-                      isaretcinin dokunma alani gorselin kendisiyle
-                      sinirli kalabiliyor; etiket kendi isaretcisi
-                      olunca ona dokunmak da ayni secimi yapiyor.
-                      Buradaki gorunmez yer tutucu ignenin kutusunu
-                      eskisi gibi tutuyor (hiza degismesin). */}
-                  <View style={[stiller.igneEtiket, stiller.igneEtiketGorunmez]}>
-                      {/* DURUM SATIRI KALDIRILDI (kullanicinin
-                          bildirdigi hata 2026-09-09: "isimsiz igneler
-                          var hala"). Etiket iki satirdi ve kutusu
-                          130x26 px'e cikiyordu; 1 km'lik bir cercevede
-                          130 px ~730 metre demek, yani neredeyse butun
-                          adlar birbirini eliyordu - otuz igneden
-                          yalnizca dordu adliydi.
-
-                          Bilgi KAYBOLMUYOR: durumu IGNENIN RENGI zaten
-                          soyluyor (yesil sakin / kirmizi yogun / sari
-                          populer) ve haritanin hemen altindaki cipler
-                          o rengi ogretiyor. Ayni seyi iki kez yazmak
-                          adlarin yerini yiyordu. */}
-                    <Text style={stiller.igneAd} numberOfLines={1}>
-                      {mekan.ad}
-                    </Text>
-                  </View>
-                </View>
+                {/* YALNIZCA IGNE. Onceden igne + ad tek gorunumdu ve iOS
+                    gorunumu koordinata ORTALADIGI icin igne gercek
+                    noktanin soluna kayiyordu (ad genisliginin yarisi
+                    kadar) - kullanicinin "etiketler kaymis" bildirimi
+                    2026-09-19/20. Ad artik asagidaki ayri isaretcide. */}
+                <Svg width={26} height={26} viewBox="0 0 24 24">
+                  <Path
+                    d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
+                    fill={DURUM_RENGI[d]}
+                    stroke="#FFFFFF"
+                    strokeWidth={1.6}
+                  />
+                  <Circle cx={12} cy={9.4} r={2.8} fill="#FFFFFF" />
+                </Svg>
               </Marker>
             )
         })}
@@ -460,16 +434,12 @@ export function CanliHarita({
           <Marker
             key={`etiket-${mekan.id}`}
             coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-            // KONUM YALNIZCA `anchor` ILE (kullanicinin bildirdigi hata
-            // 2026-09-19 gece: "isim etiketleri kaymis"): `anchor` ve
-            // `centerOffset` birlikte verilince iOS ikisini de uygulayip
-            // etiketi ignenin sol ustune atiyordu. Simdi gorunumun sol
-            // alt kosesi koordinata bagli (0,1); ignenin sagina ve
-            // dikeyde igne govdesinin ortasina dusmesi icin bosluklar
-            // GORUNUMUN ICINDE: soldan 16 px (ignenin yarisi + aralik),
-            // alttan 3 px (igne 26 px, merkezi 13 px yukarida; etiket
-            // 20 px -> 10 + 3).
+            /* Kutu sabit 136x26: sol kenari koordinatta, dikey ortasi
+               13 pt yukarida (igne govdesinin ortasi). Android anchor
+               (0,1) + kutunun ic bosluklari; iOS centerOffset = kutu
+               merkezinin koordinata gore yeri = (+68, -13). */
             anchor={{ x: 0, y: 1 }}
+            centerOffset={{ x: ETIKET_KUTU_EN / 2, y: -ETIKET_KUTU_BOY / 2 }}
             tracksViewChanges={false}
             onPress={() => onMekanSec?.(mekan.id)}
             accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
@@ -492,6 +462,7 @@ export function CanliHarita({
         <Marker
           coordinate={{ latitude: merkez.lat, longitude: merkez.lng }}
           anchor={{ x: 0.5, y: merkezDurumu ? 1 : 0.5 }}
+          centerOffset={{ x: 0, y: merkezDurumu ? -15 : 0 }}
           tracksViewChanges={false}
           accessibilityLabel={
             merkezDurumu ? cevir('harita.buMekan', { durum: durumEtiketi(merkezDurumu) }) : cevir('harita.buradasin')
@@ -659,7 +630,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // sonradan belli olunca boyut sifir sayilip etiket koordinata
   // ortalaniyordu. Sabit genislikte hesap ilk karede dogru. Hap kabin
   // solunda durur, kalan bosluk saydam.
-  etiketKabi: { width: 16 + 120, paddingLeft: 16, paddingBottom: 3, alignItems: 'flex-start' },
+  etiketKabi: {
+    width: ETIKET_KUTU_EN,
+    height: ETIKET_KUTU_BOY,
+    paddingLeft: 16,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 11,
