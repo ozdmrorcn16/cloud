@@ -163,11 +163,13 @@ const noktaStilleri = StyleSheet.create({
 })
 
 /**
- * Ad etiketi isaretcisi: 16 px sol bosluk (ignenin yarisi 13 + aralik 3)
- * + hap; 26 px yuksek (igne ile ayni). iOS'ta hap genisligi onLayout ile
+ * Ad etiketi isaretcisi: 12 px sol bosluk + hap; 26 px yuksek (igne ile
+ * ayni). Igne govdesi 26'lik kutuda 16,5 pt genis, sag kenari koordinatin
+ * 8 pt otesinde; 12 ile arada ~4 pt kalir (16 idi, kullanici
+ * 2026-09-20 "biraz yaklastir" dedi). iOS'ta hap genisligi onLayout ile
  * olculuyor; ilk kare icin varsayilan.
  */
-const ETIKET_SOL_BOSLUK = 16
+const ETIKET_SOL_BOSLUK = 12
 const ETIKET_KUTU_BOY = 26
 const ETIKET_VARSAYILAN_EN = 80
 
@@ -438,7 +440,7 @@ export function CanliHarita({
           <Marker
             key={`etiket-${mekan.id}`}
             coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-            /* IKI PLATFORM IKI GOVDE. Android: 16 px sol boslukli, 26 px
+            /* IKI PLATFORM IKI GOVDE. Android: 12 px sol boslukli, 26 px
                yuksek kab + anchor (0,1) -> kabin sol alt kosesi
                koordinatta, hap ignenin sagina/ortasina duser. iOS: kab
                YOK, isaretcinin cocugu dogrudan hap - kullanicinin iki
@@ -447,7 +449,7 @@ export function CanliHarita({
                boyutundan kuruyor ve kabi sol ust koseden ciziyordu;
                sabit 136 kutuda +29, olculen kabda +8 pt sag kayma tam
                bu modelin ongorusu. Cerceve = hap olunca centerOffset
-               x = 16 + hap/2 (sol kenar koordinatin 16 sagi),
+               x = 12 + hap/2 (sol kenar koordinatin 12 sagi),
                y = -13 (igne govdesinin ortasi). */
             anchor={{ x: 0, y: 1 }}
             centerOffset={{
