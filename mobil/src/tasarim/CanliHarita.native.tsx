@@ -164,7 +164,7 @@ const noktaStilleri = StyleSheet.create({
 
 /**
  * Ad etiketi isaretcisi: 16 px sol bosluk (ignenin yarisi 13 + aralik 3)
- * + hap; 26 px yuksek (igne ile ayni). Hap genisligi onLayout ile
+ * + hap; 26 px yuksek (igne ile ayni). iOS'ta hap genisligi onLayout ile
  * olculuyor; ilk kare icin varsayilan.
  */
 const ETIKET_SOL_BOSLUK = 16
@@ -241,11 +241,9 @@ export function CanliHarita({
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const haritaRef = useRef<MapView>(null)
-  // AD ETIKETI GENISLIKLERI (kullanicinin ekran goruntusu 2026-09-20
-  // 00:09 ile olculdu): iOS isaretci cercevesini SABIT kutuya degil
-  // ICERIGE (sol bosluk + hap) gore kuruyor; 136'lik kutu varsayimi
-  // etiketi ~30 pt fazla saga atiyordu. Hapin gercek genisligi
-  // onLayout ile olculup centerOffset ondan hesaplaniyor.
+  // AD ETIKETI GENISLIKLERI (yalnizca iOS): Apple isaretci cercevesini
+  // hapin olculen boyutundan kuruyor; hapin gercek genisligi onLayout
+  // ile okunup centerOffset ondan hesaplaniyor (bkz. etiket isaretcisi).
   const [etiketEnleri, setEtiketEnleri] = useState<Record<string, number>>({})
   /**
    * Once kalabaliklar, sonra en yakinlar. Siralama ETIKET secimini
@@ -440,15 +438,20 @@ export function CanliHarita({
           <Marker
             key={`etiket-${mekan.id}`}
             coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-            /* Kutu = 16 px sol bosluk + hap (olculen genislik), 26 px
-               yuksek. Android: anchor (0,1) -> sol alt kose koordinatta,
-               ic bosluklar hapi ignenin sagina/ortasina koyar. iOS:
-               cerceve iceriğe gore (16 + hap), koordinata ORTALANIR;
-               centerOffset x = cercevenin yarisi -> sol kenar
-               koordinatta, y = -13 -> igne govdesinin ortasi. */
+            /* IKI PLATFORM IKI GOVDE. Android: 16 px sol boslukli, 26 px
+               yuksek kab + anchor (0,1) -> kabin sol alt kosesi
+               koordinatta, hap ignenin sagina/ortasina duser. iOS: kab
+               YOK, isaretcinin cocugu dogrudan hap - kullanicinin iki
+               ekran goruntusu (2026-09-20 00:09 ve 00:20) ayni modeli
+               dogruladi: Apple isaretci cercevesini kabin degil HAPIN
+               boyutundan kuruyor ve kabi sol ust koseden ciziyordu;
+               sabit 136 kutuda +29, olculen kabda +8 pt sag kayma tam
+               bu modelin ongorusu. Cerceve = hap olunca centerOffset
+               x = 16 + hap/2 (sol kenar koordinatin 16 sagi),
+               y = -13 (igne govdesinin ortasi). */
             anchor={{ x: 0, y: 1 }}
             centerOffset={{
-              x: (ETIKET_SOL_BOSLUK + (etiketEnleri[mekan.id] ?? ETIKET_VARSAYILAN_EN)) / 2,
+              x: ETIKET_SOL_BOSLUK + (etiketEnleri[mekan.id] ?? ETIKET_VARSAYILAN_EN) / 2,
               y: -ETIKET_KUTU_BOY / 2,
             }}
             tracksViewChanges={false}
@@ -456,7 +459,7 @@ export function CanliHarita({
             accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
             testID={`igne-etiket-${mekan.id}`}
           >
-            <View style={stiller.etiketKabi} pointerEvents="box-none">
+            {Platform.OS === 'ios' ? (
               <View
                 style={[stiller.igneEtiket, stiller.igneEtiketAyri]}
                 onLayout={(o) => {
@@ -468,7 +471,15 @@ export function CanliHarita({
                   {mekan.ad}
                 </Text>
               </View>
-            </View>
+            ) : (
+              <View style={stiller.etiketKabi} pointerEvents="box-none">
+                <View style={[stiller.igneEtiket, stiller.igneEtiketAyri]}>
+                  <Text style={stiller.igneAd} numberOfLines={1}>
+                    {mekan.ad}
+                  </Text>
+                </View>
+              </View>
+            )}
           </Marker>
         ))}
 
@@ -640,12 +651,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   igneEtiketGorunmez: { opacity: 0 },
   igneEtiketAyri: { maxWidth: 120 },
-  // Etiket isaretcisinin kabi: sol bosluk konumlandirmayi tasiyor.
-  // Genislik ICERIGE gore (2026-09-20 gece, ekran goruntusuyle olculdu):
-  // iOS isaretci cercevesini icerigin olculen boyutuna gore kuruyor ve
-  // koordinata ortaliyor; sabit 136'lik kutu varsayimi etiketi hapin
-  // genisligine gore ~30 pt fazla saga atiyordu. Hapin gercek genisligi
-  // onLayout ile okunup centerOffset ondan hesaplaniyor.
+  // Etiket isaretcisinin kabi - YALNIZCA ANDROID: sol bosluk ve sabit
+  // yukseklik, anchor (0,1) ile konumlandirmayi tasiyor. iOS'ta kab
+  // kullanilmiyor (cerceve hapin boyutu; bosluk centerOffset'te).
   etiketKabi: {
     height: ETIKET_KUTU_BOY,
     paddingLeft: ETIKET_SOL_BOSLUK,
