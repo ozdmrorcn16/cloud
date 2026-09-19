@@ -148,6 +148,13 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### MEKAN SAYFASI: PUAN BLOGU EN ALTTA - 2026-09-20
+
+Kullanicinin istegi ("Puan sutununu en asagiya cek"): `harita/[mekanId]`
+icindeki `MekanPuanlama` blogu istatistik seridinin altindan ScrollView
+iceriginin SONUNA (sekme blogundan sonra) tasindi. Sira testle kilitli
+("PUAN blogu sayfanin EN ALTINDA"). OTA asagida.
+
 ### CHECK-IN EKRANI: HARITA ANA TUVAL + CEKILEN PANEL - 2026-09-19
 
 Kullanicinin referans tasarimi ("en onemli degisiklik haritayi okunur
