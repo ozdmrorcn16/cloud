@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Platform, View, Text, Pressable, StyleSheet } from 'react-native'
 import MapView, { Marker, type Region } from 'react-native-maps'
 import Svg, { Circle, Path } from 'react-native-svg'
@@ -163,12 +163,13 @@ const noktaStilleri = StyleSheet.create({
 })
 
 /**
- * Ad etiketi isaretcisinin SABIT kutusu: 16 px sol bosluk (ignenin
- * yarisi 13 + aralik 3) + 120 px etiket; 26 px yuksek (igne ile ayni).
- * Sabit olmasi sart: iOS konumu kutunun olculen boyutundan hesapliyor.
+ * Ad etiketi isaretcisi: 16 px sol bosluk (ignenin yarisi 13 + aralik 3)
+ * + hap; 26 px yuksek (igne ile ayni). Hap genisligi onLayout ile
+ * olculuyor; ilk kare icin varsayilan.
  */
-const ETIKET_KUTU_EN = 136
+const ETIKET_SOL_BOSLUK = 16
 const ETIKET_KUTU_BOY = 26
+const ETIKET_VARSAYILAN_EN = 80
 
 /** Konuma don dugmesindeki nisan simgesi. */
 function NisanIkonu({ renk: c }: { renk: string }) {
@@ -240,7 +241,12 @@ export function CanliHarita({
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const haritaRef = useRef<MapView>(null)
-
+  // AD ETIKETI GENISLIKLERI (kullanicinin ekran goruntusu 2026-09-20
+  // 00:09 ile olculdu): iOS isaretci cercevesini SABIT kutuya degil
+  // ICERIGE (sol bosluk + hap) gore kuruyor; 136'lik kutu varsayimi
+  // etiketi ~30 pt fazla saga atiyordu. Hapin gercek genisligi
+  // onLayout ile olculup centerOffset ondan hesaplaniyor.
+  const [etiketEnleri, setEtiketEnleri] = useState<Record<string, number>>({})
   /**
    * Once kalabaliklar, sonra en yakinlar. Siralama ETIKET secimini
    * besliyor (adi yazilacak olanlar bastan seciliyor); igneler artik
@@ -354,7 +360,7 @@ export function CanliHarita({
         // Yalnizca `bottom` veriliyor: sifir olan kenar DOKUNULMAZ demek,
         // yani logo ile "Yasal" yatayda Apple'in kendi hizasinda kalir
         // (yan yana), ikisine ayni left verilse ust uste binerdi.
-        legalLabelInsets={{ left: 0, bottom: altPay + 8, top: 0, right: 0 }}
+        legalLabelInsets={{ left: 0, bottom: altPay + 20, top: 0, right: 0 }}
         appleLogoInsets={{ left: 0, bottom: altPay + 8, top: 0, right: 0 }}
         onPress={onBosaDokun}
         scrollEnabled
@@ -434,19 +440,30 @@ export function CanliHarita({
           <Marker
             key={`etiket-${mekan.id}`}
             coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-            /* Kutu sabit 136x26: sol kenari koordinatta, dikey ortasi
-               13 pt yukarida (igne govdesinin ortasi). Android anchor
-               (0,1) + kutunun ic bosluklari; iOS centerOffset = kutu
-               merkezinin koordinata gore yeri = (+68, -13). */
+            /* Kutu = 16 px sol bosluk + hap (olculen genislik), 26 px
+               yuksek. Android: anchor (0,1) -> sol alt kose koordinatta,
+               ic bosluklar hapi ignenin sagina/ortasina koyar. iOS:
+               cerceve iceriğe gore (16 + hap), koordinata ORTALANIR;
+               centerOffset x = cercevenin yarisi -> sol kenar
+               koordinatta, y = -13 -> igne govdesinin ortasi. */
             anchor={{ x: 0, y: 1 }}
-            centerOffset={{ x: ETIKET_KUTU_EN / 2, y: -ETIKET_KUTU_BOY / 2 }}
+            centerOffset={{
+              x: (ETIKET_SOL_BOSLUK + (etiketEnleri[mekan.id] ?? ETIKET_VARSAYILAN_EN)) / 2,
+              y: -ETIKET_KUTU_BOY / 2,
+            }}
             tracksViewChanges={false}
             onPress={() => onMekanSec?.(mekan.id)}
             accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
             testID={`igne-etiket-${mekan.id}`}
           >
             <View style={stiller.etiketKabi} pointerEvents="box-none">
-              <View style={[stiller.igneEtiket, stiller.igneEtiketAyri]}>
+              <View
+                style={[stiller.igneEtiket, stiller.igneEtiketAyri]}
+                onLayout={(o) => {
+                  const en = Math.round(o.nativeEvent.layout.width)
+                  setEtiketEnleri((eski) => (eski[mekan.id] === en ? eski : { ...eski, [mekan.id]: en }))
+                }}
+              >
                 <Text style={stiller.igneAd} numberOfLines={1}>
                   {mekan.ad}
                 </Text>
@@ -623,17 +640,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   igneEtiketGorunmez: { opacity: 0 },
   igneEtiketAyri: { maxWidth: 120 },
-  // Etiket isaretcisinin kabi: sol ve alt bosluk konumlandirmayi tasiyor.
-  // GENISLIK SABIT (kullanicinin bildirdigi hata 2026-09-19 gece:
-  // etiket ignenin ustune ortalaniyordu): iOS `anchor`i gorunumun
-  // olculen boyutundan `centerOffset`e ceviriyor; metin genisligi
-  // sonradan belli olunca boyut sifir sayilip etiket koordinata
-  // ortalaniyordu. Sabit genislikte hesap ilk karede dogru. Hap kabin
-  // solunda durur, kalan bosluk saydam.
+  // Etiket isaretcisinin kabi: sol bosluk konumlandirmayi tasiyor.
+  // Genislik ICERIGE gore (2026-09-20 gece, ekran goruntusuyle olculdu):
+  // iOS isaretci cercevesini icerigin olculen boyutuna gore kuruyor ve
+  // koordinata ortaliyor; sabit 136'lik kutu varsayimi etiketi hapin
+  // genisligine gore ~30 pt fazla saga atiyordu. Hapin gercek genisligi
+  // onLayout ile okunup centerOffset ondan hesaplaniyor.
   etiketKabi: {
-    width: ETIKET_KUTU_EN,
     height: ETIKET_KUTU_BOY,
-    paddingLeft: 16,
+    paddingLeft: ETIKET_SOL_BOSLUK,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
