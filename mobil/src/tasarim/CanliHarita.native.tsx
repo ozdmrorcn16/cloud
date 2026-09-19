@@ -270,9 +270,17 @@ export function CanliHarita({
   }, [merkez, mekanlar, kullaniciKonumu])
 
   // Merkez ya da mekanlar degisince harita yeni cerceveye kayar.
+  //
+  // `altPay` DA BAGIMLILIK (kullanicinin bildirdigi hata 2026-09-19:
+  // "check-in sayfasina girince kullanicinin bulundugu yer ilk etapta
+  // gorunmuyor"): panel yuksekligi ilk cizimden SONRA olculuyor;
+  // `initialRegion` pay sifirken kuruldugu icin merkez tam haritanin
+  // ortasina, yani panelin ARKASINA dusuyordu. Pay gelince (mapPadding
+  // degisince) iOS kamerayi kendiliginden kaydirmiyor - burada yeniden
+  // hizalaniyor. Web'de merkez zaten `altPay`dan turetiliyor.
   useEffect(() => {
     if (bolge) haritaRef.current?.animateToRegion(bolge, KAYDIRMA_SURESI_MS)
-  }, [bolge])
+  }, [bolge, altPay])
 
   // KUMELER: gorunur bolgenin genisligine gore. Bolge henuz
   // bilinmiyorsa (ilk kare) acilis cercevesi kullaniliyor.
