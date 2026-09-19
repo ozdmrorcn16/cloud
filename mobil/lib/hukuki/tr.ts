@@ -34,7 +34,7 @@ const tr: HukukiMetin = {
         'Arkadaşlık bilgin: kimi takip ettiğin, kimlerle sohbet isteği alışverişinde bulunduğun, kimi engellediğin.',
         'Bildirim göndermemiz için cihazının bildirim jetonu.',
         'Bildirim tercihlerin (hangi bildirimlerin gelsin, gece sessizi) ve gece sessizi için cihazının saat dilimi. Giriş yaptığın cihazların oturum kayıtları: cihaz türü, IP adresi ve son etkinlik zamanı; bunları Ayarlar → Hesap ve güvenlik → Açık oturumlar bölümünden görüp tek tek kapatabilirsin. Görünüm (tema) tercihin yalnızca cihazında saklanır, sunucuya gitmez.',
-        'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler.',
+        'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler. Bir şikâyete fotoğraf eklersen o fotoğraf şikâyet kaydıyla birlikte saklanır ve yalnızca moderasyon ekibi görür; başka kullanıcılara hiçbir zaman gösterilmez.',
         'Mekânlara verdiğin puanlar (Kötü / İyi / Harika). Herkes yalnızca toplamları görür; hangi puanı verdiğini yalnızca sen görürsün. Check-in fotoğrafların, seçtiğin görünürlük kuralıyla o mekânın fotoğraf alanında da görünür.',
       ],
     },

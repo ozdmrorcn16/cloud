@@ -20,7 +20,7 @@ const fr: HukukiMetin = {
         "Tes données d'amitié : qui tu suis, avec qui tu as échangé des demandes de discussion, qui tu as bloqué.",
         "Le jeton de notification de ton appareil, pour que nous puissions t'envoyer des notifications.",
         "Tes préférences de notification (quelles notifications tu reçois, heures calmes la nuit) et, pour les heures calmes, le fuseau horaire de ton appareil. Les enregistrements de session des appareils depuis lesquels tu t'es connecté : type d'appareil, adresse IP et heure de la dernière activité ; tu peux les consulter et les fermer un par un dans Réglages → Compte et sécurité → Sessions actives. Ta préférence d'apparence (thème) est stockée uniquement sur ton appareil et n'est jamais envoyée au serveur.",
-        'Les signalements que tu as faits ou qui ont été faits à ton sujet.',
+        "Les signalements que tu as faits ou qui ont été faits à ton sujet. Si tu joins une photo à un signalement, elle est conservée avec ce signalement et vue uniquement par l'équipe de modération ; elle n'est jamais montrée aux autres utilisateurs.",
         "Les notes que tu attribues aux lieux (Mauvais / Bien / Génial). Tout le monde ne voit que les totaux ; la note que tu as donnée n'est visible que par toi. Tes photos de check-in apparaissent aussi dans l'espace photos de ce lieu, selon la règle de visibilité que tu as choisie.",
       ],
     },

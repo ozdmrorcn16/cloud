@@ -20,7 +20,7 @@ const en: HukukiMetin = {
         'Your friendship data: whom you follow, whom you exchanged chat requests with, whom you blocked.',
         "Your device's notification token, so that we can send you notifications.",
         "Your notification preferences (which notifications you receive, quiet hours at night) and, for quiet hours, your device's time zone. Session records of the devices you signed in from: device type, IP address and last activity time; you can view and close them one by one under Settings → Account and security → Active sessions. Your appearance (theme) preference is stored only on your device and never sent to the server.",
-        'Reports you filed or reports filed about you.',
+        'Reports you filed or reports filed about you. If you attach a photo to a report, it is stored with that report and seen only by the moderation team; it is never shown to other users.',
         'The ratings you give to places (Bad / Good / Great). Everyone sees only the totals; which rating you gave is visible only to you. Your check-in photos also appear in the photo area of that place, under the visibility rule you chose.',
       ],
     },

@@ -148,6 +148,40 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### SABAH TURU: MESAJLAR, SIKAYET, CHECK-IN HARITASI - 2026-09-19
+
+Kullanicinin telefondan ekran goruntuleriyle art arda istekleri (hepsi
+yayinda, OTA tek grup, web + panel guncel):
+- **Mesajlar:** satirlar arasi cizgi KALKTI; sira sunucudan (son
+  mesajin zamani, kim yazdigina bakmadan) - ekran bozmuyor, testle
+  kilitli. Okunmamis konusma: ad kalin, onizleme KOYU + kalin, sayi
+  rozeti satirin SAG UCUNDA (adin yanindayken goze carpmiyordu).
+- **Sikayet ekrani:** `paddingTop: guvenliAlan.top` ekranda BIR KEZ
+  DAHA ekleniyordu (kok duzen zaten veriyor) - cift pay yuzunden
+  "Sikayeti gonder" telefonda gezinme cubugunun altina dusuyordu.
+  Kaldirildi; rozet 52, satir dolgusu 10. 390x751 (telefon guvenli
+  alanlari dusulmus) olcusunde sigiyor: `tasarim/sikayet-01.png`.
+  DERS: ekran kendi ust payini koyacaksa `_layout.tsx`teki
+  `kendiUstPayiniKoyar` listesine girmeli; yoksa pay iki kez gelir.
+- **Ek aciklama siniri YOK** (500 ve sayac kalkti; sunucuda sinir
+  yoktu).
+- **Sikayete FOTOGRAF** (migrasyon `20260919110000`): ozel kova
+  `sikayet-fotograflari` (10 MB, gorsel), `sikayetler.fotograf`,
+  `sikayet_gonder` 5. parametre `p_fotograf` (eski imza DROP edildi -
+  asiri yukleme tuzagi) + sahiplik kontrolu; okuma yalnizca yukleyen +
+  moderator. Panel sikayet detayinda imzali onizleme. Gizlilik metni
+  7 dil + docs, KVKK listesi maddesi. Canli: yabanci yol reddediliyor.
+- **Sohbette sikayet girisi KALKTI** (ust bar dugmesi + mesaja uzun
+  basma); tek giris baskasinin profilindeki uc nokta. Sunucu/panel
+  mesaj sikayetini hala destekliyor.
+- **"Sikayet edildi" belli:** profilde daha once sikayet ettiysem
+  menude pasif "Sikayet edildi" (`SecimPenceresi` yeni `pasif` alani)
+  ve kimlik blogunda turuncu not; `kullaniciyiSikayetEttimMi`
+  (`sikayetler` RLS kendi satirlarim). `useFocusEffect` ile donuste
+  tazeleniyor.
+- **Check-in sayfasi haritasi** mekan sayfasiyla ayni olcu: tam
+  genislik (negatif yan pay) + 210 yuksek.
+
 ### GUVENLIK TARAMASI: BASTAN SONA - 2026-09-19
 
 Kullanicinin istegi: "uygulamayi bastan sona tara, hatalari duzelt,

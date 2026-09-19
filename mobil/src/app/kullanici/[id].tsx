@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import {
   baskasininProfiliniGetir,
@@ -36,6 +36,7 @@ import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
+import { kullaniciyiSikayetEttimMi } from '../../../lib/sikayet'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
 import { SekmeHapi } from '../../tasarim/SekmeHapi'
@@ -166,6 +167,22 @@ export default function KullaniciProfiliEkrani() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
   const [guvenlikMenusu, setGuvenlikMenusu] = useState(false)
+  // Bu kisiyi daha once sikayet ettiysem menude "Sikayet edildi" (pasif)
+  // ve kimlik blogunda kucuk bir not (kullanicinin istegi 2026-09-19).
+  // Ekran her odaklandiginda yeniden okunuyor: sikayet ekranindan
+  // donuste durum aninda degissin.
+  const [sikayetEdildi, setSikayetEdildi] = useState(false)
+  useFocusEffect(
+    useCallback(() => {
+      let gecerli = true
+      kullaniciyiSikayetEttimMi(id).then((d) => {
+        if (gecerli) setSikayetEdildi(d)
+      })
+      return () => {
+        gecerli = false
+      }
+    }, [id])
+  )
   // Ani kartindan acilan fotograf gezgini: bu kisinin fotografli
   // anilari arasinda saga-sola kaydirma (kullanicinin istegi 2026-09-18).
   const [acikFotografIndeksi, setAcikFotografIndeksi] = useState<number | null>(null)
@@ -621,6 +638,11 @@ export default function KullaniciProfiliEkrani() {
                   biyografi gibi kisinin kendi yayinladigi bir bilgi;
                   gizlilik ayari AKISI kapatiyor, kimlik satirini degil. */}
               {profil.instagram ? <InstagramSatiri kullaniciAdi={profil.instagram} /> : null}
+              {sikayetEdildi ? (
+                <Text style={stiller.sikayetNotu} testID="sikayet-edildi-notu">
+                  {t('kullanici.sikayetEttinNotu')}
+                </Text>
+              ) : null}
             </View>
           </View>
 
@@ -803,7 +825,14 @@ export default function KullaniciProfiliEkrani() {
         acikMi={guvenlikMenusu}
         secimler={[
           { etiket: t('kullanici.paylas'), testID: 'menu-paylas', onSec: profiliPaylas },
-          { etiket: t('kullanici.sikayetEt'), testID: 'menu-sikayet', onSec: sikayetEt },
+          sikayetEdildi
+            ? {
+                etiket: t('kullanici.sikayetEdildi'),
+                testID: 'menu-sikayet-edildi',
+                pasif: true,
+                onSec: () => {},
+              }
+            : { etiket: t('kullanici.sikayetEt'), testID: 'menu-sikayet', onSec: sikayetEt },
           {
             etiket: t('kullanici.engelle'),
             testID: 'menu-engelle',
@@ -965,6 +994,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     lineHeight: 20,
     color: renk.metinIkincil,
+    marginTop: 4,
+  },
+  sikayetNotu: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    lineHeight: 20,
+    color: renk.turuncuYazi,
     marginTop: 4,
   },
   /* EYLEM SATIRI: iki esit buton, kendi profildeki olcude (40). */

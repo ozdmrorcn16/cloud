@@ -14,6 +14,7 @@ import {
   sohbetIstegiGonder,
   sohbetIsteginiYanitla,
 } from '../../../lib/bag'
+import { kullaniciyiSikayetEttimMi } from '../../../lib/sikayet'
 
 jest.mock('../../../lib/profil', () => ({
   baskasininProfiliniGetir: jest.fn(),
@@ -29,6 +30,7 @@ jest.mock('../../../lib/fotograf-url', () => ({
   profilFotograflariUrl: jest.fn(),
   checkInFotografiUrl: jest.fn(),
 }))
+jest.mock('../../../lib/sikayet', () => ({ kullaniciyiSikayetEttimMi: jest.fn() }))
 jest.mock('../../../lib/bag', () => ({
   bagDurumunuGetir: jest.fn(),
   takipIstegiGonder: jest.fn(),
@@ -52,11 +54,17 @@ jest.mock('expo-router', () => ({
     setParams: mockSetParams,
   }),
   useLocalSearchParams: () => ({ id: 'kullanici-2', sekme: mockSekmeParam }),
+  // Ekran "sikayet ettim mi" sorusunu her odaklanmada soruyor; testte
+  // mount'ta bir kez yeter.
+  useFocusEffect: (effect: () => void) => {
+    require('react').useEffect(effect, [])
+  },
 }))
 
 beforeEach(() => {
   jest.clearAllMocks()
   mockSekmeParam = undefined
+  ;(kullaniciyiSikayetEttimMi as jest.Mock).mockResolvedValue(false)
   // Varsayilan: baktigim profil BENIM DEGIL. Kendi profilim senaryosu
   // bunu kendi testinde degistiriyor.
   ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('ben')
@@ -762,6 +770,24 @@ describe('KullaniciProfiliEkrani duzen', () => {
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
     expect(await screen.findByText('Şikâyet et')).toBeTruthy()
     expect(screen.getByText('Engelle')).toBeTruthy()
+  })
+
+  it('daha once sikayet ettiysem menude "Şikâyet edildi" (pasif) ve kimlikte not var', async () => {
+    // Kullanicinin istegi 2026-09-19: "o kullaniciyi sikayet ettigi
+    // belli olsun". Durum kendi `sikayetler` satirlarimdan okunuyor.
+    ;(kullaniciyiSikayetEttimMi as jest.Mock).mockResolvedValue(true)
+
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Ada')
+
+    expect(await screen.findByTestId('sikayet-edildi-notu')).toBeTruthy()
+    expect(screen.getByText('Bu kullanıcıyı şikâyet ettin')).toBeTruthy()
+
+    await fireEvent.press(screen.getByTestId('kullanici-menusu'))
+    expect(await screen.findByText('Şikâyet edildi')).toBeTruthy()
+    expect(screen.queryByTestId('menu-sikayet')).toBeNull()
+    await fireEvent.press(screen.getByTestId('menu-sikayet-edildi'))
+    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
   it('istek gonderilmisse BEKLEMEDE yazar, "Arkadaş ekle" gostermez', async () => {

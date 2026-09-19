@@ -64,7 +64,9 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   Ayarlar > Hesap ve guvenlik > Acik oturumlar bolumunden gorup tek tek
   kapatabilirsin. Gorunum (tema) tercihin yalnizca cihazinda saklanir,
   sunucuya gitmez.
-- Sikayet ettigin ya da hakkinda sikayet edilen bilgiler
+- Sikayet ettigin ya da hakkinda sikayet edilen bilgiler (bir sikayete
+  ekledigin fotograf sikayet kaydiyla birlikte saklanir, yalnizca
+  moderasyon ekibi gorur; baska kullanicilara gosterilmez)
 - Mekanlara verdigin puanlar (Kotu / Iyi / Harika). Herkes yalnizca
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
   Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin

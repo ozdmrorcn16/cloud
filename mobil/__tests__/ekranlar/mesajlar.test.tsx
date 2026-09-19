@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import MesajlarEkrani from '../../src/app/mesajlar'
 import { konusmalarimiGetir, konusmayiSil, mesajIsteklerimiGetir } from '../../lib/sohbet'
@@ -107,6 +108,34 @@ describe('MesajlarEkrani', () => {
   // sola kaydirilinca sagda Sil. Kaydirma hareketi jest'te yok; dugme
   // agacta duruyor (Swipeable sag eylemleri hep cizer), dogrudan
   // basiliyor.
+  it('satirlar arasinda cizgi YOK ve sunucunun sirasi korunur (son mesaj en ustte)', async () => {
+    // Kullanicinin istegi 2026-09-19: "sohbetlerin altinda cizik olmasin;
+    // en son mesaj atan en ustte - kullanici kendi attiysa da". Sirayi
+    // `konusmalarim` RPC'si veriyor (son mesajin zamani, kim yazdigina
+    // bakmadan); ekran o sirayi bozmamali.
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([
+      konusma({ konusmaId: 'k-yeni', kisiId: 'u-yeni', ad: 'En Yeni', sonMesajZamani: '2026-09-19T10:00:00Z' }),
+      konusma({ konusmaId: 'k-eski', kisiId: 'u-eski', ad: 'En Eski', sonMesajZamani: '2026-08-01T10:00:00Z' }),
+    ])
+
+    await render(<MesajlarEkrani />)
+    await screen.findByText('En Eski')
+
+    // getAllByText belge sirasiyla doner.
+    const adlar = screen.getAllByText(/^En /).map((t) => t.props.children)
+    expect(adlar).toEqual(['En Yeni', 'En Eski'])
+    // Satir stilinde alt cizgi yok: adin atalarindan hicbirinde
+    // borderBottomWidth tanimli degil.
+    for (const ad of screen.getAllByText(/^En /)) {
+      let dugum = ad.parent
+      while (dugum) {
+        const stil = StyleSheet.flatten(dugum.props?.style) as Record<string, unknown> | undefined
+        expect(stil?.borderBottomWidth ?? 0).toBe(0)
+        dugum = dugum.parent
+      }
+    }
+  })
+
   it('satirda "Gizle" YOK', async () => {
     ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([konusma()])
 

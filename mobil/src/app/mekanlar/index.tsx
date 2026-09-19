@@ -891,9 +891,16 @@ export default function KesfetEkrani() {
           mesafeleriyle. Buyuk iki satirlik baslik KALDIRILDI - harita
           zaten ekranin gorsel capasi, baslik onu asagi itiyordu. */}
       {gorunum === 'harita' && (
+        /* MEKAN SAYFASIYLA AYNI OLCU (kullanicinin istegi 2026-09-19:
+           "check-in yapma sayfasinda da harita bu olculerde gorunsun"):
+           tam genislik (sayfa yan payi negatif payla geri aliniyor),
+           210 yuksek, yuvarlak kose ve cerceve yok - `harita/[mekanId]`
+           ekranindaki `haritaCercevesi` deseni. */
+        <View style={stiller.haritaCercevesi} testID="kesfet-harita-cercevesi">
         <CanliHarita
           merkez={cihazKonumu}
           mekanlar={haritaMekanlari}
+          yukseklik={210}
           /*
             HARITA IGNESI MEKAN SAYFASINI ACIYOR, check-in ekranini
             DEGIL (kullanicinin istegi 2026-09-07: "haritadaki
@@ -909,6 +916,7 @@ export default function KesfetEkrani() {
           */
           onMekanSec={(id) => router.push(`/harita/${id}` as never)}
         />
+        </View>
       )}
 
       {/* Aktif check-in karti: nerede oldugun, orada kac kisi
@@ -1925,6 +1933,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingBottom: ALT_GEZINME_PAYI,
     paddingHorizontal: bosluk.sayfa,
     gap: bosluk.m,
+  },
+  haritaCercevesi: {
+    marginHorizontal: -bosluk.sayfa,
+    overflow: 'hidden',
   },
   ortala: {
     flex: 1,

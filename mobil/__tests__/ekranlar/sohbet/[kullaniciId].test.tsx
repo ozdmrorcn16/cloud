@@ -178,26 +178,20 @@ describe('SohbetEkrani', () => {
     expect(konusmayiOkunduIsaretle).not.toHaveBeenCalled()
   })
 
-  // Ust bardaki dugme artik DAIMA kullaniciyi sikayet eder. Eskiden
-  // hedefTur='mesaj' ile KONUSMA id'si gonderiyordu; moderator "hangi
-  // mesaj" sorusunu cevaplayamiyordu (Plan 2 Task 6, karar 62).
-  it('ust bardaki sikayet dugmesi daima kullaniciyi sikayet eder', async () => {
+  // SOHBETTE SIKAYET GIRISI YOK (kullanicinin karari 2026-09-19):
+  // ust bardaki "Sikayet et" dugmesi ve balona uzun basinca acilan
+  // mesaj sikayeti kaldirildi. Sikayet yalnizca baskasinin profilindeki
+  // uc nokta menusunden. Onceki uc test (dugme kullaniciyi sikayet eder,
+  // konusma yokken de eder, uzun basis mesaji sikayet eder) bu yuzden
+  // tersine dondu.
+  it('ust barda "Sikayet et" dugmesi YOK', async () => {
     await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Şikâyet et'))
+    await screen.findByPlaceholderText('Bir mesaj yaz...')
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
+    expect(screen.queryByText('Şikâyet et')).toBeNull()
   })
 
-  it('konusma henuz yokken de ust bar dugmesi kullaniciyi sikayet eder', async () => {
-    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([])
-
-    await render(<SohbetEkrani />)
-    await fireEvent.press(await screen.findByText('Şikâyet et'))
-
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
-  })
-
-  it('karsi tarafin mesajina uzun basinca o MESAJI sikayet eder', async () => {
+  it('karsi tarafin mesajina uzun basmak sikayet ACMAZ', async () => {
     ;(mesajlariGetir as jest.Mock).mockResolvedValue([
       mesaj({ id: 'm42', gonderenId: 'kullanici-2', metin: 'Kotu soz' }),
     ])
@@ -205,7 +199,7 @@ describe('SohbetEkrani', () => {
     await render(<SohbetEkrani />)
     await fireEvent(await screen.findByText('Kotu soz'), 'longPress')
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=mesaj&hedefId=m42&kullaniciId=kullanici-2')
+    expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
   it('kendi mesajina uzun basmak sikayet acmaz', async () => {

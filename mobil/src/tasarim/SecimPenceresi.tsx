@@ -97,6 +97,8 @@ export type Secim = {
   ikon?: ReactNode
   /** Kirmizi gosterilir. */
   yikici?: boolean
+  /** Basilamaz, soluk: yapilmis bir eylemin izi ("Sikayet edildi"). */
+  pasif?: boolean
   onSec: () => void
 }
 
@@ -130,10 +132,20 @@ export function SecimPenceresi({
                 style={stiller.satir}
                 testID={secim.testID}
                 onPress={secim.onSec}
+                disabled={secim.pasif}
                 accessibilityRole="button"
+                accessibilityState={secim.pasif ? { disabled: true } : undefined}
               >
                 {secim.ikon}
-                <Text style={[stiller.yazi, secim.yikici && stiller.yikici]}>{secim.etiket}</Text>
+                <Text
+                  style={[
+                    stiller.yazi,
+                    secim.yikici && stiller.yikici,
+                    secim.pasif && stiller.pasif,
+                  ]}
+                >
+                  {secim.etiket}
+                </Text>
               </Pressable>
             </View>
           ))}
@@ -173,6 +185,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   yikici: { color: renk.yikici },
+  pasif: { color: renk.metinSoluk },
   vazgec: { color: renk.metinIkincil },
   ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: renk.cizgi },
 })

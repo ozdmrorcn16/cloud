@@ -20,7 +20,7 @@ const de: HukukiMetin = {
         'Deine Freundschaftsdaten: wem du folgst, mit wem du Chat-Anfragen ausgetauscht hast, wen du blockiert hast.',
         'Das Benachrichtigungs-Token deines Geräts, damit wir dir Benachrichtigungen senden können.',
         'Deine Benachrichtigungseinstellungen (welche Benachrichtigungen du erhältst, Ruhezeiten in der Nacht) und für die Ruhezeiten die Zeitzone deines Geräts. Sitzungsdaten der Geräte, auf denen du dich angemeldet hast: Gerätetyp, IP-Adresse und Zeitpunkt der letzten Aktivität; du kannst sie unter Einstellungen → Konto und Sicherheit → Aktive Sitzungen einsehen und einzeln beenden. Deine Darstellungseinstellung (Design) wird nur auf deinem Gerät gespeichert und nie an den Server gesendet.',
-        'Meldungen, die du erstattet hast oder die über dich erstattet wurden.',
+        'Meldungen, die du erstattet hast oder die über dich erstattet wurden. Fügst du einer Meldung ein Foto bei, wird es zusammen mit der Meldung gespeichert und nur vom Moderationsteam gesehen; anderen Nutzern wird es nie angezeigt.',
         'Deine Bewertungen von Orten (Schlecht / Gut / Großartig). Alle sehen nur die Summen; welche Bewertung du abgegeben hast, siehst nur du. Deine Check-in-Fotos erscheinen mit der von dir gewählten Sichtbarkeitsregel auch im Fotobereich dieses Ortes.',
       ],
     },

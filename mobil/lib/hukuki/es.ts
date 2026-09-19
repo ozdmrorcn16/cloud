@@ -20,7 +20,7 @@ const es: HukukiMetin = {
         'Tus datos de amistad: a quién sigues, con quién has intercambiado solicitudes de chat, a quién has bloqueado.',
         'El token de notificaciones de tu dispositivo, para que podamos enviarte notificaciones.',
         'Tus preferencias de notificaciones (qué notificaciones recibes, horas de silencio por la noche) y, para las horas de silencio, la zona horaria de tu dispositivo. Registros de sesión de los dispositivos desde los que iniciaste sesión: tipo de dispositivo, dirección IP y hora de la última actividad; puedes verlos y cerrarlos uno por uno en Ajustes → Cuenta y seguridad → Sesiones activas. Tu preferencia de apariencia (tema) se guarda solo en tu dispositivo y nunca se envía al servidor.',
-        'Las denuncias que has presentado o las presentadas sobre ti.',
+        'Las denuncias que has presentado o las presentadas sobre ti. Si adjuntas una foto a una denuncia, se guarda junto con esa denuncia y solo la ve el equipo de moderación; nunca se muestra a otros usuarios.',
         'Las valoraciones que das a los lugares (Malo / Bueno / Genial). Todos ven solo los totales; qué valoración diste solo lo ves tú. Tus fotos de check-in también aparecen en el área de fotos de ese lugar, con la regla de visibilidad que elegiste.',
       ],
     },

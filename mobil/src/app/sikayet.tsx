@@ -1,9 +1,17 @@
 import { useState, type ReactNode } from 'react'
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { sikayetGonder, SIKAYET_SEBEPLERI, type SikayetHedefTuru } from '../../lib/sikayet'
+import * as ImagePicker from 'expo-image-picker'
+import {
+  sikayetGonder,
+  sikayetFotografYukle,
+  SIKAYET_SEBEPLERI,
+  type SikayetHedefTuru,
+} from '../../lib/sikayet'
 import { engelle } from '../../lib/engelleme'
+import { kendiKullaniciIdim } from '../../lib/profil'
+import { SecimPenceresi } from '../tasarim/SecimPenceresi'
+import { FotografIkonu } from '../tasarim/mekan-ikonlari'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
@@ -21,9 +29,6 @@ import {
   KapatIkonu,
 } from '../tasarim/sikayet-ikonlari'
 import { useDil } from '../../lib/dil'
-
-/** Ek aciklama en fazla bu kadar karakter (referanstaki "0/500"). */
-const ACIKLAMA_EN_FAZLA = 500
 
 /**
  * SIKAYET AKISI - kullanicinin referans gorseli birebir (2026-09-18:
@@ -51,7 +56,6 @@ export default function SikayetEkrani() {
   const renk = useRenk()
   const router = useRouter()
   const { t } = useDil()
-  const guvenliAlan = useSafeAreaInsets()
   const { hedefTur, hedefId, kullaniciId } = useLocalSearchParams<{
     hedefTur: SikayetHedefTuru
     hedefId: string
@@ -64,6 +68,29 @@ export default function SikayetEkrani() {
   const [gonderildi, setGonderildi] = useState(false)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
   const [engellendi, setEngellendi] = useState(false)
+  // FOTOGRAF (kullanicinin istegi 2026-09-19): istege bagli tek gorsel.
+  // Secim cihazda kalir; Gonder'e basilinca once kovaya yuklenir, yolu
+  // sikayetle birlikte gider. Check-in ekranindaki desenle ayni
+  // (kaynak secimi: kamera / galeri).
+  const [yerelFotoUri, setYerelFotoUri] = useState<string | null>(null)
+  const [kaynakSecimi, setKaynakSecimi] = useState(false)
+
+  async function kameradanCek() {
+    setKaynakSecimi(false)
+    const izin = await ImagePicker.requestCameraPermissionsAsync()
+    if (!izin.granted) {
+      setHata(t('sikayet.kameraIzni'))
+      return
+    }
+    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
+    if (!sonuc.canceled) setYerelFotoUri(sonuc.assets[0].uri)
+  }
+
+  async function galeridenSec() {
+    setKaynakSecimi(false)
+    const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
+    if (!sonuc.canceled) setYerelFotoUri(sonuc.assets[0].uri)
+  }
 
   // Engellenecek hesap: kullanici sikayetinde hedef, mesaj sikayetinde
   // sohbetten gelen kisi. Bilinmiyorsa kart hic cizilmez.
@@ -77,7 +104,19 @@ export default function SikayetEkrani() {
     setHata(null)
     setGonderiliyor(true)
     try {
-      await sikayetGonder(hedefTur, hedefId, secilenSebep, aciklama.trim() || undefined)
+      let fotografYolu: string | null = null
+      if (yerelFotoUri) {
+        const kullaniciId = await kendiKullaniciIdim()
+        if (!kullaniciId) throw new Error(t('sikayet.fotografYuklenemedi'))
+        try {
+          fotografYolu = await sikayetFotografYukle(kullaniciId, yerelFotoUri)
+        } catch {
+          // Fotograf yuklenemezse sikayet GONDERILMIYOR: kullanici kanit
+          // eklemek istedi, kanitsiz gitmesi sessiz bir kayip olurdu.
+          throw new Error(t('sikayet.fotografYuklenemedi'))
+        }
+      }
+      await sikayetGonder(hedefTur, hedefId, secilenSebep, aciklama.trim() || undefined, fotografYolu)
       setGonderildi(true)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -104,7 +143,7 @@ export default function SikayetEkrani() {
   // ---------------------------------------------------------------
   if (gonderildi) {
     return (
-      <View style={[stiller.kok, { paddingTop: guvenliAlan.top + bosluk.m }]}>
+      <View style={[stiller.kok, { paddingTop: bosluk.m }]}>
         <View style={stiller.kapatSatiri}>
           <Pressable
             onPress={() => router.back()}
@@ -193,7 +232,12 @@ export default function SikayetEkrani() {
   }
 
   return (
-    <View style={[stiller.kok, { paddingTop: guvenliAlan.top + bosluk.m }]}>
+    <View style={[stiller.kok, { paddingTop: bosluk.m }]}>
+      {/* UST GUVENLI ALAN PAYI BURADA YOK: kok duzen (`_layout.tsx`) onu
+          zaten her ekrana veriyor. 2026-09-19'a kadar burada bir kez
+          daha ekleniyordu (cift pay, ~59 pt) ve "Sikayeti gonder"
+          dugmesi telefonda gezinme cubugunun altina dusuyordu -
+          kullanicinin ekran goruntusuyle bildirdigi hata. */}
       {/* UST CUBUK: geri oku solda, baslik ORTADA (referans). Ortak
           UstCubuk basligi sola yaslar; burada referans birebir. */}
       <View style={stiller.ustCubuk}>
@@ -274,15 +318,43 @@ export default function SikayetEkrani() {
             value={aciklama}
             onChangeText={setAciklama}
             multiline
-            maxLength={ACIKLAMA_EN_FAZLA}
             textAlignVertical="top"
             testID="aciklama-girdisi"
           />
-          <Text style={stiller.sayac} testID="aciklama-sayaci">
-            {aciklama.length}/{ACIKLAMA_EN_FAZLA}
-          </Text>
+          {/* Karakter siniri ve sayac YOK (kullanicinin karari 2026-09-19:
+              "ek aciklama kisminda kelime siniri olmasin"). Referanstaki
+              0/500 kalkti; sunucu (`sikayet_gonder`) da sinir koymuyor. */}
         </View>
         <Text style={stiller.ipucu}>{t('sikayet.aciklamaIpucu')}</Text>
+
+        {/* Fotograf satiri: secilmediyse hayalet "Fotograf ekle"; secildiyse
+            kucuk onizleme + degistir / kaldir. */}
+        <View style={stiller.fotografSatiri}>
+          {yerelFotoUri && (
+            <Image source={{ uri: yerelFotoUri }} style={stiller.fotografOnizleme} testID="sikayet-foto-onizleme" />
+          )}
+          <Pressable
+            onPress={() => setKaynakSecimi(true)}
+            style={({ pressed }) => [stiller.fotografDugmesi, pressed && stiller.fotografDugmesiBasili]}
+            accessibilityRole="button"
+            testID="sikayet-foto-ekle"
+          >
+            <FotografIkonu boyut={18} renk={renk.turuncu} />
+            <Text style={stiller.fotografDugmesiYazi}>
+              {yerelFotoUri ? t('sikayet.fotografDegistir') : t('sikayet.fotografEkle')}
+            </Text>
+          </Pressable>
+          {yerelFotoUri && (
+            <Pressable
+              onPress={() => setYerelFotoUri(null)}
+              hitSlop={8}
+              accessibilityRole="button"
+              testID="sikayet-foto-kaldir"
+            >
+              <Text style={stiller.fotografKaldir}>{t('sikayet.fotografKaldir')}</Text>
+            </Pressable>
+          )}
+        </View>
 
         {hata && <Text style={stiller.hata}>{hata}</Text>}
 
@@ -299,6 +371,15 @@ export default function SikayetEkrani() {
           </Text>
         </Pressable>
       </View>
+
+      <SecimPenceresi
+        acikMi={kaynakSecimi}
+        secimler={[
+          { etiket: t('sikayet.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
+          { etiket: t('sikayet.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
+        ]}
+        onKapat={() => setKaynakSecimi(false)}
+      />
     </View>
   )
 }
@@ -336,14 +417,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Kahraman: rozet + baslik + alt baslik, ortali.
   rozet: {
     alignSelf: 'center',
-    width: 60,
-    height: 60,
-    borderRadius: 18,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     backgroundColor: renk.turuncuZemin,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: bosluk.xs,
-    marginBottom: bosluk.m,
+    marginTop: 0,
+    marginBottom: bosluk.s,
   },
   kahramanBaslik: {
     textAlign: 'center',
@@ -384,7 +465,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     gap: bosluk.m,
     paddingHorizontal: bosluk.l,
-    paddingVertical: 11,
+    paddingVertical: 10,
     backgroundColor: renk.yuzey,
   },
   sebepSatiriAyirici: { borderBottomWidth: 1, borderBottomColor: renk.cizgi },
@@ -445,7 +526,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     minHeight: 72,
     paddingHorizontal: bosluk.l,
     paddingTop: bosluk.m,
-    paddingBottom: 26,
+    paddingBottom: bosluk.m,
   },
   girdi: {
     flex: 1,
@@ -454,14 +535,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 20,
     color: renk.metin,
     padding: 0,
-  },
-  sayac: {
-    position: 'absolute',
-    right: bosluk.l,
-    bottom: bosluk.m,
-    fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    color: renk.metinSoluk,
   },
   ipucu: {
     fontFamily: yazi.govde,
@@ -491,6 +564,41 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde + 2,
     color: '#FFFFFF',
+  },
+
+  // Fotograf satiri (01)
+  fotografSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    marginTop: bosluk.s,
+  },
+  fotografOnizleme: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: renk.turuncuZemin,
+  },
+  fotografDugmesi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.xs,
+    height: 36,
+    paddingHorizontal: bosluk.m,
+    borderRadius: yuvarlak.hap,
+    borderWidth: 1,
+    borderColor: renk.turuncu,
+  },
+  fotografDugmesiBasili: { backgroundColor: renk.turuncuZemin },
+  fotografDugmesiYazi: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuYazi,
+  },
+  fotografKaldir: {
+    fontFamily: yazi.govdeOrta,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
   },
 
   // 02 / Gonderim sonrasi

@@ -183,11 +183,6 @@ export default function MesajlarEkrani() {
                     >
                       {gorunenAd}
                     </Text>
-                    {okunmamis && (
-                      <View style={stiller.rozet}>
-                        <Text style={stiller.rozetYazi}>{item.okunmamis}</Text>
-                      </View>
-                    )}
                   </View>
                   <Text
                     style={[stiller.sonMesaj, okunmamis && stiller.sonMesajOkunmamis]}
@@ -196,6 +191,15 @@ export default function MesajlarEkrani() {
                     {item.sonMesaj ?? ''}
                   </Text>
                 </Pressable>
+                {/* Okunmamis sayaci satirin SAG UCUNDA (kullanicinin istegi
+                    2026-09-19: "sohbete girilmeden mesajin okunmadigi belli
+                    olsun"). Adin yanindayken kisa adlarda goze carpmiyordu;
+                    ad ve onizleme de koyu + kalin. */}
+                {okunmamis && (
+                  <View style={stiller.rozet} testID={`okunmamis-${item.konusmaId}`}>
+                    <Text style={stiller.rozetYazi}>{item.okunmamis}</Text>
+                  </View>
+                )}
               </View>
               </Swipeable>
             )
@@ -284,9 +288,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     gap: bosluk.m,
     backgroundColor: renk.zemin,
+    // Satirlar arasinda cizgi YOK (kullanicinin istegi 2026-09-19:
+    // "sohbetlerin altinda cizik olmasin, alt alta siralansinlar").
     paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
   },
   icerik: { flex: 1 },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
@@ -305,7 +309,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.metinSoluk,
     marginTop: 2,
   },
-  sonMesajOkunmamis: { color: renk.metinIkincil },
+  sonMesajOkunmamis: { fontFamily: yazi.govdeKalin, color: renk.metin },
 
   rozet: {
     minWidth: 20,

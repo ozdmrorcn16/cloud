@@ -1,10 +1,18 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import SikayetEkrani from '../../src/app/sikayet'
-import { sikayetGonder } from '../../lib/sikayet'
+import * as ImagePicker from 'expo-image-picker'
+import { sikayetGonder, sikayetFotografYukle } from '../../lib/sikayet'
 import { engelle } from '../../lib/engelleme'
 
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  requestCameraPermissionsAsync: jest.fn(),
+}))
+jest.mock('../../lib/profil', () => ({ kendiKullaniciIdim: jest.fn().mockResolvedValue('kullanici-1') }))
 jest.mock('../../lib/sikayet', () => ({
   sikayetGonder: jest.fn(),
+  sikayetFotografYukle: jest.fn(),
   SIKAYET_SEBEPLERI: [
     { anahtar: 'taciz', etiket: 'Taciz veya rahatsız etme' },
     { anahtar: 'spam', etiket: 'Spam veya reklam' },
@@ -55,15 +63,80 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
     await fireEvent.press(screen.getByText('Şikâyeti gönder'))
 
     await waitFor(() => {
-      expect(sikayetGonder).toHaveBeenCalledWith('kullanici', 'kullanici-2', 'taciz', 'detay')
+      expect(sikayetGonder).toHaveBeenCalledWith('kullanici', 'kullanici-2', 'taciz', 'detay', null)
+    })
+    expect(sikayetFotografYukle).not.toHaveBeenCalled()
+  })
+
+  // FOTOGRAF (kullanicinin istegi 2026-09-19): istege bagli; secilirse
+  // Gonder'de once kovaya yuklenir, yolu sikayetle gider.
+  it('galeriden fotograf secip gonderince once yukler, yolu sikayetle iletir', async () => {
+    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///kanit.jpg' }],
+    })
+    ;(sikayetFotografYukle as jest.Mock).mockResolvedValue('kullanici-1/123.jpg')
+    ;(sikayetGonder as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<SikayetEkrani />)
+    expect(screen.queryByTestId('sikayet-foto-onizleme')).toBeNull()
+    await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
+    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    expect(await screen.findByTestId('sikayet-foto-onizleme')).toBeTruthy()
+    expect(screen.getByText('Fotoğrafı değiştir')).toBeTruthy()
+
+    await fireEvent.press(screen.getByText('Taciz veya rahatsız etme'))
+    await fireEvent.press(screen.getByText('Şikâyeti gönder'))
+
+    await waitFor(() => {
+      expect(sikayetFotografYukle).toHaveBeenCalledWith('kullanici-1', 'file:///kanit.jpg')
+      expect(sikayetGonder).toHaveBeenCalledWith('kullanici', 'kullanici-2', 'taciz', undefined, 'kullanici-1/123.jpg')
     })
   })
 
-  it('sayac yazilan karakteri sayar (0/500 -> 5/500)', async () => {
+  it('fotografi kaldirinca yuklenmez', async () => {
+    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///kanit.jpg' }],
+    })
+    ;(sikayetGonder as jest.Mock).mockResolvedValue(undefined)
+
     await render(<SikayetEkrani />)
-    expect(screen.getByTestId('aciklama-sayaci').props.children.join('')).toBe('0/500')
-    await fireEvent.changeText(screen.getByTestId('aciklama-girdisi'), 'detay')
-    expect(screen.getByTestId('aciklama-sayaci').props.children.join('')).toBe('5/500')
+    await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
+    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await fireEvent.press(await screen.findByTestId('sikayet-foto-kaldir'))
+    expect(screen.queryByTestId('sikayet-foto-onizleme')).toBeNull()
+
+    await fireEvent.press(screen.getByText('Taciz veya rahatsız etme'))
+    await fireEvent.press(screen.getByText('Şikâyeti gönder'))
+    await waitFor(() => expect(sikayetGonder).toHaveBeenCalled())
+    expect(sikayetFotografYukle).not.toHaveBeenCalled()
+  })
+
+  it('fotograf yuklenemezse sikayet GONDERILMEZ ve hata gorunur', async () => {
+    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///kanit.jpg' }],
+    })
+    ;(sikayetFotografYukle as jest.Mock).mockRejectedValue(new Error('kova'))
+
+    await render(<SikayetEkrani />)
+    await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
+    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await fireEvent.press(screen.getByText('Taciz veya rahatsız etme'))
+    await fireEvent.press(screen.getByText('Şikâyeti gönder'))
+
+    expect(await screen.findByText('Fotoğraf yüklenemedi, tekrar dene.')).toBeTruthy()
+    expect(sikayetGonder).not.toHaveBeenCalled()
+  })
+
+  it('ek aciklamada karakter siniri ve sayac YOK (kullanicinin karari 2026-09-19)', async () => {
+    await render(<SikayetEkrani />)
+    expect(screen.queryByTestId('aciklama-sayaci')).toBeNull()
+    expect(screen.getByTestId('aciklama-girdisi').props.maxLength).toBeUndefined()
+    const uzun = 'a'.repeat(2000)
+    await fireEvent.changeText(screen.getByTestId('aciklama-girdisi'), uzun)
+    expect(screen.getByTestId('aciklama-girdisi').props.value).toBe(uzun)
   })
 
   it('secili sebep radyo durumunu tasir, digerleri tasimaz', async () => {

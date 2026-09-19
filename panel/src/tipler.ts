@@ -87,6 +87,8 @@ export type SikayetDetayi = {
     hedef_id: string
     sebep: string
     aciklama: string | null
+    /** Sikayet edenin ekledigi gorsel: `sikayet-fotograflari` kovasindaki yol (2026-09-19). */
+    fotograf?: string | null
     durum: SikayetDurumu
     olusturuldu: string
     karar_veren_id: string | null

@@ -20,6 +20,7 @@ describe('sikayetGonder', () => {
       p_hedef_id: 'kullanici-2',
       p_sebep: 'taciz',
       p_aciklama: 'surekli mesaj atiyor',
+      p_fotograf: null,
     })
   })
 
@@ -33,6 +34,7 @@ describe('sikayetGonder', () => {
       p_hedef_id: 'checkin-1',
       p_sebep: 'uygunsuz_icerik',
       p_aciklama: null,
+      p_fotograf: null,
     })
   })
 

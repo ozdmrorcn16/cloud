@@ -251,10 +251,11 @@ export default function SohbetEkrani() {
     }
   }
 
-  // Ust bardaki dugme KISIYI sikayet eder. Tek tek mesajlar icin ayri
-  // bir yol var (asagida, uzun basis): sikayetin hedefi gercek mesaj
-  // id'si olmali, yoksa moderator "hangi mesaj" sorusunu cevaplayamaz.
-  // Eskiden bu dugme 'mesaj' turuyle KONUSMA id'si gonderiyordu.
+  // SOHBETTE SIKAYET GIRISI YOK (kullanicinin karari 2026-09-19:
+  // "mesajlar kismindan sikayet eti kaldir, sadece baska kullanicinin
+  // profilinin uc noktasi icinde kalsin"). Ust bardaki "Sikayet et"
+  // dugmesi ve balona uzun basinca acilan mesaj sikayeti kaldirildi;
+  // sunucu (`sikayet_gonder` 'mesaj' turu) ve panel degismedi.
   // "Teslim edildi" YALNIZCA en son kendi mesajimin altinda (Instagram /
   // iMessage deseni): her balonun altina yazmak listeyi tekrarla
   // doldururdu; en sondaki, oncekilerin de ulastigini zaten soyluyor.
@@ -304,9 +305,6 @@ export default function SohbetEkrani() {
             {konusmaSatiri?.ad ?? t('sohbet.baslik')}
           </Text>
         </Pressable>
-        <Pressable onPress={() => router.push(`/sikayet?hedefTur=kullanici&hedefId=${kullaniciId}`)}>
-          <Text style={stiller.sikayetButonu}>{t('sikayet.baslik')}</Text>
-        </Pressable>
       </View>
 
       {/* MESAJ ISTEGI SERIDI: onaylanmadikca istek listesinde kaliyor.
@@ -345,9 +343,6 @@ export default function SohbetEkrani() {
           const gunAyraci = !eskisi || !ayniGunMu(item.olusturuldu, eskisi.olusturuldu)
           const saat = saatYazisi(item.olusturuldu)
           const altYazi = item.id === sonKendiMesajimId ? `${saat} · ${t('sohbet.teslimEdildi')}` : saat
-          // Kendi mesajini sikayet etmek sunucuda zaten reddediliyor
-          // (Kendi mesajini sikayet edemezsin); arayuz de o yola hic
-          // sokmuyor.
           // Karsi tarafin HER balonunun solunda kucuk avatar (kullanicinin
           // istegi 2026-09-14: "her yazdigi mesaj satirinin yaninda").
           // Balonun altina hizali; kendi balonumda yok.
@@ -376,16 +371,9 @@ export default function SohbetEkrani() {
                     />
                   </Pressable>
                 )}
-                <Pressable
-                  onLongPress={
-                    benimMi
-                      ? undefined
-                      : () => router.push(`/sikayet?hedefTur=mesaj&hedefId=${item.id}&kullaniciId=${kullaniciId}`)
-                  }
-                  style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}
-                >
+                <View style={[stiller.mesajBalonu, benimMi ? stiller.kendiBalonu : stiller.karsiBalonu]}>
                   <Text testID="mesaj-metni">{item.metin}</Text>
-                </Pressable>
+                </View>
               </View>
               {/* Saat her balonun altinda; en son kendi mesajimda yanina
                   "Teslim edildi" ekleniyor. Iyimser satirda saat yerel,
@@ -504,11 +492,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
-  },
-  sikayetButonu: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    color: renk.metinIkincil,
   },
   liste: { flex: 1 },
 

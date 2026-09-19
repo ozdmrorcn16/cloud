@@ -611,6 +611,35 @@ islemleri). Kisisel veriye dokunan yeni parcalar ve dort soru:
 - **Topluluk kurallari** uygulama icinde okunur (App Store 1.2 UGC
   sarti); sikayet ve engelleme yolunu gosteriyor.
 
+## Sikayete fotograf ekleme - 2026-09-19
+
+Kullanici bir sikayete istege bagli tek bir fotograf ekleyebiliyor
+(`sikayetler.fotograf`, ozel kova `sikayet-fotograflari`,
+`<sikayet eden id>/<zaman>.jpg`; migrasyon `20260919110000`). Dort soru:
+
+1. **Hangi veri:** sikayet edenin cihazindan sectigi bir gorsel. Ucuncu
+   kisiyi (sikayet edileni ya da baskalarini) gosterebilir - bu yuzden
+   gorsel HICBIR kullaniciya gosterilmez, yalnizca moderasyon delili.
+2. **Dayanak:** mesru menfaat (kotuye kullanimin incelenmesi, m.5/2-f);
+   sikayet listesindeki mevcut satirla ayni. Gizlilik metni 7 dilde
+   guncellendi ("bir sikayete fotograf eklersen ... yalnizca moderasyon
+   ekibi gorur").
+3. **Sure:** sikayet kaydiyla ayni - kayit anonimlesse de (sikayet eden
+   hesabini silince `sikayet_eden_id` null) dosya kovada kalir; kararli
+   sikayetlerin 1 yil sonra silinmesi plani (gizlilik-metni.md) bu
+   dosyayi da kapsayacak. Sikayet gonderilmeden vazgecilirse istemci
+   yuklemiyor (secim cihazda kalir, yalnizca Gonder'de yuklenir).
+4. **Kim gorur:** yukleyen (kendi klasoru) ve AAL2 moderator
+   (`moderasyon.yetkili_mi()`); panel sikayet detayinda imzali adres,
+   1 saat. Sunucu (`sikayet_gonder`) yolun sahibini dogruluyor -
+   baskasinin dosyasi "delil" diye gosterilemez. Moderatorun sikayeti
+   acmasi zaten denetim izine yaziliyor (mevcut kural).
+
+Ayni turda: sohbet ekranindaki sikayet girisleri (ust bar + mesaja
+uzun basma) kaldirildi; mesaj sikayeti sunucuda ve panelde duruyor,
+yalnizca arayuz giris noktasi profil menusu. Ek aciklamanin 500
+karakter siniri kalkti (sunucuda sinir yoktu).
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

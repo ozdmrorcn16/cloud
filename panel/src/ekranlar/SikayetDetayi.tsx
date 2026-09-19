@@ -28,6 +28,9 @@ export function SikayetDetayi() {
   const [bilgi, setBilgi] = useState<string | null>(null)
   const [yukleniyor, setYukleniyor] = useState(true)
   const [kaydediyor, setKaydediyor] = useState(false)
+  // Sikayet edenin ekledigi fotograf: kova ozel, moderator kendi
+  // oturumuyla imzali adres uretir (mekan-fotograflari ile ayni desen).
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null)
 
   const yukle = useCallback(async () => {
     if (!id) return
@@ -42,6 +45,14 @@ export function SikayetDetayi() {
       // henuz karar yok. Karar verilmisse mevcut durum.
       setYeniDurum(gelen.sikayet.durum === 'yeni' ? 'incelendi' : gelen.sikayet.durum)
       setNot(gelen.sikayet.moderator_notu ?? '')
+      if (gelen.sikayet.fotograf) {
+        const { data: imza } = await supabase.storage
+          .from('sikayet-fotograflari')
+          .createSignedUrl(gelen.sikayet.fotograf, 60 * 60)
+        setFotoUrl(imza?.signedUrl ?? null)
+      } else {
+        setFotoUrl(null)
+      }
 
       const { data: g } = await supabase.rpc('moderasyon_hedef_gecmisi', {
         p_hedef_tur: gelen.sikayet.hedef_tur,
@@ -157,6 +168,14 @@ export function SikayetDetayi() {
               </dd>
               <dt>Sebep</dt><dd>{sebepMetni(s.sebep)}</dd>
               <dt>Açıklama</dt><dd>{s.aciklama ? `"${s.aciklama}"` : <span className="k">yazılmamış</span>}</dd>
+              <dt>Fotoğraf</dt>
+              <dd>
+                {s.fotograf
+                  ? fotoUrl
+                    ? <a href={fotoUrl} target="_blank" rel="noreferrer"><img className="onizleme" src={fotoUrl} alt="Şikayete eklenen fotoğraf" /></a>
+                    : <span className="k">yükleniyor…</span>
+                  : <span className="k">eklenmemiş</span>}
+              </dd>
             </dl>
           </div>
 
