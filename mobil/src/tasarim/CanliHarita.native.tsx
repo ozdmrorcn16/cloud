@@ -336,6 +336,18 @@ export function CanliHarita({
         style={StyleSheet.absoluteFill}
         initialRegion={bolge}
         mapPadding={{ top: 0, right: 0, bottom: altPay, left: 0 }}
+        // APPLE LOGOSU VE "YASAL" KOSEDE (kullanicinin istegi 2026-09-19
+        // gece: "yasal yazisi yukarda kalmis, koseye sabitle"). mapPadding
+        // MKMapView'in layoutMargins'ini degistiriyor ve Apple etiketi
+        // padding + guvenli alan + kendi payiyla yukari kaciyordu. Bu
+        // iki prop etiketin cercevesini haritanin kendi cercevesine gore
+        // MUTLAK yerlestiriyor: panelin hemen ustunde, sol altta.
+        // Yalnizca iOS; Android'de Google logosu mapPadding'e uyuyor.
+        // Yalnizca `bottom` veriliyor: sifir olan kenar DOKUNULMAZ demek,
+        // yani logo ile "Yasal" yatayda Apple'in kendi hizasinda kalir
+        // (yan yana), ikisine ayni left verilse ust uste binerdi.
+        legalLabelInsets={{ left: 0, bottom: altPay + 8, top: 0, right: 0 }}
+        appleLogoInsets={{ left: 0, bottom: altPay + 8, top: 0, right: 0 }}
         onPress={onBosaDokun}
         scrollEnabled
         zoomEnabled
@@ -463,8 +475,8 @@ export function CanliHarita({
             accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
             testID={`igne-etiket-${mekan.id}`}
           >
-            <View style={stiller.etiketKabi}>
-              <View style={stiller.igneEtiket}>
+            <View style={stiller.etiketKabi} pointerEvents="box-none">
+              <View style={[stiller.igneEtiket, stiller.igneEtiketAyri]}>
                 <Text style={stiller.igneAd} numberOfLines={1}>
                   {mekan.ad}
                 </Text>
@@ -639,8 +651,15 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     elevation: 3,
   },
   igneEtiketGorunmez: { opacity: 0 },
+  igneEtiketAyri: { maxWidth: 120 },
   // Etiket isaretcisinin kabi: sol ve alt bosluk konumlandirmayi tasiyor.
-  etiketKabi: { paddingLeft: 16, paddingBottom: 3 },
+  // GENISLIK SABIT (kullanicinin bildirdigi hata 2026-09-19 gece:
+  // etiket ignenin ustune ortalaniyordu): iOS `anchor`i gorunumun
+  // olculen boyutundan `centerOffset`e ceviriyor; metin genisligi
+  // sonradan belli olunca boyut sifir sayilip etiket koordinata
+  // ortalaniyordu. Sabit genislikte hesap ilk karede dogru. Hap kabin
+  // solunda durur, kalan bosluk saydam.
+  etiketKabi: { width: 16 + 120, paddingLeft: 16, paddingBottom: 3, alignItems: 'flex-start' },
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 11,
