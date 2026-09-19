@@ -1522,6 +1522,24 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(screen.getByTestId('mekan-karti-mola')).toBeTruthy()
   })
 
+  it('PANEL SURUKLENIR: sinirlar ayni - acik yukseklik harita alani - 24, kapali dogal olcu', async () => {
+    // Kullanicinin istegi 2026-09-20: "elle yukari asagi cekilebilsin,
+    // acilma/gorunme sinirlari ayni kalsin". Yukseklik Animated ile
+    // parmagi izliyor; iki durak eskisiyle ayni.
+    await render(<MekanAramaEkrani />)
+    await screen.findByTestId('mekan-karti-mola')
+    await fireEvent(screen.getByTestId('kesfet-harita-cercevesi'), 'layout', { nativeEvent: { layout: { height: 600 } } })
+    await fireEvent(screen.getByTestId('mekan-paneli'), 'layout', { nativeEvent: { layout: { height: 210 } } })
+    expect(screen.getByTestId('panel-surukleme-alani').props.onResponderMove).toBeDefined()
+
+    await fireEvent.press(screen.getByTestId('diger-mekanlar'))
+    await waitFor(() => expect(screen.getByTestId('mekan-paneli')).toHaveStyle({ height: 576 }))
+
+    await fireEvent.press(screen.getByTestId('panel-tutamaci'))
+    await waitFor(() => expect(screen.queryByTestId('mekan-karti-park')).toBeNull())
+    expect(screen.getByTestId('mekan-paneli')).not.toHaveStyle({ height: 576 })
+  })
+
   it('bos alana (panel, ust blok, harita) dokununca klavye kapanir', async () => {
     // Kullanicinin bildirimi 2026-09-19: arama kutusundan sonra bosluga
     // basinca klavye kapanmiyordu.

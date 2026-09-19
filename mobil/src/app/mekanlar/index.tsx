@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Keyboard,
   Platform,
-  LayoutAnimation,
+  Animated,
   PanResponder,
   ActionSheetIOS,
   Linking,
@@ -258,26 +258,89 @@ export default function KesfetEkrani() {
 
   /*
    * SECILI MEKAN VE PANEL (referans 2026-09-19). `seciliId` null ise en
-   * yakin mekan secili sayilir (render'da). Panel LayoutAnimation ile
-   * acilip kapaniyor; tutamac yukari/asagi surukleme de ayni isi
-   * yapiyor. Arama yazilinca panel KENDILIGINDEN acilir - sonuclar
-   * haritanin altinda kaybolmasin.
+   * yakin mekan secili sayilir (render'da). Arama yazilinca panel
+   * KENDILIGINDEN acilir - sonuclar haritanin altinda kaybolmasin.
+   *
+   * PANEL ELLE SURUKLENIR (kullanicinin istegi 2026-09-20: "yukari
+   * asagi elle cekilebilsin, acilma/gorunme sinirlari ayni kalsin").
+   * Onceden tutamac yalnizca 30 px'lik bir esikle ac/kapa yapiyordu;
+   * simdi yukseklik `panelBoyu` (Animated) ile PARMAGI TAKIP EDIYOR:
+   * kapali dogal yukseklik ile "harita alani - 24" arasinda kelepceli
+   * - iki durak ESKISIYLE AYNI. Birakinca hiz (0,5 px/ms) ya da orta
+   * cizgi karar verir, kalan yol animasyonla gider. Ara bir yukseklikte
+   * durmuyor: haritanin `altPay`i ve konum dugmesi kapali yukseklige
+   * bagli. Yukari cekilmeye baslar baslamaz liste icerigi gelir
+   * (parmakla buyusun); kapanista icerik ANIMASYON BITINCE kompakta
+   * doner, yoksa liste kaybolup bos beyaz alan kuculurdu.
+   * Reanimated degil Animated: reanimated jest'te calismiyor
+   * (2026-09-14 dersi); yukseklik zaten native surucude animlanamaz.
    */
   const [seciliId, setSeciliId] = useState<string | null>(null)
   const [panelAcik, setPanelAcik] = useState(false)
   const [panelYuksekligi, setPanelYuksekligi] = useState(0)
   const [haritaAlaniYuksekligi, setHaritaAlaniYuksekligi] = useState(0)
+  const [surukleniyor, setSurukleniyor] = useState(false)
+  const panelBoyu = useRef(new Animated.Value(0)).current
+  const acikYukseklik = haritaAlaniYuksekligi > 0 ? haritaAlaniYuksekligi - PANEL_UST_BOSLUK : 0
+  // PanResponder bir kez kuruluyor; guncel degerleri ref'ten okur.
+  const panelDurumu = useRef({ acik: false, kapaliBoy: 0, acikBoy: 0, surukleniyor: false, baslangic: 0 })
+  panelDurumu.current.acik = panelAcik
+  panelDurumu.current.kapaliBoy = panelYuksekligi
+  panelDurumu.current.acikBoy = acikYukseklik
+  panelDurumu.current.surukleniyor = surukleniyor
   function paneliAyarla(acik: boolean) {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setPanelAcik(acik)
+    const d = panelDurumu.current
+    // Olcum yokken (ilk kare, jest) animasyonsuz gecis.
+    if (d.acikBoy <= 0 || d.kapaliBoy <= 0) {
+      setPanelAcik(acik)
+      setSurukleniyor(false)
+      return
+    }
+    if (acik) {
+      if (!d.acik && !d.surukleniyor) panelBoyu.setValue(d.kapaliBoy)
+      setPanelAcik(true)
+      Animated.timing(panelBoyu, { toValue: d.acikBoy, duration: 220, useNativeDriver: false }).start(() =>
+        setSurukleniyor(false)
+      )
+    } else {
+      Animated.timing(panelBoyu, { toValue: d.kapaliBoy, duration: 220, useNativeDriver: false }).start(() => {
+        setPanelAcik(false)
+        setSurukleniyor(false)
+      })
+    }
   }
+  // Acikken harita alani degisirse yukseklik takip etsin.
+  useEffect(() => {
+    if (panelAcik && !surukleniyor && acikYukseklik > 0) panelBoyu.setValue(acikYukseklik)
+  }, [acikYukseklik, panelAcik, surukleniyor, panelBoyu])
   const tutamacSurukleme = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 8,
-      onPanResponderRelease: (_, g) => {
-        if (g.dy < -30) paneliAyarla(true)
-        else if (g.dy > 30) paneliAyarla(false)
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderGrant: () => {
+        const d = panelDurumu.current
+        d.baslangic = d.acik ? d.acikBoy : d.kapaliBoy
+        if (d.acikBoy <= 0 || d.kapaliBoy <= 0) return
+        panelBoyu.setValue(d.baslangic)
+        setSurukleniyor(true)
+        if (!d.acik) setPanelAcik(true)
       },
+      onPanResponderMove: (_, g) => {
+        const d = panelDurumu.current
+        if (d.acikBoy <= 0 || d.kapaliBoy <= 0) return
+        panelBoyu.setValue(Math.min(d.acikBoy, Math.max(d.kapaliBoy, d.baslangic - g.dy)))
+      },
+      onPanResponderRelease: (_, g) => {
+        const d = panelDurumu.current
+        if (d.acikBoy <= 0 || d.kapaliBoy <= 0) {
+          if (g.dy < -30) paneliAyarla(true)
+          else if (g.dy > 30) paneliAyarla(false)
+          return
+        }
+        const boy = d.baslangic - g.dy
+        const hedefAcik = g.vy < -0.5 ? true : g.vy > 0.5 ? false : boy > (d.kapaliBoy + d.acikBoy) / 2
+        paneliAyarla(hedefAcik)
+      },
+      onPanResponderTerminate: () => paneliAyarla(panelDurumu.current.baslangic === panelDurumu.current.acikBoy),
     })
   ).current
   /*
@@ -1467,32 +1530,36 @@ export default function KesfetEkrani() {
           onBosaDokun={Keyboard.dismiss}
         />
 
-        {/* PANEL: kapaliyken dogal yuksekligi, acikken harita alaninin
-            neredeyse tamami. LayoutAnimation gecisi yumusatiyor. */}
-        <Pressable
+        {/* PANEL: kapaliyken dogal yuksekligi (olculur), acikken ya da
+            suruklenirken `panelBoyu`. Tutamac + baslik satiri surukleme
+            alani; "Mesafeye gore" dugmesi dokunmayi hala alir, cunku
+            PanResponder ancak 8 px dikey hareketten sonra devralir. */}
+        <AnimatedPressable
           style={[
             stiller.panel,
-            panelAcik && haritaAlaniYuksekligi > 0 && { height: haritaAlaniYuksekligi - PANEL_UST_BOSLUK },
+            (panelAcik || surukleniyor) && acikYukseklik > 0 && { height: panelBoyu },
           ]}
           onLayout={(o) => {
-            if (!panelAcik) setPanelYuksekligi(o.nativeEvent.layout.height)
+            if (!panelAcik && !surukleniyor) setPanelYuksekligi(o.nativeEvent.layout.height)
           }}
           onPress={Keyboard.dismiss}
           accessible={false}
           testID="mekan-paneli"
         >
-          <View style={stiller.tutamacAlani} {...tutamacSurukleme.panHandlers}>
-            <Pressable
-              onPress={() => paneliAyarla(!panelAcik)}
-              accessibilityRole="button"
-              accessibilityLabel={panelAcik ? t('kesfet.paneliKapat') : t('kesfet.digerMekanlar')}
-              hitSlop={12}
-              testID="panel-tutamaci"
-            >
-              <View style={stiller.tutamac} />
-            </Pressable>
+          <View {...tutamacSurukleme.panHandlers} testID="panel-surukleme-alani">
+            <View style={stiller.tutamacAlani}>
+              <Pressable
+                onPress={() => paneliAyarla(!panelAcik)}
+                accessibilityRole="button"
+                accessibilityLabel={panelAcik ? t('kesfet.paneliKapat') : t('kesfet.digerMekanlar')}
+                hitSlop={12}
+                testID="panel-tutamaci"
+              >
+                <View style={stiller.tutamac} />
+              </Pressable>
+            </View>
+            {bolumBasligi}
           </View>
-          {bolumBasligi}
 
           {panelAcik ? (
             <ScrollView
@@ -1524,12 +1591,14 @@ export default function KesfetEkrani() {
               )}
             </View>
           )}
-        </Pressable>
+        </AnimatedPressable>
       </View>
       {pencereler}
     </View>
   )
 }
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 /** Bina simgesi (referans): kompakt satirin seftali kutusunda, ture bagli DEGIL. */
 function BinaIkonu({ renk: c }: { renk: string }) {
