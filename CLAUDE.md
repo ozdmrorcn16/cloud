@@ -215,7 +215,16 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   `tracksViewChanges`'i hic okumuyor (Android'e ozgu), ozel gorunumlu
   isaretci canli UIView, `centerOffset` prop'u dogrudan
   `MKAnnotationView.centerOffset`e gidiyor - olcum sonrasi guncelleme
-  yansir. TELEFONDA DOGRULANMADI; kullanici bakacak.
+  yansir. **Kullanici "hala hatali" dedi (00:20 goruntusu); piksel
+  olcumu: hap sol +24,2 pt (beklenen 16), dikey -7,5 (beklenen -13),
+  iki farkli genislikte AYNI sapma.** Tek acıklayan model: Apple
+  isaretci cercevesini KABIN degil HAPIN boyutundan kuruyor, kabi sol
+  ust koseden ciziyor (sabit 136 kutuda +29, olculen kabda +8 - ikisi
+  de bu modelin ongorusu). COZUM (OTA `960e0850`): iOS'ta isaretcinin
+  cocugu KABSIZ, dogrudan hap (`Platform.OS === 'ios'`), bosluk
+  `centerOffset x = 16 + hap/2`, `y = -13`; Android kab + anchor (0,1)
+  aynen. `etiketKabi` stili artik yalnizca Android. Dogrulama
+  kullanicida.
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
