@@ -3238,6 +3238,21 @@ Xiaohongshu, Reddit, Facebook, Instagram, Xueqiu) rehber ANA HESAP yerine
 ikincil hesap oneriyor: cerez tam hesap erisimi demek ve platformlar API
 disi cagrilari tespit edip hesabi kisitlayabiliyor.
 
+## OMNIROUTE KURULDU - 2026-09-19
+
+Kullanicinin istegiyle `omniroute` 3.8.50 (`npm install -g`, MIT yerel AI
+ag gecidi; diegosouzapw/OmniRoute) kuruldu. Panel http://localhost:20128,
+saglik ucu `/api/monitoring/health` (`/health` YOK; ilk acilista Next.js
+derlemesi yuzunden sayfalar 1-2 dk gec cevap verir, "kapali" sanma).
+Veri `~/.omniroute/` (storage.sqlite + .env). GUVENLIK: varsayilan
+0.0.0.0 ve anahtarsiz dinliyordu; `.env`e `OMNIROUTE_SERVER_HOST=127.0.0.1`
+yazildi. npm bazi native kurulum betiklerini (keytar, onnxruntime, koffi)
+calistirmadi - anahtar zinciri gibi ozellikler gerekirse
+`npm install -g --allow-scripts=... omniroute` ile yeniden kurulur.
+Baslatma elle: `omniroute` (arka planda `cmd /c omniroute > %TEMP%\omniroute.log`).
+Claude Code'a BAGLANMADI (ANTHROPIC_BASE_URL degistirilmedi) - kullanici
+isterse ayri karar.
+
 ## Eklentiler
 
 Hepsi `.claude/settings.json` icinde **proje kapsaminda** tanimli, yani yeni
