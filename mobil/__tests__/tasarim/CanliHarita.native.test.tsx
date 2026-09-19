@@ -75,10 +75,18 @@ describe('CanliHarita (native)', () => {
 
     await render(<CanliHarita merkez={MERKEZ} mekanlar={cok} />)
 
-    // 20 mekan ignesi + 1 merkez ignesi. Etiketler yine eleniyor ama
-    // igneler eksiksiz: kullanici listede gordugu yeri haritada da
-    // gormek istiyor.
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(21)
+    // 20 mekan ignesi + 1 merkez ignesi + 20 AD ETIKETI (2026-09-19
+    // gece: etiket ayri, basilabilir bir isaretci). Igneler eksiksiz:
+    // kullanici listede gordugu yeri haritada da gormek istiyor.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(41)
+    expect(screen.getByLabelText('Mekan 3 etiketi')).toBeTruthy()
+  })
+
+  it('ad etiketine dokunmak da igne gibi mekani secer', async () => {
+    const sec = jest.fn()
+    await render(<CanliHarita merkez={MERKEZ} mekanlar={[mekan(1)]} onMekanSec={sec} />)
+    await fireEvent.press(screen.getByLabelText('Mekan 1 etiketi'))
+    expect(sec).toHaveBeenCalledWith('mekan-1')
   })
 
   /**
@@ -102,8 +110,8 @@ describe('CanliHarita (native)', () => {
     await render(<CanliHarita merkez={MERKEZ} mekanlar={sakinler} />)
 
     expect(screen.getByLabelText('Mekan 1, Sakin')).toBeTruthy()
-    // 3 mekan + merkez.
-    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(4)
+    // 3 mekan + 3 etiket + merkez.
+    expect(screen.getAllByTestId('harita-ignesi')).toHaveLength(7)
   })
 
   it('konumu olmayan mekani cizmez', async () => {

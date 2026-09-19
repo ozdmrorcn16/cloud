@@ -334,16 +334,17 @@ export function CanliHarita({
 
       {/* Merkez. Kesfet ekraninda kullanicinin kendisi (turuncu),
           mekan sayfasinda o mekan (durum rengi). */}
-      <View style={[stiller.merkez, { top: merkezY }]} pointerEvents="none">
-        <Svg width={44} height={44} viewBox="0 0 24 24">
-          <Path
-            d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-            fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
-            stroke="#FFFFFF"
-            strokeWidth={1.4}
-          />
-          <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
-        </Svg>
+      <View style={[stiller.merkez, { top: merkezY, marginTop: merkezDurumu ? -38 : -22 }]} pointerEvents="none">
+        {merkezDurumu ? (
+          <Svg width={44} height={44} viewBox="0 0 24 24">
+            <Path d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z" fill={DURUM_RENGI[merkezDurumu]} stroke="#FFFFFF" strokeWidth={1.4} />
+            <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+          </Svg>
+        ) : (
+          <View style={stiller.kullaniciHale} testID="kullanici-noktasi">
+            <View style={stiller.kullaniciNokta} />
+          </View>
+        )}
       </View>
 
       {/* Olcek: haritanin ne kadarlik bir alani gosterdigi yazili
@@ -379,6 +380,23 @@ const HALKA = 220
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kokDolu: { flex: 1, backgroundColor: renk.yuzey, overflow: 'hidden' },
+  // Kullanici: MAVI NOKTA + hale (native ile ayni, 2026-09-19 gece).
+  kullaniciHale: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1A7BF233',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kullaniciNokta: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#1A7BF2',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+  },
   konumDugmesi: {
     position: 'absolute',
     right: 16,

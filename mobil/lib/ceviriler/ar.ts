@@ -573,6 +573,7 @@ export default {
     buradasin: 'أنت هنا',
     kumeEtiketi: '{{sayi}} أماكن، اضغط للتكبير',
     konumaDon: 'العودة إلى موقعي',
+    adEtiketi: 'تسمية {{ad}}',
   },
   sikayet: {
     sebepSec: 'اختر سببا',

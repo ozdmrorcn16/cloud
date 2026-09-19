@@ -126,19 +126,41 @@ const durumEtiketi = (d: MekanDurumu) =>
  * Beyaz kontur SART: harita zemini bej/yesil ve kontursuz turuncu
  * zemine yapisiyor.
  */
-function KullaniciIgnesi({ renk }: { renk: string }) {
+/**
+ * 2026-09-19 gece (kullanicinin istegi "kullanici mavi nokta gibi
+ * gorunsun"): MAVI NOKTA + saydam hale - sistem haritalarinin "sen
+ * buradasin" dili. Igne bir MEKANI isaret eder; kullanici mekan degil.
+ * Renk temadan bagimsiz: harita zemini iki modda da acik. Iki ekranda
+ * da (kesfet merkezi, mekan sayfasi) ayni bilesen.
+ */
+export const KULLANICI_MAVISI = '#1A7BF2'
+
+function KullaniciIgnesi(_: { renk?: string }) {
   return (
-    <Svg width={38} height={38} viewBox="0 0 24 24">
-      <Path
-        d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-        fill={renk}
-        stroke="#FFFFFF"
-        strokeWidth={1.4}
-      />
-      <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
-    </Svg>
+    <View style={noktaStilleri.hale}>
+      <View style={noktaStilleri.nokta} />
+    </View>
   )
 }
+
+const noktaStilleri = StyleSheet.create({
+  hale: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1A7BF233',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nokta: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: KULLANICI_MAVISI,
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+  },
+})
 
 /** Konuma don dugmesindeki nisan simgesi. */
 function NisanIkonu({ renk: c }: { renk: string }) {
@@ -392,7 +414,15 @@ export function CanliHarita({
                       satir, en fazla 84 px, arkasinda zemin renginde
                       halo var; harita etkilesimli oldugu icin
                       yakinlastirinca adlar birbirinden ayriliyor. */}
-                  <View style={stiller.igneEtiket}>
+                  {/* AD ETIKETI ASAGIDA AYRI BIR MARKER (2026-09-19 gece,
+                      kullanicinin istegi "konumun isim etiketine de
+                      basilabilsin"): iOS'ta ozel gorunumlu bir
+                      isaretcinin dokunma alani gorselin kendisiyle
+                      sinirli kalabiliyor; etiket kendi isaretcisi
+                      olunca ona dokunmak da ayni secimi yapiyor.
+                      Buradaki gorunmez yer tutucu ignenin kutusunu
+                      eskisi gibi tutuyor (hiza degismesin). */}
+                  <View style={[stiller.igneEtiket, stiller.igneEtiketGorunmez]}>
                       {/* DURUM SATIRI KALDIRILDI (kullanicinin
                           bildirdigi hata 2026-09-09: "isimsiz igneler
                           var hala"). Etiket iki satirdi ve kutusu
@@ -414,6 +444,27 @@ export function CanliHarita({
               </Marker>
             )
         })}
+        {igneler.map((mekan) => (
+          <Marker
+            key={`etiket-${mekan.id}`}
+            coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
+            // Ignenin sag yanina: igne 26 px, arasi 3 px -> soldan 16 px
+            // (ignenin yarisi + aralik), dikeyde igne govdesinin ortasi.
+            anchor={{ x: 0, y: 0.5 }}
+            centerOffset={{ x: 16, y: -13 }}
+            calloutAnchor={{ x: 0, y: 0 }}
+            tracksViewChanges={false}
+            onPress={() => onMekanSec?.(mekan.id)}
+            accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
+            testID={`igne-etiket-${mekan.id}`}
+          >
+            <View style={stiller.igneEtiket}>
+              <Text style={stiller.igneAd} numberOfLines={1}>
+                {mekan.ad}
+              </Text>
+            </View>
+          </Marker>
+        ))}
 
         {/* MERKEZ IGNESI. Ucu tam koordinata basiyor.
             Rengi `merkezDurumu` ile geliyor; verilmezse turuncu kaliyor
@@ -421,7 +472,7 @@ export function CanliHarita({
             yok). */}
         <Marker
           coordinate={{ latitude: merkez.lat, longitude: merkez.lng }}
-          anchor={{ x: 0.5, y: 1 }}
+          anchor={{ x: 0.5, y: merkezDurumu ? 1 : 0.5 }}
           tracksViewChanges={false}
           accessibilityLabel={
             merkezDurumu ? cevir('harita.buMekan', { durum: durumEtiketi(merkezDurumu) }) : cevir('harita.buradasin')
@@ -463,7 +514,7 @@ export function CanliHarita({
               latitude: kullaniciKonumu.lat,
               longitude: kullaniciKonumu.lng,
             }}
-            anchor={{ x: 0.5, y: 1 }}
+            anchor={{ x: 0.5, y: 0.5 }}
             tracksViewChanges={false}
             accessibilityLabel={cevir('harita.buradasin')}
           >
@@ -580,6 +631,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 3,
   },
+  igneEtiketGorunmez: { opacity: 0 },
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 11,

@@ -1209,8 +1209,9 @@ describe('MekanAramaEkrani', () => {
     // Kullanicinin KENDI ignesi ("Buradasın") mekan degil, sayimdan
     // cikariliyor.
     const hepsi = await screen.findAllByTestId('harita-ignesi')
+    // Ad etiketleri de birer isaretci (basilabilir); sayim yalnizca igneler.
     const mekanIgneleri = hepsi.filter(
-      (i) => i.props.accessibilityLabel !== 'Buradasın'
+      (i) => i.props.accessibilityLabel !== 'Buradasın' && !/ etiketi$/.test(String(i.props.accessibilityLabel))
     )
     expect(mekanIgneleri).toHaveLength(2)
 

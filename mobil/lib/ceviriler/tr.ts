@@ -716,6 +716,7 @@ export default {
     buradasin: 'Buradasın',
     kumeEtiketi: '{{sayi}} mekân, yakınlaştırmak için dokun',
     konumaDon: 'Konumuma dön',
+    adEtiketi: '{{ad}} etiketi',
   },
   // SIKAYET EKRANI (i18n turu 2026-09-13). Sebep etiketleri anahtara
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.

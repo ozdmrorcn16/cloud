@@ -573,6 +573,7 @@ export default {
     buradasin: 'Tu es ici',
     kumeEtiketi: '{{sayi}} lieux, touche pour zoomer',
     konumaDon: 'Revenir à ma position',
+    adEtiketi: 'Étiquette {{ad}}',
   },
   sikayet: {
     sebepSec: 'Choisis un motif',

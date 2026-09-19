@@ -573,6 +573,7 @@ export default {
     buradasin: 'Ты здесь',
     kumeEtiketi: 'Мест: {{sayi}}, нажмите, чтобы приблизить',
     konumaDon: 'К моему местоположению',
+    adEtiketi: 'Подпись {{ad}}',
   },
   sikayet: {
     sebepSec: 'Выбери причину',

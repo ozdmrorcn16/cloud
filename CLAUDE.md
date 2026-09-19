@@ -180,6 +180,16 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   mekani SECER ve paneli kapatir. Eylemler YALNIZCA secili satirda.
 - **Kompakt cipler:** tek satir hap; Tumu dolu turuncu, Sakin/Yogun
   renkli nokta, Populer yildiz.
+- **AD ETIKETI BASILABILIR + MAVI NOKTA (ayni gece, sonraki istek):**
+  ignenin yanindaki ad AYRI bir `Marker` (`centerOffset` 16/-13,
+  `igne-etiket-<id>`, `harita.adEtiketi` 7 dil) - iOS'ta ozel gorunumlu
+  isaretcinin dokunma alani gorselle sinirli kaliyordu; etiket kendi
+  isaretcisi olunca ona dokunmak da `onMekanSec` cagiriyor. Ignenin
+  icindeki eski etiket GORUNMEZ yer tutucu (`igneEtiketGorunmez`,
+  hiza icin). Kullanici yeniden MAVI NOKTA + hale (`KullaniciIgnesi`
+  artik mavi nokta ciziyor, `renk` prop'u yok sayilir; anchor 0.5/0.5).
+  Testler: isaretci sayimlari etiketleri de iceriyor (`/ etiketi$/`
+  suzgeci).
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi

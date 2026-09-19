@@ -579,6 +579,7 @@ export default {
     buradasin: 'You are here',
     kumeEtiketi: '{{sayi}} places, tap to zoom in',
     konumaDon: 'Back to my location',
+    adEtiketi: '{{ad}} label',
   },
   sikayet: {
     sebepSec: 'Choose a reason',
