@@ -622,6 +622,11 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 
 Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
 OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
+- **DUZENLEME KILIDI DENENDI VE GERI ALINDI (2026-09-19):** kullanici
+  once "bir duzenleme kapanmadan obur duzenleme acilmasin" dedi (modul
+  duzeyi kilit, commit `ef625bf`), ayni saat icinde "vazgectim, eski
+  haline al" dedi - revert edildi. Akista birden fazla kart ayni anda
+  duzenlenebilir; bu davranis BILEREK boyle, tekrar onerme.
 - **CIKIS ONAYLI (2026-09-19, kullanicinin istegi "cikis yap basinca
   hemen cikis yapmasin, once sorsun"):** ayarlar hub'inda "Cikis yap"
   `OnayPenceresi` aciyor (`ayarlar.cikisOnayBaslik/cikisOnayAciklama`
