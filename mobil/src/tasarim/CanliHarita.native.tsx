@@ -173,6 +173,9 @@ const ETIKET_SOL_BOSLUK = 12
 const ETIKET_KUTU_BOY = 26
 const ETIKET_VARSAYILAN_EN = 80
 
+/** Panelin ust kose yuvarlagi (mekanlar/index.tsx `panel`); harita bu kadar altina girer. */
+const PANEL_KOSE = 24
+
 /** Konuma don dugmesindeki nisan simgesi. */
 function NisanIkonu({ renk: c }: { renk: string }) {
   return (
@@ -347,26 +350,22 @@ export function CanliHarita({
       <MapView
         ref={haritaRef}
         testID="canli-harita"
-        style={StyleSheet.absoluteFill}
+        /* HARITA PANELIN USTUNDE BITER (kullanicinin bildirimi 2026-09-20:
+           "Yasal yazisi her giriste yer degistiriyor, sol en alta
+           sabitlensin"). Onceden harita panelin altina kadar uzanip
+           `legalLabelInsets`/`appleLogoInsets` ile etiket panelin ustune
+           TASINIYORDU; kutuphane kaynagi (AIRMap.mm) "Yasal" etiketini
+           YALNIZCA kurulus aninda ariyor, MapKit onu bazen sonradan
+           ekliyor -> referans bos kaliyor, override hic uygulanmiyor,
+           etiket Apple'in kendi yerinde kaliyor (logo icin yeniden arama
+           var, etiket icin yok). Yarisa dayanan hicbir inset ayari
+           deterministik olamaz. Simdi harita panelin ustunde (yalnizca
+           kose yuvarlagi kadar, 24 pt, altina giriyor) ve padding da o
+           24; Apple ile Google etiketi kendi kurallariyla haritanin sol
+           altina = panelin hemen ustune koyuyor. Override YOK. */
+        style={[StyleSheet.absoluteFill, { bottom: Math.max(0, altPay - PANEL_KOSE) }]}
         initialRegion={bolge}
-        mapPadding={{ top: 0, right: 0, bottom: altPay, left: 0 }}
-        // APPLE LOGOSU VE "YASAL" KOSEDE (kullanicinin istegi 2026-09-19
-        // gece: "yasal yazisi yukarda kalmis, koseye sabitle"). mapPadding
-        // MKMapView'in layoutMargins'ini degistiriyor ve Apple etiketi
-        // padding + guvenli alan + kendi payiyla yukari kaciyordu. Bu
-        // iki prop etiketin cercevesini haritanin kendi cercevesine gore
-        // MUTLAK yerlestiriyor: panelin hemen ustunde, sol altta.
-        // Yalnizca iOS; Android'de Google logosu mapPadding'e uyuyor.
-        // Yalnizca `bottom` veriliyor: sifir olan kenar DOKUNULMAZ demek,
-        // yani logo ile "Yasal" yatayda Apple'in kendi hizasinda kalir
-        // (yan yana), ikisine ayni left verilse ust uste binerdi.
-        // Yasal ile logo arasindaki 12'lik fark ikisini ayni satira
-        // getiriyor (olculdu). Apple etiketin altina ~13 pt kendi payini
-        // ekliyor: `altPay + 8` logo altini panelin 21 pt ustune koyuyordu
-        // (kullanicinin 00:20 goruntusu, 3 px/pt). Kullanici "asagiya cek"
-        // dedi (2026-09-20): 14 pt indi, logo alti panelin ~7 pt ustunde.
-        legalLabelInsets={{ left: 0, bottom: altPay + 6, top: 0, right: 0 }}
-        appleLogoInsets={{ left: 0, bottom: altPay - 6, top: 0, right: 0 }}
+        mapPadding={{ top: 0, right: 0, bottom: altPay > 0 ? PANEL_KOSE : 0, left: 0 }}
         onPress={onBosaDokun}
         scrollEnabled
         zoomEnabled
