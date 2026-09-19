@@ -137,6 +137,22 @@ export const acikRenk = {
    */
   cizgi: '#DCD3C9',
   /**
+   * AKIS ZEMINI (kullanicinin referansi 2026-09-20: "kartlar arka planla
+   * yakin seffaflikta olsun, kenar cizgileri cok keskin"). Referansta
+   * beyaz kartlar acik gri bir sayfa uzerinde duruyor ve cerceve yok;
+   * ayrimi zemin farki + yumusak golge tasiyor. 2026-08-27'nin "sayfa
+   * tam beyaz" karari diger ekranlarda duruyor; yalnizca ana sayfa
+   * akisi bu zemini kullaniyor. Notr-sicak acik gri, beyaz kartla
+   * 1,08:1 - fark edilir ama dikkat cekmez.
+   */
+  akisZemini: '#F3F1EE',
+  /**
+   * Kart cercevesi: `cizgi`den cok daha soluk, zeminle neredeyse ayni
+   * (ayni istek). Kartin sinirini golge ve zemin farki cizer; cerceve
+   * yalnizca kose yuvarlaklarinda golgenin kaybolmasini onler.
+   */
+  kartCerceve: 'rgba(23, 19, 15, 0.05)',
+  /**
    * Tekerlek secicinin secim seridi (2026-09-13, kullanicinin iOS
    * referansi): notr, hafif gri yuvarlatilmis bant. Turuncu tonlu
    * serit kaldirildi - referans notr ve turuncu burada "eylem" degil.
@@ -276,6 +292,10 @@ export const koyuRenk: Renk = {
    */
   yuzey: '#1C1917',
   cizgi: '#2E2823',
+  // Koyu modda kart zaten zeminden bir ton acik; akis zemini sayfa
+  // zemini, cerceve cizgiyle ayni.
+  akisZemini: '#121110',
+  kartCerceve: '#2E2823',
   secimSeridi: '#2A2622',
 
   yikici: '#FF6B5A',
@@ -385,5 +405,16 @@ export const golge = {
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
+  },
+  /**
+   * Akis karti (2026-09-20 referansi): cerceve neredeyse yok, karti
+   * golge ayiriyor - biraz daha genis ve yumusak.
+   */
+  akisKarti: {
+    shadowColor: '#17130F',
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 } as const

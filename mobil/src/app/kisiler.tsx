@@ -8,6 +8,7 @@ import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { UstCubuk } from '../tasarim/UstCubuk'
 
 type SatirVerisi = KisiSonucu & { fotografUrl: string | null }
 
@@ -62,10 +63,13 @@ export default function KisilerEkrani() {
 
   return (
     <View style={stiller.kok}>
+      {/* Ana sayfadaki buyutecten acilir (2026-09-20); geri oku ortak
+          ust cubuktan. Kutu acilista ODAKLI: sayfaya gelen kisi
+          yazmaya geldi. */}
+      <UstCubuk baslik={t('kisiler.baslik')} geriEtiketi={t('ortak.geri')} />
       <View style={stiller.icerik}>
-        <Text style={stiller.baslik}>{t('kisiler.baslik')}</Text>
-
         <TextInput
+          autoFocus
           style={[stiller.arama, odakli && stiller.aramaOdakli]}
           placeholder={t('kisiler.yerTutucu')}
           placeholderTextColor={renk.metinIkincil}
@@ -107,15 +111,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   icerik: {
     flex: 1,
     paddingHorizontal: bosluk.sayfa,
-    paddingTop: bosluk.xxl + bosluk.m,
-  },
-
-  baslik: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.4,
-    marginBottom: bosluk.l,
+    paddingTop: bosluk.m,
   },
 
   arama: {

@@ -197,25 +197,17 @@ describe('AnaSayfa', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 
-  it('arama sutununa yazilinca akis yerine KISI sonuclari cikar', async () => {
-    // Kullanicinin istegi 2026-08-28: markanin altindaki sutundan
-    // kullanici adi ya da isimle kisi aranabiliyor.
-    const { kisiAra } = require('../../lib/kisi-ara')
-    ;(kisiAra as jest.Mock).mockResolvedValue([
-      { id: 'k-9', kullaniciAdi: 'denizy', ad: 'Deniz Yılmaz', fotograf: 'k-9/a.jpg' },
-    ])
+  it('arama SUTUNU YOK; sol bastaki buyutec kisi arama sayfasini acar', async () => {
+    // Kullanicinin istegi 2026-09-20: 2026-08-28'in markanin altindaki
+    // arama sutunu kalkti; buyutec /kisiler'e gider.
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
 
     await render(<AnaSayfa />)
-    await fireEvent.changeText(
-      screen.getByPlaceholderText('Ara'),
-      'deniz'
-    )
+    await screen.findByText('Sahil Kafe')
 
-    expect(await screen.findByText('denizy')).toBeTruthy()
-    expect(await screen.findByText('Deniz Yılmaz')).toBeTruthy()
-    // Akis ekrandan cekiliyor: arama sonucu onun YERINE geliyor.
-    expect(screen.queryByText('Sahil Kafe')).toBeNull()
+    expect(screen.queryByPlaceholderText('Ara')).toBeNull()
+    await fireEvent.press(screen.getByTestId('kisi-ara'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/kisiler')
   })
 
   it('akis bosken kesfetmeye yonlendirir', async () => {

@@ -6,7 +6,7 @@ jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, back: jest.fn(), canGoBack: () => true }),
 }))
 
 jest.mock('../../lib/supabase', () => ({

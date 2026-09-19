@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Image, TextInput, FlatList, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
@@ -13,9 +13,6 @@ import {
   paylas,
   type EtkilesimOzeti,
 } from '../../lib/etkilesim'
-import { KisiSatiri, type KisiSatirVerisi } from '../tasarim/KisiSatiri'
-import { kisiAra } from '../../lib/kisi-ara'
-import { profilFotografiUrl } from '../../lib/fotograf-url'
 import { gorecelZaman } from '../../lib/zaman'
 import { SuAnDisarida } from '../tasarim/SuAnDisarida'
 import { useDil } from '../../lib/dil'
@@ -24,23 +21,23 @@ import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
-/** Arama kutusunun basindaki buyutec. */
+/** Ust cubuktaki buyutec: kisi arama sayfasini acar. */
 function BuyutecIkonu() {
   const renk = useRenk()
 
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
+    <Svg width={24} height={24} viewBox="0 0 24 24">
       <Circle
         cx={11}
         cy={11}
         r={7}
-        stroke={renk.metinIkincil}
+        stroke={renk.metin}
         strokeWidth={2}
         fill="none"
       />
       <Path
         d="M16.5 16.5 21 21"
-        stroke={renk.metinIkincil}
+        stroke={renk.metin}
         strokeWidth={2}
         strokeLinecap="round"
       />
@@ -101,51 +98,6 @@ export default function AnaSayfa() {
   // listesiyle calistigi icin state uzerinden okusa eski degeri gorur.
   const ogelerRef = useRef<AkisOgesi[]>([])
 
-  // KISI ARAMA (kullanicinin istegi 2026-08-28): markanin hemen
-  // altinda bir arama sutunu; kullanici adi ya da isim yazilinca
-  // akisin YERINE sonuclar ciziliyor.
-  const [arama, setArama] = useState('')
-  const [sonuclar, setSonuclar] = useState<KisiSatirVerisi[]>([])
-  const [aramaDurumu, setAramaDurumu] = useState<string | null>(null)
-  // Yavas donen eski bir istek yeninin uzerine yazmasin diye sira
-  // numarasi. Imzalama da async oldugu icin kontrol iki kez yapiliyor.
-  const sonIstekRef = useRef(0)
-
-  async function aramaDegisti(yeni: string) {
-    setArama(yeni)
-    const istekNo = ++sonIstekRef.current
-    const temiz = yeni.trim()
-
-    if (temiz.length < 2) {
-      setSonuclar([])
-      setAramaDurumu(temiz.length === 0 ? null : t('kisiler.enAzIki'))
-      return
-    }
-
-    try {
-      const bulunanlar = await kisiAra(temiz)
-      if (istekNo !== sonIstekRef.current) return
-
-      const satirlar = await Promise.all(
-        bulunanlar.map(async (kisi) => ({
-          id: kisi.id,
-          kullaniciAdi: kisi.kullaniciAdi,
-          ad: kisi.ad,
-          fotografUrl: kisi.fotograf ? await profilFotografiUrl(kisi.fotograf) : null,
-        }))
-      )
-      if (istekNo !== sonIstekRef.current) return
-
-      setSonuclar(satirlar)
-      setAramaDurumu(satirlar.length === 0 ? t('kisiler.bulunamadi') : null)
-    } catch (e) {
-      if (istekNo !== sonIstekRef.current) return
-      setSonuclar([])
-      setAramaDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  const aramaAcik = arama.trim().length > 0
 
   async function yukle() {
     // Tazelemede ELDEKI KADARINI istiyoruz. Sabit bir sayfa istenseydi
@@ -308,45 +260,27 @@ export default function AnaSayfa() {
 
   return (
     <View style={stiller.kok}>
-      {/* Marka EN USTTE, hemen altinda arama sutunu (kullanicinin
-          istegi 2026-08-28). */}
+      {/* Marka EN USTTE, ortada; SOL BASTA buyutec (kullanicinin istegi
+          2026-09-20: "arama sutununu kaldir, slooin yazisinin sol bas
+          hizasina arama ikonu ekle, basinca kisi arama sayfasi
+          acilsin"). 2026-08-28'in markanin altindaki arama sutunu
+          KALKTI; kisi arama artik `/kisiler` sayfasinda. */}
       <View style={stiller.ustCubuk}>
+        <Pressable
+          style={stiller.aramaDugmesi}
+          onPress={() => router.push('/kisiler')}
+          accessibilityRole="button"
+          accessibilityLabel={t('kisiler.baslik')}
+          hitSlop={8}
+          testID="kisi-ara"
+        >
+          <BuyutecIkonu />
+        </Pressable>
         <MarkaYazisi genislik={88} />
-      </View>
-
-      {/* Instagram duzeni (kullanicinin gonderdigi referans): kenarliksiz
-          DOLGULU kutu, solda buyutec, hemen yaninda sola dayali metin.
-          Onceki hali beyaz zeminli-kenarlikliydi ve yazi ortaliydi. */}
-      <View style={stiller.aramaKutusu}>
-        <BuyutecIkonu />
-        <TextInput
-          style={stiller.aramaGirdisi}
-          placeholder={t('anaSayfa.aramaYerTutucu')}
-          placeholderTextColor={renk.metinIkincil}
-          autoCapitalize="none"
-          autoCorrect={false}
-          value={arama}
-          onChangeText={aramaDegisti}
-          returnKeyType="search"
-        />
       </View>
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
 
-      {aramaAcik ? (
-        <FlatList
-          data={sonuclar}
-          keyExtractor={(k) => k.id}
-          contentContainerStyle={stiller.liste}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <KisiSatiri kisi={item} onSec={(k) => router.push(`/kullanici/${k.id}`)} />
-          )}
-          ListEmptyComponent={
-            aramaDurumu ? <Text style={stiller.durum}>{aramaDurumu}</Text> : null
-          }
-        />
-      ) : (
       <FlatList
         testID="akis-listesi"
         data={ogeler}
@@ -416,7 +350,6 @@ export default function AnaSayfa() {
           )
         }
       />
-      )}
     </View>
   )
 }
@@ -455,38 +388,31 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.yikici,
   },
 
-  kok: { flex: 1, backgroundColor: renk.zemin },
+  // Akis zemini acik gri (kullanicinin referansi 2026-09-20): beyaz
+  // kartlar cerceve yerine zemin farkiyla ayriliyor. Baslik ve
+  // "Su an disarida" seridi de ayni zeminde - referansta sayfa tek renk.
+  kok: { flex: 1, backgroundColor: renk.akisZemini },
 
   // Marka ORTADA ve yukarida (kullanicinin istegi 2026-08-27:
-  // "slooin yazisini biraz kucult ve yukari ortaya koy"). Onceden
-  // sola dayaliydi ve 104 genisligindeydi.
-  aramaKutusu: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.s,
-    marginHorizontal: bosluk.l,
-    marginBottom: bosluk.m,
-    // Kenarlik yok, dolgu var. Ton gun ayraclariyla ayni (#F6F1EB):
-    // beyaz sayfada kendini belli ediyor ama dikkat cekmiyor.
-    // Jetona gecti: koyu modda kremsi bir kutu beyaz bir delik gibi
-    // duruyordu.
-    backgroundColor: renk.turuncuZemin,
-    borderRadius: yuvarlak.kart,
-    paddingHorizontal: bosluk.m,
-    paddingVertical: 11,
-  },
-  aramaGirdisi: {
-    flex: 1,
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metin,
-  },
-
+  // "slooin yazisini biraz kucult ve yukari ortaya koy"); buyutec sol
+  // basta, mutlak konumda - markanin ortalanmasini bozmuyor.
   ustCubuk: {
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xl,
     paddingBottom: bosluk.m,
+  },
+  aramaDugmesi: {
+    position: 'absolute',
+    left: bosluk.sayfa,
+    top: bosluk.xl,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Marka gorseli 88 genis / 26 yuksek; dugme dikeyde onunla ortali.
+    marginTop: -9,
   },
 
   hata: {

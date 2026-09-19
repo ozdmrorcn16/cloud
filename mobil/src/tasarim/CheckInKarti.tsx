@@ -730,21 +730,24 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
-    // REFERANS KARTI (2026-09-18): yuvarlak koseli, kenardan payli,
-    // ince cerceveli beyaz kart. 2026-09-02'nin "tam genislik, yalnizca
-    // alt cizgi" duzeni bu referansla degisti. Beyaz zeminde karti
-    // gorunur kilan cerceve + hafif golge (2026-08-27 notu).
+    // REFERANS KARTI (2026-09-18): yuvarlak koseli, kenardan payli beyaz
+    // kart. 2026-09-02'nin "tam genislik, yalnizca alt cizgi" duzeni bu
+    // referansla degisti. CERCEVE YUMUSADI (kullanicinin referansi
+    // 2026-09-20: "kenar cizgileri cok keskin, arka planla yakin
+    // seffaflikta olsun"): `cizgi` yerine neredeyse saydam
+    // `kartCerceve`; karti golge (`golge.akisKarti`) ve ana sayfadaki
+    // acik gri akis zemini ayiriyor.
     backgroundColor: renk.yuzey,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: renk.cizgi,
+    borderColor: renk.kartCerceve,
     // YANLARA UZATILDI (kullanicinin istegi 2026-09-18: "sutunlari saga
     // ve sola uzat"): pay sayfa payinin yarisi.
     marginHorizontal: bosluk.s,
     marginTop: bosluk.m,
     paddingHorizontal: bosluk.l,
     paddingVertical: bosluk.l,
-    ...golge.kart,
+    ...golge.akisKarti,
   },
   kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   mekanSatiri: {
