@@ -255,6 +255,10 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   Yukari cekilince liste ANINDA gelir; kapanista icerik animasyon
   bitince kompakta doner. `LayoutAnimation` kalkti. Olcum yokken (jest)
   animasyonsuz yol. `AnimatedPressable` = createAnimatedComponent.
+  **HER YERINDEN CEKILIR (sonraki istek, OTA asagida):** panHandlers
+  panelin KOKUNDE; tek istisna acik paneldeki liste - dokunus listeden
+  basladiysa (`listeyeDokunuluyor`, ScrollView onTouchStart/End) panel
+  devralmaz, liste kaydirma ve yenileme korunur.
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
