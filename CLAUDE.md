@@ -3238,6 +3238,30 @@ Xiaohongshu, Reddit, Facebook, Instagram, Xueqiu) rehber ANA HESAP yerine
 ikincil hesap oneriyor: cerez tam hesap erisimi demek ve platformlar API
 disi cagrilari tespit edip hesabi kisitlayabiliyor.
 
+## ARACLAR KULLANICI KAPSAMINDA - 2026-09-19 (KURAL)
+
+Kullanicinin karari: "butun eklentiler, skiller, araclar, MCP'ler her
+oturumda her projede kullanilabilir olsun." Yapilanlar:
+- Eklentiler `--scope user` ile kuruldu (frontend-design, code-review,
+  security-guidance, claude-mem; superpowers zaten user). Proje
+  kapsamindaki kayitlar depo klonlansin diye DURUYOR; iki kapsam ayni
+  eklentiyi tasiyor, sorun degil.
+- Beceriler `~/.claude/skills/`e KOPYALANDI (ui-ux-pro-max, no-ai-slop,
+  banner-design, brand, design, design-system, slides, ui-styling,
+  design-taste, frontend-design). `slooin-tasarim` BILEREK projede
+  kaldi (baska projede anlamsiz). Yeni beceri once kullanici kapsamina.
+- claude-mem nobetci hook'u `~/.claude/settings.json` SessionStart'a
+  eklendi (yedek: settings.json.yedek-2026-09-19). Betik yolu hala bu
+  depodaki `.claude/hooks/claude-mem-nobetci.ps1` - depo tasinirsa yol
+  guncellenmeli.
+- OmniRoute Windows acilisinda kendiliginden kalkiyor:
+  `%APPDATA%\omniroute\omniroute-baslat.vbs` kopyasi Baslangic
+  klasorunde (shell:startup). Kaldirmak icin o kopyayi sil.
+- MCP: proje-ozel `.mcp.json` yok; claude.ai baglayicilari hesap
+  duzeyinde, claude-in-chrome yerlesik - zaten her yerde.
+Yeni kurulumlarda kural: eklenti `--scope user`, beceri `~/.claude/skills`,
+hook `~/.claude/settings.json`, MCP `~/.claude.json` ust duzey.
+
 ## OMNIROUTE KURULDU - 2026-09-19
 
 Kullanicinin istegiyle `omniroute` 3.8.50 (`npm install -g`, MIT yerel AI
