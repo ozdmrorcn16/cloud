@@ -1530,7 +1530,10 @@ describe('MekanAramaEkrani - referans kart', () => {
     await screen.findByTestId('mekan-karti-mola')
     await fireEvent(screen.getByTestId('kesfet-harita-cercevesi'), 'layout', { nativeEvent: { layout: { height: 600 } } })
     await fireEvent(screen.getByTestId('mekan-paneli'), 'layout', { nativeEvent: { layout: { height: 210 } } })
-    expect(screen.getByTestId('panel-surukleme-alani').props.onResponderMove).toBeDefined()
+    // Surukleme PANELIN KOKUNDE (her yerinden cekilir), yalnizca
+    // tutamacta degil.
+    expect(screen.getByTestId('mekan-paneli').props.onResponderMove).toBeDefined()
+    expect(screen.getByTestId('panel-surukleme-alani').props.onResponderMove).toBeUndefined()
 
     await fireEvent.press(screen.getByTestId('diger-mekanlar'))
     await waitFor(() => expect(screen.getByTestId('mekan-paneli')).toHaveStyle({ height: 576 }))

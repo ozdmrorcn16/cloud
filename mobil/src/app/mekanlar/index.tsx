@@ -313,9 +313,20 @@ export default function KesfetEkrani() {
   useEffect(() => {
     if (panelAcik && !surukleniyor && acikYukseklik > 0) panelBoyu.setValue(acikYukseklik)
   }, [acikYukseklik, panelAcik, surukleniyor, panelBoyu])
+  /*
+   * PANELIN HER YERI CEKER (kullanicinin istegi 2026-09-20: "sadece
+   * tutma cizgisinden degil her yerinden basinca kaydirilabilsin").
+   * panHandlers panelin kokunde; kart ve dugmeler dokunmayi hala alir,
+   * cunku PanResponder ancak 8 px dikey hareketten sonra devraliyor.
+   * TEK ISTISNA acik paneldeki LISTE: dokunus listenin icinden
+   * basladiysa (`listeyeDokunuluyor`) panel devralmaz - yoksa her liste
+   * kaydirmasi paneli kapatirdi ve yenileme (asagi cekme) bozulurdu.
+   */
+  const listeyeDokunuluyor = useRef(false)
   const tutamacSurukleme = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onMoveShouldSetPanResponder: (_, g) =>
+        !listeyeDokunuluyor.current && Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
       onPanResponderGrant: () => {
         const d = panelDurumu.current
         d.baslangic = d.acik ? d.acikBoy : d.kapaliBoy
@@ -1545,8 +1556,9 @@ export default function KesfetEkrani() {
           onPress={Keyboard.dismiss}
           accessible={false}
           testID="mekan-paneli"
+          {...tutamacSurukleme.panHandlers}
         >
-          <View {...tutamacSurukleme.panHandlers} testID="panel-surukleme-alani">
+          <View testID="panel-surukleme-alani">
             <View style={stiller.tutamacAlani}>
               <Pressable
                 onPress={() => paneliAyarla(!panelAcik)}
@@ -1567,6 +1579,9 @@ export default function KesfetEkrani() {
               contentContainerStyle={stiller.panelIcerik}
               onScroll={dibeYaklasinca}
               scrollEventThrottle={160}
+              onTouchStart={() => { listeyeDokunuluyor.current = true }}
+              onTouchEnd={() => { listeyeDokunuluyor.current = false }}
+              onTouchCancel={() => { listeyeDokunuluyor.current = false }}
               keyboardShouldPersistTaps="handled"
               refreshControl={<RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.turuncu} />}
               testID="kesfet-kaydirma"
