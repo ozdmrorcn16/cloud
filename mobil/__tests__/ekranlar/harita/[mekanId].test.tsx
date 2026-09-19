@@ -230,6 +230,22 @@ describe('CheckInHaritasiEkrani', () => {
    * aciyordu (Apple'da `daddr`, Google'da `dir/?api=1`) ama metin
    * "Harita uygulamasinda ac" diyordu - ne yaptigini soylemiyordu.
    */
+  it('PUAN blogu sayfanin EN ALTINDA: sekme satirindan SONRA gelir', async () => {
+    // Kullanicinin istegi 2026-09-20: "Puan sutununu en asagiya cek".
+    ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
+    await render(<CheckInHaritasiEkrani />)
+    await screen.findByText('Yol tarifi al')
+    await screen.findByText('Puan')
+
+    const metinler = JSON.stringify(screen.toJSON())
+    const puan = metinler.indexOf('"Puan"')
+    const sekme = metinler.indexOf('"Liderlik"')
+    expect(puan).toBeGreaterThan(-1)
+    expect(sekme).toBeGreaterThan(-1)
+    expect(puan).toBeGreaterThan(sekme)
+    await cevreOturana()
+  })
+
   it('dugme "Yol tarifi al" diyor', async () => {
     ;(mekaniGetir as jest.Mock).mockResolvedValue(MEKAN)
 

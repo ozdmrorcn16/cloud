@@ -638,13 +638,6 @@ export default function MekanSayfasi() {
               </View>
             </View>
 
-            {/* PUANLAMA (kullanicinin istegi 2026-09-13, Swarm'daki gibi):
-                0-10 puan, uc seviye cubugu ve oy karti. Kurallar
-                sunucuda; bilesen kendi verisini cekiyor. */}
-            <View style={stiller.bolum}>
-              <MekanPuanlama mekanId={mekanId} />
-            </View>
-
             {/* SU AN BURADA. Kimse gorunmuyorsa bolum HIC cizilmiyor -
                 bos bir serit "burada kimse yok" demek degil, "senin
                 gorme hakkin yok" da demek olabilir; ikisini birbirine
@@ -839,6 +832,15 @@ export default function MekanSayfasi() {
                   </Pressable>
                 ))
               )}
+            </View>
+
+            {/* PUANLAMA EN ALTTA (kullanicinin istegi 2026-09-20: "Puan
+                sutununu en asagiya cek"; 2026-09-13'ten beri istatistik
+                seridinin hemen altindaydi). 0-10 puan, uc seviye cubugu
+                ve oy karti; kurallar sunucuda, bilesen kendi verisini
+                cekiyor. */}
+            <View style={stiller.bolum}>
+              <MekanPuanlama mekanId={mekanId} />
             </View>
           </>
         )}
