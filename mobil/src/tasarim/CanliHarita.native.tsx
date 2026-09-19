@@ -360,8 +360,13 @@ export function CanliHarita({
         // Yalnizca `bottom` veriliyor: sifir olan kenar DOKUNULMAZ demek,
         // yani logo ile "Yasal" yatayda Apple'in kendi hizasinda kalir
         // (yan yana), ikisine ayni left verilse ust uste binerdi.
-        legalLabelInsets={{ left: 0, bottom: altPay + 20, top: 0, right: 0 }}
-        appleLogoInsets={{ left: 0, bottom: altPay + 8, top: 0, right: 0 }}
+        // Yasal ile logo arasindaki 12'lik fark ikisini ayni satira
+        // getiriyor (olculdu). Apple etiketin altina ~13 pt kendi payini
+        // ekliyor: `altPay + 8` logo altini panelin 21 pt ustune koyuyordu
+        // (kullanicinin 00:20 goruntusu, 3 px/pt). Kullanici "asagiya cek"
+        // dedi (2026-09-20): 14 pt indi, logo alti panelin ~7 pt ustunde.
+        legalLabelInsets={{ left: 0, bottom: altPay + 6, top: 0, right: 0 }}
+        appleLogoInsets={{ left: 0, bottom: altPay - 6, top: 0, right: 0 }}
         onPress={onBosaDokun}
         scrollEnabled
         zoomEnabled
