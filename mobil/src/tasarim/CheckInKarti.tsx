@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { View, Text, Image, Modal, Pressable, StyleSheet, TextInput } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
@@ -12,11 +12,6 @@ import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPence
 import { YorumSayfasi } from './YorumSayfasi'
 import { NOT_EN_FAZLA } from '../../lib/checkin'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
-import {
-  duzenlemeyiKilitle,
-  duzenlemeKilidiniBirak,
-  useDuzenlenenKartId,
-} from '../../lib/duzenleme-kilidi'
 import type { BagKisi } from '../../lib/bag'
 import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
@@ -138,13 +133,6 @@ export function CheckInKarti({
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [kaydediliyor, setKaydediliyor] = useState(false)
   const [duzenleHatasi, setDuzenleHatasi] = useState<string | null>(null)
-  // AYNI ANDA TEK KART DUZENLENIR (kullanicinin istegi 2026-09-19).
-  // Kilit modul duzeyinde (`lib/duzenleme-kilidi.ts`); baska bir kart
-  // acikken bu kartin menusunde "Duzenle" gorunmez. Kart listeden
-  // dusunce (FlatList geri donusumu, ekran degisimi) kilit birakilir.
-  const duzenlenenId = useDuzenlenenKartId()
-  const baskaKartDuzenleniyor = duzenlenenId !== null && duzenlenenId !== oge.id
-  useEffect(() => () => duzenlemeKilidiniBirak(oge.id), [oge.id])
   // YORUMLAR ARTIK ALTTAN ACILIYOR (kullanicinin karari 2026-09-03,
   // secenek "A"). Onceden `/yorumlar/<id>` sayfasina gidiliyordu.
   const [yorumlarAcik, setYorumlarAcik] = useState(false)
@@ -156,7 +144,6 @@ export function CheckInKarti({
   const [buyukAcik, setBuyukAcik] = useState(false)
 
   function duzenlemeyiAc() {
-    if (!duzenlemeyiKilitle(oge.id)) return
     // Taslak her acilista SIFIRLANIYOR: bir onceki duzenlemeden kalan
     // metin ya da secim tasinmamali.
     setTaslakNot(oge.notMetni ?? '')
@@ -190,7 +177,6 @@ export function CheckInKarti({
       // diye pencere acik kaliyor ve hata gorunuyor.
       await onNotKaydet(oge.id, taslakNot)
       setDuzenleAcik(false)
-      duzenlemeKilidiniBirak(oge.id)
     } catch (hata) {
       setDuzenleHatasi(hata instanceof Error ? hata.message : t('ortak.birSorunOldu'))
     } finally {
@@ -415,10 +401,7 @@ export function CheckInKarti({
             <Pressable
               testID="duzenle-vazgec"
               style={[stiller.duzenleDugme, stiller.duzenleIkincil]}
-              onPress={() => {
-                setDuzenleAcik(false)
-                duzenlemeKilidiniBirak(oge.id)
-              }}
+              onPress={() => setDuzenleAcik(false)}
               disabled={kaydediliyor}
               accessibilityRole="button"
             >
@@ -590,7 +573,7 @@ export function CheckInKarti({
       <SecimPenceresi
         acikMi={menuAcik}
         secimler={[
-          ...(onNotKaydet && !baskaKartDuzenleniyor
+          ...(onNotKaydet
             ? [
                 {
                   etiket: t('anaSayfa.duzenle'),

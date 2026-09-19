@@ -110,5 +110,4 @@ jest.mock('react-native-maps', () => {
 // ilk 700 ms'lik basislari yutuluyordu. Her testten once sifirla.
 beforeEach(() => {
   require('./lib/paylasim').paylasimKorumasiniSifirla()
-  require('./lib/duzenleme-kilidi').duzenlemeKilidiniSifirla()
 })
