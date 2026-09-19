@@ -448,20 +448,27 @@ export function CanliHarita({
           <Marker
             key={`etiket-${mekan.id}`}
             coordinate={{ latitude: mekan.konum!.lat, longitude: mekan.konum!.lng }}
-            // Ignenin sag yanina: igne 26 px, arasi 3 px -> soldan 16 px
-            // (ignenin yarisi + aralik), dikeyde igne govdesinin ortasi.
-            anchor={{ x: 0, y: 0.5 }}
-            centerOffset={{ x: 16, y: -13 }}
-            calloutAnchor={{ x: 0, y: 0 }}
+            // KONUM YALNIZCA `anchor` ILE (kullanicinin bildirdigi hata
+            // 2026-09-19 gece: "isim etiketleri kaymis"): `anchor` ve
+            // `centerOffset` birlikte verilince iOS ikisini de uygulayip
+            // etiketi ignenin sol ustune atiyordu. Simdi gorunumun sol
+            // alt kosesi koordinata bagli (0,1); ignenin sagina ve
+            // dikeyde igne govdesinin ortasina dusmesi icin bosluklar
+            // GORUNUMUN ICINDE: soldan 16 px (ignenin yarisi + aralik),
+            // alttan 3 px (igne 26 px, merkezi 13 px yukarida; etiket
+            // 20 px -> 10 + 3).
+            anchor={{ x: 0, y: 1 }}
             tracksViewChanges={false}
             onPress={() => onMekanSec?.(mekan.id)}
             accessibilityLabel={cevir('harita.adEtiketi', { ad: mekan.ad })}
             testID={`igne-etiket-${mekan.id}`}
           >
-            <View style={stiller.igneEtiket}>
-              <Text style={stiller.igneAd} numberOfLines={1}>
-                {mekan.ad}
-              </Text>
+            <View style={stiller.etiketKabi}>
+              <View style={stiller.igneEtiket}>
+                <Text style={stiller.igneAd} numberOfLines={1}>
+                  {mekan.ad}
+                </Text>
+              </View>
             </View>
           </Marker>
         ))}
@@ -632,6 +639,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     elevation: 3,
   },
   igneEtiketGorunmez: { opacity: 0 },
+  // Etiket isaretcisinin kabi: sol ve alt bosluk konumlandirmayi tasiyor.
+  etiketKabi: { paddingLeft: 16, paddingBottom: 3 },
   igneAd: {
     fontFamily: yazi.govdeKalin,
     fontSize: 11,
