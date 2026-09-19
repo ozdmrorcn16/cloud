@@ -571,6 +571,8 @@ export default {
     kisiBurada: '{{ad}}، {{sayi}} أشخاص هنا',
     buMekan: 'هذا المكان، {{durum}}',
     buradasin: 'أنت هنا',
+    kumeEtiketi: '{{sayi}} أماكن، اضغط للتكبير',
+    konumaDon: 'العودة إلى موقعي',
   },
   sikayet: {
     sebepSec: 'اختر سببا',
@@ -759,6 +761,8 @@ export default {
     populer: 'رائج',
     yakinindakiMekanlar: 'الأماكن القريبة منك',
     mesafeyeGore: 'حسب المسافة',
+    digerMekanlar: 'عرض الأماكن الأخرى',
+    paneliKapat: 'إغلاق القائمة',
     yolTarifi: 'الاتجاهات',
     sonuclar: 'النتائج',
     kisiBurada: '{{sayi}} أشخاص هنا',

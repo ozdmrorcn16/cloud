@@ -571,6 +571,8 @@ export default {
     kisiBurada: '{{ad}}, здесь {{sayi}} чел.',
     buMekan: 'Это место, {{durum}}',
     buradasin: 'Ты здесь',
+    kumeEtiketi: 'Мест: {{sayi}}, нажмите, чтобы приблизить',
+    konumaDon: 'К моему местоположению',
   },
   sikayet: {
     sebepSec: 'Выбери причину',
@@ -759,6 +761,8 @@ export default {
     populer: 'Популярно',
     yakinindakiMekanlar: 'Места рядом с тобой',
     mesafeyeGore: 'По расстоянию',
+    digerMekanlar: 'Показать другие места',
+    paneliKapat: 'Закрыть список',
     yolTarifi: 'Маршрут',
     sonuclar: 'Результаты',
     kisiBurada: 'здесь {{sayi}} чел.',

@@ -42,6 +42,9 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-19 — [2026-09-19-815eff1b.md](oturumlar/2026-09-19-815eff1b.md) — slooin uygulamasını şuanki aşamasına kadarki kısmını baştan sona tara hatalar va…
+- 2026-09-19 — [2026-09-19-70447846.md](oturumlar/2026-09-19-70447846.md) — login
+- 2026-09-19 — [2026-09-19-556d60d8.md](oturumlar/2026-09-19-556d60d8.md) — claude mem çalışıyor dimi
 - 2026-09-18 — [2026-09-18-70447846.md](oturumlar/2026-09-18-70447846.md) — login
 - 2026-09-18 — [2026-09-18-556d60d8.md](oturumlar/2026-09-18-556d60d8.md) — claude mem çalışıyor dimi
 - 2026-09-18 — [2026-09-18-1552d3d8.md](oturumlar/2026-09-18-1552d3d8.md) — bugün yapılan değişiklikleri biliyormusun
@@ -1339,3 +1342,14 @@ Kalan takip isleri: `docs/plan1-takip-isleri.md`.
     `grant ... to anon` yazar. Kovalara boyut/tur siniri kondu, Supabase
     "leaked password protection" acildi, `mobil/gizli/` izlemeden cikti,
     Overture iş akisi silindi. Ayrinti CLAUDE.md "GUVENLIK TARAMASI".
+
+100. **CHECK-IN EKRANI REFERANS TASARIMA GECTI** (2026-09-19).
+    Kullanici kendi tasarim gorselini verdi: harita ana tuval, sayili
+    kumeler (dokununca yakinlasir), yalnizca secili mekanin adi
+    haritada, bilgileri yukari cekilen panelde, kompakt filtreler,
+    turuncu "Check-in yap" ana / "Yol tarifi" ikincil. Harita/Liste
+    gecisi korundu. Bu referans dort eski karari degistirdi (her ignede
+    ad; igne mekan sayfasini acar; her kartta eylem + kucuk harita
+    karesi; turuncu kullanici ignesi -> mavi nokta). "Mesafeye gore"
+    etiket olarak kaldi: siralama sabit kural (2026-09-01), ok yok.
+    Ayrinti CLAUDE.md "CHECK-IN EKRANI: HARITA ANA TUVAL".

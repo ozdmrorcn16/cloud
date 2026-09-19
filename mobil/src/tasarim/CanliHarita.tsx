@@ -13,6 +13,7 @@ import { mesafeMetre } from '../../lib/konum'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import type { MekanDurumu } from '../../lib/mekan'
+import { kumele } from '../../lib/harita-kumeleme'
 
 /**
  * CANLI HARITA - "su an neredesin ve cevrende ne var".
@@ -59,14 +60,10 @@ const EN_FAZLA_GOSTERIM_METRE = 200
  * gosterilsin". Native harita da ayni gun ayni kurala gecti - ayni
  * sey iki platformda farkli gorunmemeli.
  *
- * Radarda PIKSEL ARALIGI kurali DURUYOR (`EN_AZ_ARALIK`): burada
- * cizilen sey kucuk bir daire ve tam ust uste binen iki nokta ikisini
- * birden okunmaz yapiyor. Native tarafta ayrim etiket uzerinden
- * yapiliyor cunku orada igne ad tasiyor.
+ * Piksel araligi kurali 2026-09-19'da KUMELEMEYE donustu (kullanicinin
+ * referansi): yakin igneler artik atlanmiyor, sayili bir kume oluyor -
+ * `lib/harita-kumeleme.ts`, native ile ayni kural.
  */
-
-/** Iki igne birbirine bundan yakinsa ikincisi cizilmez (px). */
-const EN_AZ_ARALIK = 34
 
 const NABIZ_SURESI = 2600
 
@@ -162,11 +159,25 @@ export function CanliHarita({
   onMekanSec,
   merkezDurumu,
   kullaniciKonumu,
+  seciliId = null,
+  konumDugmesi = false,
+  konumDugmesiAltPayi = 16,
+  doldur = false,
+  altPay = 0,
 }: {
   merkez: { lat: number; lng: number } | null
   mekanlar: HaritaMekani[]
   yukseklik?: number
   onMekanSec?: (mekanId: string) => void
+  /** Native surumle ayni sozlesme (2026-09-19): secili igne + ad, kumeler. */
+  seciliId?: string | null
+  /** Sag altta "konuma don" dugmesi (web'de radar zaten merkezde; gorsel es). */
+  konumDugmesi?: boolean
+  konumDugmesiAltPayi?: number
+  /** Kapsayiciyi doldur (kose ve cerceve yok). */
+  doldur?: boolean
+  /** Alttaki panelin yuksekligi: radar merkezi gorunen alanin ortasina kayar. */
+  altPay?: number
   /**
    * Merkez ignesinin durumu; verilmezse turuncu kaliyor. Native
    * surumle AYNI sozlesme - ekranlar hangi platformda calistigini
@@ -195,10 +206,14 @@ export function CanliHarita({
    * otedeyse hepsi merkeze yigiliyor ve harita bir sey anlatmiyor.
    * En uzak cizilecek igneye gore olceklendiriliyor.
    */
+  // Gorunen alan: alttaki panel (altPay) dusulmus yukseklik; merkez onun ortasi.
+  const gorunenBoy = Math.max(120, olcu.boy - altPay)
+  const merkezY = gorunenBoy / 2
+
   const { yerlesimler, gosterimMetre } = useMemo(() => {
     if (!merkez || olcu.en === 0) return { yerlesimler: [] as Yerlesim[], gosterimMetre: 0 }
 
-    const yaricapPx = Math.min(olcu.en, olcu.boy) / 2 - 26
+    const yaricapPx = Math.min(olcu.en, gorunenBoy) / 2 - 26
 
     const mesafeli = mekanlar
       .filter((m) => m.konum)
@@ -225,24 +240,29 @@ export function CanliHarita({
       const olcek = yaricapPx / gosterim
       const x = olcu.en / 2 + dogu * olcek
       // Ekranin y ekseni asagi buyuyor, kuzey yukari.
-      const y = olcu.boy / 2 - kuzey * olcek
-
-      // Ust uste binen igne cizilmiyor: iki nokta ayni yerde durunca
-      // ikisi de okunmuyor.
-      const cakisiyor = konan.some(
-        (k) => Math.hypot(k.x - x, k.y - y) < EN_AZ_ARALIK
-      )
-      if (cakisiyor) continue
+      const y = merkezY - kuzey * olcek
       konan.push({ mekan, x, y, metre })
     }
     return { yerlesimler: konan, gosterimMetre: gosterim }
-  }, [merkez, mekanlar, olcu])
+  }, [merkez, mekanlar, olcu, gorunenBoy, merkezY])
 
-  const yaricapPx = Math.min(olcu.en, olcu.boy) / 2 - 26
+  // KUMELER (native ile ayni kural, 2026-09-19): piksel duzleminde
+  // kumele - lngDelta yerine "1 piksel = 1 derece" varsayimiyla, hucre
+  // yine KUME_HUCRE_PX. Secili mekan kumelenmez.
+  const kumeler = useMemo(() => {
+    const noktalar = yerlesimler.map((y) => ({ id: y.mekan.id, lat: -y.y, lng: y.x }))
+    return kumele(noktalar, olcu.en || 1, olcu.en || 1, seciliId)
+  }, [yerlesimler, olcu.en, seciliId])
+  const yerlesimHaritasi = useMemo(
+    () => new Map(yerlesimler.map((y) => [y.mekan.id, y])),
+    [yerlesimler]
+  )
+
+  const yaricapPx = Math.min(olcu.en, gorunenBoy) / 2 - 26
 
   return (
     <View
-      style={[stiller.kok, { height: yukseklik }]}
+      style={doldur ? stiller.kokDolu : [stiller.kok, { height: yukseklik }]}
       onLayout={(o) =>
         setOlcu({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })
       }
@@ -266,7 +286,7 @@ export function CanliHarita({
               <Circle
                 key={o}
                 cx={olcu.en / 2}
-                cy={olcu.boy / 2}
+                cy={merkezY}
                 r={Math.max(0, yaricapPx * o)}
               />
             ))}
@@ -275,7 +295,7 @@ export function CanliHarita({
       )}
 
       {/* Nabiz: tek hareketli oge. */}
-      <View style={stiller.nabizAlani} pointerEvents="none">
+      <View style={[stiller.nabizAlani, { top: merkezY }]} pointerEvents="none">
         {[0, 1, 2].map((i) => (
           <NabizHalkasi
             key={i}
@@ -285,44 +305,96 @@ export function CanliHarita({
         ))}
       </View>
 
-      {/* Mekan igneleri. */}
-      {yerlesimler.map(({ mekan, x, y }) => {
+      {/* Igneler (referans 2026-09-19): sayili KUME, TEKIL beyaz daire,
+          SECILI buyuk turuncu igne + ad. Web'de kume dokunusu
+          yakinlastirmiyor (radar sabit olcekli), yalnizca cizim. */}
+      {kumeler.map((k) => {
+        if (k.uyeler.length > 1) {
+          const x = k.lng
+          const y = -k.lat
+          return (
+            <View
+              key={k.id}
+              style={[stiller.kume, { left: x - 22, top: y - 22 }]}
+              accessibilityLabel={cevir('harita.kumeEtiketi', { sayi: k.uyeler.length })}
+              testID={`kume-${k.id}`}
+            >
+              <Text style={stiller.kumeSayi}>{k.uyeler.length}</Text>
+              <View style={stiller.kumeNokta} />
+            </View>
+          )
+        }
+        const yer = yerlesimHaritasi.get(k.uyeler[0].id)
+        if (!yer) return null
+        const { mekan, x, y } = yer
+        const secili = mekan.id === seciliId
         const canli = mekan.kisiSayisi > 0
         return (
           <Pressable
             key={mekan.id}
-            style={[stiller.igne, { left: x - 16, top: y - 16 }]}
+            style={[stiller.igne, secili ? { left: x - 20, top: y - 40 } : { left: x - 16, top: y - 16 }]}
             onPress={() => onMekanSec?.(mekan.id)}
             accessibilityRole="button"
+            accessibilityState={{ selected: secili }}
             accessibilityLabel={
               canli ? cevir('harita.kisiBurada', { ad: mekan.ad, sayi: mekan.kisiSayisi }) : mekan.ad
             }
             hitSlop={6}
+            testID={`igne-${mekan.id}`}
           >
-            {canli ? (
-              <View style={stiller.canliIgne}>
-                <Text style={stiller.canliSayi}>{mekan.kisiSayisi}</Text>
+            {secili ? (
+              <View style={stiller.seciliKutu}>
+                <Svg width={40} height={40} viewBox="0 0 24 24">
+                  <Path d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z" fill={renk.turuncu} stroke="#FFFFFF" strokeWidth={1.4} />
+                  <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+                </Svg>
+                <View style={stiller.igneEtiket}>
+                  <Text style={stiller.igneAd} numberOfLines={1}>
+                    {mekan.ad}
+                  </Text>
+                </View>
               </View>
             ) : (
-              <View style={stiller.sakinIgne} />
+              <View style={stiller.tekil}>
+                <Svg width={18} height={18} viewBox="0 0 24 24">
+                  <Path d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z" fill={renk.turuncu} />
+                  <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+                </Svg>
+              </View>
             )}
           </Pressable>
         )
       })}
 
-      {/* Merkez. Kesfet ekraninda kullanicinin kendisi (turuncu),
-          mekan sayfasinda o mekan (durum rengi). */}
-      <View style={stiller.merkez} pointerEvents="none">
-        <Svg width={44} height={44} viewBox="0 0 24 24">
-          <Path
-            d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z"
-            fill={merkezDurumu ? DURUM_RENGI[merkezDurumu] : renk.turuncu}
-            stroke="#FFFFFF"
-            strokeWidth={1.4}
-          />
-          <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
-        </Svg>
+      {/* Merkez. Kesfet ekraninda kullanicinin kendisi (MAVI NOKTA,
+          referans 2026-09-19), mekan sayfasinda o mekan (durum rengi). */}
+      <View style={[stiller.merkez, { top: merkezY, marginTop: merkezDurumu ? -38 : -22 }]} pointerEvents="none">
+        {merkezDurumu ? (
+          <Svg width={44} height={44} viewBox="0 0 24 24">
+            <Path d="M12 2.2a7.6 7.6 0 0 0-7.6 7.6c0 5.7 7.6 12 7.6 12s7.6-6.3 7.6-12A7.6 7.6 0 0 0 12 2.2z" fill={DURUM_RENGI[merkezDurumu]} stroke="#FFFFFF" strokeWidth={1.4} />
+            <Circle cx={12} cy={9.7} r={2.9} fill="#FFFFFF" />
+          </Svg>
+        ) : (
+          <View style={stiller.kullaniciHale} testID="kullanici-noktasi">
+            <View style={stiller.kullaniciNokta} />
+          </View>
+        )}
       </View>
+
+      {konumDugmesi && (
+        <Pressable
+          style={[stiller.konumDugmesi, { bottom: konumDugmesiAltPayi }]}
+          accessibilityRole="button"
+          accessibilityLabel={cevir('harita.konumaDon')}
+          testID="konuma-don"
+        >
+          <Svg width={22} height={22} viewBox="0 0 24 24">
+            <Circle cx={12} cy={12} r={6.5} stroke="#17130F" strokeWidth={1.8} fill="none" />
+            <Circle cx={12} cy={12} r={2.2} fill="#17130F" />
+            <Path d="M12 2v3.5M12 18.5V22M2 12h3.5M18.5 12H22" stroke="#17130F" strokeWidth={1.8} strokeLinecap="round" />
+          </Svg>
+        </Pressable>
+      )}
 
       {/* Olcek: haritanin ne kadarlik bir alani gosterdigi yazili
           olmali, yoksa mesafe hissi uydurma olur. */}
@@ -342,6 +414,77 @@ export function CanliHarita({
 const HALKA = 220
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
+  kokDolu: { flex: 1, backgroundColor: renk.yuzey, overflow: 'hidden' },
+  kume: {
+    position: 'absolute',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
+  kumeSayi: { fontFamily: yazi.govdeKalin, fontSize: 15, lineHeight: 18, color: '#17130F' },
+  kumeNokta: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: renk.turuncu,
+  },
+  tekil: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
+  seciliKutu: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  igneEtiket: {
+    maxWidth: 160,
+    backgroundColor: '#FFFFFFF2',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
+  igneAd: { fontFamily: yazi.govdeKalin, fontSize: 13, lineHeight: 16, color: '#17130F' },
+  kullaniciHale: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1A7BF233',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kullaniciNokta: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#1A7BF2',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+  },
+  konumDugmesi: {
+    position: 'absolute',
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+  },
   kok: {
     backgroundColor: renk.yuzey,
     borderRadius: yuvarlak.buyuk,

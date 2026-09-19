@@ -571,6 +571,8 @@ export default {
     kisiBurada: '{{ad}}, {{sayi}} personnes ici',
     buMekan: 'Ce lieu, {{durum}}',
     buradasin: 'Tu es ici',
+    kumeEtiketi: '{{sayi}} lieux, touche pour zoomer',
+    konumaDon: 'Revenir à ma position',
   },
   sikayet: {
     sebepSec: 'Choisis un motif',
@@ -759,6 +761,8 @@ export default {
     populer: 'Populaire',
     yakinindakiMekanlar: 'Lieux près de toi',
     mesafeyeGore: 'Par distance',
+    digerMekanlar: 'Voir les autres lieux',
+    paneliKapat: 'Fermer la liste',
     yolTarifi: 'Itinéraire',
     sonuclar: 'Résultats',
     kisiBurada: '{{sayi}} personnes ici',

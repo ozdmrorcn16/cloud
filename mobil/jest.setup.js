@@ -71,7 +71,7 @@ jest.mock('react-native-maps', () => {
   const React = require('react')
   const { View, Pressable } = require('react-native')
   const MapView = React.forwardRef((props, ref) => {
-    React.useImperativeHandle(ref, () => ({ animateToRegion: jest.fn() }))
+    React.useImperativeHandle(ref, () => ({ animateToRegion: jest.fn(), fitToCoordinates: jest.fn() }))
     // Cerceve ve kart kucuk haritasinin kipi testlerden okunabilsin
     // diye tasiniyor: gercek harita jest'te cizilmiyor, dogrulanabilen
     // tek sey MapView'e NE VERILDIGI.
@@ -101,6 +101,8 @@ jest.mock('react-native-maps', () => {
       testID: 'harita-ignesi',
       onPress: props.onPress,
       accessibilityLabel: props.accessibilityLabel,
+      // Secili igne (2026-09-19) testten okunabilsin.
+      accessibilityState: props.accessibilityState,
     })
   return { __esModule: true, default: MapView, Marker, PROVIDER_GOOGLE: 'google' }
 })

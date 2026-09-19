@@ -148,6 +148,51 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### CHECK-IN EKRANI: HARITA ANA TUVAL + CEKILEN PANEL - 2026-09-19
+
+Kullanicinin referans tasarimi ("en onemli degisiklik haritayi okunur
+hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
+`CanliHarita` (native + web) yeni sozlesme. Goruntu
+`tasarim/checkin-harita.png`. OTA grup `a62d7efb`.
+- **Harita ust bloktan (arama + kompakt cipler) alt gezinmeye kadar
+  DOLDURUYOR** (`doldur` prop). Igneler uc tur: sayili KUME (beyaz
+  daire + turuncu nokta; dokununca `fitToCoordinates` ile yakinlasir),
+  TEKIL (beyaz daire icinde kucuk turuncu igne), SECILI (buyuk turuncu
+  igne + adi beyaz hapta). Kumeleme `lib/harita-kumeleme.ts` (izgara,
+  56 px hucre, gorunur `longitudeDelta` + piksel eni; secili ASLA
+  kumelenmez; 8 test). Web radar ayni kurali piksel duzleminde uygular.
+- **KULLANICI ARTIK MAVI NOKTA + hale** (`KullaniciNoktasi`,
+  `KULLANICI_MAVISI`), turuncu igne degil - mekan sayfasinda da ayni.
+  Sag altta "konuma don" dugmesi (`konumDugmesi`, `harita.konumaDon`).
+- **`altPay`/`mapPadding`:** panel haritanin altini ortuyor; merkez ve
+  cerceve GORUNEN alana gore (native `mapPadding.bottom`, web
+  `merkezY`). Panel yuksekligi `onLayout` ile olculup veriliyor.
+- **Panel** (`mekan-paneli`): kapaliyken SECILI (varsayilan en yakin)
+  mekanin kompakt satiri + Yol tarifi / Check-in yap + "Diger mekanlari
+  goster"; tutamac (`panel-tutamaci`, PanResponder yukari/asagi) ya da o
+  satir paneli acar, LayoutAnimation ile `haritaAlani - 24` yuksekluge
+  cikar ve butun liste (sayfalama, yenileme) orada. Arama yazilinca
+  panel KENDILIGINDEN acilir. Liste gorunumunde panel/harita yok.
+- **Kompakt satir:** seftali kutu (kapak fotografi varsa o, yoksa
+  ture bagli OLMAYAN `BinaIkonu`), ad 2 satir, "110 m · Nilufer,
+  Bursa" (UZAKLIK ONCE, ayirac `·`), durum rozeti, kisi satiri. Ad ve
+  simge MEKAN SAYFASINI acar; satirin geri kalani (`mekan-sec-<id>`)
+  mekani SECER ve paneli kapatir. Eylemler YALNIZCA secili satirda.
+- **Kompakt cipler:** tek satir hap; Tumu dolu turuncu, Sakin/Yogun
+  renkli nokta, Populer yildiz.
+- **REFERANSLA DEGISEN ESKI KARARLAR:** (1) 2026-09-09 "her ignede ad"
+  -> yalnizca secili ignede ad; (2) 2026-09-07 "igneye basinca mekan
+  sayfasi" -> igne mekani SECER; (3) 2026-09-17 "her kartta eylem
+  satiri + kucuk gercek harita karesi" -> eylem yalnizca secili
+  satirda, kare yerine simge/kapak (`MekanKapakHarita` artik burada
+  kullanilmiyor, dosya duruyor); (4) turuncu kullanici ignesi -> mavi
+  nokta. "Mesafeye gore" hala ETIKET (sabit siralama kurali), referanstaki
+  ok BILEREK yok.
+- Test: `listeyiAc()` yardimcisi (panel kapali acildigi icin listeyi
+  olcen testler once "Diger mekanlari goster"a basar); jest.setup
+  Marker mock'u `accessibilityState` tasiyor, MapView `fitToCoordinates`.
+  Jest 81 paket / 1078 test.
+
 ### CIHAZ UYUMU: BUTUN TELEFONLAR - 2026-09-19
 
 Kullanicinin istegi: "farkli boyutlarda telefonlar var, uygulama

@@ -577,6 +577,8 @@ export default {
     kisiBurada: '{{ad}}, {{sayi}} people here',
     buMekan: 'This place, {{durum}}',
     buradasin: 'You are here',
+    kumeEtiketi: '{{sayi}} places, tap to zoom in',
+    konumaDon: 'Back to my location',
   },
   sikayet: {
     sebepSec: 'Choose a reason',
@@ -765,6 +767,8 @@ export default {
     populer: 'Popular',
     yakinindakiMekanlar: 'Places Near You',
     mesafeyeGore: 'By distance',
+    digerMekanlar: 'Show other places',
+    paneliKapat: 'Close the list',
     yolTarifi: 'Directions',
     sonuclar: 'Results',
     kisiBurada: '{{sayi}} people here',

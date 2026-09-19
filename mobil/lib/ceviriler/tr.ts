@@ -714,6 +714,8 @@ export default {
     kisiBurada: '{{ad}}, {{sayi}} kişi burada',
     buMekan: 'Bu mekan, {{durum}}',
     buradasin: 'Buradasın',
+    kumeEtiketi: '{{sayi}} mekân, yakınlaştırmak için dokun',
+    konumaDon: 'Konumuma dön',
   },
   // SIKAYET EKRANI (i18n turu 2026-09-13). Sebep etiketleri anahtara
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.
@@ -920,6 +922,8 @@ export default {
     populer: 'Popüler',
     yakinindakiMekanlar: 'Yakınındaki mekânlar',
     mesafeyeGore: 'Mesafeye göre',
+    digerMekanlar: 'Diğer mekânları göster',
+    paneliKapat: 'Listeyi kapat',
     yolTarifi: 'Yol tarifi',
     sonuclar: 'Sonuçlar',
     kisiBurada: '{{sayi}} kişi burada',
