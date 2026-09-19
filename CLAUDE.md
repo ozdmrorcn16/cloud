@@ -180,6 +180,16 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   mekani SECER ve paneli kapatir. Eylemler YALNIZCA secili satirda.
 - **Kompakt cipler:** tek satir hap; Tumu dolu turuncu, Sakin/Yogun
   renkli nokta, Populer yildiz.
+- **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
+  istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
+  kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
+  kullanici noktasi GERI ALINDI; `CanliHarita` iki surumde de 6a4c80d
+  igne cizimi (durum renkli igne + her ignede ad, turuncu
+  `KullaniciIgnesi`). Kalanlar: `doldur`, `altPay`/mapPadding, konuma
+  don dugmesi, `onBosaDokun`, `seciliId` (yalnizca erisilebilirlik
+  durumu). `lib/harita-kumeleme.ts` ve testi duruyor, kullanilmiyor.
+  Yani bu turdan geriye kalan: harita tam tuval + panel + basilabilir
+  mesafe secimi + kompakt cipler + konuma don.
 - **AYNI AKSAM IKI DEGISIKLIK (kullanicinin istegi):** (a) "Mesafeye
   gore" artik BASILABILIR (seftali hap, turuncu yazi, asagi ok) ->
   `SecimPenceresi` ile 100 m / 250 m / 500 m / 1 km (tumu); secim
