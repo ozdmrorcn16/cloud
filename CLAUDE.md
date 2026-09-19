@@ -622,6 +622,15 @@ sessizi 22-08 yerel), yeni olay `ani_hatirlatma` ("Bir yil once bugun:
 
 Jest 81 paket / 1064 test, tsc temiz. Yayin: web `slooin--7vsyt8lbxi`,
 OTA grup `b376cb33-c05d-453b-83e4-36ab705ddfb3`.
+- **DUZELTME 2 (2026-09-19, kullanicinin istegi "yazilar biraz daha
+  belirgin, iki ikonda sorun var"):** `Liste.tsx` ortak: bolum basligi
+  14, satir etiketi 600/16 (500/15'ti), aciklama 14/20 - butun ayar
+  ekranlari birlikte. Ikonlar: `KonumIkonu` hub'da tek siyah ikondu
+  (renk.metin) -> varsayilan turuncu (`renk` prop'u ile ezilebilir);
+  `GunesAyIkonu` yarim dolu daire yayi MERKEZDEN basliyordu, kirik bir
+  dilim ciziyordu -> `M12 7.5a4.5 4.5 0 0 0 0 9z`. Goruntu
+  `tasarim/ayar-hub.png`. OTA grup `6f91cb9a-05fe-43e2-a22f-b6f8394e04c9`,
+  web guncel.
 - **DUZELTME (kullanicinin bildirimi "ikonlar yazilar birbirine
   girmis"):** `Liste.tsx` `ikon` kabi `width: 22` SABITTI; 44'luk
   seftali kutular tasip yaziya biniyordu (web goruntusunde fark

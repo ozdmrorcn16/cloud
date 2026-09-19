@@ -21,8 +21,11 @@ export function GunesAyIkonu({ boyut = 22, renk }: Props) {
   const c = useC(renk)
   return (
     <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      {/* Yarisi dolu daire: sol yarim ay (koyu), sag yarim gunes (acik).
+          Onceki yay merkezden basliyordu ve daireyi kesen bir dilim
+          ciziyordu - ikon kirik gorunuyordu (2026-09-19). */}
       <Circle cx={12} cy={12} r={4.5} fill="none" stroke={c} strokeWidth={1.8} />
-      <Path d="M12 12a4.5 4.5 0 0 1 0-9" fill={c} stroke="none" />
+      <Path d="M12 7.5a4.5 4.5 0 0 0 0 9z" fill={c} stroke="none" />
       <Path
         d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
         stroke={c}

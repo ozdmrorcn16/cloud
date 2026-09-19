@@ -163,9 +163,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   metinAlani: { flex: 1 },
 
   bolum: { marginTop: bosluk.xl },
+  // 2026-09-19 (kullanicinin istegi "yazilar biraz daha belirgin"):
+  // bolum basligi 13 -> 14, satir etiketi 500/15 -> 600/16, aciklama
+  // 13 -> 14. Satir bileseni butun ayar ekranlarinda ortak; hepsi
+  // birlikte degisti.
   bolumBasligi: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
+    fontSize: 14,
     color: renk.metinIkincil,
     marginBottom: bosluk.s,
     marginLeft: bosluk.xs,
@@ -194,8 +198,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ikon: { minWidth: 22, alignItems: 'center', justifyContent: 'center' },
   etiket: {
     flex: 1,
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.govde,
+    fontFamily: yazi.govdeKalin,
+    fontSize: 16,
     color: renk.metin,
   },
   etiketSecili: { fontFamily: yazi.govdeKalin },
@@ -209,8 +213,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   secenekOrta: { flex: 1 },
   aciklama: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 20,
     color: renk.metinIkincil,
     marginTop: 2,
   },

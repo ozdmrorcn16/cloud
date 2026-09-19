@@ -65,18 +65,22 @@ export const EngelIkonu = () => {
 }
 
 /** Konum ignesi - "oturdugum bolge" ayari (2026-09-18). */
-export const KonumIkonu = () => {
+// Ayarlar hub'inda seftali kutu icinde duruyor; oradaki diger ikonlar
+// gibi TURUNCU (2026-09-19: tek siyah ikon o kalmisti). Baska yerde
+// koyu istenirse `renk` verilir.
+export const KonumIkonu = ({ renk: verilen }: { renk?: string } = {}) => {
   const renk = useRenk()
+  const c = verilen ?? renk.turuncu
   return govde(
     <>
       <Path
         d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"
-        stroke={renk.metin}
+        stroke={c}
         strokeWidth={K}
         fill="none"
         strokeLinejoin="round"
       />
-      <Circle cx={12} cy={10} r={2.4} stroke={renk.metin} strokeWidth={K} fill="none" />
+      <Circle cx={12} cy={10} r={2.4} stroke={c} strokeWidth={K} fill="none" />
     </>
   )
 }
