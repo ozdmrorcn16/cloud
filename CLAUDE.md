@@ -148,6 +148,42 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### CIHAZ UYUMU: BUTUN TELEFONLAR - 2026-09-19
+
+Kullanicinin istegi: "farkli boyutlarda telefonlar var, uygulama
+kullanilan cihaza gore optimize olmali, Apple ve Android tumu icin".
+Yontem: 16 ekran x 3 olcu (`araclar/cihaz-taramasi.sh`: iPhone SE
+375x647, yaygin Android 360x736, Pro Max 430x839 - guvenli alan
+dusulmus etkin alan) cizildi, kirilanlar duzeltildi; kod duzeyinde
+klavye ve durum cubugu ele alindi. **YENI KURALLAR:**
+- **Girdili, "kaydirmasiz" ekran = `FormSayfasi`** (`src/tasarim/`):
+  iOS'ta KeyboardAvoidingView (padding; Android'de pencere zaten
+  resize), ScrollView + `flexGrow: 1` (yer varsa dizilim aynen, kucuk
+  ekranda kaydirir), bos alana dokununca/kaydirinca klavye kapanir.
+  giris, kayit, sifre-sifirla, dogrula, check-in/[mekanId], sikayet
+  buna gecti (`KlavyeKapatan` o uc ekrandan cikti). Icerik stili
+  `icerikStili`na, `flex: 1` DEGIL `flexGrow: 1`.
+- **Durum cubugu temayi takip eder:** `_layout.tsx` `<StatusBar
+  style={koyuMu ? 'light' : 'dark'}>` (`useKoyuMu`, tema-baglami).
+  Onceden hic ayarlanmiyordu; "Acik"a zorlanmis uygulama koyu cihazda
+  beyaz ustune beyaz saat gosteriyordu.
+- **Kisa ekran (pencere < 720 pt):** karsilama sahnesi 140, kart
+  dolgusu kucuk - "Hesap olustur" SE'de ilk bakista gorunur
+  (`tasarim/karsilama-se.png`). Ayni desen baska ekranlarda gerekirse
+  `useWindowDimensions().height < 720`.
+- **375/360 genislik kirilmalari:** `MekanPuanlama.puanKutu` sabit 112
+  (minWidth ile cubuklarin ustune biniyordu); `Liste.Satir` etiketi 2
+  satira sarar, `deger` daralmaz (%45 tavan) - "Profil gorunurlu..."
+  kirpilmasi.
+- Sabit/cift ust pay: yalnizca `_layout` `kendiUstPayiniKoyar`
+  listesindekiler kendi `insets.top`unu koyar (sikayet cift pay hatasi
+  ayni gun bulundu).
+- Android: `orientation portrait`, kenar-kenara (SDK 57 varsayilani),
+  `ALT_GEZINME_PAYI` hareket cubugu insetini zaten tasiyor; klavye
+  `resize`. Yazi buyutme (`maxFontSizeMultiplier`) YAPILMADI - RN 0.81
+  /React 19'da global varsayilan yok, ekran ekran is; acik borc.
+Tarama gorselleri scratchpad'de kaldi (buyuk); betik depoda.
+
 ### SABAH TURU: MESAJLAR, SIKAYET, CHECK-IN HARITASI - 2026-09-19
 
 Kullanicinin telefondan ekran goruntuleriyle art arda istekleri (hepsi

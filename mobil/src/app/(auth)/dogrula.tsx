@@ -7,6 +7,7 @@ import { epostaGecerliMi } from '../../../lib/eposta'
 import { useDil } from '../../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
+import { FormSayfasi } from '../../tasarim/FormSayfasi'
 import { hataMetni } from '../../../lib/hata-metni'
 import {
   BEKLEME_SANIYE,
@@ -171,7 +172,7 @@ export default function DogrulaEkrani() {
   }
 
   return (
-    <View style={stiller.sayfa}>
+    <FormSayfasi icerikStili={stiller.sayfa}>
       <Pressable
         style={stiller.geri}
         onPress={() => router.back()}
@@ -284,7 +285,7 @@ export default function DogrulaEkrani() {
       </View>
       </>
       )}
-    </View>
+    </FormSayfasi>
   )
 }
 
@@ -299,7 +300,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     marginTop: 2,
   },
   sayfa: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,

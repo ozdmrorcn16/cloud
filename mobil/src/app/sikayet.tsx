@@ -11,6 +11,7 @@ import {
 import { engelle } from '../../lib/engelleme'
 import { kendiKullaniciIdim } from '../../lib/profil'
 import { SecimPenceresi } from '../tasarim/SecimPenceresi'
+import { FormSayfasi } from '../tasarim/FormSayfasi'
 import { FotografIkonu } from '../tasarim/mekan-ikonlari'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
@@ -232,7 +233,7 @@ export default function SikayetEkrani() {
   }
 
   return (
-    <View style={[stiller.kok, { paddingTop: bosluk.m }]}>
+    <FormSayfasi icerikStili={stiller.formIcerik}>
       {/* UST GUVENLI ALAN PAYI BURADA YOK: kok duzen (`_layout.tsx`) onu
           zaten her ekrana veriyor. 2026-09-19'a kadar burada bir kez
           daha ekleniyordu (cift pay, ~59 pt) ve "Sikayeti gonder"
@@ -380,14 +381,17 @@ export default function SikayetEkrani() {
         ]}
         onKapat={() => setKaynakSecimi(false)}
       />
-    </View>
+    </FormSayfasi>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   kok: { flex: 1, backgroundColor: renk.zemin },
+  formIcerik: { flexGrow: 1, paddingTop: bosluk.m },
+  // 01 ekrani FormSayfasi icinde: icerik kabi flexGrow (yer varsa
+  // eski dizilim, kucuk ekranda kaydirma - cihaz uyumu 2026-09-19).
   icerik: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,
   },

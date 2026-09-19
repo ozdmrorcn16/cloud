@@ -73,7 +73,7 @@ export function Satir({
       <View style={stiller.metinAlani}>
         <Text
           style={[stiller.etiket, tehlikeli && stiller.etiketTehlikeli]}
-          numberOfLines={1}
+          numberOfLines={2}
         >
           {etiket}
         </Text>
@@ -204,8 +204,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   etiketSecili: { fontFamily: yazi.govdeKalin },
   etiketTehlikeli: { color: renk.yikici },
+  // Deger DARALMAZ, etiket iki satira sarar (cihaz uyumu 2026-09-19:
+  // 375 px'te "Profil gorunurlu..." diye kirpiliyordu).
   deger: {
-    flexShrink: 1,
+    flexShrink: 0,
+    maxWidth: '45%',
     fontFamily: yazi.govde,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,

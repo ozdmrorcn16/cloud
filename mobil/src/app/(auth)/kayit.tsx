@@ -18,7 +18,7 @@ import {
   Vazgecildi,
   type Saglayici,
 } from '../../../lib/sosyal-giris'
-import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
+import { FormSayfasi } from '../../tasarim/FormSayfasi'
 import Svg, { Path } from 'react-native-svg'
 
 /**
@@ -125,7 +125,7 @@ export default function KayitEkrani() {
   }
 
   return (
-    <KlavyeKapatan style={stiller.sayfa}>
+    <FormSayfasi icerikStili={stiller.sayfa}>
       {/* GERI DONME (kullanicinin istegi 2026-09-02). Karsilama
           ekranindan buraya gelen kisi fikrini degistirebilmeli; tek
           cikis yolu uygulamayi kapatmak olmamali. Mutlak konumlu:
@@ -219,7 +219,7 @@ export default function KayitEkrani() {
 
       {/* Hukuki bilgilendirme bu ekrandan KALDIRILDI (2026-09-13):
           yalnizca hesabin olustugu son adimda, baglantili. */}
-    </KlavyeKapatan>
+    </FormSayfasi>
   )
 }
 
@@ -231,7 +231,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     zIndex: 1,
   },
   sayfa: {
-    flex: 1,
+    // ScrollView icerik kabi: flex yerine flexGrow (cihaz uyumu 2026-09-19).
+    flexGrow: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.sayfa,
     // LOGO YUKARIDA, YAZILAR ASAGIDA (kullanicinin verdigi referans

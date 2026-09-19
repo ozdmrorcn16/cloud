@@ -201,7 +201,10 @@ const stilleriYap = (renk: Renk) =>
       alignItems: 'center',
       gap: bosluk.l,
     },
-    puanKutu: { alignItems: 'center', minWidth: 96 },
+    // SABIT genislik (cihaz uyumu 2026-09-19): minWidth ile kutu "Henuz
+    // puan yok" yazisi kadar buyuyor, 375 px'lik ekranda cubuklarla ust
+    // uste biniyordu (iPhone SE'de olculdu). Sabit genislikte yazi sarar.
+    puanKutu: { alignItems: 'center', width: 112, flexShrink: 0 },
     puan: {
       fontFamily: yazi.ekranBasligi,
       fontSize: 44,

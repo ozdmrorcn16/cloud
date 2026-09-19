@@ -31,6 +31,13 @@ export function useRenk(): Renk {
   return koyu ? koyuRenk : acikRenk
 }
 
+/** Cozulmus tema koyu mu (tercih + cihaz). Durum cubugu rengi buna bakar. */
+export function useKoyuMu(): boolean {
+  const sema = useColorScheme()
+  const tercih = useTemaTercihi()
+  return tercih === 'koyu' || (tercih === 'sistem' && sema === 'dark')
+}
+
 /**
  * Paletin degistigi her seferde stilleri yeniden uretir, arada aynisini
  * dondurur.

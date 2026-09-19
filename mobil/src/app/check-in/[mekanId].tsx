@@ -13,6 +13,7 @@ import type { BagKisi } from '../../../lib/bag'
 import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { FormSayfasi } from '../../tasarim/FormSayfasi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { UstCubuk } from '../../tasarim/UstCubuk'
@@ -179,7 +180,7 @@ export default function CheckInEkrani() {
   }
 
   return (
-    <View style={stiller.kapsayici}>
+    <FormSayfasi icerikStili={stiller.kapsayici}>
       <UstCubuk baslik={t('checkIn.baslik')} geriEtiketi={t('ortak.geri')} />
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli]}
@@ -276,7 +277,7 @@ export default function CheckInEkrani() {
         onKapat={() => setArkadasSecimi(false)}
       />
 
-    </View>
+    </FormSayfasi>
   )
 }
 
@@ -299,7 +300,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   etiketYaziSecili: { fontFamily: yazi.govdeKalin, color: renk.turuncuYazi },
 
   kapsayici: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.sayfa,
     paddingBottom: ALT_GEZINME_PAYI,

@@ -10,7 +10,7 @@ import { useDil } from '../../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { hataMetni } from '../../../lib/hata-metni'
-import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
+import { FormSayfasi } from '../../tasarim/FormSayfasi'
 import {
   BEKLEME_SANIYE,
   gonderimDurumu,
@@ -236,7 +236,7 @@ export default function SifreSifirlaEkrani() {
   const gecerliAdim = asama === 'yeniSifre' ? null : geriDon
 
   return (
-    <KlavyeKapatan style={stiller.sayfa}>
+    <FormSayfasi icerikStili={stiller.sayfa}>
       {/* Yeni sifre asamasinda geri yok: oturum acildi, kod harcandi;
           geri gidilecek anlamli bir yer kalmadi. */}
       {gecerliAdim && (
@@ -418,13 +418,14 @@ export default function SifreSifirlaEkrani() {
           </Pressable>
         </>
       )}
-    </KlavyeKapatan>
+    </FormSayfasi>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   sayfa: {
-    flex: 1,
+    // ScrollView icerik kabi: flex yerine flexGrow (cihaz uyumu 2026-09-19).
+    flexGrow: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.sayfa,
     paddingTop: bosluk.xxl + bosluk.m,

@@ -8,7 +8,7 @@ import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { MarkaYazisi } from '../../tasarim/MarkaYazisi'
 import { hataMetni } from '../../../lib/hata-metni'
-import { KlavyeKapatan } from '../../tasarim/KlavyeKapatan'
+import { FormSayfasi } from '../../tasarim/FormSayfasi'
 import Svg, { Path } from 'react-native-svg'
 
 /**
@@ -87,7 +87,7 @@ export default function GirisEkrani() {
   }
 
   return (
-    <KlavyeKapatan style={stiller.sayfa}>
+    <FormSayfasi icerikStili={stiller.sayfa}>
       {/* GERI DONME (kullanicinin istegi 2026-09-02). Karsilama
           ekranindan buraya gelen kisi fikrini degistirebilmeli; tek
           cikis yolu uygulamayi kapatmak olmamali. Mutlak konumlu:
@@ -202,7 +202,7 @@ export default function GirisEkrani() {
         <Text style={stiller.ikincilYazi}>{t('giris.kayitOl')}</Text>
       </Pressable>
 
-    </KlavyeKapatan>
+    </FormSayfasi>
   )
 }
 
@@ -214,7 +214,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     zIndex: 1,
   },
   sayfa: {
-    flex: 1,
+    // ScrollView icerik kabi: flex yerine flexGrow (cihaz uyumu 2026-09-19).
+    flexGrow: 1,
     backgroundColor: renk.zemin,
     paddingHorizontal: bosluk.sayfa,
     paddingTop: 96,

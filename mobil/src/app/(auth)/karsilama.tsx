@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from 'react-native'
+import { View, Text, Pressable, ScrollView, StyleSheet, Animated, useWindowDimensions } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle, G } from 'react-native-svg'
@@ -131,6 +131,10 @@ const UST_PAY = 18
 
 export default function KarsilamaEkrani() {
   const guvenliAlan = useSafeAreaInsets()
+  // KISA EKRAN (cihaz uyumu 2026-09-19): iPhone SE / kucuk Android'de
+  // (pencere < 720 pt) sahne ve kartlar sikisiyor ki "Hesap olustur"
+  // ilk bakista gorunsun; sayfa yine kaydirilabilir.
+  const kisaEkran = useWindowDimensions().height < 720
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
@@ -204,13 +208,13 @@ export default function KarsilamaEkrani() {
           yukari uzat"). Sahne o bosluga yayiliyor; ustten ve alttan
           ayni pay (bosluk.m) ile kartlarla orantili. Metin ekran
           okuyucu icin sahnenin erisilebilirlik etiketinde duruyor. */}
-      <View style={stiller.sahne}>
+      <View style={[stiller.sahne, kisaEkran && stiller.sahneKisa]}>
         <KarsilamaSahnesi />
       </View>
 
       <View style={stiller.kartlar}>
         {KARTLAR.map(({ no, ikon }) => (
-          <View key={no} style={stiller.kart}>
+          <View key={no} style={[stiller.kart, kisaEkran && stiller.kartKisa]}>
             <OzellikIkonu ad={ikon} />
             <Text style={stiller.kartBaslik}>{t(`karsilama.adim${no}Baslik`)}</Text>
             <Text style={stiller.kartAciklama}>{t(`karsilama.adim${no}Aciklama`)}</Text>
@@ -293,6 +297,7 @@ const stilleriYap = (renk: Renk) =>
       // uzaklikta durur.
       marginTop: bosluk.m,
     },
+    sahneKisa: { minHeight: 140 },
 
     kartlar: {
       flexDirection: 'row',
@@ -311,6 +316,7 @@ const stilleriYap = (renk: Renk) =>
       padding: bosluk.m,
       gap: bosluk.xs,
     },
+    kartKisa: { padding: bosluk.s, gap: 2 },
     kartBaslik: {
       fontFamily: yazi.govdeKalin,
       fontSize: olcek.govde,

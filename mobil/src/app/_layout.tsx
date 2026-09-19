@@ -17,7 +17,8 @@ import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
 import { PaylasimKalkani } from '../tasarim/PaylasimKalkani'
 import { type Renk } from '../tasarim/tema'
-import { useRenk, useStiller } from '../tasarim/tema-baglami'
+import { StatusBar } from 'expo-status-bar'
+import { useKoyuMu, useRenk, useStiller } from '../tasarim/tema-baglami'
 
 /**
  * Dil tercihi cihazdan okunana kadar ekran cizilmiyor. Yazi tipleriyle
@@ -190,9 +191,16 @@ function YonlendirmeKontrolu() {
   const baskasininProfili = segments[0] === 'kullanici' && !!segments[1]
   const karsilamaEkrani = segments[0] === '(auth)' && segments[1] === 'karsilama'
   const kendiUstPayiniKoyar = profilKoku || baskasininProfili || karsilamaEkrani
+  // DURUM CUBUGU TEMAYI TAKIP EDER (cihaz uyumu 2026-09-19). Onceden hic
+  // ayarlanmiyordu: kullanici uygulamayi "Acik"a zorlayip cihazi koyu
+  // moddaysa saat/pil BEYAZ zeminde beyaz kaliyordu (Android'de
+  // kenar-kenara pencerede de ayni). `style` icerik rengi: koyu temada
+  // acik simgeler, acik temada koyu.
+  const koyuMu = useKoyuMu()
 
   return (
     <View style={stiller.kok}>
+      <StatusBar style={koyuMu ? 'light' : 'dark'} />
       <View
         testID="kok-icerik"
         style={[stiller.icerik, !kendiUstPayiniKoyar && { paddingTop: insets.top }]}
