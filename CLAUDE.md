@@ -223,8 +223,31 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   de bu modelin ongorusu). COZUM (OTA `960e0850`): iOS'ta isaretcinin
   cocugu KABSIZ, dogrudan hap (`Platform.OS === 'ios'`), bosluk
   `centerOffset x = 16 + hap/2`, `y = -13`; Android kab + anchor (0,1)
-  aynen. `etiketKabi` stili artik yalnizca Android. Dogrulama
-  kullanicida.
+  aynen. `etiketKabi` stili artik yalnizca Android. **Kullanicinin
+  01:00 goruntusuyle DOGRULANDI: etiketler ignenin saginda.** Sonra
+  "biraz yaklastir": `ETIKET_SOL_BOSLUK` 16 -> 12 (OTA `b789e42c`).
+- **YASAL / APPLE LOGOSU SOL ALTA SABIT (2026-09-20 01:xx, OTA
+  `52ff2841`):** kullanici "her giriste yeri degisiyor" dedi. KOK NEDEN
+  kutuphane kaynaginda (AIRMap.mm): `_legalLabel` (MKAttributionLabel)
+  YALNIZCA init'te aranir, MapKit onu bazen sonradan ekler -> referans
+  nil, `legalLabelInsets` hic uygulanmaz; logo icin `updateAppleLogoInsets`
+  yeniden ariyor, etiket icin yok. Yani inset override'i acilisa gore
+  bazen calisir bazen calismaz. COZUM: override YOK; `MapView` style
+  `bottom: altPay - 24` (yalnizca panel kose yuvarlagi kadar altina
+  girer), `mapPadding.bottom = 24`; Apple/Google etiketi kendi kuraliyla
+  haritanin sol altina = panelin ustune koyar. `PANEL_KOSE` sabiti
+  `mekanlar/index.tsx` panel `borderTopRadius` ile ayni kalmali.
+  Onceki `altPay + 8 / +20 / +6 / -6` denemeleri (ucu OTA) gecersiz.
+- **PANEL ELLE SURUKLENIR (OTA `2f21d8bb`):** kullanicinin istegi
+  "yukari asagi elle cekilebilsin, acilma sinirlari ayni kalsin".
+  `panelBoyu` (Animated.Value) parmagi izler; duraklar eskisiyle ayni
+  (kapali dogal olcu / harita alani - 24), birakinca `vy` 0,5 ya da
+  orta cizgi karar verir, `Animated.timing` 220 ms. Surukleme alani
+  tutamac + baslik satiri (`panel-surukleme-alani`); "Mesafeye gore"
+  dokunmayi hala alir (PanResponder 8 px dikey hareketten sonra).
+  Yukari cekilince liste ANINDA gelir; kapanista icerik animasyon
+  bitince kompakta doner. `LayoutAnimation` kalkti. Olcum yokken (jest)
+  animasyonsuz yol. `AnimatedPressable` = createAnimatedComponent.
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
