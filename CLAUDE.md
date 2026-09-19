@@ -148,12 +148,34 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
+
+Kullanicinin referans gorseli ("kartlar bu paylasimdaki gibi, arka
+planla yakin seffaflikta; bizde kenar cizgileri cok keskin") ve ayni
+dakikalardaki iki istek. OTA `c8094a96`, web guncel, goruntu
+`tasarim/ana-sayfa-yumusak-kart.png`.
+- **Kart:** `borderColor` artik `renk.kartCerceve` (acik:
+  `rgba(23,19,15,0.05)`, koyu: cizgi), golge `golge.akisKarti` (0,07 /
+  14 / y4). `CheckInKarti` uc ekranda ortak - profil ekranlarinda da
+  ayni yumusak kart (zemin orada beyaz kaldi).
+- **Akis zemini acik gri** `renk.akisZemini` (#F3F1EE; koyu: zemin):
+  yalnizca ana sayfa `kok`. 2026-08-27 "sayfa tam beyaz" karari diger
+  ekranlarda DURUYOR; referans akista gri zemin gosterdigi icin burada
+  istisna. Baslik ve "Su an disarida" seridi de bu zeminde.
+- **Arama sutunu KALKTI** (2026-08-28'in markanin altindaki kutusu ve
+  akis-yerine-sonuc davranisi). Ust cubukta marka ortada, SOL BASTA
+  buyutec (`kisi-ara`, mutlak konum, 44'luk hedef) -> `/kisiler`
+  (var olan kisi arama sayfasi; ana sayfadaki kopya mantik silindi).
+  `kisiler.tsx` artik `UstCubuk` (geri oku) + `autoFocus` kutu.
+  `anaSayfa.aramaYerTutucu` anahtari 7 dilde duruyor, kullanilmiyor.
+
 ### MEKAN SAYFASI: PUAN BLOGU EN ALTTA - 2026-09-20
 
-Kullanicinin istegi ("Puan sutununu en asagiya cek"): `harita/[mekanId]`
+Kullanicinin istegi ("Puan sutununu en asagiya cek", sonra "bunlar
+[Su an burada + sekmeler] ustte puan altta"): `harita/[mekanId]`
 icindeki `MekanPuanlama` blogu istatistik seridinin altindan ScrollView
 iceriginin SONUNA (sekme blogundan sonra) tasindi. Sira testle kilitli
-("PUAN blogu sayfanin EN ALTINDA"). OTA asagida.
+("PUAN blogu sayfanin EN ALTINDA"). OTA `57b5731f`.
 
 ### CHECK-IN EKRANI: HARITA ANA TUVAL + CEKILEN PANEL - 2026-09-19
 
