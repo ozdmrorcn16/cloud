@@ -167,8 +167,8 @@ describe('MekanAramaEkrani', () => {
     await listeyiAc()
     // Iki satir da AYNI: mahalle yok sayiliyor. Uzaklik once (referans
     // 2026-09-19: "50 m · Nilufer, Bursa").
-    expect(screen.getAllByText('240 m · Nilüfer, Bursa').length).toBe(2)
-    expect(screen.queryByText('240 m · Ertuğrul')).toBeNull()
+    expect(screen.getAllByText('Nilüfer, Bursa • 240 m').length).toBe(2)
+    expect(screen.queryByText('Ertuğrul • 240 m')).toBeNull()
     // Durum rozeti: iki mekan da sakin.
     expect(screen.getAllByText('Sakin').length).toBeGreaterThanOrEqual(2)
   })
@@ -190,10 +190,7 @@ describe('MekanAramaEkrani', () => {
     // Not: en yakin mekani ayrica gosteren kart 2026-08-31'de
     // kaldirildi, artik butun mekanlar listede.
     await screen.findByText('Sahil Kafe')
-    // Panelde yalnizca secili (en yakin) satirin eylemleri var; ikinci
-    // mekan once listeden SECILIR (2026-09-19), sonra check-in.
     await listeyiAc()
-    await fireEvent.press(screen.getByTestId('mekan-sec-mekan-2'))
     await fireEvent.press(await screen.findByLabelText('Moda Parkı için check-in yap'))
 
     expect(mockRouterPush).toHaveBeenCalledWith('/check-in/mekan-2')
@@ -1002,7 +999,7 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    expect(await screen.findByText('240 m · Nilüfer, Bursa')).toBeTruthy()
+    expect(await screen.findByText('Nilüfer, Bursa • 240 m')).toBeTruthy()
   })
 
   /**
@@ -1422,33 +1419,34 @@ describe('MekanAramaEkrani - referans kart', () => {
     ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
   })
 
-  it('Yol tarifi + Check-in yap YALNIZCA secili satirda; panel acilinca digerleri eylemsiz', async () => {
-    // Referans 2026-09-19: net islem sirasi - secili mekanin altinda
-    // turuncu "Check-in yap" ana buton, "Yol tarifi" yaninda ikincil.
-    // 2026-09-17'deki "her kartta eylem" kurali panelle degisti: eylem
-    // secili satirda, digerleri dokununca secilir.
+  it('BUTUN kartlarda Yol tarifi + Check-in yap; SECILI (varsayilan en yakin) turuncu cerceveli', async () => {
+    // Kullanicinin istegi 2026-09-19 aksam: kart sutunlari eski haline
+    // (2026-09-17) dondu - her kartta eylem satiri, kucuk harita karesi.
+    // Cerceve artik "secili" demek; panel kapaliyken secili = en yakin.
     await render(<MekanAramaEkrani />)
     const ilk = await screen.findByTestId('mekan-karti-mola')
+    expect(StyleSheet.flatten(ilk.props.style).borderColor).toBe(acikRenk.turuncu)
     expect(within(ilk).getByText('Yol tarifi')).toBeTruthy()
     expect(within(ilk).getByText('Check-in yap')).toBeTruthy()
     expect(screen.queryByTestId('mekan-karti-park')).toBeNull()
 
     await listeyiAc()
     const ikinci = screen.getByTestId('mekan-karti-park')
-    expect(within(ikinci).queryByText('Yol tarifi')).toBeNull()
-    expect(within(ikinci).queryByText('Check-in yap')).toBeNull()
+    expect(StyleSheet.flatten(ikinci.props.style).borderColor).not.toBe(acikRenk.turuncu)
+    expect(within(ikinci).getByTestId('yol-tarifi-park')).toBeTruthy()
+    expect(within(ikinci).getByText('Check-in yap')).toBeTruthy()
 
-    // Parki secince eylemler ona gecer ve panel kapanir.
-    await fireEvent.press(screen.getByTestId('mekan-sec-park'))
-    expect(await screen.findByTestId('yol-tarifi-park')).toBeTruthy()
-    expect(screen.queryByTestId('mekan-karti-mola')).toBeNull()
+    // Kartin bos yerine dokunmak parki SECER: cerceve ona gecer, panel kapanir.
+    await fireEvent.press(ikinci)
+    await waitFor(() => expect(screen.queryByTestId('mekan-karti-mola')).toBeNull())
+    expect(StyleSheet.flatten(screen.getByTestId('mekan-karti-park').props.style).borderColor).toBe(acikRenk.turuncu)
   })
 
-  it('kullanicinin ekledigi mekanda "240 m · Kafe · Nilüfer, Bursa", dis kaynaklida tur yok', async () => {
+  it('kullanicinin ekledigi mekanda "Kafe • Nilüfer, Bursa • 240 m", dis kaynaklida tur yok', async () => {
     await render(<MekanAramaEkrani />)
-    expect(await screen.findByText('240 m · Kafe · Nilüfer, Bursa')).toBeTruthy()
+    expect(await screen.findByText('Kafe • Nilüfer, Bursa • 240 m')).toBeTruthy()
     await listeyiAc()
-    expect(screen.getByText('240 m · Nilüfer, Bursa')).toBeTruthy()
+    expect(screen.getByText('Nilüfer, Bursa • 240 m')).toBeTruthy()
   })
 
   it('durum rozeti: Yogun/Sakin metni ve renkli nokta', async () => {
@@ -1459,11 +1457,9 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(within(screen.getByTestId('mekan-karti-park')).getByText('Sakin')).toBeTruthy()
   })
 
-  it('kapak fotografi imzalanip kutuda cizilir; fotografsiz satirda BINA simgesi, kucuk harita YOK', async () => {
-    // Referans 2026-09-19: satirin solunda seftali kutuda simge. Onayli
-    // kapak fotografi varsa o (kullanicinin karari 2026-09-14), yoksa
-    // ture BAGLI OLMAYAN bina simgesi. 2026-09-17'deki "kucuk gercek
-    // harita" karesi referansla kalkti.
+  it('kapak fotografi imzalanip cizilir; fotografsiz kartta mekanin GERCEK kucuk haritasi', async () => {
+    // Eski kart (2026-09-17) geri: kapak fotografi varsa o, yoksa kucuk
+    // gercek harita karesi.
     ;(mekanFotografiUrlleri as jest.Mock).mockResolvedValue({
       'kisi-1/mola.jpg': 'https://imzali/mola.jpg',
     })
@@ -1472,9 +1468,8 @@ describe('MekanAramaEkrani - referans kart', () => {
     const kapak = await screen.findByTestId('kapak-mola')
     expect(kapak.props.source).toEqual([{ uri: 'https://imzali/mola.jpg' }])
     await listeyiAc()
-    expect(screen.getByTestId('simge-park')).toBeTruthy()
-    expect(screen.queryByTestId('kapak-harita-park')).toBeNull()
-    // Yalnizca fotografi olan mekanin yolu imzalatiliyor.
+    expect(screen.getByTestId('kapak-harita-park')).toBeTruthy()
+    expect(screen.getByTestId('kapak-harita-park-harita')).toBeTruthy()
     expect(mekanFotografiUrlleri).toHaveBeenCalledWith(['kisi-1/mola.jpg'])
   })
 
@@ -1555,11 +1550,37 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(screen.queryByTestId('bulunanlar-mola')).toBeNull()
   })
 
-  it('"Mesafeye göre" etiketi var ve bir secici DEGIL; aramada gizlenir', async () => {
+  it('"Mesafeye göre" BASILABILIR: mesafe secimi acar, secim listeyi ve haritayi daraltir; aramada gizlenir', async () => {
+    // Kullanicinin istegi 2026-09-19 aksam: 100 m ... 1 km secenekleri,
+    // secime gore yakinindaki mekanlar guncellensin. SIRALAMA yine
+    // sabit (en yakindan); yalnizca yaricap daraliyor.
+    ;(mesafeMetre as jest.Mock).mockImplementation(
+      (_a: number, _b: number, lat: number) => (lat === 41.015 ? 80 : 400)
+    )
     await render(<MekanAramaEkrani />)
-    const etiket = await screen.findByTestId('siralama-etiketi')
-    expect(etiket.props.accessibilityRole).toBeUndefined()
+    const dugme = await screen.findByTestId('siralama-etiketi')
+    expect(dugme.props.accessibilityRole).toBe('button')
     expect(screen.getByText('Mesafeye göre')).toBeTruthy()
+
+    await fireEvent.press(dugme)
+    expect(await screen.findByTestId('mesafe-100')).toBeTruthy()
+    expect(screen.getByText('1 km içinde (tümü)')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('mesafe-100'))
+
+    // Etiket secimi soyluyor; 400 m'deki park listeden ve haritadan dustu
+    // (tek mekan kaldigi icin "Diger mekanlari goster" de yok).
+    expect(await screen.findByText('100 m içinde')).toBeTruthy()
+    expect(screen.getByTestId('mekan-karti-mola')).toBeTruthy()
+    expect(screen.queryByTestId('mekan-karti-park')).toBeNull()
+    expect(screen.queryByTestId('diger-mekanlar')).toBeNull()
+    const igneler = screen.getAllByTestId('harita-ignesi').filter((i) => i.props.accessibilityLabel !== 'Buradasın')
+    expect(igneler.some((i) => String(i.props.accessibilityLabel).startsWith('Nilüfer Parkı'))).toBe(false)
+
+    // 1 km'ye donunce park geri gelir.
+    await fireEvent.press(screen.getByTestId('siralama-etiketi'))
+    await fireEvent.press(await screen.findByTestId('mesafe-1000'))
+    await listeyiAc()
+    expect(await screen.findByTestId('mekan-karti-park')).toBeTruthy()
 
     await fireEvent.changeText(screen.getByTestId('mekan-arama-kutusu'), 'kahve')
     await waitFor(() => expect(screen.queryByTestId('siralama-etiketi')).toBeNull())

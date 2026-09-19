@@ -180,6 +180,18 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   mekani SECER ve paneli kapatir. Eylemler YALNIZCA secili satirda.
 - **Kompakt cipler:** tek satir hap; Tumu dolu turuncu, Sakin/Yogun
   renkli nokta, Populer yildiz.
+- **AYNI AKSAM IKI DEGISIKLIK (kullanicinin istegi):** (a) "Mesafeye
+  gore" artik BASILABILIR (seftali hap, turuncu yazi, asagi ok) ->
+  `SecimPenceresi` ile 100 m / 250 m / 500 m / 1 km (tumu); secim
+  liste + haritayi ISTEMCIDE daraltiyor (`mesafeyeUyan`, arama yokken),
+  siralama sabit kalir; etiket secimi yazar ("100 m icinde"). (b)
+  Panel icindeki satirlar ESKI KART DUZENINE dondu ("sutunlari eski
+  haline cevir"): kucuk gercek harita karesi / kapak, ad, "Nilufer,
+  Bursa • 110 m", rozet, kisi satiri, HER KARTTA Yol tarifi + Check-in
+  yap; turuncu cerceve = SECILI (varsayilan en yakin); kartin bos
+  yerine dokunmak secer. Yukaridaki "kompakt satir" maddesi bu yuzden
+  GECERSIZ; `BinaIkonu`/`satirSimge` stilleri dosyada duruyor ama
+  kullanilmiyor.
 - **REFERANSLA DEGISEN ESKI KARARLAR:** (1) 2026-09-09 "her ignede ad"
   -> yalnizca secili ignede ad; (2) 2026-09-07 "igneye basinca mekan
   sayfasi" -> igne mekani SECER; (3) 2026-09-17 "her kartta eylem
