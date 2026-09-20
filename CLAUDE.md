@@ -3238,6 +3238,26 @@ sayfa zemini artik RENKLE ayrilmiyor; ayrimi `renk.cizgi` kenarligi ve
 gorunmez olur. Mevcut ekranlar kontrol edildi (ayarlar, profil,
 kesfet, kisiler): hepsinde kenarlik ya da golge zaten vardi.
 
+### OSM TUR OLCUMU: TEKRAR DENENMESIN - 2026-09-20
+
+Kullanicinin sorusu: yeni kazima araclariyla (Scrapling, ScrapeGraphAI)
+gercek tur ve fotograf verisine ulasmak kolaylasti mi? CEVAP HAYIR -
+engel teknik degil: Google/Yelp/Instagram verisi sozlesme+telif,
+LLM tahmini "turetilmis veri", fotograf icin mesru kaynak yok.
+Tek mesru aday OSM etiketleriydi; Bursa'da OLCULDU
+(`araclar/osm-tur-olcum.py`, tamamen yerel: fsq-tr.parquet +
+turkiye-osm.pbf, cikti `olcum-bursa-cikti.txt`):
+- 212.162 Foursquare mekani; OSM'de Bursa'da adli POI yalnizca 8.733.
+- 40 m + ad benzerligiyle eslesen: 3.023 (%1,4); OSM turu yazili: 1.946 (%0,9).
+- Sosyal turlerde OSM: 220 cafe / 314 restaurant / 13 bar; bizde 23.285.
+- Eslesen ciftlerde aile bazinda tutarlilik %80 - OSM bile %20 farkli
+  soyluyor (AVM icindeki restoran "mall", pastane "cafe").
+SONUC: OSM turu kapsam olarak isleyemez (%1), guvenilirlik olarak da
+%100 degil. 24 Agustos karari (dis kaynakli mekanda tur gosterilmez)
+DURUYOR; fotograf icin tek kaynak uygulamanin kendi check-in anilari.
+PostgREST tuzagi: `il='Bursa' order by id` 8 sn'de zaman asimi
+(212 bin satir sirasi) - toplu olcumler yerel parquet'ten yapilir.
+
 ### KARAR: dis kaynakli mekanlarda TUR GOSTERILMIYOR (2026-08-24)
 
 Kullanicinin karari, tur hatalarini "yuzde yuz nasil cozeriz" sorusuna

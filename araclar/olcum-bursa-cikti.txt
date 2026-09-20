@@ -1,0 +1,64 @@
+
+=== OSM TUR OLCUMU - BURSA ===
+Foursquare kaynakli mekan (Bursa)  : 212,162
+  bizde tur yazili (yer-degil haric): 210,072 (99.0%)
+OSM POI ile eslesen (40 m + ad)     : 3,023 (1.4%)
+  eslesen VE OSM turu yazili         : 1,946 (0.9% / tum mekanlar)
+Her ikisinde tur olan cift          : 1,997; aile tanimli: 1,321; AYNI aile: 1,060 (80%)
+
+En sik OSM turleri (eslesenlerde):
+  pharmacy                538
+  restaurant              174
+  fuel                    139
+  cafe                    135
+  supermarket              98
+  bank                     94
+  convenience              60
+  hotel                    60
+  fast_food                47
+  clothes                  38
+  school                   29
+  post_office              28
+
+Bizim tur x OSM turu (en sik 15 cift):
+   Pharmacy      -> pharmacy             397
+   Fuel Station  -> fuel                 128
+   Bank          -> bank                  86
+   Café          -> cafe                  48
+   Grocery Store -> supermarket           38
+   Hotel         -> hotel                 28
+   Coffee Shop   -> cafe                  26
+   Kofte Place   -> restaurant            21
+   Medical Center -> pharmacy              20
+   Seafood Restaurant -> restaurant            17
+   Hair Salon    -> hairdresser           16
+   Convenience Store -> convenience           14
+   Restaurant    -> restaurant            14
+   Convenience Store -> supermarket           14
+   Turkish Restaurant -> restaurant            14
+
+Ornek eslesmeler (rastgele 12):
+  Yapı Kredi                   | Yapı Kredi                   | biz= Bank osm=bank  22 m
+  Ptt - Alanyurt               | PTT                          | biz= Post Office osm=post_office  10 m
+  BP                           | BP                           | biz= Fuel Station osm=fuel  7 m
+  Yediselviler Otobüs Durağı   | d                            | biz= Bus Stop osm=convenience  36 m
+  Opet                         | Opet Harmancık               | biz= Fuel Station osm=fuel  16 m
+  Kasap Adem Et Market         | Kasap Adem                   | biz= Big Box Store osm=butcher  19 m
+  Petrol Ofisi                 | Petrol Ofisi                 | biz= Fuel Station osm=fuel  16 m
+  İşte Pide                    | İşte Pide                    | biz= Pide Place osm=restaurant (pide;lahmacun) 23 m
+  Karacabey Ulubatlı Hasan ASM | Karacabey 1 nolu Ulubatlı Ha | biz= Doctor's Office osm=clinic  0 m
+  Setbaşı Çay Ocağı            | Setbaşı Eczanesi             | biz= Tea Room osm=pharmacy  10 m
+  Groupama Bursa Bolge Mdr     | LG                           | biz= Structure osm=electronics  39 m
+  Mahkeme Fırını               | Mahkeme Fırını               | biz= Bakery osm=bakery  18 m
+
+UYUSMAZLIK ornekleri (farkli aile, 10):
+  Kent Meydanı AVM Otopark       biz= Parking osm=parking 
+  Kardesler Kuaför               biz= Nail Salon osm=convenience 
+  Uzay Pastanesi                 biz= Pastry Shop osm=cafe 
+  Meydan Kasabı                  biz= Steakhouse osm=farm 
+  Emirgan Sütiş                  biz= Dessert Shop osm=cafe 
+  Crakers Pizza Korupark Avm     biz= Pizzeria osm=mall 
+  Doyuyo! Korupark AVM           biz= Restaurant osm=mall 
+  M Chocolate & Korupark         biz= Fondue Restaurant osm=mall 
+  Gülümoğlu                      biz= Dessert Shop osm=food_court 
+  Gürsu  Belediyesi Nikah  Salon biz= Amphitheater osm=townhall 
