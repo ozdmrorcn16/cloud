@@ -3561,6 +3561,20 @@ list` Connected. Araclari: get/fetch/stealthy_fetch + oturumlu surumler
 `mcp__scrapling__*` adiyla gorunur. Kullanim alani: agent-reach'in
 Jina okuyucusunun yetmedigi (JS'li, bot korumali) sayfalar.
 
+## SCRAPEGRAPHAI KURULDU - 2026-09-20
+
+Kullanicinin verdigi baglanti (ScrapeGraphAI/Scrapegraph-ai, MIT):
+LLM'e dogal dille "sunu cikar" diyerek kazima (SmartScraperGraph vb.).
+Kurulum kullanici kapsaminda: `pip install --user scrapegraphai` (2.2.4)
++ `python -m playwright install chromium`. **LLM'i OmniRoute'tan alir:**
+`araclar/scrapegraph-ornek.py` -> `openai/auto` + `base_url
+http://127.0.0.1:20128/v1`. Zincir uctan uca olculdu (sayfa cekildi,
+OmniRoute'a istek gitti); LLM cevabi OmniRoute'ta GERCEK bir saglayici
+baglaninca gelir (Gemini OAuth panelden, bkz. OmniRoute bolumu).
+MCP'si kurulmadi: onlarin bulut API'si icin (ucretli anahtar).
+Scrapling ile is bolumu: Scrapling secici tabanli/hizli ve bot korumasi
+gecer; ScrapeGraphAI sema bilinmeyen sayfadan LLM ile yapisal veri cikarir.
+
 ## OMNIROUTE KURULDU - 2026-09-19
 
 Kullanicinin istegiyle `omniroute` 3.8.50 (`npm install -g`, MIT yerel AI
