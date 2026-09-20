@@ -293,6 +293,8 @@ export default {
     profilKapali: 'Dieses Profil ist privat',
     profilKapaliAciklama: 'Ihr müsst Freunde sein, damit du die Erinnerungen sehen kannst.',
     yerYok: 'Noch keine Orte',
+    fotografYok: 'Noch keine Fotos',
+    arkadasYok: 'Noch keine Freunde',
     secenekler: 'Profiloptionen',
     sikayetEt: 'Melden',
     sikayetEttinNotu: 'Du hast diese Person gemeldet',

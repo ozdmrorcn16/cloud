@@ -293,6 +293,8 @@ export default {
     profilKapali: 'هذا الملف خاص',
     profilKapaliAciklama: 'يجب أن تكونا صديقين لرؤية الذكريات.',
     yerYok: 'لا أماكن بعد',
+    fotografYok: 'لا صور بعد',
+    arkadasYok: 'لا أصدقاء بعد',
     secenekler: 'خيارات الملف الشخصي',
     sikayetEt: 'إبلاغ',
     sikayetEttinNotu: 'لقد أبلغت عن هذا المستخدم',

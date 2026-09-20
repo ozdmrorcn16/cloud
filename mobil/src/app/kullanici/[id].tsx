@@ -36,6 +36,9 @@ import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { ProfilSayaclari } from '../../tasarim/ProfilSayaclari'
 import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
+import { Avatar } from '../../tasarim/Avatar'
+import { baskasininArkadaslariniGetir } from '../../../lib/bag-listeleri'
+import type { BagKisi } from '../../../lib/bag'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { kullaniciyiSikayetEttimMi } from '../../../lib/sikayet'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
@@ -151,7 +154,10 @@ const KIMLIK_UST_PAYI = 16
  * Engelleme iki adimli. Tek dokunusla engellemek geri alinamaz bir
  * eylemi kazayla tetikliyordu.
  */
-const KULLANICI_SEKMELERI = ['anilar', 'yerler'] as const
+// Sayaclar bolum secer (kullanicinin istegi 2026-09-20: "Ani / Fotograf /
+// Arkadas'a basamiyor"); kendi profildeki dort bolumun aynisi.
+const KULLANICI_SEKMELERI = ['anilar', 'yerler', 'fotograflar', 'arkadaslar'] as const
+const ARKADAS_AVATAR_CAPI = 48
 
 export default function KullaniciProfiliEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -204,6 +210,8 @@ export default function KullaniciProfiliEkrani() {
   /** Sunucuya SORULMUS kimlikler; ayni istegi iki kez atmamak icin. */
   const istenenOzetler = useRef<Set<string>>(new Set())
   const [kimlikYuksekligi, setKimlikYuksekligi] = useState(KIMLIK_VARSAYILAN)
+  // Arkadas bolumu (2026-09-20): sunucu kapisi paylasimlarla ayni.
+  const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
 
   // ASAGI CEKINCE YENILE (kullanicinin istegi 2026-09-20): istek
   // gonderdikten sonra karsi taraf kabul edince "Beklemede" ->
@@ -218,12 +226,15 @@ export default function KullaniciProfiliEkrani() {
 
   async function verileriYukle() {
     try {
-      const [profilVerisi, anilarVerisi, bagVerisi] = await Promise.all([
+      const [profilVerisi, anilarVerisi, bagVerisi, arkadasVerisi] = await Promise.all([
         baskasininProfiliniGetir(id),
         kullanicininAnilariniGetir(id),
         bagDurumunuGetir(id),
+        // Okunamazsa bolum bos kalir, sayfa kilitlenmez.
+        baskasininArkadaslariniGetir(id).catch(() => [] as BagKisi[]),
       ])
       setProfil(profilVerisi)
+      setArkadaslar(arkadasVerisi)
       setFotografUrlleri(await profilFotograflariUrl(profilVerisi?.fotograflar ?? []))
       // Fotograf adresi `kullanicininAnilariniGetir` icinde zaten
       // imzalaniyor; burada yeniden imzalamak ayni isi iki kez yapmakti.
@@ -591,8 +602,10 @@ export default function KullaniciProfiliEkrani() {
   )
 
   /*
-   * SAYACLAR YALNIZCA SAYI (kullanicinin tarifi 2026-09-13):
-   * `onSec` verilmedigi icin satir salt okunur, bolum secmiyor.
+   * SAYACLAR BOLUM SECER (kullanicinin istegi 2026-09-20; 2026-09-13'un
+   * "yalnizca sayi" tarifi bununla degisti): kendi profildeki gibi
+   * Ani -> akis (+ En sik alt sekmesi), Fotograf -> izgara, Arkadas ->
+   * liste. Kapali profilde satir zaten cizilmiyor.
    */
   const sayacSatiri = (
     <ProfilSayaclari
@@ -603,6 +616,8 @@ export default function KullaniciProfiliEkrani() {
         fotograflar: fotografUrlleri.length,
         arkadaslar: profil.arkadasSayisi,
       }}
+      secili={sekme === 'yerler' ? 'anilar' : sekme}
+      onSec={setSekme}
     />
   )
 
@@ -759,8 +774,10 @@ export default function KullaniciProfiliEkrani() {
         {!kapali && sayacSatiri}
 
         {/* SEKME HAPI KAPALI PROFILDE CIZILMIYOR: secilecek bir sey
-            yokken secici gostermek bozuk bir kontrol sunar. */}
-        {!kapali && (
+            yokken secici gostermek bozuk bir kontrol sunar. Yalnizca ANI
+            bolumunde (kendi profildeki kural): fotograf ve arkadas
+            bolumlerinde tek bakis var. */}
+        {!kapali && (sekme === 'anilar' || sekme === 'yerler') && (
           <SekmeHapi
             sekmeler={[
               {
@@ -774,7 +791,7 @@ export default function KullaniciProfiliEkrani() {
                 ikon: (renk) => <EnSikSekmeIkonu renk={renk} />,
               },
             ]}
-            secili={sekme}
+            secili={sekme === 'yerler' ? 'yerler' : 'anilar'}
             onSec={setSekme}
           />
         )}
@@ -785,6 +802,58 @@ export default function KullaniciProfiliEkrani() {
             <Text style={stiller.bosBaslik}>{t('kullanici.profilKapali')}</Text>
             <Text style={stiller.bosAciklama}>{t('kullanici.profilKapaliAciklama')}</Text>
           </View>
+        ) : sekme === 'arkadaslar' ? (
+          arkadaslar.length === 0 ? (
+            <View style={stiller.bosAlan}>
+              <Text style={stiller.bosBaslik}>{t('kullanici.arkadasYok')}</Text>
+            </View>
+          ) : (
+            /* Kendi profildeki liste; uc nokta menusu YOK (baskasinin
+               arkadasi uzerinde islem yapilmaz). Satir profile gider. */
+            arkadaslar.map((kisi) => (
+              <Pressable
+                key={kisi.id}
+                style={stiller.kisiSatiri}
+                onPress={() => router.push(`/kullanici/${kisi.id}`)}
+                accessibilityRole="button"
+                accessibilityLabel={kisi.ad || kisi.kullaniciAdi}
+                testID={`arkadas-${kisi.id}`}
+              >
+                <Avatar
+                  fotografUrl={kisi.avatarUrl ?? null}
+                  ad={kisi.ad}
+                  kullaniciAdi={kisi.kullaniciAdi}
+                  cap={ARKADAS_AVATAR_CAPI}
+                />
+                <View style={stiller.yerOrta}>
+                  <Text style={stiller.yerAd}>{kisi.ad}</Text>
+                  <Text style={stiller.yerSemt}>{kisi.kullaniciAdi}</Text>
+                </View>
+              </Pressable>
+            ))
+          )
+        ) : sekme === 'fotograflar' ? (
+          fotografliAnilar.length === 0 ? (
+            <View style={stiller.bosAlan}>
+              <Text style={stiller.bosBaslik}>{t('kullanici.fotografYok')}</Text>
+            </View>
+          ) : (
+            /* IZGARA - kendi profildekiyle ayni: uc sutun, kare, cover. */
+            <View style={stiller.izgara}>
+              {fotografliAnilar.map((a, i) => (
+                <Pressable
+                  key={a.id}
+                  style={stiller.izgaraHucre}
+                  onPress={() => setAcikFotografIndeksi(i)}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={a.mekanAdi}
+                  testID={`izgara-${a.id}`}
+                >
+                  <Image source={{ uri: a.fotografUrl as string }} style={stiller.izgaraFoto} resizeMode="cover" />
+                </Pressable>
+              ))}
+            </View>
+          )
         ) : sekme === 'yerler' ? (
           yerler.length === 0 ? (
             <View style={stiller.bosAlan}>
@@ -1117,6 +1186,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.m,
   },
   bosAlan: { alignItems: 'center', paddingVertical: bosluk.xxl, gap: bosluk.s },
+  // Fotograf izgarasi ve arkadas satiri (2026-09-20): kendi profildeki
+  // olculer, ayni bilesen olmasi gerekmiyor - stiller basit.
+  izgara: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -bosluk.s },
+  izgaraHucre: { width: '33.333%', aspectRatio: 1, padding: 1 },
+  izgaraFoto: { width: '100%', height: '100%', backgroundColor: renk.cizgi },
+  kisiSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: bosluk.m,
+    paddingVertical: bosluk.m,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.cizgi,
+  },
   bosBaslik: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.govde,

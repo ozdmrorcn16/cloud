@@ -383,6 +383,8 @@ export default {
     profilKapali: 'Bu profil kapalı',
     profilKapaliAciklama: 'Anılarını görmek için arkadaş olmalısın.',
     yerYok: 'Henüz bir yeri yok',
+    fotografYok: 'Henüz fotoğrafı yok',
+    arkadasYok: 'Henüz arkadaşı yok',
     secenekler: 'Profil seçenekleri',
     sikayetEt: 'Şikâyet et',
     sikayetEttinNotu: 'Bu kullanıcıyı şikâyet ettin',

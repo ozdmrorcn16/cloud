@@ -293,6 +293,8 @@ export default {
     profilKapali: 'Это закрытый профиль',
     profilKapaliAciklama: 'Чтобы видеть воспоминания, нужно быть друзьями.',
     yerYok: 'Мест пока нет',
+    fotografYok: 'Фото пока нет',
+    arkadasYok: 'Друзей пока нет',
     secenekler: 'Действия с профилем',
     sikayetEt: 'Пожаловаться',
     sikayetEttinNotu: 'Ты пожаловался на этого пользователя',

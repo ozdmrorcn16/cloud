@@ -640,6 +640,26 @@ uzun basma) kaldirildi; mesaj sikayeti sunucuda ve panelde duruyor,
 yalnizca arayuz giris noktasi profil menusu. Ek aciklamanin 500
 karakter siniri kalkti (sunucuda sinir yoktu).
 
+## Baskasinin profilinde arkadas listesi ve ani sayisi - 2026-09-20
+
+Baskasinin profilindeki sayaclar bolum seciyor; "Arkadas" bolumu o
+kisinin arkadaslarini listeliyor (RPC `baskasinin_arkadaslari`,
+migrasyon `20260920130000`) ve "Ani" sayaci sunucudan geliyor
+(`baskasinin_profili.ani_sayisi`, migrasyon `20260920120000`). Dort soru:
+
+1. **Hangi veri:** kisinin kabul edilmis arkadaslik iliskileri (kimin
+   kiminle arkadas oldugu) ve ani ADEDI. Anilarin icerigi/konumu
+   acilmiyor; adet konum degil.
+2. **Dayanak:** hizmetin dogasi - sosyal uygulamada arkadas listesi
+   profilin parcasi (sozlesmenin ifasi, m.5/2-c); gizlilik metni
+   "arkadaslik bilgin" maddesini zaten sayiyor.
+3. **Sure:** yeni veri yok; mevcut `takipler` satirlari okunuyor.
+4. **Kim gorur:** PAYLASIMLARLA AYNI KAPI (`20260902120000` politikasi):
+   hedef aktif, aramizda engel yok, profil gizliyse yalnizca arkadaslari.
+   Listedeki kisiler de tek tek eleniyor (pasif / engelli gorunmez).
+   Gizli profilin ani sayisi herkese gorunur (Instagram'in gizli
+   hesapta gonderi sayisi gibi) - icerik degil, adet.
+
 ## Bu listeyi kullanma bicimi
 
 Yeni bir is kalemi (faz, mini-faz, ozellik) tasarlanirken su dort soru

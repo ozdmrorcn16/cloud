@@ -31,6 +31,7 @@ jest.mock('../../../lib/fotograf-url', () => ({
   checkInFotografiUrl: jest.fn(),
 }))
 jest.mock('../../../lib/sikayet', () => ({ kullaniciyiSikayetEttimMi: jest.fn() }))
+jest.mock('../../../lib/bag-listeleri', () => ({ baskasininArkadaslariniGetir: jest.fn().mockResolvedValue([]) }))
 jest.mock('../../../lib/bag', () => ({
   bagDurumunuGetir: jest.fn(),
   takipIstegiGonder: jest.fn(),
@@ -846,6 +847,38 @@ describe('KullaniciProfiliEkrani duzen', () => {
      * gelirse burasi kirilir.
      */
     expect(screen.queryByText('En sık')).toBeNull()
+  })
+
+  it('SAYACLAR BOLUM SECER: Arkadas -> arkadas listesi (profile gider), Fotograf -> izgara, Ani -> akis', async () => {
+    // Kullanicinin istegi 2026-09-20: "Ani / Fotograf / Arkadas'a
+    // basamiyor". 2026-09-13'un salt-sayi tarifi degisti.
+    const { baskasininArkadaslariniGetir } = require('../../../lib/bag-listeleri')
+    ;(baskasininArkadaslariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-7', kullaniciAdi: 'mert', ad: 'Mert Kaya', avatarUrl: null },
+    ])
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 1, aniSayisi: 2,
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      { id: 'c-1', mekanId: 'm-1', mekanAdi: 'Sahil Kafe', notMetni: null, fotografUrl: 'https://x/1.jpg', olusturmaZamani: '2026-09-01T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
+      { id: 'c-2', mekanId: 'm-2', mekanAdi: 'Park', notMetni: null, fotografUrl: null, olusturmaZamani: '2026-09-02T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
+    ])
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Anılar')
+
+    await fireEvent.press(screen.getByLabelText('1 Arkadaş'))
+    expect(await screen.findByText('Mert Kaya')).toBeTruthy()
+    expect(screen.queryByText('En sık')).toBeNull()
+    await fireEvent.press(screen.getByTestId('arkadas-k-7'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k-7')
+
+    await fireEvent.press(screen.getByLabelText('0 Fotoğraf'))
+    expect(await screen.findByTestId('izgara-c-1')).toBeTruthy()
+    expect(screen.queryByTestId('izgara-c-2')).toBeNull()
+
+    await fireEvent.press(screen.getByLabelText('2 Anı'))
+    expect(await screen.findByText('En sık')).toBeTruthy()
   })
 
   it('ANI SAYACI sunucudan gelir: gizli profilde liste bos olsa da sayi gorunur', async () => {

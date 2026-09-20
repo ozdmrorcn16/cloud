@@ -299,6 +299,8 @@ export default {
     profilKapali: 'This profile is private',
     profilKapaliAciklama: 'You need to be friends to see their memories.',
     yerYok: 'No places yet',
+    fotografYok: 'No photos yet',
+    arkadasYok: 'No friends yet',
     secenekler: 'Profile options',
     sikayetEt: 'Report',
     sikayetEttinNotu: 'You reported this user',

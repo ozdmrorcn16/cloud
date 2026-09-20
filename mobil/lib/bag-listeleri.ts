@@ -100,3 +100,22 @@ export async function takipcilerimiGetir(): Promise<BagKisi[]> {
   )
   return kisileriCoz(kimlikler)
 }
+
+/**
+ * BASKASININ ARKADASLARI (2026-09-20): profil sayaclarindaki "Arkadas"
+ * bolumu. Kapi sunucuda (`baskasinin_arkadaslari`): profil gizliyse
+ * yalnizca arkadaslarina, engel varsa hic; liste pasif/engelli
+ * kisileri eler. Avatar ikincil: okunamazsa bas harf.
+ */
+export async function baskasininArkadaslariniGetir(kullaniciId: string): Promise<BagKisi[]> {
+  const { data, error } = await supabase.rpc('baskasinin_arkadaslari', { p_kullanici_id: kullaniciId })
+  if (error) throw new Error(hataMetni(error))
+  const satirlar = (data ?? []) as SunucuKisi[]
+  const avatarlar = await avatarlariGetir(satirlar.map((s) => s.id)).catch(() => ({}) as Record<string, string | null>)
+  return satirlar.map((satir) => ({
+    id: satir.id,
+    kullaniciAdi: satir.kullanici_adi,
+    ad: satir.ad,
+    avatarUrl: avatarlar[satir.id] ?? null,
+  }))
+}
