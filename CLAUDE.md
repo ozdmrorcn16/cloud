@@ -210,8 +210,13 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   ekrani `profil/ani-gorunurlugu.tsx` 2026-09-19 ayarlar yeniden
   yaziminda menuden dustu ama ekran + RPC duruyor - geri alma yolu YOK.
   Veri elle duzeltildi (`bag.ani_gorunurlugu(bulunurluk,
-  'herkese_acik')`), RLS ile ozdemrs gozunden 29 olculdu. ACIK KARAR:
-  o ayar geri mi gelsin, ekran + RPC mi silinsin - kullaniciya soruldu.
+  'herkese_acik')`), RLS ile ozdemrs gozunden 29 olculdu. **KARAR (B,
+  kullanici): ayar TAMAMEN KALKTI** - `profil/ani-gorunurlugu.tsx`,
+  `aniGorunurlugunuAyarla`, sozluk anahtarlari (7 dil), RPC
+  `ani_gorunurlugunu_ayarla` (migrasyon `20260920140000` drop; canli
+  senaryo 31 artik PGRST202 ile "yok" olcuyor, senaryo 4 'kimse'yi
+  servis roluyle yaziyor). TEK gizlilik anahtari `profil_gizli`;
+  `bag.ani_gorunurlugu` cron icin duruyor. Tekrar onerme. OTA asagida.
 - **SAYACLAR BOLUM SECER (ayni tur, OTA asagida):** baskasinin
   profilinde Ani / Fotograf / Arkadas sayaclari kendi profildeki gibi
   bolum acar (2026-09-13 "salt sayi" tarifi degisti). Arkadas listesi
