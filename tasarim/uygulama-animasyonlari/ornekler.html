@@ -1,0 +1,255 @@
+<title>Slooin Hareket Örnekleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Uygulama ici animasyon ORNEKLERI - web prototipi.
+     ek-find-animation-opportunities taramasindan gecen 7 aday; her ornek
+     dokunmayla tetiklenir. Degerler Emil Kowalski olcutleriyle:
+     yalnizca transform/opacity, ease-out giris, <300 ms UI, spring'ler
+     Reanimated'e 1:1 tasinir. Renk ve jetonlar mobil/src/tasarim/tema.ts. */
+  :root {
+    --turuncu: #FE7813; --turuncu-basili: #E06509; --turuncu-zemin: #FFF3E8;
+    --metin: #17130F; --ikincil: #6E6660; --soluk: #A39B93; --cizgi: #EFEAE5; --zemin: #FFFFFF; --sayfa: #2A2521;
+    --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-cekmece: cubic-bezier(0.32, 0.72, 0, 1);
+    --spring: linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001);
+    --spring-kalp: linear(0, 0.4 12%, 0.9 24%, 1.22 38%, 1.05 56%, 0.98 72%, 1);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sayfa: #17130F; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sayfa); color: var(--metin); font-family: var(--govde); padding: 28px 16px 40px; }
+  h1 { color: #F5EFE8; font-size: 22px; letter-spacing: -.3px; text-align: center; margin: 0 0 6px; }
+  .not { color: #A39B93; text-align: center; font-size: 14px; margin: 0 0 28px; }
+  .izgara { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; max-width: 1100px; margin: 0 auto; }
+  .kutu { display: flex; flex-direction: column; gap: 12px; }
+  .kutu h2 { color: #F5EFE8; font-size: 15px; margin: 0; letter-spacing: -.2px; display: flex; align-items: baseline; gap: 10px; }
+  .kutu h2 small { color: var(--soluk); font-weight: 500; font-size: 12px; }
+  .kutu p { margin: 0; color: #B8AFA6; font-size: 13px; line-height: 1.45; }
+  .kutu code { color: #FFB27A; font-size: 12px; }
+  .cihaz { background: var(--zemin); border-radius: 28px; height: 380px; position: relative; overflow: hidden; box-shadow: inset 0 0 0 8px #16151a; }
+  .ekran { position: absolute; inset: 8px; border-radius: 22px; overflow: hidden; background: var(--zemin); display: flex; flex-direction: column; }
+  .ipucu { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: 12px; color: var(--soluk); pointer-events: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--turuncu); outline-offset: 3px; border-radius: 6px; }
+
+  /* birincil hap */
+  .hap { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: var(--turuncu); color: #fff; font-weight: 600; font-size: 16px; padding: 16px 26px; border-radius: 999px; box-shadow: 0 12px 30px -14px rgba(254,120,19,.6); transition: transform .12s var(--ease-out), background .15s; position: relative; overflow: hidden; }
+  .hap:active { transform: scale(.97); background: var(--turuncu-basili); }
+
+  /* ---- 1. check-in basarisi ---- */
+  #o1 .ekran { align-items: center; justify-content: center; gap: 14px; }
+  #o1 .mekan { font-weight: 700; font-size: 20px; letter-spacing: -.3px; }
+  #o1 .semt { color: var(--ikincil); font-size: 14px; margin-top: -8px; }
+  #o1 .hap { min-width: 220px; height: 54px; }
+  #o1 .hap .yazi, #o1 .hap .tik { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .18s var(--ease-out), transform .18s var(--ease-out); }
+  #o1 .hap .tik { opacity: 0; transform: scale(.8); }
+  #o1 .hap .tik svg { width: 26px; height: 26px; }
+  #o1 .hap .tik path { stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
+  #o1 .hap.dolu { width: 54px; min-width: 54px; padding: 0; transition: min-width .32s var(--ease-cekmece), padding .32s var(--ease-cekmece), transform .12s; }
+  #o1 .hap.dolu .yazi { opacity: 0; transform: scale(.9); }
+  #o1 .hap.dolu .tik { opacity: 1; transform: none; transition-delay: .12s; }
+  #o1 .hap.dolu .tik path { stroke-dashoffset: 0; transition: stroke-dashoffset .3s var(--ease-out) .2s; }
+  #o1 .durum { display: inline-flex; align-items: center; gap: 8px; color: var(--turuncu); font-weight: 600; font-size: 15px; opacity: 0; transform: translateY(6px) scale(.97); filter: blur(2px); transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), filter .3s var(--ease-out); }
+  #o1 .durum.acik { opacity: 1; transform: none; filter: none; transition-delay: .45s; }
+  .nokta { width: 8px; height: 8px; border-radius: 50%; background: var(--turuncu); position: relative; }
+  .nokta::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--turuncu); animation: nabiz 2s ease-out infinite; }
+  @keyframes nabiz { 0% { transform: scale(.5); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
+
+  /* ---- 2. secim penceresi alttan ---- */
+  #o2 .ekran { justify-content: flex-end; }
+  #o2 .ustbar { position: absolute; top: 0; left: 0; right: 0; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+  #o2 .ucnokta { width: 40px; height: 40px; border-radius: 50%; background: var(--turuncu-zemin); display: grid; place-items: center; font-weight: 700; letter-spacing: 1px; color: var(--metin); }
+  #o2 .karartma { position: absolute; inset: 0; background: rgba(23,19,15,.32); opacity: 0; transition: opacity .2s var(--ease-out); pointer-events: none; }
+  #o2 .sayfa { position: relative; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 12px 18px; transform: translateY(100%); transition: transform .24s var(--ease-cekmece); box-shadow: 0 -10px 40px -20px rgba(0,0,0,.35); }
+  #o2.acik .karartma { opacity: 1; pointer-events: auto; }
+  #o2.acik .sayfa { transform: none; transition-duration: .32s; }
+  #o2 .tutamac { width: 36px; height: 4px; border-radius: 2px; background: var(--cizgi); margin: 0 auto 10px; }
+  #o2 .satir { display: block; width: 100%; text-align: left; padding: 14px 12px; border-radius: 12px; font-size: 16px; font-weight: 500; }
+  #o2 .satir:active { background: var(--turuncu-zemin); }
+  #o2 .satir.yikici { color: #D2483C; }
+
+  /* ---- 3. arkadas ekle morfu ---- */
+  #o3 .ekran { align-items: center; justify-content: center; gap: 12px; }
+  #o3 .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--turuncu-zemin); color: var(--turuncu); font-weight: 700; font-size: 24px; display: grid; place-items: center; }
+  #o3 .ad { font-weight: 700; font-size: 18px; letter-spacing: -.3px; }
+  #o3 .dugme { position: relative; min-width: 160px; height: 46px; border-radius: 999px; font-weight: 600; font-size: 15px; background: var(--turuncu); color: #fff; box-shadow: inset 0 0 0 1.5px var(--turuncu); transition: background .22s var(--ease-out), color .22s var(--ease-out), box-shadow .22s var(--ease-out), transform .12s var(--ease-out); }
+  #o3 .dugme:active { transform: scale(.97); }
+  #o3 .dugme span { position: absolute; inset: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .22s var(--ease-out), transform .22s var(--ease-out), filter .22s var(--ease-out); }
+  #o3 .dugme span.gizli { opacity: 0; transform: scale(.97); filter: blur(2px); }
+  #o3 .dugme.beklemede { background: #fff; color: var(--ikincil); box-shadow: inset 0 0 0 1.5px var(--cizgi); }
+  #o3 .dugme.arkadas { background: #fff; color: var(--turuncu); box-shadow: inset 0 0 0 1.5px var(--turuncu); }
+  #o3 .dugme svg { width: 18px; height: 18px; } #o3 .dugme path { stroke: currentColor; stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .26s var(--ease-out) .1s; }
+  #o3 .dugme.arkadas path { stroke-dashoffset: 0; }
+  #o3 .sec { display: flex; gap: 8px; margin-top: 8px; }
+  #o3 .sec button { font-size: 12px; color: var(--soluk); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--cizgi); }
+
+  /* ---- 4. kalp ---- */
+  #o4 .ekran { align-items: center; justify-content: center; gap: 10px; }
+  #o4 .kart { width: 82%; border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; box-shadow: 0 8px 20px -14px rgba(0,0,0,.25); }
+  #o4 .kbas { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  #o4 .kav { width: 36px; height: 36px; border-radius: 50%; background: var(--turuncu-zemin); }
+  #o4 .kad { font-weight: 700; font-size: 15px; } #o4 .kzaman { color: var(--ikincil); font-size: 12px; }
+  #o4 .foto { height: 90px; border-radius: 12px; background: linear-gradient(135deg, #E8DDD2, #F5EDE4); }
+  #o4 .eylemler { display: flex; gap: 16px; margin-top: 12px; align-items: center; }
+  #o4 .kalp { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: var(--metin); }
+  #o4 .kalp svg { width: 24px; height: 24px; transform-origin: center; }
+  #o4 .kalp path { fill: none; stroke: var(--metin); stroke-width: 1.8; transition: fill .12s, stroke .12s; }
+  #o4 .kalp.dolu path { fill: var(--turuncu); stroke: var(--turuncu); }
+  #o4 .kalp.dolu svg { animation: kalpAt .36s var(--spring-kalp); }
+  @keyframes kalpAt { from { transform: scale(1) } 40% { transform: scale(1.22) } to { transform: scale(1) } }
+  #o4 .yorum, #o4 .paylas { color: var(--ikincil); font-size: 14px; }
+
+  /* ---- 5. onay penceresi ---- */
+  #o5 .ekran { align-items: center; justify-content: center; }
+  #o5 .karartma { position: absolute; inset: 0; background: rgba(23,19,15,.32); opacity: 0; transition: opacity .2s var(--ease-out); pointer-events: none; display: grid; place-items: center; }
+  #o5 .pencere { background: #fff; border-radius: 20px; padding: 22px 20px 16px; width: 78%; text-align: center; transform: scale(.97); transition: transform .2s var(--ease-out); box-shadow: 0 30px 60px -30px rgba(0,0,0,.4); }
+  #o5.acik .karartma { opacity: 1; pointer-events: auto; } #o5.acik .pencere { transform: none; }
+  #o5 .pencere b { display: block; font-size: 17px; letter-spacing: -.3px; margin-bottom: 6px; }
+  #o5 .pencere p { color: var(--ikincil); font-size: 14px; margin: 0 0 16px; }
+  #o5 .pencere .sira { display: flex; gap: 8px; }
+  #o5 .pencere .sira button { flex: 1; padding: 12px; border-radius: 999px; font-weight: 600; font-size: 14px; transition: transform .12s var(--ease-out); }
+  #o5 .pencere .sira button:active { transform: scale(.97); }
+  #o5 .vazgec { border: 1.5px solid var(--cizgi); } #o5 .sil { background: #D2483C; color: #fff; }
+
+  /* ---- 6. kademeli liste ---- */
+  #o6 .ekran { padding: 16px 14px; gap: 10px; }
+  #o6 .ust { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-weight: 700; }
+  #o6 .yenile { font-size: 12px; color: var(--turuncu); font-weight: 600; }
+  #o6 .satir { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--cizgi); border-radius: 14px; opacity: 0; transform: translateY(8px); }
+  #o6.acik .satir { opacity: 1; transform: none; transition: opacity .26s var(--ease-out), transform .26s var(--ease-out); }
+  #o6.acik .satir:nth-child(2) { transition-delay: .04s } #o6.acik .satir:nth-child(3) { transition-delay: .08s } #o6.acik .satir:nth-child(4) { transition-delay: .12s } #o6.acik .satir:nth-child(5) { transition-delay: .16s }
+  #o6 .sav { width: 40px; height: 40px; border-radius: 50%; background: var(--turuncu-zemin); flex: none; }
+  #o6 .sad { font-weight: 600; font-size: 15px; } #o6 .salt { color: var(--ikincil); font-size: 12px; }
+  #o6 .canli { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--turuncu); font-weight: 600; font-size: 12px; }
+  #o6 .canli .nokta::after { display: none; }
+
+  /* ---- 7. bos durum ---- */
+  #o7 .ekran { align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 8px; }
+  #o7 .ikon { width: 64px; height: 64px; border-radius: 20px; background: var(--turuncu-zemin); display: grid; place-items: center; opacity: 0; transform: scale(.92); }
+  #o7 .ikon svg { width: 30px; height: 30px; }
+  #o7 b { font-size: 18px; letter-spacing: -.3px; opacity: 0; transform: translateY(6px); }
+  #o7 p { margin: 0; color: var(--ikincil); font-size: 14px; max-width: 24ch; opacity: 0; transform: translateY(6px); }
+  #o7 .hayalet { margin-top: 10px; padding: 12px 20px; border-radius: 999px; border: 1.5px solid var(--turuncu); color: var(--turuncu); font-weight: 600; font-size: 14px; opacity: 0; transform: translateY(6px); }
+  #o7.acik .ikon { opacity: 1; transform: none; transition: opacity .32s var(--ease-out), transform .32s var(--ease-out); }
+  #o7.acik b { opacity: 1; transform: none; transition: opacity .3s var(--ease-out) .06s, transform .3s var(--ease-out) .06s; }
+  #o7.acik p { opacity: 1; transform: none; transition: opacity .3s var(--ease-out) .12s, transform .3s var(--ease-out) .12s; }
+  #o7.acik .hayalet { opacity: 1; transform: none; transition: opacity .3s var(--ease-out) .18s, transform .3s var(--ease-out) .18s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .15s !important; animation: none !important; transform: none !important; filter: none !important; }
+  }
+</style>
+
+<h1>Uygulama içi hareket örnekleri</h1>
+<p class="not">Her kutuya dokunup tetikle. Değerler Kowalski ölçütleriyle; hepsi Reanimated'e taşınabilir.</p>
+
+<div class="izgara">
+
+  <section class="kutu" id="o1">
+    <h2>1 · Check-in başarısı <small>keyif · günde 1–3</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <div class="mekan">Hozee</div><div class="semt">Nilüfer, Bursa</div>
+      <button class="hap" id="o1b"><span class="yazi">Check-in yap</span><span class="tik"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+      <div class="durum" id="o1d"><span class="nokta"></span>Şu an buradasın</div>
+      <div class="ipucu">Butona dokun</div>
+    </div></div>
+    <p>Buton 54 px'lik daireye toplanır (<code>320 ms çekmece eğrisi</code>), tik çizilir (<code>strokeDashoffset 300 ms ease-out</code>), "Şu an buradasın" 2 px blur'dan belirir. Sonra yönlendirme — bugün bu an hiç yok.</p>
+  </section>
+
+  <section class="kutu" id="o2">
+    <h2>2 · Seçim sayfası alttan <small>uzamsal tutarlılık</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <div class="ustbar"><span>Profil</span><button class="ucnokta" id="o2b" aria-label="Seçenekler">···</button></div>
+      <div class="karartma" id="o2k"></div>
+      <div class="sayfa"><div class="tutamac"></div><button class="satir">Profili paylaş</button><button class="satir">Şikâyet et</button><button class="satir yikici">Engelle</button></div>
+      <div class="ipucu">Üç noktaya dokun · karartmaya dokun kapat</div>
+    </div></div>
+    <p>Bugün <code>fade</code> ile beliriyor. Öneri: <code>translateY(100%→0)</code> 320 ms <code>cubic-bezier(.32,.72,0,1)</code>, kapanış aynı kenardan 240 ms, karartma 200 ms.</p>
+  </section>
+
+  <section class="kutu" id="o3">
+    <h2>3 · Arkadaş ekle → Beklemede → Arkadaşsın <small>durum göstergesi</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <div class="avatar">D</div><div class="ad">Deniz</div>
+      <button class="dugme" id="o3b"><span data-h="ekle">Arkadaş ekle</span><span data-h="beklemede" class="gizli">Beklemede</span><span data-h="arkadas" class="gizli"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Arkadaşsın</span></button>
+      <div class="sec"><button data-hedef="ekle">ekle</button><button data-hedef="beklemede">beklemede</button><button data-hedef="arkadas">arkadaşsın</button></div>
+      <div class="ipucu">Butona dokun: gizli profil akışı</div>
+    </div></div>
+    <p>Aynı buton üç hal arasında morflar: dolgu/çerçeve 220 ms ease-out, yazı <code>blur 2 px + %97</code> ile değişir, "Arkadaşsın"da tik çizilir. Teleport yok.</p>
+  </section>
+
+  <section class="kutu" id="o4">
+    <h2>4 · Beğeni <small>geri bildirim · günde onlarca</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <div class="kart"><div class="kbas"><div class="kav"></div><div><div class="kad">byorcun</div><div class="kzaman">2 sa önce · Hozee</div></div></div><div class="foto"></div>
+        <div class="eylemler"><button class="kalp" id="o4b"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg><span id="o4s">12</span></button><span class="yorum">💬 3</span><span class="paylas">Paylaş</span></div></div>
+      <div class="ipucu">Kalbe dokun</div>
+    </div></div>
+    <p>Neredeyse görünmez: yalnızca beğenirken <code>scale 1→1.22→1</code> spring (~360 ms, damping 12), kaldırırken hiç. Sık eylemde bundan fazlası yavaşlatır.</p>
+  </section>
+
+  <section class="kutu" id="o5">
+    <h2>5 · Onay penceresi <small>sert değişimi önleme</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <button class="hap" id="o5b" style="margin:auto;background:#fff;color:#D2483C;box-shadow:inset 0 0 0 1.5px var(--cizgi)">Paylaşımı sil</button>
+      <div class="karartma" id="o5k"><div class="pencere"><b>Paylaşımı sil?</b><p>Bu işlem geri alınamaz.</p><div class="sira"><button class="vazgec">Vazgeç</button><button class="sil">Sil</button></div></div></div>
+      <div class="ipucu">Butona dokun · dışına dokun kapat</div>
+    </div></div>
+    <p>Bugün <code>fade</code>. Öneri: fade + <code>scale(.97→1)</code> 200 ms ease-out; modal ortada kalır (Kowalski: modallar merkeze sabit, origin yok).</p>
+  </section>
+
+  <section class="kutu" id="o6">
+    <h2>6 · İlk yüklemede kademeli liste <small>sert değişimi önleme</small></h2>
+    <div class="cihaz"><div class="ekran">
+      <div class="ust"><span>Yakınındaki Mekânlar</span><button class="yenile" id="o6b">Yeniden yükle</button></div>
+      <div class="satir"><div class="sav"></div><div><div class="sad">Hozee</div><div class="salt">Nilüfer · 120 m</div></div><span class="canli"><span class="nokta"></span>3</span></div>
+      <div class="satir"><div class="sav"></div><div><div class="sad">Kütüphane Kafe</div><div class="salt">Nilüfer · 310 m</div></div><span class="canli"><span class="nokta"></span>5</span></div>
+      <div class="satir"><div class="sav"></div><div><div class="sad">Kumsaati</div><div class="salt">Nilüfer · 780 m</div></div></div>
+      <div class="satir"><div class="sav"></div><div><div class="sad">Setbaşı Köprüsü</div><div class="salt">Osmangazi · 960 m</div></div><span class="canli"><span class="nokta"></span>7</span></div>
+      <div class="ipucu">Yeniden yükle'ye dokun</div>
+    </div></div>
+    <p>Yalnızca <b>ilk sayfa</b>: 40 ms kademe, <code>opacity 0→1 + translateY(8→0)</code>, 260 ms ease-out. Sonsuz kaydırmada gelen sayfalarda yok — etkileşimi engellemez.</p>
+  </section>
+
+  <section class="kutu" id="o7">
+    <h2>7 · Boş durum <small>keyif · nadir</small></h2>
+    <div class="cihaz"><div class="ekran" id="o7e">
+      <div class="ikon"><svg viewBox="0 0 24 24" fill="none" stroke="#FE7813" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12z"/></svg></div>
+      <b>Henüz mesajın yok</b>
+      <p>Aynı mekândaki biriyle arkadaş ol, sohbet burada başlar.</p>
+      <button class="hayalet">Yakınındakileri gör</button>
+      <div class="ipucu">Ekrana dokun: yeniden oynat</div>
+    </div></div>
+    <p>Tek öğe hareket eder: ikon <code>%92→1</code> 320 ms ease-out, metinler 60 ms kademe. Yön veren buton en son gelir. Başka bir şey yok.</p>
+  </section>
+
+</div>
+
+<script>
+  const azHareket = matchMedia('(prefers-reduced-motion: reduce)').matches
+  // 1 check-in
+  const o1b = document.getElementById('o1b'), o1d = document.getElementById('o1d')
+  o1b.addEventListener('click', () => { if (o1b.classList.contains('dolu')) { o1b.classList.remove('dolu'); o1d.classList.remove('acik'); return } o1b.classList.add('dolu'); o1d.classList.add('acik') })
+  // 2 secim sayfasi
+  const o2 = document.getElementById('o2'); document.getElementById('o2b').addEventListener('click', () => o2.classList.add('acik')); document.getElementById('o2k').addEventListener('click', () => o2.classList.remove('acik'))
+  o2.querySelectorAll('.satir').forEach(b => b.addEventListener('click', () => o2.classList.remove('acik')))
+  // 3 arkadas morfu
+  const o3b = document.getElementById('o3b'); const hal = h => { o3b.className = 'dugme ' + (h === 'ekle' ? '' : h); o3b.querySelectorAll('span[data-h]').forEach(s => s.classList.toggle('gizli', s.dataset.h !== h)) }
+  const sira = ['ekle', 'beklemede', 'arkadas']; let hi = 0
+  o3b.addEventListener('click', () => { hi = (hi + 1) % sira.length; hal(sira[hi]) })
+  document.querySelectorAll('#o3 .sec button').forEach(b => b.addEventListener('click', () => { hi = sira.indexOf(b.dataset.hedef); hal(sira[hi]) }))
+  // 4 kalp
+  const o4b = document.getElementById('o4b'), o4s = document.getElementById('o4s')
+  o4b.addEventListener('click', () => { const d = !o4b.classList.contains('dolu'); o4b.classList.toggle('dolu', d); o4s.textContent = d ? 13 : 12 })
+  // 5 onay
+  const o5 = document.getElementById('o5'); document.getElementById('o5b').addEventListener('click', () => o5.classList.add('acik'))
+  document.getElementById('o5k').addEventListener('click', (e) => { if (e.target.id === 'o5k' || e.target.classList.contains('vazgec') || e.target.classList.contains('sil')) o5.classList.remove('acik') })
+  // 6 liste
+  const o6 = document.getElementById('o6'); const o6oynat = () => { o6.classList.remove('acik'); void o6.offsetWidth; requestAnimationFrame(() => o6.classList.add('acik')) }
+  document.getElementById('o6b').addEventListener('click', o6oynat); setTimeout(o6oynat, 300)
+  // 7 bos durum
+  const o7 = document.getElementById('o7'); const o7oynat = () => { o7.classList.remove('acik'); void o7.offsetWidth; requestAnimationFrame(() => o7.classList.add('acik')) }
+  document.getElementById('o7e').addEventListener('click', o7oynat); setTimeout(o7oynat, 500)
+</script>
