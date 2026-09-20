@@ -3543,6 +3543,24 @@ oturumda her projede kullanilabilir olsun." Yapilanlar:
 Yeni kurulumlarda kural: eklenti `--scope user`, beceri `~/.claude/skills`,
 hook `~/.claude/settings.json`, MCP `~/.claude.json` ust duzey.
 
+## SCRAPLING KURULDU - 2026-09-20
+
+Kullanicinin verdigi baglanti (D4Vinci/Scrapling, BSD-3): Python web
+kazima catisi - `Fetcher` (HTTP), `StealthyFetcher` (Cloudflare/anti-bot
+atlatan Patchright Chromium), `DynamicFetcher` (tarayici otomasyonu),
+Spider, CLI ve MCP. Kurulum kullanici kapsaminda: `pip install --user
+"scrapling[fetchers,ai]"` (0.4.15) + `scrapling install` + `patchright
+install chromium` (114 MB, `%LOCALAPPDATA%/ms-playwright`). Canli olcum:
+Fetcher ve StealthyFetcher slooin.com'dan 200 aldi.
+**MCP Claude Code'a bagli (user scope, `~/.claude.json`):** `claude mcp
+add --scope user scrapling -- <Scripts>/scrapling.exe mcp`; `claude mcp
+list` Connected. Araclari: get/fetch/stealthy_fetch + oturumlu surumler
+(`open_session` acilirsa `close_session` sart). TUZAK: `mcp` modulu
+`[fetchers]` ekstrasinda YOK, `[ai]` ekstrasinda - ilk denemede sunucu
+"No module named mcp" ile kapandi. Yeni oturumdan itibaren araclar
+`mcp__scrapling__*` adiyla gorunur. Kullanim alani: agent-reach'in
+Jina okuyucusunun yetmedigi (JS'li, bot korumali) sayfalar.
+
 ## OMNIROUTE KURULDU - 2026-09-19
 
 Kullanicinin istegiyle `omniroute` 3.8.50 (`npm install -g`, MIT yerel AI
