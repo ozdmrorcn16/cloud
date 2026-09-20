@@ -308,6 +308,12 @@ describe('ProfilEkrani', () => {
     expect(screen.queryByText('Yer')).toBeNull()
     expect(screen.getByText('Fotoğraf')).toBeTruthy()
     expect(screen.getByText('Arkadaş')).toBeTruthy()
+
+    // ARKADAS SAYACI AYRI SAYFA (kullanicinin referans gorseli 2026-09-20):
+    // sekme degil, /profil/arkadaslar'a gider.
+    await fireEvent.press(screen.getByText('Arkadaş'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/profil/arkadaslar')
+    expect(screen.queryByText('Henüz arkadaşın yok')).toBeNull()
   })
 
   it('Yerler sekmesi en cok gidilen mekani kac kez gidildigiyle listeler', async () => {
@@ -893,71 +899,3 @@ describe('ProfilEkrani sayac satiri ve sekmeler', () => {
 
 // ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
 // sagda "..." -> Arkadasliktan cikar / Engelle.
-describe('ProfilEkrani arkadas listesi', () => {
-  const ARKADAS = { id: 'k2', kullaniciAdi: 'semra', ad: 'Semra Ozdemir' }
-
-  async function arkadasSekmesiniAc() {
-    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([ARKADAS])
-    await render(<ProfilEkrani />)
-    await screen.findByText('Arkadaş')
-    await fireEvent.press(screen.getByText('Arkadaş'))
-    await screen.findByText('Semra Ozdemir')
-  }
-
-  it('satirda arkadasin profil resmi var (avatarlariGetir ile)', async () => {
-    ;(avatarlariGetir as jest.Mock).mockResolvedValue({ k2: 'https://x/semra.jpg' })
-    await arkadasSekmesiniAc()
-
-    await waitFor(() => expect(avatarlariGetir).toHaveBeenCalledWith(['k2']))
-    await waitFor(() =>
-      expect(screen.getByTestId('arkadas-avatar-k2').props.source).toEqual([{ uri: 'https://x/semra.jpg' }])
-    )
-  })
-
-  it('"..." dugmesi iki secenek acar: Arkadasliktan cikar ve Engelle', async () => {
-    await arkadasSekmesiniAc()
-
-    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-
-    expect(screen.getByText('Arkadaşlıktan çıkar')).toBeTruthy()
-    expect(screen.getByText('Engelle')).toBeTruthy()
-  })
-
-  it('Arkadasliktan cikar: takibiBirak cagrilir, satir listeden kalkar', async () => {
-    ;(takibiBirak as jest.Mock).mockResolvedValue(undefined)
-    await arkadasSekmesiniAc()
-
-    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await menudenSec('arkadas-cikar')
-
-    await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
-    await waitFor(() => expect(screen.queryByText('Semra Ozdemir')).toBeNull())
-  })
-
-  it('Engelle: once onay penceresi, "Evet, engelle" ile engelle cagrilir ve satir kalkar', async () => {
-    ;(engelle as jest.Mock).mockResolvedValue(undefined)
-    await arkadasSekmesiniAc()
-
-    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await menudenSec('arkadas-engelle')
-
-    // Onay gelmeden engelleme YOK.
-    expect(engelle).not.toHaveBeenCalled()
-    expect(await screen.findByText('Evet, engelle')).toBeTruthy()
-    await fireEvent.press(screen.getByText('Evet, engelle'))
-
-    await waitFor(() => expect(engelle).toHaveBeenCalledWith('k2'))
-    await waitFor(() => expect(screen.queryByText('Semra Ozdemir')).toBeNull())
-  })
-
-  it('islem reddedilirse hata gorunur, satir yerinde kalir', async () => {
-    ;(takibiBirak as jest.Mock).mockRejectedValue(new Error('Sunucuya ulasilamadi'))
-    await arkadasSekmesiniAc()
-
-    await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await menudenSec('arkadas-cikar')
-
-    expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
-    expect(screen.getByText('Semra Ozdemir')).toBeTruthy()
-  })
-})

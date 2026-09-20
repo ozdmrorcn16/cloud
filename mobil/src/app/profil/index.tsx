@@ -36,12 +36,8 @@ import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
-import { anidanAkisOgesi, avatarlariGetir } from '../../../lib/akis'
-import { takibiBirak } from '../../../lib/bag'
-import { engelle } from '../../../lib/engelleme'
-import { Avatar } from '../../tasarim/Avatar'
+import { anidanAkisOgesi } from '../../../lib/akis'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
-import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import {
   etkilesimOzetleriniGetir,
   begen,
@@ -220,7 +216,8 @@ const EN_FAZLA_YER = 20
  * ZORUNDAYDI: beyaz yazi acik bir gecisin uzerinde okunmuyor.
  */
 
-const PROFIL_SEKMELERI = ['anilar', 'yerler', 'fotograflar', 'arkadaslar'] as const
+// 'arkadaslar' KALKTI (2026-09-20): sayac ayri sayfa acar (/profil/arkadaslar).
+const PROFIL_SEKMELERI = ['anilar', 'yerler', 'fotograflar'] as const
 
 export default function ProfilEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -243,34 +240,9 @@ export default function ProfilEkrani() {
   // ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
   // sagda "..." -> Arkadasliktan cikar / Engelle. Avatarlar listeden
   // sonra ve ayri (bildirimler/mesajlarla ayni yol).
-  const [arkadasAvatarlari, setArkadasAvatarlari] = useState<Record<string, string | null>>({})
-  const [secenekAcikKisi, setSecenekAcikKisi] = useState<BagKisi | null>(null)
-  const [engelOnayiKisi, setEngelOnayiKisi] = useState<BagKisi | null>(null)
 
   // Iki eylem de sunucu cevabindan SONRA satiri kaldiriyor: basarisiz
   // islem satiri kaldirmis gibi yalan soylemesin (mesajlardaki desen).
-  async function arkadasliktanCikar(kisi: BagKisi) {
-    setSecenekAcikKisi(null)
-    try {
-      await takibiBirak(kisi.id)
-      setBaglar((mevcut) => mevcut.filter((k) => k.id !== kisi.id))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function arkadasiEngelle(kisi: BagKisi) {
-    try {
-      await engelle(kisi.id)
-      setBaglar((mevcut) => mevcut.filter((k) => k.id !== kisi.id))
-      setHata(null)
-    } catch (e) {
-      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    } finally {
-      setEngelOnayiKisi(null)
-    }
-  }
   // Izgaradan acilan buyuk gorunum; null ise kapali.
   /*
    * Izgaradan acilan fotograf: URL degil OGENIN KENDISI tutuluyor.
@@ -335,11 +307,6 @@ export default function ProfilEkrani() {
       setBaglar(baglar)
       setFotografUrl(foto)
       setHata(null)
-      if (baglar.length > 0) {
-        avatarlariGetir(baglar.map((k) => k.id))
-          .then(setArkadasAvatarlari)
-          .catch(() => {})
-      }
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {
@@ -820,7 +787,11 @@ export default function ProfilEkrani() {
                 // "En sık" anilar bolumunun ALT SEKMESI, o acikken de
                 // Ani sayaci secili duruyor.
                 secili={sekme === 'yerler' ? 'anilar' : sekme}
-                onSec={setSekme}
+                // ARKADAS SAYACI AYRI SAYFA (kullanicinin referans gorseli
+                // 2026-09-20): liste, arama, davet ve kisi menusu orada.
+                onSec={(anahtar) =>
+                  anahtar === 'arkadaslar' ? router.push('/profil/arkadaslar' as never) : setSekme(anahtar)
+                }
               />
 
 
@@ -853,47 +824,7 @@ export default function ProfilEkrani() {
               />
             )}
 
-            {sekme === 'arkadaslar' ? (
-              baglar.length === 0 ? (
-                <View style={stiller.bosAlan}>
-                  {/* Aciklama satiri KALDIRILDI (kullanicinin istegi
-                      2026-09-05). Baslik zaten durumu soyluyor. */}
-                  <Text style={stiller.bosBaslik}>{t('profil.bosArkadasBaslik')}</Text>
-                </View>
-              ) : (
-                baglar.map((kisi) => (
-                  <View key={kisi.id} style={stiller.kisiSatiri}>
-                    <Pressable
-                      style={stiller.kisiSol}
-                      onPress={() => router.push(`/kullanici/${kisi.id}`)}
-                      accessibilityRole="button"
-                      accessibilityLabel={kisi.ad || kisi.kullaniciAdi}
-                    >
-                      <Avatar
-                        fotografUrl={arkadasAvatarlari[kisi.id] ?? null}
-                        ad={kisi.ad}
-                        kullaniciAdi={kisi.kullaniciAdi}
-                        cap={ARKADAS_AVATAR_CAPI}
-                        testID={`arkadas-avatar-${kisi.id}`}
-                      />
-                      <View style={stiller.yerOrta}>
-                        <Text style={stiller.yerAd}>{kisi.ad}</Text>
-                        <Text style={stiller.yerSemt}>{kisi.kullaniciAdi}</Text>
-                      </View>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => setSecenekAcikKisi(kisi)}
-                      accessibilityRole="button"
-                      accessibilityLabel={t('anaSayfa.secenekler')}
-                      hitSlop={10}
-                      testID={`arkadas-secenekler-${kisi.id}`}
-                    >
-                      <UcNoktaIkonu />
-                    </Pressable>
-                  </View>
-                ))
-              )
-            ) : sekme === 'fotograflar' ? (
+            {sekme === 'fotograflar' ? (
               fotograflar.length === 0 ? (
                 <View style={stiller.bosAlan}>
                   <Text style={stiller.bosBaslik}>{t('profil.bosFotografBaslik')}</Text>
@@ -1103,44 +1034,10 @@ export default function ProfilEkrani() {
           </View>
         </View>
       </Modal>
-      <SecimPenceresi
-        acikMi={secenekAcikKisi !== null}
-        secimler={
-          secenekAcikKisi
-            ? [
-                {
-                  etiket: t('baglar.arkadasliktanCikar'),
-                  testID: 'arkadas-cikar',
-                  onSec: () => arkadasliktanCikar(secenekAcikKisi),
-                },
-                {
-                  etiket: t('baglar.engelle'),
-                  testID: 'arkadas-engelle',
-                  yikici: true,
-                  onSec: () => {
-                    setEngelOnayiKisi(secenekAcikKisi)
-                    setSecenekAcikKisi(null)
-                  },
-                },
-              ]
-            : []
-        }
-        onKapat={() => setSecenekAcikKisi(null)}
-      />
-      <OnayPenceresi
-        acikMi={engelOnayiKisi !== null}
-        baslik={t('kullanici.engelle')}
-        aciklama={t('kullanici.engelleOnayi')}
-        eylemEtiketi={t('kullanici.engelleEvet')}
-        onOnay={() => engelOnayiKisi && arkadasiEngelle(engelOnayiKisi)}
-        onVazgec={() => setEngelOnayiKisi(null)}
-      />
     </View>
   )
 }
 
-// Bildirim ve mesaj satirlariyla ayni cap.
-const ARKADAS_AVATAR_CAPI = 48
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: 16 },
@@ -1418,7 +1315,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   /* `kisiAvatar` / `kisiBasHarf` KALDIRILDI (2026-09-14): arkadas
      satiri ortak `Avatar` bilesenini kullaniyor. */
-  kisiSol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
 
   // Bandin icindeki dugmeler: dolu olan birincil (Profili duzenle),
   // hayalet olan ikincil (Paylas). Band acildigi icin dolu dugme artik
@@ -1620,14 +1516,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   // Arkadas satiri: bas harfli avatar + ad + kullanici adi.
-  kisiSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.m,
-    paddingVertical: bosluk.m,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.cizgi,
-  },
   // Yerler sekmesi: sira, ad/semt, kac kez gidildigi.
   yerSatiri: {
     flexDirection: 'row',

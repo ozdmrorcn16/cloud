@@ -176,6 +176,17 @@ export default {
     bulunamadi: 'No one found.',
     ipucu: 'You can search for someone you know by username or name.',
   },
+  arkadaslar: {
+    baslik: 'My friends',
+    ara: 'Search by name or username',
+    sayi: '{{sayi}} friends',
+    profiliGor: 'View profile',
+    mesajGonder: 'Send message',
+    davetBaslik: 'Explore with your friends',
+    davetMetin: 'Invite your friends to Slooin.',
+    davetDugme: 'Invite friends',
+    davetMesaji: 'Join me on Slooin 👋',
+  },
   baglar: {
     baslik: 'Friends',
     arkadasliktanCikar: 'Remove friend',

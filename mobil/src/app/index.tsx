@@ -20,31 +20,8 @@ import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { KademeliGiris, BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
+import { BuyutecIkonu } from '../tasarim/BuyutecIkonu'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
-
-/** Ust cubuktaki buyutec: kisi arama sayfasini acar. */
-function BuyutecIkonu() {
-  const renk = useRenk()
-
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24">
-      <Circle
-        cx={11}
-        cy={11}
-        r={7}
-        stroke={renk.metin}
-        strokeWidth={2}
-        fill="none"
-      />
-      <Path
-        d="M16.5 16.5 21 21"
-        stroke={renk.metin}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  )
-}
 
 function KonumIkonu() {
   const renk = useRenk()

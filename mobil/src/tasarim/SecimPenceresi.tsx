@@ -122,10 +122,13 @@ const EYLEM_GECIKMESI_MS = 80
 export function SecimPenceresi({
   acikMi,
   secimler,
+  baslik,
   onKapat,
 }: {
   acikMi: boolean
   secimler: Secim[]
+  /** Tutamacin altinda, satirlarin ustunde istege bagli baslik (ornegin kisi karti). */
+  baslik?: ReactNode
   onKapat: () => void
 }) {
   const stiller = useStiller(stilleriYap)
@@ -222,6 +225,7 @@ export function SecimPenceresi({
             {/* Icerige dokunmak kapatmamali; bos onPress dokunusu zemine gecirmez. */}
             <Pressable testID="secim-penceresi" onPress={() => {}} accessibilityViewIsModal>
               <View style={stiller.tutamac} />
+              {baslik}
               {secimler.map((secim) => (
                 <Pressable
                   key={secim.testID ?? secim.etiket}

@@ -170,6 +170,17 @@ export default {
     bulunamadi: 'لم يُعثر على أحد.',
     ipucu: 'يمكنك البحث عن شخص باسم المستخدم أو الاسم.',
   },
+  arkadaslar: {
+    baslik: 'أصدقائي',
+    ara: 'ابحث بالاسم أو اسم المستخدم',
+    sayi: '{{sayi}} أصدقاء',
+    profiliGor: 'عرض الملف الشخصي',
+    mesajGonder: 'إرسال رسالة',
+    davetBaslik: 'اكتشف مع أصدقائك',
+    davetMetin: 'ادعُ أصدقاءك إلى Slooin.',
+    davetDugme: 'دعوة الأصدقاء',
+    davetMesaji: 'انضم إليّ في Slooin 👋',
+  },
   baglar: {
     baslik: 'الأصدقاء',
     arkadasliktanCikar: 'إزالة الصديق',

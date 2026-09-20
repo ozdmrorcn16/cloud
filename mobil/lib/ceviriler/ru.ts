@@ -170,6 +170,17 @@ export default {
     bulunamadi: 'Никого не найдено.',
     ipucu: 'Можно искать по имени пользователя или по имени.',
   },
+  arkadaslar: {
+    baslik: 'Мои друзья',
+    ara: 'Поиск по имени или нику',
+    sayi: '{{sayi}} друзей',
+    profiliGor: 'Открыть профиль',
+    mesajGonder: 'Написать сообщение',
+    davetBaslik: 'Открывай места с друзьями',
+    davetMetin: 'Пригласи друзей в Slooin.',
+    davetDugme: 'Пригласить друзей',
+    davetMesaji: 'Присоединяйся ко мне в Slooin 👋',
+  },
   baglar: {
     baslik: 'Друзья',
     arkadasliktanCikar: 'Удалить из друзей',

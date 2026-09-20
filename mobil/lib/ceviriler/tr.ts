@@ -235,6 +235,17 @@ export default {
     ipucu: 'Tanıdığın birini kullanıcı adıyla ya da ismiyle arayabilirsin.',
   },
 
+  arkadaslar: {
+    baslik: 'Arkadaşlarım',
+    ara: 'İsim veya kullanıcı adı ara',
+    sayi: '{{sayi}} arkadaş',
+    profiliGor: 'Profili gör',
+    mesajGonder: 'Mesaj gönder',
+    davetBaslik: 'Arkadaşlarınla keşfet',
+    davetMetin: "Slooin'e arkadaşlarını davet et.",
+    davetDugme: 'Arkadaş davet et',
+    davetMesaji: "Slooin'de bana katıl 👋",
+  },
   baglar: {
     baslik: 'Arkadaşlar',
     arkadasliktanCikar: 'Arkadaşlıktan çıkar',
