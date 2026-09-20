@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-native'
+import { View, Text, TextInput, Pressable, Image, StyleSheet, useWindowDimensions } from 'react-native'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
@@ -36,6 +36,9 @@ import { Avatar } from '../../tasarim/Avatar'
 export default function CheckInEkrani() {
   const stiller = useStiller(stilleriYap)
   const renk = useRenk()
+  // KISA EKRAN (< 720 pt, iPhone SE): ipucu satiri gizli, kutular daha
+  // basik - tek ekrana kaydirmasiz sigsin (cihaz uyumu kurali 2026-09-19).
+  const kisaEkran = useWindowDimensions().height < 720
   const router = useRouter()
   const { t } = useDil()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
@@ -224,7 +227,7 @@ export default function CheckInEkrani() {
       <UstCubuk baslik={t('checkIn.baslik')} geriEtiketi={t('ortak.geri')} />
 
       {mekan && (
-        <View style={stiller.mekanKarti} testID="mekan-karti">
+        <View style={[stiller.mekanKarti, kisaEkran && stiller.mekanKartiKisa]} testID="mekan-karti">
           <View style={stiller.mekanIkonKutusu}>
             <IgneIkonu boyut={26} />
           </View>
@@ -237,11 +240,11 @@ export default function CheckInEkrani() {
           </Pressable>
         </View>
       )}
-      <Text style={stiller.ipucu}>{t('checkIn.istegeBagli')}</Text>
+      {!kisaEkran && <Text style={stiller.ipucu}>{t('checkIn.istegeBagli')}</Text>}
 
       <Text style={stiller.etiket}>{t('checkIn.notEtiket')}</Text>
       <TextInput
-        style={[stiller.girdi, stiller.cokSatirli]}
+        style={[stiller.girdi, stiller.cokSatirli, kisaEkran && stiller.cokSatirliKisa]}
         placeholder={t('checkIn.notYerTutucu')}
         placeholderTextColor={renk.metinSoluk}
         value={notMetni}
@@ -256,7 +259,7 @@ export default function CheckInEkrani() {
       <Text style={stiller.etiket}>{t('checkIn.fotografEtiket')}</Text>
       {yerelFotoUri ? (
         <View style={stiller.onizlemeKabi}>
-          <Pressable onPress={() => setKaynakSecimi(true)} accessibilityRole="imagebutton" accessibilityLabel={t('checkIn.fotografCek')}>
+          <Pressable style={stiller.onizlemeDugmesi} onPress={() => setKaynakSecimi(true)} accessibilityRole="imagebutton" accessibilityLabel={t('checkIn.fotografCek')}>
             <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} testID="foto-onizleme" />
           </Pressable>
           <Pressable
@@ -272,7 +275,7 @@ export default function CheckInEkrani() {
         </View>
       ) : (
         <Pressable
-          style={({ pressed }) => [stiller.fotoKutusu, pressed && stiller.basili]}
+          style={({ pressed }) => [stiller.fotoKutusu, kisaEkran && stiller.fotoKutusuKisa, pressed && stiller.basili]}
           onPress={() => setKaynakSecimi(true)}
           accessibilityRole="button"
           testID="foto-ekle"
@@ -287,7 +290,7 @@ export default function CheckInEkrani() {
            Arkadas listesi bos olsa da gorunur - ozelligin varligi belli
            olsun (2026-09-12 karari). */
         <Pressable
-          style={({ pressed }) => [stiller.etiketleSatiri, pressed && stiller.basili]}
+          style={({ pressed }) => [stiller.etiketleSatiri, kisaEkran && stiller.etiketleSatiriKisa, pressed && stiller.basili]}
           onPress={() => setArkadasSecimi(true)}
           accessibilityRole="button"
           testID="arkadas-ekle"
@@ -420,7 +423,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   mekanAd: { fontFamily: yazi.govdeKalin, fontSize: olcek.altBaslik, color: renk.metin },
   mekanKonum: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil, marginTop: 2 },
   degistir: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncu },
-  ipucu: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinSoluk, marginTop: bosluk.s, marginBottom: bosluk.l },
+  ipucu: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinSoluk, marginTop: bosluk.s, marginBottom: bosluk.m },
 
   etiket: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin, marginBottom: bosluk.s },
   etiketSikisik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
@@ -436,24 +439,34 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metin,
   },
-  cokSatirli: { minHeight: 130, textAlignVertical: 'top' },
+  // TEK EKRAN, KAYDIRMASIZ (kullanicinin istegi 2026-09-20): not ve
+  // fotograf kutulari sabit degil, kalan yuksekligi paylasiyor (FormSayfasi
+  // icerigi flexGrow 1). Kucuk ekranda minHeight'a iner; ancak o da
+  // sigmazsa kaydirir (SE 375x647 olculdu: sigiyor).
+  cokSatirli: { flex: 1, minHeight: 72, textAlignVertical: 'top' },
+  cokSatirliKisa: { minHeight: 48, paddingVertical: 10 },
+  mekanKartiKisa: { padding: bosluk.s, marginBottom: bosluk.m },
+  fotoKutusuKisa: { minHeight: 64, flexDirection: 'row' },
+  etiketleSatiriKisa: { padding: bosluk.s },
 
   // Kesikli kutu: fotograf yokken.
   fotoKutusu: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: bosluk.s,
-    minHeight: 170,
+    flex: 1.4,
+    minHeight: 96,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     backgroundColor: renk.yuzey,
-    marginBottom: bosluk.l,
+    marginBottom: bosluk.m,
   },
   fotoKutusuYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metinIkincil },
-  onizlemeKabi: { marginBottom: bosluk.l },
-  onizleme: { width: '100%', aspectRatio: 16 / 10, borderRadius: yuvarlak.kart, backgroundColor: renk.cizgi },
+  onizlemeKabi: { flex: 1.4, minHeight: 96, marginBottom: bosluk.m },
+  onizleme: { width: '100%', height: '100%', borderRadius: yuvarlak.kart, backgroundColor: renk.cizgi },
+  onizlemeDugmesi: { flex: 1 },
   kaldirDugmesi: {
     position: 'absolute',
     top: bosluk.s,
@@ -475,12 +488,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.kart,
     padding: bosluk.m,
-    marginBottom: bosluk.l,
+    marginBottom: bosluk.m,
   },
   satirBaslik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   satirAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil, marginTop: 2 },
   birlikteBaslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: bosluk.s },
-  etiketCipleri: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s, marginBottom: bosluk.l },
+  etiketCipleri: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s, marginBottom: bosluk.m },
   etiketCipi: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -501,8 +514,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     color: renk.metinSoluk,
     textAlign: 'center',
-    marginTop: 'auto',
-    marginBottom: bosluk.m,
+    marginBottom: bosluk.s,
   },
   hata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici, marginBottom: bosluk.s },
   uyari: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.turuncuYazi, marginBottom: bosluk.s },
