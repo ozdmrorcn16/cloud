@@ -165,8 +165,13 @@ goruntu `tasarim/checkin-panel-referans.png`.
 - **Kartlar cercevesiz:** kare GERCEK HARITA (kapak yoksa) solda, ad,
   "ilce, il · uzaklik", rozet sagda; altta tam genislik "Yol tarifi"
   (ARABA ikonu, cerceveli) + "Check-in yap" (dolu), 14 px dikey dolgu.
-  SECILI = seftali zemin (`mekanKartiOneCikan`), turuncu cerceve kalkti;
-  test `borderWidth undefined` + `backgroundColor turuncuZemin`.
+  SECILI = seftali zemin (`mekanKartiOneCikan`) YALNIZCA liste acikken
+  (kapali panelde tek satir zeminsiz - kullanicinin "hatali" bildirimi
+  sonrasi); turuncu cerceve kalkti.
+- **OLCULER REFERANSTAN ORANTILANDI (ayni aksam, OTA asagida):** kare
+  `KAPAK_OLCUSU` 96 -> 72, ad 17, alt satir 13, rozet 4/9 dolgu, avatar
+  yigini 22, dugmeler paddingVertical 10 (~40 pt), baslik 18, "Mesafe"
+  13; aktif kart dolgu 12, ad 18, etiket 12, Ayrildim 7 px dolgu.
 
 ### AKIS KARTI: TEK CUMLE BASLIK, "ILE BIRLIKTE" - 2026-09-20 AKSAM
 
