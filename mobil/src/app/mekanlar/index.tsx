@@ -141,7 +141,7 @@ const DURUM_RENGI: Record<MekanDurumu, string> = {
 const ONERI_ADEDI = 6
 
 /** Karttaki avatar yigininin capi (referans gorsel). */
-const BULUNAN_AVATAR_CAPI = 28
+const BULUNAN_AVATAR_CAPI = 22
 
 const DURUM_ZEMINI: Record<MekanDurumu, string> = {
   sakin: 'rgba(47, 191, 91, 0.12)',
@@ -1015,7 +1015,9 @@ export default function KesfetEkrani() {
           return (
           <Pressable
             key={item.id}
-            style={[stiller.mekanKarti, oneCikan && stiller.mekanKartiOneCikan]}
+            /* Secili zemin YALNIZCA liste acikken (referans 2026-09-20: kapali
+               panelde tek satir zeminsiz, yalnizca kare seftali). */
+            style={[stiller.mekanKarti, oneCikan && panelAcik && stiller.mekanKartiOneCikan]}
             testID={`mekan-karti-${item.id}`}
             onPress={secilebilir ? () => mekaniSec(item.id) : undefined}
             accessibilityState={secilebilir ? { selected: oneCikan } : undefined}
@@ -1726,7 +1728,8 @@ function AsagiOkIkonu({ renk: c }: { renk: string }) {
 
 const KART_GENISLIK = 256
 /** Karttaki kare kapak fotografinin kenari (referans gorsel). */
-const KAPAK_OLCUSU = 96
+// Referans 2026-09-20 aksam: kare dugme yuksekliginin ~1,5 kati (72).
+const KAPAK_OLCUSU = 72
 
 /*
  * KART YUKSEKLIGI TAHMINLERI - yalnizca "hangi kartin kucuk haritasi
@@ -1754,7 +1757,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // `marginLeft: 'auto'` eylemleri seridin sagina itiyor; sabit bir
   // genislik verilseydi uzun bir durum metni onlari tasardi.
   canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m, marginLeft: 'auto' },
-  ayrilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  ayrilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk + 1, color: renk.metin },
   ayrilYaziEski: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
@@ -1773,48 +1776,48 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buradaKart: {
     backgroundColor: renk.turuncuZemin,
     borderRadius: yuvarlak.buyuk,
-    padding: bosluk.l,
-    marginTop: bosluk.m,
-    gap: bosluk.m,
+    padding: bosluk.m,
+    marginTop: bosluk.s,
+    gap: bosluk.s,
   },
   buradaUst: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.m },
   buradaIgne: { paddingTop: 2 },
   buradaMetin: { flex: 1 },
   buradaEtiket: {
     fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
+    fontSize: 12,
     color: renk.turuncuYazi,
     letterSpacing: 0.6,
     marginBottom: 4,
   },
   buradaAd: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik + 2,
+    fontSize: 18,
     color: renk.metin,
     letterSpacing: -0.3,
   },
   buradaAlt: {
     fontFamily: yazi.govde,
-    fontSize: olcek.govde,
+    fontSize: olcek.kucuk,
     color: renk.metinIkincil,
     marginTop: 2,
   },
   buradaAltSatir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: bosluk.m },
   buradaKisi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  buradaKisiYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
+  buradaKisiYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk + 1, color: renk.turuncuYazi },
   ayrilDugmesi: {
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
     borderRadius: yuvarlak.hap,
-    paddingHorizontal: bosluk.xl,
-    paddingVertical: 12,
+    paddingHorizontal: bosluk.l,
+    paddingVertical: 7,
   },
   ayrilDugmesiBasili: { backgroundColor: renk.zemin },
   checkInButonu: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 14,
+    paddingVertical: 10,
     alignItems: 'center',
   },
   checkInYazi: {
@@ -2090,9 +2093,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // olan acik listede seftali zeminle belli (turuncu cerceve kalkti).
   mekanKarti: {
     borderRadius: yuvarlak.buyuk,
-    paddingVertical: bosluk.m,
+    paddingVertical: bosluk.s,
     paddingHorizontal: bosluk.xs,
-    gap: bosluk.m,
+    gap: bosluk.s,
   },
   mekanKartiOneCikan: {
     backgroundColor: renk.turuncuZemin,
@@ -2115,9 +2118,11 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.s,
   },
   kartAdAlani: { flex: 1, minWidth: 0 },
+  // Olculer referanstan (2026-09-20 aksam): ad 17, alt satir 13, kare 72,
+  // rozet ufak, dugmeler 40 pt.
   kartMekanAdi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: 17,
     color: renk.metin,
     letterSpacing: -0.3,
   },
@@ -2159,12 +2164,12 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   rozet: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    gap: 5,
+    paddingVertical: 4,
+    paddingHorizontal: 9,
     borderRadius: yuvarlak.hap,
   },
-  rozetNokta: { width: 8, height: 8, borderRadius: 4 },
+  rozetNokta: { width: 7, height: 7, borderRadius: 4 },
   rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.minik },
   kartEylemler: { flexDirection: 'row', gap: bosluk.s },
   // Yol tarifi: turuncu cerceveli, ici bos, ikonlu (referans).
@@ -2177,7 +2182,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderWidth: 1.5,
     borderColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 14,
+    paddingVertical: 10,
   },
   yolTarifiBasili: { backgroundColor: renk.turuncuZemin },
   yolTarifiYazi: {
@@ -2224,7 +2229,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     paddingHorizontal: 4,
   },
   mesafeDugmesiBasili: { opacity: 0.7 },
-  mesafeDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metinIkincil },
+  mesafeDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
   mesafeSeciliNokta: { width: 10, height: 10, borderRadius: 5, backgroundColor: renk.turuncu },
   mesafeBosNokta: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, borderColor: renk.cizgi },
 
@@ -2377,7 +2382,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
 
   bolumBasligi: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: 18,
     color: renk.metin,
     letterSpacing: -0.3,
     /*

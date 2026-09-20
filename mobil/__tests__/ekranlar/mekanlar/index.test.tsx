@@ -1439,12 +1439,14 @@ describe('MekanAramaEkrani - referans kart', () => {
     await render(<MekanAramaEkrani />)
     const ilk = await screen.findByTestId('mekan-karti-mola')
     expect(StyleSheet.flatten(ilk.props.style).borderWidth).toBeUndefined()
-    expect(StyleSheet.flatten(ilk.props.style).backgroundColor).toBe(acikRenk.turuncuZemin)
+    // Kapali panelde secili satir ZEMINSIZ (referans); zemin liste acilinca.
+    expect(StyleSheet.flatten(ilk.props.style).backgroundColor).toBeUndefined()
     expect(within(ilk).getByText('Yol tarifi')).toBeTruthy()
     expect(within(ilk).getByText('Check-in yap')).toBeTruthy()
     expect(screen.queryByTestId('mekan-karti-park')).toBeNull()
 
     await listeyiAc()
+    expect(StyleSheet.flatten(screen.getByTestId('mekan-karti-mola').props.style).backgroundColor).toBe(acikRenk.turuncuZemin)
     const ikinci = screen.getByTestId('mekan-karti-park')
     expect(StyleSheet.flatten(ikinci.props.style).backgroundColor).toBeUndefined()
     expect(within(ikinci).getByTestId('yol-tarifi-park')).toBeTruthy()
@@ -1453,7 +1455,8 @@ describe('MekanAramaEkrani - referans kart', () => {
     // Kartin bos yerine dokunmak parki SECER: cerceve ona gecer, panel kapanir.
     await fireEvent.press(ikinci)
     await waitFor(() => expect(screen.queryByTestId('mekan-karti-mola')).toBeNull())
-    expect(StyleSheet.flatten(screen.getByTestId('mekan-karti-park').props.style).backgroundColor).toBe(acikRenk.turuncuZemin)
+    // Panel kapandi: secili park, zeminsiz.
+    expect(screen.getByTestId('mekan-karti-park')).toBeTruthy()
   })
 
   it('kullanicinin ekledigi mekanda "Kafe • Nilüfer, Bursa • 240 m", dis kaynaklida tur yok', async () => {
