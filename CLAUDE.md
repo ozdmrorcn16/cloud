@@ -160,9 +160,19 @@ dakikalardaki iki istek. OTA `c8094a96`, web guncel, goruntu
   ayni yumusak kart (zemin orada beyaz kaldi).
 - **Gri akis zemini DENENDI VE GERI ALINDI** (sabah, kullanici: "arka
   plan gri olmayacak, beyaz olacak"). Zemin `renk.zemin` (beyaz), 2026-08-27
-  karari aynen; `akisZemini` jetonu silindi. Kart cercevesi
-  `rgba(23,19,15,0.07)` + `golge.akisKarti` - beyaz ustunde beyaz karti
-  golge ayiriyor. Tekrar gri onerme.
+  karari aynen; `akisZemini` jetonu silindi. Tekrar gri onerme.
+- **KART DUZENI KESINLESTI - SECENEK B (ayni sabah, OTA asagida):**
+  kullanici "kenarlari kaldir, sadece alt-ust ayrimi belli olsun,
+  yanlar sonsuz durup ekrana sigsin nasil durur" diye sordu; iki secenek
+  gorsel sunuldu (`tasarim/akis-tam-genislik-secenekler.png`: A ince
+  alt cizgi, B 8 px gri bant), **B secildi**. `CheckInKarti.kart`: yan
+  pay, kose yuvarlagi, cerceve, golge YOK; `borderBottomWidth: 8` +
+  `renk.akisAyrac` (#F3F1EE; koyu: zemin). `kartCerceve` ve
+  `golge.akisKarti` jetonlari silindi. 2026-09-18 referans karti
+  KAPANDI. Uc ekranda ortak (profil listeleri `aniListesi: -8` payi
+  ile tam genislik, olculdu). Web'de ekran cekerken `python -m
+  http.server` SPA yollarina 404 verir: `node araclar/spa-sunucu.mjs
+  dist` (yeni, port 8080) kullan.
 - **Arama sutunu KALKTI** (2026-08-28'in markanin altindaki kutusu ve
   akis-yerine-sonuc davranisi). Ust cubukta marka ortada, SOL BASTA
   buyutec (`kisi-ara`, mutlak konum, 44'luk hedef) -> `/kisiler`
