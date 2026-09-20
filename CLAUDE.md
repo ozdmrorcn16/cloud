@@ -202,7 +202,25 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   PUBLIC EXECUTE aldi; migrasyona acik `revoke ... from public, anon`
   yazildi. Her yeni fonksiyonda revoke ACIKCA yazilir. test:sema ve
   test:gorunurluk yesil. Testte `duzenMetni()` yardimcisi
-  (`refreshControl` prop'u dongusel JSON veriyor). OTA asagida.
+  (`refreshControl` prop'u dongusel JSON veriyor). OTA `1c7c98d2`.
+- **"ARKADASIM ANILARIMI GOREMIYOR" - VERI HATASI (ogleden sonra):**
+  kullanicinin 29 anisinin HEPSI `gorunurluk = 'kimse'` idi (ozdemrs
+  gozuyle RLS 0 satir). Sebep `ani_gorunurlugunu_ayarla` RPC'si
+  ("Anilarim kimlere gorunsun" = Kimse, TUM anilari toplu yazar);
+  ekrani `profil/ani-gorunurlugu.tsx` 2026-09-19 ayarlar yeniden
+  yaziminda menuden dustu ama ekran + RPC duruyor - geri alma yolu YOK.
+  Veri elle duzeltildi (`bag.ani_gorunurlugu(bulunurluk,
+  'herkese_acik')`), RLS ile ozdemrs gozunden 29 olculdu. ACIK KARAR:
+  o ayar geri mi gelsin, ekran + RPC mi silinsin - kullaniciya soruldu.
+- **SAYACLAR BOLUM SECER (ayni tur, OTA asagida):** baskasinin
+  profilinde Ani / Fotograf / Arkadas sayaclari kendi profildeki gibi
+  bolum acar (2026-09-13 "salt sayi" tarifi degisti). Arkadas listesi
+  yeni RPC `baskasinin_arkadaslari` (migrasyon `20260920130000`; kapi
+  paylasimlarla AYNI: aktif, engel yok, gizliyse arkadas; liste pasif/
+  engelli eler; revoke anon acik). `lib/bag-listeleri.ts`
+  `baskasininArkadaslariniGetir`. Fotograf bolumu `fotografliAnilar`
+  izgarasi, gezgin ayni. SekmeHapi yalnizca Ani bolumunde. KVKK listesi
+  maddesi yazildi. Sozluk `kullanici.fotografYok/arkadasYok` 7 dil.
 
 ### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
 
