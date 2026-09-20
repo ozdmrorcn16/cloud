@@ -3608,6 +3608,38 @@ list` Connected. Araclari: get/fetch/stealthy_fetch + oturumlu surumler
 `mcp__scrapling__*` adiyla gorunur. Kullanim alani: agent-reach'in
 Jina okuyucusunun yetmedigi (JS'li, bot korumali) sayfalar.
 
+## GEMINI -> OMNIROUTE -> CLAUDE-MEM ZINCIRI CALISIYOR - 2026-09-20
+
+Kullanicinin karari: "ucretsiz kullanilan modele dussun" -> claude-mem
+gozlemcisi artik Claude kotasina DOKUNMUYOR: `~/.claude-mem/settings.json`
+`CLAUDE_MEM_PROVIDER=openrouter`, `BASE_URL=http://127.0.0.1:20128/v1`
+(OmniRoute), `MODEL=gemini/gemini-3.6-flash`, anahtar yer tutucu
+(yedek: settings.json.yedek-2026-09-20). Olculdu: gunlukte
+`OpenRouter API usage {model=gemini-3.6-flash}` + `STORED`, gozlem
+3692 -> 3695. ScrapeGraphAI ornegi de ayni yoldan gercek JSON dondurdu.
+
+OmniRoute'ta Gemini (Google AI Studio) API anahtariyla bagli
+(baglanti `47666593`, ad `main`, varsayilan model gemini-3.6-flash).
+**UC DERS:**
+1. Anahtar `slooin` Google Cloud projesinde uretilirse CALISMAZ: proje
+   faturaya bagli (Maps), Google faturali projede Gemini API'yi on
+   odemeli krediyle isletiyor -> her model 402 "prepayment credits are
+   depleted". Ucretsiz katman icin FATURASIZ ayri proje
+   (`slooin-ucretsiz`) gerekti; anahtar orada uretildi.
+2. `model: auto` Pro'ya (kredi isteyen) gidip 402 alinca OmniRoute
+   baglantiyi BELLEK ICI `credits_exhausted` isaretliyor ve butun
+   Gemini istekleri kilitleniyor; `resilience reset` ve `edit --active`
+   acmiyor, yalnizca sunucuyu yeniden baslatmak aciyor. Bu yuzden her
+   yerde ACIK model adi kullanilir (`gemini/gemini-3.6-flash`), auto degil.
+3. Gemini 3.6 Flash dusunen model: `max_tokens` kucukse cevap bos gelir
+   (reasoning_tokens butceyi yer). claude-mem 4096 veriyor, sorun yok.
+Google OAuth yolu (Antigravity karti) BILEREK KULLANILMADI: OmniRoute
+kendi uyarisiyla "official session not authorized for proxy use, account
+may be banned" diyor; slooinapp hesabi (Cloud, Play, Maps) riske atilmaz.
+Ollama kurulmadi (kullanici istemedi). GUVENLIK: ilk anahtar sohbete
+yapistirildi -> `oturum-kaydet.py` maskesine `AQ.` kalibi eklendi;
+o anahtar zaten calismayan projedeydi, AI Studio'da silinmeli.
+
 ## SCRAPEGRAPHAI KURULDU - 2026-09-20
 
 Kullanicinin verdigi baglanti (ScrapeGraphAI/Scrapegraph-ai, MIT):

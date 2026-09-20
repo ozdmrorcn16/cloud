@@ -18,9 +18,11 @@ from scrapegraphai.graphs import SmartScraperGraph
 OMNIROUTE = "http://127.0.0.1:20128/v1"
 
 
-def kaz(kaynak: str, istem: str, model: str = "openai/auto") -> dict:
+def kaz(kaynak: str, istem: str, model: str = "openai/gemini/gemini-3.6-flash") -> dict:
     ayar = {
-        # "openai/..." on eki langchain-openai istemcisini secer; base_url
+        # "openai/..." on eki langchain-openai istemcisini secer (model adinin geri
+        # kalani OmniRoute yolu: gemini/gemini-3.6-flash - `auto` DEGIL, cunku auto
+        # kredi isteyen Pro modele gidip 402 ile baglantiyi kilitliyor); base_url
         # ile OmniRoute'a yonlenir. Anahtar loopback'te gerekmiyor ama
         # istemci bos kabul etmiyor.
         "llm": {"model": model, "api_key": "yerel", "base_url": OMNIROUTE, "model_tokens": 8000},
