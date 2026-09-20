@@ -148,6 +148,26 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### CHECK-IN PANELI REFERANS DUZENINDE - 2026-09-20 AKSAM
+
+Kullanicinin referans gorseli ("boyle yap, tur ikonu yerine harita
+olacak yine"). `mekanlar/index.tsx`; OTA `2a08f10e`, web guncel,
+goruntu `tasarim/checkin-panel-referans.png`.
+- **Aktif check-in karti:** seftali zemin, cercevesiz; solda igne,
+  "AKTİF CHECK-IN" (turuncu, harf araligi), ad, "ilce, il" (uzaklik
+  yok); altta "N kişi burada ›" (turuncu, mekan sayfasi, yalnizca N>0)
+  ve beyaz "Ayrıldım" hapi; sag ustte uc nokta -> `SecimPenceresi`
+  "Sil" (yikici) -> OnayPenceresi. 2026-09-19'un buyuk sayi + "Şu an
+  buradasın" seridi + yan yana Ayrıldım/Sil kalkti. Sozluk
+  `kesfet.aktifCheckIn`, `kesfet.mesafe` 7 dil.
+- **Baslik:** "Mesafe ▾" sade gri metin + turuncu ok (hap kalkti);
+  daraltilmissa "100 m içinde" yazar.
+- **Kartlar cercevesiz:** kare GERCEK HARITA (kapak yoksa) solda, ad,
+  "ilce, il · uzaklik", rozet sagda; altta tam genislik "Yol tarifi"
+  (ARABA ikonu, cerceveli) + "Check-in yap" (dolu), 14 px dikey dolgu.
+  SECILI = seftali zemin (`mekanKartiOneCikan`), turuncu cerceve kalkti;
+  test `borderWidth undefined` + `backgroundColor turuncuZemin`.
+
 ### AKIS KARTI: TEK CUMLE BASLIK, "ILE BIRLIKTE" - 2026-09-20 AKSAM
 
 Kullanicinin referans gorseli ("ana sayfada akisi bu sekilde yap").
