@@ -61,6 +61,7 @@ import {
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { MekanKapakHarita } from '../../tasarim/MekanKapakHarita'
 import { turSuzgeciniOku, turSuzgeciniYaz } from '../../../lib/tur-suzgeci-depo'
+import { mesafeSeciminiOku, mesafeSeciminiYaz } from '../../../lib/mesafe-secimi-depo'
 import { turEtiketi } from '../../../lib/tur-etiketi'
 import { avatarlariGetir } from '../../../lib/akis'
 import { mekanFotografiUrlleri } from '../../../lib/mekan-duzenleme'
@@ -625,6 +626,10 @@ export default function KesfetEkrani() {
       if (!gecerli) return
       if (kayitli.length > 0) setSeciliTurler(kayitli)
       yukle(arama, kayitli)
+    })
+    // Mesafe secimi de cihazda (2026-09-20): son secim geri geliyor.
+    mesafeSeciminiOku(MESAFE_SECENEKLERI).then((kayitli) => {
+      if (gecerli && kayitli !== null) setYaricapSecimi(kayitli)
     })
     return () => {
       gecerli = false
@@ -1472,6 +1477,7 @@ export default function KesfetEkrani() {
           onSec: () => {
             setYaricapSecimi(metre)
             setMesafeSecici(false)
+            void mesafeSeciminiYaz(metre)
           },
         }))}
         onKapat={() => setMesafeSecici(false)}

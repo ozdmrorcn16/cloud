@@ -1587,6 +1587,19 @@ describe('MekanAramaEkrani - referans kart', () => {
     expect(screen.queryByTestId('bulunanlar-mola')).toBeNull()
   })
 
+  it('MESAFE SECIMI KALICI: secim depoya yazilir, yeniden acilista geri gelir', async () => {
+    // Kullanicinin bildirimi 2026-09-20: "mesafede hep 1 km secili".
+    await AsyncStorage.setItem('slooin.mesafe-secimi.test-kisi', '250')
+    await render(<MekanAramaEkrani />)
+    expect(await screen.findByText('250 m içinde')).toBeTruthy()
+
+    await fireEvent.press(screen.getByTestId('siralama-etiketi'))
+    await menudenSec('mesafe-500')
+    await waitFor(async () =>
+      expect(await AsyncStorage.getItem('slooin.mesafe-secimi.test-kisi')).toBe('500')
+    )
+  })
+
   it('"Mesafeye göre" BASILABILIR: mesafe secimi acar, secim listeyi ve haritayi daraltir; aramada gizlenir', async () => {
     // Kullanicinin istegi 2026-09-19 aksam: 100 m ... 1 km secenekleri,
     // secime gore yakinindaki mekanlar guncellensin. SIRALAMA yine
