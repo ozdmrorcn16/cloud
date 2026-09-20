@@ -3463,6 +3463,22 @@ Baslatma elle: `omniroute` (arka planda `cmd /c omniroute > %TEMP%\omniroute.log
 Claude Code'a BAGLANMADI (ANTHROPIC_BASE_URL degistirilmedi) - kullanici
 isterse ayri karar.
 
+## EMIL KOWALSKI BECERILERI - 2026-09-20
+
+`emilkowalski/skills` (MIT) deposundan 11 beceri `~/.claude/skills/ek-*`
+altina kuruldu (kullanici kapsami, `ek-` oneki cakisma onlemi):
+ek-review-animations (animasyon kodunu Kowalski olcutleriyle denetler;
+`disable-model-invocation`, elle cagrilir), ek-animate, **ek-animate-expo**
+(RN/Expo animasyonu - karsilama yol animasyonunun RN tasimasinda
+kullanilacak), ek-improve-animations, ek-find-animation-opportunities,
+ek-animation-vocabulary, ek-apple-design, ek-mobile-native,
+ek-emil-design-eng, ek-prototype, ek-pick-ui-library. Disarida
+birakilanlar: write-swift, ask-sonner. Ilkelerin ozeti prototipte
+(`tasarim/karsilama-yol/prototip.html` yorumlari): yalnizca
+transform/opacity, ease-out giris `(.23,1,.32,1)`, hareket ease-in-out
+`(.77,0,.175,1)`, UI gecisleri <300 ms, stagger 30-80 ms, 2 px blur,
+reduced motion = solma kalir.
+
 ## Eklentiler
 
 Hepsi `.claude/settings.json` icinde **proje kapsaminda** tanimli, yani yeni
