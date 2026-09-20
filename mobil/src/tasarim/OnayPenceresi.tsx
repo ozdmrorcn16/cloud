@@ -29,6 +29,7 @@ export function OnayPenceresi({
   aciklama,
   eylemEtiketi,
   yikici = true,
+  tekDugme = false,
   onOnay,
   onVazgec,
 }: {
@@ -39,6 +40,11 @@ export function OnayPenceresi({
   eylemEtiketi: string
   /** Yikici eylem kirmizi; degilse turuncu (birincil eylem rengi). */
   yikici?: boolean
+  /**
+   * BILGI KIPI (2026-09-20): secim yok, yalnizca "Tamam" - "Vazgec"
+   * satiri cizilmez. Ayni pencere, ayri bir bilesen yazilmadi.
+   */
+  tekDugme?: boolean
   onOnay: () => void
   onVazgec: () => void
 }) {
@@ -89,14 +95,18 @@ export function OnayPenceresi({
             </Text>
           </Pressable>
 
-          <View style={stiller.ayirac} />
-          <Pressable
-            style={stiller.dugme}
-            onPress={onVazgec}
-            accessibilityRole="button"
-          >
-            <Text style={[stiller.dugmeYazi, stiller.vazgec]}>{t('ortak.vazgec')}</Text>
-          </Pressable>
+          {!tekDugme && (
+            <>
+              <View style={stiller.ayirac} />
+              <Pressable
+                style={stiller.dugme}
+                onPress={onVazgec}
+                accessibilityRole="button"
+              >
+                <Text style={[stiller.dugmeYazi, stiller.vazgec]}>{t('ortak.vazgec')}</Text>
+              </Pressable>
+            </>
+          )}
         </Pressable>
         </Animated.View>
       </Pressable>

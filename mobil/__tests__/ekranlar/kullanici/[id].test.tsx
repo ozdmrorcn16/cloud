@@ -1,6 +1,6 @@
 import { Share, StyleSheet } from 'react-native'
 import { acikRenk } from '../../../src/tasarim/tema'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import KullaniciProfiliEkrani from '../../../src/app/kullanici/[id]'
 import { baskasininProfiliniGetir, kendiKullaniciIdim } from '../../../lib/profil'
 import { engelle, engellediklerimiGetir } from '../../../lib/engelleme'
@@ -774,22 +774,29 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.getByText('Engelle')).toBeTruthy()
   })
 
-  it('daha once sikayet ettiysem menude "Şikâyet edildi" (pasif) ve kimlikte not var', async () => {
-    // Kullanicinin istegi 2026-09-19: "o kullaniciyi sikayet ettigi
-    // belli olsun". Durum kendi `sikayetler` satirlarimdan okunuyor.
+  it('daha once sikayet ettiysem kimlikte NOT YOK; "Şikâyet et" basinca uyari penceresi, ekran acilmaz', async () => {
+    // Kullanicinin istegi 2026-09-20 (2026-09-19'un notu + pasif satiri
+    // kalkti): sikayet etmis olmak profilde damga degil; tekrar
+    // sikayet etmeye kalkinca "Bu kullaniciyi sikayet ettin" uyarisi.
     ;(kullaniciyiSikayetEttimMi as jest.Mock).mockResolvedValue(true)
 
     await render(<KullaniciProfiliEkrani />)
     await screen.findByText('Ada')
 
-    expect(await screen.findByTestId('sikayet-edildi-notu')).toBeTruthy()
-    expect(screen.getByText('Bu kullanıcıyı şikâyet ettin')).toBeTruthy()
+    expect(screen.queryByTestId('sikayet-edildi-notu')).toBeNull()
+    expect(screen.queryByText('Bu kullanıcıyı şikâyet ettin')).toBeNull()
 
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    expect(await screen.findByText('Şikâyet edildi')).toBeTruthy()
-    expect(screen.queryByTestId('menu-sikayet')).toBeNull()
-    await fireEvent.press(screen.getByTestId('menu-sikayet-edildi'))
+    expect(screen.queryByText('Şikâyet edildi')).toBeNull()
+    await fireEvent.press(await screen.findByTestId('menu-sikayet'))
     expect(mockRouterPush).not.toHaveBeenCalled()
+    expect(await screen.findByText('Bu kullanıcıyı şikâyet ettin')).toBeTruthy()
+    expect(screen.getByText('Tamam')).toBeTruthy()
+    // Tek dugme: pencerenin icinde "Vazgec" yok (menunun kendi Vazgec'i
+    // kapanis animasyonunda hala agacta olabilir, o yuzden pencere ici).
+    expect(within(screen.getByTestId('onay-penceresi')).queryByText('Vazgeç')).toBeNull()
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
+    await waitFor(() => expect(screen.queryByText('Bu kullanıcıyı şikâyet ettin')).toBeNull())
   })
 
   it('istek gonderilmisse BEKLEMEDE yazar, "Arkadaş ekle" gostermez', async () => {
@@ -820,6 +827,23 @@ describe('KullaniciProfiliEkrani duzen', () => {
      * gelirse burasi kirilir.
      */
     expect(screen.queryByText('En sık')).toBeNull()
+  })
+
+  it('kabul edilmis SOHBET kapali profili ACMAZ - yalnizca arkadaslik acar', async () => {
+    // Kullanicinin bildirimi 2026-09-20 (canlida olculdu): arkadaslik
+    // yok, karsi tarafin sohbet istegi kabul edilmis; profil acik
+    // gorunuyordu. Sohbet bag degil.
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+    })
+    ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
+      takip: 'yok', sohbet: 'kabul', gelenTakip: 'yok', gelenSohbet: 'kabul',
+    })
+    await render(<KullaniciProfiliEkrani />)
+
+    await screen.findByTestId('profil-kilitli')
+    expect(screen.queryByText('Anılar')).toBeNull()
   })
 
   it('arkadaslik varsa kapali profil ACILIYOR', async () => {

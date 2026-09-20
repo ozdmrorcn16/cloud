@@ -168,11 +168,15 @@ export default function KullaniciProfiliEkrani() {
   const [yukleniyor, setYukleniyor] = useState(true)
   const [engelleOnayi, setEngelleOnayi] = useState(false)
   const [guvenlikMenusu, setGuvenlikMenusu] = useState(false)
-  // Bu kisiyi daha once sikayet ettiysem menude "Sikayet edildi" (pasif)
-  // ve kimlik blogunda kucuk bir not (kullanicinin istegi 2026-09-19).
+  // Bu kisiyi daha once sikayet ettiysem menudeki "Sikayet et" yine
+  // durur; basinca sikayet ekrani yerine "Bu kullaniciyi sikayet ettin"
+  // UYARISI acilir (kullanicinin istegi 2026-09-20 - 2026-09-19'un
+  // kimlik blogundaki notu ve pasif "Sikayet edildi" satiri KALKTI:
+  // sikayet etmis olmak profilde surekli gorunen bir damga olmasin).
   // Ekran her odaklandiginda yeniden okunuyor: sikayet ekranindan
   // donuste durum aninda degissin.
   const [sikayetEdildi, setSikayetEdildi] = useState(false)
+  const [sikayetUyarisi, setSikayetUyarisi] = useState(false)
   useFocusEffect(
     useCallback(() => {
       let gecerli = true
@@ -333,6 +337,10 @@ export default function KullaniciProfiliEkrani() {
   }
 
   function sikayetEt() {
+    if (sikayetEdildi) {
+      setSikayetUyarisi(true)
+      return
+    }
     router.push(`/sikayet?hedefTur=kullanici&hedefId=${id}`)
   }
 
@@ -415,12 +423,14 @@ export default function KullaniciProfiliEkrani() {
     }
   }
 
-  // Aramizda bir bag var mi: arkadaslik ya da kabul edilmis sohbet.
-  // Kapali profili ACAN sey bu.
-  const bagVar =
-    bagDurum?.takip === 'kabul' ||
-    bagDurum?.sohbet === 'kabul' ||
-    bagDurum?.gelenSohbet === 'kabul'
+  // Kapali profili ACAN tek sey ARKADASLIK (kullanicinin bildirimi
+  // 2026-09-20: "profili gizli birinin ekrani acik gorunuyor" - canlida
+  // aralarinda arkadaslik yok, yalnizca kabul edilmis bir sohbet istegi
+  // vardi ve o da bag sayiliyordu). Sohbet 2026-09-01'den beri
+  // yabancinin da yazabildigi bir kapi; kimlik guvencesi degil. Sunucu
+  // (check_inler RLS) anilari zaten yalnizca arkadasa aciyor - ekran o
+  // kuralla ayni cizgiye cekildi.
+  const bagVar = bagDurum?.takip === 'kabul'
 
   /**
    * "En sik" gorunumu: ayni anilardan gruplaniyor, sunucuda yeni bir
@@ -643,11 +653,6 @@ export default function KullaniciProfiliEkrani() {
                   biyografi gibi kisinin kendi yayinladigi bir bilgi;
                   gizlilik ayari AKISI kapatiyor, kimlik satirini degil. */}
               {profil.instagram ? <InstagramSatiri kullaniciAdi={profil.instagram} /> : null}
-              {sikayetEdildi ? (
-                <Text style={stiller.sikayetNotu} testID="sikayet-edildi-notu">
-                  {t('kullanici.sikayetEttinNotu')}
-                </Text>
-              ) : null}
             </View>
           </View>
 
@@ -830,14 +835,7 @@ export default function KullaniciProfiliEkrani() {
         acikMi={guvenlikMenusu}
         secimler={[
           { etiket: t('kullanici.paylas'), testID: 'menu-paylas', onSec: profiliPaylas },
-          sikayetEdildi
-            ? {
-                etiket: t('kullanici.sikayetEdildi'),
-                testID: 'menu-sikayet-edildi',
-                pasif: true,
-                onSec: () => {},
-              }
-            : { etiket: t('kullanici.sikayetEt'), testID: 'menu-sikayet', onSec: sikayetEt },
+          { etiket: t('kullanici.sikayetEt'), testID: 'menu-sikayet', onSec: sikayetEt },
           {
             etiket: t('kullanici.engelle'),
             testID: 'menu-engelle',
@@ -913,6 +911,16 @@ export default function KullaniciProfiliEkrani() {
         yikici={false}
         onOnay={takibiBirakEt}
         onVazgec={() => setGeriCekOnayi(false)}
+      />
+      <OnayPenceresi
+        acikMi={sikayetUyarisi}
+        baslik={t('kullanici.sikayetEttinNotu')}
+        aciklama={t('kullanici.sikayetEttinAciklama')}
+        eylemEtiketi={t('ortak.tamam')}
+        yikici={false}
+        tekDugme
+        onOnay={() => setSikayetUyarisi(false)}
+        onVazgec={() => setSikayetUyarisi(false)}
       />
       <OnayPenceresi
         acikMi={engelleOnayi}
@@ -999,13 +1007,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.kucuk,
     lineHeight: 20,
     color: renk.metinIkincil,
-    marginTop: 4,
-  },
-  sikayetNotu: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.kucuk,
-    lineHeight: 20,
-    color: renk.turuncuYazi,
     marginTop: 4,
   },
   /* EYLEM SATIRI: iki esit buton, kendi profildeki olcude (40). */

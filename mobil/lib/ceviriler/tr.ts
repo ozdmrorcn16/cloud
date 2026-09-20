@@ -385,8 +385,8 @@ export default {
     yerYok: 'Henüz bir yeri yok',
     secenekler: 'Profil seçenekleri',
     sikayetEt: 'Şikâyet et',
-    sikayetEdildi: 'Şikâyet edildi',
     sikayetEttinNotu: 'Bu kullanıcıyı şikâyet ettin',
+    sikayetEttinAciklama: 'Şikâyetin inceleniyor. Aynı kullanıcı için yeniden şikâyet gönderemezsin.',
     engelle: 'Engelle',
     engelleOnayi:
       'Engellersen birbirinizi hiçbir yerde göremezsiniz ve aranızdaki bütün mesajlar kalıcı olarak silinir. Bu işlem geri alınamaz.',
