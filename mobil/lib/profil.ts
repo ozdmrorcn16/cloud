@@ -30,6 +30,7 @@ export type BaskaProfil = {
    * arkadas oldugu bag listesi RLS'e tabi ve bu RPC onu acmiyor.
    */
   arkadasSayisi: number
+  aniSayisi: number
 }
 
 type SunucuProfili = {
@@ -40,6 +41,7 @@ type SunucuProfili = {
   instagram: string | null
   fotograflar: string[]
   profil_gizli: boolean | null
+  ani_sayisi?: number | null
   arkadas_sayisi: number | null
 }
 
@@ -84,6 +86,9 @@ export async function baskasininProfiliniGetir(
     fotograflar: satir.fotograflar,
     profilGizli: satir.profil_gizli ?? false,
     arkadasSayisi: satir.arkadas_sayisi ?? 0,
+    // Sunucudan (2026-09-20): gizli profilde anilar RLS ile gelmez,
+    // sayac `anilar.length`ten 0 kaliyordu.
+    aniSayisi: satir.ani_sayisi ?? 0,
   }
 }
 

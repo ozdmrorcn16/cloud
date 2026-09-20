@@ -26,6 +26,7 @@ describe('baskasininProfiliniGetir', () => {
           fotograflar: ['a.jpg'],
           profil_gizli: true,
           arkadas_sayisi: 7,
+          ani_sayisi: 7,
         },
       ],
       error: null,
@@ -51,7 +52,7 @@ describe('baskasininProfiliniGetir', () => {
       // 2026-09-08'de eklendi: gizlilik ayari sunucudan geliyordu ama
       // istemci okumuyordu; arkadas sayisi ise yeni.
       profilGizli: true,
-      arkadasSayisi: 7,
+      arkadasSayisi: 7, aniSayisi: 7,
     })
   })
 

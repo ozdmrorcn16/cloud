@@ -70,7 +70,7 @@ beforeEach(() => {
   ;(kendiKullaniciIdim as jest.Mock).mockResolvedValue('ben')
   ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
     id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null, fotograflar: [],
-    profilGizli: false, arkadasSayisi: 4,
+    profilGizli: false, arkadasSayisi: 4, aniSayisi: 7,
   })
   ;(engellediklerimiGetir as jest.Mock).mockResolvedValue([])
   ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
@@ -702,6 +702,11 @@ describe('KullaniciProfiliEkrani', () => {
  * olmamali, su an kullanicinin profili nasilsa aynisinin kapali
  * halini gormeli".
  */
+/** Agacin metni; `refreshControl` gibi React elemani tasiyan prop'lar atlanir (dongusel). */
+function duzenMetni(): string {
+  return JSON.stringify(screen.toJSON(), (anahtar, deger) => (anahtar === 'refreshControl' ? undefined : deger))
+}
+
 describe('KullaniciProfiliEkrani duzen', () => {
   it('uc sayaci gosterir: ani, fotograf ve ARKADAS (sunucudan gelen sayi)', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
@@ -710,7 +715,8 @@ describe('KullaniciProfiliEkrani duzen', () => {
     // Arkadas sayisi istemcide hesaplanamaz - bag listesi RLS'e tabi -
     // bu yuzden RPC'den geliyor.
     expect(await screen.findByLabelText('4 Arkadaş')).toBeTruthy()
-    expect(screen.getByLabelText('0 Anı')).toBeTruthy()
+    // Ani sayisi da sunucudan (2026-09-20): liste bos, sayi 7.
+    expect(screen.getByLabelText('7 Anı')).toBeTruthy()
     expect(screen.getByLabelText('0 Fotoğraf')).toBeTruthy()
   })
 
@@ -743,13 +749,13 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('GIZLI profilde once sayaclar, sonra butonlar', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
 
     await render(<KullaniciProfiliEkrani />)
     await screen.findByTestId('profil-kilitli')
 
-    const duzen = JSON.stringify(screen.toJSON())
+    const duzen = duzenMetni()
     expect(duzen.indexOf('Fotoğraf')).toBeLessThan(duzen.indexOf('Arkadaş ekle'))
     // Sekme secici gizli profilde zaten cizilmiyordu.
     expect(screen.queryByText('En sık')).toBeNull()
@@ -758,13 +764,13 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('ACIK profilde once butonlar, sonra sayaclar ve sekmeler', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2, aniSayisi: 7,
     })
 
     await render(<KullaniciProfiliEkrani />)
     await screen.findByText('Anılar')
 
-    const duzen = JSON.stringify(screen.toJSON())
+    const duzen = duzenMetni()
     expect(duzen.indexOf('Arkadaş ekle')).toBeLessThan(duzen.indexOf('Fotoğraf'))
     expect(screen.getByText('En sık')).toBeTruthy()
   })
@@ -825,7 +831,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('KAPALI PROFIL: duzen ayni kalir, liste yerine aciklama cikar', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
     await render(<KullaniciProfiliEkrani />)
 
@@ -842,13 +848,50 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(screen.queryByText('En sık')).toBeNull()
   })
 
+  it('ANI SAYACI sunucudan gelir: gizli profilde liste bos olsa da sayi gorunur', async () => {
+    // Kullanicinin bildirimi 2026-09-20: 5 check-in'i olan gizli profil
+    // "0 Ani" gosteriyordu (anilar RLS ile gelmiyor).
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 5,
+    })
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([])
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByTestId('profil-kilitli')
+    expect(screen.getByText('5')).toBeTruthy()
+  })
+
+  it('ASAGI CEKINCE YENILENIR: bag durumu yeniden okunur, Beklemede -> Arkadassin', async () => {
+    // Kullanicinin istegi 2026-09-20: istek kabul edilince sayfayi
+    // yeniden acmadan gormek icin cek-yenile.
+    ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
+      id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
+    })
+    ;(bagDurumunuGetir as jest.Mock)
+      .mockResolvedValueOnce({ takip: 'beklemede', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok' })
+      .mockResolvedValueOnce({ takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok' })
+    await render(<KullaniciProfiliEkrani />)
+    await screen.findByText('Beklemede')
+    await screen.findByTestId('profil-kilitli')
+
+    const kaydirma = screen.getByTestId('kullanici-kaydirma')
+    expect(kaydirma.props.refreshControl).toBeTruthy()
+    await act(async () => {
+      await kaydirma.props.refreshControl.props.onRefresh()
+    })
+
+    expect(await screen.findByText('Arkadaşsın')).toBeTruthy()
+    expect(screen.queryByTestId('profil-kilitli')).toBeNull()
+  })
+
   it('kabul edilmis SOHBET kapali profili ACMAZ - yalnizca arkadaslik acar', async () => {
     // Kullanicinin bildirimi 2026-09-20 (canlida olculdu): arkadaslik
     // yok, karsi tarafin sohbet istegi kabul edilmis; profil acik
     // gorunuyordu. Sohbet bag degil.
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'yok', sohbet: 'kabul', gelenTakip: 'yok', gelenSohbet: 'kabul',
@@ -862,7 +905,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('arkadaslik varsa kapali profil ACILIYOR', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
     ;(bagDurumunuGetir as jest.Mock).mockResolvedValue({
       takip: 'kabul', sohbet: 'yok', gelenTakip: 'yok', gelenSohbet: 'yok',
@@ -928,7 +971,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('KAPALI profilde sekme secici CIZILMIYOR', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
 
     await render(<KullaniciProfiliEkrani />)
@@ -946,7 +989,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('ACIK profilde sekme secici DURUYOR', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2, aniSayisi: 7,
     })
 
     await render(<KullaniciProfiliEkrani />)
@@ -972,7 +1015,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('KAPALI profilde akis karti YOK, kilit alani VAR', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: true, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: true, arkadasSayisi: 2, aniSayisi: 7,
     })
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
@@ -985,13 +1028,13 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     expect(screen.queryByText('Sahil Kafe')).toBeNull()
     // Sayaclar yine de sayiyi soyluyor - kilit yalnizca AKISI kapatiyor.
-    expect(screen.getByLabelText('1 Anı')).toBeTruthy()
+    expect(screen.getByLabelText('7 Anı')).toBeTruthy()
   })
 
   it('profil fotografina (avatar/serit) dokununca profil fotograflari gezgini acilir', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: ['kullanici-2/1.jpg', 'kullanici-2/2.jpg'], profilGizli: false, arkadasSayisi: 0,
+      fotograflar: ['kullanici-2/1.jpg', 'kullanici-2/2.jpg'], profilGizli: false, arkadasSayisi: 0, aniSayisi: 7,
     })
     ;(profilFotograflariUrl as jest.Mock).mockResolvedValue([
       'https://ornek/imzali/kullanici-2/1.jpg',
@@ -1067,7 +1110,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('EN SIK listesinde en fazla BES yer gorunuyor', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
       id: 'kullanici-2', kullaniciAdi: 'ada123', ad: 'Ada', biyografi: null,
-      fotograflar: [], profilGizli: false, arkadasSayisi: 2,
+      fotograflar: [], profilGizli: false, arkadasSayisi: 2, aniSayisi: 7,
     })
     // Yedi FARKLI mekan; en cok gidilen ustte olacak sekilde azalan
     // sayida ani uretiliyor.

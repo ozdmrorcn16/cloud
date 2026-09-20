@@ -4,6 +4,7 @@ import {
   Text,
   Image,
   ScrollView,
+  RefreshControl,
   Pressable,
   StyleSheet,
   type NativeScrollEvent,
@@ -203,6 +204,17 @@ export default function KullaniciProfiliEkrani() {
   /** Sunucuya SORULMUS kimlikler; ayni istegi iki kez atmamak icin. */
   const istenenOzetler = useRef<Set<string>>(new Set())
   const [kimlikYuksekligi, setKimlikYuksekligi] = useState(KIMLIK_VARSAYILAN)
+
+  // ASAGI CEKINCE YENILE (kullanicinin istegi 2026-09-20): istek
+  // gonderdikten sonra karsi taraf kabul edince "Beklemede" ->
+  // "Arkadassin" ve kilit -> anilar gecisi icin sayfayi yeniden
+  // acmak gerekiyordu. Ayni yukleme; yalnizca gosterge farkli.
+  const [yenileniyor, setYenileniyor] = useState(false)
+  async function yenile() {
+    setYenileniyor(true)
+    await verileriYukle()
+    setYenileniyor(false)
+  }
 
   async function verileriYukle() {
     try {
@@ -585,7 +597,9 @@ export default function KullaniciProfiliEkrani() {
   const sayacSatiri = (
     <ProfilSayaclari
       sayilar={{
-        anilar: anilar.length,
+        // Sunucu sayisi (2026-09-20): gizli profilde liste bos gelir,
+        // sayi yine dogru. Acik profilde de ayni kaynak - liste sayfali.
+        anilar: profil.aniSayisi,
         fotograflar: fotografUrlleri.length,
         arkadaslar: profil.arkadasSayisi,
       }}
@@ -600,6 +614,9 @@ export default function KullaniciProfiliEkrani() {
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={160}
         onScroll={dibeYaklasinca}
+        refreshControl={
+          <RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.turuncu} />
+        }
       >
         {/* KIMLIK BLOGU - kendi profille AYNI: avatar solda, bilgiler
             saginda, arkada isimsiz harita dokusu. Doku kimlik blogunun
