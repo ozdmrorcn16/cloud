@@ -148,6 +148,24 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### GIZLI PROFILI YALNIZCA ARKADASLIK ACAR; SIKAYET DAMGASI KALKTI - 2026-09-20
+
+- **HATA (kullanicinin bildirimi "profili gizli birinin ekrani acik
+  gorunuyor"):** `kullanici/[id]` `bagVar` kabul edilmis SOHBET
+  istegini de bag sayiyordu; canlida ozdemrs->byorcun 'kabul' sohbet
+  satiri vardi, arkadaslik yoktu -> acik duzen cizildi (anilar RLS ile
+  zaten gizliydi, "Henuz bir anisi yok"). Artik `bagVar = takip ===
+  'kabul'` - ekran, sunucunun kuraliyla (check_inler RLS) ayni. Test:
+  "kabul edilmis SOHBET kapali profili ACMAZ".
+- **Sikayet gorunumu (kullanicinin istegi):** 2026-09-19'un kimlik
+  blogundaki "Bu kullaniciyi sikayet ettin" notu ve menudeki pasif
+  "Sikayet edildi" satiri KALKTI. Menude "Sikayet et" hep var; daha
+  once sikayet ettiysem basinca sikayet ekrani degil UYARI penceresi
+  ("Bu kullaniciyi sikayet ettin" + aciklama, tek dugme Tamam).
+  `OnayPenceresi` yeni `tekDugme` prop'u (Vazgec cizilmez). Sozluk:
+  `kullanici.sikayetEdildi` silindi, `sikayetEttinAciklama` 7 dil.
+  OTA asagida, web guncel.
+
 ### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
 
 Kullanicinin referans gorseli ("kartlar bu paylasimdaki gibi, arka
