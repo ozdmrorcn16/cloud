@@ -190,6 +190,19 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   yutulur ve 700 ms pencere baslar (sayfa gercekten acikken dokunus
   kalkana zaten ulasamaz). KURAL: ekranin tamamini orten bir katman
   hicbir zaman yalnizca bir sozun cozulmesine baglanmaz. OTA `3c0dd88f`.
+- **CEK-YENILE + ANI SAYISI (ogleden sonra):** `kullanici/[id]`
+  ScrollView'a `RefreshControl` (istek kabul edilince Beklemede ->
+  Arkadassin, kilit -> anilar, sayfayi yeniden acmadan). Ani sayaci
+  `anilar.length`ten geliyordu; gizli profilde RLS listeyi bos
+  dondurdugu icin 5 check-in'li profil "0 Ani" gosteriyordu. Migrasyon
+  `20260920120000`: `baskasinin_profili` yeni `ani_sayisi` (moderasyon
+  gizli degil, gorunurluk <> 'kimse'; yalnizca ADET aciliyor, icerik
+  RLS'te). **TUZAK (olculdu):** MCP `apply_migration` postgres rolunde
+  kosmuyor -> 20260919100000'in varsayilan yetkisi ISLEMEDI, anon +
+  PUBLIC EXECUTE aldi; migrasyona acik `revoke ... from public, anon`
+  yazildi. Her yeni fonksiyonda revoke ACIKCA yazilir. test:sema ve
+  test:gorunurluk yesil. Testte `duzenMetni()` yardimcisi
+  (`refreshControl` prop'u dongusel JSON veriyor). OTA asagida.
 
 ### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
 
