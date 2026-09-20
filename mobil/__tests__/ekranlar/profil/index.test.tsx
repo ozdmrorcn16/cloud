@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within, act } from '@testing-library/react-native'
 import { Share, StyleSheet } from 'react-native'
 import { acikRenk, koyuRenk, olcek } from '../../../src/tasarim/tema'
 import ProfilEkrani from '../../../src/app/profil/index'
@@ -119,6 +119,8 @@ beforeEach(() => {
 async function menudenSec(testID: string) {
   await fireEvent.press(await screen.findByTestId(testID))
   await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+  // Eylem menu kalktiktan 80 ms sonra kosuyor (SecimPenceresi).
+  await act(() => new Promise<void>((r) => setTimeout(r, 120)))
 }
 
 describe('ProfilEkrani', () => {

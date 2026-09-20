@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { paylasimDinle, paylasimSonrasiBaskiMi, PAYLASIM_KORUMA_MS } from '../../lib/paylasim'
+import { paylasimDinle, paylasimKapandiVarsay, paylasimSonrasiBaskiMi, PAYLASIM_KORUMA_MS } from '../../lib/paylasim'
 
 /**
  * PAYLASIM KALKANI - kok duzende, her seyin USTUNDE, gorunmez.
@@ -36,5 +36,17 @@ export function PaylasimKalkani() {
   }, [])
 
   if (!acik) return null
-  return <View style={StyleSheet.absoluteFill} testID="paylasim-kalkani" pointerEvents="auto" />
+  // KALKAN KENDINI KILITLEYEMEZ (2026-09-20): sayfa acikken dokunus
+  // buraya ulasamaz; ulasan dokunus yutulur ve kalkan kapanis
+  // penceresine gecer (700 ms sonra kalkar). Soz hic cozulmezse bile
+  // ekran tek dokunusla geri gelir.
+  return (
+    <View
+      style={StyleSheet.absoluteFill}
+      testID="paylasim-kalkani"
+      pointerEvents="auto"
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={paylasimKapandiVarsay}
+    />
+  )
 }

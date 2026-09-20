@@ -1,4 +1,4 @@
-import { render, waitFor, act } from '@testing-library/react-native'
+import { render, waitFor, act, fireEvent } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
 import type { ReactNode } from 'react'
 import KokLayout, { hedefRota } from '../../src/app/_layout'
@@ -119,6 +119,38 @@ describe('YonlendirmeKontrolu (kok layout yonlendirme mantigi)', () => {
     await act(async () => {
       jest.advanceTimersByTime(800)
     })
+    expect(queryByTestId('paylasim-kalkani')).toBeNull()
+
+    paylasSpy.mockRestore()
+    jest.useRealTimers()
+  })
+
+  it('KALKAN KENDINI KILITLEMEZ: soz hic cozulmezse dokunus kalkani kapanis penceresine gecirir', async () => {
+    // Kullanicinin bildirimi 2026-09-20: paylasim sayfasi menuyle
+    // birlikte kapaninca Share.share cozulmedi, kalkan kaldi, "ekranda
+    // hicbir seye basamiyorum".
+    jest.useFakeTimers()
+    ;(useOturum as jest.Mock).mockReturnValue({ oturum: null, profilVarMi: null, yukleniyor: false })
+    mockSegments = ['(auth)', 'karsilama']
+    const { Share } = require('react-native')
+    const paylasSpy = jest.spyOn(Share, 'share').mockReturnValue(new Promise(() => {}) as never)
+    const { sistemPaylasimi } = require('../../lib/paylasim')
+
+    const { queryByTestId, getByTestId } = await render(<KokLayout />)
+    await act(async () => {
+      void sistemPaylasimi({ message: 'x' })
+    })
+    expect(queryByTestId('paylasim-kalkani')).not.toBeNull()
+
+    await act(async () => {
+      fireEvent(getByTestId('paylasim-kalkani'), 'responderGrant')
+    })
+    // Dokunus yutuldu, kalkan hala orada (700 ms penceresi)...
+    expect(queryByTestId('paylasim-kalkani')).not.toBeNull()
+    await act(async () => {
+      jest.advanceTimersByTime(800)
+    })
+    // ...sonra kalkti: ekran geri geldi.
     expect(queryByTestId('paylasim-kalkani')).toBeNull()
 
     paylasSpy.mockRestore()

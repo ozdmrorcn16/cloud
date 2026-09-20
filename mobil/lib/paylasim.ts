@@ -53,6 +53,23 @@ export async function sistemPaylasimi(icerik: ShareContent): Promise<void> {
   }
 }
 
+/**
+ * KALKANA DOKUNULDU (kullanicinin bildirimi 2026-09-20: "ekranda hicbir
+ * seye basamiyorum"). Paylasim sayfasi sistem tarafindan sessizce
+ * kapatilirsa (menu Modal'iyla birlikte dismiss edildi) `Share.share`
+ * sozu HIC cozulmuyor ve kalkan sonsuza dek kaliyordu. Sayfa gercekten
+ * acikken dokunus kalkana ulasamaz (sayfa ustte); kalkana ulasan bir
+ * dokunus ya kapatma dokunusudur ya da sayfa coktan gitmistir. Iki
+ * halde de dogru davranis ayni: dokunusu yut, sayfayi kapanmis say,
+ * 700 ms'lik koruma penceresini SIMDI baslat.
+ */
+export function paylasimKapandiVarsay(): void {
+  if (!acikMi) return
+  acikMi = false
+  sonKapanis = Date.now()
+  dinleyiciler.forEach((d) => d('kapandi'))
+}
+
 export function paylasimSonrasiBaskiMi(simdi: number = Date.now()): boolean {
   return acikMi || simdi - sonKapanis < PAYLASIM_KORUMA_MS
 }

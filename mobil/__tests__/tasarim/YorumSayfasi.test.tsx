@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { YorumSayfasi } from '../../src/tasarim/YorumSayfasi'
 import {
   yorumlariGetir,
@@ -57,6 +57,8 @@ beforeEach(() => {
 async function menudenSec(testID: string) {
   await fireEvent.press(await screen.findByTestId(testID))
   await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+  // Eylem menu kalktiktan 80 ms sonra kosuyor (SecimPenceresi).
+  await act(() => new Promise<void>((r) => setTimeout(r, 120)))
 }
 
 describe('YorumSayfasi', () => {

@@ -116,6 +116,9 @@ export type Secim = {
 /** Sayfa yuksekligi olculmeden once girisin basladigi varsayilan uzaklik. */
 const VARSAYILAN_YUKSEKLIK = 420
 
+/** Menu Modal'i kalktiktan sonra eylemin kosmasina kadar beklenen sure. */
+const EYLEM_GECIKMESI_MS = 80
+
 export function SecimPenceresi({
   acikMi,
   secimler,
@@ -151,7 +154,14 @@ export function SecimPenceresi({
     if (gorunur || !bekleyenEylem.current) return
     const eylem = bekleyenEylem.current
     bekleyenEylem.current = null
-    eylem()
+    // BIR KARE BEKLE (kullanicinin bildirimi 2026-09-20: "Profili
+    // paylas'a bastim hicbir sey olmadi"): Modal'in agactan kalkmasi
+    // native'e UIManager toplu isiyle gidiyor, ayni turda cagrilan
+    // Share.share ise dogrudan; paylasim sayfasi henuz kapanmamis menu
+    // VC'sinden sunulup onunla birlikte kapaniyordu. Kisa gecikme
+    // Modal'in gercekten dismiss olmasini garanti ediyor.
+    const zamanlayici = setTimeout(eylem, EYLEM_GECIKMESI_MS)
+    return () => clearTimeout(zamanlayici)
   }, [gorunur])
 
   // Surukleme: parmak sayfayi asagi ceker. Yukari cekiste lastik direnc:
