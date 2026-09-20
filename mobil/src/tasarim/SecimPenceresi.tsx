@@ -1,9 +1,12 @@
-import type { ReactNode } from 'react'
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useRef, useState, type ReactNode } from 'react'
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { PanGestureHandler, State, type PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler'
 import Svg, { Circle, Path } from 'react-native-svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDil } from '../../lib/dil'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { EGRI, SURE, useHareket, useModalHareketi } from './hareket'
 
 /**
  * UC NOKTA MENUSU - ortak.
@@ -19,6 +22,14 @@ import { useRenk, useStiller } from './tema-baglami'
  *
  * Yikici secim (Sil, Şikâyet et) kirmizi ve genelde ONAY PENCERESI
  * aciyor - menuden secmek isi yapmiyor, yalnizca soruyor.
+ *
+ * ALTTAN GELEN SAYFA (2026-09-20, kullanicinin onayladigi ornek):
+ * onceden ekranin ortasinda `fade` ile beliriyordu - nereden geldigi
+ * belli degildi. Simdi alttan geliyor (iOS cekmece egrisi, 320 ms),
+ * ayni kenardan gidiyor (240 ms), tutamactan asagi surukleyip
+ * birakinca kapaniyor: hizli bir fiske ya da yuksekliginin ucte biri
+ * yeter; yukari cekmek lastik gibi direnir. Surukleme native driver'da
+ * (`Animated.event`), JS is parcacigina hic dokunmaz.
  */
 
 /**
@@ -102,6 +113,9 @@ export type Secim = {
   onSec: () => void
 }
 
+/** Sayfa yuksekligi olculmeden once girisin basladigi varsayilan uzaklik. */
+const VARSAYILAN_YUKSEKLIK = 420
+
 export function SecimPenceresi({
   acikMi,
   secimler,
@@ -113,79 +127,142 @@ export function SecimPenceresi({
 }) {
   const stiller = useStiller(stilleriYap)
   const { t } = useDil()
+  const guvenliAlan = useSafeAreaInsets()
+  const hareket = useHareket()
+  const { gorunur, ilerleme } = useModalHareketi(acikMi, SURE.sayfaGiris, SURE.sayfaCikis)
 
-  if (!acikMi) return null
+  // Surukleme: parmak sayfayi asagi ceker. Yukari cekiste lastik direnc:
+  // -200 birim cekis yalnizca -28 birim hareket ettirir.
+  const [yukseklik, setYukseklik] = useState(VARSAYILAN_YUKSEKLIK)
+  const surukleme = useRef(new Animated.Value(0)).current
+  const suruklemeOlayi = useRef(
+    Animated.event([{ nativeEvent: { translationY: surukleme } }], { useNativeDriver: true })
+  ).current
+
+  if (!gorunur) return null
+
+  const girisY = ilerleme.interpolate({ inputRange: [0, 1], outputRange: [yukseklik, 0] })
+  const suruklemeY = surukleme.interpolate({
+    inputRange: [-200, 0, yukseklik],
+    outputRange: [-28, 0, yukseklik],
+    extrapolate: 'clamp',
+  })
+  const toplamY = Animated.add(girisY, suruklemeY)
+
+  function suruklemeBitti(e: PanGestureHandlerStateChangeEvent) {
+    if (e.nativeEvent.oldState !== State.ACTIVE) return
+    const { translationY, velocityY } = e.nativeEvent
+    // Fiske (hiz) YA DA mesafe yeter - ikisi de gerekmez.
+    const kapat = velocityY > 800 || translationY > yukseklik / 3
+    if (kapat) {
+      // Surukleme degerini oldugu yerde birakip cikisi ebeveyne devret:
+      // useModalHareketi kalan yolu 240 ms'de tamamlar.
+      onKapat()
+      return
+    }
+    if (!hareket) {
+      surukleme.setValue(0)
+      return
+    }
+    // Parmak biraktiysa spring: hiz tasinir, yerine oturur.
+    Animated.spring(surukleme, {
+      toValue: 0,
+      velocity: velocityY / 1000,
+      speed: 22,
+      bounciness: 4,
+      useNativeDriver: true,
+    }).start()
+  }
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onKapat}>
+    <Modal visible transparent animationType="none" onRequestClose={onKapat}>
+      <Animated.View style={[stiller.zeminRenk, { opacity: ilerleme }]} pointerEvents="none" />
       <Pressable style={stiller.zemin} testID="secim-zemini" onPress={onKapat}>
-        <Pressable
-          style={stiller.pencere}
-          testID="secim-penceresi"
-          onPress={() => {}}
-          accessibilityViewIsModal
-        >
-          {secimler.map((secim, sira) => (
-            <View key={secim.testID ?? secim.etiket}>
-              {sira > 0 && <View style={stiller.ayirac} />}
-              <Pressable
-                style={stiller.satir}
-                testID={secim.testID}
-                onPress={secim.onSec}
-                disabled={secim.pasif}
-                accessibilityRole="button"
-                accessibilityState={secim.pasif ? { disabled: true } : undefined}
-              >
-                {secim.ikon}
-                <Text
-                  style={[
-                    stiller.yazi,
-                    secim.yikici && stiller.yikici,
-                    secim.pasif && stiller.pasif,
-                  ]}
+        <PanGestureHandler onGestureEvent={suruklemeOlayi} onHandlerStateChange={suruklemeBitti} activeOffsetY={6}>
+          <Animated.View
+            style={[
+              stiller.sayfa,
+              { paddingBottom: Math.max(guvenliAlan.bottom, bosluk.s) + bosluk.s, transform: [{ translateY: toplamY }] },
+            ]}
+            onLayout={(e) => setYukseklik(e.nativeEvent.layout.height)}
+          >
+            {/* Icerige dokunmak kapatmamali; bos onPress dokunusu zemine gecirmez. */}
+            <Pressable testID="secim-penceresi" onPress={() => {}} accessibilityViewIsModal>
+              <View style={stiller.tutamac} />
+              {secimler.map((secim) => (
+                <Pressable
+                  key={secim.testID ?? secim.etiket}
+                  style={({ pressed }) => [stiller.satir, pressed && !secim.pasif && stiller.satirBasili]}
+                  testID={secim.testID}
+                  onPress={secim.onSec}
+                  disabled={secim.pasif}
+                  accessibilityRole="button"
+                  accessibilityState={secim.pasif ? { disabled: true } : undefined}
                 >
-                  {secim.etiket}
-                </Text>
-              </Pressable>
-            </View>
-          ))}
+                  {secim.ikon}
+                  <Text
+                    style={[
+                      stiller.yazi,
+                      secim.yikici && stiller.yikici,
+                      secim.pasif && stiller.pasif,
+                    ]}
+                  >
+                    {secim.etiket}
+                  </Text>
+                </Pressable>
+              ))}
 
-          <View style={stiller.ayirac} />
-          <Pressable style={stiller.satir} onPress={onKapat} accessibilityRole="button">
-            <Text style={[stiller.yazi, stiller.vazgec]}>{t('ortak.vazgec')}</Text>
-          </Pressable>
-        </Pressable>
+              <View style={stiller.ayirac} />
+              <Pressable
+                style={({ pressed }) => [stiller.satir, pressed && stiller.satirBasili]}
+                onPress={onKapat}
+                accessibilityRole="button"
+              >
+                <Text style={[stiller.yazi, stiller.vazgec]}>{t('ortak.vazgec')}</Text>
+              </Pressable>
+            </Pressable>
+          </Animated.View>
+        </PanGestureHandler>
       </Pressable>
     </Modal>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  zemin: {
-    flex: 1,
+  zeminRenk: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(23, 19, 15, 0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: bosluk.xl,
   },
-  pencere: {
-    width: '100%',
-    maxWidth: 340,
+  zemin: { flex: 1, justifyContent: 'flex-end' },
+  sayfa: {
     backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.buyuk,
-    overflow: 'hidden',
+    borderTopLeftRadius: yuvarlak.buyuk,
+    borderTopRightRadius: yuvarlak.buyuk,
+    paddingHorizontal: bosluk.s,
+    paddingTop: bosluk.s,
   },
-  // 44 pt asgari dokunma hedefi.
+  tutamac: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: renk.cizgi,
+    marginBottom: bosluk.s,
+  },
+  // 44 pt asgari dokunma hedefi. Satirlar yuvarlak: basili hali zemin
+  // renginin koyulasmasi (turuncuZemin), opaklik degil.
   satir: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.m,
     paddingVertical: bosluk.l,
-    paddingHorizontal: bosluk.sayfa,
+    paddingHorizontal: bosluk.m,
+    borderRadius: yuvarlak.kart,
   },
+  satirBasili: { backgroundColor: renk.turuncuZemin },
   yazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   yikici: { color: renk.yikici },
   pasif: { color: renk.metinSoluk },
   vazgec: { color: renk.metinIkincil },
-  ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: renk.cizgi },
+  ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: renk.cizgi, marginVertical: bosluk.xs },
 })

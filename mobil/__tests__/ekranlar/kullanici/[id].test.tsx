@@ -362,7 +362,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('kullanici-2'))
     expect(await screen.findByText('Arkadaş ekle')).toBeTruthy()
-    expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull()
+    // Menu cikis animasyonunu (240 ms) oynatip dusuyor; aninda degil.
+    await waitFor(() => expect(screen.queryByText('Arkadaşlıktan çıkar')).toBeNull())
   })
 
   it('"Mesaj yaz" bag YOKKEN de sohbet ekranini acar; sohbet istegi RPC\'si HIC cagrilmaz', async () => {
@@ -432,7 +433,8 @@ describe('KullaniciProfiliEkrani', () => {
 
     expect(takibiBirak).not.toHaveBeenCalled()
     expect(screen.getByText('Beklemede')).toBeTruthy()
-    expect(screen.queryByText('Arkadaşlık isteğini geri çekmek istiyor musun?')).toBeNull()
+    // Onay penceresi cikis animasyonunu (150 ms) oynatip dusuyor.
+    await waitFor(() => expect(screen.queryByText('Arkadaşlık isteğini geri çekmek istiyor musun?')).toBeNull())
   })
 
   it('gelen takip istegi icin kabul et ve reddet butonlarini ve aciklamayi gosterir', async () => {

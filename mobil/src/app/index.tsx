@@ -18,6 +18,7 @@ import { SuAnDisarida } from '../tasarim/SuAnDisarida'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
+import { KademeliGiris, BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
@@ -77,6 +78,9 @@ export default function AnaSayfa() {
   const renk = useRenk()
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
+  // Kademeli giris her kimlik icin bir kez oynar (sanal liste satiri
+  // yeniden mount olsa bile).
+  const kademeOynatilanlar = useRef(new Set<string>())
   const { t } = useDil()
   const [ogeler, setOgeler] = useState<AkisOgesi[]>([])
   const [hata, setHata] = useState<string | null>(null)
@@ -306,10 +310,13 @@ export default function AnaSayfa() {
         // `ogeler`den turetiyor, yeni bir ag cagrisi yok; kimse
         // disarida degilse hic cizilmiyor.
         ListHeaderComponent={<SuAnDisarida ogeler={ogeler} />}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           // ORTAK KART (kullanicinin karari 2026-08-30): ana sayfa,
           // profil ve Anilarim ayni CheckInKarti'yi kullaniyor. Zaman
           // tuneli deseni (gun ayraci + dikey serit) kaldirildi.
+          // KADEMELI GIRIS (2026-09-20): ilk ekran dolusu 40 ms arayla
+          // belirir; her kart bir kez, sonraki sayfalar hic.
+          <KademeliGiris anahtar={item.id} sira={index} oynatilanlar={kademeOynatilanlar.current}>
           <CheckInKarti
             oge={item}
             zamanYazisi={gorecelZaman(item.olusturmaZamani, t)}
@@ -330,13 +337,14 @@ export default function AnaSayfa() {
             onEtiketKaldir={etiketiSil}
             onEtiketEkle={etiketEkle}
           />
+          </KademeliGiris>
         )}
         ListEmptyComponent={
           yukleniyor ? (
             <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>
           ) : (
             // Bos akis yon veriyor: nasil dolacagini soyluyor.
-            <View style={stiller.bosAlan}>
+            <BosDurumGirisi style={stiller.bosAlan}>
               <Text style={stiller.bosBaslik}>{t('anaSayfa.bosBaslik')}</Text>
               <Text style={stiller.bosAciklama}>{t('anaSayfa.bosAciklama')}</Text>
               <Pressable
@@ -346,7 +354,7 @@ export default function AnaSayfa() {
               >
                 <Text style={stiller.birincilYazi}>{t('anaSayfa.kesfet')}</Text>
               </Pressable>
-            </View>
+            </BosDurumGirisi>
           )
         }
       />

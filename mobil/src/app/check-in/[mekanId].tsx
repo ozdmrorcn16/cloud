@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, Image, StyleSheet } from 'react-nativ
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { BasariDugmesi } from '../../tasarim/BasariDugmesi'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk, NOT_EN_FAZLA } from '../../../lib/checkin'
@@ -39,6 +40,7 @@ export default function CheckInEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
+  const [basarili, setBasarili] = useState(false)
   // null = varsayilan henuz cozulmedi. Bu sure boyunca gonder butonu
   // devre disi: cozulmeden basilirsa ya da profil okumasi (agdaki bir
   // sorun yuzunden) basarisiz olursa, kullanicinin secmedigi 'herkese_acik'
@@ -167,7 +169,11 @@ export default function CheckInEkrani() {
       // Check-in sonrasi MEKAN DETAYINA gidilmiyor (kullanicinin
       // karari 2026-08-29): kullanici check-in sekmesinde kaliyor,
       // kart zaten "Şu an buradasın" haline geciyor.
-      router.replace('/mekanlar')
+      // BASARI ANI (2026-09-20): once dugme daireye toplanip tik
+      // gosterir, "Şu an buradasın" belirir; yonlendirme BasariDugmesi
+      // `onBasariBitti` ile ~1,15 s sonra. Urunun en onemli ani bugune
+      // kadar hic gorunmuyordu.
+      setBasarili(true)
     } catch (e) {
       if (e instanceof TypeError && e.message === 'Network request failed') {
         setHata(t('ortak.agYok'))
@@ -250,13 +256,17 @@ export default function CheckInEkrani() {
 
       {uyari && <Text style={stiller.uyari}>{uyari}</Text>}
       {hata && <Text style={stiller.hata}>{hata}</Text>}
-      <Pressable
-        style={stiller.buton}
+      <BasariDugmesi
+        etiket={t('checkIn.gonder')}
+        mesgulEtiketi={t('checkIn.gonderiliyor')}
+        basariEtiketi={t('kesfet.suAnBuradasin')}
+        mesgul={gonderiliyor}
+        basarili={basarili}
+        disabled={bulunurluk === null}
         onPress={checkInYapButonu}
-        disabled={gonderiliyor || bulunurluk === null}
-      >
-        <Text style={stiller.butonYazi}>{gonderiliyor ? t('checkIn.gonderiliyor') : t('checkIn.gonder')}</Text>
-      </Pressable>
+        onBasariBitti={() => router.replace('/mekanlar')}
+        testID="check-in-gonder"
+      />
       <SecimPenceresi
         acikMi={kaynakSecimi}
         secimler={[

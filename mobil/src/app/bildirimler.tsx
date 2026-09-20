@@ -12,6 +12,7 @@ import { avatarlariGetir } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
+import { BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 import { Avatar } from '../tasarim/Avatar'
 
@@ -117,10 +118,10 @@ export default function BildirimlerEkrani() {
         {yukleniyor && bosMu && <Text style={stiller.durum}>{t('ortak.yukleniyor')}</Text>}
 
         {!yukleniyor && bosMu && (
-          <View style={stiller.bosAlan}>
+          <BosDurumGirisi style={stiller.bosAlan}>
             <Text style={stiller.bosBaslik}>{t('bildirimler.bosBaslik')}</Text>
             <Text style={stiller.bosAciklama}>{t('bildirimler.bosAciklama')}</Text>
-          </View>
+          </BosDurumGirisi>
         )}
 
         {takipIstekleri.length > 0 && (

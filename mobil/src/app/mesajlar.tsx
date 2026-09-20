@@ -14,6 +14,7 @@ import { Avatar } from '../tasarim/Avatar'
 import { OnayPenceresi } from '../tasarim/OnayPenceresi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
+import { BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 export default function MesajlarEkrani() {
@@ -207,9 +208,9 @@ export default function MesajlarEkrani() {
           ListEmptyComponent={
             // Yalnizca baslik (kullanicinin karari 2026-09-01): altindaki
             // "kimlerle mesajlasabilirsin" cumlesi kaldirildi.
-            <View style={stiller.bosAlan}>
+            <BosDurumGirisi style={stiller.bosAlan}>
               <Text style={stiller.bosBaslik}>{t('mesajlar.bosBaslik')}</Text>
-            </View>
+            </BosDurumGirisi>
           }
         />
       </View>

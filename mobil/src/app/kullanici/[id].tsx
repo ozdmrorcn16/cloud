@@ -48,6 +48,7 @@ import { useSekmeParametresi } from '../../../lib/sekme-parametresi'
 import { profilBaglantisi, sistemPaylasimi } from '../../../lib/paylasim'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
+import { DurumGecisi } from '../../tasarim/DurumGecisi'
 import {
   bagDurumunuGetir,
   takipIstegiGonder,
@@ -520,6 +521,9 @@ export default function KullaniciProfiliEkrani() {
    */
   const eylemSatiri = (
     <View style={stiller.eylemler}>
+      {/* DURUM GECISI (2026-09-20): uc hal arasinda teleport degil,
+          110 ms sol + 110 ms belir. Dugmelerin kendisi degismedi. */}
+      <DurumGecisi anahtar={bagDurum?.takip === 'kabul' ? 'arkadas' : bagDurum?.takip === 'beklemede' ? 'beklemede' : 'ekle'} style={stiller.eylemGecis}>
       {bagDurum?.takip === 'kabul' ? (
         <Pressable
           style={({ pressed }) => [stiller.eylemButonu, stiller.eylemArkadas, pressed && stiller.eylemArkadasBasili]}
@@ -552,6 +556,7 @@ export default function KullaniciProfiliEkrani() {
           <Text style={stiller.eylemBirincilYazi}>{t('kullanici.takipEt')}</Text>
         </Pressable>
       )}
+      </DurumGecisi>
       <Pressable
         style={({ pressed }) => [stiller.eylemButonu, stiller.eylemBirincil, pressed && stiller.eylemBirincilBasili]}
         onPress={() => router.push(`/sohbet/${id}`)}
@@ -1005,6 +1010,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
   /* EYLEM SATIRI: iki esit buton, kendi profildeki olcude (40). */
   eylemler: { flexDirection: 'row' as const, gap: bosluk.s, marginTop: bosluk.m },
+  /* Gecis sarmali dugmenin yerini tutar; icindeki dugme flex: 1 ile dolar. */
+  eylemGecis: { flex: 1, flexDirection: 'row' as const },
   eylemButonu: {
     flex: 1,
     height: 40,

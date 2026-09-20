@@ -274,6 +274,8 @@ describe('AnaSayfa', () => {
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-sil'))
+    // Menu cikis animasyonunu oynatip dusuyor; onay penceresininki kalir.
+    await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
     await fireEvent.press(screen.getByText('Vazgeç'))
 
     expect(checkIniSil).not.toHaveBeenCalled()
@@ -371,6 +373,9 @@ describe('AnaSayfa', () => {
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    // Menu cikis animasyonunu oynatip dusuyor; onun "Vazgeç"i gitmeden
+    // formunkine basilmali.
+    await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yazdim ama vazgectim')
     await fireEvent.press(screen.getByText('Vazgeç'))
 

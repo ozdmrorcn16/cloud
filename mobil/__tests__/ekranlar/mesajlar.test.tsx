@@ -173,7 +173,8 @@ describe('MesajlarEkrani', () => {
 
     expect(konusmayiSil).not.toHaveBeenCalled()
     expect(screen.getByText('Orcun Ozdemir')).toBeTruthy()
-    expect(screen.queryByText('Konuşmayı sil')).toBeNull()
+    // Onay penceresi cikis animasyonunu (150 ms) oynatip dusuyor.
+    await waitFor(() => expect(screen.queryByText('Konuşmayı sil')).toBeNull())
   })
 
   it('silme reddedilirse hata mesaji gorunur ve satir listede kalir', async () => {

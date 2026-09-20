@@ -1,7 +1,8 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useDil } from '../../lib/dil'
 import { bosluk, olcek, yazi, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
+import { useModalHareketi } from './hareket'
 
 /**
  * Geri alinamayan islemler icin ortak onay penceresi.
@@ -16,6 +17,11 @@ import { useRenk, useStiller } from './tema-baglami'
  * calisiyor (slooin.expo.app) ve React Native Web'de Alert sessizce
  * hicbir sey yapmiyor - silme orada tamamen kirilirdi. Ustelik kendi
  * penceremiz uc platformda ayni gorunuyor ve test edilebiliyor.
+ *
+ * HAREKET (2026-09-20): Modal'in kendi `fade`i yerine `useModalHareketi`:
+ * zemin solar, pencere %97'den 1'e olceklenip belirir (200 ms guclu
+ * ease-out); kapanis 150 ms tersi. Pencere ORTADA kalir - modallar
+ * tetikleyiciden buyumez (Kowalski). Yalnizca opacity + transform.
  */
 export function OnayPenceresi({
   acikMi,
@@ -38,24 +44,28 @@ export function OnayPenceresi({
 }) {
   const stiller = useStiller(stilleriYap)
   const { t } = useDil()
+  const { gorunur, ilerleme } = useModalHareketi(acikMi)
 
-  if (!acikMi) return null
+  if (!gorunur) return null
+
+  const olcekDegeri = ilerleme.interpolate({ inputRange: [0, 1], outputRange: [0.97, 1] })
 
   return (
     <Modal
       visible
       transparent
-      animationType="fade"
+      animationType="none"
       // Android'in donanim geri tusu de vazgecmek demek.
       onRequestClose={onVazgec}
     >
+      <Animated.View style={[stiller.zeminRenk, { opacity: ilerleme }]} pointerEvents="none" />
       {/* Zemine dokunmak vazgecmek - iOS'ta alistirilmis davranis. */}
       <Pressable style={stiller.zemin} testID="onay-zemini" onPress={onVazgec}>
         {/* Pencerenin KENDISINE dokunmak kapatmamali: metni okumak icin
             dokunan kullanici islemi iptal etmis olmasin. Bos onPress,
             dokunusu zemine gecirmemek icin. */}
+        <Animated.View style={[stiller.pencere, { opacity: ilerleme, transform: [{ scale: olcekDegeri }] }]}>
         <Pressable
-          style={stiller.pencere}
           testID="onay-penceresi"
           onPress={() => {}}
           accessibilityViewIsModal
@@ -88,19 +98,25 @@ export function OnayPenceresi({
             <Text style={[stiller.dugmeYazi, stiller.vazgec]}>{t('ortak.vazgec')}</Text>
           </Pressable>
         </Pressable>
+        </Animated.View>
       </Pressable>
     </Modal>
   )
 }
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  zemin: {
-    flex: 1,
+  // Karartma ayri bir katman: opakligi animasyonla degisiyor, dokunma
+  // hedefi (zemin) ise saydam ve hep tam boy.
+  zeminRenk: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     // Karartma %40'ta yeterince geri itmiyordu: alt gezinme cubugu
     // beyaz ve parlak oldugu icin altinda kalmasina ragmen tiklanabilir
     // GORUNUYORDU. (Olculdu: modal portali zIndex 9999 ile en ustte,
     // yani islevsel bir sorun yoktu - yalnizca gorsel.)
     backgroundColor: 'rgba(23, 19, 15, 0.55)',
+  },
+  zemin: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: bosluk.xl,

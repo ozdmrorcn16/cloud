@@ -13,7 +13,8 @@ import { YorumSayfasi } from './YorumSayfasi'
 import { NOT_EN_FAZLA } from '../../lib/checkin'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
-import { KalpIkonu, YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
+import { YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
+import { BegeniKalbi } from './BegeniKalbi'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 import {
   YakinlastirilabilirGorsel,
@@ -473,7 +474,7 @@ export function CheckInKarti({
             }
             hitSlop={8}
           >
-            <KalpIkonu dolu={ozet.begendim} />
+            <BegeniKalbi dolu={ozet.begendim} />
             {ozet.begeni > 0 && <Text style={stiller.sayac}>{ozet.begeni}</Text>}
           </Pressable>
 

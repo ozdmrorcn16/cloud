@@ -52,9 +52,13 @@ describe('CheckInEkrani', () => {
     await waitFor(() => {
       expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', undefined, 'herkese_acik')
     })
+    // BASARI ANI (2026-09-20): once dugme daireye toplanip tik ve
+    // "Şu an buradasın" gosteriyor; yonlendirme ~1,15 s sonra.
+    expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
+    expect(mockRouterReplace).not.toHaveBeenCalled()
     // Check-in sonrasi mekan detayina degil, CHECK-IN SEKMESINE
     // donuluyor (kullanicinin karari 2026-08-29).
-    expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar')
+    await waitFor(() => expect(mockRouterReplace).toHaveBeenCalledWith('/mekanlar'), { timeout: 3000 })
   })
 
   it('sunucu mesafe hatasi donerse gosterir', async () => {
