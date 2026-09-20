@@ -177,7 +177,19 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   ikinci Modal/push/Share acilacaksa ilki once KAPANMALI. Testler:
   `menudenSec(testID)` yardimcisi (basar + `secim-penceresi`nin
   kalkmasini bekler) 7 test dosyasinda; menu satirina basip sonucu
-  hemen arayan iddia artik yarisir. OTA asagida.
+  hemen arayan iddia artik yarisir. OTA `63752df7`.
+- **IKI ACIL DEVAM (ayni saat):** (1) "Profili paylas'a bastim hicbir
+  sey olmadi": Modal'in kalkmasi UIManager toplu isiyle, `Share.share`
+  dogrudan native'e gidiyor -> paylasim sayfasi henuz dismiss olmamis
+  menu VC'sinden sunulup onunla birlikte kapaniyordu. Eylem artik Modal
+  kalktiktan `EYLEM_GECIKMESI_MS` (80) sonra; `menudenSec` yardimcisi
+  120 ms de bekliyor. (2) **"Ekranda hicbir seye basamiyorum"** - o
+  kapanan sayfanin `Share.share` sozu HIC cozulmedi, `PaylasimKalkani`
+  (kok duzen, absoluteFill) sonsuza dek kaldi. Kalkan artik KENDINI
+  KILITLEYEMEZ: kalkana ulasan dokunus `paylasimKapandiVarsay()` ile
+  yutulur ve 700 ms pencere baslar (sayfa gercekten acikken dokunus
+  kalkana zaten ulasamaz). KURAL: ekranin tamamini orten bir katman
+  hicbir zaman yalnizca bir sozun cozulmesine baglanmaz. OTA `3c0dd88f`.
 
 ### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
 
