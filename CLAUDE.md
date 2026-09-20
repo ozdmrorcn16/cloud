@@ -282,6 +282,13 @@ hale getirmek"): `src/app/mekanlar/index.tsx` render'i bastan,
   panelin KOKUNDE; tek istisna acik paneldeki liste - dokunus listeden
   basladiysa (`listeyeDokunuluyor`, ScrollView onTouchStart/End) panel
   devralmaz, liste kaydirma ve yenileme korunur.
+  **HATA VE DERS (sabah, kullanici "kaydiramiyorum"):** panHandlers
+  `Pressable`a yayilmisti; Pressable kendi responder islevlerini
+  props'tan SONRA yazip onlari eziyor - surukleme hic baslamiyordu
+  (jest bunu gormez, host props'ta islev gorunur). PanResponder
+  islevleri HER ZAMAN duz `View`/`Animated.View`a verilir; klavye
+  kapatan Pressable icte (`panelIci` flex 1). Dis kap
+  `panel-surukleme-alani`, ic `mekan-paneli`.
 - **HARITA IGNELERI DE ESKI HALINE DONDU (ayni gece, kullanicinin
   istegi "haritada konumlarin gorunumunu de eski haline cevir"):**
   kumeler, beyaz daireli tekil igne, yalnizca-secili-ad ve mavi
