@@ -158,10 +158,11 @@ dakikalardaki iki istek. OTA `c8094a96`, web guncel, goruntu
   `rgba(23,19,15,0.05)`, koyu: cizgi), golge `golge.akisKarti` (0,07 /
   14 / y4). `CheckInKarti` uc ekranda ortak - profil ekranlarinda da
   ayni yumusak kart (zemin orada beyaz kaldi).
-- **Akis zemini acik gri** `renk.akisZemini` (#F3F1EE; koyu: zemin):
-  yalnizca ana sayfa `kok`. 2026-08-27 "sayfa tam beyaz" karari diger
-  ekranlarda DURUYOR; referans akista gri zemin gosterdigi icin burada
-  istisna. Baslik ve "Su an disarida" seridi de bu zeminde.
+- **Gri akis zemini DENENDI VE GERI ALINDI** (sabah, kullanici: "arka
+  plan gri olmayacak, beyaz olacak"). Zemin `renk.zemin` (beyaz), 2026-08-27
+  karari aynen; `akisZemini` jetonu silindi. Kart cercevesi
+  `rgba(23,19,15,0.07)` + `golge.akisKarti` - beyaz ustunde beyaz karti
+  golge ayiriyor. Tekrar gri onerme.
 - **Arama sutunu KALKTI** (2026-08-28'in markanin altindaki kutusu ve
   akis-yerine-sonuc davranisi). Ust cubukta marka ortada, SOL BASTA
   buyutec (`kisi-ara`, mutlak konum, 44'luk hedef) -> `/kisiler`
