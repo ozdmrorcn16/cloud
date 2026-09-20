@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi } from '../../lib/zaman'
-import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
 import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPenceresi'
@@ -730,24 +730,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
-    // REFERANS KARTI (2026-09-18): yuvarlak koseli, kenardan payli beyaz
-    // kart. 2026-09-02'nin "tam genislik, yalnizca alt cizgi" duzeni bu
-    // referansla degisti. CERCEVE YUMUSADI (kullanicinin referansi
-    // 2026-09-20: "kenar cizgileri cok keskin, arka planla yakin
-    // seffaflikta olsun"): `cizgi` yerine neredeyse saydam
-    // `kartCerceve`; karti beyaz zeminden golge (`golge.akisKarti`)
-    // ayiriyor (gri akis zemini denendi, ayni gun geri alindi).
+    // TAM GENISLIK BLOK, ARADA INCE GRI BANT (kullanicinin secimi
+    // 2026-09-20, iki secenek gorsel sunuldu, B secildi:
+    // `tasarim/akis-tam-genislik-secenekler.png`). Yan kenar, kose
+    // yuvarlagi, cerceve ve golge YOK; ayrimi yalnizca alttaki 8 px
+    // `akisAyrac` bandi tasiyor. 2026-09-18'in referans karti (yuvarlak
+    // koseli, 8 px yan payli) ve ayni gunun "cerceve yumusatma" turu bu
+    // secimle KAPANDI. Kart uc ekranda ortak: profil listeleri de
+    // boyle.
     backgroundColor: renk.yuzey,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: renk.kartCerceve,
-    // YANLARA UZATILDI (kullanicinin istegi 2026-09-18: "sutunlari saga
-    // ve sola uzat"): pay sayfa payinin yarisi.
-    marginHorizontal: bosluk.s,
-    marginTop: bosluk.m,
+    borderBottomWidth: 8,
+    borderBottomColor: renk.akisAyrac,
     paddingHorizontal: bosluk.l,
     paddingVertical: bosluk.l,
-    ...golge.akisKarti,
   },
   kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
   mekanSatiri: {
