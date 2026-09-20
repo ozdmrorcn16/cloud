@@ -16,6 +16,12 @@
     --zemin: #FAF7F3; --metin: #17130F; --ikincil: #6E6660; --soluk: #A39B93;
     --cizgi: #E2DAD2; --turuncu: #FE7813; --turuncu-basili: #E06509; --beyaz: #fff;
     --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* Emil Kowalski easing seti: giris/cikis ease-out, ekranda hareket
+       ease-in-out, yerine oturma iOS cekmece egrisi. Yerlesik CSS
+       egrileri zayif kalir. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-otur: cubic-bezier(0.32, 0.72, 0, 1);
   }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --zemin: #FAF7F3; } }
   * { box-sizing: border-box; }
@@ -26,33 +32,43 @@
   /* dunya: kamera bunu kaydirir */
   .dunya { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
   .dunya svg { display: block; width: 100%; height: auto; }
-  .simge { position: absolute; width: 62px; height: 62px; border-radius: 16px; box-shadow: 0 14px 28px -12px rgba(23,19,15,.45); transform: translate(-50%,-50%); will-change: transform; }
+  /* Simge YALNIZCA transform ile hareket eder (left/top layout tetikler). */
+  .simge { position: absolute; left: 0; top: 0; width: 62px; height: 62px; border-radius: 16px; box-shadow: 0 14px 28px -12px rgba(23,19,15,.45); will-change: transform; transform-origin: center; }
   .simge img { width: 100%; height: 100%; display: block; border-radius: 16px; }
-  .etiket { position: absolute; opacity: 0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+  /* Etiket girisi: ease-out, %97 olcek + 6 px + 2 px blur -> net. Cikis daha kisa.
+     transform-origin yola donuk: soldaki etiket sag kenarindan, sagdaki sol
+     kenarindan buyur. */
+  .etiket { position: absolute; opacity: 0; transform: translate3d(0, 6px, 0) scale(.97); filter: blur(2px); transition: opacity .2s var(--ease-out), transform .2s var(--ease-out), filter .2s var(--ease-out); }
+  .etiket.sol { transform-origin: right center; } .etiket.sag { transform-origin: left center; }
   .etiket i { display: block; font-style: normal; font-size: 11px; letter-spacing: .08em; color: var(--soluk); font-weight: 600; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
-  .etiket.acik { opacity: 1; transform: none; }
+  .etiket.acik { opacity: 1; transform: none; filter: blur(0); transition-duration: .3s; }
   .etiket b { display: block; font-size: 19px; letter-spacing: -.3px; line-height: 1.15; }
   .etiket span { display: block; font-size: 13px; color: var(--ikincil); margin-top: 3px; line-height: 1.3; }
   .etiket.sag { text-align: left; }
   .etiket.sol { text-align: right; }
 
   /* son durum */
-  .son { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
-  .son.acik { opacity: 1; pointer-events: auto; }
+  .son { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; pointer-events: none; }
+  .son.acik { pointer-events: auto; }
+  /* Son durumun ogeleri 60 ms arayla, her biri 300 ms ease-out (stagger 30-80 ms bandi). */
+  .son .g { opacity: 0; transform: translate3d(0, 8px, 0) scale(.97); filter: blur(2px); transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), filter .3s var(--ease-out); }
+  .son.acik .g { opacity: 1; transform: none; filter: blur(0); }
+  .son.acik .g:nth-child(2) { transition-delay: .06s } .son.acik .g:nth-child(3) { transition-delay: .12s } .son.acik .g:nth-child(4) { transition-delay: .18s } .son.acik .g:nth-child(5) { transition-delay: .24s }
   .son .yer { height: 78px; }
   .son img.marka { width: 148px; margin-top: 22px; }
   .son h1 { font-size: 22px; letter-spacing: -.4px; margin: 10px 0 0; font-weight: 700; }
   .son h1 em { font-style: normal; color: var(--turuncu); }
-  .son .eylem { margin-top: 34px; display: inline-flex; align-items: center; gap: 10px; background: var(--turuncu); color: #fff; font-weight: 600; font-size: 16px; padding: 16px 28px; border-radius: 999px; box-shadow: 0 14px 30px -14px rgba(254,120,19,.7); text-decoration: none; transform: translateY(10px); opacity: 0; transition: all .5s ease .25s; }
-  .son.acik .eylem { transform: none; opacity: 1; }
-  .son .ikincil { margin-top: 18px; font-size: 14px; color: var(--ikincil); opacity: 0; transition: opacity .5s ease .5s; }
-  .son.acik .ikincil { opacity: 1; }
+  .son .eylem { margin-top: 34px; display: inline-flex; align-items: center; gap: 10px; background: var(--turuncu); color: #fff; font-weight: 600; font-size: 16px; padding: 16px 28px; border-radius: 999px; box-shadow: 0 14px 30px -14px rgba(254,120,19,.7); text-decoration: none; }
+  .son .eylem:active { transform: scale(.98); transition: transform .12s var(--ease-out); }
+  .son .ikincil { margin-top: 18px; font-size: 14px; color: var(--ikincil); }
   .son .ikincil b { color: var(--metin); font-weight: 600; }
   .atif { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 10px; color: var(--soluk); }
   .atla { position: absolute; right: 22px; top: 22px; font-size: 13px; color: var(--ikincil); background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 999px; z-index: 5; }
+  .atla { transition: opacity .2s var(--ease-out); }
   .atla.gizli { opacity: 0; pointer-events: none; }
   .yeniden { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 13px; color: #CFC6BD; background: rgba(255,255,255,.08); padding: 8px 14px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; }
-  @media (prefers-reduced-motion: reduce) { .etiket, .son, .son .eylem, .son .ikincil { transition: none; } }
+  /* Hareketi azalt: sifir animasyon DEGIL - yer degistirme ve blur kalkar, solma kalir. */
+  @media (prefers-reduced-motion: reduce) { .etiket, .son .g { transform: none !important; filter: none !important; transition: opacity .2s ease !important; } }
 </style>
 
 <div class="cihaz" id="cihaz" role="button" aria-label="Animasyonu atla">
@@ -72,10 +88,10 @@
     </div>
     <div class="son" id="son">
       <div class="yer"></div>
-      <img class="marka" src="varlik/marka-yazisi-koyu.png" alt="Slooin" />
-      <h1>Yakınında kim var, <em>keşfet.</em></h1>
-      <a class="eylem" href="#">Hesap oluştur <span>→</span></a>
-      <div class="ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="Slooin" /></div>
+      <div class="g"><h1>Yakınında kim var, <em>keşfet.</em></h1></div>
+      <div class="g"><a class="eylem" href="#">Hesap oluştur <span>→</span></a></div>
+      <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
       <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
     </div>
   </div>
@@ -138,8 +154,12 @@
   const hedefler = [...DONEMEC_ILERLEME, 1]
   hedefler.forEach((h, i) => { KARELER.push([t, t + BACAK, onceki, h]); t += BACAK; onceki = h; if (i < hedefler.length - 1) { KARELER.push([t, t + DURAK, h, h]); t += DURAK } })
   const TOPLAM_SURE = t
-  const easeInOut = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2
-  const easeOut = x => 1 - Math.pow(1 - x, 3)
+  // cubic-bezier(x1,y1,x2,y2) -> easing fonksiyonu (CSS ile ayni egriler)
+  function bezierEasing(x1, y1, x2, y2) { const A = (a,b) => 1 - 3*b + 3*a, B = (a,b) => 3*b - 6*a, C = a => 3*a
+    const cx = t => ((A(x1,x2)*t + B(x1,x2))*t + C(x1))*t, cy = t => ((A(y1,y2)*t + B(y1,y2))*t + C(y1))*t
+    return x => { let t = x; for (let i = 0; i < 6; i++) { const d = (3*A(x1,x2)*t + 2*B(x1,x2))*t + C(x1); if (Math.abs(d) < 1e-6) break; t -= (cx(t) - x) / d } return cy(Math.min(1, Math.max(0, t))) } }
+  const easeInOut = bezierEasing(0.77, 0, 0.175, 1)   // ekranda hareket
+  const easeOut = bezierEasing(0.23, 1, 0.32, 1)      // giris
   function ilerlemeAt(ms) { if (ms < KARELER[0][0]) return P0
     for (const [b, e, p, q] of KARELER) if (ms < e) return p + (q - p) * easeInOut((ms - b) / (e - b))
     return 1 }
@@ -151,7 +171,7 @@
 
   function ciz(ilerleme, izBas, yolOpak) {
     const { x, y, i } = noktaAt(ilerleme), o = olcek()
-    simge.style.left = (x * o) + 'px'; simge.style.top = (y * o) + 'px'
+    simge.style.transform = `translate3d(${(x * o - 31).toFixed(2)}px, ${(y * o - 31).toFixed(2)}px, 0)`
     // gecilen iz: izBas'tan simgeye (giriste izBas P0'dan 0'a iner - asagiya dogru cizilir)
     const iB = indeksAt(izBas), nb = noktaAt(izBas)
     const iz = [[nb.x, nb.y]].concat(NOKTA.slice(iB, i)).concat([[x, y]])
@@ -175,21 +195,24 @@
   function bitir() {
     if (bitti) return; bitti = true; cancelAnimationFrame(raf)
     ciz(1, 0, 1)
+    // Yerine oturma: dunya ve simge yalnizca transform ile, iOS cekmece
+    // egrisiyle 500 ms; yol 300 ms'de soner; son durum 150 ms sonra kademeli.
     const o = olcek(), hedefX = ekran.clientWidth / 2, hedefY = ekran.clientHeight / 2 - 150
-    const { y } = noktaAt(1); const m = new DOMMatrix(getComputedStyle(dunya).transform); const suanY = y * o + m.f
-    dunya.style.transition = 'transform .9s cubic-bezier(.2,.8,.2,1)'
-    dunya.style.transform = `translateY(${m.f + (hedefY - suanY)}px)`
-    simge.style.transition = 'left .9s cubic-bezier(.2,.8,.2,1), width .9s, height .9s'
-    simge.style.left = hedefX + 'px'; simge.style.width = simge.style.height = '78px'
-    svgYol.style.transition = 'opacity .7s ease'; svgYol.style.opacity = 0
+    const { x, y } = noktaAt(1); const m = new DOMMatrix(getComputedStyle(dunya).transform); const suanY = y * o + m.f
+    const dy = hedefY - suanY
+    dunya.style.transition = 'transform .5s var(--ease-otur)'
+    dunya.style.transform = `translateY(${m.f + dy}px)`
+    simge.style.transition = 'transform .5s var(--ease-otur)'
+    simge.style.transform = `translate3d(${(hedefX - 31).toFixed(2)}px, ${(y * o - 31).toFixed(2)}px, 0) scale(1.26)`
+    svgYol.style.transition = 'opacity .3s var(--ease-out)'; svgYol.style.opacity = 0
     DONEMEC.forEach((_, k) => document.getElementById('e' + k).classList.remove('acik'))
-    setTimeout(() => son.classList.add('acik'), 400)
+    setTimeout(() => son.classList.add('acik'), 150)
     atla.classList.add('gizli')
   }
 
   function basla() {
     bitti = false; bas = 0; son.classList.remove('acik'); atla.classList.remove('gizli')
-    dunya.style.transition = ''; simge.style.transition = ''; simge.style.width = simge.style.height = '62px'
+    dunya.style.transition = ''; simge.style.transition = ''
     svgYol.style.transition = ''; svgYol.style.opacity = 1
     etiketleriYerlestir()
     if (azHareket) { bitir(); return }
