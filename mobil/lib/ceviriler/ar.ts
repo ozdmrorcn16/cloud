@@ -775,6 +775,8 @@ export default {
     populer: 'رائج',
     yakinindakiMekanlar: 'الأماكن القريبة منك',
     mesafeyeGore: 'حسب المسافة',
+    mesafe: 'المسافة',
+    aktifCheckIn: 'تسجيل وصول نشط',
     mesafeSec: 'اختيار المسافة',
     mesafeIcinde: 'ضمن {{mesafe}}',
     mesafeTumu: 'ضمن 1 كم (الكل)',

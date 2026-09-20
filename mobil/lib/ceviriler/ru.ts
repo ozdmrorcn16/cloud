@@ -775,6 +775,8 @@ export default {
     populer: 'Популярно',
     yakinindakiMekanlar: 'Места рядом с тобой',
     mesafeyeGore: 'По расстоянию',
+    mesafe: 'Расстояние',
+    aktifCheckIn: 'АКТИВНЫЙ ЧЕК-ИН',
     mesafeSec: 'Выбрать расстояние',
     mesafeIcinde: 'В радиусе {{mesafe}}',
     mesafeTumu: 'В радиусе 1 км (все)',

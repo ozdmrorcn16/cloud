@@ -55,8 +55,8 @@ import {
   SuzgecIkonu,
   IgneIkonu,
   YildizIkonu,
-  NavigasyonIkonu,
   GeriOkIkonu,
+  KisilerIkonu,
 } from '../../tasarim/mekan-ikonlari'
 import { CanliHarita } from '../../tasarim/CanliHarita'
 import { MekanKapakHarita } from '../../tasarim/MekanKapakHarita'
@@ -72,7 +72,7 @@ import {
   type HaritaSecimi,
 } from '../../../lib/yol-tarifi'
 import { Avatar } from '../../tasarim/Avatar'
-import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
 /** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
@@ -204,6 +204,7 @@ export default function KesfetEkrani() {
   // Ayrıldım ve Sil sunuyor. Baska bir mekan secilene kadar boyle.
   const [aktifCheckIn, setAktifCheckIn] = useState<AktifCheckIn | null>(null)
   const [silOnayi, setSilOnayi] = useState(false)
+  const [buradaMenusu, setBuradaMenusu] = useState(false)
   // Silme GERI ALINAMAZ: once onay satiri aciliyor.
   const [hata, setHata] = useState<string | null>(null)
   const [yenileniyor, setYenileniyor] = useState(false)
@@ -1153,7 +1154,7 @@ export default function KesfetEkrani() {
                 accessibilityRole="button"
                 testID={`yol-tarifi-${item.id}`}
               >
-                <NavigasyonIkonu boyut={18} />
+                <ArabaIkonu renk={renk.turuncuYazi} />
                 <Text style={stiller.yolTarifiYazi}>{t('kesfet.yolTarifi')}</Text>
               </Pressable>
               {checkInDugmesi()}
@@ -1164,44 +1165,80 @@ export default function KesfetEkrani() {
 
   /** Aktif check-in karti: nerede oldugun + Ayril / Sil. */
   const buradaKarti = kartMekani && (
+    /* AKTIF CHECK-IN KARTI (kullanicinin referansi 2026-09-20 aksam):
+       seftali zemin, solda igne, "AKTIF CHECK-IN" etiketi, ad, ilce/il;
+       altta "N kisi burada >" (mekan sayfasi) ve beyaz "Ayrildim" hapi;
+       sag ustte uc nokta -> Sil (onaylı). 2026-09-19'un buyuk sayi +
+       "Su an buradasin" seridi bu referansla kalkti. */
     <View style={stiller.buradaKart} testID="burada-karti">
       <View style={stiller.buradaUst}>
+        <View style={stiller.buradaIgne}>
+          <IgneIkonu boyut={24} />
+        </View>
         <Pressable
           style={stiller.buradaMetin}
           onPress={() => router.push(`/harita/${kartMekani.id}` as never)}
           accessibilityRole="button"
           accessibilityLabel={t('kesfet.konumuAc', { ad: kartMekani.ad })}
         >
+          {kartCanli && <Text style={stiller.buradaEtiket}>{t('kesfet.aktifCheckIn')}</Text>}
           <Text style={stiller.buradaAd} numberOfLines={1}>
             {kartMekani.ad}
           </Text>
-          {kartMekani.listedeki && (
+          {kartMekani.listedeki && konumYazisi(kartMekani.listedeki) ? (
             <Text style={stiller.buradaAlt} numberOfLines={1}>
-              {[konumYazisi(kartMekani.listedeki), uzaklik(kartMekani.listedeki)].filter(Boolean).join(' · ')}
+              {konumYazisi(kartMekani.listedeki)}
             </Text>
-          )}
+          ) : null}
         </Pressable>
-        {(kartMekani.listedeki?.kisiSayisi ?? 0) > 0 && (
-          <View style={stiller.buradaSayiAlani}>
-            <Text style={stiller.buradaSayi}>{kartMekani.listedeki?.kisiSayisi}</Text>
-            <Text style={stiller.buradaSayiEtiket}>{t('kesfet.kisiBuradaEtiket')}</Text>
-          </View>
+        {kartCanli && (
+          <Pressable
+            onPress={() => setBuradaMenusu(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('anaSayfa.secenekler')}
+            hitSlop={10}
+            testID="burada-menu"
+          >
+            <UcNoktaIkonu boyut={22} renk={renk.metinIkincil} />
+          </Pressable>
         )}
       </View>
       {kartCanli ? (
         <>
-          <View style={stiller.canliSerit}>
-            <View style={stiller.buradaNokta} />
-            <Text style={stiller.canliYazi}>{t('kesfet.suAnBuradasin')}</Text>
-            <View style={stiller.canliEylemler}>
-              <Pressable onPress={ayril} accessibilityRole="button" hitSlop={10}>
-                <Text style={stiller.ayrilYazi}>{t('kesfet.ayrildim')}</Text>
+          <View style={stiller.buradaAltSatir}>
+            {(kartMekani.listedeki?.kisiSayisi ?? 0) > 0 ? (
+              <Pressable
+                style={stiller.buradaKisi}
+                onPress={() => router.push(`/harita/${kartMekani.id}` as never)}
+                accessibilityRole="link"
+                hitSlop={6}
+                testID="burada-kisi"
+              >
+                <KisilerIkonu boyut={20} renk={renk.metinIkincil} />
+                <Text style={stiller.buradaKisiYazi}>
+                  {t('kesfet.kisiBurada', { sayi: kartMekani.listedeki?.kisiSayisi })}
+                </Text>
+                <OkIkonu boyut={16} renk={renk.turuncuYazi} />
               </Pressable>
-              <Pressable onPress={() => setSilOnayi(true)} accessibilityRole="button" hitSlop={10}>
-                <Text style={stiller.silYazi}>{t('ortak.sil')}</Text>
-              </Pressable>
-            </View>
+            ) : (
+              <View />
+            )}
+            <Pressable
+              style={({ pressed }) => [stiller.ayrilDugmesi, pressed && stiller.ayrilDugmesiBasili]}
+              onPress={ayril}
+              accessibilityRole="button"
+              testID="burada-ayril"
+            >
+              <Text style={stiller.ayrilYazi}>{t('kesfet.ayrildim')}</Text>
+            </Pressable>
           </View>
+          <SecimPenceresi
+            acikMi={buradaMenusu}
+            secimler={[
+              { etiket: t('ortak.sil'), testID: 'burada-sil', yikici: true, onSec: () => setSilOnayi(true) },
+            ]}
+            onKapat={() => setBuradaMenusu(false)}
+          />
           <OnayPenceresi
             acikMi={silOnayi}
             baslik={t('anaSayfa.silOnay')}
@@ -1384,8 +1421,10 @@ export default function KesfetEkrani() {
           hitSlop={6}
           testID="siralama-etiketi"
         >
+          {/* Referans 2026-09-20: hap degil, sade gri "Mesafe" + turuncu ok;
+              daraltilmissa secim yazar ("100 m icinde"). */}
           <Text style={stiller.mesafeDugmesiYazi}>
-            {yaricapSecimi >= 1000 ? t('kesfet.mesafeyeGore') : t('kesfet.mesafeIcinde', { mesafe: mesafeYazisi(yaricapSecimi) })}
+            {yaricapSecimi >= 1000 ? t('kesfet.mesafe') : t('kesfet.mesafeIcinde', { mesafe: mesafeYazisi(yaricapSecimi) })}
           </Text>
           <AsagiOkIkonu renk={renk.turuncuYazi} />
         </Pressable>
@@ -1652,6 +1691,15 @@ function ArabaIkonu({ renk: c }: { renk: string }) {
   )
 }
 
+/** "N kisi burada >" satirindaki saga ok. */
+function OkIkonu({ boyut = 16, renk: c }: { boyut?: number; renk: string }) {
+  return (
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+      <Path d="M9 6l6 6-6 6" stroke={c} strokeWidth={2.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
 /** "Diger mekanlari goster" satirindaki yukari ok. */
 function YukariOkIkonu({ renk: c }: { renk: string }) {
   return (
@@ -1706,7 +1754,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // `marginLeft: 'auto'` eylemleri seridin sagina itiyor; sabit bir
   // genislik verilseydi uzun bir durum metni onlari tasardi.
   canliEylemler: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m, marginLeft: 'auto' },
-  ayrilYazi: {
+  ayrilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+  ayrilYaziEski: {
     fontFamily: yazi.govdeKalin,
     fontSize: olcek.kucuk,
     color: renk.metinIkincil,
@@ -1720,42 +1769,48 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
 
+  // Aktif check-in karti (referans 2026-09-20): seftali zemin, cercevesiz.
   buradaKart: {
-    backgroundColor: renk.yuzey,
-    borderRadius: yuvarlak.kart,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
+    backgroundColor: renk.turuncuZemin,
+    borderRadius: yuvarlak.buyuk,
     padding: bosluk.l,
     marginTop: bosluk.m,
     gap: bosluk.m,
-    ...golge.kart,
   },
-  buradaUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  buradaUst: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.m },
+  buradaIgne: { paddingTop: 2 },
   buradaMetin: { flex: 1 },
+  buradaEtiket: {
+    fontFamily: yazi.govdeKalin,
+    fontSize: olcek.kucuk,
+    color: renk.turuncuYazi,
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
   buradaAd: {
     fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.altBaslik,
+    fontSize: olcek.altBaslik + 2,
     color: renk.metin,
     letterSpacing: -0.3,
   },
   buradaAlt: {
     fontFamily: yazi.govde,
-    fontSize: olcek.kucuk,
+    fontSize: olcek.govde,
     color: renk.metinIkincil,
     marginTop: 2,
   },
-  buradaSayiAlani: { alignItems: 'flex-end' },
-  buradaSayi: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.baslik,
-    color: renk.metin,
-    letterSpacing: -0.5,
+  buradaAltSatir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: bosluk.m },
+  buradaKisi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  buradaKisiYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
+  ayrilDugmesi: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: yuvarlak.hap,
+    paddingHorizontal: bosluk.xl,
+    paddingVertical: 12,
   },
-  buradaSayiEtiket: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.minik,
-    color: renk.metinIkincil,
-  },
+  ayrilDugmesiBasili: { backgroundColor: renk.zemin },
   checkInButonu: {
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
@@ -2030,18 +2085,19 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
    * Beyaz zemin uzerinde beyaz kart: ayrimi golge + ince cizgi
    * tasiyor (2026-08-27 kurali); one cikan kartta cizgi turuncu.
    */
+  // Kart CERCEVESIZ (referans 2026-09-20 aksam): kare harita, ad,
+  // "ilce, il · uzaklik", rozet; altta tam genislik iki dugme. Secili
+  // olan acik listede seftali zeminle belli (turuncu cerceve kalkti).
   mekanKarti: {
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
     borderRadius: yuvarlak.buyuk,
-    padding: bosluk.m,
+    paddingVertical: bosluk.m,
+    paddingHorizontal: bosluk.xs,
     gap: bosluk.m,
-    ...golge.kart,
   },
   mekanKartiOneCikan: {
-    borderWidth: 1.5,
-    borderColor: renk.turuncu,
+    backgroundColor: renk.turuncuZemin,
+    paddingHorizontal: bosluk.m,
+    marginHorizontal: -bosluk.s,
   },
   kartUst: { flexDirection: 'row', gap: bosluk.m, alignItems: 'flex-start' },
   // Kapak KARE ve sabit: referansta kartin yuksekligini fotograf
@@ -2121,7 +2177,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderWidth: 1.5,
     borderColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 11,
+    paddingVertical: 14,
   },
   yolTarifiBasili: { backgroundColor: renk.turuncuZemin },
   yolTarifiYazi: {
@@ -2144,7 +2200,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: 8,
     backgroundColor: renk.turuncu,
     borderRadius: yuvarlak.hap,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2165,16 +2221,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: yuvarlak.hap,
-    backgroundColor: renk.turuncuZemin,
+    paddingHorizontal: 4,
   },
-  mesafeDugmesiBasili: { opacity: 0.85 },
-  mesafeDugmesiYazi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.kucuk,
-    color: renk.turuncuYazi,
-  },
+  mesafeDugmesiBasili: { opacity: 0.7 },
+  mesafeDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metinIkincil },
   mesafeSeciliNokta: { width: 10, height: 10, borderRadius: 5, backgroundColor: renk.turuncu },
   mesafeBosNokta: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, borderColor: renk.cizgi },
 

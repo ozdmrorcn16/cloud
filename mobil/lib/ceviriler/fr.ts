@@ -775,6 +775,8 @@ export default {
     populer: 'Populaire',
     yakinindakiMekanlar: 'Lieux près de toi',
     mesafeyeGore: 'Par distance',
+    mesafe: 'Distance',
+    aktifCheckIn: 'CHECK-IN ACTIF',
     mesafeSec: 'Choisir la distance',
     mesafeIcinde: 'À moins de {{mesafe}}',
     mesafeTumu: 'À moins de 1 km (tous)',

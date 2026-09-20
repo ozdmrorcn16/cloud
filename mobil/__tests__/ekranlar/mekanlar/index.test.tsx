@@ -324,17 +324,15 @@ describe('MekanAramaEkrani', () => {
 
     await render(<MekanAramaEkrani />)
 
-    expect(await screen.findByText('Şu an buradasın')).toBeTruthy()
+    expect(await screen.findByText('AKTİF CHECK-IN')).toBeTruthy()
     expect(screen.queryByText('Check-in yap')).toBeNull()
 
-    // EYLEMLER DURUM SERIDININ ICINDE (kullanicinin istegi
-    // 2026-09-07). Bir kez kaldirilip ayni gun geri kondular; fark
-    // yerlesimde: ayri bir buton satiri degil, seridin sagindaki
-    // yazilar. Eski etiket "Ayrıldım" idi, artik "Ayrıl" - mekan
-    // sayfasindaki "Buradasın · Ayrıl" cubuguyla ayni kelime.
+    // REFERANS 2026-09-20 aksam: "Ayrıldım" beyaz hap; "Sil" uc nokta
+    // menusunde (onayli).
     expect(screen.getByText('Ayrıldım')).toBeTruthy()
-    expect(screen.getByText('Sil')).toBeTruthy()
-    expect(screen.queryByText('Ayrıl')).toBeNull()
+    expect(screen.queryByText('Sil')).toBeNull()
+    await fireEvent.press(screen.getByTestId('burada-menu'))
+    expect(await screen.findByText('Sil')).toBeTruthy()
   })
 
   /**
@@ -358,7 +356,7 @@ describe('MekanAramaEkrani', () => {
     })
 
     await render(<MekanAramaEkrani />)
-    await screen.findByText('Şu an buradasın')
+    await screen.findByText('AKTİF CHECK-IN')
 
     await fireEvent.press(screen.getByLabelText('Sahil Kafe konumunu aç'))
     expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
@@ -386,10 +384,12 @@ describe('MekanAramaEkrani', () => {
     })
 
     await render(<MekanAramaEkrani />)
-    await screen.findByText('Şu an buradasın')
+    await screen.findByText('AKTİF CHECK-IN')
 
     mockRouterPush.mockClear()
-    await fireEvent.press(screen.getByText('Sil'))
+    await fireEvent.press(screen.getByTestId('burada-menu'))
+    await menudenSec('burada-sil')
+    expect(await screen.findByText('Bu check-in kalıcı olarak silinsin mi?')).toBeTruthy()
     expect(mockRouterPush).not.toHaveBeenCalled()
   })
 
@@ -534,7 +534,7 @@ describe('MekanAramaEkrani', () => {
 
     // Kart, listede olmayan check-in mekanini gosteriyor.
     expect(await screen.findByText('Kent Meydanı')).toBeTruthy()
-    expect(screen.getByText('Şu an buradasın')).toBeTruthy()
+    expect(screen.getByText('AKTİF CHECK-IN')).toBeTruthy()
     // KARTTA "Check-in yap" yok (listedeki satirlar kendi dugmelerini
     // tasiyor - referans gorsel 2026-09-14, etiket "Check-in yap").
     expect(within(screen.getByTestId('burada-karti')).queryByText('Check-in yap')).toBeNull()
@@ -1433,27 +1433,27 @@ describe('MekanAramaEkrani - referans kart', () => {
     ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
   })
 
-  it('BUTUN kartlarda Yol tarifi + Check-in yap; SECILI (varsayilan en yakin) turuncu cerceveli', async () => {
-    // Kullanicinin istegi 2026-09-19 aksam: kart sutunlari eski haline
-    // (2026-09-17) dondu - her kartta eylem satiri, kucuk harita karesi.
-    // Cerceve artik "secili" demek; panel kapaliyken secili = en yakin.
+  it('BUTUN kartlarda Yol tarifi + Check-in yap; SECILI (varsayilan en yakin) seftali zeminli, cerceve YOK', async () => {
+    // Referans 2026-09-20 aksam: kartlar cercevesiz; secili olan seftali
+    // zemin. (2026-09-19'un turuncu cercevesi kalkti.)
     await render(<MekanAramaEkrani />)
     const ilk = await screen.findByTestId('mekan-karti-mola')
-    expect(StyleSheet.flatten(ilk.props.style).borderColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(ilk.props.style).borderWidth).toBeUndefined()
+    expect(StyleSheet.flatten(ilk.props.style).backgroundColor).toBe(acikRenk.turuncuZemin)
     expect(within(ilk).getByText('Yol tarifi')).toBeTruthy()
     expect(within(ilk).getByText('Check-in yap')).toBeTruthy()
     expect(screen.queryByTestId('mekan-karti-park')).toBeNull()
 
     await listeyiAc()
     const ikinci = screen.getByTestId('mekan-karti-park')
-    expect(StyleSheet.flatten(ikinci.props.style).borderColor).not.toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(ikinci.props.style).backgroundColor).toBeUndefined()
     expect(within(ikinci).getByTestId('yol-tarifi-park')).toBeTruthy()
     expect(within(ikinci).getByText('Check-in yap')).toBeTruthy()
 
     // Kartin bos yerine dokunmak parki SECER: cerceve ona gecer, panel kapanir.
     await fireEvent.press(ikinci)
     await waitFor(() => expect(screen.queryByTestId('mekan-karti-mola')).toBeNull())
-    expect(StyleSheet.flatten(screen.getByTestId('mekan-karti-park').props.style).borderColor).toBe(acikRenk.turuncu)
+    expect(StyleSheet.flatten(screen.getByTestId('mekan-karti-park').props.style).backgroundColor).toBe(acikRenk.turuncuZemin)
   })
 
   it('kullanicinin ekledigi mekanda "Kafe • Nilüfer, Bursa • 240 m", dis kaynaklida tur yok', async () => {
@@ -1610,7 +1610,7 @@ describe('MekanAramaEkrani - referans kart', () => {
     await render(<MekanAramaEkrani />)
     const dugme = await screen.findByTestId('siralama-etiketi')
     expect(dugme.props.accessibilityRole).toBe('button')
-    expect(screen.getByText('Mesafeye göre')).toBeTruthy()
+    expect(screen.getByText('Mesafe')).toBeTruthy()
 
     await fireEvent.press(dugme)
     expect(await screen.findByTestId('mesafe-100')).toBeTruthy()

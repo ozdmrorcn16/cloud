@@ -934,6 +934,8 @@ export default {
     populer: 'Popüler',
     yakinindakiMekanlar: 'Yakınındaki mekânlar',
     mesafeyeGore: 'Mesafeye göre',
+    mesafe: 'Mesafe',
+    aktifCheckIn: 'AKTİF CHECK-IN',
     mesafeSec: 'Mesafe seç',
     mesafeIcinde: '{{mesafe}} içinde',
     mesafeTumu: '1 km içinde (tümü)',
