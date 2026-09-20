@@ -148,6 +148,14 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### MESAFE SECIMI KALICI - 2026-09-20
+
+Kullanicinin bildirimi ("mesafede hep 1 km secili, en son hangisi
+seciliyse o gosterilsin"): `lib/mesafe-secimi-depo.ts` - tur suzgeci
+deposuyla ayni desen (AsyncStorage, anahtar `slooin.mesafe-secimi.<id>`,
+izinli olmayan deger atilir). Ekran acilista okur, secimde yazar.
+Testte AsyncStorage `beforeEach/afterEach clear` zaten var. OTA asagida.
+
 ### CHECK-IN FORMU REFERANS DUZENINDE - 2026-09-20
 
 Kullanicinin referans gorseli ("check-in'e basinca gelecek sayfayi
