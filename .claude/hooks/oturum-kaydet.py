@@ -36,6 +36,9 @@ SIR_KALIPLARI = [
     re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),           # GitHub token
     re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),         # GitHub ince token
     re.compile(r"AIza[A-Za-z0-9_\-]{30,}"),             # Google API
+    # Google AI Studio (Gemini) anahtarlarinin yeni bicimi - 2026-09-20'de
+    # bir tanesi sohbete yapistirildi.
+    re.compile(r"AQ\.[A-Za-z0-9_\-]{30,}"),             # Google AI Studio (Gemini)
     re.compile(r"GOCSPX-[A-Za-z0-9_\-]{20,}"),          # Google istemci sifresi
     re.compile(r"1//[A-Za-z0-9_\-]{30,}"),              # Google refresh token
     re.compile(r"xox[baprs]-[A-Za-z0-9\-]{20,}"),       # Slack
