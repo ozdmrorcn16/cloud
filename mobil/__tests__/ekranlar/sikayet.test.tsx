@@ -41,6 +41,17 @@ beforeEach(() => {
  * SIKAYET AKISI - kullanicinin referans gorseli (2026-09-18). Iki ekran:
  * 01 sikayet olustur, 02 gonderim sonrasi (engelleme kartiyla).
  */
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('SikayetEkrani - 01 sikayet olustur', () => {
   it('referanstaki metinler: baslik, kahraman, alt baslik, ek aciklama, ipucu, dugme', async () => {
     await render(<SikayetEkrani />)
@@ -81,7 +92,7 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
     await render(<SikayetEkrani />)
     expect(screen.queryByTestId('sikayet-foto-onizleme')).toBeNull()
     await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
-    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await menudenSec('foto-galeri')
     expect(await screen.findByTestId('sikayet-foto-onizleme')).toBeTruthy()
     expect(screen.getByText('Fotoğrafı değiştir')).toBeTruthy()
 
@@ -103,7 +114,7 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
 
     await render(<SikayetEkrani />)
     await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
-    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await menudenSec('foto-galeri')
     await fireEvent.press(await screen.findByTestId('sikayet-foto-kaldir'))
     expect(screen.queryByTestId('sikayet-foto-onizleme')).toBeNull()
 
@@ -122,7 +133,7 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
 
     await render(<SikayetEkrani />)
     await fireEvent.press(screen.getByTestId('sikayet-foto-ekle'))
-    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await menudenSec('foto-galeri')
     await fireEvent.press(screen.getByText('Taciz veya rahatsız etme'))
     await fireEvent.press(screen.getByText('Şikâyeti gönder'))
 

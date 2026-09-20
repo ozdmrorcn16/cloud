@@ -83,6 +83,17 @@ beforeEach(() => {
   })
 })
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('KullaniciProfiliEkrani', () => {
   it('profili gosterir', async () => {
     ;(baskasininProfiliniGetir as jest.Mock).mockResolvedValue({
@@ -190,7 +201,7 @@ describe('KullaniciProfiliEkrani', () => {
     // eylem tek dokunusla tetiklenmemeli.
     // Sikayet ve engelleme ust cubuktaki menude (2026-09-17).
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    await fireEvent.press(await screen.findByTestId('menu-engelle'))
+    await menudenSec('menu-engelle')
     await fireEvent.press(await screen.findByText('Evet, engelle'))
 
     await waitFor(() => {
@@ -207,7 +218,7 @@ describe('KullaniciProfiliEkrani', () => {
     await render(<KullaniciProfiliEkrani />)
     await waitFor(() => screen.getByText('Ada'))
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    await fireEvent.press(await screen.findByTestId('menu-sikayet'))
+    await menudenSec('menu-sikayet')
 
     expect(mockRouterPush).toHaveBeenCalledWith('/sikayet?hedefTur=kullanici&hedefId=kullanici-2')
   })
@@ -222,7 +233,7 @@ describe('KullaniciProfiliEkrani', () => {
     await waitFor(() => screen.getByText('Ada'))
     // Sikayet ve engelleme ust cubuktaki menude (2026-09-17).
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    await fireEvent.press(await screen.findByTestId('menu-engelle'))
+    await menudenSec('menu-engelle')
     await fireEvent.press(await screen.findByText('Evet, engelle'))
 
     await waitFor(() => {
@@ -611,7 +622,7 @@ describe('KullaniciProfiliEkrani', () => {
     expect(screen.queryByTestId('profili-paylas')).toBeNull()
 
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
-    await fireEvent.press(await screen.findByTestId('menu-paylas'))
+    await menudenSec('menu-paylas')
 
     await waitFor(() => expect(paylasSpy).toHaveBeenCalled())
     const mesaj = (paylasSpy.mock.calls[0][0] as { message: string }).message
@@ -788,7 +799,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     await fireEvent.press(screen.getByTestId('kullanici-menusu'))
     expect(screen.queryByText('Şikâyet edildi')).toBeNull()
-    await fireEvent.press(await screen.findByTestId('menu-sikayet'))
+    await menudenSec('menu-sikayet')
     expect(mockRouterPush).not.toHaveBeenCalled()
     expect(await screen.findByText('Bu kullanıcıyı şikâyet ettin')).toBeTruthy()
     expect(screen.getByText('Tamam')).toBeTruthy()

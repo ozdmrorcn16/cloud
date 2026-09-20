@@ -48,6 +48,17 @@ beforeEach(() => {
   ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
 })
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('YorumSayfasi', () => {
   it('kapaliyken hicbir sey cizmiyor', async () => {
     await render(<YorumSayfasi acikMi={false} checkInId="checkin-1" onKapat={jest.fn()} />)
@@ -185,7 +196,7 @@ describe('YorumSayfasi', () => {
     await screen.findByText('deniz.k')
 
     await fireEvent.press(screen.getByTestId('yorum-menu-yorum-1'))
-    await fireEvent.press(screen.getByTestId('secim-sil'))
+    await menudenSec('secim-sil')
     expect(yorumSil).not.toHaveBeenCalled()
 
     await fireEvent.press(screen.getByTestId('onay-eylemi'))
@@ -202,7 +213,7 @@ describe('YorumSayfasi', () => {
     await screen.findByText('deniz.k')
 
     await fireEvent.press(screen.getByTestId('yorum-menu-yorum-1'))
-    await fireEvent.press(screen.getByTestId('secim-sikayet'))
+    await menudenSec('secim-sikayet')
     expect(yorumuSikayetEt).not.toHaveBeenCalled()
 
     await fireEvent.press(screen.getByTestId('onay-eylemi'))

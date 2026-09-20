@@ -110,6 +110,17 @@ beforeEach(() => {
   ;(profilFotografiUrl as jest.Mock).mockResolvedValue(null)
 })
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('ProfilEkrani', () => {
   /**
    * Kullanicinin istegi (2026-09-17): buyuk acilan fotografin sol
@@ -915,7 +926,7 @@ describe('ProfilEkrani arkadas listesi', () => {
     await arkadasSekmesiniAc()
 
     await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await fireEvent.press(screen.getByText('Arkadaşlıktan çıkar'))
+    await menudenSec('arkadas-cikar')
 
     await waitFor(() => expect(takibiBirak).toHaveBeenCalledWith('k2'))
     await waitFor(() => expect(screen.queryByText('Semra Ozdemir')).toBeNull())
@@ -926,11 +937,11 @@ describe('ProfilEkrani arkadas listesi', () => {
     await arkadasSekmesiniAc()
 
     await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await fireEvent.press(screen.getByText('Engelle'))
+    await menudenSec('arkadas-engelle')
 
     // Onay gelmeden engelleme YOK.
     expect(engelle).not.toHaveBeenCalled()
-    expect(screen.getByText('Evet, engelle')).toBeTruthy()
+    expect(await screen.findByText('Evet, engelle')).toBeTruthy()
     await fireEvent.press(screen.getByText('Evet, engelle'))
 
     await waitFor(() => expect(engelle).toHaveBeenCalledWith('k2'))
@@ -942,7 +953,7 @@ describe('ProfilEkrani arkadas listesi', () => {
     await arkadasSekmesiniAc()
 
     await fireEvent.press(screen.getByTestId('arkadas-secenekler-k2'))
-    await fireEvent.press(screen.getByText('Arkadaşlıktan çıkar'))
+    await menudenSec('arkadas-cikar')
 
     expect(await screen.findByText('Sunucuya ulasilamadi')).toBeTruthy()
     expect(screen.getByText('Semra Ozdemir')).toBeTruthy()

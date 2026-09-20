@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { PanGestureHandler, State, type PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler'
 import Svg, { Circle, Path } from 'react-native-svg'
@@ -131,6 +131,29 @@ export function SecimPenceresi({
   const hareket = useHareket()
   const { gorunur, ilerleme } = useModalHareketi(acikMi, SURE.sayfaGiris, SURE.sayfaCikis)
 
+  /*
+   * SECIM ONCE MENUYU KAPATIR, EYLEM MENU KALKINCA CALISIR (kullanicinin
+   * bildirimi 2026-09-20: baskasinin profilindeki uc nokta menusunun
+   * islevleri hatali). Onceden satir dogrudan `onSec`i cagiriyor ve
+   * menu ACIK KALIYORDU: iOS'ta bu Modal'in ustune ikinci bir Modal
+   * (engelleme onayi) SUNULAMIYOR - onay hic cikmiyordu; sayfa gecisi
+   * (sikayet) menunun arkasinda kaliyordu; paylasim sayfasi kapaninca
+   * menu duruyordu. Eylem `gorunur` false olunca, yani Modal agactan
+   * kalktiktan sonra kosuyor: ardisik Modal, push ve Share temiz acilir.
+   * Ekranlarin kendi kapatma cagrilari (setX(false)) zararsiz.
+   */
+  const bekleyenEylem = useRef<(() => void) | null>(null)
+  function sec(secim: Secim) {
+    bekleyenEylem.current = secim.onSec
+    onKapat()
+  }
+  useEffect(() => {
+    if (gorunur || !bekleyenEylem.current) return
+    const eylem = bekleyenEylem.current
+    bekleyenEylem.current = null
+    eylem()
+  }, [gorunur])
+
   // Surukleme: parmak sayfayi asagi ceker. Yukari cekiste lastik direnc:
   // -200 birim cekis yalnizca -28 birim hareket ettirir.
   const [yukseklik, setYukseklik] = useState(VARSAYILAN_YUKSEKLIK)
@@ -194,7 +217,7 @@ export function SecimPenceresi({
                   key={secim.testID ?? secim.etiket}
                   style={({ pressed }) => [stiller.satir, pressed && !secim.pasif && stiller.satirBasili]}
                   testID={secim.testID}
-                  onPress={secim.onSec}
+                  onPress={() => sec(secim)}
                   disabled={secim.pasif}
                   accessibilityRole="button"
                   accessibilityState={secim.pasif ? { disabled: true } : undefined}

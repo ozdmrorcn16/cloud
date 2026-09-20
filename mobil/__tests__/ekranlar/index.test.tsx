@@ -99,6 +99,17 @@ beforeEach(() => {
   ;(yorumlariGetir as jest.Mock).mockResolvedValue([])
 })
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('AnaSayfa', () => {
   it('akistaki check-ini kisi ve mekan adiyla gosterir', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
@@ -242,7 +253,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-sil'))
+    await menudenSec('menu-sil')
 
     // Onay penceresi acildi; silme HENUZ yapilmadi.
     expect(screen.getByText('Bu check-in kalıcı olarak silinsin mi?')).toBeTruthy()
@@ -257,7 +268,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-sil'))
+    await menudenSec('menu-sil')
     await fireEvent.press(screen.getByTestId('onay-eylemi'))
 
     expect(checkIniSil).toHaveBeenCalledWith('checkin-1')
@@ -273,7 +284,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-sil'))
+    await menudenSec('menu-sil')
     // Menu cikis animasyonunu oynatip dusuyor; onay penceresininki kalir.
     await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
     await fireEvent.press(screen.getByText('Vazgeç'))
@@ -302,7 +313,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
 
     // AYRI PENCERE YOK (kullanicinin istegi 2026-09-05): duzenleme
     // kartin kendi icinde aciliyor.
@@ -326,7 +337,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
 
     expect(screen.queryByText('Mekan ve zaman değişmez')).toBeNull()
     // Mekan adi pencerenin basliginda: neyin degismedigi yine belli.
@@ -341,7 +352,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -357,7 +368,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), '')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -372,7 +383,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     // Menu cikis animasyonunu oynatip dusuyor; onun "Vazgeç"i gitmeden
     // formunkine basilmali.
     await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
@@ -399,7 +410,7 @@ describe('AnaSayfa', () => {
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
 
     // Satir ici "+ ad" cipleri YOK; buton var.
     expect(screen.queryByText('+ Deniz Yılmaz')).toBeNull()
@@ -447,7 +458,7 @@ describe('AnaSayfa', () => {
     expect(screen.queryByText('Deniz')).toBeNull()
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     await fireEvent.press(screen.getByLabelText('denizy etiketini kaldır'))
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -465,7 +476,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'yeni not')
     await fireEvent.press(screen.getByText('Kaydet'))
 
@@ -485,7 +496,7 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
-    await fireEvent.press(screen.getByTestId('menu-duzenle'))
+    await menudenSec('menu-duzenle')
     await fireEvent.changeText(screen.getByTestId('duzenle-not'), 'a'.repeat(600))
     await fireEvent.press(screen.getByText('Kaydet'))
 

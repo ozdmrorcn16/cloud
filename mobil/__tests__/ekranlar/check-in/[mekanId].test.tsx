@@ -37,6 +37,17 @@ beforeEach(async () => {
   ;(etiketleriKaydet as jest.Mock).mockResolvedValue(undefined)
 })
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('CheckInEkrani', () => {
   it('not ile check-in yapar ve check-in sekmesinde kalir', async () => {
     ;(checkInYap as jest.Mock).mockResolvedValue({
@@ -90,7 +101,7 @@ describe('CheckInEkrani', () => {
     // Fotograf: once KAYNAK penceresi aciliyor (2026-09-08), sonra
     // galeri seciliyor.
     await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
-    await fireEvent.press(await screen.findByTestId('foto-galeri'))
+    await menudenSec('foto-galeri')
 
     const buttons = screen.getAllByText('Check-in yap')
     await fireEvent.press(buttons[buttons.length - 1])
@@ -224,7 +235,7 @@ describe('CheckInEkrani fotograf kaynagi', () => {
 
     await render(<CheckInEkrani />)
     await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
-    await fireEvent.press(await screen.findByTestId('foto-kamera'))
+    await menudenSec('foto-kamera')
 
     await waitFor(() => expect(ImagePicker.launchCameraAsync).toHaveBeenCalled())
     // Galeri ACILMIYOR: iki kaynak birbirinin yerine gecmiyor.
@@ -236,7 +247,7 @@ describe('CheckInEkrani fotograf kaynagi', () => {
 
     await render(<CheckInEkrani />)
     await fireEvent.press(screen.getByText('Fotoğraf ekle (opsiyonel)'))
-    await fireEvent.press(await screen.findByTestId('foto-kamera'))
+    await menudenSec('foto-kamera')
 
     expect(
       await screen.findByText('Fotoğraf çekmek için kamera izni gerekiyor.')

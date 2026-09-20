@@ -91,6 +91,17 @@ async function listeyiAc() {
   await fireEvent.press(await screen.findByTestId('diger-mekanlar'))
 }
 
+
+/**
+ * Menu satirina basar ve menunun KAPANMASINI bekler. SecimPenceresi
+ * (2026-09-20) eylemi menu agactan kalktiktan sonra kosuyor; sonucu
+ * hemen aramak yarisir.
+ */
+async function menudenSec(testID: string) {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+}
+
 describe('MekanAramaEkrani', () => {
   it('acilista cihaz konumuna gore yakin mekanlari listeler', async () => {
     ;(cihazKonumunuAl as jest.Mock).mockResolvedValue({ lat: 41.015, lng: 28.979 })
@@ -1589,7 +1600,7 @@ describe('MekanAramaEkrani - referans kart', () => {
     await fireEvent.press(dugme)
     expect(await screen.findByTestId('mesafe-100')).toBeTruthy()
     expect(screen.getByText('1 km içinde (tümü)')).toBeTruthy()
-    await fireEvent.press(screen.getByTestId('mesafe-100'))
+    await menudenSec('mesafe-100')
 
     // Etiket secimi soyluyor; 400 m'deki park listeden ve haritadan dustu
     // (tek mekan kaldigi icin "Diger mekanlari goster" de yok).
@@ -1602,7 +1613,7 @@ describe('MekanAramaEkrani - referans kart', () => {
 
     // 1 km'ye donunce park geri gelir.
     await fireEvent.press(screen.getByTestId('siralama-etiketi'))
-    await fireEvent.press(await screen.findByTestId('mesafe-1000'))
+    await menudenSec('mesafe-1000')
     await listeyiAc()
     expect(await screen.findByTestId('mekan-karti-park')).toBeTruthy()
 
