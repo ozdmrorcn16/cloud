@@ -176,6 +176,13 @@ animasyonu) AYNI. OTA `27d759d9` + duzeltme, web guncel, goruntu
 - Butun "Check-in yap" dugmeleri (liste karti, secili kart, mekan
   sayfasi) zaten `/check-in/<id>`e gidiyor; alt cubuk sekmesi mekan
   listesi (once mekan secilir).
+- **TEK EKRAN, KAYDIRMASIZ (kullanicinin istegi, sonraki OTA):** not
+  kutusu `flex: 1` (min 72), fotograf kutusu/onizleme `flex: 1.4` (min
+  96) - kalan yuksekligi paylasiyorlar, FormSayfasi flexGrow 1. Kisa
+  ekranda (`useWindowDimensions().height < 720`, SE) ipucu satiri
+  gizli, kart/satir dolgusu 8, kutu min 48/64, fotograf kutusu yatay.
+  Olculdu: 390x751 ve 375x647 sigiyor (`tasarim/checkin-form-referans.png`,
+  `checkin-form-se.png`).
 
 ### ARKADASLARIM SAYFASI - 2026-09-20
 
