@@ -466,6 +466,45 @@ degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
 `auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
 `tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
 
+### YEDI UYGULAMA ICI ANIMASYON + HAREKET SOZLUGU - 2026-09-20
+
+Kullanicinin istegi: "uygulama ici animasyon ornekleri ... ornekler
+olustur" -> `ek-find-animation-opportunities` taramasi (7 aday, 6 ret;
+rapor oturum dokumunde), web prototipi Artifact
+`RHhztTP63yEyCsdoF1fFbG` -> "Hepsini yap".
+- **Hareket sozlugu** `src/tasarim/hareket.ts`: `EGRI` (girisCikis
+  `.23,1,.32,1` / hareket `.77,0,.175,1` / cekmece `.32,.72,0,1`),
+  `SURE`, `useModalHareketi(acikMi)` (giris + CIKIS animasyonu; bilesen
+  `acikMi` kapaninca 150-240 ms daha agacta kalir). RN `Animated` +
+  native driver, YALNIZCA transform/opacity. Reanimated DEGIL (jest
+  kurulumu yok, 2026-09-14). `expo-haptics` kurulu degil - haptik yok.
+- **Bilesenler:** `BasariDugmesi` (check-in: hap daireye toplanir, tik,
+  "Şu an buradasın", 1,15 s sonra `onBasariBitti` -> yonlendirme;
+  `router.replace` artik oradan), `SecimPenceresi` ALTTAN GELEN SAYFA
+  oldu (once ortada fade idi; PanGestureHandler + Animated.event ile
+  surukle-kapat: hiz > 800 ya da 1/3 yukseklik; yukari lastik direnc),
+  `OnayPenceresi` fade + %97 olcek (ortada kalir), `DurumGecisi`
+  (arkadas dugmesi uc hali: 110 ms sol + 110 ms belir; renk gorunmez
+  anda degisir), `BegeniKalbi` (yalnizca dolarken tek spring vurusu),
+  `KademeliGiris` (ana sayfa ilk 6 kart, 40 ms kademe, kimlik basina
+  BIR kez - `oynatilanlar` kumesi) ve `BosDurumGirisi` (ana sayfa,
+  mesajlar, bildirimler bos durumlari).
+- **TUZAK, yasandi:** sarmal bilesende `oynat` her render'da yeniden
+  hesaplaninca Animated.View <-> Fragment degisiyor, cocuk YENIDEN
+  MOUNT oluyor ve kartin acik yorum sayfasi kayboluyordu. Karar
+  mount'ta `useRef` ile sabitlenir; regresyon testi
+  `hareket-bilesenleri.test.tsx`.
+- **TEST DERSI:** cikis animasyonu olan pencereler kapaninca aninda
+  dusmez; "kapandi" olcumleri `waitFor` ile yapilir (5 test cevrildi).
+  Ayrica menu acikken ikinci bir "Vazgeç" olabilir - once menunun
+  dusmesi beklenir.
+Reddedilenler (dokunulmadi): alt gezinme, sekme hapi (gunde 100+ kez),
+liste sirasi/kisi sayilari (okunan veri), sohbet balonlari, harita
+igneleri, hold-to-confirm (onay penceresi karari var).
+Jest 83 paket / 1090 test. Yayin: web `slooin--73t87zndut`, OTA grup
+`94226950-fe44-4dfb-a63a-029a04540c7c`. GERCEK CIHAZDA DOGRULANMADI -
+surukleme hizi, spring hissi ve zamanlamalar telefonda denenmeli.
+
 ### BASKASININ PROFILINDE UST CUBUK KALKTI - 2026-09-18
 
 Kullanicinin istegi: "sol ustteki geri dugmesini kaldir; kendi
