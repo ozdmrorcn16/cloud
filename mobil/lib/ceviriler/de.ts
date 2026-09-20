@@ -642,7 +642,8 @@ export default {
     fotografYuklenemedi: 'Foto konnte nicht hochgeladen werden; Check-in mit deiner Notiz',
     etiketlenemedi: 'Check-in erstellt, aber deine Freunde konnten nicht markiert werden.',
     gorunurlukNotu: 'Die Sichtbarkeit richtet sich nach deinen Datenschutzeinstellungen.',
-    gonder: 'Check-in teilen',
+    gonder: 'Einchecken',
+    paylas: 'Check-in teilen',
     gonderiliyor: 'Wird geteilt...',
   },
   mekanDuzenle: {

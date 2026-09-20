@@ -642,7 +642,8 @@ export default {
     fotografYuklenemedi: 'Photo non envoyée ; check-in fait avec ta note',
     etiketlenemedi: "Check-in fait, mais tes amis n’ont pas pu être identifiés.",
     gorunurlukNotu: 'La visibilité suit tes paramètres de confidentialité.',
-    gonder: 'Partager le check-in',
+    gonder: 'Faire un check-in',
+    paylas: 'Partager le check-in',
     gonderiliyor: 'Partage...',
   },
   mekanDuzenle: {

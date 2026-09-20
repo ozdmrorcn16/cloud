@@ -642,7 +642,8 @@ export default {
     fotografYuklenemedi: 'No se pudo subir la foto; check-in hecho con tu nota',
     etiketlenemedi: 'Check-in hecho, pero no se pudo etiquetar a tus amigos.',
     gorunurlukNotu: 'La visibilidad sigue tu configuración de privacidad.',
-    gonder: 'Compartir check-in',
+    gonder: 'Hacer check-in',
+    paylas: 'Compartir check-in',
     gonderiliyor: 'Compartiendo...',
   },
   mekanDuzenle: {

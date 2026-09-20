@@ -642,7 +642,8 @@ export default {
     fotografYuklenemedi: 'Фото не загрузилось; чек-ин сделан с заметкой',
     etiketlenemedi: 'Чек-ин сделан, но друзей отметить не удалось.',
     gorunurlukNotu: 'Видимость определяется настройками приватности.',
-    gonder: 'Поделиться чек-ином',
+    gonder: 'Отметиться',
+    paylas: 'Поделиться чек-ином',
     gonderiliyor: 'Отправка...',
   },
   mekanDuzenle: {

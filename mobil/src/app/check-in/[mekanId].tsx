@@ -330,7 +330,7 @@ export default function CheckInEkrani() {
       {hata && <Text style={stiller.hata}>{hata}</Text>}
       <Text style={stiller.gorunurlukNotu}>{t('checkIn.gorunurlukNotu')}</Text>
       <BasariDugmesi
-        etiket={t('checkIn.gonder')}
+        etiket={t('checkIn.paylas')}
         mesgulEtiketi={t('checkIn.gonderiliyor')}
         basariEtiketi={t('kesfet.suAnBuradasin')}
         mesgul={gonderiliyor}

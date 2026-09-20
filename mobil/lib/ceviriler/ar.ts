@@ -642,7 +642,8 @@ export default {
     fotografYuklenemedi: 'تعذّر رفع الصورة؛ تم تسجيل الوصول مع ملاحظتك',
     etiketlenemedi: 'تم تسجيل الوصول لكن تعذّرت الإشارة إلى أصدقائك.',
     gorunurlukNotu: 'تُحدَّد الرؤية وفق إعدادات الخصوصية.',
-    gonder: 'مشاركة تسجيل الوصول',
+    gonder: 'تسجيل الوصول',
+    paylas: 'مشاركة تسجيل الوصول',
     gonderiliyor: 'جارٍ المشاركة...',
   },
   mekanDuzenle: {

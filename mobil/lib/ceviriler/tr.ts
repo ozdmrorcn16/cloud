@@ -791,7 +791,8 @@ export default {
     fotografYuklenemedi: 'Fotoğraf yüklenemedi, notunla check-in yapıldı',
     etiketlenemedi: 'Check-in yapıldı ama arkadaşların etiketlenemedi.',
     gorunurlukNotu: 'Görünürlük, gizlilik ayarlarına göre belirlenir.',
-    gonder: 'Check-in paylaş',
+    gonder: 'Check-in yap',
+    paylas: 'Check-in paylaş',
     gonderiliyor: 'Paylaşılıyor...',
   },
 

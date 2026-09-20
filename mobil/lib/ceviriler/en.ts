@@ -648,7 +648,8 @@ export default {
     fotografYuklenemedi: 'Photo could not be uploaded; checked in with your note',
     etiketlenemedi: 'Checked in, but your friends could not be tagged.',
     gorunurlukNotu: 'Visibility follows your privacy settings.',
-    gonder: 'Share check-in',
+    gonder: 'Check in',
+    paylas: 'Share check-in',
     gonderiliyor: 'Sharing...',
   },
   mekanDuzenle: {
