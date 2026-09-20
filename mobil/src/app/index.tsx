@@ -388,10 +388,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.yikici,
   },
 
-  // Akis zemini acik gri (kullanicinin referansi 2026-09-20): beyaz
-  // kartlar cerceve yerine zemin farkiyla ayriliyor. Baslik ve
-  // "Su an disarida" seridi de ayni zeminde - referansta sayfa tek renk.
-  kok: { flex: 1, backgroundColor: renk.akisZemini },
+  // Zemin BEYAZ (2026-08-27 karari; 2026-09-20'de gri denendi, kullanici
+  // ayni gun reddetti). Kartlari golge + soluk cerceve ayiriyor.
+  kok: { flex: 1, backgroundColor: renk.zemin },
 
   // Marka ORTADA ve yukarida (kullanicinin istegi 2026-08-27:
   // "slooin yazisini biraz kucult ve yukari ortaya koy"); buyutec sol

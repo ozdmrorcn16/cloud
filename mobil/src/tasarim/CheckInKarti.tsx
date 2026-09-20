@@ -735,8 +735,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // referansla degisti. CERCEVE YUMUSADI (kullanicinin referansi
     // 2026-09-20: "kenar cizgileri cok keskin, arka planla yakin
     // seffaflikta olsun"): `cizgi` yerine neredeyse saydam
-    // `kartCerceve`; karti golge (`golge.akisKarti`) ve ana sayfadaki
-    // acik gri akis zemini ayiriyor.
+    // `kartCerceve`; karti beyaz zeminden golge (`golge.akisKarti`)
+    // ayiriyor (gri akis zemini denendi, ayni gun geri alindi).
     backgroundColor: renk.yuzey,
     borderRadius: 20,
     borderWidth: 1,
