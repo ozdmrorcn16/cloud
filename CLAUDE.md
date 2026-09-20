@@ -148,6 +148,30 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### ARKADASLARIM SAYFASI - 2026-09-20
+
+Kullanicinin referans gorseli ("Arkadas'a basilinca gorunecek arkadas
+listesi sayfasini bu sekilde yap"): `src/app/profil/arkadaslar.tsx`,
+OTA `992b27f9`, web guncel, goruntu `tasarim/arkadaslarim.png` +
+`arkadaslarim-menu.png`.
+- Kendi profildeki "Arkadas" sayaci artik `/profil/arkadaslar`a gider;
+  2026-09-14'un satir-ici arkadas listesi + menusu profil ekranindan
+  KALKTI (PROFIL_SEKMELERI: anilar/yerler/fotograflar). Baskasinin
+  profilindeki Arkadas bolumu (ayni gun) yerinde - orada islem yok.
+- Sayfa: `UstCubuk` (sagda `KisiEkleIkonu` -> /kisiler), seftali arama
+  kutusu (YEREL suzgec, ad/kullanici adi), "N arkadas", beyaz kartta
+  satirlar (Avatar 48, ad, @kullanici adi, seftali kare mesaj dugmesi
+  -> /sohbet, uc nokta), davet karti (`KisilerIkonu`, "Arkadaslarinla
+  kesfet", cerceveli "Arkadas davet et" -> sistemPaylasimi
+  `arkadaslar.davetMesaji` + slooin.com). Uc nokta = `SecimPenceresi`
+  yeni `baslik` prop'u (avatar + ad karti) + ikonlu satirlar: Profili
+  gor / Mesaj gonder / Arkadasliktan cikar (kirmizi) / Engelle
+  (kirmizi, OnayPenceresi) / Vazgec. Ikonlar `arkadas-ikonlari.tsx`;
+  `BuyutecIkonu` ortak bilesene cikti (ana sayfa da onu kullaniyor).
+- `useFocusEffect` ile her donuste yeniden okunuyor (profilden
+  arkadasliktan cikinca liste guncel). Sozluk `arkadaslar` blogu 7 dil.
+  Testler `__tests__/ekranlar/profil/arkadaslar.test.tsx` (9).
+
 ### GIZLI PROFILI YALNIZCA ARKADASLIK ACAR; SIKAYET DAMGASI KALKTI - 2026-09-20
 
 - **HATA (kullanicinin bildirimi "profili gizli birinin ekrani acik
