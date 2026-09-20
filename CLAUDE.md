@@ -148,6 +148,35 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### AKIS KARTI: TEK CUMLE BASLIK, "ILE BIRLIKTE" - 2026-09-20 AKSAM
+
+Kullanicinin referans gorseli ("ana sayfada akisi bu sekilde yap").
+`CheckInKarti` (uc ekranda ortak) yeniden; OTA `18a6af61`, web guncel,
+goruntu `tasarim/akis-cumle-referans.png`.
+- **Baslik tek cumle:** "**byorcun**, **Ozdemir Kafe**'de check-in
+  yapti." - ad kalin siyah (profil), mekan kalin turuncu (harita), ek ve
+  fiil duz; altinda gorece zaman ya da "su an burada". Sablon
+  `anaSayfa.checkInYapti` 7 dil (`{{ad}}`, `{{mekan}}`, `{{ek}}`);
+  parcalar ic ice Text. **TUZAK (webde goruldu, jest'te degil):** `t`
+  parametresiz cagrilinca yer tutuculari "[missing ... value]" yapiyor;
+  NOBETCI degerler (-) verilip onlardan bolunuyor; test
+  `/missing/` yokluğunu kilitliyor. 2026-09-18'in igneli ayri mekan
+  satiri KALKTI (`MekanIgnesi` silindi).
+- **Turkce bulunma eki `lib/bulunma-eki.ts`** (20 test): unlu uyumu,
+  sert unsuz ('ta/'te), cok kelimeli + dar unluyle biten = iyelik
+  ('nda/'nde: "Kultur Merkezi'nde"), rakamla biten ("34'te", "40'ta"),
+  kisaltma ("AVM'de"). 2026-09-13'te ek bilerek yoktu; referans istedi.
+  Yalnizca `dil === 'tr'`, digerlerinde ek bos.
+- **"<adlar> ile birlikte"** satiri (`anaSayfa.ileBirlikte`): 28'lik
+  ust uste avatarlar (ilk 3) + KULLANICI ADLARI kalin, geri kalan gri;
+  metin sutunuyla hizali; avatar ve ad profile gider (`birlikte-<id>`).
+  `anaSayfa.birlikte` anahtari silindi. Not da metin sutunuyla hizali.
+- Kart: yuvarlak 16, ince `cizgi` cerceve, 8 px yan pay, 12 px ara,
+  ZEMIN BEYAZ (referansin gri sayfasi bilerek alinmadi - kullanicinin
+  sabahki karari). Sabahki "tam genislik + gri bant" (B) bu referansla
+  KAPANDI; `akisAyrac` jetonu duruyor, kullanilmiyor. Fotograf 2:1
+  (16:7 idi). Fotografsiz kartta eylem satirinin ustunde ince cizgi.
+
 ### MESAFE SECIMI KALICI - 2026-09-20
 
 Kullanicinin bildirimi ("mesafede hep 1 km secili, en son hangisi
