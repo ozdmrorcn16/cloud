@@ -263,7 +263,8 @@ export default {
     silinmisKullanici: 'Deleted user',
   },
   anaSayfa: {
-    birlikte: 'With',
+    checkInYapti: '{{ad}} checked in at {{mekan}}{{ek}}.',
+    ileBirlikte: 'with {{adlar}}',
     aramaYerTutucu: 'Search',
     suAnDisarida: 'Out right now',
     disaridaSayi: '{{sayi}} people',

@@ -257,7 +257,8 @@ export default {
     silinmisKullanici: 'Удалённый пользователь',
   },
   anaSayfa: {
-    birlikte: 'Вместе с',
+    checkInYapti: '{{ad}} отметился в {{mekan}}{{ek}}.',
+    ileBirlikte: 'вместе с {{adlar}}',
     aramaYerTutucu: 'Поиск',
     suAnDisarida: 'Сейчас на месте',
     disaridaSayi: '{{sayi}} чел.',

@@ -257,7 +257,8 @@ export default {
     silinmisKullanici: 'Gelöschter Nutzer',
   },
   anaSayfa: {
-    birlikte: 'Mit',
+    checkInYapti: '{{ad}} hat bei {{mekan}}{{ek}} eingecheckt.',
+    ileBirlikte: 'zusammen mit {{adlar}}',
     aramaYerTutucu: 'Suchen',
     suAnDisarida: 'Gerade unterwegs',
     disaridaSayi: '{{sayi}} Personen',

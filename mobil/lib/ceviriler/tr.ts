@@ -330,7 +330,8 @@ export default {
   },
 
   anaSayfa: {
-    birlikte: 'Birlikte',
+    checkInYapti: '{{ad}}, {{mekan}}{{ek}} check-in yaptı.',
+    ileBirlikte: '{{adlar}} ile birlikte',
     aramaYerTutucu: 'Ara',
     // "SU AN DISARIDA" SERIDI (2026-09-07, referans gorselden).
     suAnDisarida: 'Şu an dışarıda',

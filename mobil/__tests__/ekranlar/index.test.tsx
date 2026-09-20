@@ -559,7 +559,7 @@ describe('AnaSayfa', () => {
   // REFERANS DUZENI (2026-09-18 gece): fotograf kartin ICINDE, yuvarlak
   // koseli ve YATAY (16:7). Onceki "kenara yapisik, 4:5" deseni kalkti.
   // Buyuk gorunum fotografi kendi oraninda acar (contain).
-  it('fotograf kartin icinde, yuvarlak koseli ve 16:7 yatay (referans)', async () => {
+  it('fotograf kartin icinde, yuvarlak koseli ve 2:1 yatay (referans 2026-09-20)', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ fotografUrl: 'https://imzali/foto.jpg' })])
     await render(<AnaSayfa />)
     const kap = await screen.findByTestId('akis-fotografi')
@@ -568,7 +568,7 @@ describe('AnaSayfa', () => {
     expect(stil.borderRadius).toBeGreaterThan(0)
     // Kart icindeki gorsel (jest'te yedek Image cizilir; testID ayni).
     const gorsel = screen.getAllByTestId('buyuk-fotograf')[0]
-    expect(StyleSheet.flatten(gorsel.props.style).aspectRatio).toBeCloseTo(16 / 7)
+    expect(StyleSheet.flatten(gorsel.props.style).aspectRatio).toBeCloseTo(2)
   })
 
   it('"Birlikte" satirindaki avatara basinca etiketlenen kisinin profili acilir', async () => {
@@ -576,7 +576,9 @@ describe('AnaSayfa', () => {
       oge({ etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', kullaniciAdi: 'denizy', avatarUrl: null }] }),
     ])
     await render(<AnaSayfa />)
-    expect(await screen.findByText('Birlikte')).toBeTruthy()
+    // Referans 2026-09-20: "<kullanici adi> ile birlikte" satiri, ad kalin.
+    expect(await screen.findByText('denizy')).toBeTruthy()
+    expect(screen.getByText(' ile birlikte')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('birlikte-kisi-9'))
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kisi-9')
   })
@@ -704,10 +706,9 @@ describe('AnaSayfa', () => {
   // kart uzerinde 2,65:1 veriyordu. Ayrica zaman IKI KEZ yaziyordu.
   // ------------------------------------------------------------------ //
 
-  it('mekan adi TURUNCU, adin altinda igneli satirda (referans 2026-09-18)', async () => {
-    // 2026-09-07 karari "mekan adi turuncu" duruyor; 2026-09-18
-    // referansiyla mekan adi adin ALTINA, igne ikonlu kendi satirina
-    // indi (turuncu marka tonu, tiklanabilir).
+  it('BASLIK TEK CUMLE (referans 2026-09-20): "<ad>, <mekan>-de check-in yapti." - ad kalin siyah, mekan kalin turuncu, ek Turkce', async () => {
+    // 2026-09-07 karari "mekan adi turuncu" duruyor; 2026-09-18'in
+    // igneli ayri satiri bu referansla kalkti.
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
     await render(<AnaSayfa />)
 
@@ -717,7 +718,14 @@ describe('AnaSayfa', () => {
     expect(duzYazi(mekan).color).toBe(acikRenk.turuncuYazi)
     expect(duzYazi(mekan).color).toBe('#FE7813')
     expect(duzYazi(ad).color).toBe(acikRenk.metin)
-    expect(mekan.parent).not.toBe(ad.parent)
+    expect(screen.getByText("'de")).toBeTruthy()
+    expect(screen.getByText(' check-in yaptı.')).toBeTruthy()
+    // Yer tutucular nobetciyle dolduruluyor; "[missing ... value]" ASLA
+    // ekrana cikmamali (webde bir kez cikti, 2026-09-20).
+    expect(screen.queryByText(/missing/)).toBeNull()
+    // Mekan adi hala haritaya gider.
+    await fireEvent.press(mekan)
+    expect(mockRouterPush).toHaveBeenCalledWith('/harita/mekan-1')
   })
 
   it('TAM TARIH YOK: zaman tek bicimde yaziliyor', async () => {

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
 import { useDil } from '../../lib/dil'
 import { suAnBuradaMi } from '../../lib/zaman'
+import { bulunmaEki } from '../../lib/bulunma-eki'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
@@ -112,7 +113,7 @@ export function CheckInKarti({
 }) {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
-  const { t } = useDil()
+  const { t, dil } = useDil()
 
   // Menu ve duzenleme penceresi KARTIN KENDI durumu; silme onayi ise
   // ekrandan geliyor (o desen degismedi, uc cagiran ekran da onu
@@ -199,6 +200,57 @@ export function CheckInKarti({
   // basligi, burada bir cumlenin oznesi.
   const gosterilenAd = oge.rumuz ?? oge.kullaniciAdi ?? ''
 
+  /** Sablonu belirteclerden bolup ic ice Text uretir. */
+  function basligiCiz() {
+    const ek = dil === 'tr' ? bulunmaEki(oge.mekanAdi) : ''
+    // Yer tutuculara NOBETCI degerler: `t` parametresiz cagrilinca
+    // "[missing ... value]" yaziyor (webde goruldu); nobetciden bolunuyor.
+    const sablon = t('anaSayfa.checkInYapti', { ad: '', mekan: '', ek: '' })
+    return sablon.split(/(||)/).map((parca, i) => {
+      if (parca === '')
+        return (
+          <Text key={i} style={stiller.baslikAd} onPress={() => router.push(kisiYolu as never)}>
+            {gosterilenAd}
+          </Text>
+        )
+      if (parca === '')
+        return (
+          <Text
+            key={i}
+            style={stiller.baslikMekan}
+            accessibilityRole="link"
+            accessibilityLabel={t('anaSayfa.haritadaGor', { ad: oge.mekanAdi })}
+            onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
+          >
+            {oge.mekanAdi}
+          </Text>
+        )
+      if (parca === '') return <Text key={i}>{ek}</Text>
+      return <Text key={i}>{parca}</Text>
+    })
+  }
+
+  function ileBirlikteCiz() {
+    const sablon = t('anaSayfa.ileBirlikte', { adlar: '' })
+    const adlar = oge.etiketler.map((e) => e.kullaniciAdi ?? e.ad ?? '')
+    return sablon.split(/()/).map((parca, i) =>
+      parca === '' ? (
+        <Text key={i}>
+          {oge.etiketler.map((e, k) => (
+            <Text key={e.kullaniciId}>
+              {k > 0 ? ', ' : ''}
+              <Text style={stiller.birlikteAd} onPress={() => router.push(`/kullanici/${e.kullaniciId}`)}>
+                {adlar[k]}
+              </Text>
+            </Text>
+          ))}
+        </Text>
+      ) : (
+        <Text key={i}>{parca}</Text>
+      )
+    )
+  }
+
   return (
     // KART BIR BUTON DEGIL (kullanicinin bildirdigi hata 2026-09-04):
     // "Paylasimda bos biryere basinca konumun icine gidiyor, sadece
@@ -240,12 +292,14 @@ export function CheckInKarti({
             "Birlikte" satirinda YALNIZCA avatar olarak - ad yazmiyor,
             avatara basinca profil aciliyor (kullanicinin karari). */}
         <View style={stiller.orta}>
-          <Text
-            style={stiller.kullaniciAdi}
-            numberOfLines={1}
-            onPress={() => router.push(kisiYolu as never)}
-          >
-            {gosterilenAd}
+          {/* BASLIK TEK CUMLE (kullanicinin referansi 2026-09-20):
+              "<ad>, <mekan>'de check-in yapti." - ad kalin siyah
+              (profil), mekan kalin turuncu (harita), ek ve fiil duz.
+              Sablon sozlukte; parcalar {{ad}}/{{mekan}}/{{ek}}
+              belirteclerinden bolunerek ic ice Text'le ciziliyor. Ek
+              yalnizca Turkce'de (`bulunmaEki`), digerlerinde bos. */}
+          <Text style={stiller.baslik} testID="akis-basligi">
+            {basligiCiz()}
           </Text>
           {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
             <View style={stiller.canliSatir}>
@@ -270,44 +324,34 @@ export function CheckInKarti({
         )}
       </View>
 
-      {/* MEKAN SATIRI: igne + ad, turuncu ve basilabilir. Mekan adi
-          KONUM EKRANINI aciyor (kullanicinin karari 2026-08-30) - haritanin
-          tek kapisi bu. */}
-      <View style={stiller.mekanSatiri}>
-        {/* Dokunma hedefi yazi kadar (satirin bos sagina basmak bir sey
-            acmaz); uzun ad tek satirda kirpilir. */}
-        <Pressable
-          style={stiller.mekanDugmesi}
-          accessibilityRole="link"
-          accessibilityLabel={t('anaSayfa.haritadaGor', { ad: oge.mekanAdi })}
-          onPress={() => router.push(`/harita/${oge.mekanId}` as never)}
-          hitSlop={4}
-        >
-          <MekanIgnesi />
-          <Text style={stiller.mekanAdi} numberOfLines={1}>{oge.mekanAdi}</Text>
-        </Pressable>
-      </View>
-
+      {/* "<adlar> ile birlikte" (referans): kucuk avatarlar + kullanici
+          adlari kalin, geri kalan gri; metin sutunuyla hizali. Her
+          avatar/ad o kisinin profiline gider. */}
       {oge.etiketler.length > 0 && (
         <View style={stiller.birlikteSatiri} testID="birlikte-satiri">
-          <Text style={stiller.birlikteEtiket}>{t('anaSayfa.birlikte')}</Text>
-          {oge.etiketler.map((etiket) => (
-            <Pressable
-              key={etiket.kullaniciId}
-              onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
-              accessibilityRole="button"
-              accessibilityLabel={etiket.ad ?? ''}
-              hitSlop={4}
-              testID={`birlikte-${etiket.kullaniciId}`}
-            >
-              <Avatar
-                fotografUrl={etiket.avatarUrl}
-                ad={etiket.ad}
-                kullaniciAdi={etiket.ad ?? ''}
-                cap={ETIKET_AVATAR_CAPI}
-              />
-            </Pressable>
-          ))}
+          <View style={stiller.birlikteAvatarlar}>
+            {oge.etiketler.slice(0, 3).map((etiket, i) => (
+              <Pressable
+                key={etiket.kullaniciId}
+                onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+                accessibilityRole="button"
+                accessibilityLabel={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+                hitSlop={4}
+                testID={`birlikte-${etiket.kullaniciId}`}
+                style={i > 0 && stiller.birlikteAvatarUstUste}
+              >
+                <Avatar
+                  fotografUrl={etiket.avatarUrl}
+                  ad={etiket.ad}
+                  kullaniciAdi={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+                  cap={ETIKET_AVATAR_CAPI}
+                />
+              </Pressable>
+            ))}
+          </View>
+          <Text style={stiller.birlikteYazi} numberOfLines={2}>
+            {ileBirlikteCiz()}
+          </Text>
         </View>
       )}
 
@@ -464,7 +508,7 @@ export function CheckInKarti({
           turuncu - Slooin'de turuncu "eylem ya da su an oluyor" demek,
           uc ikonu birden turuncu yapmak o anlami tuketirdi. */}
       {ozet && (
-        <View style={stiller.eylemler}>
+        <View style={[stiller.eylemler, !oge.fotografUrl && stiller.eylemlerCizgili]}>
           <Pressable
             style={stiller.eylem}
             onPress={() => onBegen?.(oge.id)}
@@ -627,18 +671,8 @@ export function CheckInKarti({
 
 const AVATAR_CAPI = 52
 /** "Birlikte" satirindaki etiket avatarlari. */
-const ETIKET_AVATAR_CAPI = 36
+const ETIKET_AVATAR_CAPI = 28
 
-/** Mekan satirindaki turuncu dolu igne (referans). */
-function MekanIgnesi() {
-  const renk = useRenk()
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" fill={renk.turuncu} />
-      <Circle cx={12} cy={10} r={2.6} fill="#FFFFFF" />
-    </Svg>
-  )
-}
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
   // YERINDE DUZENLEME (kullanicinin istegi 2026-09-05). Ayri bir
@@ -731,47 +765,38 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
-    // TAM GENISLIK BLOK, ARADA INCE GRI BANT (kullanicinin secimi
-    // 2026-09-20, iki secenek gorsel sunuldu, B secildi:
-    // `tasarim/akis-tam-genislik-secenekler.png`). Yan kenar, kose
-    // yuvarlagi, cerceve ve golge YOK; ayrimi yalnizca alttaki 8 px
-    // `akisAyrac` bandi tasiyor. 2026-09-18'in referans karti (yuvarlak
-    // koseli, 8 px yan payli) ve ayni gunun "cerceve yumusatma" turu bu
-    // secimle KAPANDI. Kart uc ekranda ortak: profil listeleri de
-    // boyle.
+    // REFERANS KARTI (kullanicinin gorseli 2026-09-20 aksam, "akisi bu
+    // sekilde yap"): yuvarlak koseli (16), ince cerceveli beyaz kart,
+    // yanlardan 8 px payli, kartlar arasi 12 px. Ayni gunun "tam
+    // genislik + gri bant" (B) secimi bu referansla KAPANDI; sayfa zemini
+    // beyaz. Kart uc ekranda ortak: profil listeleri de boyle.
     backgroundColor: renk.yuzey,
-    borderBottomWidth: 8,
-    borderBottomColor: renk.akisAyrac,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    marginHorizontal: bosluk.s,
+    marginTop: bosluk.m,
     paddingHorizontal: bosluk.l,
     paddingVertical: bosluk.l,
   },
-  kartUst: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
-  mekanSatiri: {
-    flexDirection: 'row',
-    // Avatar sutununun yanindan baslar (referans: igne adin altinda).
-    marginLeft: AVATAR_CAPI + bosluk.m - 4,
-    marginTop: bosluk.s,
-  },
-  mekanDugmesi: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexShrink: 1,
-    maxWidth: '100%',
-  },
+  kartUst: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.m },
+  // Baslik cumlesi (referans 2026-09-20).
+  baslik: { fontFamily: yazi.govde, fontSize: olcek.govde + 2, lineHeight: 24, color: renk.metin },
+  baslikAd: { fontFamily: yazi.ekranBasligi, color: renk.metin, letterSpacing: -0.2 },
+  baslikMekan: { fontFamily: yazi.ekranBasligi, color: renk.turuncuYazi, letterSpacing: -0.2 },
+  // "<adlar> ile birlikte": metin sutunuyla hizali (avatar + aralik).
   birlikteSatiri: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: bosluk.s,
     marginTop: bosluk.m,
-    flexWrap: 'wrap',
+    marginLeft: AVATAR_CAPI + bosluk.m,
   },
-  birlikteEtiket: {
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metinIkincil,
-    marginRight: bosluk.xs,
-  },
+  birlikteAvatarlar: { flexDirection: 'row', alignItems: 'center' },
+  birlikteAvatarUstUste: { marginLeft: -8 },
+  birlikteYazi: { flex: 1, fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
+  birlikteAd: { fontFamily: yazi.govdeKalin, color: renk.metin },
+  eylemlerCizgili: { borderTopWidth: 1, borderTopColor: renk.cizgi, paddingTop: bosluk.m },
 
   avatar: {
     width: AVATAR_CAPI,
@@ -790,20 +815,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   orta: { flex: 1 },
-  kullaniciAdi: {
-    fontFamily: yazi.ekranBasligi,
-    fontSize: olcek.govde + 3,
-    color: renk.metin,
-    letterSpacing: -0.2,
-  },
   // Mekan adi TURUNCU (kullanicinin istegi): satirdaki tek renkli oge
   // ve ayni zamanda tiklanabilir - turuncu kurali bozulmuyor.
-  mekanAdi: {
-    fontFamily: yazi.govdeKalin,
-    fontSize: olcek.govde + 2,
-    color: renk.turuncuYazi,
-    flexShrink: 1,
-  },
 
   silDugmesi: { padding: 4, marginRight: 2 },
 
@@ -822,12 +835,14 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     color: renk.turuncuYazi,
   },
 
+  // Not da metin sutunuyla hizali (referans).
   not: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 21,
     color: renk.metin,
     marginTop: bosluk.m,
+    marginLeft: AVATAR_CAPI + bosluk.m,
   },
   // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
   // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif
@@ -847,9 +862,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
   },
+  // Referans olcusu 2:1 (16:7 idi, 2026-09-18).
   fotograf: {
     width: '100%',
-    aspectRatio: 16 / 7,
+    aspectRatio: 2,
     backgroundColor: renk.cizgi,
   },
 })

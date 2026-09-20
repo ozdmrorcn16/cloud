@@ -257,7 +257,8 @@ export default {
     silinmisKullanici: 'Usuario eliminado',
   },
   anaSayfa: {
-    birlikte: 'Con',
+    checkInYapti: '{{ad}} hizo check-in en {{mekan}}{{ek}}.',
+    ileBirlikte: 'junto a {{adlar}}',
     aramaYerTutucu: 'Buscar',
     suAnDisarida: 'Fuera ahora mismo',
     disaridaSayi: '{{sayi}} personas',

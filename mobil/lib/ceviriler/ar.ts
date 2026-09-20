@@ -257,7 +257,8 @@ export default {
     silinmisKullanici: 'مستخدم محذوف',
   },
   anaSayfa: {
-    birlikte: 'مع',
+    checkInYapti: '{{ad}} سجّل وصوله في {{mekan}}{{ek}}.',
+    ileBirlikte: 'مع {{adlar}}',
     aramaYerTutucu: 'بحث',
     suAnDisarida: 'بالخارج الآن',
     disaridaSayi: '{{sayi}} أشخاص',
