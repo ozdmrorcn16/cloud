@@ -164,7 +164,20 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   ("Bu kullaniciyi sikayet ettin" + aciklama, tek dugme Tamam).
   `OnayPenceresi` yeni `tekDugme` prop'u (Vazgec cizilmez). Sozluk:
   `kullanici.sikayetEdildi` silindi, `sikayetEttinAciklama` 7 dil.
-  OTA asagida, web guncel.
+  OTA `9cae6db3`, web guncel.
+- **UC NOKTA MENUSU ISLEVLERI BOZUKTU - KOK NEDEN `SecimPenceresi`
+  (kullanicinin bildirimi "uc noktadaki islevlerde hata var"):** satir
+  `onSec`i dogrudan cagiriyor, menu ACIK kaliyordu. iOS'ta acik bir
+  RN Modal'in ustune ikinci Modal SUNULAMAZ -> "Engelle" onayi hic
+  cikmiyordu; "Sikayet et" push'u menunun arkasinda kaliyordu;
+  "Profili paylas" sonrasi menu duruyordu. Diger ekranlar kendi
+  isleyicilerinde `setX(false)` cagirdigi icin oralarda gorunmuyordu.
+  Duzeltme BILESENDE: secim `onKapat()` cagirir, eylem `gorunur`
+  false olunca (Modal agactan kalkinca) kosar. KURAL: bir Modal'dan
+  ikinci Modal/push/Share acilacaksa ilki once KAPANMALI. Testler:
+  `menudenSec(testID)` yardimcisi (basar + `secim-penceresi`nin
+  kalkmasini bekler) 7 test dosyasinda; menu satirina basip sonucu
+  hemen arayan iddia artik yarisir. OTA asagida.
 
 ### ANA SAYFA: YUMUSAK KARTLAR, ARAMA SUTUNU KALKTI - 2026-09-20
 
