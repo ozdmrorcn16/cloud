@@ -1529,18 +1529,20 @@ describe('MekanAramaEkrani - referans kart', () => {
     await render(<MekanAramaEkrani />)
     await screen.findByTestId('mekan-karti-mola')
     await fireEvent(screen.getByTestId('kesfet-harita-cercevesi'), 'layout', { nativeEvent: { layout: { height: 600 } } })
-    await fireEvent(screen.getByTestId('mekan-paneli'), 'layout', { nativeEvent: { layout: { height: 210 } } })
-    // Surukleme PANELIN KOKUNDE (her yerinden cekilir), yalnizca
-    // tutamacta degil.
-    expect(screen.getByTestId('mekan-paneli').props.onResponderMove).toBeDefined()
-    expect(screen.getByTestId('panel-surukleme-alani').props.onResponderMove).toBeUndefined()
+    await fireEvent(screen.getByTestId('panel-surukleme-alani'), 'layout', { nativeEvent: { layout: { height: 210 } } })
+    // Surukleme DIS KAPTA, duz View'da (her yerinden cekilir). Pressable
+    // uzerine yayilan panHandlers eziliyordu (2026-09-20 sabah hatasi):
+    // klavye kapatan Pressable icte ve onda responder islevi YOK.
+    const kap = screen.getByTestId('panel-surukleme-alani')
+    expect(kap.props.onResponderMove).toBeDefined()
+    expect(kap.props.onResponderGrant).toBeDefined()
 
     await fireEvent.press(screen.getByTestId('diger-mekanlar'))
-    await waitFor(() => expect(screen.getByTestId('mekan-paneli')).toHaveStyle({ height: 576 }))
+    await waitFor(() => expect(screen.getByTestId('panel-surukleme-alani')).toHaveStyle({ height: 576 }))
 
     await fireEvent.press(screen.getByTestId('panel-tutamaci'))
     await waitFor(() => expect(screen.queryByTestId('mekan-karti-park')).toBeNull())
-    expect(screen.getByTestId('mekan-paneli')).not.toHaveStyle({ height: 576 })
+    expect(screen.getByTestId('panel-surukleme-alani')).not.toHaveStyle({ height: 576 })
   })
 
   it('bos alana (panel, ust blok, harita) dokununca klavye kapanir', async () => {

@@ -1545,7 +1545,12 @@ export default function KesfetEkrani() {
             suruklenirken `panelBoyu`. Tutamac + baslik satiri surukleme
             alani; "Mesafeye gore" dugmesi dokunmayi hala alir, cunku
             PanResponder ancak 8 px dikey hareketten sonra devralir. */}
-        <AnimatedPressable
+        {/* DIS KAP DUZ View (kullanicinin bildirimi 2026-09-20 sabah:
+            "paneli kaydiramiyorum"): panHandlers Pressable'a yayilinca
+            Pressable kendi responder islevlerini SONRA yazip onlari
+            eziyordu - surukleme hic baslamiyordu. Klavye kapatan
+            Pressable icte. */}
+        <Animated.View
           style={[
             stiller.panel,
             (panelAcik || surukleniyor) && acikYukseklik > 0 && { height: panelBoyu },
@@ -1553,12 +1558,15 @@ export default function KesfetEkrani() {
           onLayout={(o) => {
             if (!panelAcik && !surukleniyor) setPanelYuksekligi(o.nativeEvent.layout.height)
           }}
-          onPress={Keyboard.dismiss}
-          accessible={false}
-          testID="mekan-paneli"
+          testID="panel-surukleme-alani"
           {...tutamacSurukleme.panHandlers}
         >
-          <View testID="panel-surukleme-alani">
+          <Pressable
+            style={stiller.panelIci}
+            onPress={Keyboard.dismiss}
+            accessible={false}
+            testID="mekan-paneli"
+          >
             <View style={stiller.tutamacAlani}>
               <Pressable
                 onPress={() => paneliAyarla(!panelAcik)}
@@ -1571,7 +1579,6 @@ export default function KesfetEkrani() {
               </Pressable>
             </View>
             {bolumBasligi}
-          </View>
 
           {panelAcik ? (
             <ScrollView
@@ -1606,14 +1613,13 @@ export default function KesfetEkrani() {
               )}
             </View>
           )}
-        </AnimatedPressable>
+          </Pressable>
+        </Animated.View>
       </View>
       {pencereler}
     </View>
   )
 }
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 /** Bina simgesi (referans): kompakt satirin seftali kutusunda, ture bagli DEGIL. */
 function BinaIkonu({ renk: c }: { renk: string }) {
@@ -1774,6 +1780,9 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     ...golge.kart,
     shadowOffset: { width: 0, height: -2 },
   },
+  // Ic Pressable acik panelde kabin yuksekligini doldurmali (liste
+  // flex: 1); kapaliyken kap dogal olcude, flex bir sey degistirmez.
+  panelIci: { flex: 1 },
   tutamacAlani: { alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
   tutamac: { width: 44, height: 5, borderRadius: 3, backgroundColor: renk.cizgi },
   panelListe: { flex: 1, marginTop: bosluk.s },
