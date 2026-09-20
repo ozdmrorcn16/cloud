@@ -335,7 +335,6 @@ export default {
     verilerimiIndirHata: "Les données n'ont pas pu être préparées. Réessaie.",
     gizlilikMetni: 'Politique de confidentialité',
     bolumGorunurluk: 'Réglages de confidentialité',
-    aniGorunurlugu: 'Mes souvenirs passés',
     etiketOnayi: 'Me demander avant de me taguer',
     etiketOnayiAciklama: "Quand c'est désactivé, tes amis peuvent te taguer directement. Quand c'est activé, on te demande d'abord ; personne ne voit le tag avant ton approbation.",
     aramadaGorun: 'Me montrer dans la recherche',
@@ -351,19 +350,11 @@ export default {
     cikisYap: 'Se déconnecter',
     cikisOnayBaslik: 'Se déconnecter ?',
     cikisOnayAciklama: 'Tu vas être déconnecté de ton compte. Tu peux te reconnecter à tout moment.',
-    aniHerkeseAcik: 'Tout le monde',
-    aniTakipcilerim: 'Seulement mes abonnés',
-    aniKimse: 'Personne',
     secilmedi: 'Non sélectionné',
   },
   kullaniciAdiEkrani: {
     yerTutucu: "Nouveau nom d'utilisateur",
     sonrakiDegisim: 'Tu pourras le changer à nouveau le : {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'Mes souvenirs passés',
-    geri: 'Retour',
-    aciklama: "Ce choix s'applique à tous tes souvenirs, mais les souvenirs issus d'un check-in masqué ne sont pas concernés et restent privés.",
   },
   engellenenler: {
     baslik: 'Personnes bloquées',

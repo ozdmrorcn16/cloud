@@ -360,15 +360,9 @@ async function main() {
   // kisitina carpip ham 23502 dondururdu. Uc RPC de `is null or` ile
   // guclendirildi; burada dostane Turkce mesajin (kod P0001) hala
   // dondugu dogrulaniyor, ham 23502 degil.
-  const { error: aniNullHatasi } = await a.rpc('ani_gorunurlugunu_ayarla', {
-    p_deger: null,
-  })
-  esitMi(aniNullHatasi?.code, 'P0001', 'ani_gorunurlugunu_ayarla(null) ham 23502 degil')
-  esitMi(
-    aniNullHatasi?.message,
-    'Gecersiz gorunurluk degeri',
-    'ani_gorunurlugunu_ayarla(null) dostane mesaj donduruyor'
-  )
+  // ani_gorunurlugunu_ayarla 2026-09-20'de DUSURULDU (calistir.ts 31).
+  const { error: aniRpcHatasi } = await a.rpc('ani_gorunurlugunu_ayarla', { p_deger: null })
+  esitMi(aniRpcHatasi?.code, 'PGRST202', 'ani_gorunurlugunu_ayarla artik yok (PGRST202)')
 
   // check_in_yap(null): mesaj iddiasi NULL korumanin varligini kanitlar. Kod
   // iddiasi yeterli degildir: p_mekan_id gecersiz olunca 'Mekan bulunamadi' de P0001 doner.

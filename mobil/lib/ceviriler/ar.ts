@@ -335,7 +335,6 @@ export default {
     verilerimiIndirHata: 'تعذّر تحضير البيانات. حاول مجددا.',
     gizlilikMetni: 'سياسة الخصوصية',
     bolumGorunurluk: 'إعدادات الخصوصية',
-    aniGorunurlugu: 'ذكرياتي السابقة',
     etiketOnayi: 'اسألني قبل الإشارة إليّ',
     etiketOnayiAciklama: 'عند الإيقاف، يمكن لأصدقائك الإشارة إليك مباشرة. عند التفعيل، تُسأل أولا؛ ولا يرى أحد الإشارة حتى توافق.',
     aramadaGorun: 'إظهاري في البحث',
@@ -351,19 +350,11 @@ export default {
     cikisYap: 'تسجيل الخروج',
     cikisOnayBaslik: 'هل تريد تسجيل الخروج؟',
     cikisOnayAciklama: 'سيتم تسجيل خروجك من حسابك. يمكنك تسجيل الدخول مجددًا في أي وقت.',
-    aniHerkeseAcik: 'الجميع',
-    aniTakipcilerim: 'متابعيّ فقط',
-    aniKimse: 'لا أحد',
     secilmedi: 'غير محدد',
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'اسم مستخدم جديد',
     sonrakiDegisim: 'يمكنك تغييره مجددا في: {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'ذكرياتي السابقة',
-    geri: 'رجوع',
-    aciklama: 'ينطبق هذا الاختيار على كل ذكرياتك، لكن الذكريات الناتجة عن تسجيل حضور مخفي لا تتأثر وتبقى خاصة.',
   },
   engellenenler: {
     baslik: 'الأشخاص المحظورون',

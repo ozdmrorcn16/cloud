@@ -335,7 +335,6 @@ export default {
     verilerimiIndirHata: 'No se pudieron preparar los datos. Inténtalo de nuevo.',
     gizlilikMetni: 'Política de privacidad',
     bolumGorunurluk: 'Ajustes de privacidad',
-    aniGorunurlugu: 'Mis recuerdos anteriores',
     etiketOnayi: 'Preguntarme antes de etiquetar',
     etiketOnayiAciklama: 'Si está desactivado, tus amigos pueden etiquetarte directamente. Si está activado, se te pregunta primero; nadie ve la etiqueta hasta que la apruebes.',
     aramadaGorun: 'Mostrarme en la búsqueda',
@@ -351,19 +350,11 @@ export default {
     cikisYap: 'Cerrar sesión',
     cikisOnayBaslik: '¿Cerrar sesión?',
     cikisOnayAciklama: 'Cerrarás la sesión de tu cuenta. Puedes volver a iniciar sesión cuando quieras.',
-    aniHerkeseAcik: 'Todos',
-    aniTakipcilerim: 'Solo mis seguidores',
-    aniKimse: 'Nadie',
     secilmedi: 'Sin seleccionar',
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'Nuevo nombre de usuario',
     sonrakiDegisim: 'Podrás cambiarlo de nuevo el: {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'Mis recuerdos anteriores',
-    geri: 'Atrás',
-    aciklama: 'Esta elección se aplica a todos tus recuerdos, pero los recuerdos que vienen de un check-in oculto no cambian y siguen siendo privados.',
   },
   engellenenler: {
     baslik: 'Personas bloqueadas',

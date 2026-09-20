@@ -341,7 +341,6 @@ export default {
     verilerimiIndirHata: 'The data could not be prepared. Try again.',
     gizlilikMetni: 'Privacy policy',
     bolumGorunurluk: 'Privacy settings',
-    aniGorunurlugu: 'My past memories',
     etiketOnayi: 'Ask me before tagging',
     etiketOnayiAciklama: 'When off, your friends can tag you directly. When on, you are asked first; no one sees the tag until you approve.',
     aramadaGorun: 'Show me in search',
@@ -357,19 +356,11 @@ export default {
     cikisYap: 'Sign out',
     cikisOnayBaslik: 'Sign out?',
     cikisOnayAciklama: "You'll be signed out of your account. You can sign back in anytime.",
-    aniHerkeseAcik: 'Everyone',
-    aniTakipcilerim: 'Only my followers',
-    aniKimse: 'No one',
     secilmedi: 'Not selected',
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'New username',
     sonrakiDegisim: 'You can change it again on: {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'My past memories',
-    geri: 'Back',
-    aciklama: 'This choice applies to all your memories, but memories that came from a hidden check-in are not affected and stay private.',
   },
   engellenenler: {
     baslik: 'Blocked people',

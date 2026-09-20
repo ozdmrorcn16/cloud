@@ -135,11 +135,10 @@ bolumunde.
 - **30 — Kimliksiz cagrilar reddedilir.** Oturum acmamis ham bir anon
   istemciyle `takip_istegi_gonder` ve `bag_kisileri` cagrilari hata
   doner.
-- **31 - `ani_gorunurlugunu_ayarla` genisletmeyi kelepceler.** Gizli
-  kokenli bir ani (`check_inden_ayril` ile 'gizli'den donusmus, yani
-  gorunurlugu 'kimse') RPC ile 'herkese_acik'a genisletilmeye
-  calisilir; `bag.ani_gorunurlugu` yardimcisi bunu engelledigi icin
-  deger 'kimse' olarak kaliyor ve A anisi hala goremiyor.
+- **31 - `ani_gorunurlugunu_ayarla` artik YOK.** "Anilarim kimlere
+  gorunsun" ayari 2026-09-20'de kaldirildi (tek gizlilik anahtari
+  "Profilim gizli"); RPC'nin sunucudan dustugu PGRST202 ile kilitli.
+  Senaryo 4 'kimse' degerini artik servis roluyle yaziyor.
 
 32-44: Faz 3b (birebir sohbet: mesaj gonderme, mesaj kutusu, okunmamis
 sayisi, gizleme, karsilikli takibin yazma kapisiyla iliskisi):

@@ -335,7 +335,6 @@ export default {
     verilerimiIndirHata: 'Не удалось подготовить данные. Попробуй снова.',
     gizlilikMetni: 'Политика конфиденциальности',
     bolumGorunurluk: 'Настройки приватности',
-    aniGorunurlugu: 'Мои прошлые воспоминания',
     etiketOnayi: 'Спрашивать перед отметкой',
     etiketOnayiAciklama: 'Когда выключено, друзья могут отмечать тебя сразу. Когда включено, тебя сначала спросят; никто не увидит отметку, пока ты не подтвердишь.',
     aramadaGorun: 'Показывать меня в поиске',
@@ -351,19 +350,11 @@ export default {
     cikisYap: 'Выйти',
     cikisOnayBaslik: 'Выйти из аккаунта?',
     cikisOnayAciklama: 'Ты выйдешь из своего аккаунта. Войти снова можно в любой момент.',
-    aniHerkeseAcik: 'Все',
-    aniTakipcilerim: 'Только мои подписчики',
-    aniKimse: 'Никто',
     secilmedi: 'Не выбрано',
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'Новое имя пользователя',
     sonrakiDegisim: 'Снова изменить можно: {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'Мои прошлые воспоминания',
-    geri: 'Назад',
-    aciklama: 'Этот выбор применяется ко всем воспоминаниям, но воспоминания из скрытого чек-ина не затрагиваются и остаются приватными.',
   },
   engellenenler: {
     baslik: 'Заблокированные',

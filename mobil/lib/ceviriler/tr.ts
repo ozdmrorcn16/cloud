@@ -444,7 +444,6 @@ export default {
     gizlilikMetni: 'Gizlilik metni',
 
     bolumGorunurluk: 'Gizlilik ayarları',
-    aniGorunurlugu: 'Geçmiş anılarım',
     // ETIKET ONAYI (kullanicinin karari 2026-09-06). Varsayilan
     // KAPALI: arkadasin seni direk etiketleyebiliyor.
     etiketOnayi: 'Etiketlemeden önce bana sor',
@@ -467,9 +466,6 @@ export default {
     cikisOnayBaslik: 'Çıkış yapılsın mı?',
     cikisOnayAciklama: 'Hesabından çıkış yapacaksın. İstediğin zaman tekrar giriş yapabilirsin.',
 
-    aniHerkeseAcik: 'Herkes görsün',
-    aniTakipcilerim: 'Sadece takipçilerim görsün',
-    aniKimse: 'Kimse görmesin',
     secilmedi: 'Seçilmedi',
   },
 
@@ -483,13 +479,6 @@ export default {
   kullaniciAdiEkrani: {
     yerTutucu: 'Yeni kullanıcı adı',
     sonrakiDegisim: 'Tekrar değiştirebileceğin tarih: {{tarih}}',
-  },
-
-  aniGorunurlugu: {
-    baslik: 'Geçmiş anılarım',
-    geri: 'Geri',
-    aciklama:
-      'Bu seçim bütün anılarına uygulanır, ama gizli check-in’den dönüşen anılar bu ayardan etkilenmez ve kapalı kalır.',
   },
 
   engellenenler: {

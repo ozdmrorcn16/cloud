@@ -335,7 +335,6 @@ export default {
     verilerimiIndirHata: 'Die Daten konnten nicht vorbereitet werden. Versuch es erneut.',
     gizlilikMetni: 'Datenschutzerklärung',
     bolumGorunurluk: 'Datenschutzeinstellungen',
-    aniGorunurlugu: 'Meine früheren Erinnerungen',
     etiketOnayi: 'Vor dem Markieren fragen',
     etiketOnayiAciklama: 'Wenn aus, können dich deine Freunde direkt markieren. Wenn an, wirst du zuerst gefragt; niemand sieht die Markierung, bis du zustimmst.',
     aramadaGorun: 'In der Suche anzeigen',
@@ -351,19 +350,11 @@ export default {
     cikisYap: 'Abmelden',
     cikisOnayBaslik: 'Abmelden?',
     cikisOnayAciklama: 'Du wirst von deinem Konto abgemeldet. Du kannst dich jederzeit wieder anmelden.',
-    aniHerkeseAcik: 'Alle',
-    aniTakipcilerim: 'Nur meine Follower',
-    aniKimse: 'Niemand',
     secilmedi: 'Nicht ausgewählt',
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'Neuer Benutzername',
     sonrakiDegisim: 'Du kannst ihn wieder ändern am: {{tarih}}',
-  },
-  aniGorunurlugu: {
-    baslik: 'Meine früheren Erinnerungen',
-    geri: 'Zurück',
-    aciklama: 'Diese Wahl gilt für alle deine Erinnerungen; Erinnerungen aus einem versteckten Check-in bleiben davon unberührt und privat.',
   },
   engellenenler: {
     baslik: 'Blockierte Personen',
