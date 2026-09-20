@@ -148,6 +148,35 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### CHECK-IN FORMU REFERANS DUZENINDE - 2026-09-20
+
+Kullanicinin referans gorseli ("check-in'e basinca gelecek sayfayi
+boyle yap; her Check-in yap'a basildiginda bu ekran gelecek").
+`src/app/check-in/[mekanId].tsx` render'i bastan, mantik (kamera/
+galeri secimi, ArkadasSecici, bulunurluk = profil varsayilani, basari
+animasyonu) AYNI. OTA `27d759d9` + duzeltme, web guncel, goruntu
+`tasarim/checkin-form-referans.png`.
+- Sira: UstCubuk "Yeni check-in" -> MEKAN KARTI (`mekaniGetir`; seftali
+  kare `IgneIkonu` - tur ikonu YOK, 2026-08-24 kurali; ad; "ilce, il";
+  sagda turuncu "Degistir" = `router.back()`) -> "Not, fotograf ve
+  arkadas eklemek istege bagli." -> "Notun" + 130 px kutu -> "Fotograf"
+  + KESIKLI kutu (kamera ikonu, "Fotograf ekle"; secilince 16:10 tam
+  genislik onizleme + sag ustte x `foto-kaldir`, onizlemeye dokunmak
+  kaynak secimini yeniden acar) -> "Arkadas etiketle / Kimlerle
+  birliktesin?" satiri (ok; arkadas yokken de gorunur) -> secim varsa
+  "Birlikte" + sagda turuncu "Ekle" + avatarli KULLANICI ADI cipleri
+  (x ile kaldir) -> "Gorunurluk, gizlilik ayarlarina gore belirlenir."
+  (marginTop auto, dugmenin ustune yapisik) -> "Check-in paylas".
+- Sozluk `checkIn` blogu 7 dilde bastan. TUZAK (yasandi): `checkIn.gonder`
+  ("Check-in yap") liste kartlari, panel ve alt cubuk etiketinde de
+  kullaniliyor; ilk yayinda "Check-in paylas" yapinca 4 test kirildi ve
+  `&&` zinciri grep yuzunden gecti. Form dugmesi ayri anahtar
+  `checkIn.paylas`. DERS: sozluk anahtarini degistirmeden once
+  `grep -rn "checkIn.<anahtar>" src`.
+- Butun "Check-in yap" dugmeleri (liste karti, secili kart, mekan
+  sayfasi) zaten `/check-in/<id>`e gidiyor; alt cubuk sekmesi mekan
+  listesi (once mekan secilir).
+
 ### ARKADASLARIM SAYFASI - 2026-09-20
 
 Kullanicinin referans gorseli ("Arkadas'a basilinca gorunecek arkadas
