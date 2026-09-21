@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Image, Modal, Pressable, StyleSheet, TextInput } from 'react-native'
+import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
@@ -11,23 +11,14 @@ import { useRenk, useStiller } from './tema-baglami'
 import { OnayPenceresi } from './OnayPenceresi'
 import { SecimPenceresi, UcNoktaIkonu, KalemIkonu, CopIkonu } from './SecimPenceresi'
 import { YorumSayfasi } from './YorumSayfasi'
-import { NOT_EN_FAZLA } from '../../lib/checkin'
-import { takipcilerimiGetir } from '../../lib/bag-listeleri'
-import type { BagKisi } from '../../lib/bag'
 import { YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import { BegeniKalbi } from './BegeniKalbi'
 import { ifadeBul } from '../../lib/ifadeler'
-import { IfadeSecici, IfadeCipi } from './IfadeSecici'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
-import {
-  YakinlastirilabilirGorsel,
-  YakinlastirilabilirTamEkran,
-} from './YakinlastirilabilirGorsel'
 import { FotografAltyazisi } from './FotografAltyazisi'
+import { FotografSeridi } from './FotografSeridi'
+import { FotografGezgini } from './FotografGezgini'
 import { Avatar } from './Avatar'
-import { ArkadasSecici } from './ArkadasSecici'
-import Svg, { Path, Circle } from 'react-native-svg'
-import * as ImagePicker from 'expo-image-picker'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -68,11 +59,7 @@ export function CheckInKarti({
   silOnayiAcik = false,
   onSilOnayi,
   onSil,
-  onNotKaydet,
-  onIfadeKaydet,
-  onEtiketEkle,
-  onEtiketKaldir,
-  onFotografKaydet,
+  onDuzenle,
   onFotografAc,
 }: {
   oge: AkisOgesi
@@ -101,29 +88,19 @@ export function CheckInKarti({
   onSilOnayi?: (id: string) => void
   onSil?: (id: string) => void
   /**
-   * Verilmezse menude "Düzenle" satiri cizilmez - profil gecmisi gibi
-   * salt okunur yerlerde kart sade kaliyor.
+   * Verilirse menude "Düzenle" satiri cizilir ve basinca cagrilir; ekran
+   * "Check-in'i düzenle" sayfasini acar (referans, 2026-09-21). Kartin
+   * icindeki yerinde duzenleme (2026-09-05) bu sayfayla KALKTI.
    */
-  onNotKaydet?: (id: string, yeniNot: string) => Promise<void> | void
-  /** Duzenlemede ifade degistiyse (ekle/degistir/kaldir) cagrilir; null = kaldir. */
-  onIfadeKaydet?: (id: string, ifade: string | null) => Promise<void> | void
-  /** Yerinde duzenlemede secilen arkadaslari etiketler. */
-  onEtiketEkle?: (id: string, kullaniciIdler: string[]) => Promise<void> | void
-  onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
+  onDuzenle?: (id: string) => void
   /**
-   * Duzenlemede fotograf degistiyse cagrilir: yeni fotografin YEREL
-   * adresi (ekran yukler + sunucuya yazar) ya da kaldirildiysa null
-   * (kullanicinin istegi 2026-09-21). Verilmezse fotograf satiri
-   * cizilmez.
+   * Verilirse fotografa dokunmak kartin KENDI gezginini acmaz, dokunulan
+   * fotografin indeksiyle bunu cagirir: profil ekranlari butun
+   * fotograflari tek bir gezginde (saga-sola kaydirmali) aciyor
+   * (kullanicinin istegi 2026-09-18). Akista verilmiyor; kart kendi
+   * fotograflarini kendisi acar.
    */
-  onFotografKaydet?: (id: string, yerelUri: string | null) => Promise<void> | void
-  /**
-   * Verilirse fotografa dokunmak kartin KENDI tam ekranini acmaz, bunu
-   * cagirir: profil ekranlari butun fotograflari tek bir gezginde
-   * (saga-sola kaydirmali) aciyor (kullanicinin istegi 2026-09-18).
-   * Akista verilmiyor; kart tek fotografini kendisi acar.
-   */
-  onFotografAc?: () => void
+  onFotografAc?: (indeks: number) => void
 }) {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
@@ -134,21 +111,7 @@ export function CheckInKarti({
   // kullaniyor). Modal zaten ekranda tek basina durdugu icin "ayni anda
   // yalnizca bir kart acik olsun" kaygisi burada yok.
   const [menuAcik, setMenuAcik] = useState(false)
-  // YERINDE DUZENLEME (kullanicinin istegi 2026-09-05: "bu ekran hic
-  // gelmesin, direk paylasimin oldugu ekranda uzerine yapilsin").
-  // Onceden ayri bir pencere (`PaylasimDuzenle`) aciliyordu; kart
-  // arkada kaliyor ve neyi duzenledigin gorunmuyordu.
   const renk = useRenk()
-  const [duzenleAcik, setDuzenleAcik] = useState(false)
-  const [taslakNot, setTaslakNot] = useState('')
-  // Kaldirilacak etiketler ve eklenecekler; Kaydet'e basilana kadar
-  // sunucuya HICBIR SEY gitmiyor - Vazgec gercekten vazgeciyor.
-  const [kaldirilan, setKaldirilan] = useState<string[]>([])
-  const [eklenen, setEklenen] = useState<string[]>([])
-  const [seciciAcik, setSeciciAcik] = useState(false)
-  const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
-  const [kaydediliyor, setKaydediliyor] = useState(false)
-  const [duzenleHatasi, setDuzenleHatasi] = useState<string | null>(null)
   // YORUMLAR ARTIK ALTTAN ACILIYOR (kullanicinin karari 2026-09-03,
   // secenek "A"). Onceden `/yorumlar/<id>` sayfasina gidiliyordu.
   const [yorumlarAcik, setYorumlarAcik] = useState(false)
@@ -157,93 +120,13 @@ export function CheckInKarti({
   // sadece gorseli buyuk ekran acmasi gerek". Kartin kendisi haritayi
   // aciyordu ve fotograf duz bir Image oldugu icin dokunus karta
   // gidiyordu.
-  const [buyukAcik, setBuyukAcik] = useState(false)
-
-  // Ifade duzenleme (kullanicinin istegi 2026-09-21): taslak slug ve
-  // secici; Kaydet'te degistiyse `onIfadeKaydet`.
-  const [taslakIfade, setTaslakIfade] = useState<string | null>(oge.ifade)
-  const [ifadeSecici, setIfadeSecici] = useState(false)
-  // Fotograf duzenleme (kullanicinin istegi 2026-09-21): `undefined` =
-  // dokunulmadi, `null` = kaldirilacak, string = secilen yeni yerel
-  // dosya. Kaydet'e kadar sunucuya gitmez; Vazgec atar.
-  const [taslakFoto, setTaslakFoto] = useState<string | null | undefined>(undefined)
-  const [fotoKaynak, setFotoKaynak] = useState(false)
-  // Ekranda gorunecek onizleme: dokunulmadiysa mevcut fotograf.
-  const onizlemeUri = taslakFoto === undefined ? oge.fotografUrl : taslakFoto
-
-  function duzenlemeyiAc() {
-    // Taslak her acilista SIFIRLANIYOR: bir onceki duzenlemeden kalan
-    // metin ya da secim tasinmamali.
-    setTaslakNot(oge.notMetni ?? '')
-    setTaslakIfade(oge.ifade)
-    setTaslakFoto(undefined)
-    setKaldirilan([])
-    setEklenen([])
-    setDuzenleHatasi(null)
-    setDuzenleAcik(true)
-    // Arkadas listesi yalnizca duzenleme acilinca cekiliyor; akistaki
-    // her kart icin onceden cekmek bosuna istek olurdu.
-    takipcilerimiGetir()
-      .then(setArkadaslar)
-      .catch(() => setArkadaslar([]))
-  }
-
-  // Kamera / galeri: check-in formundaki akisla ayni (izin reddi
-  // sessiz gecilmiyor - hata satirinda gorunur).
-  async function kameradanCek() {
-    setFotoKaynak(false)
-    const izin = await ImagePicker.requestCameraPermissionsAsync()
-    if (!izin.granted) {
-      setDuzenleHatasi(t('checkIn.kameraIzni'))
-      return
-    }
-    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
-    if (!sonuc.canceled) setTaslakFoto(sonuc.assets[0].uri)
-  }
-
-  async function galeridenSec() {
-    setFotoKaynak(false)
-    const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
-    if (!sonuc.canceled) setTaslakFoto(sonuc.assets[0].uri)
-  }
-
-  async function duzenlemeyiKaydet() {
-    if (!onNotKaydet) return
-    setKaydediliyor(true)
-    setDuzenleHatasi(null)
-    try {
-      // SUNUCUYA KART DEGIL EKRAN YAZIYOR. Kart saf sunum: ekran hem
-      // yaziyor hem kendi listesini guncelliyor, boylece kaldirilan
-      // etiket aninda karttan dusuyor. Kart dogrudan lib'i cagirsaydi
-      // ekranin haberi olmazdi (denendi, etiket ekranda kaliyordu).
-      for (const kullaniciId of kaldirilan) {
-        await onEtiketKaldir?.(oge.id, kullaniciId)
-      }
-      if (eklenen.length > 0) {
-        await onEtiketEkle?.(oge.id, eklenen)
-      }
-      if (taslakIfade !== oge.ifade) {
-        await onIfadeKaydet?.(oge.id, taslakIfade)
-      }
-      // Fotograf: yalnizca dokunulduysa (yukleme + sunucu ekranda).
-      if (taslakFoto !== undefined) {
-        await onFotografKaydet?.(oge.id, taslakFoto)
-      }
-      // Not en son: etiketler yazilamazsa kullanici notu da kaybetmesin
-      // diye pencere acik kaliyor ve hata gorunuyor.
-      await onNotKaydet(oge.id, taslakNot)
-      setDuzenleAcik(false)
-    } catch (hata) {
-      setDuzenleHatasi(hata instanceof Error ? hata.message : t('ortak.birSorunOldu'))
-    } finally {
-      setKaydediliyor(false)
-    }
-  }
+  // COKLU FOTOGRAF (2026-09-21): acik fotografin indeksi; null kapali.
+  const [buyukIndeks, setBuyukIndeks] = useState<number | null>(null)
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
   // de bunun icinde. Onceden baslikta dogrudan cop kutusu vardi.
-  const menuVar = oge.benimMi && Boolean(onSilOnayi || onNotKaydet)
+  const menuVar = oge.benimMi && Boolean(onSilOnayi || onDuzenle)
   // Bas harf ADDAN (kullanicinin karari 2026-08-28): `kullaniciAdi`
   // alani check_inler'de denormalize duran ADI tasiyor (karar #18).
   const basHarf = (oge.kullaniciAdi || '?').trim().charAt(0).toLocaleUpperCase('tr-TR')
@@ -410,236 +293,34 @@ export function CheckInKarti({
       )}
 
       {/* NOT ONCE, FOTOGRAF ALTINDA (kullanicinin istegi 2026-08-30). */}
-      {duzenleAcik ? (
-        /* YERINDE DUZENLEME. Kart yerinde duruyor; degistirilen sey ne
-           ise onun uzerinde calisiliyor. Sunucuya hicbir sey Kaydet'e
-           basilana kadar gitmiyor. */
-        <View style={stiller.duzenleAlani} testID="yerinde-duzenle">
-          <TextInput
-            testID="duzenle-not"
-            style={stiller.duzenleGirdi}
-            value={taslakNot}
-            onChangeText={(d) => setTaslakNot(d.slice(0, NOT_EN_FAZLA))}
-            maxLength={NOT_EN_FAZLA}
-            placeholder={t('anaSayfa.notYerTutucu')}
-            placeholderTextColor={renk.metinIkincil}
-            multiline
-            editable={!kaydediliyor}
-          />
-
-          {/* Mevcut etiketler: carpiyla kaldirilir. Kaldirma da
-              Kaydet'e kadar bekliyor. */}
-          {oge.etiketler.filter((e) => !kaldirilan.includes(e.kullaniciId)).length > 0 && (
-            <View style={stiller.cipler}>
-              {oge.etiketler
-                .filter((e) => !kaldirilan.includes(e.kullaniciId))
-                .map((e) => (
-                  <Pressable
-                    key={e.kullaniciId}
-                    style={stiller.cip}
-                    onPress={() => setKaldirilan((m) => [...m, e.kullaniciId])}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: e.kullaniciAdi ?? e.ad ?? '' })}
-                  >
-                    {/* CIPTE KULLANICI ADI, ad-soyad DEGIL (kullanicinin karari 2026-09-18). */}
-                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.kullaniciAdi ?? e.ad ?? ''} cap={22} />
-                    <Text style={stiller.cipYazi}>{e.kullaniciAdi ?? e.ad ?? ''}</Text>
-                    <Text style={stiller.cipCarpi}>×</Text>
-                  </Pressable>
-                ))}
-            </View>
+      {(oge.notMetni || oge.ifade) && (
+        /* IFADE (2026-09-21): notun basinda 32 pt ikon, YAZISI YOK
+           (kullanicinin istegi ayni gun: "yaninda ifadenin yazisi
+           eklenmesin, sadece ifade"); etiket erisilebilirlik icin
+           ikonun accessibilityLabel'inda. Not yoksa yalnizca ikon.
+           Sozlukte olmayan (silinmis) slug sessizce cizilmez. */
+        <View style={stiller.notSatiri} testID="not-satiri">
+          {oge.ifade && ifadeBul(oge.ifade) && (
+            <Image
+              source={ifadeBul(oge.ifade)!.kaynak}
+              style={stiller.ifadeIkon}
+              resizeMode="contain"
+              accessibilityLabel={ifadeBul(oge.ifade)!.etiket}
+              testID={`kart-ifade-${oge.ifade}`}
+            />
           )}
-
-          {/* IFADE (kullanicinin istegi 2026-09-21): formdakiyle ayni
-              desen - cip (kaldirilabilir, basinca secici) ya da hayalet
-              "Ifade ekle". */}
-          <View style={stiller.ifadeSatiri}>
-            {taslakIfade ? (
-              <IfadeCipi slug={taslakIfade} onPress={() => setIfadeSecici(true)} onKaldir={() => setTaslakIfade(null)} />
-            ) : (
-              <Pressable
-                style={stiller.etiketleDugmesi}
-                onPress={() => setIfadeSecici(true)}
-                accessibilityRole="button"
-                testID="duzenle-ifade-ekle"
-              >
-                <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.ifadeEkle')}</Text>
-              </Pressable>
-            )}
-          </View>
-          <IfadeSecici acikMi={ifadeSecici} secili={taslakIfade} onSec={setTaslakIfade} onKapat={() => setIfadeSecici(false)} />
-
-          {/* FOTOGRAF (kullanicinin istegi 2026-09-21: "isterse koydugu
-              fotografi kaldirabilir ya da yenisini ekleyebilir").
-              Fotograf varsa kucuk onizleme + Degistir + Kaldir; yoksa
-              formdakiyle ayni "Fotograf ekle". Kaynak secimi formdaki
-              Kamera / Galeri penceresi. Kaydet'e kadar sunucuya gitmez. */}
-          {onFotografKaydet && (
-            <View style={stiller.fotoSatiri}>
-              {onizlemeUri ? (
-                <>
-                  <HizliImage
-                    source={{ uri: onizlemeUri }}
-                    style={stiller.fotoOnizleme}
-                    contentFit="cover"
-                    testID="duzenle-foto-onizleme"
-                  />
-                  <Pressable
-                    style={stiller.etiketleDugmesi}
-                    onPress={() => setFotoKaynak(true)}
-                    accessibilityRole="button"
-                    testID="duzenle-foto-degistir"
-                    disabled={kaydediliyor}
-                  >
-                    <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.fotografDegistir')}</Text>
-                  </Pressable>
-                  <Pressable
-                    style={stiller.etiketleDugmesi}
-                    onPress={() => setTaslakFoto(null)}
-                    accessibilityRole="button"
-                    testID="duzenle-foto-kaldir"
-                    disabled={kaydediliyor}
-                  >
-                    <Text style={[stiller.etiketleDugmesiYazi, stiller.kaldirYazi]}>{t('checkIn.fotografKaldir')}</Text>
-                  </Pressable>
-                </>
-              ) : (
-                <Pressable
-                  style={stiller.etiketleDugmesi}
-                  onPress={() => setFotoKaynak(true)}
-                  accessibilityRole="button"
-                  testID="duzenle-foto-ekle"
-                  disabled={kaydediliyor}
-                >
-                  <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.fotografEkle')}</Text>
-                </Pressable>
-              )}
-            </View>
-          )}
-          <SecimPenceresi
-            acikMi={fotoKaynak}
-            secimler={[
-              { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
-              { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
-            ]}
-            onKapat={() => setFotoKaynak(false)}
-          />
-
-          {/* ARKADAS ETIKETLE DUGMESI (kullanicinin istegi 2026-09-18):
-              basinca alttan aranabilir arkadas listesi (profil resmi +
-              kullanici adi) aciliyor; secilenler altta cip olarak duruyor
-              ve Kaydet'e basilana kadar sunucuya gitmiyor. Etiket, karsi
-              tarafin "etiket onayi" ayarina gore sunucuda ya hemen
-              onaylaniyor ya da onaya dusuyor (trigger, 2026-09-06);
-              onaylaninca akis yenilenince kartta gorunur.
-              2026-09-05'ten kalan satir ici "+ ad" cipleri kalkti. */}
-          <Pressable
-            style={stiller.etiketleDugmesi}
-            onPress={() => setSeciciAcik(true)}
-            accessibilityRole="button"
-            testID="arkadas-etiketle"
-          >
-            <Text style={stiller.etiketleDugmesiYazi}>{t('anaSayfa.arkadasEtiketle')}</Text>
-          </Pressable>
-
-          {/* Eklenmek uzere secilenler */}
-          {eklenen.length > 0 && (
-            <View style={stiller.cipler}>
-              {eklenen.map((id) => {
-                const kisi = arkadaslar.find((a) => a.id === id)
-                return (
-                  <Pressable
-                    key={id}
-                    style={stiller.cip}
-                    onPress={() => setEklenen((m) => m.filter((x) => x !== id))}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('checkIn.etiketiKaldir', { ad: kisi?.kullaniciAdi ?? '' })}
-                  >
-                    <Avatar
-                      fotografUrl={kisi?.avatarUrl ?? null}
-                      ad={kisi?.ad}
-                      kullaniciAdi={kisi?.kullaniciAdi ?? ''}
-                      cap={22}
-                    />
-                    <Text style={stiller.cipYazi}>{kisi?.kullaniciAdi ?? ''}</Text>
-                    <Text style={stiller.cipCarpi}>×</Text>
-                  </Pressable>
-                )
-              })}
-            </View>
-          )}
-
-          {duzenleHatasi && <Text style={stiller.duzenleHata}>{duzenleHatasi}</Text>}
-
-          <View style={stiller.duzenleEylemler}>
-            <Pressable
-              testID="duzenle-vazgec"
-              style={[stiller.duzenleDugme, stiller.duzenleIkincil]}
-              onPress={() => setDuzenleAcik(false)}
-              disabled={kaydediliyor}
-              accessibilityRole="button"
-            >
-              <Text style={stiller.duzenleIkincilYazi}>{t('ortak.vazgec')}</Text>
-            </Pressable>
-            <Pressable
-              testID="duzenle-kaydet"
-              style={[stiller.duzenleDugme, stiller.duzenleBirincil]}
-              onPress={duzenlemeyiKaydet}
-              disabled={kaydediliyor}
-              accessibilityRole="button"
-            >
-              <Text style={stiller.duzenleBirincilYazi}>{t('ortak.kaydet')}</Text>
-            </Pressable>
-          </View>
+          {oge.notMetni ? <Text style={stiller.not}>{oge.notMetni}</Text> : null}
         </View>
-      ) : (
-        (oge.notMetni || oge.ifade) && (
-          /* IFADE (2026-09-21): notun basinda 32 pt ikon, YAZISI YOK
-             (kullanicinin istegi ayni gun: "yaninda ifadenin yazisi
-             eklenmesin, sadece ifade"); etiket erisilebilirlik icin
-             ikonun accessibilityLabel'inda. Not yoksa yalnizca ikon.
-             Sozlukte olmayan (silinmis) slug sessizce cizilmez. */
-          <View style={stiller.notSatiri} testID="not-satiri">
-            {oge.ifade && ifadeBul(oge.ifade) && (
-              <Image
-                source={ifadeBul(oge.ifade)!.kaynak}
-                style={stiller.ifadeIkon}
-                resizeMode="contain"
-                accessibilityLabel={ifadeBul(oge.ifade)!.etiket}
-                testID={`kart-ifade-${oge.ifade}`}
-              />
-            )}
-            {oge.notMetni ? <Text style={stiller.not}>{oge.notMetni}</Text> : null}
-          </View>
-        )
       )}
 
-      {oge.fotografUrl && (
-        <Pressable
-          testID="akis-fotografi"
-          onPress={() => (onFotografAc ? onFotografAc() : setBuyukAcik(true))}
-          accessibilityRole="button"
-          accessibilityLabel={t('anaSayfa.fotografiBuyut')}
-          // NEGATIF PAY SARMALAYICIDA, gorselde DEGIL. Gorselde
-          // oldugunda `Pressable` kartin ic genisliginde kaliyor ve
-          // gorsel yalnizca SOLA tasiyordu; sagda kartin dolgusu kadar
-          // (16 px) beyaz bir serit kaliyordu - kullanicinin bildirdigi
-          // kusur (2026-09-08).
-          style={stiller.fotografKabi}
-        >
-          {/* KART ICINDE DE ZOOM (kullanicinin istegi 2026-09-08: "tam
-              ekran acilmadan da zoom yapma ekle"). Parmak kalkinca 1x'e
-              donuyor - kart sabit yukseklikte ve listenin icinde, kalici
-              zoom komsu kartlarin uzerine tasardi.
-
-              TEK DOKUNUS hala tam ekrani aciyor: `Pressable` disarida,
-              hareketler icerideki katmanda. */}
-          <YakinlastirilabilirGorsel
-            uri={oge.fotografUrl}
-            stil={stiller.fotograf}
-            birakincaSifirla
-          />
-        </Pressable>
+      {oge.fotografUrller.length > 0 && (
+        /* COKLU FOTOGRAF (2026-09-21): 2:1 alanda yana kaydirmali serit;
+           dokununca ya ekranin gezgini (profil) ya kartin kendi gezgini
+           acilir, dokunulan fotograftan baslayarak. */
+        <FotografSeridi
+          urller={oge.fotografUrller}
+          onDokun={(i) => (onFotografAc ? onFotografAc(i) : setBuyukIndeks(i))}
+        />
       )}
 
       {/* EYLEM SATIRI FOTOGRAFIN USTUNDE (kullanicinin karari
@@ -695,67 +376,34 @@ export function CheckInKarti({
         </View>
       )}
 
-      {/* Arkadas secici: zaten etiketli olanlar listede yok. */}
-      <ArkadasSecici
-        acikMi={seciciAcik}
-        arkadaslar={arkadaslar.filter(
-          (a) => !oge.etiketler.some((e) => e.kullaniciId === a.id && !kaldirilan.includes(a.id))
+      {/* BUYUK GORUNUM: ortak gezgin (siyah zemin, × ve "2 / 3" sayaci,
+          saga-sola kaydirma, iki parmakla yakinlastirma), SOL ALTTA
+          paylasan kisi (kullanicinin istegi 2026-09-17). "Kaldir" yok:
+          bu fotograf baskasinin olabilir; silme duzenleme sayfasinda. */}
+      <FotografGezgini
+        testID="akis"
+        fotograflar={oge.fotografUrller.map((url, i) => ({ id: `${oge.id}-${i}`, url }))}
+        acikIndeks={buyukIndeks}
+        onIndeks={setBuyukIndeks}
+        onKapat={() => setBuyukIndeks(null)}
+        altyazi={() => (
+          <FotografAltyazisi
+            testID="akis-fotograf-altyazisi"
+            avatarUrl={oge.avatarUrl}
+            kullaniciAdi={gosterilenAd || null}
+            mekanAdi={oge.mekanAdi}
+            zamanYazisi={zamanYazisi}
+            onKisi={() => {
+              setBuyukIndeks(null)
+              router.push(kisiYolu as never)
+            }}
+            onMekan={() => {
+              setBuyukIndeks(null)
+              router.push(`/harita/${oge.mekanId}` as never)
+            }}
+          />
         )}
-        secili={eklenen}
-        onDegistir={(id) =>
-          setEklenen((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]))
-        }
-        onKapat={() => setSeciciAcik(false)}
       />
-
-      {/* BUYUK GORUNUM: siyah zemin, fotograf tam genislikte, ustte
-          Kapat, SOL ALTTA paylasan kisi (kullanicinin istegi
-          2026-09-17). Profildeki buyuk gorunumun ayni deseni - orada
-          ayrica "Kaldir" var, burada yok: bu fotograf baskasinin
-          olabilir. */}
-      <Modal
-        visible={buyukAcik && Boolean(oge.fotografUrl)}
-        transparent={false}
-        animationType="fade"
-        onRequestClose={() => setBuyukAcik(false)}
-      >
-        <View style={stiller.buyukZemin} testID="fotograf-gorunumu">
-          <Pressable
-            style={stiller.buyukKapat}
-            onPress={() => setBuyukAcik(false)}
-            accessibilityRole="button"
-            accessibilityLabel={t('ortak.kapat')}
-            hitSlop={12}
-          >
-            <Text style={stiller.buyukKapatYazi}>×</Text>
-          </Pressable>
-          {/* IKI PARMAKLA YAKINLASTIRMA (kullanicinin istegi
-              2026-09-08). Cift dokunus sifirliyor. */}
-          {oge.fotografUrl && (
-            <YakinlastirilabilirTamEkran uri={oge.fotografUrl} stil={stiller.buyukFotograf} />
-          )}
-          {/* Altyazi fotografin USTUNDE duruyor (mutlak): fotograf
-              ekranin ortasinda ve %70 yuksekliginde, altta akisla
-              birlikte kayan bir satir olsaydi kadraj daralirdi. */}
-          <View style={stiller.buyukAltyazi}>
-            <FotografAltyazisi
-              testID="akis-fotograf-altyazisi"
-              avatarUrl={oge.avatarUrl}
-              kullaniciAdi={gosterilenAd || null}
-              mekanAdi={oge.mekanAdi}
-              zamanYazisi={zamanYazisi}
-              onKisi={() => {
-                setBuyukAcik(false)
-                router.push(kisiYolu as never)
-              }}
-              onMekan={() => {
-                setBuyukAcik(false)
-                router.push(`/harita/${oge.mekanId}` as never)
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
 
       {/* SILME GERI ALINAMAZ: tek dokunusla degil, onayla.
           Onay ekranin ORTASINDA aciliyor (kullanicinin istegi
@@ -765,7 +413,7 @@ export function CheckInKarti({
       <SecimPenceresi
         acikMi={menuAcik}
         secimler={[
-          ...(onNotKaydet
+          ...(onDuzenle
             ? [
                 {
                   etiket: t('anaSayfa.duzenle'),
@@ -773,7 +421,7 @@ export function CheckInKarti({
                   ikon: <KalemIkonu />,
                   onSec: () => {
                     setMenuAcik(false)
-                    duzenlemeyiAc()
+                    onDuzenle(oge.id)
                   },
                 },
               ]
@@ -822,78 +470,6 @@ const ETIKET_AVATAR_CAPI = 28
 
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
-  // YERINDE DUZENLEME (kullanicinin istegi 2026-09-05). Ayri bir
-  // pencere yerine kartin kendi icinde aciliyor.
-  duzenleAlani: {
-    marginTop: bosluk.m,
-    padding: bosluk.m,
-    borderRadius: yuvarlak.kart,
-    backgroundColor: renk.zemin,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    gap: bosluk.s,
-  },
-  duzenleGirdi: {
-    minHeight: 64,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    backgroundColor: renk.yuzey,
-    paddingHorizontal: bosluk.m,
-    paddingVertical: bosluk.s,
-    fontFamily: yazi.govde,
-    fontSize: olcek.govde,
-    color: renk.metin,
-    textAlignVertical: 'top',
-  },
-  duzenleEtiket: {
-    fontFamily: yazi.govdeOrta,
-    fontSize: olcek.minik,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: renk.metinSoluk,
-  },
-  cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.xs },
-  cip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingLeft: 4,
-    paddingRight: bosluk.s,
-    paddingVertical: 4,
-    borderRadius: yuvarlak.hap,
-    backgroundColor: renk.turuncuZemin,
-  },
-  cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.turuncuYazi },
-  cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
-  // "Arkadas etiketle" dugmesi: check-in formundaki "Arkadas ekle" ile
-  // ayni dil (hayalet, cerceveli).
-  etiketleDugmesi: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.hap,
-    paddingHorizontal: bosluk.l,
-    paddingVertical: 9,
-  },
-  etiketleDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metin },
-  duzenleHata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici },
-  duzenleEylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.xs },
-  ifadeSatiri: { flexDirection: 'row', marginBottom: bosluk.s },
-  // Fotograf satiri: 2:1 kucuk onizleme + hayalet dugmeler, sarar.
-  fotoSatiri: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: bosluk.s, marginBottom: bosluk.s },
-  fotoOnizleme: { width: 96, height: 48, borderRadius: 8, backgroundColor: renk.cizgi },
-  kaldirYazi: { color: renk.yikici },
-  duzenleDugme: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 11,
-    borderRadius: yuvarlak.hap,
-  },
-  duzenleIkincil: { borderWidth: 1, borderColor: renk.cizgi },
-  duzenleIkincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
-  duzenleBirincil: { backgroundColor: renk.turuncu },
-  duzenleBirincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
 
   eylemler: {
     flexDirection: 'row',
@@ -909,12 +485,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     fontSize: olcek.govde,
     color: renk.metin,
   },
-  buyukZemin: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center' },
   // × SOLDA (kullanicinin istegi 2026-09-18: butun buyuk gorunumlerde ayni yer; gezginle ayni).
-  buyukKapat: { position: 'absolute', top: bosluk.xxl + bosluk.xl, left: bosluk.sayfa, zIndex: 1 },
-  buyukKapatYazi: { fontFamily: yazi.govde, fontSize: 34, color: '#FFFFFF', lineHeight: 38 },
-  buyukFotograf: { width: '100%', height: '70%' },
-  buyukAltyazi: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 
   kart: {
     // REFERANS KARTI (kullanicinin gorseli 2026-09-20 aksam, "akisi bu
@@ -997,28 +568,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     lineHeight: 21,
     color: renk.metin,
   },
-  // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
-  // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif
-  // yatay margin kartin kendi dolgusunu iptal ediyor - metin padding'li
-  // kaliyor, yalnizca gorsel kenara ulasiyor.
-  //
-  // Pay SARMALAYICIDA: gorselde oldugunda `Pressable` kartin ic
-  // genisliginde kaliyor ve gorsel yalnizca sola tasiyor, sagda 16 px
-  // beyaz serit kaliyordu.
-  // REFERANS (2026-09-18): fotograf kartin ICINDE, yuvarlak koseli ve
-  // YATAY sabit oranli (16:7) - akista referanstaki boyutta gorunur;
-  // basilinca acilan buyuk gorunum fotografi KENDI oraninda gosterir
-  // (`contain`). 2026-09-02/18'in kenara yapisik tam genislik deseni bu
-  // referansla degisti.
-  fotografKabi: {
-    marginTop: bosluk.m,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  // Referans olcusu 2:1 (16:7 idi, 2026-09-18).
-  fotograf: {
-    width: '100%',
-    aspectRatio: 2,
-    backgroundColor: renk.cizgi,
-  },
+  // Fotograf alani artik `FotografSeridi` (coklu fotograf, 2026-09-21);
+  // 2:1 oran ve yuvarlak kose orada.
 })

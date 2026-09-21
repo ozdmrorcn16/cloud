@@ -651,8 +651,12 @@ export default {
     ifadeEkle: 'أضف حالة',
     ifadeBaslik: 'كيف حالك، ماذا تفعل؟',
     ifadeKaldir: 'إزالة الحالة',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'تغيير',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'تعديل تسجيل الوصول',
+    fotograflar: 'الصور',
+    kameraVeyaGaleri: 'اختر من الكاميرا أو المعرض',
+    ifade: 'الحالة',
+    kaydedinceUygulanir: 'تُطبَّق التغييرات عند الحفظ.',
   },
   mekanDuzenle: {
     baslik: 'تصحيح المعلومات',

@@ -14,7 +14,7 @@ import { takibiBirak } from '../../../lib/bag'
 import { engelle } from '../../../lib/engelleme'
 import { avatarlariGetir } from '../../../lib/akis'
 import { checkIniSil, checkInNotunuGuncelle } from '../../../lib/checkin'
-import { checkInFotografiniDegistir } from '../../../lib/checkin-fotograf-degistir'
+import { checkInFotograflariniDegistir } from '../../../lib/checkin-fotograf-degistir'
 import { etkilesimOzetleriniGetir, begen, paylas } from '../../../lib/etkilesim'
 
 jest.mock('../../../lib/profil', () => ({
@@ -37,7 +37,7 @@ jest.mock('../../../lib/checkin', () => ({
   checkInNotunuGuncelle: jest.fn(),
 }))
 jest.mock('../../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
-jest.mock('../../../lib/checkin-fotograf-degistir', () => ({ checkInFotografiniDegistir: jest.fn() }))
+jest.mock('../../../lib/checkin-fotograf-degistir', () => ({ checkInFotograflariniDegistir: jest.fn() }))
 // Sabitler GERCEK kaliyor, yalnizca ag cagrilari degistiriliyor: eksik
 // bir sabit hata vermiyor, sessizce undefined donuyor (2026-09-02'de
 // yasandi).
@@ -77,7 +77,8 @@ function ani(ustune: Record<string, unknown> = {}) {
     mekanSemti: 'Nilüfer',
     mekanKonumu: { lat: 41, lng: 29 },
     notMetni: 'harika bir aksamdi',
-    fotograf: null,
+    fotograflar: [],
+    fotografUrller: [],
     olusturmaZamani: '2026-08-20T10:00:00Z',
     bitisZamani: '2026-08-20T14:00:00Z',
     canliMi: false,
@@ -133,7 +134,7 @@ describe('ProfilEkrani', () => {
    */
   it('izgaradan acilan fotografin altinda kisi, mekan ve zaman yaziyor', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      ani({ fotografUrl: 'https://imzali/1.jpg' }),
+      ani({ fotograflar: ['u/1.jpg'], fotografUrller: ['https://imzali/1.jpg'] }),
     ])
 
     await render(<ProfilEkrani />)
@@ -152,9 +153,9 @@ describe('ProfilEkrani', () => {
    */
   it('izgaradan acilan buyuk gorunumde sayac var ve kaydirinca sonraki fotografa gecer', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      ani({ id: 'ani-1', fotografUrl: 'https://imzali/1.jpg' }),
-      ani({ id: 'ani-2', fotografUrl: 'https://imzali/2.jpg', mekanAdi: 'Kent Meydanı' }),
-      ani({ id: 'ani-3', fotografUrl: null }),
+      ani({ id: 'ani-1', fotograflar: ['u/1.jpg'], fotografUrller: ['https://imzali/1.jpg'] }),
+      ani({ id: 'ani-2', fotograflar: ['u/2.jpg'], fotografUrller: ['https://imzali/2.jpg'], mekanAdi: 'Kent Meydanı' }),
+      ani({ id: 'ani-3', fotograflar: [], fotografUrller: [] }),
     ])
 
     await render(<ProfilEkrani />)
@@ -177,8 +178,8 @@ describe('ProfilEkrani', () => {
 
   it('ani KARTINDAKI fotografa dokununca da ayni gezgin, o fotograftan acilir', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      ani({ id: 'ani-1', fotografUrl: 'https://imzali/1.jpg' }),
-      ani({ id: 'ani-2', fotografUrl: 'https://imzali/2.jpg', mekanAdi: 'Kent Meydanı' }),
+      ani({ id: 'ani-1', fotograflar: ['u/1.jpg'], fotografUrller: ['https://imzali/1.jpg'] }),
+      ani({ id: 'ani-2', fotograflar: ['u/2.jpg'], fotografUrller: ['https://imzali/2.jpg'], mekanAdi: 'Kent Meydanı' }),
     ])
 
     await render(<ProfilEkrani />)
@@ -189,12 +190,12 @@ describe('ProfilEkrani', () => {
     await screen.findByTestId('izgara-buyuk-gorunum')
     expect(screen.getByTestId('izgara-sayac')).toHaveTextContent('2 / 2')
     // Kartin kendi tek fotografli penceresi ACILMADI.
-    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
+    expect(screen.queryByTestId('akis-buyuk-gorunum')).toBeNull()
   })
 
   it('izgaradaki fotografin MEKAN ADI mekan sayfasini aciyor', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      ani({ fotografUrl: 'https://imzali/1.jpg' }),
+      ani({ fotograflar: ['u/1.jpg'], fotografUrller: ['https://imzali/1.jpg'] }),
     ])
 
     await render(<ProfilEkrani />)
@@ -794,10 +795,10 @@ describe('ProfilEkrani anilar listesi', () => {
     expect(screen.getByText('Mekan 1')).toBeTruthy()
   })
 
-  it('PROFILDE DE FOTOGRAF DUZENLENIR (kullanicinin istegi 2026-09-21: ana sayfayla ayni): ekle -> galeri -> Kaydet; kaldir -> null', async () => {
-    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani({ fotografUrl: null })])
+  it('PROFILDE DE FOTOGRAF DUZENLENIR (kullanicinin istegi 2026-09-21: ana sayfayla ayni sayfa): ekle -> galeri -> Kaydet; kaldir', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani()])
     ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
-    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue('https://imzali/yeni.jpg')
+    ;(checkInFotograflariniDegistir as jest.Mock).mockResolvedValue({ yollar: ['u/yeni.jpg'], urller: ['https://imzali/yeni.jpg'] })
     mockGaleriAc.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///yeni.jpg' }] })
 
     await render(<ProfilEkrani />)
@@ -805,20 +806,35 @@ describe('ProfilEkrani anilar listesi', () => {
 
     await fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
     await menudenSec('menu-duzenle')
+    expect(await screen.findByTestId('duzenle-sayfasi')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('duzenle-foto-ekle'))
     await menudenSec('foto-galeri')
-    expect(await screen.findByTestId('duzenle-foto-onizleme')).toBeTruthy()
-    await fireEvent.press(screen.getByText('Kaydet'))
-    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenCalledWith('ani-1', 'file:///yeni.jpg'))
+    expect(await screen.findByTestId('duzenle-foto-0')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
+    await waitFor(() => expect(checkInFotograflariniDegistir).toHaveBeenCalledWith('ani-1', { kalanYollar: [], yeniUriler: ['file:///yeni.jpg'] }))
     expect(await screen.findByTestId('akis-fotografi')).toBeTruthy()
 
-    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue(null)
+    ;(checkInFotograflariniDegistir as jest.Mock).mockResolvedValue({ yollar: [], urller: [] })
     await fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
     await menudenSec('menu-duzenle')
-    await fireEvent.press(screen.getByTestId('duzenle-foto-kaldir'))
-    await fireEvent.press(screen.getByText('Kaydet'))
-    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenLastCalledWith('ani-1', null))
+    await fireEvent.press(await screen.findByTestId('duzenle-foto-kaldir-0'))
+    await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
+    // Tek fotograf kaldirildi: kalan yok.
+    await waitFor(() => expect(checkInFotograflariniDegistir).toHaveBeenLastCalledWith('ani-1', { kalanYollar: [], yeniUriler: [] }))
     await waitFor(() => expect(screen.queryByTestId('akis-fotografi')).toBeNull())
+  })
+
+  it('IKI FOTOGRAFLI ANI izgarada IKI kare, gezginde iki sayfa (coklu fotograf, 2026-09-21)', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
+      ani({ id: 'ani-1', fotograflar: ['u/1.jpg', 'u/2.jpg'], fotografUrller: ['https://imzali/1.jpg', 'https://imzali/2.jpg'] }),
+    ])
+    await render(<ProfilEkrani />)
+    await fireEvent.press(await screen.findByText('Fotoğraf'))
+    expect(screen.getByTestId('izgara-ani-1-0')).toBeTruthy()
+    expect(screen.getByTestId('izgara-ani-1-1')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('izgara-ani-1-1'))
+    await screen.findByTestId('izgara-buyuk-gorunum')
+    expect(screen.getByTestId('izgara-sayac')).toHaveTextContent('2 / 2')
   })
 
   /*

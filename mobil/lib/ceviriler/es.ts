@@ -651,8 +651,12 @@ export default {
     ifadeEkle: 'Añadir un estado',
     ifadeBaslik: '¿Cómo estás, qué haces?',
     ifadeKaldir: 'Quitar estado',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Cambiar',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Editar check-in',
+    fotograflar: 'Fotos',
+    kameraVeyaGaleri: 'Elige cámara o galería',
+    ifade: 'Estado',
+    kaydedinceUygulanir: 'Los cambios se aplican al guardar.',
   },
   mekanDuzenle: {
     baslik: 'Corregir la información',

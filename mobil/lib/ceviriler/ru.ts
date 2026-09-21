@@ -651,8 +651,12 @@ export default {
     ifadeEkle: 'Добавить настроение',
     ifadeBaslik: 'Как ты, чем занимаешься?',
     ifadeKaldir: 'Убрать настроение',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Изменить',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Изменить чекин',
+    fotograflar: 'Фото',
+    kameraVeyaGaleri: 'Камера или галерея',
+    ifade: 'Настроение',
+    kaydedinceUygulanir: 'Изменения применяются после сохранения.',
   },
   mekanDuzenle: {
     baslik: 'Исправить данные',

@@ -25,7 +25,7 @@ jest.mock('../../../lib/engelleme', () => ({
   engeliKaldir: jest.fn(),
   engellediklerimiGetir: jest.fn(),
 }))
-jest.mock('../../../lib/checkin', () => ({ kullanicininAnilariniGetir: jest.fn() }))
+jest.mock('../../../lib/checkin', () => ({ ...jest.requireActual('../../../lib/checkin'), kullanicininAnilariniGetir: jest.fn() }))
 jest.mock('../../../lib/fotograf-url', () => ({
   profilFotograflariUrl: jest.fn(),
   checkInFotografiUrl: jest.fn(),
@@ -861,8 +861,8 @@ describe('KullaniciProfiliEkrani duzen', () => {
       fotograflar: [], profilGizli: false, arkadasSayisi: 1, aniSayisi: 2,
     })
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
-      { id: 'c-1', mekanId: 'm-1', mekanAdi: 'Sahil Kafe', notMetni: null, fotografUrl: 'https://x/1.jpg', olusturmaZamani: '2026-09-01T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
-      { id: 'c-2', mekanId: 'm-2', mekanAdi: 'Park', notMetni: null, fotografUrl: null, olusturmaZamani: '2026-09-02T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
+      { id: 'c-1', mekanId: 'm-1', mekanAdi: 'Sahil Kafe', notMetni: null, fotograflar: ['u/1.jpg'], fotografUrller: ['https://x/1.jpg'], olusturmaZamani: '2026-09-01T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
+      { id: 'c-2', mekanId: 'm-2', mekanAdi: 'Park', notMetni: null, fotograflar: [], fotografUrller: [], olusturmaZamani: '2026-09-02T10:00:00Z', canliMi: false, gorunurluk: 'herkese_acik' },
     ])
     await render(<KullaniciProfiliEkrani />)
     await screen.findByText('Anılar')
@@ -874,8 +874,8 @@ describe('KullaniciProfiliEkrani duzen', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k-7')
 
     await fireEvent.press(screen.getByLabelText('0 Fotoğraf'))
-    expect(await screen.findByTestId('izgara-c-1')).toBeTruthy()
-    expect(screen.queryByTestId('izgara-c-2')).toBeNull()
+    expect(await screen.findByTestId('izgara-c-1-0')).toBeTruthy()
+    expect(screen.queryByTestId('izgara-c-2-0')).toBeNull()
 
     await fireEvent.press(screen.getByLabelText('2 Anı'))
     expect(await screen.findByText('En sık')).toBeTruthy()
@@ -1052,7 +1052,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
     })
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
-        fotografUrl: null, olusturmaZamani: new Date().toISOString(), canliMi: false,
+        fotograflar: [], fotografUrller: [], olusturmaZamani: new Date().toISOString(), canliMi: false,
         mekanSemti: null, etiketler: [] },
     ])
 
@@ -1092,10 +1092,10 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('kartin fotografina dokununca gezgin acilir: sayac ve kaydirma (2026-09-18)', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: null,
-        fotografUrl: 'https://imzali/1.jpg', olusturmaZamani: new Date().toISOString(),
+        fotograflar: ['u/1.jpg'], fotografUrller: ['https://imzali/1.jpg'], olusturmaZamani: new Date().toISOString(),
         canliMi: false, mekanSemti: null, etiketler: [] },
       { id: 'checkin-2', mekanId: 'mekan-2', mekanAdi: 'Kent Meydanı', notMetni: null,
-        fotografUrl: 'https://imzali/2.jpg', olusturmaZamani: new Date().toISOString(),
+        fotograflar: ['u/2.jpg'], fotografUrller: ['https://imzali/2.jpg'], olusturmaZamani: new Date().toISOString(),
         canliMi: false, mekanSemti: null, etiketler: [] },
     ])
 
@@ -1105,7 +1105,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
 
     await screen.findByTestId('kullanici-buyuk-gorunum')
     expect(screen.getByTestId('kullanici-sayac')).toHaveTextContent('1 / 2')
-    expect(screen.queryByTestId('fotograf-gorunumu')).toBeNull()
+    expect(screen.queryByTestId('akis-buyuk-gorunum')).toBeNull()
 
     const liste = screen.getByTestId('kullanici-sayfalar')
     const genislik = require('react-native').Dimensions.get('window').width
@@ -1119,7 +1119,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
   it('ACIK profilde paylasimlar KART olarak gorunur ve duzenleme menusu YOK', async () => {
     ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([
       { id: 'checkin-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: 'harika',
-        fotografUrl: null, olusturmaZamani: new Date().toISOString(), canliMi: false,
+        fotograflar: [], fotografUrller: [], olusturmaZamani: new Date().toISOString(), canliMi: false,
         mekanSemti: null, etiketler: [] },
     ])
 
@@ -1157,7 +1157,7 @@ describe('KullaniciProfiliEkrani duzen', () => {
           mekanSemti: 'Nilüfer',
           olusturmaZamani: new Date().toISOString(),
           notMetni: null,
-          fotografUrl: null,
+          fotograflar: [], fotografUrller: [],
           etiketler: [],
         })
       }

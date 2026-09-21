@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-
 import CheckInEkrani from '../../../src/app/check-in/[mekanId]'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap } from '../../../lib/checkin'
-import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
+import { checkinFotograflariniYukle } from '../../../lib/checkin-fotograf-yukle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import * as ImagePicker from 'expo-image-picker'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
@@ -11,8 +11,11 @@ import { etiketleriKaydet } from '../../../lib/etiket'
 jest.mock('../../../lib/konum', () => ({ cihazKonumunuAl: jest.fn() }))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 jest.mock('../../../lib/etiket', () => ({ etiketleriKaydet: jest.fn() }))
-jest.mock('../../../lib/checkin', () => ({ checkInYap: jest.fn() }))
-jest.mock('../../../lib/checkin-fotograf-yukle', () => ({ checkinFotografYukle: jest.fn() }))
+// Sabitler (NOT_EN_FAZLA, EN_FAZLA_FOTOGRAF) GERCEK kalir: tam mock'ta
+// undefined donuyor ve `selectionLimit: NaN` gibi sessiz hatalar cikiyor
+// (2026-09-22'de yasandi).
+jest.mock('../../../lib/checkin', () => ({ ...jest.requireActual('../../../lib/checkin'), checkInYap: jest.fn() }))
+jest.mock('../../../lib/checkin-fotograf-yukle', () => ({ checkinFotograflariniYukle: jest.fn() }))
 jest.mock('../../../lib/ayarlar', () => ({ varsayilanBulunurluguGetir: jest.fn() }))
 jest.mock('../../../lib/mekan', () => ({
   mekaniGetir: jest.fn().mockResolvedValue({
@@ -70,7 +73,7 @@ describe('CheckInEkrani', () => {
     await fireEvent.press(buttons[buttons.length - 1]) // Press the button, not the title
 
     await waitFor(() => {
-      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', undefined, 'herkese_acik', null)
+      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', [], 'herkese_acik', null)
     })
     // BASARI ANI (2026-09-20): once dugme daireye toplanip tik ve
     // "Şu an buradasın" gosteriyor; yonlendirme ~1,15 s sonra.
@@ -98,7 +101,7 @@ describe('CheckInEkrani', () => {
       canceled: false,
       assets: [{ uri: 'file:///local/photo.jpg' }],
     })
-    ;(checkinFotografYukle as jest.Mock).mockRejectedValue(new Error('Upload hatasi'))
+    ;(checkinFotograflariniYukle as jest.Mock).mockRejectedValue(new Error('Upload hatasi'))
     ;(checkInYap as jest.Mock).mockResolvedValue({
       id: 'checkin-1', mekanId: 'mekan-1', notMetni: 'not', fotograf: null,
       olusturmaZamani: '2026-08-14T10:00:00Z', bitisZamani: '2026-08-14T14:00:00Z', canliMi: true,
@@ -119,7 +122,7 @@ describe('CheckInEkrani', () => {
       expect(screen.getByText('Fotoğraf yüklenemedi, notunla check-in yapıldı')).toBeTruthy()
     })
     // checkInYap fotografsiz cagirilmali
-    expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'not', undefined, 'herkese_acik', null)
+    expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'not', [], 'herkese_acik', null)
   })
 
   it('ag hatasi icin ozel mesaj gosterir', async () => {
@@ -157,7 +160,7 @@ describe('CheckInEkrani', () => {
     await waitFor(() =>
       expect(checkInYap).toHaveBeenCalledWith(
         expect.anything(), expect.anything(), expect.anything(),
-        undefined, undefined, 'takipcilerim', null
+        undefined, [], 'takipcilerim', null
       )
     )
   })
@@ -203,7 +206,7 @@ describe('CheckInEkrani', () => {
 
     await waitFor(() => {
       expect(checkInYap).toHaveBeenCalledWith(
-        'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli', null
+        'mekan-1', 41.015, 28.979, undefined, [], 'gizli', null
       )
     })
   })
@@ -217,22 +220,42 @@ describe('CheckInEkrani', () => {
     expect(screen.getByText('Nilüfer, Bursa')).toBeTruthy()
     expect(screen.getByText('Not, fotoğraf ve arkadaş eklemek isteğe bağlı.')).toBeTruthy()
     expect(screen.getByText('Notun')).toBeTruthy()
-    expect(screen.getByText('Fotoğraf')).toBeTruthy()
+    expect(screen.getByText('Fotoğraflar')).toBeTruthy()
     expect(screen.getByText('Kimlerle birliktesin?')).toBeTruthy()
     expect(screen.getByText('Görünürlük, gizlilik ayarlarına göre belirlenir.')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('mekan-degistir'))
     expect(mockRouterBack).toHaveBeenCalled()
   })
 
-  it('secilen fotograf tam genislik onizleme + x ile kaldirilir', async () => {
-    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///a.jpg' }] })
+  it('COKLU FOTOGRAF (2026-09-21): galeriden iki secim -> iki kare + Ekle; x ile kaldirilir; gonderince yollar dizi gider', async () => {
+    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///a.jpg' }, { uri: 'file:///b.jpg' }],
+    })
+    ;(checkinFotograflariniYukle as jest.Mock).mockResolvedValue(['u/a.jpg', 'u/b.jpg'])
+    ;(checkInYap as jest.Mock).mockResolvedValue({ id: 'checkin-1', mekanId: 'mekan-1', notMetni: null, fotograflar: ['u/a.jpg', 'u/b.jpg'], olusturmaZamani: '2026-08-14T10:00:00Z', bitisZamani: '2026-08-14T14:00:00Z', canliMi: true, bulunurluk: 'herkese_acik' })
     await render(<CheckInEkrani />)
     await fireEvent.press(await screen.findByTestId('foto-ekle'))
     await menudenSec('foto-galeri')
-    expect(await screen.findByTestId('foto-onizleme')).toBeTruthy()
+    // Galeri COKLU secimle (5 yer bos) acildi.
+    expect((ImagePicker.launchImageLibraryAsync as jest.Mock).mock.calls[0][0]).toMatchObject({ allowsMultipleSelection: true, selectionLimit: 5 })
+    expect(await screen.findByTestId('foto-0')).toBeTruthy()
+    expect(screen.getByTestId('foto-1')).toBeTruthy()
+    expect(screen.getByTestId('foto-ekle')).toBeTruthy()
     expect(screen.queryByText('Fotoğraf ekle')).toBeNull()
-    await fireEvent.press(screen.getByTestId('foto-kaldir'))
+
+    await fireEvent.press(screen.getByTestId('foto-kaldir-0'))
+    expect(screen.queryByTestId('foto-1')).toBeNull()
+    await fireEvent.press(screen.getByTestId('foto-kaldir-0'))
     expect(await screen.findByText('Fotoğraf ekle')).toBeTruthy()
+
+    // Yeniden iki sec, gonder: yukleme tek cagri, checkInYap dizi alir.
+    await fireEvent.press(screen.getByTestId('foto-ekle'))
+    await menudenSec('foto-galeri')
+    await screen.findByTestId('foto-1')
+    await fireEvent.press(screen.getByText('Check-in paylaş'))
+    await waitFor(() => expect(checkinFotograflariniYukle).toHaveBeenCalledWith(expect.any(String), ['file:///a.jpg', 'file:///b.jpg']))
+    await waitFor(() => expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, undefined, ['u/a.jpg', 'u/b.jpg'], 'herkese_acik', null))
   })
 
   it('ilk kullanim ekrani yok: form dogrudan acilir', async () => {
@@ -377,7 +400,7 @@ describe('CheckInEkrani fotograf kaynagi', () => {
 
     await fireEvent.press(screen.getByTestId('check-in-gonder'))
     await waitFor(() =>
-      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, undefined, undefined, 'herkese_acik', 'kahve-keyfi')
+      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, undefined, [], 'herkese_acik', 'kahve-keyfi')
     )
   })
 

@@ -5,8 +5,9 @@ import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { checkIniSil, checkInNotunuGuncelle, checkInIfadesiniGuncelle } from '../../lib/checkin'
-import { checkInFotografiniDegistir } from '../../lib/checkin-fotograf-degistir'
+import { checkInFotograflariniDegistir } from '../../lib/checkin-fotograf-degistir'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
+import { CheckInDuzenle, type DuzenlemeDegisiklikleri } from '../tasarim/CheckInDuzenle'
 import {
   etkilesimOzetleriniGetir,
   begen,
@@ -154,55 +155,45 @@ export default function AnaSayfa() {
   }
 
   /**
-   * DUZENLEME (kullanicinin istegi 2026-09-02).
-   *
-   * Hata BURADA yakalanmiyor: pencere kendi hatasini gostersin diye
-   * yukari birakiliyor. Boylece basarisiz kayitta pencere acik kaliyor
-   * ve kullanici yazdigi metni kaybetmiyor.
+   * DUZENLEME (referans sayfa, 2026-09-21): "Check-in'i duzenle" alttan
+   * gelir, Kaydet tek paket verir. Sira: fotograflar (yukle -> sunucu ->
+   * eskileri sil) -> etiket kaldir -> etiket ekle -> ifade -> not. Not en
+   * son: bir adim kirilirsa sayfa acik kalir, hata gorunur, yazilan
+   * kaybolmaz (2026-09-05'ten beri kural). Liste her adimdan sonra
+   * YERINDE guncellenir; sayfa kapaninca kart zaten yeni halini gosterir.
    */
-  async function notuKaydet(id: string, yeniNot: string) {
-    await checkInNotunuGuncelle(id, yeniNot)
-    const temiz = yeniNot.trim()
-    setOgeler((mevcut) =>
-      mevcut.map((o) => (o.id === id ? { ...o, notMetni: temiz === '' ? null : temiz } : o))
-    )
+  function ogeyiGuncelle(id: string, parca: Partial<AkisOgesi>) {
+    setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, ...parca } : o)))
   }
 
-  async function ifadeyiKaydet(id: string, ifade: string | null) {
-    await checkInIfadesiniGuncelle(id, ifade)
-    setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, ifade } : o)))
-  }
+  const [duzenlenenId, setDuzenlenenId] = useState<string | null>(null)
+  const duzenlenen = ogeler.find((o) => o.id === duzenlenenId) ?? null
 
-  // Fotograf degistir/kaldir (kullanicinin istegi 2026-09-21): yukleme,
-  // sunucu ve eski dosyanin silinmesi lib'de; ekran yalnizca karta yeni
-  // imzali adresi (ya da null) yaziyor.
-  async function fotografiKaydet(id: string, yerelUri: string | null) {
-    const yeniUrl = await checkInFotografiniDegistir(id, yerelUri)
-    setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, fotografUrl: yeniUrl } : o)))
-  }
-
-  async function etiketEkle(id: string, kullaniciIdler: string[]) {
-    await etiketleriKaydet(id, kullaniciIdler)
-    // KAYDEDINCE HEMEN GORUNSUN (kullanicinin istegi 2026-09-18): sunucu
-    // karsi tarafin ayarina gore etiketi ya hemen onayliyor ya onaya
-    // dusuruyor; hangisi oldugunu tahmin etmek yerine o check-in'in
-    // onayli etiketleri yeniden okunup karta yaziliyor. Onaya dusen
-    // etiket onaylanana kadar gorunmez (eski kural).
-    const guncel = await etiketleriGetir([id]).catch(() => null)
-    if (guncel) {
-      setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, etiketler: guncel[id] ?? [] } : o)))
+  async function duzenlemeyiKaydet(id: string, d: DuzenlemeDegisiklikleri) {
+    if (d.fotograflar) {
+      const { yollar, urller } = await checkInFotograflariniDegistir(id, d.fotograflar)
+      ogeyiGuncelle(id, { fotograflar: yollar, fotografUrller: urller })
     }
-  }
-
-  async function etiketiSil(id: string, kullaniciId: string) {
-    await etiketiKaldir(id, kullaniciId)
-    setOgeler((mevcut) =>
-      mevcut.map((o) =>
-        o.id === id
-          ? { ...o, etiketler: o.etiketler.filter((e) => e.kullaniciId !== kullaniciId) }
-          : o
-      )
-    )
+    for (const kullaniciId of d.etiketKaldir) {
+      await etiketiKaldir(id, kullaniciId)
+    }
+    if (d.etiketEkle.length > 0) {
+      await etiketleriKaydet(id, d.etiketEkle)
+    }
+    if (d.etiketKaldir.length > 0 || d.etiketEkle.length > 0) {
+      // Sunucu karsi tarafin "etiket onayi" ayarina gore hemen onayliyor
+      // ya da onaya dusuruyor (2026-09-18): onayli liste yeniden okunur.
+      const guncel = await etiketleriGetir([id]).catch(() => null)
+      if (guncel) ogeyiGuncelle(id, { etiketler: guncel[id] ?? [] })
+    }
+    const mevcut = ogeler.find((o) => o.id === id)
+    if (mevcut && d.ifade !== mevcut.ifade) {
+      await checkInIfadesiniGuncelle(id, d.ifade)
+      ogeyiGuncelle(id, { ifade: d.ifade })
+    }
+    await checkInNotunuGuncelle(id, d.not)
+    const temiz = d.not.trim()
+    ogeyiGuncelle(id, { notMetni: temiz === '' ? null : temiz })
   }
 
   // Ref'i state ile ayni tutuyoruz; okuyanlar (tazeleme, sonraki
@@ -324,11 +315,7 @@ export default function AnaSayfa() {
             silOnayiAcik={silOnayi === item.id}
             onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
             onSil={sil}
-            onNotKaydet={notuKaydet}
-            onEtiketKaldir={etiketiSil}
-            onEtiketEkle={etiketEkle}
-            onIfadeKaydet={ifadeyiKaydet}
-            onFotografKaydet={fotografiKaydet}
+            onDuzenle={setDuzenlenenId}
           />
           </KademeliGiris>
         )}
@@ -350,6 +337,14 @@ export default function AnaSayfa() {
             </BosDurumGirisi>
           )
         }
+      />
+
+      <CheckInDuzenle
+        acikMi={duzenlenen !== null}
+        oge={duzenlenen}
+        zamanYazisi={duzenlenen ? gorecelZaman(duzenlenen.olusturmaZamani, t) : ''}
+        onKapat={() => setDuzenlenenId(null)}
+        onKaydet={(d) => duzenlemeyiKaydet(duzenlenenId as string, d)}
       />
     </View>
   )

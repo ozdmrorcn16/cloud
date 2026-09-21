@@ -26,7 +26,7 @@ import {
   type AniGorunumu,
   type AktifCheckIn,
 } from '../../../lib/checkin'
-import { checkInFotografiniDegistir } from '../../../lib/checkin-fotograf-degistir'
+import { checkInFotograflariniDegistir } from '../../../lib/checkin-fotograf-degistir'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../../lib/etiket'
 import type { BagKisi } from '../../../lib/bag'
@@ -37,7 +37,8 @@ import { PaylasIkonu } from '../../tasarim/etkilesim-ikonlari'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { CheckInKarti } from '../../tasarim/CheckInKarti'
-import { anidanAkisOgesi } from '../../../lib/akis'
+import { CheckInDuzenle, type DuzenlemeDegisiklikleri } from '../../tasarim/CheckInDuzenle'
+import { anidanAkisOgesi, fotografBirimleri, type AkisOgesi } from '../../../lib/akis'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import {
   etkilesimOzetleriniGetir,
@@ -419,48 +420,52 @@ export default function ProfilEkrani() {
     }
   }
 
-  // Hata pencereye birakiliyor (akis ekranindaki desen): kayit
-  // basarisizsa pencere acik kalsin, yazilan metin kaybolmasin.
-  async function notuKaydet(checkInId: string, yeniNot: string) {
-    await checkInNotunuGuncelle(checkInId, yeniNot)
-    const temiz = yeniNot.trim()
-    setAnilar((mevcut) =>
-      mevcut.map((a) => (a.id === checkInId ? { ...a, notMetni: temiz === '' ? null : temiz } : a))
-    )
+  /**
+   * DUZENLEME (referans sayfa, 2026-09-21): "Check-in'i duzenle" alttan
+   * gelir, Kaydet tek paket verir. Sira: fotograflar (yukle -> sunucu ->
+   * eskileri sil) -> etiket kaldir -> etiket ekle -> ifade -> not. Not en
+   * son: bir adim kirilirsa sayfa acik kalir, hata gorunur, yazilan
+   * kaybolmaz (2026-09-05'ten beri kural). Liste her adimdan sonra
+   * YERINDE guncellenir; sayfa kapaninca kart zaten yeni halini gosterir.
+   */
+  function aniyiGuncelle(id: string, parca: Partial<AniGorunumu>) {
+    setAnilar((mevcut) => mevcut.map((a) => (a.id === id ? { ...a, ...parca } : a)))
   }
 
-  async function ifadeyiKaydet(checkInId: string, ifade: string | null) {
-    await checkInIfadesiniGuncelle(checkInId, ifade)
-    setAnilar((mevcut) => mevcut.map((a) => (a.id === checkInId ? { ...a, ifade } : a)))
-  }
+  // Duzenleme sayfasi AkisOgesi bekliyor; profil anilari o bicime cevrilir
+  // (kartla ayni donusum).
+  const duzenlenebilirler: AkisOgesi[] = profil
+    ? anilar.map((a) => anidanAkisOgesi(a, { kullaniciId: profil.id, avatarUrl: fotografUrl, rumuz: profil.kullaniciAdi }))
+    : []
 
-  // Ana sayfadaki fotografiKaydet ile ayni (2026-09-21).
-  async function fotografiKaydet(checkInId: string, yerelUri: string | null) {
-    const yeniUrl = await checkInFotografiniDegistir(checkInId, yerelUri)
-    setAnilar((mevcut) => mevcut.map((a) => (a.id === checkInId ? { ...a, fotografUrl: yeniUrl } : a)))
-  }
+  const [duzenlenenId, setDuzenlenenId] = useState<string | null>(null)
+  const duzenlenen = duzenlenebilirler.find((o) => o.id === duzenlenenId) ?? null
 
-  // Ana sayfadaki etiketEkle ile ayni: kaydet, onayli etiketleri yeniden
-  // oku, karta yaz (kullanicinin istegi 2026-09-18: hemen gorunsun).
-  async function etiketEkle(checkInId: string, kullaniciIdler: string[]) {
-    await etiketleriKaydet(checkInId, kullaniciIdler)
-    const guncel = await etiketleriGetir([checkInId]).catch(() => null)
-    if (guncel) {
-      setAnilar((mevcut) =>
-        mevcut.map((a) => (a.id === checkInId ? { ...a, etiketler: guncel[checkInId] ?? [] } : a))
-      )
+  async function duzenlemeyiKaydet(id: string, d: DuzenlemeDegisiklikleri) {
+    if (d.fotograflar) {
+      const { yollar, urller } = await checkInFotograflariniDegistir(id, d.fotograflar)
+      aniyiGuncelle(id, { fotograflar: yollar, fotografUrller: urller })
     }
-  }
-
-  async function etiketiSil(checkInId: string, kisiId: string) {
-    await etiketiKaldir(checkInId, kisiId)
-    setAnilar((mevcut) =>
-      mevcut.map((a) =>
-        a.id === checkInId
-          ? { ...a, etiketler: (a.etiketler ?? []).filter((e) => e.kullaniciId !== kisiId) }
-          : a
-      )
-    )
+    for (const kullaniciId of d.etiketKaldir) {
+      await etiketiKaldir(id, kullaniciId)
+    }
+    if (d.etiketEkle.length > 0) {
+      await etiketleriKaydet(id, d.etiketEkle)
+    }
+    if (d.etiketKaldir.length > 0 || d.etiketEkle.length > 0) {
+      // Sunucu karsi tarafin "etiket onayi" ayarina gore hemen onayliyor
+      // ya da onaya dusuruyor (2026-09-18): onayli liste yeniden okunur.
+      const guncel = await etiketleriGetir([id]).catch(() => null)
+      if (guncel) aniyiGuncelle(id, { etiketler: guncel[id] ?? [] })
+    }
+    const mevcut = duzenlenebilirler.find((o) => o.id === id)
+    if (mevcut && d.ifade !== mevcut.ifade) {
+      await checkInIfadesiniGuncelle(id, d.ifade)
+      aniyiGuncelle(id, { ifade: d.ifade })
+    }
+    await checkInNotunuGuncelle(id, d.not)
+    const temiz = d.not.trim()
+    aniyiGuncelle(id, { notMetni: temiz === '' ? null : temiz })
   }
 
   // Ekran her odaklandiginda yeniden cekiliyor: kullanici check-in yapip
@@ -512,7 +517,9 @@ export default function ProfilEkrani() {
    * Yeni sorgu YOK: anilar zaten imzalanmis fotograf adresini
    * tasiyor, burada yalnizca fotografi olanlar suzuluyor.
    */
-  const fotograflar = anilar.filter((a) => a.fotografUrl)
+  // FOTOGRAF BIRIMLERI (coklu fotograf, 2026-09-21): iki fotografli ani
+  // izgarada iki kare, gezginde iki sayfa.
+  const fotograflar = fotografBirimleri(anilar)
 
   async function profiliPaylas() {
     if (!profil) return
@@ -848,16 +855,17 @@ export default function ProfilEkrani() {
                    hizalaniyor - fotograflarin en/boy orani birbirini
                    tutmuyor. */
                 <View style={stiller.izgara}>
-                  {fotograflar.map((a) => (
+                  {fotograflar.map((f, i) => (
                     <Pressable
-                      key={a.id}
+                      key={f.id}
                       style={stiller.izgaraHucre}
-                      onPress={() => setAcikFotografIndeksi(fotograflar.indexOf(a))}
+                      onPress={() => setAcikFotografIndeksi(i)}
                       accessibilityRole="imagebutton"
-                      accessibilityLabel={a.mekanAdi}
+                      accessibilityLabel={f.ani.mekanAdi}
+                      testID={`izgara-${f.id}`}
                     >
                       <Image
-                        source={{ uri: a.fotografUrl as string }}
+                        source={{ uri: f.url }}
                         style={stiller.izgaraFoto}
                         resizeMode="cover"
                       />
@@ -921,8 +929,8 @@ export default function ProfilEkrani() {
                     zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                     ozet={ozetler[ani.id]}
                     onBegen={begeniDegistir}
-                    onFotografAc={() =>
-                      setAcikFotografIndeksi(fotograflar.findIndex((f) => f.id === ani.id))
+                    onFotografAc={(indeks) =>
+                      setAcikFotografIndeksi(fotograflar.findIndex((f) => f.ani.id === ani.id && f.indeks === indeks))
                     }
                     // Yorumlar kartin ICINDE alttan aciliyor; ekranin
                     // tek isi sayaci tazelemek.
@@ -935,11 +943,7 @@ export default function ProfilEkrani() {
                     silOnayiAcik={silOnayi === ani.id}
                     onSilOnayi={(id) => setSilOnayi(silOnayi === id ? null : id)}
                     onSil={aniyiSil}
-                    onNotKaydet={notuKaydet}
-                    onEtiketKaldir={etiketiSil}
-                    onEtiketEkle={etiketEkle}
-                    onIfadeKaydet={ifadeyiKaydet}
-                    onFotografKaydet={fotografiKaydet}
+                    onDuzenle={setDuzenlenenId}
                   />
                 ))}
               </View>
@@ -948,17 +952,25 @@ export default function ProfilEkrani() {
         )}
       </ScrollView>
 
+      <CheckInDuzenle
+        acikMi={duzenlenen !== null}
+        oge={duzenlenen}
+        zamanYazisi={duzenlenen ? gorecelZaman(duzenlenen.olusturmaZamani, t) : ''}
+        onKapat={() => setDuzenlenenId(null)}
+        onKaydet={(d) => duzenlemeyiKaydet(duzenlenenId as string, d)}
+      />
+
       {/* IZGARADAN VE ANI KARTINDAN ACILAN BUYUK GORUNUM: ortak gezgin
           (kaydirma, sayac, zoom). "Kaldir" YOK - silme check-in'in kendi
           menusunden yapiliyor. */}
       <FotografGezgini
         testID="izgara"
-        fotograflar={fotograflar.map((a) => ({ id: a.id, url: a.fotografUrl as string }))}
+        fotograflar={fotograflar.map((f) => ({ id: f.id, url: f.url }))}
         acikIndeks={acikFotografIndeksi}
         onIndeks={setAcikFotografIndeksi}
         onKapat={() => setAcikFotografIndeksi(null)}
         altyazi={(i) => {
-          const acik = fotograflar[i]
+          const acik = fotograflar[i].ani
           return (
             <FotografAltyazisi
               testID="izgara-fotograf-altyazisi"

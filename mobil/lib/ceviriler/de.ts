@@ -651,8 +651,12 @@ export default {
     ifadeEkle: 'Stimmung hinzufügen',
     ifadeBaslik: "Wie geht's dir, was machst du?",
     ifadeKaldir: 'Stimmung entfernen',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Ändern',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Check-in bearbeiten',
+    fotograflar: 'Fotos',
+    kameraVeyaGaleri: 'Kamera oder Galerie wählen',
+    ifade: 'Stimmung',
+    kaydedinceUygulanir: 'Änderungen gelten nach dem Speichern.',
   },
   mekanDuzenle: {
     baslik: 'Angaben korrigieren',

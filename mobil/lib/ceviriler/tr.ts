@@ -800,8 +800,12 @@ export default {
     ifadeEkle: 'İfade ekle',
     ifadeBaslik: 'Nasılsın, ne yapıyorsun?',
     ifadeKaldir: 'İfadeyi kaldır',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Değiştir',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Check-in’i düzenle',
+    fotograflar: 'Fotoğraflar',
+    kameraVeyaGaleri: 'Kamera veya galeriden seç',
+    ifade: 'İfade',
+    kaydedinceUygulanir: 'Değişiklikler kaydedildiğinde uygulanır.',
   },
 
   // MEKAN BILGILERINI DUZELT (i18n turu 2026-09-13).
@@ -1139,7 +1143,7 @@ export default {
       en_az_2_karakter_gerekli: 'En az 2 karakter yazmalısın.',
       gecersiz_bulunurluk_degeri: 'Geçersiz bulunurluk değeri.',
       gecersiz_ifade: 'Seçilen ifade tanınmadı, uygulamayı güncelle.',
-      en_fazla_5_fotograf: 'Bir check-in'e en fazla 5 fotoğraf ekleyebilirsin.',
+      en_fazla_5_fotograf: "Bir check-in'e en fazla 5 fotoğraf ekleyebilirsin.",
       gecersiz_gorunurluk_degeri: 'Geçersiz görünürlük değeri.',
       gecersiz_platform: 'Geçersiz platform.',
       gecersiz_sikayet_durumu: 'Geçersiz şikayet durumu.',

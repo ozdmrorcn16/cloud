@@ -91,7 +91,7 @@ describe('checkInYap', () => {
 
   it('bulunurluk degerini RPC-ye gecirir', async () => {
     ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: { id: 'ci-1' }, error: null })
-    await checkInYap('mekan-1', 39, 35, null, null, 'takipcilerim')
+    await checkInYap('mekan-1', 39, 35, null, [], 'takipcilerim')
     expect(supabase.rpc).toHaveBeenCalledWith(
       'check_in_yap',
       expect.objectContaining({ p_bulunurluk: 'takipcilerim' })

@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { View, Text, TextInput, Pressable, Image, StyleSheet, useWindowDimensions } from 'react-native'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import * as ImagePicker from 'expo-image-picker'
-import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { BasariDugmesi } from '../../tasarim/BasariDugmesi'
 import { IfadeSecici, IfadeCipi } from '../../tasarim/IfadeSecici'
 import { ifadeBul } from '../../../lib/ifadeler'
@@ -14,7 +12,8 @@ import { etiketleriKaydet } from '../../../lib/etiket'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import type { BagKisi } from '../../../lib/bag'
-import { checkinFotografYukle } from '../../../lib/checkin-fotograf-yukle'
+import { checkinFotograflariniYukle } from '../../../lib/checkin-fotograf-yukle'
+import { FotografIzgarasiDuzenle, type FotografKaresi } from '../../tasarim/FotografIzgarasiDuzenle'
 import { varsayilanBulunurluguGetir } from '../../../lib/ayarlar'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { FormSayfasi } from '../../tasarim/FormSayfasi'
@@ -24,8 +23,8 @@ import { UstCubuk } from '../../tasarim/UstCubuk'
 import { useDil } from '../../../lib/dil'
 import { mekaniGetir, type Mekan } from '../../../lib/mekan'
 import { IgneIkonu, KisilerIkonu } from '../../tasarim/mekan-ikonlari'
-import { KapatIkonu } from '../../tasarim/sikayet-ikonlari'
 import { Avatar } from '../../tasarim/Avatar'
+import { KapatIkonu } from '../../tasarim/sikayet-ikonlari'
 
 /*
  * "Bu check-in ne paylasiyor?" ilk kullanim ekrani KALDIRILDI
@@ -48,9 +47,9 @@ export default function CheckInEkrani() {
   // IFADE (2026-09-21): 108'lik setten tek secim; not alaninin ustunde.
   const [ifade, setIfade] = useState<string | null>(null)
   const [ifadeSecici, setIfadeSecici] = useState(false)
-  const [yerelFotoUri, setYerelFotoUri] = useState<string | null>(null)
+  // COKLU FOTOGRAF (2026-09-21): en fazla EN_FAZLA_FOTOGRAF yerel dosya.
+  const [fotoKareleri, setFotoKareleri] = useState<FotografKaresi[]>([])
   // Fotograf KAYNAGI penceresi: kamera mi galeri mi.
-  const [kaynakSecimi, setKaynakSecimi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
   const [uyari, setUyari] = useState<string | null>(null)
   const [gonderiliyor, setGonderiliyor] = useState(false)
@@ -95,36 +94,6 @@ export default function CheckInEkrani() {
       })
   }, [])
 
-  /**
-   * FOTOGRAF: once KAYNAK sorulur (kullanicinin istegi 2026-09-08:
-   * "fotograf eklemeye basilinca canli fotograf cekmede olsun kamera
-   * acilsin"). Onceden dogrudan galeri aciliyordu; check-in "su an
-   * buradayim" demek oldugu icin asil beklenen kaynak KAMERA.
-   *
-   * Kamera SIRADA ONCE: listede ilk siradaki secim en cok beklenen
-   * olmali.
-   */
-  async function kameradanCek() {
-    setKaynakSecimi(false)
-    // Izin REDDEDILIRSE sessizce gecmiyoruz: kullanici dugmeye basip
-    // hicbir sey olmamasini "uygulama bozuk" diye okur.
-    const izin = await ImagePicker.requestCameraPermissionsAsync()
-    if (!izin.granted) {
-      setHata(t('checkIn.kameraIzni'))
-      return
-    }
-    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
-    if (!sonuc.canceled) setYerelFotoUri(sonuc.assets[0].uri)
-  }
-
-  async function galeridenSec() {
-    setKaynakSecimi(false)
-    const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
-    if (!sonuc.canceled) {
-      setYerelFotoUri(sonuc.assets[0].uri)
-    }
-  }
-
   useEffect(() => {
     let gecerli = true
     // Bag listesi okunamazsa etiketleme bolumu hic cizilmiyor;
@@ -159,17 +128,18 @@ export default function CheckInEkrani() {
     try {
       const konum = await cihazKonumunuAl()
 
-      let yuklenenFotoYolu: string | undefined
-      if (yerelFotoUri) {
+      let yuklenenYollar: string[] = []
+      if (fotoKareleri.length > 0) {
         try {
           const { data: kullaniciVerisi } = await supabase.auth.getUser()
           const kullaniciId = kullaniciVerisi.user?.id
           if (kullaniciId) {
-            yuklenenFotoYolu = await checkinFotografYukle(kullaniciId, yerelFotoUri)
+            yuklenenYollar = await checkinFotograflariniYukle(kullaniciId, fotoKareleri.map((k) => k.uri))
           }
         } catch {
           // Fotograf yuklenemezse check-in'i engelleme — notsuz/fotografsiz devam eder.
           setUyari(t('checkIn.fotografYuklenemedi'))
+          yuklenenYollar = []
         }
       }
 
@@ -178,7 +148,7 @@ export default function CheckInEkrani() {
         konum.lat,
         konum.lng,
         notMetni.trim() || undefined,
-        yuklenenFotoYolu,
+        yuklenenYollar,
         bulunurluk,
         ifade
       )
@@ -280,34 +250,19 @@ export default function CheckInEkrani() {
         testID="not-girdisi"
       />
 
-      <Text style={stiller.etiket}>{t('checkIn.fotografEtiket')}</Text>
-      {yerelFotoUri ? (
-        <View style={stiller.onizlemeKabi}>
-          <Pressable style={stiller.onizlemeDugmesi} onPress={() => setKaynakSecimi(true)} accessibilityRole="imagebutton" accessibilityLabel={t('checkIn.fotografCek')}>
-            <Image source={{ uri: yerelFotoUri }} style={stiller.onizleme} testID="foto-onizleme" />
-          </Pressable>
-          <Pressable
-            style={stiller.kaldirDugmesi}
-            onPress={() => setYerelFotoUri(null)}
-            accessibilityRole="button"
-            accessibilityLabel={t('checkIn.fotografKaldir')}
-            hitSlop={8}
-            testID="foto-kaldir"
-          >
-            <KapatIkonu boyut={16} />
-          </Pressable>
-        </View>
-      ) : (
-        <Pressable
-          style={({ pressed }) => [stiller.fotoKutusu, kisaEkran && stiller.fotoKutusuKisa, pressed && stiller.basili]}
-          onPress={() => setKaynakSecimi(true)}
-          accessibilityRole="button"
-          testID="foto-ekle"
-        >
-          <KameraIkonu renk={renk.metinIkincil} />
-          <Text style={stiller.fotoKutusuYazi}>{t('checkIn.fotografEkle')}</Text>
-        </Pressable>
-      )}
+      <Text style={stiller.etiket}>{t('checkIn.fotograflar')}</Text>
+      {/* COKLU FOTOGRAF (2026-09-21): duzenleme sayfasiyla AYNI izgara -
+          bos halde kesikli kutu, secilince kareler + "Ekle". */}
+      <View style={stiller.fotoAlani}>
+        <FotografIzgarasiDuzenle
+          kareler={fotoKareleri}
+          onEklendi={(uriler) => setFotoKareleri((m) => [...m, ...uriler.map((uri) => ({ uri }))])}
+          onDegistirildi={(i, uri) => setFotoKareleri((m) => m.map((k, j) => (j === i ? { uri } : k)))}
+          onKaldir={(i) => setFotoKareleri((m) => m.filter((_, j) => j !== i))}
+          onHata={setHata}
+          pasif={gonderiliyor}
+        />
+      </View>
 
       {secilenler.length === 0 ? (
         /* ARKADAS ETIKETLE satiri (referans): ikon, iki satir metin, ok.
@@ -368,18 +323,6 @@ export default function CheckInEkrani() {
         testID="check-in-gonder"
       />
       <IfadeSecici acikMi={ifadeSecici} secili={ifade} onSec={setIfade} onKapat={() => setIfadeSecici(false)} />
-      <SecimPenceresi
-        acikMi={kaynakSecimi}
-        secimler={[
-          // NOT: bu ekranin metinleri (bastan beri) sozlukte degil koda
-          // gomulu; yenileri de ayni yerde tutuluyor ki ekranin yarisi
-          // sozlukten yarisi gomuluden gelmesin. Ekranin tamaminin
-          // i18n'e tasinmasi ayri bir is.
-          { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
-          { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
-        ]}
-        onKapat={() => setKaynakSecimi(false)}
-      />
       <ArkadasSecici
         acikMi={arkadasSecimi}
         arkadaslar={arkadaslar}
@@ -392,21 +335,6 @@ export default function CheckInEkrani() {
   )
 }
 
-/** Kesikli fotograf kutusundaki kamera. */
-function KameraIkonu({ renk: c }: { renk: string }) {
-  return (
-    <Svg width={30} height={30} viewBox="0 0 24 24">
-      <Path
-        d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.1-1.8A1 1 0 0 1 9.65 4.7h4.7a1 1 0 0 1 .85.5L16.3 7h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"
-        stroke={c}
-        strokeWidth={1.7}
-        fill="none"
-        strokeLinejoin="round"
-      />
-      <Circle cx={12} cy={12.8} r={3.3} stroke={c} strokeWidth={1.7} fill="none" />
-    </Svg>
-  )
-}
 
 /** Satir sonundaki saga ok. */
 function OkIkonuKucuk({ renk: c }: { renk: string }) {
@@ -478,38 +406,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   cokSatirli: { flex: 1, minHeight: 72, textAlignVertical: 'top' },
   cokSatirliKisa: { minHeight: 48, paddingVertical: 10 },
   mekanKartiKisa: { padding: bosluk.s, marginBottom: bosluk.m },
-  fotoKutusuKisa: { minHeight: 64, flexDirection: 'row' },
   etiketleSatiriKisa: { padding: bosluk.s },
 
-  // Kesikli kutu: fotograf yokken.
-  fotoKutusu: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: bosluk.s,
-    flex: 1.4,
-    minHeight: 96,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: renk.cizgi,
-    borderRadius: yuvarlak.kart,
-    backgroundColor: renk.yuzey,
-    marginBottom: bosluk.m,
-  },
-  fotoKutusuYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metinIkincil },
-  onizlemeKabi: { flex: 1.4, minHeight: 96, marginBottom: bosluk.m },
-  onizleme: { width: '100%', height: '100%', borderRadius: yuvarlak.kart, backgroundColor: renk.cizgi },
-  onizlemeDugmesi: { flex: 1 },
-  kaldirDugmesi: {
-    position: 'absolute',
-    top: bosluk.s,
-    right: bosluk.s,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // Fotograf izgarasi (FotografIzgarasiDuzenle) - bos halde kesikli kutu.
+  fotoAlani: { marginBottom: bosluk.m },
 
   etiketleSatiri: {
     flexDirection: 'row',

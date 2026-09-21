@@ -20,7 +20,7 @@ import {
 import { engelle } from '../../../lib/engelleme'
 import { kullanicininAnilariniGetir, type AniGorunumu } from '../../../lib/checkin'
 import { profilFotograflariUrl } from '../../../lib/fotograf-url'
-import { anidanAkisOgesi } from '../../../lib/akis'
+import { anidanAkisOgesi, fotografBirimleri } from '../../../lib/akis'
 import {
   etkilesimOzetleriniGetir,
   begen,
@@ -483,8 +483,9 @@ export default function KullaniciProfiliEkrani() {
   const kapali = (profil?.profilGizli ?? false) && !bagVar
 
   const fotografUrl = fotografUrlleri[0] ?? null
-  // Gezginin listesi: yalnizca fotografli anilar, akistaki sirayla.
-  const fotografliAnilar = anilar.filter((a) => a.fotografUrl)
+  // Gezginin listesi: FOTOGRAF birimleri (coklu fotograf, 2026-09-21),
+  // akistaki sirayla; iki fotografli ani iki kare / iki sayfa.
+  const fotografliAnilar = fotografBirimleri(anilar)
 
   /*
    * UST CUBUK YOK ARTIK (kullanicinin istegi 2026-09-18): "ustte soldaki
@@ -840,16 +841,16 @@ export default function KullaniciProfiliEkrani() {
           ) : (
             /* IZGARA - kendi profildekiyle ayni: uc sutun, kare, cover. */
             <View style={stiller.izgara}>
-              {fotografliAnilar.map((a, i) => (
+              {fotografliAnilar.map((f, i) => (
                 <Pressable
-                  key={a.id}
+                  key={f.id}
                   style={stiller.izgaraHucre}
                   onPress={() => setAcikFotografIndeksi(i)}
                   accessibilityRole="imagebutton"
-                  accessibilityLabel={a.mekanAdi}
-                  testID={`izgara-${a.id}`}
+                  accessibilityLabel={f.ani.mekanAdi}
+                  testID={`izgara-${f.id}`}
                 >
-                  <Image source={{ uri: a.fotografUrl as string }} style={stiller.izgaraFoto} resizeMode="cover" />
+                  <Image source={{ uri: f.url }} style={stiller.izgaraFoto} resizeMode="cover" />
                 </Pressable>
               ))}
             </View>
@@ -901,8 +902,8 @@ export default function KullaniciProfiliEkrani() {
                 zamanYazisi={gorecelZaman(ani.olusturmaZamani, t)}
                 ozet={ozetler[ani.id]}
                 onBegen={begeniDegistir}
-                onFotografAc={() =>
-                  setAcikFotografIndeksi(fotografliAnilar.findIndex((f) => f.id === ani.id))
+                onFotografAc={(indeks) =>
+                  setAcikFotografIndeksi(fotografliAnilar.findIndex((f) => f.ani.id === ani.id && f.indeks === indeks))
                 }
                 onYorumSayisi={(aniId, sayi) =>
                   setOzetler((mevcut) =>
@@ -948,12 +949,12 @@ export default function KullaniciProfiliEkrani() {
           mekan sayfasina gidiyor. */}
       <FotografGezgini
         testID="kullanici"
-        fotograflar={fotografliAnilar.map((a) => ({ id: a.id, url: a.fotografUrl as string }))}
+        fotograflar={fotografliAnilar.map((f) => ({ id: f.id, url: f.url }))}
         acikIndeks={acikFotografIndeksi}
         onIndeks={setAcikFotografIndeksi}
         onKapat={() => setAcikFotografIndeksi(null)}
         altyazi={(i) => {
-          const acik = fotografliAnilar[i]
+          const acik = fotografliAnilar[i].ani
           return (
             <FotografAltyazisi
               testID="kullanici-fotograf-altyazisi"

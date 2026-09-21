@@ -657,8 +657,12 @@ export default {
     ifadeEkle: 'Add a mood',
     ifadeBaslik: 'How are you, what are you up to?',
     ifadeKaldir: 'Remove mood',
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Change',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Edit check-in',
+    fotograflar: 'Photos',
+    kameraVeyaGaleri: 'Pick from camera or gallery',
+    ifade: 'Mood',
+    kaydedinceUygulanir: 'Changes apply when you save.',
   },
   mekanDuzenle: {
     baslik: 'Fix the details',

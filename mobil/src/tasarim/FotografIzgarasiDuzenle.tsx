@@ -1,0 +1,254 @@
+import { useState } from 'react'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { Image as HizliImage } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import Svg, { Path, Circle } from 'react-native-svg'
+import { useDil } from '../../lib/dil'
+import { EN_FAZLA_FOTOGRAF } from '../../lib/checkin'
+import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
+import { SecimPenceresi } from './SecimPenceresi'
+
+/** Izgaradaki bir kare: sunucudaki mevcut fotograf (`yol` dolu) ya da yeni yerel dosya. */
+export type FotografKaresi = { uri: string; yol?: string }
+
+/**
+ * FOTOGRAF IZGARASI (duzenlenebilir) - check-in formu ve "Check-in'i
+ * duzenle" sayfasi ORTAK kullanir (coklu fotograf, referans 2026-09-21):
+ *   - fotograf yokken kesikli tam genislik kutu: resim+ ikonu,
+ *     "Fotograf ekle", "Kamera veya galeriden sec";
+ *   - varken 3 sutun kare izgara: her karede sag ustte beyaz daire x
+ *     (kaldir), altta yarim saydam "Degistir" seridi; son kare kesikli
+ *     "+ Ekle" (EN_FAZLA_FOTOGRAF'a ulasinca gizlenir).
+ * Kaynak secimi (Kamera / Galeri) ve secici cagrilari BURADA; galeri
+ * coklu secim (kalan yer kadar), Degistir tekli. Sonuclar geri
+ * cagrilarla bildirilir; sunucuya hicbir sey gitmez.
+ */
+export function FotografIzgarasiDuzenle({
+  kareler,
+  onEklendi,
+  onDegistirildi,
+  onKaldir,
+  onHata,
+  pasif = false,
+  testID = 'foto',
+}: {
+  kareler: FotografKaresi[]
+  /** Galeriden/kameradan gelen yeni yerel dosyalar (sona eklenir). */
+  onEklendi: (uriler: string[]) => void
+  /** `indeks`teki kare yeni yerel dosyayla degistirildi. */
+  onDegistirildi: (indeks: number, uri: string) => void
+  onKaldir: (indeks: number) => void
+  /** Izin reddi gibi kullaniciya gosterilecek hatalar. */
+  onHata?: (mesaj: string) => void
+  pasif?: boolean
+  /** `${testID}-ekle`, `${testID}-<i>`, `${testID}-kaldir-<i>`, `${testID}-degistir-<i>`. */
+  testID?: string
+}) {
+  const stiller = useStiller(stilleriYap)
+  const renk = useRenk()
+  const { t } = useDil()
+  // Kaynak penceresi hangi is icin acik: -1 ekle, >=0 o kareyi degistir.
+  const [kaynakIcin, setKaynakIcin] = useState<number | null>(null)
+
+  const kalanYer = Math.max(0, EN_FAZLA_FOTOGRAF - kareler.length)
+
+  async function kameradanCek() {
+    const hedef = kaynakIcin
+    setKaynakIcin(null)
+    // Izin REDDEDILIRSE sessizce gecmiyoruz: kullanici dugmeye basip
+    // hicbir sey olmamasini "uygulama bozuk" diye okur.
+    const izin = await ImagePicker.requestCameraPermissionsAsync()
+    if (!izin.granted) {
+      onHata?.(t('checkIn.kameraIzni'))
+      return
+    }
+    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
+    if (sonuc.canceled || !sonuc.assets[0]) return
+    if (hedef !== null && hedef >= 0) onDegistirildi(hedef, sonuc.assets[0].uri)
+    else onEklendi([sonuc.assets[0].uri])
+  }
+
+  async function galeridenSec() {
+    const hedef = kaynakIcin
+    setKaynakIcin(null)
+    const degistirMi = hedef !== null && hedef >= 0
+    const sonuc = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      // Ekle: kalan yer kadar coklu secim; Degistir: tek.
+      allowsMultipleSelection: !degistirMi && kalanYer > 1,
+      selectionLimit: degistirMi ? 1 : kalanYer,
+    })
+    if (sonuc.canceled || sonuc.assets.length === 0) return
+    if (degistirMi) onDegistirildi(hedef, sonuc.assets[0].uri)
+    else onEklendi(sonuc.assets.slice(0, kalanYer).map((a) => a.uri))
+  }
+
+  return (
+    <View>
+      {kareler.length === 0 ? (
+        <Pressable
+          style={({ pressed }) => [stiller.bosKutu, pressed && stiller.basili]}
+          onPress={() => setKaynakIcin(-1)}
+          disabled={pasif}
+          accessibilityRole="button"
+          testID={`${testID}-ekle`}
+        >
+          <ResimEkleIkonu renk={renk.turuncu} />
+          <Text style={stiller.bosBaslik}>{t('checkIn.fotografEkle')}</Text>
+          <Text style={stiller.bosAlt}>{t('checkIn.kameraVeyaGaleri')}</Text>
+        </Pressable>
+      ) : (
+        <View style={stiller.izgara}>
+          {kareler.map((kare, i) => (
+            <View key={`${i}-${kare.uri}`} style={stiller.kare} testID={`${testID}-${i}`}>
+              <HizliImage source={{ uri: kare.uri }} style={stiller.kareFoto} contentFit="cover" />
+              <Pressable
+                style={stiller.kaldir}
+                onPress={() => onKaldir(i)}
+                disabled={pasif}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('checkIn.fotografKaldir')}
+                testID={`${testID}-kaldir-${i}`}
+              >
+                <Text style={stiller.kaldirYazi}>×</Text>
+              </Pressable>
+              <Pressable
+                style={stiller.degistir}
+                onPress={() => setKaynakIcin(i)}
+                disabled={pasif}
+                accessibilityRole="button"
+                testID={`${testID}-degistir-${i}`}
+              >
+                <KalemBeyaz />
+                <Text style={stiller.degistirYazi}>{t('checkIn.degistir')}</Text>
+              </Pressable>
+            </View>
+          ))}
+          {kalanYer > 0 && (
+            <Pressable
+              style={({ pressed }) => [stiller.kare, stiller.ekleKare, pressed && stiller.basili]}
+              onPress={() => setKaynakIcin(-1)}
+              disabled={pasif}
+              accessibilityRole="button"
+              testID={`${testID}-ekle`}
+            >
+              <Text style={stiller.ekleArti}>+</Text>
+              <Text style={stiller.ekleYazi}>{t('checkIn.ekle')}</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+
+      <SecimPenceresi
+        acikMi={kaynakIcin !== null}
+        secimler={[
+          { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
+          { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
+        ]}
+        onKapat={() => setKaynakIcin(null)}
+      />
+    </View>
+  )
+}
+
+/** Kesikli kutudaki resim + isareti (referans). */
+function ResimEkleIkonu({ renk: c }: { renk: string }) {
+  return (
+    <Svg width={40} height={40} viewBox="0 0 24 24">
+      <Path
+        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7M20 11v6.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11"
+        stroke={c}
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path d="M4 16l4.5-4.5 3 3 2.5-2.5L20 17.5" stroke={c} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Circle cx={9} cy={9} r={1.4} fill={c} />
+      <Path d="M18.5 3.5v5M16 6h5" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function KalemBeyaz() {
+  return (
+    <Svg width={13} height={13} viewBox="0 0 24 24">
+      <Path
+        d="M4 20h4l10-10-4-4L4 16v4z M13.5 6.5l4 4"
+        stroke="#FFFFFF"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  )
+}
+
+const stilleriYap = (renk: Renk) =>
+  StyleSheet.create({
+    bosKutu: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      minHeight: 150,
+      borderWidth: 1.5,
+      borderStyle: 'dashed',
+      borderColor: renk.turuncu,
+      borderRadius: yuvarlak.kart,
+      backgroundColor: renk.turuncuZemin,
+      paddingVertical: bosluk.l,
+    },
+    bosBaslik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi, marginTop: bosluk.xs },
+    bosAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
+    basili: { opacity: 0.85 },
+    izgara: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s },
+    // Uc sutun: (100% - 2 bosluk) / 3; yuzdeyle sarmak icin flexBasis.
+    kare: {
+      width: '31%',
+      flexGrow: 1,
+      maxWidth: '32%',
+      aspectRatio: 1,
+      borderRadius: 12,
+      overflow: 'hidden',
+      backgroundColor: renk.cizgi,
+    },
+    kareFoto: { width: '100%', height: '100%' },
+    kaldir: {
+      position: 'absolute',
+      top: 6,
+      right: 6,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    kaldirYazi: { fontFamily: yazi.govdeKalin, fontSize: 18, lineHeight: 20, color: '#17130F' },
+    degistir: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 5,
+      paddingVertical: 7,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    degistirYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: '#FFFFFF' },
+    ekleKare: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderStyle: 'dashed',
+      borderColor: renk.turuncu,
+      backgroundColor: renk.yuzey,
+    },
+    ekleArti: { fontFamily: yazi.govde, fontSize: 30, lineHeight: 34, color: renk.turuncu },
+    ekleYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi },
+  })

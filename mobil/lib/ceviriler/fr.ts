@@ -651,8 +651,12 @@ export default {
     ifadeEkle: 'Ajouter une humeur',
     ifadeBaslik: 'Comment ça va, que fais-tu ?',
     ifadeKaldir: "Retirer l'humeur",
-    // Duzenlemede fotograf satiri (2026-09-21)
-    fotografDegistir: 'Changer',
+    // CHECK-IN'I DUZENLE sayfasi + coklu fotograf (2026-09-21)
+    duzenleBaslik: 'Modifier le check-in',
+    fotograflar: 'Photos',
+    kameraVeyaGaleri: 'Caméra ou galerie',
+    ifade: 'Humeur',
+    kaydedinceUygulanir: 'Les modifications s’appliquent à l’enregistrement.',
   },
   mekanDuzenle: {
     baslik: 'Corriger les infos',

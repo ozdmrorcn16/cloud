@@ -49,8 +49,9 @@ export function anidanAkisOgesi(
     mekanSemti: ani.mekanSemti,
     notMetni: ani.notMetni,
     ifade: ani.ifade,
-    fotograflar: ani.fotograflar,
-    fotografUrller: ani.fotografUrller,
+    // Eski kayitlarda/testlerde alan eksik olabiliyor; kart dizi bekliyor.
+    fotograflar: ani.fotograflar ?? [],
+    fotografUrller: ani.fotografUrller ?? [],
     olusturmaZamani: ani.olusturmaZamani,
     canliMi: ani.canliMi,
     benimMi: secenekler.benimMi ?? true,
@@ -246,4 +247,20 @@ export async function profilOzetleriniGetir(
 export async function avatarlariGetir(kimlikler: string[]): Promise<Record<string, string | null>> {
   const ozetler = await profilOzetleriniGetir(kimlikler)
   return Object.fromEntries(Object.entries(ozetler).map(([id, o]) => [id, o.avatarUrl]))
+}
+
+/**
+ * Galeriler icin FOTOGRAF BIRIMI (coklu fotograf, 2026-09-21): profil
+ * izgarasi, baskasinin profili ve gezgin "ani" degil "fotograf" sayar.
+ * Iki fotografli bir ani iki birimdir; sira: anilar sirasi, ani icinde
+ * fotograf sirasi.
+ */
+export type FotografBirimi<T> = { id: string; ani: T; indeks: number; url: string }
+
+export function fotografBirimleri<T extends { id: string; fotografUrller: string[] }>(
+  anilar: T[]
+): FotografBirimi<T>[] {
+  return anilar.flatMap((ani) =>
+    (ani.fotografUrller ?? []).map((url, indeks) => ({ id: `${ani.id}-${indeks}`, ani, indeks, url }))
+  )
 }
