@@ -466,6 +466,8 @@ describe('SohbetEkrani - profil resmi ve teslim durumu', () => {
   it('ust bardaki ADA basinca da profil acilir (kullanicinin istegi 2026-09-18)', async () => {
     await render(<SohbetEkrani />)
     await screen.findByText('Ada')
+    // Adin altinda kullanici adi (kullanicinin istegi 2026-09-21).
+    expect(screen.getByText('@ada123')).toBeTruthy()
 
     await fireEvent.press(screen.getByTestId('sohbet-ad'))
 

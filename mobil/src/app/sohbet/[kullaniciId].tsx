@@ -301,9 +301,17 @@ export default function SohbetEkrani() {
             cap={UST_BAR_AVATAR_CAPI}
             testID="sohbet-avatar"
           />
-          <Text style={stiller.baslik} numberOfLines={1} testID="sohbet-ad">
-            {konusmaSatiri?.ad ?? t('sohbet.baslik')}
-          </Text>
+          {/* Ad + altinda kullanici adi (kullanicinin istegi 2026-09-21). */}
+          <View style={stiller.kimlikMetinler}>
+            <Text style={stiller.baslik} numberOfLines={1} testID="sohbet-ad">
+              {konusmaSatiri?.ad ?? t('sohbet.baslik')}
+            </Text>
+            {konusmaSatiri?.kullaniciAdi ? (
+              <Text style={stiller.kullaniciAdi} numberOfLines={1} testID="sohbet-kullanici-adi">
+                @{konusmaSatiri.kullaniciAdi}
+              </Text>
+            ) : null}
+          </View>
         </Pressable>
       </View>
 
@@ -486,12 +494,18 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Avatar + ad birlikte; flex: 1 ile sikayet dugmesine kadar uzanir,
   // yani adin sagindaki bosluk da dokunus hedefi.
   kimlikDugmesi: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+  kimlikMetinler: { flex: 1 },
   baslik: {
-    flex: 1,
     fontFamily: yazi.ekranBasligi,
     fontSize: olcek.altBaslik,
     color: renk.metin,
     letterSpacing: -0.3,
+  },
+  kullaniciAdi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.kucuk,
+    color: renk.metinIkincil,
+    marginTop: 1,
   },
   liste: { flex: 1 },
 
