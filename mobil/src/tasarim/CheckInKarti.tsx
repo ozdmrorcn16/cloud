@@ -498,23 +498,22 @@ export function CheckInKarti({
         </View>
       ) : (
         (oge.notMetni || oge.ifade) && (
-          /* IFADE (2026-09-21): notun basinda 32 pt ikon + kalin etiket;
-             not yoksa yalnizca ikon + etiket. Ikon ust hizali, metin
-             yaninda akar. Sozlukte olmayan (silinmis) slug sessizce
-             cizilmez - kart bozulmaz. */
+          /* IFADE (2026-09-21): notun basinda 32 pt ikon, YAZISI YOK
+             (kullanicinin istegi ayni gun: "yaninda ifadenin yazisi
+             eklenmesin, sadece ifade"); etiket erisilebilirlik icin
+             ikonun accessibilityLabel'inda. Not yoksa yalnizca ikon.
+             Sozlukte olmayan (silinmis) slug sessizce cizilmez. */
           <View style={stiller.notSatiri} testID="not-satiri">
             {oge.ifade && ifadeBul(oge.ifade) && (
-              <Image source={ifadeBul(oge.ifade)!.kaynak} style={stiller.ifadeIkon} resizeMode="contain" testID={`kart-ifade-${oge.ifade}`} />
+              <Image
+                source={ifadeBul(oge.ifade)!.kaynak}
+                style={stiller.ifadeIkon}
+                resizeMode="contain"
+                accessibilityLabel={ifadeBul(oge.ifade)!.etiket}
+                testID={`kart-ifade-${oge.ifade}`}
+              />
             )}
-            <Text style={stiller.not}>
-              {oge.ifade && ifadeBul(oge.ifade) && (
-                <Text style={stiller.ifadeEtiket}>
-                  {ifadeBul(oge.ifade)!.etiket}
-                  {oge.notMetni ? ' · ' : ''}
-                </Text>
-              )}
-              {oge.notMetni}
-            </Text>
+            {oge.notMetni ? <Text style={stiller.not}>{oge.notMetni}</Text> : null}
           </View>
         )
       )}
@@ -891,7 +890,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   // Not satiri: ifade ikonu + metin yan yana; kenar payi eski notunki.
   notSatiri: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.s, marginTop: bosluk.m, marginLeft: AVATAR_CAPI + bosluk.m },
   ifadeIkon: { width: 32, height: 32, marginTop: -4 },
-  ifadeEtiket: { fontFamily: yazi.govdeKalin },
   not: {
     flex: 1,
     fontFamily: yazi.govde,

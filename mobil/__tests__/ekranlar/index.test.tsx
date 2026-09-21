@@ -848,20 +848,21 @@ describe('AnaSayfa sayfalama', () => {
     expect(screen.getByText('Mekan 0')).toBeTruthy()
   })
   // IFADE (2026-09-21): kartta notun basinda ikon + kalin etiket.
-  it('ifadeli paylasimda notun basinda ifade ikonu ve etiketi var', async () => {
+  it('ifadeli paylasimda notun basinda YALNIZCA ifade ikonu var, yazisi yok (2026-09-21)', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ ifade: 'kahve-keyfi', notMetni: 'sabah kahvesi' })])
     await render(<AnaSayfa />)
     await screen.findByText('Sahil Kafe')
     expect(screen.getByTestId('kart-ifade-kahve-keyfi')).toBeTruthy()
-    expect(screen.getByText(/Kahve keyfi/)).toBeTruthy()
-    expect(screen.getByText(/sabah kahvesi/)).toBeTruthy()
+    expect(screen.queryByText(/Kahve keyfi/)).toBeNull()
+    expect(screen.getByText('sabah kahvesi')).toBeTruthy()
   })
 
   it('notsuz ama ifadeli paylasimda yalnizca ifade satiri cizilir; ifadesiz ve notsuzda satir yok', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ id: 'a', ifade: 'huzurluyum', notMetni: null }), oge({ id: 'b', ifade: null, notMetni: null, mekanAdi: 'Ikinci Mekan' })])
     await render(<AnaSayfa />)
     await screen.findByText('Ikinci Mekan')
-    expect(screen.getByText('Huzurluyum')).toBeTruthy()
+    expect(screen.getByTestId('kart-ifade-huzurluyum')).toBeTruthy()
+    expect(screen.queryByText('Huzurluyum')).toBeNull()
     expect(screen.getAllByTestId('not-satiri')).toHaveLength(1)
   })
 })
