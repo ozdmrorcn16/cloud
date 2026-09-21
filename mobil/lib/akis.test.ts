@@ -1,13 +1,13 @@
 import { akisiGetir } from './akis'
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
-import { checkInFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrlHaritasi } from './fotograf-url'
 
 jest.mock('./supabase', () => ({
   supabase: { from: jest.fn(), auth: { getUser: jest.fn() } },
 }))
 jest.mock('./bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
-jest.mock('./fotograf-url', () => ({ checkInFotografiUrl: jest.fn() }))
+jest.mock('./fotograf-url', () => ({ checkInFotografiUrlHaritasi: jest.fn().mockResolvedValue({}) }))
 // Etiketler ayri bir sorgudan geliyor; akisin kendi donusumunu test
 // ederken o sorgu mock'lanıyor.
 jest.mock('./etiket', () => ({ etiketleriGetir: jest.fn().mockResolvedValue({}) }))
@@ -19,7 +19,7 @@ function satir(ustune: Record<string, unknown> = {}) {
     kullanici_adi: 'Ada',
     mekan_id: 'mekan-1',
     not_metni: 'guzel bir aksam',
-    fotograf: null,
+    fotograflar: [],
     olusturma_zamani: '2026-08-25T10:00:00Z',
     konum: null,
     mekanlar: { ad: 'Sahil Kafe', semt: 'Nilüfer' },
@@ -42,7 +42,7 @@ beforeEach(() => {
     data: { user: { id: 'kullanici-1' } },
   })
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
-  ;(checkInFotografiUrl as jest.Mock).mockResolvedValue(null)
+  ;(checkInFotografiUrlHaritasi as jest.Mock).mockResolvedValue({})
 })
 
 describe('akisiGetir', () => {
@@ -88,7 +88,8 @@ describe('akisiGetir', () => {
       rumuz: null,
       notMetni: 'guzel bir aksam',
       ifade: null,
-      fotografUrl: null,
+      fotograflar: [],
+      fotografUrller: [],
       olusturmaZamani: '2026-08-25T10:00:00Z',
       canliMi: false,
       benimMi: false,
@@ -108,14 +109,26 @@ describe('akisiGetir', () => {
     expect(oge.benimMi).toBe(true)
   })
 
-  it('fotografli satirin adresini imzalar', async () => {
-    ;(checkInFotografiUrl as jest.Mock).mockResolvedValue('https://imzali/foto.jpg')
-    zinciriKur([satir({ fotograf: 'kullanici-2/1.jpg' })])
+  it('COKLU FOTOGRAF (2026-09-21): butun satirlarin yollari TEK imza cagrisiyla, sira korunur, imzalanamayan atlanir', async () => {
+    ;(checkInFotografiUrlHaritasi as jest.Mock).mockResolvedValue({
+      'kullanici-2/1.jpg': 'https://imzali/1.jpg',
+      'kullanici-2/3.jpg': 'https://imzali/3.jpg',
+      'kullanici-3/9.jpg': 'https://imzali/9.jpg',
+    })
+    zinciriKur([
+      satir({ fotograflar: ['kullanici-2/1.jpg', 'kullanici-2/2.jpg', 'kullanici-2/3.jpg'] }),
+      satir({ id: 'checkin-2', kullanici_id: 'kullanici-3', fotograflar: ['kullanici-3/9.jpg'] }),
+    ])
 
-    const [oge] = await akisiGetir()
+    const ogeler = await akisiGetir()
 
-    expect(checkInFotografiUrl).toHaveBeenCalledWith('kullanici-2/1.jpg')
-    expect(oge.fotografUrl).toBe('https://imzali/foto.jpg')
+    expect(checkInFotografiUrlHaritasi).toHaveBeenCalledTimes(1)
+    expect(checkInFotografiUrlHaritasi).toHaveBeenCalledWith([
+      'kullanici-2/1.jpg', 'kullanici-2/2.jpg', 'kullanici-2/3.jpg', 'kullanici-3/9.jpg',
+    ])
+    expect(ogeler[0].fotograflar).toEqual(['kullanici-2/1.jpg', 'kullanici-2/2.jpg', 'kullanici-2/3.jpg'])
+    expect(ogeler[0].fotografUrller).toEqual(['https://imzali/1.jpg', 'https://imzali/3.jpg'])
+    expect(ogeler[1].fotografUrller).toEqual(['https://imzali/9.jpg'])
   })
 
   it('mekan satiri okunamazsa oge adsiz da olsa listede kalir', async () => {

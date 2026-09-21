@@ -1139,6 +1139,7 @@ export default {
       en_az_2_karakter_gerekli: 'En az 2 karakter yazmalısın.',
       gecersiz_bulunurluk_degeri: 'Geçersiz bulunurluk değeri.',
       gecersiz_ifade: 'Seçilen ifade tanınmadı, uygulamayı güncelle.',
+      en_fazla_5_fotograf: 'Bir check-in'e en fazla 5 fotoğraf ekleyebilirsin.',
       gecersiz_gorunurluk_degeri: 'Geçersiz görünürlük değeri.',
       gecersiz_platform: 'Geçersiz platform.',
       gecersiz_sikayet_durumu: 'Geçersiz şikayet durumu.',

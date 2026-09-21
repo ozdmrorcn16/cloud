@@ -39,3 +39,30 @@ export async function profilFotograflariUrl(yollar: string[]): Promise<string[]>
   const sonuclar = await Promise.all(yollar.map((yol) => profilFotografiUrl(yol)))
   return sonuclar.filter((url): url is string => url !== null)
 }
+
+/**
+ * Check-in fotograflarini TOPLU imzalar (2026-09-21, coklu fotograf):
+ * akis sayfasi 30 kart x 5 fotograf = 150 imza olabilir; tek tek istek
+ * atmak akisi yavaslatirdi. Tek `createSignedUrls` cagrisi; yol ->
+ * imzali adres haritasi doner, imzalanamayan yol haritada yer almaz
+ * (cagiran fotografsiz cizer - eski davranisla ayni).
+ */
+export async function checkInFotografiUrlHaritasi(yollar: string[]): Promise<Record<string, string>> {
+  const tekil = [...new Set(yollar.filter((y) => y))]
+  if (tekil.length === 0) return {}
+  const { data, error } = await supabase.storage
+    .from('check-in-fotograflari')
+    .createSignedUrls(tekil, GECERLILIK_SANIYE)
+  if (error || !data) return {}
+  const harita: Record<string, string> = {}
+  data.forEach((satir, i) => {
+    if (!satir.error && satir.signedUrl) harita[satir.path ?? tekil[i]] = satir.signedUrl
+  })
+  return harita
+}
+
+/** Bir check-in'in fotograflarini SIRASIYLA imzalar; imzalanamayan atlanir. */
+export async function checkInFotografiUrlleri(yollar: string[]): Promise<string[]> {
+  const harita = await checkInFotografiUrlHaritasi(yollar)
+  return yollar.map((y) => harita[y]).filter((u): u is string => Boolean(u))
+}

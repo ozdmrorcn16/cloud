@@ -1,59 +1,71 @@
 import { supabase } from './supabase'
-import { checkinFotografYukle } from './checkin-fotograf-yukle'
-import { checkInFotografiUrl } from './fotograf-url'
+import { checkinFotograflariniYukle } from './checkin-fotograf-yukle'
+import { checkInFotografiUrlleri } from './fotograf-url'
 import { hataMetni } from './hata-metni'
 
 const KOVA = 'check-in-fotograflari'
 
+export type FotografDegisikligi = {
+  /** Kalan MEVCUT yollar (sirali). Kaldirilanlar bu listede yoktur. */
+  kalanYollar: string[]
+  /** Yeni secilen yerel dosyalar; kalanlarin ARKASINA eklenir. */
+  yeniUriler: string[]
+}
+
 /**
- * Bir check-in'in fotografini sonradan DEGISTIRIR ya da KALDIRIR
- * (kullanicinin istegi 2026-09-21: kartin yerinde duzenlemesinde
- * "isterse koydugu fotografi kaldirabilir ya da yenisini ekleyebilir").
+ * Bir check-in'in fotograf listesini DEGISTIRIR (coklu fotograf,
+ * kullanicinin istegi 2026-09-21: kaldirabilir ya da yenisini ekleyebilir).
  *
  * Sira onemli:
- *   1) yeni fotograf varsa once kovaya yuklenir (yol `<uid>/<zaman>.jpg`;
- *      RPC baskasinin yolunu reddediyor, 2026-09-19 kurali),
- *   2) RPC satirdaki yolu degistirir ve ESKI yolu dondurur,
- *   3) eski dosya kovadan silinir (KVKK: kaldirilan fotograf sunucuda
- *      kalmaz). Silme basarisiz olursa hata FIRLATILMAZ: satir zaten
- *      guncel, eski dosya artik hicbir satira bagli olmadigi icin
- *      sahibinden baskasina gorunmuyor; yetim dosya bir sonraki
- *      denemede/temizlikte gider.
- *   RPC reddederse yeni yuklenen dosya geri silinir - yetim birakilmaz.
+ *   1) yeni dosyalar kovaya yuklenir (yol `<uid>/<zaman>-<sira>.jpg`; RPC
+ *      baskasinin yolunu reddediyor, 2026-09-19 kurali),
+ *   2) RPC `check_in_fotograflarini_guncelle` diziyi yazar ve KALDIRILAN
+ *      eski yollari dondurur,
+ *   3) kaldirilanlar kovadan silinir (KVKK: kaldirilan fotograf sunucuda
+ *      kalmaz). Silme basarisiz olursa hata FIRLATILMAZ: satir guncel,
+ *      dosya artik hicbir satira bagli olmadigi icin sahibinden baskasina
+ *      gorunmuyor.
+ *   RPC reddederse yeni yuklenenler geri silinir - yetim birakilmaz.
  *
- * Doner: yeni fotografin IMZALI adresi (ekran karta bunu yazar) ya da
- * kaldirildiysa null.
+ * Doner: yeni yol listesi ve ayni siradaki imzali adresler (ekran karta
+ * bunlari yazar).
  */
-export async function checkInFotografiniDegistir(
+export async function checkInFotograflariniDegistir(
   checkInId: string,
-  yerelUri: string | null
-): Promise<string | null> {
-  let yeniYol: string | null = null
-  if (yerelUri) {
+  degisiklik: FotografDegisikligi
+): Promise<{ yollar: string[]; urller: string[] }> {
+  const yeniYollar: string[] = []
+  if (degisiklik.yeniUriler.length > 0) {
     const { data: kullaniciVerisi } = await supabase.auth.getUser()
     const kullaniciId = kullaniciVerisi.user?.id
     if (!kullaniciId) throw new Error('Oturum bulunamadi')
-    yeniYol = await checkinFotografYukle(kullaniciId, yerelUri)
+    try {
+      await checkinFotograflariniYukle(kullaniciId, degisiklik.yeniUriler, yeniYollar)
+    } catch (hata) {
+      if (yeniYollar.length > 0) await sessizceSil(yeniYollar)
+      throw hata
+    }
   }
 
-  const { data, error } = await supabase.rpc('check_in_fotografini_guncelle', {
+  const yollar = [...degisiklik.kalanYollar, ...yeniYollar]
+  const { data, error } = await supabase.rpc('check_in_fotograflarini_guncelle', {
     p_check_in_id: checkInId,
-    p_fotograf: yeniYol,
+    p_fotograflar: yollar,
   })
   if (error) {
-    if (yeniYol) await sessizceSil(yeniYol)
+    if (yeniYollar.length > 0) await sessizceSil(yeniYollar)
     throw new Error(hataMetni(error))
   }
 
-  const eskiYol = (data as string | null) ?? null
-  if (eskiYol) await sessizceSil(eskiYol)
+  const kaldirilanlar = (data as string[] | null) ?? []
+  if (kaldirilanlar.length > 0) await sessizceSil(kaldirilanlar)
 
-  return yeniYol ? await checkInFotografiUrl(yeniYol) : null
+  return { yollar, urller: await checkInFotografiUrlleri(yollar) }
 }
 
-async function sessizceSil(yol: string): Promise<void> {
+async function sessizceSil(yollar: string[]): Promise<void> {
   try {
-    await supabase.storage.from(KOVA).remove([yol])
+    await supabase.storage.from(KOVA).remove(yollar)
   } catch {
     // bkz. ust yorum: satir guncel, dosya baskasina gorunmuyor.
   }

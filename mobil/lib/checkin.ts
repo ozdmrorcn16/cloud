@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { noktayiCoz } from './konum'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
-import { checkInFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrlHaritasi } from './fotograf-url'
 
 /**
  * CHECK-IN YAKINLIK KURALI: en fazla 1 km.
@@ -16,6 +16,9 @@ import { checkInFotografiUrl } from './fotograf-url'
 export const CHECK_IN_YARICAP_METRE = 1000
 
 export type Bulunurluk = 'herkese_acik' | 'takipcilerim' | 'gizli'
+
+/** Bir check-in'e eklenebilecek fotograf sayisi (sunucuda check kisiti). */
+export const EN_FAZLA_FOTOGRAF = 5
 export type AniGorunurlugu = 'herkese_acik' | 'takipcilerim' | 'kimse'
 
 export type CheckIn = {
@@ -24,7 +27,8 @@ export type CheckIn = {
   notMetni: string | null
   /** Secilen ifade slug'i (lib/ifadeler.ts); yoksa null. */
   ifade: string | null
-  fotograf: string | null
+  /** Kovadaki yollar, sirali (2026-09-21: coklu fotograf, en fazla 5). */
+  fotograflar: string[]
   olusturmaZamani: string
   bitisZamani: string
   canliMi: boolean
@@ -36,7 +40,9 @@ type CheckInSatiri = {
   mekan_id: string
   not_metni: string | null
   ifade?: string | null
-  fotograf: string | null
+  fotograflar?: string[] | null
+  /** Eski tekil sutun (artik generated = fotograflar[1]); yalnizca geri uyum. */
+  fotograf?: string | null
   olusturma_zamani: string
   bitis_zamani: string
   konum: string | null
@@ -49,7 +55,7 @@ function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
     mekanId: satir.mekan_id,
     notMetni: satir.not_metni,
     ifade: satir.ifade ?? null,
-    fotograf: satir.fotograf,
+    fotograflar: satir.fotograflar ?? (satir.fotograf ? [satir.fotograf] : []),
     olusturmaZamani: satir.olusturma_zamani,
     bitisZamani: satir.bitis_zamani,
     canliMi: satir.konum !== null,
@@ -62,7 +68,7 @@ export async function checkInYap(
   lat: number,
   lng: number,
   notMetni: string | null = null,
-  fotograf: string | null = null,
+  fotograflar: string[] = [],
   bulunurluk: Bulunurluk = 'herkese_acik',
   ifade: string | null = null
 ): Promise<CheckIn> {
@@ -71,7 +77,10 @@ export async function checkInYap(
     p_lat: lat,
     p_lng: lng,
     p_not_metni: notMetni,
-    p_fotograf: fotograf,
+    // COKLU FOTOGRAF (2026-09-21): yollar dizi olarak gider; tekil
+    // p_fotograf yalnizca eski istemciler icin sunucuda duruyor.
+    p_fotograf: null,
+    p_fotograflar: fotograflar,
     p_bulunurluk: bulunurluk,
     // IFADE (2026-09-21): 108'lik setten tek slug; sunucu sozlukte
     // dogruluyor. Yoksa null gider, sutun bos kalir.
@@ -101,7 +110,7 @@ function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
 export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
+    .select('id, mekan_id, kullanici_id, not_metni, ifade, fotograflar, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(hataMetni(error))
@@ -160,8 +169,8 @@ export type AniGorunumu = CheckIn & {
   mekanKonumu: { lat: number; lng: number }
   /** check_inler'de denormalize duran ad (karar #18). */
   kullaniciAdi: string | null
-  /** Imzalanmis fotograf adresi; yoksa null. */
-  fotografUrl: string | null
+  /** Imzalanmis fotograf adresleri, `fotograflar` sirasiyla; imzalanamayan atlanir. */
+  fotografUrller: string[]
   etiketler: Etiket[]
 }
 
@@ -176,7 +185,7 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
     // `ifade` de seciliyor (2026-09-21): ana sayfa akisi seciyordu, bu
     // sorgu secmiyordu; ayni kart profilde ifadesiz ciziliyordu.
     .select(
-      'id, mekan_id, kullanici_adi, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
+      'id, mekan_id, kullanici_adi, not_metni, ifade, fotograflar, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
     )
     .eq('kullanici_id', kullaniciId)
     // KONUM FILTRESI KALDIRILDI (kullanicinin bildirdigi eksik,
@@ -194,6 +203,11 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
     satirlar.map((s) => s.id)
   ).catch(() => ({}))
 
+  // Butun fotograflar TEK imza istegiyle (coklu fotograf, 2026-09-21).
+  const urlHaritasi = await checkInFotografiUrlHaritasi(
+    satirlar.flatMap((s) => s.fotograflar ?? [])
+  )
+
   return Promise.all(
     satirlar.map(async (satir) => ({
       ...satiriCheckInACevir(satir),
@@ -202,7 +216,7 @@ export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<A
       mekanSemti: satir.mekanlar.semt,
       mekanKonumu: noktayiCoz(satir.mekanlar.konum),
       kullaniciAdi: satir.kullanici_adi,
-      fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
+      fotografUrller: (satir.fotograflar ?? []).map((y) => urlHaritasi[y]).filter((u): u is string => Boolean(u)),
       etiketler: etiketler[satir.id] ?? [],
     }))
   )
@@ -279,7 +293,7 @@ export async function aktifCheckInimiGetir(): Promise<AktifCheckIn | null> {
 
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad)')
+    .select('id, mekan_id, not_metni, ifade, fotograflar, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad)')
     .eq('kullanici_id', kullaniciId)
     .not('konum', 'is', null)
     .order('olusturma_zamani', { ascending: false })

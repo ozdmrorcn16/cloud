@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
-import { checkInFotografiUrl, profilFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrlHaritasi, profilFotografiUrl } from './fotograf-url'
 import type { AniGorunumu } from './checkin'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
@@ -49,7 +49,8 @@ export function anidanAkisOgesi(
     mekanSemti: ani.mekanSemti,
     notMetni: ani.notMetni,
     ifade: ani.ifade,
-    fotografUrl: ani.fotografUrl,
+    fotograflar: ani.fotograflar,
+    fotografUrller: ani.fotografUrller,
     olusturmaZamani: ani.olusturmaZamani,
     canliMi: ani.canliMi,
     benimMi: secenekler.benimMi ?? true,
@@ -79,8 +80,10 @@ export type AkisOgesi = {
   notMetni: string | null
   /** Check-in'de secilen ifade slug'i (lib/ifadeler.ts); yoksa null. */
   ifade: string | null
-  /** Imzalanmis fotograf adresi; fotograf yoksa ya da imzalanamadiysa null. */
-  fotografUrl: string | null
+  /** Kovadaki yollar (duzenleme sayfasi "kalanlar"i bununla bildirir). */
+  fotograflar: string[]
+  /** Imzalanmis adresler, `fotograflar` sirasiyla; imzalanamayan atlanir. */
+  fotografUrller: string[]
   olusturmaZamani: string
   /** Konum sutunu doluysa kisi su an orada. */
   canliMi: boolean
@@ -106,7 +109,7 @@ type AkisSatiri = {
   mekan_id: string
   not_metni: string | null
   ifade: string | null
-  fotograf: string | null
+  fotograflar: string[] | null
   olusturma_zamani: string
   konum: string | null
   mekanlar: { ad: string; semt: string | null } | null
@@ -137,7 +140,7 @@ export async function akisiGetir(
   let sorgu = supabase
     .from('check_inler')
     .select(
-      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, ifade, fotograf, olusturma_zamani, konum, mekanlar(ad, semt)'
+      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, ifade, fotograflar, olusturma_zamani, konum, mekanlar(ad, semt)'
     )
     .in('kullanici_id', kimlikler)
   if (oncesi) sorgu = sorgu.lt('olusturma_zamani', oncesi)
@@ -162,6 +165,11 @@ export async function akisiGetir(
     ...new Set(satirlar.map((s) => s.kullanici_id)),
   ]).catch(() => ({}) as Record<string, ProfilOzeti>)
 
+  // Butun fotograflar TEK imza istegiyle (coklu fotograf, 2026-09-21).
+  const urlHaritasi = await checkInFotografiUrlHaritasi(
+    satirlar.flatMap((s) => s.fotograflar ?? [])
+  )
+
   return Promise.all(
     satirlar.map(async (satir) => ({
       id: satir.id,
@@ -174,7 +182,8 @@ export async function akisiGetir(
       mekanSemti: satir.mekanlar?.semt ?? null,
       notMetni: satir.not_metni,
       ifade: satir.ifade ?? null,
-      fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
+      fotograflar: satir.fotograflar ?? [],
+      fotografUrller: (satir.fotograflar ?? []).map((y) => urlHaritasi[y]).filter((u): u is string => Boolean(u)),
       olusturmaZamani: satir.olusturma_zamani,
       canliMi: satir.konum !== null,
       benimMi: satir.kullanici_id === benimId,

@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
-import { checkInFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrlHaritasi } from './fotograf-url'
 
 /**
  * MEKAN SAYFASININ VERISI (kullanicinin istegi 2026-09-06).
@@ -193,9 +193,9 @@ export async function mekanFotograflariniGetir(
       fotograf: string
     }[]) ?? []
 
-  const imzali = await Promise.all(
-    satirlar.map(async (s) => ({ satir: s, url: await checkInFotografiUrl(s.fotograf) }))
-  )
+  // Tek imza istegi (2026-09-21).
+  const harita = await checkInFotografiUrlHaritasi(satirlar.map((s) => s.fotograf))
+  const imzali = satirlar.map((s) => ({ satir: s, url: harita[s.fotograf] ?? null }))
   return imzali
     .filter((x): x is { satir: (typeof satirlar)[number]; url: string } => x.url !== null)
     .map(({ satir, url }) => ({

@@ -941,6 +941,7 @@ export default {
       en_az_2_karakter_gerekli: 'Введи не меньше 2 символов.',
       gecersiz_bulunurluk_degeri: 'Недопустимое значение доступности.',
       gecersiz_ifade: 'Это выражение настроения не распознано; обновите приложение.',
+      en_fazla_5_fotograf: 'К чекину можно добавить не более 5 фото.',
       gecersiz_gorunurluk_degeri: 'Недопустимое значение видимости.',
       gecersiz_platform: 'Недопустимая платформа.',
       gecersiz_sikayet_durumu: 'Недопустимый статус жалобы.',

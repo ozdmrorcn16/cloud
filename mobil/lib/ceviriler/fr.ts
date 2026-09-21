@@ -941,6 +941,7 @@ export default {
       en_az_2_karakter_gerekli: 'Saisis au moins 2 caractères.',
       gecersiz_bulunurluk_degeri: 'Valeur de disponibilité invalide.',
       gecersiz_ifade: "Cette expression d'humeur n'a pas été reconnue ; mets l'application à jour.",
+      en_fazla_5_fotograf: 'Tu peux ajouter au maximum 5 photos à un check-in.',
       gecersiz_gorunurluk_degeri: 'Valeur de visibilité invalide.',
       gecersiz_platform: 'Plateforme invalide.',
       gecersiz_sikayet_durumu: 'Statut de signalement invalide.',
