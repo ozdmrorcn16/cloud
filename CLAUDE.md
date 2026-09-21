@@ -204,7 +204,8 @@ goruntu `tasarim/akis-cumle-referans.png`.
   ZEMIN BEYAZ (referansin gri sayfasi bilerek alinmadi - kullanicinin
   sabahki karari). Sabahki "tam genislik + gri bant" (B) bu referansla
   KAPANDI; `akisAyrac` jetonu duruyor, kullanilmiyor. Fotograf 2:1
-  (16:7 idi). Fotografsiz kartta eylem satirinin ustunde ince cizgi.
+  (16:7 idi). Fotografsiz karttaki eylem ustu cizgi 2026-09-21 sabahi
+  kullanicinin istegiyle KALKTI ("sutun icindeki cizgiyi kaldir").
 
 ### MESAFE SECIMI KALICI - 2026-09-20
 
