@@ -3340,6 +3340,22 @@ sayfa zemini artik RENKLE ayrilmiyor; ayrimi `renk.cizgi` kenarligi ve
 gorunmez olur. Mevcut ekranlar kontrol edildi (ayarlar, profil,
 kesfet, kisiler): hepsinde kenarlik ya da golge zaten vardi.
 
+### UCRETSIZ MEKAN VERISI + FOTOGRAF KAYNAKLARI ARASTIRMASI - 2026-09-21
+
+Kullanicinin istegi: "detayli arastir, GitHub'i da". Rapor:
+`docs/konum-veri-kaynaklari-arastirmasi.md` (13 kaynak, lisans, TR/Bursa
+olcumu, karar). Uc bulgu: (1) turu %100 guvenilir TEK ucretsiz kaynak
+**AllThePlaces** (CC0; markalarin kendi magaza bulucularindan; TR 48
+orumcek / 102 bin kayit ama banka-market-telekom agirlikli; sosyalde
+yalnizca fast-food/doner zincirleri; bagimsiz kafe/bar YOK). (2) Isletme
+fotografi icin ucretsiz+yasal kaynak YOK; Commons/Wikidata yalnizca yer
+isaretleri (Bursa: 59 resimli oge, 0 kafe/bar); Mapillary cephe = tahmin.
+(3) IBB Acik Veri CC BY 4.0, ticari kullanim serbest - Istanbul'da kamu
+tesisleri (park/kutuphane/kultur merkezi) icin resmi tur kaynagi.
+Yandex: Google ile ayni duvar (saklama yasak, kendi haritada gosterme
+yasak, ticari lisans ~120 bin ruble/yil). Overture elimizde ama 08-30'da
+kategori guvensizligi yuzunden birakilmisti - durum ayni.
+
 ### OSM TUR OLCUMU: TEKRAR DENENMESIN - 2026-09-20
 
 Kullanicinin sorusu: yeni kazima araclariyla (Scrapling, ScrapeGraphAI)
