@@ -1,0 +1,1190 @@
+[
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Çay molası",
+  "slug": "cay-molasi",
+  "dosya": "icecekler/cay-molasi.png",
+  "boyut": [
+   112,
+   123
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Kahve keyfi",
+  "slug": "kahve-keyfi",
+  "dosya": "icecekler/kahve-keyfi.png",
+  "boyut": [
+   113,
+   123
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Türk kahvesi",
+  "slug": "turk-kahvesi",
+  "dosya": "icecekler/turk-kahvesi.png",
+  "boyut": [
+   123,
+   108
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Buzlu kahve",
+  "slug": "buzlu-kahve",
+  "dosya": "icecekler/buzlu-kahve.png",
+  "boyut": [
+   99,
+   124
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Matcha zamanı",
+  "slug": "matcha-zamani",
+  "dosya": "icecekler/matcha-zamani.png",
+  "boyut": [
+   124,
+   87
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Limonata ferahlığı",
+  "slug": "limonata-ferahligi",
+  "dosya": "icecekler/limonata-ferahligi.png",
+  "boyut": [
+   99,
+   124
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Smoothie molası",
+  "slug": "smoothie-molasi",
+  "dosya": "icecekler/smoothie-molasi.png",
+  "boyut": [
+   101,
+   124
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Bubble tea",
+  "slug": "bubble-tea",
+  "dosya": "icecekler/bubble-tea.png",
+  "boyut": [
+   92,
+   124
+  ]
+ },
+ {
+  "kategori": "İçecekler",
+  "kategoriSlug": "icecekler",
+  "etiket": "Su molası",
+  "slug": "su-molasi",
+  "dosya": "icecekler/su-molasi.png",
+  "boyut": [
+   96,
+   124
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Kahvaltı keyfi",
+  "slug": "kahvalti-keyfi",
+  "dosya": "yemekler/kahvalti-keyfi.png",
+  "boyut": [
+   123,
+   99
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Simit molası",
+  "slug": "simit-molasi",
+  "dosya": "yemekler/simit-molasi.png",
+  "boyut": [
+   123,
+   109
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Pizza zamanı",
+  "slug": "pizza-zamani",
+  "dosya": "yemekler/pizza-zamani.png",
+  "boyut": [
+   115,
+   123
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Burger keyfi",
+  "slug": "burger-keyfi",
+  "dosya": "yemekler/burger-keyfi.png",
+  "boyut": [
+   124,
+   117
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Kebap molası",
+  "slug": "kebap-molasi",
+  "dosya": "yemekler/kebap-molasi.png",
+  "boyut": [
+   123,
+   89
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Sushi zamanı",
+  "slug": "sushi-zamani",
+  "dosya": "yemekler/sushi-zamani.png",
+  "boyut": [
+   123,
+   101
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Hafif bir öğün",
+  "slug": "hafif-bir-ogun",
+  "dosya": "yemekler/hafif-bir-ogun.png",
+  "boyut": [
+   124,
+   106
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Makarna keyfi",
+  "slug": "makarna-keyfi",
+  "dosya": "yemekler/makarna-keyfi.png",
+  "boyut": [
+   123,
+   96
+  ]
+ },
+ {
+  "kategori": "Yemekler",
+  "kategoriSlug": "yemekler",
+  "etiket": "Patates molası",
+  "slug": "patates-molasi",
+  "dosya": "yemekler/patates-molasi.png",
+  "boyut": [
+   111,
+   124
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Dondurma keyfi",
+  "slug": "dondurma-keyfi",
+  "dosya": "tatlilar-ve-atistirmaliklar/dondurma-keyfi.png",
+  "boyut": [
+   73,
+   123
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Tatlı kaçamağı",
+  "slug": "tatli-kacamagi",
+  "dosya": "tatlilar-ve-atistirmaliklar/tatli-kacamagi.png",
+  "boyut": [
+   124,
+   120
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Waffle zamanı",
+  "slug": "waffle-zamani",
+  "dosya": "tatlilar-ve-atistirmaliklar/waffle-zamani.png",
+  "boyut": [
+   111,
+   123
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Baklava keyfi",
+  "slug": "baklava-keyfi",
+  "dosya": "tatlilar-ve-atistirmaliklar/baklava-keyfi.png",
+  "boyut": [
+   124,
+   79
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Donut molası",
+  "slug": "donut-molasi",
+  "dosya": "tatlilar-ve-atistirmaliklar/donut-molasi.png",
+  "boyut": [
+   123,
+   121
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Kruvasan keyfi",
+  "slug": "kruvasan-keyfi",
+  "dosya": "tatlilar-ve-atistirmaliklar/kruvasan-keyfi.png",
+  "boyut": [
+   124,
+   87
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Çikolata mutluluğu",
+  "slug": "cikolata-mutlulugu",
+  "dosya": "tatlilar-ve-atistirmaliklar/cikolata-mutlulugu.png",
+  "boyut": [
+   87,
+   124
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Film atıştırması",
+  "slug": "film-atistirmasi",
+  "dosya": "tatlilar-ve-atistirmaliklar/film-atistirmasi.png",
+  "boyut": [
+   103,
+   123
+  ]
+ },
+ {
+  "kategori": "Tatlılar ve atıştırmalıklar",
+  "kategoriSlug": "tatlilar-ve-atistirmaliklar",
+  "etiket": "Meyve molası",
+  "slug": "meyve-molasi",
+  "dosya": "tatlilar-ve-atistirmaliklar/meyve-molasi.png",
+  "boyut": [
+   124,
+   109
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Çok mutluyum",
+  "slug": "cok-mutluyum",
+  "dosya": "ruh-hali/cok-mutluyum.png",
+  "boyut": [
+   123,
+   119
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Kahkahadayım",
+  "slug": "kahkahadayim",
+  "dosya": "ruh-hali/kahkahadayim.png",
+  "boyut": [
+   104,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Kalbim burada",
+  "slug": "kalbim-burada",
+  "dosya": "ruh-hali/kalbim-burada.png",
+  "boyut": [
+   117,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Huzurluyum",
+  "slug": "huzurluyum",
+  "dosya": "ruh-hali/huzurluyum.png",
+  "boyut": [
+   121,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Düşünceliyim",
+  "slug": "dusunceliyim",
+  "dosya": "ruh-hali/dusunceliyim.png",
+  "boyut": [
+   118,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Biraz üzgünüm",
+  "slug": "biraz-uzgunum",
+  "dosya": "ruh-hali/biraz-uzgunum.png",
+  "boyut": [
+   103,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Pilim bitti",
+  "slug": "pilim-bitti",
+  "dosya": "ruh-hali/pilim-bitti.png",
+  "boyut": [
+   123,
+   116
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Biraz sinirliyim",
+  "slug": "biraz-sinirliyim",
+  "dosya": "ruh-hali/biraz-sinirliyim.png",
+  "boyut": [
+   105,
+   123
+  ]
+ },
+ {
+  "kategori": "Ruh hâli",
+  "kategoriSlug": "ruh-hali",
+  "etiket": "Çok şaşırdım",
+  "slug": "cok-sasirdim",
+  "dosya": "ruh-hali/cok-sasirdim.png",
+  "boyut": [
+   111,
+   123
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Çak bir beşlik",
+  "slug": "cak-bir-beslik",
+  "dosya": "arkadaslik-ve-iliskiler/cak-bir-beslik.png",
+  "boyut": [
+   124,
+   95
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Ekiple birlikte",
+  "slug": "ekiple-birlikte",
+  "dosya": "arkadaslik-ve-iliskiler/ekiple-birlikte.png",
+  "boyut": [
+   123,
+   68
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Aile zamanı",
+  "slug": "aile-zamani",
+  "dosya": "arkadaslik-ve-iliskiler/aile-zamani.png",
+  "boyut": [
+   123,
+   99
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Randevu zamanı",
+  "slug": "randevu-zamani",
+  "dosya": "arkadaslik-ve-iliskiler/randevu-zamani.png",
+  "boyut": [
+   123,
+   101
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Seni bekliyorum",
+  "slug": "seni-bekliyorum",
+  "dosya": "arkadaslik-ve-iliskiler/seni-bekliyorum.png",
+  "boyut": [
+   123,
+   87
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Kendi başıma",
+  "slug": "kendi-basima",
+  "dosya": "arkadaslik-ve-iliskiler/kendi-basima.png",
+  "boyut": [
+   109,
+   123
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "İyi ki varsın",
+  "slug": "iyi-ki-varsin",
+  "dosya": "arkadaslik-ve-iliskiler/iyi-ki-varsin.png",
+  "boyut": [
+   123,
+   104
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Sen de gel",
+  "slug": "sen-de-gel",
+  "dosya": "arkadaslik-ve-iliskiler/sen-de-gel.png",
+  "boyut": [
+   123,
+   123
+  ]
+ },
+ {
+  "kategori": "Arkadaşlık ve ilişkiler",
+  "kategoriSlug": "arkadaslik-ve-iliskiler",
+  "etiket": "Özledim",
+  "slug": "ozledim",
+  "dosya": "arkadaslik-ve-iliskiler/ozledim.png",
+  "boyut": [
+   109,
+   123
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Yoldayım",
+  "slug": "yoldayim",
+  "dosya": "yolculuk-ve-ulasim/yoldayim.png",
+  "boyut": [
+   123,
+   123
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Trafikteyim",
+  "slug": "trafikteyim",
+  "dosya": "yolculuk-ve-ulasim/trafikteyim.png",
+  "boyut": [
+   123,
+   123
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Yürüyerek",
+  "slug": "yuruyerek",
+  "dosya": "yolculuk-ve-ulasim/yuruyerek.png",
+  "boyut": [
+   124,
+   117
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Bisikletle",
+  "slug": "bisikletle",
+  "dosya": "yolculuk-ve-ulasim/bisikletle.png",
+  "boyut": [
+   123,
+   115
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Scooter ile",
+  "slug": "scooter-ile",
+  "dosya": "yolculuk-ve-ulasim/scooter-ile.png",
+  "boyut": [
+   113,
+   124
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Tren yolculuğu",
+  "slug": "tren-yolculugu",
+  "dosya": "yolculuk-ve-ulasim/tren-yolculugu.png",
+  "boyut": [
+   124,
+   109
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Otobüsteyim",
+  "slug": "otobusteyim",
+  "dosya": "yolculuk-ve-ulasim/otobusteyim.png",
+  "boyut": [
+   124,
+   83
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Uçuş zamanı",
+  "slug": "ucus-zamani",
+  "dosya": "yolculuk-ve-ulasim/ucus-zamani.png",
+  "boyut": [
+   124,
+   95
+  ]
+ },
+ {
+  "kategori": "Yolculuk ve ulaşım",
+  "kategoriSlug": "yolculuk-ve-ulasim",
+  "etiket": "Tatil başladı",
+  "slug": "tatil-basladi",
+  "dosya": "yolculuk-ve-ulasim/tatil-basladi.png",
+  "boyut": [
+   93,
+   124
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Çalışıyorum",
+  "slug": "calisiyorum",
+  "dosya": "gunluk-yasam/calisiyorum.png",
+  "boyut": [
+   123,
+   119
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Ders zamanı",
+  "slug": "ders-zamani",
+  "dosya": "gunluk-yasam/ders-zamani.png",
+  "boyut": [
+   123,
+   111
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Alışverişteyim",
+  "slug": "alisveristeyim",
+  "dosya": "gunluk-yasam/alisveristeyim.png",
+  "boyut": [
+   123,
+   110
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Ev keyfi",
+  "slug": "ev-keyfi",
+  "dosya": "gunluk-yasam/ev-keyfi.png",
+  "boyut": [
+   123,
+   110
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Market turu",
+  "slug": "market-turu",
+  "dosya": "gunluk-yasam/market-turu.png",
+  "boyut": [
+   100,
+   124
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Bakım zamanı",
+  "slug": "bakim-zamani",
+  "dosya": "gunluk-yasam/bakim-zamani.png",
+  "boyut": [
+   123,
+   112
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Sağlık molası",
+  "slug": "saglik-molasi",
+  "dosya": "gunluk-yasam/saglik-molasi.png",
+  "boyut": [
+   123,
+   117
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Patili dostumla",
+  "slug": "patili-dostumla",
+  "dosya": "gunluk-yasam/patili-dostumla.png",
+  "boyut": [
+   123,
+   97
+  ]
+ },
+ {
+  "kategori": "Günlük yaşam",
+  "kategoriSlug": "gunluk-yasam",
+  "etiket": "Toplantıdayım",
+  "slug": "toplantidayim",
+  "dosya": "gunluk-yasam/toplantidayim.png",
+  "boyut": [
+   123,
+   99
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Antrenmandayım",
+  "slug": "antrenmandayim",
+  "dosya": "spor-ve-hareket/antrenmandayim.png",
+  "boyut": [
+   124,
+   93
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Koşu zamanı",
+  "slug": "kosu-zamani",
+  "dosya": "spor-ve-hareket/kosu-zamani.png",
+  "boyut": [
+   124,
+   114
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Maç keyfi",
+  "slug": "mac-keyfi",
+  "dosya": "spor-ve-hareket/mac-keyfi.png",
+  "boyut": [
+   123,
+   123
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Basket zamanı",
+  "slug": "basket-zamani",
+  "dosya": "spor-ve-hareket/basket-zamani.png",
+  "boyut": [
+   90,
+   123
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Tenis zamanı",
+  "slug": "tenis-zamani",
+  "dosya": "spor-ve-hareket/tenis-zamani.png",
+  "boyut": [
+   121,
+   123
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Yüzüyorum",
+  "slug": "yuzuyorum",
+  "dosya": "spor-ve-hareket/yuzuyorum.png",
+  "boyut": [
+   125,
+   105
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Yoga molası",
+  "slug": "yoga-molasi",
+  "dosya": "spor-ve-hareket/yoga-molasi.png",
+  "boyut": [
+   123,
+   109
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Doğa yürüyüşü",
+  "slug": "doga-yuruyusu",
+  "dosya": "spor-ve-hareket/doga-yuruyusu.png",
+  "boyut": [
+   123,
+   97
+  ]
+ },
+ {
+  "kategori": "Spor ve hareket",
+  "kategoriSlug": "spor-ve-hareket",
+  "etiket": "Bowling zamanı",
+  "slug": "bowling-zamani",
+  "dosya": "spor-ve-hareket/bowling-zamani.png",
+  "boyut": [
+   101,
+   123
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Sahil keyfi",
+  "slug": "sahil-keyfi",
+  "dosya": "gezi-ve-eglence/sahil-keyfi.png",
+  "boyut": [
+   123,
+   118
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Kamptayım",
+  "slug": "kamptayim",
+  "dosya": "gezi-ve-eglence/kamptayim.png",
+  "boyut": [
+   123,
+   100
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Piknik zamanı",
+  "slug": "piknik-zamani",
+  "dosya": "gezi-ve-eglence/piknik-zamani.png",
+  "boyut": [
+   123,
+   122
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Sinemadayım",
+  "slug": "sinemadayim",
+  "dosya": "gezi-ve-eglence/sinemadayim.png",
+  "boyut": [
+   123,
+   121
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Konserdeyim",
+  "slug": "konserdeyim",
+  "dosya": "gezi-ve-eglence/konserdeyim.png",
+  "boyut": [
+   123,
+   117
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Dans zamanı",
+  "slug": "dans-zamani",
+  "dosya": "gezi-ve-eglence/dans-zamani.png",
+  "boyut": [
+   107,
+   124
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Oyun molası",
+  "slug": "oyun-molasi",
+  "dosya": "gezi-ve-eglence/oyun-molasi.png",
+  "boyut": [
+   124,
+   86
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Keşif turu",
+  "slug": "kesif-turu",
+  "dosya": "gezi-ve-eglence/kesif-turu.png",
+  "boyut": [
+   123,
+   107
+  ]
+ },
+ {
+  "kategori": "Gezi ve eğlence",
+  "kategoriSlug": "gezi-ve-eglence",
+  "etiket": "Balık tutuyorum",
+  "slug": "balik-tutuyorum",
+  "dosya": "gezi-ve-eglence/balik-tutuyorum.png",
+  "boyut": [
+   123,
+   123
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Güneşli gün",
+  "slug": "gunesli-gun",
+  "dosya": "hava-ve-gunun-saati/gunesli-gun.png",
+  "boyut": [
+   124,
+   120
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Yağmur keyfi",
+  "slug": "yagmur-keyfi",
+  "dosya": "hava-ve-gunun-saati/yagmur-keyfi.png",
+  "boyut": [
+   121,
+   123
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Kar zamanı",
+  "slug": "kar-zamani",
+  "dosya": "hava-ve-gunun-saati/kar-zamani.png",
+  "boyut": [
+   105,
+   123
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Rüzgârlı",
+  "slug": "ruzgarli",
+  "dosya": "hava-ve-gunun-saati/ruzgarli.png",
+  "boyut": [
+   124,
+   76
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Çok sıcak",
+  "slug": "cok-sicak",
+  "dosya": "hava-ve-gunun-saati/cok-sicak.png",
+  "boyut": [
+   123,
+   117
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Üşüdüm",
+  "slug": "usudum",
+  "dosya": "hava-ve-gunun-saati/usudum.png",
+  "boyut": [
+   105,
+   122
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Gün batımı",
+  "slug": "gun-batimi",
+  "dosya": "hava-ve-gunun-saati/gun-batimi.png",
+  "boyut": [
+   124,
+   107
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Gece modu",
+  "slug": "gece-modu",
+  "dosya": "hava-ve-gunun-saati/gece-modu.png",
+  "boyut": [
+   118,
+   122
+  ]
+ },
+ {
+  "kategori": "Hava ve günün saati",
+  "kategoriSlug": "hava-ve-gunun-saati",
+  "etiket": "Bulutlu gün",
+  "slug": "bulutlu-gun",
+  "dosya": "hava-ve-gunun-saati/bulutlu-gun.png",
+  "boyut": [
+   124,
+   104
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "İyi ki doğdun",
+  "slug": "iyi-ki-dogdun",
+  "dosya": "kutlamalar-ve-ozel-anlar/iyi-ki-dogdun.png",
+  "boyut": [
+   114,
+   123
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Mezun oldum",
+  "slug": "mezun-oldum",
+  "dosya": "kutlamalar-ve-ozel-anlar/mezun-oldum.png",
+  "boyut": [
+   112,
+   122
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Başardım",
+  "slug": "basardim",
+  "dosya": "kutlamalar-ve-ozel-anlar/basardim.png",
+  "boyut": [
+   123,
+   109
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Küçük bir sürpriz",
+  "slug": "kucuk-bir-surpriz",
+  "dosya": "kutlamalar-ve-ozel-anlar/kucuk-bir-surpriz.png",
+  "boyut": [
+   117,
+   124
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Yıl dönümümüz",
+  "slug": "yil-donumumuz",
+  "dosya": "kutlamalar-ve-ozel-anlar/yil-donumumuz.png",
+  "boyut": [
+   123,
+   107
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Düğün zamanı",
+  "slug": "dugun-zamani",
+  "dosya": "kutlamalar-ve-ozel-anlar/dugun-zamani.png",
+  "boyut": [
+   124,
+   88
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Yeni başlangıç",
+  "slug": "yeni-baslangic",
+  "dosya": "kutlamalar-ve-ozel-anlar/yeni-baslangic.png",
+  "boyut": [
+   124,
+   105
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Şans benimle",
+  "slug": "sans-benimle",
+  "dosya": "kutlamalar-ve-ozel-anlar/sans-benimle.png",
+  "boyut": [
+   123,
+   109
+  ]
+ },
+ {
+  "kategori": "Kutlamalar ve özel anlar",
+  "kategoriSlug": "kutlamalar-ve-ozel-anlar",
+  "etiket": "Kutlama zamanı",
+  "slug": "kutlama-zamani",
+  "dosya": "kutlamalar-ve-ozel-anlar/kutlama-zamani.png",
+  "boyut": [
+   119,
+   124
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Buradayım",
+  "slug": "buradayim",
+  "dosya": "mekan-ve-check-in/buradayim.png",
+  "boyut": [
+   123,
+   122
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "İlk kez buradayım",
+  "slug": "ilk-kez-buradayim",
+  "dosya": "mekan-ve-check-in/ilk-kez-buradayim.png",
+  "boyut": [
+   123,
+   114
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Yine buradayım",
+  "slug": "yine-buradayim",
+  "dosya": "mekan-ve-check-in/yine-buradayim.png",
+  "boyut": [
+   112,
+   122
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Burası kalabalık",
+  "slug": "burasi-kalabalik",
+  "dosya": "mekan-ve-check-in/burasi-kalabalik.png",
+  "boyut": [
+   123,
+   114
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Tam kafa dinlemelik",
+  "slug": "tam-kafa-dinlemelik",
+  "dosya": "mekan-ve-check-in/tam-kafa-dinlemelik.png",
+  "boyut": [
+   123,
+   107
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Manzara şahane",
+  "slug": "manzara-sahane",
+  "dosya": "mekan-ve-check-in/manzara-sahane.png",
+  "boyut": [
+   106,
+   122
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Çok lezzetli",
+  "slug": "cok-lezzetli",
+  "dosya": "mekan-ve-check-in/cok-lezzetli.png",
+  "boyut": [
+   112,
+   122
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Beklediğim gibi değil",
+  "slug": "bekledigim-gibi-degil",
+  "dosya": "mekan-ve-check-in/bekledigim-gibi-degil.png",
+  "boyut": [
+   115,
+   124
+  ]
+ },
+ {
+  "kategori": "Mekân ve check-in",
+  "kategoriSlug": "mekan-ve-check-in",
+  "etiket": "Gizli bir güzellik",
+  "slug": "gizli-bir-guzellik",
+  "dosya": "mekan-ve-check-in/gizli-bir-guzellik.png",
+  "boyut": [
+   123,
+   117
+  ]
+ }
+]
