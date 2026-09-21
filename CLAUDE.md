@@ -966,6 +966,17 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### AKIS KARTINDA IFADE DUZENLEME - 2026-09-21
+
+Kullanicinin istegi ("burada da ifade ekleme, eklenen ifade
+silinebilsin"): yerinde duzenlemede (`CheckInKarti` duzenle alani) not
+kutusunun altinda `IfadeCipi` (basinca secici, x ile kaldir) ya da
+hayalet "Ifade ekle" (`duzenle-ifade-ekle`); Kaydet'te degistiyse
+`onIfadeKaydet(id, slug|null)` -> `checkInIfadesiniGuncelle` -> yeni RPC
+`check_in_ifadesini_guncelle` (migrasyon `20260921150000`; kendi +
+moderasyon gizli degil + slug `ifadeler`de; null = kaldir; revoke anon).
+Ana sayfa ve profil listeyi yerinde gunceller (`ifade` alani).
+
 ### IFADE SECICI: KATEGORILER YANA KAYDIRMALI - 2026-09-21
 
 Kullanicinin istegi ("sayfa elle yana kaydirilabilsin, kaydirinca obur
