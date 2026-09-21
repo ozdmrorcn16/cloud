@@ -657,6 +657,8 @@ export default {
     ifadeEkle: 'Add a mood',
     ifadeBaslik: 'How are you, what are you up to?',
     ifadeKaldir: 'Remove mood',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Change',
   },
   mekanDuzenle: {
     baslik: 'Fix the details',

@@ -966,6 +966,32 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### KARTTA FOTOGRAF DEGISTIR/KALDIR; PROFILDE IFADE EKSIKTI - 2026-09-21 GECE
+
+Kullanicinin iki bildirimi ("eklenen fotograf, arkadas, ifade duzenleme
+ana sayfada da profilde de ayni gorunmeli" + "fotograf duzenlemede
+eklenmeli: kaldirabilir ya da yenisini ekleyebilir"). OTA `46bcc97d`
+(ifade) + `9ec78c2e` (fotograf), web guncel.
+- **HATA:** `kullanicininAnilariniGetir` select'i `ifade` secmiyordu
+  (akis seciyordu) -> profil ve baskasinin profilindeki kart ifadesiz.
+  DERS: uc ekran ortak karti cizerken UC SORGU da ayni alanlari tasimali;
+  yeni sutun eklerken `grep -n "select(" lib/*.ts` ile hepsine bak.
+- **Fotograf duzenleme:** kart duzenleme alaninda ifade satirinin
+  altinda fotograf satiri - varsa 96x48 onizleme + "Degistir" +
+  "Fotografi kaldir" (kirmizi), yoksa hayalet "Fotograf ekle"; kaynak
+  formdaki Kamera/Galeri `SecimPenceresi`. Taslak `undefined` (dokunulmadi)
+  / `null` (kaldir) / uri; Kaydet'e kadar sunucuya gitmez, Vazgec atar.
+  `lib/checkin-fotograf-degistir.ts` `checkInFotografiniDegistir`: yukle
+  -> RPC `check_in_fotografini_guncelle` (migrasyon `20260921170000`;
+  ayni kapi, yol `<uid>/...`, ESKI YOLU dondurur) -> eski dosyayi
+  kovadan sil (basarisizsa sessiz; RPC reddederse yeni yuklenen geri
+  silinir). Kovaya DELETE politikasi + okuma politikasina "kendi
+  klasoru" istisnasi (Storage `remove` once SELECT ister; satira bagli
+  kural eski dosyayi RPC'den sonra sahibine bile kapatiyordu). Ekranlar
+  `onFotografKaydet` ile `fotografUrl`i yerinde gunceller. Sozluk
+  `checkIn.fotografDegistir` 7 dil. Canli
+  `araclar/check-in-fotograf-degistir-canli-test.py` 12/12. Jest 85 / 1134.
+
 ### AKIS KARTINDA IFADE DUZENLEME - 2026-09-21
 
 Kullanicinin istegi ("burada da ifade ekleme, eklenen ifade

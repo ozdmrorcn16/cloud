@@ -651,6 +651,8 @@ export default {
     ifadeEkle: 'Añadir un estado',
     ifadeBaslik: '¿Cómo estás, qué haces?',
     ifadeKaldir: 'Quitar estado',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Cambiar',
   },
   mekanDuzenle: {
     baslik: 'Corregir la información',

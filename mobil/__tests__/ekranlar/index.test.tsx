@@ -6,6 +6,8 @@ import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 import { checkIniSil, checkInNotunuGuncelle, checkInIfadesiniGuncelle } from '../../lib/checkin'
+import { checkInFotografiniDegistir } from '../../lib/checkin-fotograf-degistir'
+import * as ImagePicker from 'expo-image-picker'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
@@ -25,6 +27,12 @@ jest.mock('../../lib/checkin', () => ({
   checkIniSil: jest.fn(),
   checkInNotunuGuncelle: jest.fn(),
   checkInIfadesiniGuncelle: jest.fn(),
+}))
+jest.mock('../../lib/checkin-fotograf-degistir', () => ({ checkInFotografiniDegistir: jest.fn() }))
+jest.mock('expo-image-picker', () => ({
+  requestCameraPermissionsAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  launchImageLibraryAsync: jest.fn(),
 }))
 jest.mock('../../lib/etiket', () => ({
   etiketiKaldir: jest.fn(),
@@ -335,6 +343,72 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByText('Kaydet'))
     await waitFor(() => expect(checkInIfadesiniGuncelle).toHaveBeenLastCalledWith('checkin-1', null))
     await waitFor(() => expect(screen.queryByTestId('kart-ifade-kahve-keyfi')).toBeNull())
+  })
+
+  it('DUZENLEMEDE FOTOGRAF (2026-09-21): fotografsiz kartta "Fotograf ekle" -> galeri -> Kaydet ile sunucuya, kart yeni fotografi gosterir', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///yeni.jpg' }],
+    })
+    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue('https://imzali/yeni.jpg')
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    // Fotograf yokken "kaldir" / "degistir" yok, yalnizca "ekle".
+    expect(screen.queryByTestId('duzenle-foto-kaldir')).toBeNull()
+    await fireEvent.press(screen.getByTestId('duzenle-foto-ekle'))
+    await menudenSec('foto-galeri')
+    // Secilen fotograf hemen onizlemede; sunucuya HENUZ gitmedi.
+    expect(await screen.findByTestId('duzenle-foto-onizleme')).toBeTruthy()
+    expect(checkInFotografiniDegistir).not.toHaveBeenCalled()
+
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenCalledWith('checkin-1', 'file:///yeni.jpg'))
+    // Kart artik fotografi ciziyor (ekran listeyi yerinde guncelledi).
+    expect(await screen.findByTestId('akis-fotografi')).toBeTruthy()
+  })
+
+  it('DUZENLEMEDE FOTOGRAF KALDIR: mevcut fotografli kartta "Fotografi kaldir" -> Kaydet -> null gider, fotograf karttan duser', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true, fotografUrl: 'https://imzali/eski.jpg' })])
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue(null)
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    expect(screen.getByTestId('duzenle-foto-onizleme')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('duzenle-foto-kaldir'))
+    // Kaldirinca satir "ekle" haline doner; sunucuya henuz gitmedi.
+    expect(screen.getByTestId('duzenle-foto-ekle')).toBeTruthy()
+    expect(checkInFotografiniDegistir).not.toHaveBeenCalled()
+
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenCalledWith('checkin-1', null))
+    await waitFor(() => expect(screen.queryByTestId('akis-fotografi')).toBeNull())
+  })
+
+  it('DUZENLEMEDE FOTOGRAF: Vazgec secilen fotografi atar, sunucuya gitmez; degismediyse Kaydet fotograf cagrisi yapmaz', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true, fotografUrl: 'https://imzali/eski.jpg' })])
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(screen.getByTestId('duzenle-foto-kaldir'))
+    await fireEvent.press(screen.getByTestId('duzenle-vazgec'))
+    expect(screen.getByTestId('akis-fotografi')).toBeTruthy()
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInNotunuGuncelle).toHaveBeenCalled())
+    expect(checkInFotografiniDegistir).not.toHaveBeenCalled()
   })
 
   it('menudeki Duzenle notu MEVCUT haliyle aciyor', async () => {

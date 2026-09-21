@@ -26,6 +26,7 @@ import {
   type AniGorunumu,
   type AktifCheckIn,
 } from '../../../lib/checkin'
+import { checkInFotografiniDegistir } from '../../../lib/checkin-fotograf-degistir'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../../lib/etiket'
 import type { BagKisi } from '../../../lib/bag'
@@ -431,6 +432,12 @@ export default function ProfilEkrani() {
   async function ifadeyiKaydet(checkInId: string, ifade: string | null) {
     await checkInIfadesiniGuncelle(checkInId, ifade)
     setAnilar((mevcut) => mevcut.map((a) => (a.id === checkInId ? { ...a, ifade } : a)))
+  }
+
+  // Ana sayfadaki fotografiKaydet ile ayni (2026-09-21).
+  async function fotografiKaydet(checkInId: string, yerelUri: string | null) {
+    const yeniUrl = await checkInFotografiniDegistir(checkInId, yerelUri)
+    setAnilar((mevcut) => mevcut.map((a) => (a.id === checkInId ? { ...a, fotografUrl: yeniUrl } : a)))
   }
 
   // Ana sayfadaki etiketEkle ile ayni: kaydet, onayli etiketleri yeniden
@@ -932,6 +939,7 @@ export default function ProfilEkrani() {
                     onEtiketKaldir={etiketiSil}
                     onEtiketEkle={etiketEkle}
                     onIfadeKaydet={ifadeyiKaydet}
+                    onFotografKaydet={fotografiKaydet}
                   />
                 ))}
               </View>

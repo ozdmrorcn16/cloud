@@ -290,8 +290,17 @@ Jest 84 paket / 1124 test; test:sema ve test:gorunurluk yesil
 (21.09 ogleden sonra). Telefonda dogrulanmamis son ikisi: ifade
 duzenleme ve "ifade yalnizca ikon" - kullanici bakacak.
 
-**ACIK / bekleyen:** yok (kod tarafinda yarim is yok). Kullanicinin
-telefondan yeni geri bildirimi beklenir.
+**Ek (2026-09-21 gece, YAYINDA - OTA `46bcc97d` + `9ec78c2e`, web
+guncel):** (1) profil/baskasinin profili anilar sorgusu `ifade`
+secmiyordu - duzeltildi (kart uc ekranda ayni). (2) Kartin yerinde
+duzenlemesine FOTOGRAF satiri: ekle / degistir / kaldir; RPC
+`check_in_fotografini_guncelle` + kova silme politikasi; kaldirilan
+dosya kovadan gercekten siliniyor. Ayrinti CLAUDE.md "KARTTA FOTOGRAF
+DEGISTIR/KALDIR". Jest 85 paket / 1134 test, test:sema yesil, canli
+12/12.
+
+**ACIK / bekleyen:** yok (kod tarafinda yarim is yok). Telefonda
+dogrulanmamis: fotograf duzenleme satiri (kamera/galeri gercek cihazda).
 
 ## 8a. Onceki kayit (2026-09-19)
 

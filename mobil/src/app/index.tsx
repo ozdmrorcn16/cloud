@@ -5,6 +5,7 @@ import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { checkIniSil, checkInNotunuGuncelle, checkInIfadesiniGuncelle } from '../../lib/checkin'
+import { checkInFotografiniDegistir } from '../../lib/checkin-fotograf-degistir'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
 import {
   etkilesimOzetleriniGetir,
@@ -172,6 +173,14 @@ export default function AnaSayfa() {
     setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, ifade } : o)))
   }
 
+  // Fotograf degistir/kaldir (kullanicinin istegi 2026-09-21): yukleme,
+  // sunucu ve eski dosyanin silinmesi lib'de; ekran yalnizca karta yeni
+  // imzali adresi (ya da null) yaziyor.
+  async function fotografiKaydet(id: string, yerelUri: string | null) {
+    const yeniUrl = await checkInFotografiniDegistir(id, yerelUri)
+    setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, fotografUrl: yeniUrl } : o)))
+  }
+
   async function etiketEkle(id: string, kullaniciIdler: string[]) {
     await etiketleriKaydet(id, kullaniciIdler)
     // KAYDEDINCE HEMEN GORUNSUN (kullanicinin istegi 2026-09-18): sunucu
@@ -319,6 +328,7 @@ export default function AnaSayfa() {
             onEtiketKaldir={etiketiSil}
             onEtiketEkle={etiketEkle}
             onIfadeKaydet={ifadeyiKaydet}
+            onFotografKaydet={fotografiKaydet}
           />
           </KademeliGiris>
         )}

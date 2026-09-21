@@ -651,6 +651,8 @@ export default {
     ifadeEkle: 'Stimmung hinzufügen',
     ifadeBaslik: "Wie geht's dir, was machst du?",
     ifadeKaldir: 'Stimmung entfernen',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Ändern',
   },
   mekanDuzenle: {
     baslik: 'Angaben korrigieren',

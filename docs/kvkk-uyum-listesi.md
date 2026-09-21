@@ -714,3 +714,23 @@ keyfi", "Huzurluyum") TEK ifade secebiliyor; `check_inler.ifade` (FK ->
 - Kayit: `verilerimi_disa_aktar` check_inler bloguna `ifade` eklendi;
   kullanim kosullari 6. madde (icerik sahipligi) 7 dilde "not, ifade ve
   fotograf" oldu.
+
+## Check-in fotografini sonradan degistirme / kaldirma (2026-09-21)
+
+Kullanici paylasimini yerinde duzenlerken fotografi kaldirabilir ya da
+yenisiyle degistirebilir (RPC `check_in_fotografini_guncelle`,
+migrasyon 20260921170000). Yeni veri kalemi yok; degisen sey SILME
+disiplini:
+
+- Kaldirilan ya da degistirilen eski fotograf kovadan GERCEKTEN
+  silinir (istemci `remove`; kovaya "kendi klasorunu silebilir"
+  politikasi eklendi). Onceden fotografi degistirme yolu yoktu, yani
+  yetim dosya da olusmuyordu; artik olusabilecegi icin silme ayni
+  isin parcasi (KVKK m.4 "gerekli sure kadar saklama", m.7 silme).
+- Silme basarisiz olursa dosya hicbir satira bagli olmadigi icin
+  sahibinden baskasina okunmaz (okuma politikasi satira bagli); yetim
+  dosya sahibinin bir sonraki denemesinde gider.
+- Yeni fotograf yolu `<kendi id>/...` olmak zorunda (2026-09-19
+  sahiplik kurali burada da uygulanir); baskasinin dosyasi bir
+  check-in'e baglanamaz.
+- Canli olcum: `araclar/check-in-fotograf-degistir-canli-test.py` 12/12.

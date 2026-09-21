@@ -651,6 +651,8 @@ export default {
     ifadeEkle: 'Добавить настроение',
     ifadeBaslik: 'Как ты, чем занимаешься?',
     ifadeKaldir: 'Убрать настроение',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Изменить',
   },
   mekanDuzenle: {
     baslik: 'Исправить данные',

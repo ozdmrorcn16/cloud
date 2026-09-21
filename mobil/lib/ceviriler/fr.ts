@@ -651,6 +651,8 @@ export default {
     ifadeEkle: 'Ajouter une humeur',
     ifadeBaslik: 'Comment ça va, que fais-tu ?',
     ifadeKaldir: "Retirer l'humeur",
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Changer',
   },
   mekanDuzenle: {
     baslik: 'Corriger les infos',

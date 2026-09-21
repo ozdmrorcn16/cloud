@@ -27,6 +27,7 @@ import { FotografAltyazisi } from './FotografAltyazisi'
 import { Avatar } from './Avatar'
 import { ArkadasSecici } from './ArkadasSecici'
 import Svg, { Path, Circle } from 'react-native-svg'
+import * as ImagePicker from 'expo-image-picker'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -71,6 +72,7 @@ export function CheckInKarti({
   onIfadeKaydet,
   onEtiketEkle,
   onEtiketKaldir,
+  onFotografKaydet,
   onFotografAc,
 }: {
   oge: AkisOgesi
@@ -108,6 +110,13 @@ export function CheckInKarti({
   /** Yerinde duzenlemede secilen arkadaslari etiketler. */
   onEtiketEkle?: (id: string, kullaniciIdler: string[]) => Promise<void> | void
   onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
+  /**
+   * Duzenlemede fotograf degistiyse cagrilir: yeni fotografin YEREL
+   * adresi (ekran yukler + sunucuya yazar) ya da kaldirildiysa null
+   * (kullanicinin istegi 2026-09-21). Verilmezse fotograf satiri
+   * cizilmez.
+   */
+  onFotografKaydet?: (id: string, yerelUri: string | null) => Promise<void> | void
   /**
    * Verilirse fotografa dokunmak kartin KENDI tam ekranini acmaz, bunu
    * cagirir: profil ekranlari butun fotograflari tek bir gezginde
@@ -154,12 +163,20 @@ export function CheckInKarti({
   // secici; Kaydet'te degistiyse `onIfadeKaydet`.
   const [taslakIfade, setTaslakIfade] = useState<string | null>(oge.ifade)
   const [ifadeSecici, setIfadeSecici] = useState(false)
+  // Fotograf duzenleme (kullanicinin istegi 2026-09-21): `undefined` =
+  // dokunulmadi, `null` = kaldirilacak, string = secilen yeni yerel
+  // dosya. Kaydet'e kadar sunucuya gitmez; Vazgec atar.
+  const [taslakFoto, setTaslakFoto] = useState<string | null | undefined>(undefined)
+  const [fotoKaynak, setFotoKaynak] = useState(false)
+  // Ekranda gorunecek onizleme: dokunulmadiysa mevcut fotograf.
+  const onizlemeUri = taslakFoto === undefined ? oge.fotografUrl : taslakFoto
 
   function duzenlemeyiAc() {
     // Taslak her acilista SIFIRLANIYOR: bir onceki duzenlemeden kalan
     // metin ya da secim tasinmamali.
     setTaslakNot(oge.notMetni ?? '')
     setTaslakIfade(oge.ifade)
+    setTaslakFoto(undefined)
     setKaldirilan([])
     setEklenen([])
     setDuzenleHatasi(null)
@@ -169,6 +186,25 @@ export function CheckInKarti({
     takipcilerimiGetir()
       .then(setArkadaslar)
       .catch(() => setArkadaslar([]))
+  }
+
+  // Kamera / galeri: check-in formundaki akisla ayni (izin reddi
+  // sessiz gecilmiyor - hata satirinda gorunur).
+  async function kameradanCek() {
+    setFotoKaynak(false)
+    const izin = await ImagePicker.requestCameraPermissionsAsync()
+    if (!izin.granted) {
+      setDuzenleHatasi(t('checkIn.kameraIzni'))
+      return
+    }
+    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
+    if (!sonuc.canceled) setTaslakFoto(sonuc.assets[0].uri)
+  }
+
+  async function galeridenSec() {
+    setFotoKaynak(false)
+    const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 })
+    if (!sonuc.canceled) setTaslakFoto(sonuc.assets[0].uri)
   }
 
   async function duzenlemeyiKaydet() {
@@ -188,6 +224,10 @@ export function CheckInKarti({
       }
       if (taslakIfade !== oge.ifade) {
         await onIfadeKaydet?.(oge.id, taslakIfade)
+      }
+      // Fotograf: yalnizca dokunulduysa (yukleme + sunucu ekranda).
+      if (taslakFoto !== undefined) {
+        await onFotografKaydet?.(oge.id, taslakFoto)
       }
       // Not en son: etiketler yazilamazsa kullanici notu da kaybetmesin
       // diye pencere acik kaliyor ve hata gorunuyor.
@@ -428,6 +468,62 @@ export function CheckInKarti({
             )}
           </View>
           <IfadeSecici acikMi={ifadeSecici} secili={taslakIfade} onSec={setTaslakIfade} onKapat={() => setIfadeSecici(false)} />
+
+          {/* FOTOGRAF (kullanicinin istegi 2026-09-21: "isterse koydugu
+              fotografi kaldirabilir ya da yenisini ekleyebilir").
+              Fotograf varsa kucuk onizleme + Degistir + Kaldir; yoksa
+              formdakiyle ayni "Fotograf ekle". Kaynak secimi formdaki
+              Kamera / Galeri penceresi. Kaydet'e kadar sunucuya gitmez. */}
+          {onFotografKaydet && (
+            <View style={stiller.fotoSatiri}>
+              {onizlemeUri ? (
+                <>
+                  <HizliImage
+                    source={{ uri: onizlemeUri }}
+                    style={stiller.fotoOnizleme}
+                    contentFit="cover"
+                    testID="duzenle-foto-onizleme"
+                  />
+                  <Pressable
+                    style={stiller.etiketleDugmesi}
+                    onPress={() => setFotoKaynak(true)}
+                    accessibilityRole="button"
+                    testID="duzenle-foto-degistir"
+                    disabled={kaydediliyor}
+                  >
+                    <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.fotografDegistir')}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={stiller.etiketleDugmesi}
+                    onPress={() => setTaslakFoto(null)}
+                    accessibilityRole="button"
+                    testID="duzenle-foto-kaldir"
+                    disabled={kaydediliyor}
+                  >
+                    <Text style={[stiller.etiketleDugmesiYazi, stiller.kaldirYazi]}>{t('checkIn.fotografKaldir')}</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable
+                  style={stiller.etiketleDugmesi}
+                  onPress={() => setFotoKaynak(true)}
+                  accessibilityRole="button"
+                  testID="duzenle-foto-ekle"
+                  disabled={kaydediliyor}
+                >
+                  <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.fotografEkle')}</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+          <SecimPenceresi
+            acikMi={fotoKaynak}
+            secimler={[
+              { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
+              { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
+            ]}
+            onKapat={() => setFotoKaynak(false)}
+          />
 
           {/* ARKADAS ETIKETLE DUGMESI (kullanicinin istegi 2026-09-18):
               basinca alttan aranabilir arkadas listesi (profil resmi +
@@ -784,6 +880,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   duzenleHata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici },
   duzenleEylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.xs },
   ifadeSatiri: { flexDirection: 'row', marginBottom: bosluk.s },
+  // Fotograf satiri: 2:1 kucuk onizleme + hayalet dugmeler, sarar.
+  fotoSatiri: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: bosluk.s, marginBottom: bosluk.s },
+  fotoOnizleme: { width: 96, height: 48, borderRadius: 8, backgroundColor: renk.cizgi },
+  kaldirYazi: { color: renk.yikici },
   duzenleDugme: {
     flex: 1,
     alignItems: 'center',

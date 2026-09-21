@@ -651,6 +651,8 @@ export default {
     ifadeEkle: 'أضف حالة',
     ifadeBaslik: 'كيف حالك، ماذا تفعل؟',
     ifadeKaldir: 'إزالة الحالة',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'تغيير',
   },
   mekanDuzenle: {
     baslik: 'تصحيح المعلومات',

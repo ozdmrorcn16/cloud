@@ -800,6 +800,8 @@ export default {
     ifadeEkle: 'İfade ekle',
     ifadeBaslik: 'Nasılsın, ne yapıyorsun?',
     ifadeKaldir: 'İfadeyi kaldır',
+    // Duzenlemede fotograf satiri (2026-09-21)
+    fotografDegistir: 'Değiştir',
   },
 
   // MEKAN BILGILERINI DUZELT (i18n turu 2026-09-13).

@@ -13,7 +13,8 @@ import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
 import { takibiBirak } from '../../../lib/bag'
 import { engelle } from '../../../lib/engelleme'
 import { avatarlariGetir } from '../../../lib/akis'
-import { checkIniSil } from '../../../lib/checkin'
+import { checkIniSil, checkInNotunuGuncelle } from '../../../lib/checkin'
+import { checkInFotografiniDegistir } from '../../../lib/checkin-fotograf-degistir'
 import { etkilesimOzetleriniGetir, begen, paylas } from '../../../lib/etkilesim'
 
 jest.mock('../../../lib/profil', () => ({
@@ -36,6 +37,7 @@ jest.mock('../../../lib/checkin', () => ({
   checkInNotunuGuncelle: jest.fn(),
 }))
 jest.mock('../../../lib/etiket', () => ({ etiketiKaldir: jest.fn() }))
+jest.mock('../../../lib/checkin-fotograf-degistir', () => ({ checkInFotografiniDegistir: jest.fn() }))
 // Sabitler GERCEK kaliyor, yalnizca ag cagrilari degistiriliyor: eksik
 // bir sabit hata vermiyor, sessizce undefined donuyor (2026-09-02'de
 // yasandi).
@@ -790,6 +792,33 @@ describe('ProfilEkrani anilar listesi', () => {
     await waitFor(() => expect(screen.queryByText('Mekan 0')).toBeNull())
     // Digeri YERINDE: silme tek tek.
     expect(screen.getByText('Mekan 1')).toBeTruthy()
+  })
+
+  it('PROFILDE DE FOTOGRAF DUZENLENIR (kullanicinin istegi 2026-09-21: ana sayfayla ayni): ekle -> galeri -> Kaydet; kaldir -> null', async () => {
+    ;(kullanicininAnilariniGetir as jest.Mock).mockResolvedValue([ani({ fotografUrl: null })])
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue('https://imzali/yeni.jpg')
+    mockGaleriAc.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///yeni.jpg' }] })
+
+    await render(<ProfilEkrani />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(screen.getByTestId('duzenle-foto-ekle'))
+    await menudenSec('foto-galeri')
+    expect(await screen.findByTestId('duzenle-foto-onizleme')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenCalledWith('ani-1', 'file:///yeni.jpg'))
+    expect(await screen.findByTestId('akis-fotografi')).toBeTruthy()
+
+    ;(checkInFotografiniDegistir as jest.Mock).mockResolvedValue(null)
+    await fireEvent.press(screen.getAllByLabelText('Paylaşım seçenekleri')[0])
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(screen.getByTestId('duzenle-foto-kaldir'))
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInFotografiniDegistir).toHaveBeenLastCalledWith('ani-1', null))
+    await waitFor(() => expect(screen.queryByTestId('akis-fotografi')).toBeNull())
   })
 
   /*
