@@ -975,7 +975,9 @@ hayalet "Ifade ekle" (`duzenle-ifade-ekle`); Kaydet'te degistiyse
 `onIfadeKaydet(id, slug|null)` -> `checkInIfadesiniGuncelle` -> yeni RPC
 `check_in_ifadesini_guncelle` (migrasyon `20260921150000`; kendi +
 moderasyon gizli degil + slug `ifadeler`de; null = kaldir; revoke anon).
-Ana sayfa ve profil listeyi yerinde gunceller (`ifade` alani).
+Ana sayfa ve profil listeyi yerinde gunceller (`ifade` alani). Kartta
+ifade YALNIZCA IKON (ayni gun: "yaninda yazisi eklenmesin"); etiket
+accessibilityLabel'da, `ifadeEtiket` stili silindi.
 
 ### IFADE SECICI: KATEGORILER YANA KAYDIRMALI - 2026-09-21
 
