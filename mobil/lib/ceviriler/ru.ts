@@ -782,6 +782,7 @@ export default {
     mesafeIcinde: 'В радиусе {{mesafe}}',
     mesafeTumu: 'В радиусе 1 км',
     digerMekanlar: 'Показать другие места',
+    yakinMekanlariGoster: 'Показать места рядом',
     paneliKapat: 'Закрыть список',
     yolTarifi: 'Маршрут',
     sonuclar: 'Результаты',

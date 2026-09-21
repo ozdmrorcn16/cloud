@@ -782,6 +782,7 @@ export default {
     mesafeIcinde: 'ضمن {{mesafe}}',
     mesafeTumu: 'ضمن 1 كم',
     digerMekanlar: 'عرض الأماكن الأخرى',
+    yakinMekanlariGoster: 'عرض الأماكن القريبة',
     paneliKapat: 'إغلاق القائمة',
     yolTarifi: 'الاتجاهات',
     sonuclar: 'النتائج',

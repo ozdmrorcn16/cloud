@@ -788,6 +788,7 @@ export default {
     mesafeIcinde: 'Within {{mesafe}}',
     mesafeTumu: 'Within 1 km',
     digerMekanlar: 'Show other places',
+    yakinMekanlariGoster: 'Show nearby places',
     paneliKapat: 'Close the list',
     yolTarifi: 'Directions',
     sonuclar: 'Results',

@@ -1262,6 +1262,9 @@ export default function KesfetEkrani() {
     </View>
   )
 
+  /** Aktif (canli) check-in karti ciziliyor mu: kapali panelin icerigini belirler. */
+  const aktifKartVar = Boolean(kartMekani && kartCanli)
+
   /** Arama kutusu + tur suzgeci + oneriler + secili tur cipleri + durum cipleri. */
   // BOS ALANA DOKUNMAK KLAVYEYI KAPATIR (kullanicinin bildirimi
   // 2026-09-19: "mekan araya bastiktan sonra klavye aciliyor, bosluga
@@ -1629,7 +1632,12 @@ export default function KesfetEkrani() {
                 2026-09-21; referansta da oyle). Panel acik/kapali fark
                 etmez, listeyle kaymaz. */}
             {buradaKarti}
-            {bolumBasligi}
+            {/* AKTIF CHECK-IN VARKEN KAPALI PANEL YALNIZCA O KART (kullanicinin
+                istegi 2026-09-21: "arkadaki harita cok kapaniyor; aktif
+                check-in eklenince yakinindaki mekanlar asagi cekilsin,
+                yukari cekilince ciksin"). Baslik ve secili satir panel
+                acilinca geliyor; kapaliyken kucuk bir "goster" satiri. */}
+            {!(aktifKartVar && !panelAcik) && bolumBasligi}
 
           {panelAcik ? (
             <ScrollView
@@ -1648,8 +1656,8 @@ export default function KesfetEkrani() {
             </ScrollView>
           ) : (
             <View style={stiller.panelKapaliIcerik}>
-              {seciliMekan ? satirCiz(seciliMekan, true, false) : bosDurum}
-              {sakinler.length > 1 && (
+              {!aktifKartVar && (seciliMekan ? satirCiz(seciliMekan, true, false) : bosDurum)}
+              {(aktifKartVar || sakinler.length > 1) && (
                 <Pressable
                   style={stiller.digerDugmesi}
                   onPress={() => paneliAyarla(true)}
@@ -1657,7 +1665,9 @@ export default function KesfetEkrani() {
                   testID="diger-mekanlar"
                 >
                   <YukariOkIkonu renk={renk.metin} />
-                  <Text style={stiller.digerYazi}>{t('kesfet.digerMekanlar')}</Text>
+                  <Text style={stiller.digerYazi}>
+                    {aktifKartVar ? t('kesfet.yakinMekanlariGoster') : t('kesfet.digerMekanlar')}
+                  </Text>
                 </Pressable>
               )}
             </View>

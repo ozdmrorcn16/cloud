@@ -941,6 +941,7 @@ export default {
     mesafeIcinde: '{{mesafe}} içinde',
     mesafeTumu: '1 km içinde',
     digerMekanlar: 'Diğer mekânları göster',
+    yakinMekanlariGoster: 'Yakınındaki mekânları göster',
     paneliKapat: 'Listeyi kapat',
     yolTarifi: 'Yol tarifi',
     sonuclar: 'Sonuçlar',

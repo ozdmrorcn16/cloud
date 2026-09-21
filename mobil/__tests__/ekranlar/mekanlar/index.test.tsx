@@ -73,6 +73,10 @@ beforeEach(async () => {
   // suzgec bir sonrakinde yukleniyor ve secim TERSINE donuyor (secili
   // bir turu tiklamak onu kaldirir). Bir kez yasandi.
   await AsyncStorage.clear()
+  // Aktif check-in mock'u testler arasinda SIZIYOR (clearAllMocks
+  // uygulamayi sifirlamaz); varsayilan "check-in yok".
+  const { aktifCheckInimiGetir } = require('../../../lib/checkin')
+  ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
 })
 
 // Testin BITISINDE de temizleniyor: ekran suzgeci arka planda yaziyor
@@ -1431,6 +1435,23 @@ describe('MekanAramaEkrani - referans kart', () => {
     ;(mekanlardaBulunanlariGetir as jest.Mock).mockResolvedValue({})
     ;(mekanFotografiUrlleri as jest.Mock).mockResolvedValue({})
     ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
+  })
+
+  it('AKTIF CHECK-IN VARKEN KAPALI PANEL YALNIZCA O KART: baslik ve satir gizli, "Yakinindaki mekanlari goster" acar', async () => {
+    // Kullanicinin istegi 2026-09-21: harita cok kapanmasin.
+    ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({
+      id: 'ci-1', mekanId: 'mekan-1', mekanAdi: 'Sahil Kafe', notMetni: null, fotograf: null,
+      olusturmaZamani: '2026-08-29T10:00:00Z', bitisZamani: '2026-08-29T10:30:00Z', canliMi: true, bulunurluk: 'herkese_acik',
+    })
+    await render(<MekanAramaEkrani />)
+    await screen.findByText('AKTİF CHECK-IN')
+    expect(screen.queryByText('Yakınındaki mekânlar')).toBeNull()
+    expect(screen.queryByTestId('mekan-karti-mola')).toBeNull()
+
+    await fireEvent.press(screen.getByText('Yakınındaki mekânları göster'))
+    expect(await screen.findByText('Yakınındaki mekânlar')).toBeTruthy()
+    expect(screen.getByTestId('mekan-karti-mola')).toBeTruthy()
+    expect(screen.getByText('AKTİF CHECK-IN')).toBeTruthy()
   })
 
   it('BUTUN kartlarda Yol tarifi + Check-in yap; SECILI (varsayilan en yakin) seftali zeminli, cerceve YOK', async () => {
