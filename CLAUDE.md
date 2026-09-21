@@ -966,6 +966,56 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### COKLU FOTOGRAF (5) + "CHECK-IN'I DUZENLE" SAYFASI - 2026-09-22
+
+Kullanicinin referans gorseli (`tasarim/checkin-duzenle-referans.png`,
+"Check-in duzenleme sayfasi bu sekilde olacak") ve karari "coklu
+fotograf". Spec `docs/superpowers/specs/2026-09-21-coklu-fotograf-ve-
+duzenleme-sayfasi-design.md`, plan `docs/superpowers/plans/...`. OTA
+`4a9aa8ec`, web guncel, goruntu `tasarim/checkin-duzenle.png`.
+- **Sunucu (migrasyon `20260921180000`):** `check_inler.fotograflar
+  text[]` (check <= 5, GIN indeks); `fotograf` sutunu GENERATED
+  (`fotograflar[1]`) - moderasyon RPC'leri, panel JSON'u, canli
+  senaryolar, eski OTA kirilmadi. `check_in_yap` 8 parametre
+  (`p_fotograflar`; `p_fotograf` uyumluluk icin durur, eski imza drop).
+  `check_in_fotograflarini_guncelle(id, text[]) returns text[]` =
+  KALDIRILAN yollar (istemci kovadan siler); dunku tekil
+  `check_in_fotografini_guncelle` ince sarmalayici. Kova okuma
+  politikasi `name = any(fotograflar)` + kendi klasoru.
+  `mekan_fotograflari` fotograf basina satir (unnest with ordinality);
+  `verilerimi_disa_aktar` `fotograflar`. Canli
+  `araclar/check-in-fotograf-degistir-canli-test.py` 15/15.
+- **Istemci tipleri:** `CheckIn.fotograflar`, `AniGorunumu.fotografUrller`,
+  `AkisOgesi.fotograflar + fotografUrller` (`fotografUrl` KALKTI).
+  Imza TOPLU: `checkInFotografiUrlHaritasi` (tek `createSignedUrls`).
+  `checkinFotograflariniYukle` (sirali, `kismi` geri alma),
+  `checkInFotograflariniDegistir(id, {kalanYollar, yeniUriler})`.
+- **Kart:** `FotografSeridi` (2:1, yatay sayfali, >1'de nokta + "1/3"
+  rozeti; testID kok `akis-fotografi-serit`, tek foto `akis-fotografi`,
+  sayfalar `akis-fotografi-<i>`); buyuk gorunum ortak `FotografGezgini`
+  (`akis-buyuk-gorunum`). **YERINDE DUZENLEME KALKTI** (2026-09-05 ve
+  dunku "kartta fotograf satiri" GECERSIZ); menu "Duzenle" ->
+  `onDuzenle(id)`.
+- **`CheckInDuzenle`** (alttan sayfa, referans birebir): mekan karti,
+  Notun, Fotograflar (`FotografIzgarasiDuzenle`: 3 sutun kare, x, alt
+  "Degistir" seridi, kesikli "+ Ekle"; bos halde kesikli buyuk kutu),
+  Ifade + "Degistir/Ekle", Birlikte + "+ Ekle", "Degisiklikler
+  kaydedildiginde uygulanir.", Vazgec/Kaydet. Tek paket
+  `DuzenlemeDegisiklikleri`; ekran `duzenlemeyiKaydet`: fotograf ->
+  etiket kaldir -> ekle -> ifade -> not (not en son). TUZAK: effect
+  bagimliligi `oge?.id` - profil ogeyi her render yeniden uretiyor,
+  nesneye baglaninca taslak siliniyordu.
+- **Form:** ayni izgara; galeri `allowsMultipleSelection` +
+  `selectionLimit = 5 - mevcut`; `checkInYap(..., yollar[])`.
+- **Galeriler** (profil izgarasi, baskasinin profili, gezgin) fotograf
+  birimine duzlesti: `fotografBirimleri(anilar)` (`izgara-<aniId>-<i>`).
+- TEST TUZAGI: `lib/checkin` tam mock'lanan dosyalarda
+  `EN_FAZLA_FOTOGRAF` undefined -> `selectionLimit: NaN`; `requireActual`
+  ile sabitler gercek tutulur. Sozluk `checkIn.duzenleBaslik/fotograflar/
+  kameraVeyaGaleri/ifade/kaydedinceUygulanir` 7 dil (`degistir` zaten
+  vardi). Jest 87 / 1154; test:sema, test:gorunurluk, tekrar 18/18,
+  ifade 7/7 yesil. Telefonda dogrulanmadi (kamera/galeri coklu secim).
+
 ### KARTTA FOTOGRAF DEGISTIR/KALDIR; PROFILDE IFADE EKSIKTI - 2026-09-21 GECE
 
 Kullanicinin iki bildirimi ("eklenen fotograf, arkadas, ifade duzenleme

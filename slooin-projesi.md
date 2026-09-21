@@ -299,8 +299,17 @@ dosya kovadan gercekten siliniyor. Ayrinti CLAUDE.md "KARTTA FOTOGRAF
 DEGISTIR/KALDIR". Jest 85 paket / 1134 test, test:sema yesil, canli
 12/12.
 
-**ACIK / bekleyen:** yok (kod tarafinda yarim is yok). Telefonda
-dogrulanmamis: fotograf duzenleme satiri (kamera/galeri gercek cihazda).
+**Ek (2026-09-22, YAYINDA - OTA `4a9aa8ec`, web guncel):** COKLU FOTOGRAF
+(check-in basina 5) + referanstaki "Check-in'i duzenle" alttan sayfasi.
+Sunucu: `check_inler.fotograflar text[]`, `fotograf` generated, RPC
+`check_in_fotograflarini_guncelle`, kova politikasi; istemci: kart
+fotograf seridi (yana kaydirmali), duzenleme sayfasi, form coklu secim,
+galeriler fotograf birimi. Yerinde duzenleme KALKTI. Ayrinti CLAUDE.md
+"COKLU FOTOGRAF (5)". Jest 87 / 1154; canli paketler yesil.
+
+**ACIK / bekleyen:** yok. Telefonda dogrulanmamis: duzenleme sayfasi,
+kamera/galeri coklu secim, kartta yana kaydirma (web'de olculdu:
+`tasarim/checkin-duzenle.png`).
 
 ## 8a. Onceki kayit (2026-09-19)
 

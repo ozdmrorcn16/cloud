@@ -715,12 +715,15 @@ keyfi", "Huzurluyum") TEK ifade secebiliyor; `check_inler.ifade` (FK ->
   kullanim kosullari 6. madde (icerik sahipligi) 7 dilde "not, ifade ve
   fotograf" oldu.
 
-## Check-in fotografini sonradan degistirme / kaldirma (2026-09-21)
+## Check-in fotograflarini sonradan degistirme / kaldirma; 5'e kadar fotograf (2026-09-21/22)
 
-Kullanici paylasimini yerinde duzenlerken fotografi kaldirabilir ya da
-yenisiyle degistirebilir (RPC `check_in_fotografini_guncelle`,
-migrasyon 20260921170000). Yeni veri kalemi yok; degisen sey SILME
-disiplini:
+Bir check-in'e artik 5'e kadar fotograf eklenebiliyor
+(`check_inler.fotograflar text[]`, migrasyon 20260921180000; eski tekil
+`fotograf` sutunu turetilmis = ilk fotograf). Kullanici paylasimini
+"Check-in'i duzenle" sayfasinda duzenlerken fotograf ekleyebilir,
+kaldirabilir ya da degistirebilir (RPC `check_in_fotograflarini_guncelle`
+kaldirilan yollari dondurur). Yeni veri kalemi yok, sayi artti; degisen
+sey SILME disiplini:
 
 - Kaldirilan ya da degistirilen eski fotograf kovadan GERCEKTEN
   silinir (istemci `remove`; kovaya "kendi klasorunu silebilir"
@@ -733,4 +736,6 @@ disiplini:
 - Yeni fotograf yolu `<kendi id>/...` olmak zorunda (2026-09-19
   sahiplik kurali burada da uygulanir); baskasinin dosyasi bir
   check-in'e baglanamaz.
-- Canli olcum: `araclar/check-in-fotograf-degistir-canli-test.py` 12/12.
+- Canli olcum: `araclar/check-in-fotograf-degistir-canli-test.py` 15/15
+  (5 siniri, baskasinin yolu/check-in'i, kaldirilan dosyanin kovadan
+  silinmesi, disa aktarimda `fotograflar`).
