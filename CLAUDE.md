@@ -976,7 +976,9 @@ kurdugu 12 kategori / 108 ifade secicisi): tek FlatList yerine
 Sayfa eni `onLayout` (olcum gelene kadar pencere - 24). Cip -> 
 `scrollToIndex`; `onMomentumScrollEnd` -> cip. Butun sayfalar bastan
 cizili (`initialNumToRender/windowSize` = 12): yerel PNG'ler hafif,
-sanal listede cip kaydirmasi ve jest bos sayfa veriyordu.
+sanal listede cip kaydirmasi ve jest bos sayfa veriyordu. Secili cip
+`cipKonumlari` (onLayout x/en) ile serit ortasina kaydirilir
+(kullanicinin bildirimi: "hangi baslikta olundugu gorulmuyor").
 
 ### KULLANICI ADI 24 SAATTE BIR; PANEL AKTIF KARTLA KAPALI - 2026-09-21
 
