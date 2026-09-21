@@ -87,6 +87,7 @@ describe('akisiGetir', () => {
       avatarUrl: null,
       rumuz: null,
       notMetni: 'guzel bir aksam',
+      ifade: null,
       fotografUrl: null,
       olusturmaZamani: '2026-08-25T10:00:00Z',
       canliMi: false,

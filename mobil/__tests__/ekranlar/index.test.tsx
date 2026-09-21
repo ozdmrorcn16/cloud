@@ -70,6 +70,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     rumuz: null,
     mekanAdi: 'Sahil Kafe',
     notMetni: 'guzel bir aksam',
+    ifade: null,
     fotografUrl: null,
     olusturmaZamani: new Date().toISOString(),
     canliMi: false,
@@ -817,5 +818,22 @@ describe('AnaSayfa sayfalama', () => {
 
     expect(await screen.findByText('ag hatasi')).toBeTruthy()
     expect(screen.getByText('Mekan 0')).toBeTruthy()
+  })
+  // IFADE (2026-09-21): kartta notun basinda ikon + kalin etiket.
+  it('ifadeli paylasimda notun basinda ifade ikonu ve etiketi var', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ ifade: 'kahve-keyfi', notMetni: 'sabah kahvesi' })])
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+    expect(screen.getByTestId('kart-ifade-kahve-keyfi')).toBeTruthy()
+    expect(screen.getByText(/Kahve keyfi/)).toBeTruthy()
+    expect(screen.getByText(/sabah kahvesi/)).toBeTruthy()
+  })
+
+  it('notsuz ama ifadeli paylasimda yalnizca ifade satiri cizilir; ifadesiz ve notsuzda satir yok', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ id: 'a', ifade: 'huzurluyum', notMetni: null }), oge({ id: 'b', ifade: null, notMetni: null, mekanAdi: 'Ikinci Mekan' })])
+    await render(<AnaSayfa />)
+    await screen.findByText('Ikinci Mekan')
+    expect(screen.getByText('Huzurluyum')).toBeTruthy()
+    expect(screen.getAllByTestId('not-satiri')).toHaveLength(1)
   })
 })

@@ -70,7 +70,7 @@ describe('CheckInEkrani', () => {
     await fireEvent.press(buttons[buttons.length - 1]) // Press the button, not the title
 
     await waitFor(() => {
-      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', undefined, 'herkese_acik')
+      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'harika', undefined, 'herkese_acik', null)
     })
     // BASARI ANI (2026-09-20): once dugme daireye toplanip tik ve
     // "Şu an buradasın" gosteriyor; yonlendirme ~1,15 s sonra.
@@ -119,7 +119,7 @@ describe('CheckInEkrani', () => {
       expect(screen.getByText('Fotoğraf yüklenemedi, notunla check-in yapıldı')).toBeTruthy()
     })
     // checkInYap fotografsiz cagirilmali
-    expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'not', undefined, 'herkese_acik')
+    expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, 'not', undefined, 'herkese_acik', null)
   })
 
   it('ag hatasi icin ozel mesaj gosterir', async () => {
@@ -157,7 +157,7 @@ describe('CheckInEkrani', () => {
     await waitFor(() =>
       expect(checkInYap).toHaveBeenCalledWith(
         expect.anything(), expect.anything(), expect.anything(),
-        undefined, undefined, 'takipcilerim'
+        undefined, undefined, 'takipcilerim', null
       )
     )
   })
@@ -203,7 +203,7 @@ describe('CheckInEkrani', () => {
 
     await waitFor(() => {
       expect(checkInYap).toHaveBeenCalledWith(
-        'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli'
+        'mekan-1', 41.015, 28.979, undefined, undefined, 'gizli', null
       )
     })
   })
@@ -355,5 +355,48 @@ describe('CheckInEkrani fotograf kaynagi', () => {
 
     expect(screen.getByLabelText('Deniz')).toBeTruthy()
     expect(screen.queryByLabelText('Ece')).toBeNull()
+  })
+  // IFADE SECICI (2026-09-21): not alaninin ustunde "Ifade ekle";
+  // alttan gelen sayfadan tek ifade secilir, cip olur, check_in_yap'a
+  // slug gider; kaldirilinca null gider.
+  it('ifade secilir, cip olur ve check-in ile slug gonderilir', async () => {
+    ;(checkInYap as jest.Mock).mockResolvedValue({
+      id: 'checkin-1', mekanId: 'mekan-1', notMetni: null, fotograf: null, ifade: 'kahve-keyfi',
+      olusturmaZamani: '2026-08-14T10:00:00Z', bitisZamani: '2026-08-14T14:00:00Z', canliMi: true,
+    })
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByTestId('ifade-ekle'))
+    expect(await screen.findByTestId('ifade-secici')).toBeTruthy()
+    // Varsayilan kategori Icecekler; ilk kategori ciplerinden biri secili.
+    await fireEvent.press(screen.getByTestId('ifade-kahve-keyfi'))
+    // Secim sayfayi kapatir, cip gorunur.
+    expect(await screen.findByTestId('ifade-cipi-kahve-keyfi')).toBeTruthy()
+    // Secici cikis animasyonunu (240 ms) oynatip duser; sonra etiket tek.
+    await waitFor(() => expect(screen.queryByTestId('ifade-secici')).toBeNull())
+    expect(screen.getByText('Kahve keyfi')).toBeTruthy()
+
+    await fireEvent.press(screen.getByTestId('check-in-gonder'))
+    await waitFor(() =>
+      expect(checkInYap).toHaveBeenCalledWith('mekan-1', 41.015, 28.979, undefined, undefined, 'herkese_acik', 'kahve-keyfi')
+    )
+  })
+
+  it('ifade kaldirilinca "Ifade ekle" geri gelir ve null gider', async () => {
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByTestId('ifade-ekle'))
+    await fireEvent.press(await screen.findByTestId('ifade-cay-molasi'))
+    await screen.findByTestId('ifade-cipi-cay-molasi')
+    await fireEvent.press(screen.getByTestId('ifade-kaldir'))
+    expect(await screen.findByTestId('ifade-ekle')).toBeTruthy()
+    expect(screen.queryByTestId('ifade-cipi-cay-molasi')).toBeNull()
+  })
+
+  it('kategori cipine basinca o kategorinin ifadeleri listelenir', async () => {
+    await render(<CheckInEkrani />)
+    await fireEvent.press(await screen.findByTestId('ifade-ekle'))
+    await screen.findByTestId('ifade-secici')
+    await fireEvent.press(screen.getByTestId('ifade-kategori-ruh-hali'))
+    expect(await screen.findByTestId('ifade-huzurluyum')).toBeTruthy()
+    expect(screen.queryByTestId('ifade-kahve-keyfi')).toBeNull()
   })
 })

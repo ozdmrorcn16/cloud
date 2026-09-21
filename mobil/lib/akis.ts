@@ -48,6 +48,7 @@ export function anidanAkisOgesi(
     mekanAdi: ani.mekanAdi,
     mekanSemti: ani.mekanSemti,
     notMetni: ani.notMetni,
+    ifade: ani.ifade,
     fotografUrl: ani.fotografUrl,
     olusturmaZamani: ani.olusturmaZamani,
     canliMi: ani.canliMi,
@@ -76,6 +77,8 @@ export type AkisOgesi = {
   /** Mekanin semti; zaman tunelindeki alt satirda kullaniliyor. */
   mekanSemti: string | null
   notMetni: string | null
+  /** Check-in'de secilen ifade slug'i (lib/ifadeler.ts); yoksa null. */
+  ifade: string | null
   /** Imzalanmis fotograf adresi; fotograf yoksa ya da imzalanamadiysa null. */
   fotografUrl: string | null
   olusturmaZamani: string
@@ -102,6 +105,7 @@ type AkisSatiri = {
   kullanici_adi: string | null
   mekan_id: string
   not_metni: string | null
+  ifade: string | null
   fotograf: string | null
   olusturma_zamani: string
   konum: string | null
@@ -133,7 +137,7 @@ export async function akisiGetir(
   let sorgu = supabase
     .from('check_inler')
     .select(
-      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, fotograf, olusturma_zamani, konum, mekanlar(ad, semt)'
+      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, ifade, fotograf, olusturma_zamani, konum, mekanlar(ad, semt)'
     )
     .in('kullanici_id', kimlikler)
   if (oncesi) sorgu = sorgu.lt('olusturma_zamani', oncesi)
@@ -169,6 +173,7 @@ export async function akisiGetir(
       mekanAdi: satir.mekanlar?.ad ?? '',
       mekanSemti: satir.mekanlar?.semt ?? null,
       notMetni: satir.not_metni,
+      ifade: satir.ifade ?? null,
       fotografUrl: satir.fotograf ? await checkInFotografiUrl(satir.fotograf) : null,
       olusturmaZamani: satir.olusturma_zamani,
       canliMi: satir.konum !== null,

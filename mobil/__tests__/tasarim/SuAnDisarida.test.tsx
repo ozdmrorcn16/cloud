@@ -18,6 +18,7 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
     rumuz: null,
     mekanAdi: 'Sahil Kafe',
     notMetni: null,
+    ifade: null,
     fotografUrl: null,
     olusturmaZamani: new Date().toISOString(),
     canliMi: true,

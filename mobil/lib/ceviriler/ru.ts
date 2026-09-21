@@ -647,6 +647,10 @@ export default {
     gonder: 'Отметиться',
     paylas: 'Поделиться чек-ином',
     gonderiliyor: 'Отправка...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'Добавить настроение',
+    ifadeBaslik: 'Как ты, чем занимаешься?',
+    ifadeKaldir: 'Убрать настроение',
   },
   mekanDuzenle: {
     baslik: 'Исправить данные',
@@ -934,6 +938,7 @@ export default {
       cok_fazla_kimlik: 'Отправлено слишком много идентификаторов.',
       en_az_2_karakter_gerekli: 'Введи не меньше 2 символов.',
       gecersiz_bulunurluk_degeri: 'Недопустимое значение доступности.',
+      gecersiz_ifade: 'Это выражение настроения не распознано; обновите приложение.',
       gecersiz_gorunurluk_degeri: 'Недопустимое значение видимости.',
       gecersiz_platform: 'Недопустимая платформа.',
       gecersiz_sikayet_durumu: 'Недопустимый статус жалобы.',

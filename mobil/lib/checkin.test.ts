@@ -31,11 +31,13 @@ describe('checkInYap', () => {
       p_not_metni: 'guzel bir yer',
       p_fotograf: 'kullanici-1/123.jpg',
       p_bulunurluk: 'herkese_acik',
+      p_ifade: null,
     })
     expect(sonuc).toEqual({
       id: 'checkin-1',
       mekanId: 'mekan-1',
       notMetni: 'guzel bir yer',
+      ifade: null,
       fotograf: 'kullanici-1/123.jpg',
       olusturmaZamani: '2026-08-14T10:00:00Z',
       bitisZamani: '2026-08-14T14:00:00Z',
@@ -78,6 +80,7 @@ describe('checkInYap', () => {
       p_not_metni: null,
       p_fotograf: null,
       p_bulunurluk: 'gizli',
+      p_ifade: null,
     })
     expect(sonuc.bulunurluk).toBe('gizli')
   })

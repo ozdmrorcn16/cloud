@@ -22,6 +22,8 @@ export type CheckIn = {
   id: string
   mekanId: string
   notMetni: string | null
+  /** Secilen ifade slug'i (lib/ifadeler.ts); yoksa null. */
+  ifade: string | null
   fotograf: string | null
   olusturmaZamani: string
   bitisZamani: string
@@ -33,6 +35,7 @@ type CheckInSatiri = {
   id: string
   mekan_id: string
   not_metni: string | null
+  ifade?: string | null
   fotograf: string | null
   olusturma_zamani: string
   bitis_zamani: string
@@ -45,6 +48,7 @@ function satiriCheckInACevir(satir: CheckInSatiri): CheckIn {
     id: satir.id,
     mekanId: satir.mekan_id,
     notMetni: satir.not_metni,
+    ifade: satir.ifade ?? null,
     fotograf: satir.fotograf,
     olusturmaZamani: satir.olusturma_zamani,
     bitisZamani: satir.bitis_zamani,
@@ -59,7 +63,8 @@ export async function checkInYap(
   lng: number,
   notMetni: string | null = null,
   fotograf: string | null = null,
-  bulunurluk: Bulunurluk = 'herkese_acik'
+  bulunurluk: Bulunurluk = 'herkese_acik',
+  ifade: string | null = null
 ): Promise<CheckIn> {
   const { data, error } = await supabase.rpc('check_in_yap', {
     p_mekan_id: mekanId,
@@ -68,6 +73,9 @@ export async function checkInYap(
     p_not_metni: notMetni,
     p_fotograf: fotograf,
     p_bulunurluk: bulunurluk,
+    // IFADE (2026-09-21): 108'lik setten tek slug; sunucu sozlukte
+    // dogruluyor. Yoksa null gider, sutun bos kalir.
+    p_ifade: ifade,
   })
   if (error) throw new Error(hataMetni(error))
   return satiriCheckInACevir(data as CheckInSatiri)
@@ -93,7 +101,7 @@ function satiriGorunumeCevir(satir: CheckInSatiriProfilli): CheckInGorunumu {
 export async function suAnBurdakileriGetir(mekanId: string): Promise<CheckInGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, kullanici_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
+    .select('id, mekan_id, kullanici_id, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, kullanici_adi, bulunurluk')
     .not('konum', 'is', null)
     .eq('mekan_id', mekanId)
   if (error) throw new Error(hataMetni(error))
@@ -260,7 +268,7 @@ export async function aktifCheckInimiGetir(): Promise<AktifCheckIn | null> {
 
   const { data, error } = await supabase
     .from('check_inler')
-    .select('id, mekan_id, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad)')
+    .select('id, mekan_id, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad)')
     .eq('kullanici_id', kullaniciId)
     .not('konum', 'is', null)
     .order('olusturma_zamani', { ascending: false })

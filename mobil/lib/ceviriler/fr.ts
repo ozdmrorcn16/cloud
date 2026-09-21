@@ -647,6 +647,10 @@ export default {
     gonder: 'Faire un check-in',
     paylas: 'Partager le check-in',
     gonderiliyor: 'Partage...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'Ajouter une humeur',
+    ifadeBaslik: 'Comment ça va, que fais-tu ?',
+    ifadeKaldir: "Retirer l'humeur",
   },
   mekanDuzenle: {
     baslik: 'Corriger les infos',
@@ -934,6 +938,7 @@ export default {
       cok_fazla_kimlik: "Trop d'identifiants envoyés.",
       en_az_2_karakter_gerekli: 'Saisis au moins 2 caractères.',
       gecersiz_bulunurluk_degeri: 'Valeur de disponibilité invalide.',
+      gecersiz_ifade: "Cette expression d'humeur n'a pas été reconnue ; mets l'application à jour.",
       gecersiz_gorunurluk_degeri: 'Valeur de visibilité invalide.',
       gecersiz_platform: 'Plateforme invalide.',
       gecersiz_sikayet_durumu: 'Statut de signalement invalide.',

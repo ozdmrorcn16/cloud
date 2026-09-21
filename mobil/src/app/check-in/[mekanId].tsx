@@ -5,6 +5,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { BasariDugmesi } from '../../tasarim/BasariDugmesi'
+import { IfadeSecici, IfadeCipi } from '../../tasarim/IfadeSecici'
+import { ifadeBul } from '../../../lib/ifadeler'
 import { supabase } from '../../../lib/supabase'
 import { cihazKonumunuAl } from '../../../lib/konum'
 import { checkInYap, type Bulunurluk, NOT_EN_FAZLA } from '../../../lib/checkin'
@@ -43,6 +45,9 @@ export default function CheckInEkrani() {
   const { t } = useDil()
   const { mekanId } = useLocalSearchParams<{ mekanId: string }>()
   const [notMetni, setNotMetni] = useState('')
+  // IFADE (2026-09-21): 108'lik setten tek secim; not alaninin ustunde.
+  const [ifade, setIfade] = useState<string | null>(null)
+  const [ifadeSecici, setIfadeSecici] = useState(false)
   const [yerelFotoUri, setYerelFotoUri] = useState<string | null>(null)
   // Fotograf KAYNAGI penceresi: kamera mi galeri mi.
   const [kaynakSecimi, setKaynakSecimi] = useState(false)
@@ -174,7 +179,8 @@ export default function CheckInEkrani() {
         konum.lng,
         notMetni.trim() || undefined,
         yuklenenFotoYolu,
-        bulunurluk
+        bulunurluk,
+        ifade
       )
 
       // Etiketler check-in OLUSTUKTAN SONRA yaziliyor: etiket satiri
@@ -243,6 +249,24 @@ export default function CheckInEkrani() {
       {!kisaEkran && <Text style={stiller.ipucu}>{t('checkIn.istegeBagli')}</Text>}
 
       <Text style={stiller.etiket}>{t('checkIn.notEtiket')}</Text>
+      {/* IFADE: not alaninin ustunde. Secilmemisken hayalet "Ifade ekle"
+          (setin bir ikonuyla), secilince cip (ikon + etiket + kaldir);
+          cipe basmak seciciyi yeniden acar. */}
+      <View style={stiller.ifadeSatiri}>
+        {ifade ? (
+          <IfadeCipi slug={ifade} onPress={() => setIfadeSecici(true)} onKaldir={() => setIfade(null)} />
+        ) : (
+          <Pressable
+            style={({ pressed }) => [stiller.ifadeEkle, pressed && stiller.ifadeEkleBasili]}
+            onPress={() => setIfadeSecici(true)}
+            accessibilityRole="button"
+            testID="ifade-ekle"
+          >
+            <Image source={ifadeBul('cok-mutluyum')!.kaynak} style={stiller.ifadeEkleIkon} resizeMode="contain" />
+            <Text style={stiller.ifadeEkleYazi}>{t('checkIn.ifadeEkle')}</Text>
+          </Pressable>
+        )}
+      </View>
       <TextInput
         style={[stiller.girdi, stiller.cokSatirli, kisaEkran && stiller.cokSatirliKisa]}
         placeholder={t('checkIn.notYerTutucu')}
@@ -343,6 +367,7 @@ export default function CheckInEkrani() {
         onBasariBitti={() => router.replace('/mekanlar')}
         testID="check-in-gonder"
       />
+      <IfadeSecici acikMi={ifadeSecici} secili={ifade} onSec={setIfade} onKapat={() => setIfadeSecici(false)} />
       <SecimPenceresi
         acikMi={kaynakSecimi}
         secimler={[
@@ -426,6 +451,13 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   ipucu: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinSoluk, marginTop: bosluk.s, marginBottom: bosluk.m },
 
   etiket: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin, marginBottom: bosluk.s },
+  ifadeSatiri: { marginBottom: bosluk.s, alignItems: 'flex-start' },
+  // Hayalet desen (tema: dolgu yok, turuncu kenarlik + yazi) - ekranda
+  // dolu turuncu tek: "Check-in yap".
+  ifadeEkle: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s, borderWidth: 1.5, borderColor: renk.turuncu, borderRadius: yuvarlak.hap, paddingVertical: 8, paddingHorizontal: 14 },
+  ifadeEkleBasili: { backgroundColor: renk.turuncuZemin },
+  ifadeEkleIkon: { width: 22, height: 22 },
+  ifadeEkleYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk + 1, color: renk.turuncuYazi },
   etiketSikisik: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
   girdi: {
     backgroundColor: renk.yuzey,

@@ -694,3 +694,23 @@ yonlendiriliyor - gelen destek postasi Gmail'de durur; KVKK basvurulari
 bu kanaldan gelecegi icin Gmail hesabinin erisimi de kisisel veri
 erisimidir (2FA acik tutulmali).
 
+
+
+## Check-in ifadesi (2026-09-21)
+
+Kullanici check-in yaparken 108 ifadelik sabit setten (ornegin "Kahve
+keyfi", "Huzurluyum") TEK ifade secebiliyor; `check_inler.ifade` (FK ->
+`ifadeler.slug`), akis kartinda notun basinda gorunur.
+
+- Hangi veri: kullanicinin sectigi ifade slug'i. Ruh hali ifadeleri
+  ("Biraz uzgunum") duygu durumu anlatir ama serbest metin not zaten
+  ayni sinifta; ozel nitelikli veri (saglik) degil, kullanicinin kendi
+  paylasim secimi.
+- Dayanak: notla ayni - sozlesmenin ifasi (m.5/2-c); paylasmak istege
+  bagli, varsayilan bos.
+- Sure: check-in ile ayni (anilar suresiz; check-in silinince silinir).
+- Kim gorur: check-in'in gorunurluk kademesi neyse o; moderasyon ekibi
+  sikayet uzerine.
+- Kayit: `verilerimi_disa_aktar` check_inler bloguna `ifade` eklendi;
+  kullanim kosullari 6. madde (icerik sahipligi) 7 dilde "not, ifade ve
+  fotograf" oldu.

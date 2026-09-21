@@ -16,6 +16,7 @@ import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import type { BagKisi } from '../../lib/bag'
 import { YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import { BegeniKalbi } from './BegeniKalbi'
+import { ifadeBul } from '../../lib/ifadeler'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 import {
   YakinlastirilabilirGorsel,
@@ -464,7 +465,26 @@ export function CheckInKarti({
           </View>
         </View>
       ) : (
-        oge.notMetni && <Text style={stiller.not}>{oge.notMetni}</Text>
+        (oge.notMetni || oge.ifade) && (
+          /* IFADE (2026-09-21): notun basinda 32 pt ikon + kalin etiket;
+             not yoksa yalnizca ikon + etiket. Ikon ust hizali, metin
+             yaninda akar. Sozlukte olmayan (silinmis) slug sessizce
+             cizilmez - kart bozulmaz. */
+          <View style={stiller.notSatiri} testID="not-satiri">
+            {oge.ifade && ifadeBul(oge.ifade) && (
+              <Image source={ifadeBul(oge.ifade)!.kaynak} style={stiller.ifadeIkon} resizeMode="contain" testID={`kart-ifade-${oge.ifade}`} />
+            )}
+            <Text style={stiller.not}>
+              {oge.ifade && ifadeBul(oge.ifade) && (
+                <Text style={stiller.ifadeEtiket}>
+                  {ifadeBul(oge.ifade)!.etiket}
+                  {oge.notMetni ? ' · ' : ''}
+                </Text>
+              )}
+              {oge.notMetni}
+            </Text>
+          </View>
+        )
       )}
 
       {oge.fotografUrl && (
@@ -835,13 +855,16 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   },
 
   // Not da metin sutunuyla hizali (referans).
+  // Not satiri: ifade ikonu + metin yan yana; kenar payi eski notunki.
+  notSatiri: { flexDirection: 'row', alignItems: 'flex-start', gap: bosluk.s, marginTop: bosluk.m, marginLeft: AVATAR_CAPI + bosluk.m },
+  ifadeIkon: { width: 32, height: 32, marginTop: -4 },
+  ifadeEtiket: { fontFamily: yazi.govdeKalin },
   not: {
+    flex: 1,
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 21,
     color: renk.metin,
-    marginTop: bosluk.m,
-    marginLeft: AVATAR_CAPI + bosluk.m,
   },
   // TAM GENISLIK (kullanicinin sectigi tasarim B, 2026-09-02):
   // Instagram'da fotografin durdugu gibi kenara yapisiyor. Negatif

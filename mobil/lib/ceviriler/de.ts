@@ -647,6 +647,10 @@ export default {
     gonder: 'Einchecken',
     paylas: 'Check-in teilen',
     gonderiliyor: 'Wird geteilt...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'Stimmung hinzufügen',
+    ifadeBaslik: "Wie geht's dir, was machst du?",
+    ifadeKaldir: 'Stimmung entfernen',
   },
   mekanDuzenle: {
     baslik: 'Angaben korrigieren',
@@ -934,6 +938,7 @@ export default {
       cok_fazla_kimlik: 'Zu viele Kennungen gesendet.',
       en_az_2_karakter_gerekli: 'Gib mindestens 2 Zeichen ein.',
       gecersiz_bulunurluk_degeri: 'Ungültiger Verfügbarkeitswert.',
+      gecersiz_ifade: 'Dieser Stimmungsausdruck wurde nicht erkannt; aktualisiere die App.',
       gecersiz_gorunurluk_degeri: 'Ungültiger Sichtbarkeitswert.',
       gecersiz_platform: 'Ungültige Plattform.',
       gecersiz_sikayet_durumu: 'Ungültiger Meldestatus.',

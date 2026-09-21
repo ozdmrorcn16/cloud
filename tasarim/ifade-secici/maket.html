@@ -1,0 +1,109 @@
+<title>İfade Seçici Maketi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Check-in formunda ifade secimi - uc ekran: form (secimsiz), alt sayfa
+     secici, form (secili) + akis karti. Jetonlar tema.ts ile ayni. */
+  :root { --turuncu:#FE7813; --turuncu-basili:#E06509; --turuncu-zemin:#FFF3E8; --metin:#17130F; --ikincil:#6E6660; --soluk:#A39B93; --cizgi:#EFEAE5; --zemin:#FFFFFF; --sayfa:#2A2521; --govde:'Instrument Sans',system-ui,sans-serif; }
+  *{box-sizing:border-box} body{margin:0;background:var(--sayfa);font-family:var(--govde);color:var(--metin);padding:28px 16px 40px}
+  h1{color:#F5EFE8;font-size:20px;text-align:center;margin:0 0 6px;letter-spacing:-.3px} .not{color:#A39B93;text-align:center;font-size:13px;margin:0 0 24px}
+  .izgara{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1120px;margin:0 auto}
+  .kutu h2{color:#F5EFE8;font-size:14px;margin:0 0 10px;font-weight:600}
+  .cihaz{background:var(--zemin);border-radius:36px;height:720px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 9px #16151a}
+  .ekran{position:absolute;inset:9px;border-radius:28px;overflow:hidden;background:var(--zemin);display:flex;flex-direction:column}
+  .ust{display:flex;align-items:center;gap:12px;padding:18px 16px 8px;font-weight:700;font-size:17px} .ust .geri{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--turuncu-zemin);font-size:18px}
+  .icerik{padding:6px 16px;display:flex;flex-direction:column;gap:14px;flex:1}
+  .mekan{font-weight:700;font-size:22px;letter-spacing:-.3px} .semt{color:var(--ikincil);font-size:14px;margin-top:-10px}
+  .etiket{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ikincil);font-weight:600}
+  .hayalet{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--turuncu);color:var(--turuncu);border-radius:999px;padding:9px 14px;font-weight:600;font-size:14px;align-self:flex-start}
+  .hayalet img{width:22px;height:22px}
+  .cip{display:inline-flex;align-items:center;gap:8px;background:var(--turuncu-zemin);border-radius:999px;padding:6px 12px 6px 6px;font-weight:600;font-size:14px;align-self:flex-start}
+  .cip img{width:30px;height:30px} .cip .x{color:var(--ikincil);margin-left:4px;font-weight:500}
+  .notalani{border:1px solid var(--cizgi);border-radius:16px;padding:12px 14px;min-height:96px;color:var(--soluk);font-size:15px;position:relative}
+  .notalani.dolu{color:var(--metin)} .notalani small{position:absolute;right:12px;bottom:8px;color:var(--soluk);font-size:12px}
+  .satir{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--cizgi);font-size:15px;color:var(--metin)} .satir span{color:var(--ikincil)}
+  .birincil{margin-top:auto;background:var(--turuncu);color:#fff;text-align:center;border-radius:999px;padding:15px;font-weight:600;font-size:16px;margin-bottom:64px}
+  /* alt sayfa */
+  .karartma{position:absolute;inset:0;background:rgba(23,19,15,.45)} .sayfa{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 12px 16px;height:78%;display:flex;flex-direction:column}
+  .tutamac{width:36px;height:4px;border-radius:2px;background:var(--cizgi);margin:0 auto 10px}
+  .sayfa h3{margin:4px 4px 10px;font-size:17px;letter-spacing:-.3px}
+  .kategoriler{display:flex;gap:8px;overflow-x:auto;padding:2px 4px 10px;scrollbar-width:none} .kategoriler::-webkit-scrollbar{display:none}
+  .kat{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--cizgi);font-size:13px;font-weight:500;white-space:nowrap;color:var(--ikincil)} .kat.secili{background:var(--turuncu);color:#fff;border-color:var(--turuncu)}
+  .ifadeler{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow-y:auto;padding:2px 4px}
+  .ifade{border-radius:16px;padding:10px 6px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid transparent}
+  .ifade img{width:56px;height:56px;object-fit:contain} .ifade span{font-size:12px;font-weight:500;line-height:1.2;color:var(--metin)}
+  .ifade.secili{background:var(--turuncu-zemin);border-color:var(--turuncu)}
+  /* akis karti */
+  .kart{margin:12px 8px;border:1px solid var(--cizgi);border-radius:20px;padding:14px;box-shadow:0 8px 24px -16px rgba(0,0,0,.25)}
+  .kbas{display:flex;align-items:center;gap:10px} .kav{width:52px;height:52px;border-radius:50%;background:var(--turuncu-zemin)} .kad{font-weight:700;font-size:18px} .kzaman{display:flex;align-items:center;gap:6px;color:var(--turuncu);font-weight:600;font-size:13px}
+  .nokta{width:7px;height:7px;border-radius:50%;background:var(--turuncu)}
+  .kmekan{color:var(--turuncu);font-weight:600;margin:10px 0 8px;font-size:15px}
+  .knot{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.4} .knot img{width:32px;height:32px;flex:none;margin-top:-2px}
+  .knot b{font-weight:600;color:var(--metin)} .knot .sadece{display:flex;align-items:center;gap:8px;color:var(--metin);font-weight:600}
+  .kfoto{height:150px;border-radius:14px;background:linear-gradient(135deg,#E8DDD2,#F5EDE4);margin-top:12px}
+  .keylem{display:flex;gap:18px;margin-top:12px;color:var(--ikincil);font-size:14px}
+</style>
+<h1>Check-in'de ifade seçimi</h1>
+<p class="not">1 · Not alanının üstünde "İfade ekle" &nbsp; 2 · Alttan gelen seçici (12 kategori, 3 sütun) &nbsp; 3 · Seçili hal + akış kartındaki görünüm</p>
+<div class="izgara">
+
+<section class="kutu"><h2>1 · Check-in formu — ifade seçilmemiş</h2>
+<div class="cihaz"><div class="ekran">
+  <div class="ust"><span class="geri">‹</span>Check-in</div>
+  <div class="icerik">
+    <div class="mekan">Hozee</div><div class="semt">Nilüfer, Bursa</div>
+    <div class="etiket">Not</div>
+    <div class="hayalet"><img src="v/ruh-hali/cok-mutluyum.png" alt="">İfade ekle</div>
+    <div class="notalani">Bir not ekle (opsiyonel)<small>0/280</small></div>
+    <div class="satir">Fotoğraf <span>Ekle ›</span></div>
+    <div class="satir">Arkadaş etiketle <span>Ekle ›</span></div>
+    <div class="birincil">Check-in yap</div>
+  </div>
+</div></div></section>
+
+<section class="kutu"><h2>2 · Alttan gelen seçici</h2>
+<div class="cihaz"><div class="ekran">
+  <div class="ust"><span class="geri">‹</span>Check-in</div>
+  <div class="icerik"><div class="mekan">Hozee</div><div class="semt">Nilüfer, Bursa</div></div>
+  <div class="karartma"></div>
+  <div class="sayfa">
+    <div class="tutamac"></div>
+    <h3>Nasılsın, ne yapıyorsun?</h3>
+    <div class="kategoriler"><span class="kat secili">İçecekler</span><span class="kat">Yemekler</span><span class="kat">Tatlılar</span><span class="kat">Ruh hâli</span><span class="kat">Arkadaşlık</span><span class="kat">Yolculuk</span><span class="kat">Günlük yaşam</span><span class="kat">Spor</span><span class="kat">Gezi</span><span class="kat">Hava</span><span class="kat">Kutlama</span><span class="kat">Mekân</span></div>
+    <div class="ifadeler">
+      <div class="ifade"><img src="v/icecekler/cay-molasi.png" alt=""><span>Çay molası</span></div>
+      <div class="ifade secili"><img src="v/icecekler/kahve-keyfi.png" alt=""><span>Kahve keyfi</span></div>
+      <div class="ifade"><img src="v/icecekler/turk-kahvesi.png" alt=""><span>Türk kahvesi</span></div>
+      <div class="ifade"><img src="v/icecekler/buzlu-kahve.png" alt=""><span>Buzlu kahve</span></div>
+      <div class="ifade"><img src="v/icecekler/matcha-zamani.png" alt=""><span>Matcha zamanı</span></div>
+      <div class="ifade"><img src="v/icecekler/limonata-ferahligi.png" alt=""><span>Limonata ferahlığı</span></div>
+      <div class="ifade"><img src="v/icecekler/smoothie-molasi.png" alt=""><span>Smoothie molası</span></div>
+      <div class="ifade"><img src="v/icecekler/bubble-tea.png" alt=""><span>Bubble tea</span></div>
+      <div class="ifade"><img src="v/icecekler/su-molasi.png" alt=""><span>Su molası</span></div>
+    </div>
+  </div>
+</div></div></section>
+
+<section class="kutu"><h2>3 · Seçili hal ve akış kartı</h2>
+<div class="cihaz"><div class="ekran">
+  <div class="ust"><span class="geri">‹</span>Check-in</div>
+  <div class="icerik" style="flex:none">
+    <div class="etiket">Not</div>
+    <div class="cip"><img src="v/icecekler/kahve-keyfi.png" alt="">Kahve keyfi<span class="x">×</span></div>
+    <div class="notalani dolu">Sabah kahvesi burada başka güzel ☕<small>34/280</small></div>
+  </div>
+  <div style="border-top:8px solid var(--cizgi);margin-top:8px"></div>
+  <div class="kart">
+    <div class="kbas"><div class="kav"></div><div><div class="kad">byorcun</div><div class="kzaman"><span class="nokta"></span>şu an burada</div></div></div>
+    <div class="kmekan">📍 Hozee</div>
+    <div class="knot"><img src="v/icecekler/kahve-keyfi.png" alt=""><div><b>Kahve keyfi</b> · Sabah kahvesi burada başka güzel ☕</div></div>
+    <div class="kfoto"></div>
+    <div class="keylem"><span>♡ 12</span><span>💬 3</span><span style="margin-left:auto">Paylaş</span></div>
+  </div>
+  <div class="kart" style="margin-top:0"><div class="kbas"><div class="kav"></div><div><div class="kad">deniz.k</div><div class="kzaman" style="color:var(--ikincil)">2 sa önce</div></div></div>
+    <div class="kmekan">📍 Kütüphane Kafe</div>
+    <div class="knot"><img src="v/ruh-hali/huzurluyum.png" alt=""><div class="sadece">Huzurluyum</div></div>
+  </div>
+</div></div></section>
+
+</div>

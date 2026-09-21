@@ -647,6 +647,10 @@ export default {
     gonder: 'Hacer check-in',
     paylas: 'Compartir check-in',
     gonderiliyor: 'Compartiendo...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'Añadir un estado',
+    ifadeBaslik: '¿Cómo estás, qué haces?',
+    ifadeKaldir: 'Quitar estado',
   },
   mekanDuzenle: {
     baslik: 'Corregir la información',
@@ -934,6 +938,7 @@ export default {
       cok_fazla_kimlik: 'Se enviaron demasiados identificadores.',
       en_az_2_karakter_gerekli: 'Escribe al menos 2 caracteres.',
       gecersiz_bulunurluk_degeri: 'Valor de disponibilidad no válido.',
+      gecersiz_ifade: 'Esa expresión de estado no se reconoció; actualiza la app.',
       gecersiz_gorunurluk_degeri: 'Valor de visibilidad no válido.',
       gecersiz_platform: 'Plataforma no válida.',
       gecersiz_sikayet_durumu: 'Estado de denuncia no válido.',

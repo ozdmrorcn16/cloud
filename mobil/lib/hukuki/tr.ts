@@ -143,7 +143,7 @@ const tr: HukukiMetin = {
     {
       baslik: '6. İçerik',
       paragraflar: [
-        "Check-in'e eklediğin not ve fotoğrafın sahibi sensin. Bunları paylaşarak Slooin'e, o içeriği uygulama içinde (akışta, profilinde, ilgili mekân sayfasında) gösterme izni vermiş olursun. İçeriğin sahipliği sende kalır.",
+        "Check-in'e eklediğin not, ifade ve fotoğrafın sahibi sensin. Bunları paylaşarak Slooin'e, o içeriği uygulama içinde (akışta, profilinde, ilgili mekân sayfasında) gösterme izni vermiş olursun. İçeriğin sahipliği sende kalır.",
       ],
     },
     {

@@ -647,6 +647,10 @@ export default {
     gonder: 'تسجيل الوصول',
     paylas: 'مشاركة تسجيل الوصول',
     gonderiliyor: 'جارٍ المشاركة...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'أضف حالة',
+    ifadeBaslik: 'كيف حالك، ماذا تفعل؟',
+    ifadeKaldir: 'إزالة الحالة',
   },
   mekanDuzenle: {
     baslik: 'تصحيح المعلومات',
@@ -934,6 +938,7 @@ export default {
       cok_fazla_kimlik: 'أُرسلت معرّفات كثيرة جدا.',
       en_az_2_karakter_gerekli: 'اكتب حرفين على الأقل.',
       gecersiz_bulunurluk_degeri: 'قيمة توفر غير صالحة.',
+      gecersiz_ifade: 'لم يتم التعرف على تعبير الحالة هذا؛ حدّث التطبيق.',
       gecersiz_gorunurluk_degeri: 'قيمة ظهور غير صالحة.',
       gecersiz_platform: 'منصة غير صالحة.',
       gecersiz_sikayet_durumu: 'حالة بلاغ غير صالحة.',

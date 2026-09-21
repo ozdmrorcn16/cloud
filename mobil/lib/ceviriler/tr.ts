@@ -796,6 +796,10 @@ export default {
     gonder: 'Check-in yap',
     paylas: 'Check-in paylaş',
     gonderiliyor: 'Paylaşılıyor...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'İfade ekle',
+    ifadeBaslik: 'Nasılsın, ne yapıyorsun?',
+    ifadeKaldir: 'İfadeyi kaldır',
   },
 
   // MEKAN BILGILERINI DUZELT (i18n turu 2026-09-13).
@@ -1132,6 +1136,7 @@ export default {
       cok_fazla_kimlik: 'Çok fazla kimlik gönderildi.',
       en_az_2_karakter_gerekli: 'En az 2 karakter yazmalısın.',
       gecersiz_bulunurluk_degeri: 'Geçersiz bulunurluk değeri.',
+      gecersiz_ifade: 'Seçilen ifade tanınmadı, uygulamayı güncelle.',
       gecersiz_gorunurluk_degeri: 'Geçersiz görünürlük değeri.',
       gecersiz_platform: 'Geçersiz platform.',
       gecersiz_sikayet_durumu: 'Geçersiz şikayet durumu.',

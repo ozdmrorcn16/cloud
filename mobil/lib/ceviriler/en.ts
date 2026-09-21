@@ -653,6 +653,10 @@ export default {
     gonder: 'Check in',
     paylas: 'Share check-in',
     gonderiliyor: 'Sharing...',
+    // IFADE SECICI (2026-09-21)
+    ifadeEkle: 'Add a mood',
+    ifadeBaslik: 'How are you, what are you up to?',
+    ifadeKaldir: 'Remove mood',
   },
   mekanDuzenle: {
     baslik: 'Fix the details',
@@ -940,6 +944,7 @@ export default {
       cok_fazla_kimlik: 'Too many identifiers were sent.',
       en_az_2_karakter_gerekli: 'Type at least 2 characters.',
       gecersiz_bulunurluk_degeri: 'Invalid availability value.',
+      gecersiz_ifade: 'That mood expression was not recognized; update the app.',
       gecersiz_gorunurluk_degeri: 'Invalid visibility value.',
       gecersiz_platform: 'Invalid platform.',
       gecersiz_sikayet_durumu: 'Invalid report status.',

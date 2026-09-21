@@ -129,7 +129,7 @@ const de: HukukiMetin = {
     {
       baslik: '6. Inhalte',
       paragraflar: [
-        'Die Notiz und das Foto, die du einem Check-in hinzufügst, gehören dir. Indem du sie teilst, erlaubst du Slooin, diesen Inhalt innerhalb der App anzuzeigen (im Feed, in deinem Profil, auf der Seite des betreffenden Ortes). Das Eigentum am Inhalt bleibt bei dir.',
+        'Die Notiz, der Stimmungsausdruck und das Foto, die du einem Check-in hinzufügst, gehören dir. Indem du sie teilst, erlaubst du Slooin, diesen Inhalt innerhalb der App anzuzeigen (im Feed, in deinem Profil, auf der Seite des betreffenden Ortes). Das Eigentum am Inhalt bleibt bei dir.',
       ],
     },
     {

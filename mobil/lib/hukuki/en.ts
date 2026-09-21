@@ -129,7 +129,7 @@ const en: HukukiMetin = {
     {
       baslik: '6. Content',
       paragraflar: [
-        'You own the note and photo you add to a check-in. By sharing them you grant Slooin permission to display that content inside the app (in the feed, on your profile, on the related place page). Ownership of the content stays with you.',
+        'You own the note, mood expression and photo you add to a check-in. By sharing them you grant Slooin permission to display that content inside the app (in the feed, on your profile, on the related place page). Ownership of the content stays with you.',
       ],
     },
     {
