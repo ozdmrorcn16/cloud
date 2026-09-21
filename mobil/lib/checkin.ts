@@ -251,6 +251,15 @@ export async function checkInNotunuGuncelle(checkInId: string, not: string): Pro
   if (error) throw new Error(hataMetni(error))
 }
 
+/** Ifadeyi sonradan degistir/kaldir (null = kaldir); yalnizca kendi paylasimi. */
+export async function checkInIfadesiniGuncelle(checkInId: string, ifade: string | null): Promise<void> {
+  const { error } = await supabase.rpc('check_in_ifadesini_guncelle', {
+    p_check_in_id: checkInId,
+    p_ifade: ifade,
+  })
+  if (error) throw new Error(hataMetni(error))
+}
+
 export type AktifCheckIn = CheckIn & { mekanAdi: string }
 
 /**

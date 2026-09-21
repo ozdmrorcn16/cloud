@@ -4,7 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { akisiGetir, AKIS_SAYFA_BOYU, type AkisOgesi } from '../../lib/akis'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
-import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
+import { checkIniSil, checkInNotunuGuncelle, checkInIfadesiniGuncelle } from '../../lib/checkin'
 import { CheckInKarti } from '../tasarim/CheckInKarti'
 import {
   etkilesimOzetleriniGetir,
@@ -167,6 +167,11 @@ export default function AnaSayfa() {
     )
   }
 
+  async function ifadeyiKaydet(id: string, ifade: string | null) {
+    await checkInIfadesiniGuncelle(id, ifade)
+    setOgeler((mevcut) => mevcut.map((o) => (o.id === id ? { ...o, ifade } : o)))
+  }
+
   async function etiketEkle(id: string, kullaniciIdler: string[]) {
     await etiketleriKaydet(id, kullaniciIdler)
     // KAYDEDINCE HEMEN GORUNSUN (kullanicinin istegi 2026-09-18): sunucu
@@ -313,6 +318,7 @@ export default function AnaSayfa() {
             onNotKaydet={notuKaydet}
             onEtiketKaldir={etiketiSil}
             onEtiketEkle={etiketEkle}
+            onIfadeKaydet={ifadeyiKaydet}
           />
           </KademeliGiris>
         )}

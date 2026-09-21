@@ -21,7 +21,7 @@ import {
   kullanicininAnilariniGetir,
   aktifCheckInimiGetir,
   checkIniSil,
-  checkInNotunuGuncelle,
+  checkInNotunuGuncelle, checkInIfadesiniGuncelle,
   checkIndenAyril,
   type AniGorunumu,
   type AktifCheckIn,
@@ -426,6 +426,11 @@ export default function ProfilEkrani() {
     setAnilar((mevcut) =>
       mevcut.map((a) => (a.id === checkInId ? { ...a, notMetni: temiz === '' ? null : temiz } : a))
     )
+  }
+
+  async function ifadeyiKaydet(checkInId: string, ifade: string | null) {
+    await checkInIfadesiniGuncelle(checkInId, ifade)
+    setAnilar((mevcut) => mevcut.map((a) => (a.id === checkInId ? { ...a, ifade } : a)))
   }
 
   // Ana sayfadaki etiketEkle ile ayni: kaydet, onayli etiketleri yeniden
@@ -926,6 +931,7 @@ export default function ProfilEkrani() {
                     onNotKaydet={notuKaydet}
                     onEtiketKaldir={etiketiSil}
                     onEtiketEkle={etiketEkle}
+                    onIfadeKaydet={ifadeyiKaydet}
                   />
                 ))}
               </View>

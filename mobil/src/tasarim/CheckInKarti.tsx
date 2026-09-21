@@ -17,6 +17,7 @@ import type { BagKisi } from '../../lib/bag'
 import { YorumIkonu, PaylasIkonu } from './etkilesim-ikonlari'
 import { BegeniKalbi } from './BegeniKalbi'
 import { ifadeBul } from '../../lib/ifadeler'
+import { IfadeSecici, IfadeCipi } from './IfadeSecici'
 import type { EtkilesimOzeti } from '../../lib/etkilesim'
 import {
   YakinlastirilabilirGorsel,
@@ -67,6 +68,7 @@ export function CheckInKarti({
   onSilOnayi,
   onSil,
   onNotKaydet,
+  onIfadeKaydet,
   onEtiketEkle,
   onEtiketKaldir,
   onFotografAc,
@@ -101,6 +103,8 @@ export function CheckInKarti({
    * salt okunur yerlerde kart sade kaliyor.
    */
   onNotKaydet?: (id: string, yeniNot: string) => Promise<void> | void
+  /** Duzenlemede ifade degistiyse (ekle/degistir/kaldir) cagrilir; null = kaldir. */
+  onIfadeKaydet?: (id: string, ifade: string | null) => Promise<void> | void
   /** Yerinde duzenlemede secilen arkadaslari etiketler. */
   onEtiketEkle?: (id: string, kullaniciIdler: string[]) => Promise<void> | void
   onEtiketKaldir?: (id: string, kullaniciId: string) => Promise<void> | void
@@ -146,10 +150,16 @@ export function CheckInKarti({
   // gidiyordu.
   const [buyukAcik, setBuyukAcik] = useState(false)
 
+  // Ifade duzenleme (kullanicinin istegi 2026-09-21): taslak slug ve
+  // secici; Kaydet'te degistiyse `onIfadeKaydet`.
+  const [taslakIfade, setTaslakIfade] = useState<string | null>(oge.ifade)
+  const [ifadeSecici, setIfadeSecici] = useState(false)
+
   function duzenlemeyiAc() {
     // Taslak her acilista SIFIRLANIYOR: bir onceki duzenlemeden kalan
     // metin ya da secim tasinmamali.
     setTaslakNot(oge.notMetni ?? '')
+    setTaslakIfade(oge.ifade)
     setKaldirilan([])
     setEklenen([])
     setDuzenleHatasi(null)
@@ -175,6 +185,9 @@ export function CheckInKarti({
       }
       if (eklenen.length > 0) {
         await onEtiketEkle?.(oge.id, eklenen)
+      }
+      if (taslakIfade !== oge.ifade) {
+        await onIfadeKaydet?.(oge.id, taslakIfade)
       }
       // Not en son: etiketler yazilamazsa kullanici notu da kaybetmesin
       // diye pencere acik kaliyor ve hata gorunuyor.
@@ -396,6 +409,25 @@ export function CheckInKarti({
                 ))}
             </View>
           )}
+
+          {/* IFADE (kullanicinin istegi 2026-09-21): formdakiyle ayni
+              desen - cip (kaldirilabilir, basinca secici) ya da hayalet
+              "Ifade ekle". */}
+          <View style={stiller.ifadeSatiri}>
+            {taslakIfade ? (
+              <IfadeCipi slug={taslakIfade} onPress={() => setIfadeSecici(true)} onKaldir={() => setTaslakIfade(null)} />
+            ) : (
+              <Pressable
+                style={stiller.etiketleDugmesi}
+                onPress={() => setIfadeSecici(true)}
+                accessibilityRole="button"
+                testID="duzenle-ifade-ekle"
+              >
+                <Text style={stiller.etiketleDugmesiYazi}>{t('checkIn.ifadeEkle')}</Text>
+              </Pressable>
+            )}
+          </View>
+          <IfadeSecici acikMi={ifadeSecici} secili={taslakIfade} onSec={setTaslakIfade} onKapat={() => setIfadeSecici(false)} />
 
           {/* ARKADAS ETIKETLE DUGMESI (kullanicinin istegi 2026-09-18):
               basinca alttan aranabilir arkadas listesi (profil resmi +
@@ -752,6 +784,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   etiketleDugmesiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metin },
   duzenleHata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici },
   duzenleEylemler: { flexDirection: 'row', gap: bosluk.s, marginTop: bosluk.xs },
+  ifadeSatiri: { flexDirection: 'row', marginBottom: bosluk.s },
   duzenleDugme: {
     flex: 1,
     alignItems: 'center',

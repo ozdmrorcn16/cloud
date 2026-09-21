@@ -5,7 +5,7 @@ import AnaSayfa from '../../src/app/index'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
-import { checkIniSil, checkInNotunuGuncelle } from '../../lib/checkin'
+import { checkIniSil, checkInNotunuGuncelle, checkInIfadesiniGuncelle } from '../../lib/checkin'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
@@ -24,6 +24,7 @@ jest.mock('../../lib/checkin', () => ({
   ...jest.requireActual('../../lib/checkin'),
   checkIniSil: jest.fn(),
   checkInNotunuGuncelle: jest.fn(),
+  checkInIfadesiniGuncelle: jest.fn(),
 }))
 jest.mock('../../lib/etiket', () => ({
   etiketiKaldir: jest.fn(),
@@ -307,6 +308,33 @@ describe('AnaSayfa', () => {
     await screen.findByText('Sahil Kafe')
 
     expect(screen.queryByLabelText('Paylaşım seçenekleri')).toBeNull()
+  })
+
+  it('DUZENLEMEDE IFADE (2026-09-21): ekle -> secici -> cip, Kaydet ile sunucuya; kaldir -> null gider, kart guncellenir', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge({ benimMi: true })])
+    ;(checkInNotunuGuncelle as jest.Mock).mockResolvedValue(undefined)
+    ;(checkInIfadesiniGuncelle as jest.Mock).mockResolvedValue(undefined)
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(screen.getByTestId('duzenle-ifade-ekle'))
+    await fireEvent.press(await screen.findByTestId('ifade-kahve-keyfi'))
+    expect(await screen.findByTestId('ifade-cipi-kahve-keyfi')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInIfadesiniGuncelle).toHaveBeenCalledWith('checkin-1', 'kahve-keyfi'))
+    // Kart notun basinda ifadeyi gosteriyor.
+    expect(await screen.findByTestId('kart-ifade-kahve-keyfi')).toBeTruthy()
+
+    // Kaldirma: cipin x'i -> Kaydet -> null.
+    await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
+    await menudenSec('menu-duzenle')
+    await fireEvent.press(await screen.findByTestId('ifade-kaldir'))
+    expect(screen.getByTestId('duzenle-ifade-ekle')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Kaydet'))
+    await waitFor(() => expect(checkInIfadesiniGuncelle).toHaveBeenLastCalledWith('checkin-1', null))
+    await waitFor(() => expect(screen.queryByTestId('kart-ifade-kahve-keyfi')).toBeNull())
   })
 
   it('menudeki Duzenle notu MEVCUT haliyle aciyor', async () => {
