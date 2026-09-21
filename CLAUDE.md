@@ -148,6 +148,43 @@ ayrintilar `docs/konusma-gunlugu.md` icinde.
   uretmek icin onay isteyebilir, o adim interaktifse kullaniciya
   birakilir.
 
+### PLAY CONSOLE DAHILI TEST KURULDU - 2026-09-22
+
+Kullanicinin secimi (APK yerine Play akisi). Play Console'da (hesap
+slooinapp@gmail.com, gelistirici id 8670756961503280599) **Slooin
+uygulamasi olusturuldu** (app id `4975519482711386603`, paket
+com.slooin.app, Turkce, ucretsiz), **dahili test kanalina AAB
+versionCode 7 (EAS 320ddc2a) yuklendi ve yayinlandi**, test listesi
+"Slooin dahili test" (ozdmrorcn16@gmail.com, slooinapp@gmail.com).
+**Opt-in bağlantısı: https://play.google.com/apps/internaltest/4700396095656408634**
+(telefonda listedeki Google hesabiyla ac -> Play'den kur).
+- **Play Uygulama Imzalama:** Google'in anahtari "kuantum uyumlu
+  (Beta)" - IKI sertifika: klasik SHA-1 `A2:ED:59:E4:6C:88:04:02:30:38:
+  57:C7:84:7D:0E:70:FB:BE:F5:C6` (SHA-256 F4:1B...), kuantum sonrasi
+  SHA-1 `39:62:E4:52:...:FE:20` (SHA-256 E6:25...). Play'in Digital
+  Asset Links snippet'i ise 4C:8D:F1... veriyor. Hangisinin APK'yi
+  imzaladigi olculemedi (sertifika indirme 73FED255 hatasi) - bu
+  yuzden UCU de kaydedildi: Google Cloud'da iki yeni Android OAuth
+  istemcisi ("Play imzasi - klasik/kuantum"), Maps Android anahtari
+  kisitina iki SHA-1, `site/public/.well-known/assetlinks.json`a uc
+  SHA-256. Supabase Google saglayicisi DEGISMEDI (native akista aud =
+  web istemci id). Play'den kurulan surumde Google girisi ve harita
+  DOGRULANMALI; DEVELOPER_ERROR / gri harita gorulurse ilk suphe SHA-1.
+- **TARAYICI DERSLERI:** (1) Play Console'a 81 MB AAB'yi
+  `claude-in-chrome` file_upload ile veremezsin (10 MB siniri); yerel
+  CORS'lu `ThreadingHTTPServer` (127.0.0.1:8123) + sayfada `fetch ->
+  File -> DataTransfer -> input.files + change` calisti. Chrome bunun
+  icin "yerel aga erisim" izni istiyor ve sekme ARKA PLANDAYSA soru
+  cikmiyor (fetch sonsuza dek bekler). (2) Play Console'un dialoglari
+  (e-posta listesi vb.) arka plandaki sekmede HIC cizilmiyor
+  (rAF durur); kullanici sekmeyi one getirmeli. (3) Kopyala dugmeleri
+  `navigator.clipboard.writeText`i sarmalayarak okunabiliyor.
+- Play Console'da ilk kurulum gorevleri (magaza girisi, icerik
+  derecelendirme, veri guvenligi, uygulama erisimi) YAPILMADI - dahili
+  test icin gerekmedi; kapali test/uretim oncesi gerekecek. Not:
+  "Kurulusunuzu dogrulayin (dokuman yukleyin)" istemi gorundu - kimlik
+  belgesi, kullanicinin isi.
+
 ### CHECK-IN PANELI REFERANS DUZENINDE - 2026-09-20 AKSAM
 
 Kullanicinin referans gorseli ("boyle yap, tur ikonu yerine harita
