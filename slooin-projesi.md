@@ -250,7 +250,50 @@ Yeni oturum bunlari bilerek baslar.
 16. **Oturumlar arasi hafiza hep bir sonrakine aktarilir**: is
     bitmeden/kesilmeden once CLAUDE.md + gunluk + bu dosya guncel olsun.
 
-## 8. Kaldigi yer (2026-09-19)
+## 8. Kaldigi yer (2026-09-21)
+
+**Son bitirilen isler (2026-09-20 / 21, hepsi YAYINDA - son OTA grup
+`ed53c110`, web `slooin.expo.app` guncel, iki depoya push):** kullanicinin
+telefondan art arda gonderdigi ekran goruntusu ve referanslarla ~30
+kucuk tur. Her birinin ayrintisi CLAUDE.md'de tarihli basliklarda; ozet:
+- **Check-in haritasi:** ad etiketleri iOS'ta iğnenin sağında
+  (`centerOffset`, kabsiz isaretci, olculen genislik); Yasal/Apple
+  logosu sol alta sabit (harita panelin ustunde biter; inset override'i
+  yarisliydi); panel elle suruklenir (her yerinden; PanResponder duz
+  View'da, Pressable'da eziliyor); mesafe secimi kalici; aktif check-in
+  karti basligin ustunde ve varken kapali panel yalnizca o kart;
+  kart/panel olculeri referanstan (kare gercek harita 72, cercevesiz).
+- **Ana sayfa:** arama sutunu kalkti, sol basta buyutec -> /kisiler;
+  kart tek cumle baslik ("ad, mekan'de check-in yapti" - Turkce
+  bulunma eki `lib/bulunma-eki.ts`), "adlar ile birlikte", 2:1
+  fotograf, yuvarlak cerceveli kart, ic cizgi yok; ifade yalnizca ikon;
+  duzenlemede ifade ekle/kaldir (RPC `check_in_ifadesini_guncelle`).
+- **Check-in formu:** referans duzeni (mekan karti, Notun, kesikli
+  fotograf kutusu, Arkadas etiketle, Birlikte cipleri), tek ekran
+  kaydirmasiz (SE dahil); ifade secici kategorileri yana kaydirmali,
+  secili cip serit ortasina kayar.
+- **Profil:** gizli profili yalnizca ARKADASLIK acar (kabul sohbet
+  acmaz - canlida bulunan hata); sikayet damgasi kalkti, tekrar
+  sikayette uyari; cek-yenile; ani sayisi sunucudan; sayaclar bolum
+  secer (baskasinda arkadas listesi RPC `baskasinin_arkadaslari`);
+  kendi profilde "Arkadaslarim" sayfasi (referans); "Anilarim kimlere
+  gorunsun" ayari ve RPC'si TAMAMEN KALDIRILDI (kullanicinin 29 anisini
+  'kimse' yapmisti; veri duzeltildi); kullanici adi 24 saatte bir.
+- **Sohbet:** ust barda adin altinda @kullaniciadi.
+- **Genel hatalar:** SecimPenceresi secim once kapanir sonra eylem
+  (iOS'ta ikinci Modal acilmiyordu, paylasim sayfasi menuyle kapaniyordu),
+  paylasim kalkani kendini kilitleyemez (ekran donmustu).
+- **Yan bulgu:** MCP `apply_migration` postgres rolunde kosmuyor ->
+  yeni fonksiyona `revoke ... from public, anon` ACIKCA yazilir.
+
+Jest 84 paket / 1124 test; test:sema ve test:gorunurluk yesil
+(21.09 ogleden sonra). Telefonda dogrulanmamis son ikisi: ifade
+duzenleme ve "ifade yalnizca ikon" - kullanici bakacak.
+
+**ACIK / bekleyen:** yok (kod tarafinda yarim is yok). Kullanicinin
+telefondan yeni geri bildirimi beklenir.
+
+## 8a. Onceki kayit (2026-09-19)
 
 **Son bitirilen is (2026-09-19, sunucu tarafi CANLI - OTA/web gerekmedi,
 istemci kodu degismedi):** BASTAN SONA GUVENLIK TARAMASI. Tek gercek
