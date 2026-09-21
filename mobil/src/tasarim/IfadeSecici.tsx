@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Animated, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDil } from '../../lib/dil'
@@ -58,6 +58,20 @@ export function IfadeSecici({
   const sayfaEni = olculenEn || Math.max(1, pencereEni - bosluk.m * 2)
   const sayfaListesi = useRef<FlatList<(typeof sayfalar)[number]>>(null)
   const baslangicIndeksi = Math.max(0, sayfalar.findIndex((s) => s.slug === baslangicKategori))
+  /*
+   * SECILI CIP GORUNUR ALANA KAYAR (kullanicinin bildirimi 2026-09-21:
+   * "yana kaydirdikca basliklarda kaysin, hangi baslikta olundugu
+   * gorulmuyor"). Her cipin x'i ve eni onLayout ile tutuluyor; kategori
+   * degisince cip satiri onu ortalayacak sekilde kaydiriliyor.
+   */
+  const cipSeridi = useRef<ScrollView>(null)
+  const cipKonumlari = useRef<Record<string, { x: number; en: number }>>({})
+  useEffect(() => {
+    const k = cipKonumlari.current[kategori]
+    if (!k || !sayfaEni) return
+    cipSeridi.current?.scrollTo({ x: Math.max(0, k.x + k.en / 2 - sayfaEni / 2), animated: true })
+  }, [kategori, sayfaEni])
+
   function kategoriyeGit(slug: IfadeKategorisi) {
     setKategori(slug)
     const i = sayfalar.findIndex((s) => s.slug === slug)
@@ -85,13 +99,16 @@ export function IfadeSecici({
             <Text style={stiller.baslik} accessibilityRole="header">
               {t('checkIn.ifadeBaslik')}
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.kategoriler}>
+            <ScrollView ref={cipSeridi} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.kategoriler} testID="ifade-cipleri">
               {IFADE_KATEGORILERI.map((k) => {
                 const seciliMi = k.slug === kategori
                 return (
                   <Pressable
                     key={k.slug}
                     onPress={() => kategoriyeGit(k.slug as IfadeKategorisi)}
+                    onLayout={(o) => {
+                      cipKonumlari.current[k.slug] = { x: o.nativeEvent.layout.x, en: o.nativeEvent.layout.width }
+                    }}
                     style={[stiller.kategori, seciliMi && stiller.kategoriSecili]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: seciliMi }}
