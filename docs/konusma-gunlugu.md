@@ -42,7 +42,13 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-21 — [2026-09-21-70668709.md](oturumlar/2026-09-21-70668709.md) — devam et
+- 2026-09-21 — [2026-09-21-70447846.md](oturumlar/2026-09-21-70447846.md) — login
+- 2026-09-21 — [2026-09-21-556d60d8.md](oturumlar/2026-09-21-556d60d8.md) — claude mem çalışıyor dimi
+- 2026-09-20 — [2026-09-20-70668709.md](oturumlar/2026-09-20-70668709.md) — devam et
+- 2026-09-20 — [2026-09-20-556d60d8.md](oturumlar/2026-09-20-556d60d8.md) — claude mem çalışıyor dimi
 - 2026-09-19 — [2026-09-19-815eff1b.md](oturumlar/2026-09-19-815eff1b.md) — slooin uygulamasını şuanki aşamasına kadarki kısmını baştan sona tara hatalar va…
+- 2026-09-19 — [2026-09-19-70668709.md](oturumlar/2026-09-19-70668709.md) — devam et
 - 2026-09-19 — [2026-09-19-70447846.md](oturumlar/2026-09-19-70447846.md) — login
 - 2026-09-19 — [2026-09-19-556d60d8.md](oturumlar/2026-09-19-556d60d8.md) — claude mem çalışıyor dimi
 - 2026-09-18 — [2026-09-18-70447846.md](oturumlar/2026-09-18-70447846.md) — login
