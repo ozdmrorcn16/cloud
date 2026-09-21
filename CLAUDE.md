@@ -966,6 +966,18 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### IFADE SECICI: KATEGORILER YANA KAYDIRMALI - 2026-09-21
+
+Kullanicinin istegi ("sayfa elle yana kaydirilabilsin, kaydirinca obur
+ifadelere gecilsin"). `IfadeSecici.tsx` (paralel oturumun 70c14513'te
+kurdugu 12 kategori / 108 ifade secicisi): tek FlatList yerine
+`horizontal + pagingEnabled` sayfa listesi, her sayfa bir kategorinin
+3 sutunlu izgarasi (`satirlar()` ile bolunmus, dikey ScrollView).
+Sayfa eni `onLayout` (olcum gelene kadar pencere - 24). Cip -> 
+`scrollToIndex`; `onMomentumScrollEnd` -> cip. Butun sayfalar bastan
+cizili (`initialNumToRender/windowSize` = 12): yerel PNG'ler hafif,
+sanal listede cip kaydirmasi ve jest bos sayfa veriyordu.
+
 ### KULLANICI ADI 24 SAATTE BIR; PANEL AKTIF KARTLA KAPALI - 2026-09-21
 
 - **Kullanici adi 24 saat (30 gundu):** migrasyon `20260921100000`
