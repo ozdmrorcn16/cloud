@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<title>Check-in'i düzenle – daraltma seçenekleri</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--tur:#FE7813;--metin:#17130F;--ikincil:#6E6660;--soluk:#A39B93;--cizgi:#DCD3C9;--sef:#FFF3E8;--krem:#FAF7F3}
+  *{box-sizing:border-box}
+  body{margin:0;background:#ECE8E2;font-family:"Instrument Sans",system-ui,sans-serif;color:var(--metin);padding:28px 24px}
+  h1{font-size:22px;margin:0 0 6px}
+  .alt{color:var(--ikincil);font-size:14px;margin:0 0 22px}
+  .sira{display:flex;gap:26px;align-items:flex-start}
+  .kolon{width:390px;flex:none}
+  .etiketK{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ikincil);margin:0 0 4px}
+  .aciklama{font-size:13px;color:var(--ikincil);margin:0 0 10px;min-height:54px;line-height:1.35}
+  .tel{width:390px;height:844px;background:#9a9691;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.18)}
+  .sayfa{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:8px 16px 26px}
+  .tut{width:36px;height:4px;border-radius:2px;background:var(--cizgi);margin:0 auto 12px}
+  .bas{display:flex;justify-content:space-between;align-items:center;margin:0 4px}
+  .bas h2{font-size:22px;letter-spacing:-.3px;margin:0}
+  .x{font-size:22px;line-height:1}
+  .kart{display:flex;align-items:center;gap:14px;border:1px solid var(--cizgi);background:var(--krem);border-radius:16px;padding:14px;margin:14px 0 18px}
+  .av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#7a2b5a,#2c1633);flex:none}
+  .av.k{width:34px;height:34px}
+  .mad{font-weight:700;font-size:17px;display:flex;gap:6px;align-items:center}
+  .pin{width:14px;height:14px;background:var(--tur);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-block}
+  .malt{color:var(--ikincil);font-size:14px;margin-left:20px;margin-top:3px}
+  .lbl{font-weight:700;font-size:16px;margin:0 0 8px}
+  .not{border:1px solid var(--cizgi);border-radius:16px;padding:14px;color:var(--soluk);font-size:15px;margin-bottom:18px}
+  .izg{display:flex;gap:8px;margin-bottom:6px}
+  .kare{border-radius:12px;background:#333 center/cover;position:relative;overflow:hidden;flex:none}
+  .kare.a{background-image:linear-gradient(#111,#2a2a2a)}
+  .kare.b{background-image:linear-gradient(135deg,#0f5f4f,#1f8a6f)}
+  .kare .xs{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#fff;color:#000;font-size:15px;line-height:22px;text-align:center}
+  .kare .dg{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);color:#fff;font-size:12px;text-align:center;padding:5px 0}
+  .kare.ekle{border:1.5px dashed var(--tur);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tur);font-weight:700;font-size:13px}
+  .kare.ekle b{font-size:26px;font-weight:400;line-height:1}
+  .satir{display:flex;justify-content:space-between;align-items:center;margin-top:18px;margin-bottom:8px}
+  .link{color:var(--tur);font-weight:700;font-size:15px}
+  .cip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--cizgi);border-radius:16px;padding:8px 14px 8px 8px;font-weight:500;font-size:15px}
+  .cip.sef{background:var(--sef);border-color:transparent}
+  .cip .i{width:26px;height:26px;border-radius:50%;background:#e9c9a4}
+  .cip .k{opacity:.7;margin-left:4px}
+  .dip{border-top:1px solid var(--cizgi);margin-top:16px;padding-top:12px}
+  .dipnot{text-align:center;color:var(--soluk);font-size:13px;margin-bottom:12px}
+  .dug{display:flex;gap:14px}
+  .dug div{flex:1;border-radius:16px;text-align:center;padding:15px 0;font-weight:700;font-size:16px;border:1px solid var(--cizgi)}
+  .dug .k{flex:1.4;background:var(--tur);color:#fff;border-color:var(--tur)}
+  /* SIKI varyantlar */
+  .s .sayfa{padding:8px 16px 22px}
+  .s .tut{margin-bottom:10px}
+  .s .bas h2{font-size:20px}
+  .s .kart{padding:10px 12px;gap:10px;margin:10px 0 12px}
+  .s .mad{font-size:16px}
+  .s .malt{font-size:13px;margin-top:1px}
+  .s .lbl{font-size:15px;margin-bottom:6px}
+  .s .not{padding:12px;margin-bottom:12px;font-size:14px}
+  .s .satir{margin-top:12px;margin-bottom:6px}
+  .s .dip{margin-top:12px;padding-top:10px}
+  .s .dipnot{margin-bottom:10px;font-size:12px}
+  .s .dug div{padding:13px 0;font-size:15px}
+  .s .cip{padding:6px 12px 6px 6px;font-size:14px}
+  .s .cip .i{width:22px;height:22px}
+  /* tek satir mekan */
+  .mek1{display:flex;align-items:center;gap:10px;margin:10px 4px 12px;color:var(--ikincil);font-size:14px}
+  .mek1 b{color:var(--metin);font-size:15px}
+  /* ic etiket */
+  .icnot{position:relative}
+  .icnot .lbl{position:absolute;left:12px;top:8px;font-size:12px;color:var(--ikincil);margin:0;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .icnot .not{padding-top:28px}
+  .yanyana{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+  .yanyana>div{flex:1}
+  .yanyana .satir{margin-top:0}
+  .olcu{position:absolute;right:10px;top:12px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 7px;border-radius:999px}
+</style></head><body>
+<h1>"Check-in'i düzenle" – daha dar sayfa için üç seçenek</h1>
+<p class="alt">Aynı içerik, aynı 390 px genişlik. Gri alan = sayfanın altında görünen arka plan (sayfa ne kadar kısaysa o kadar çok).</p>
+<div class="sira">
+
+<div class="kolon">
+  <p class="etiketK">Şimdiki hâli</p>
+  <p class="aciklama">Sayfa ekranın neredeyse tamamını kaplıyor (~760 px). Mekân kartı 60'lık avatarla yüksek, 3 sütun büyük kareler, her bölüm ayrı satır.</p>
+  <div class="tel"><div class="sayfa"><span class="olcu">~760 px</span>
+    <div class="tut"></div>
+    <div class="bas"><h2>Check-in’i düzenle</h2><span class="x">✕</span></div>
+    <div class="kart"><div class="av"></div><div><div class="mad"><span class="pin"></span>Özdemir kafe</div><div class="malt">byorcun · 2 saat önce</div></div></div>
+    <p class="lbl">Notun</p><div class="not" style="height:88px">Bu an hakkında bir şeyler yaz…</div>
+    <p class="lbl">Fotoğraflar</p>
+    <div class="izg"><div class="kare a" style="width:114px;height:114px"><span class="xs">✕</span><span class="dg">✎ Değiştir</span></div><div class="kare b" style="width:114px;height:114px"><span class="xs">✕</span><span class="dg">✎ Değiştir</span></div><div class="kare ekle" style="width:114px;height:114px"><b>+</b>Ekle</div></div>
+    <div class="satir"><span class="lbl" style="margin:0">İfade</span><span class="link">Değiştir</span></div>
+    <span class="cip sef"><span class="i"></span>Kahve keyfi<span class="k">✕</span></span>
+    <div class="satir"><span class="lbl" style="margin:0">Birlikte</span><span class="link">+ Ekle</span></div>
+    <span class="cip"><span class="i" style="background:#c9a4a4"></span>ozdemrs<span class="k">✕</span></span>
+    <div class="dip"><div class="dipnot">Değişiklikler kaydedildiğinde uygulanır.</div><div class="dug"><div>Vazgeç</div><div class="k">Kaydet</div></div></div>
+  </div></div>
+</div>
+
+<div class="kolon s">
+  <p class="etiketK">A · Sıkı boşluklar</p>
+  <p class="aciklama">Düzen aynı; dolgular ve yazılar bir kademe küçük, not kutusu 64 px, kareler 4 sütun (84 px). Kazanç ~130 px.</p>
+  <div class="tel"><div class="sayfa"><span class="olcu">~630 px</span>
+    <div class="tut"></div>
+    <div class="bas"><h2>Check-in’i düzenle</h2><span class="x">✕</span></div>
+    <div class="kart"><div class="av" style="width:44px;height:44px"></div><div><div class="mad"><span class="pin"></span>Özdemir kafe</div><div class="malt">byorcun · 2 saat önce</div></div></div>
+    <p class="lbl">Notun</p><div class="not" style="height:64px">Bu an hakkında bir şeyler yaz…</div>
+    <p class="lbl">Fotoğraflar</p>
+    <div class="izg"><div class="kare a" style="width:84px;height:84px"><span class="xs">✕</span><span class="dg">✎</span></div><div class="kare b" style="width:84px;height:84px"><span class="xs">✕</span><span class="dg">✎</span></div><div class="kare ekle" style="width:84px;height:84px"><b>+</b>Ekle</div></div>
+    <div class="satir"><span class="lbl" style="margin:0">İfade</span><span class="link">Değiştir</span></div>
+    <span class="cip sef"><span class="i"></span>Kahve keyfi<span class="k">✕</span></span>
+    <div class="satir"><span class="lbl" style="margin:0">Birlikte</span><span class="link">+ Ekle</span></div>
+    <span class="cip"><span class="i" style="background:#c9a4a4"></span>ozdemrs<span class="k">✕</span></span>
+    <div class="dip"><div class="dipnot">Değişiklikler kaydedildiğinde uygulanır.</div><div class="dug"><div>Vazgeç</div><div class="k">Kaydet</div></div></div>
+  </div></div>
+</div>
+
+<div class="kolon s">
+  <p class="etiketK">B · Tek satır mekân + yan yana bölümler (önerim)</p>
+  <p class="aciklama">Mekân kartı yerine başlığın altında tek satır (küçük avatar · mekân · zaman). İfade ve Birlikte yan yana iki sütun. Kazanç ~230 px.</p>
+  <div class="tel"><div class="sayfa"><span class="olcu">~530 px</span>
+    <div class="tut"></div>
+    <div class="bas"><h2>Check-in’i düzenle</h2><span class="x">✕</span></div>
+    <div class="mek1"><div class="av k"></div><span><b><span class="pin" style="width:11px;height:11px"></span> Özdemir kafe</b> · byorcun · 2 saat önce</span></div>
+    <p class="lbl">Notun</p><div class="not" style="height:64px">Bu an hakkında bir şeyler yaz…</div>
+    <p class="lbl">Fotoğraflar</p>
+    <div class="izg"><div class="kare a" style="width:84px;height:84px"><span class="xs">✕</span><span class="dg">✎</span></div><div class="kare b" style="width:84px;height:84px"><span class="xs">✕</span><span class="dg">✎</span></div><div class="kare ekle" style="width:84px;height:84px"><b>+</b>Ekle</div></div>
+    <div class="yanyana">
+      <div><div class="satir"><span class="lbl" style="margin:0">İfade</span><span class="link">Değiştir</span></div><span class="cip sef"><span class="i"></span>Kahve keyfi<span class="k">✕</span></span></div>
+      <div><div class="satir"><span class="lbl" style="margin:0">Birlikte</span><span class="link">+ Ekle</span></div><span class="cip"><span class="i" style="background:#c9a4a4"></span>ozdemrs<span class="k">✕</span></span></div>
+    </div>
+    <div class="dip"><div class="dipnot">Değişiklikler kaydedildiğinde uygulanır.</div><div class="dug"><div>Vazgeç</div><div class="k">Kaydet</div></div></div>
+  </div></div>
+</div>
+
+<div class="kolon s">
+  <p class="etiketK">C · En sıkı</p>
+  <p class="aciklama">B'ye ek: etiketler kutuların içine küçük başlık olarak girdi, fotoğraf kareleri 72 px (4 sütun + Ekle), dip not kalktı. Kazanç ~290 px; en yoğun görünüm.</p>
+  <div class="tel"><div class="sayfa"><span class="olcu">~470 px</span>
+    <div class="tut"></div>
+    <div class="bas"><h2>Check-in’i düzenle</h2><span class="x">✕</span></div>
+    <div class="mek1"><div class="av k"></div><span><b><span class="pin" style="width:11px;height:11px"></span> Özdemir kafe</b> · byorcun · 2 saat önce</span></div>
+    <div class="icnot"><p class="lbl">Notun</p><div class="not" style="height:72px">Bu an hakkında bir şeyler yaz…</div></div>
+    <div class="izg"><div class="kare a" style="width:72px;height:72px"><span class="xs">✕</span></div><div class="kare b" style="width:72px;height:72px"><span class="xs">✕</span></div><div class="kare ekle" style="width:72px;height:72px"><b>+</b></div></div>
+    <div class="yanyana">
+      <div><div class="satir"><span class="lbl" style="margin:0">İfade</span><span class="link">Değiştir</span></div><span class="cip sef"><span class="i"></span>Kahve keyfi<span class="k">✕</span></span></div>
+      <div><div class="satir"><span class="lbl" style="margin:0">Birlikte</span><span class="link">+ Ekle</span></div><span class="cip"><span class="i" style="background:#c9a4a4"></span>ozdemrs<span class="k">✕</span></span></div>
+    </div>
+    <div class="dip"><div class="dug"><div>Vazgeç</div><div class="k">Kaydet</div></div></div>
+  </div></div>
+</div>
+
+</div>
+</body></html>

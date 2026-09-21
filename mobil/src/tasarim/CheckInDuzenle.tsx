@@ -177,7 +177,7 @@ export function CheckInDuzenle({
           >
             {/* MEKAN KARTI: avatar, igne + mekan adi, kullanici adi · zaman. */}
             <View style={stiller.mekanKarti}>
-              <Avatar fotografUrl={mevcut.avatarUrl} ad={mevcut.kullaniciAdi} kullaniciAdi={gosterilenAd} cap={60} />
+              <Avatar fotografUrl={mevcut.avatarUrl} ad={mevcut.kullaniciAdi} kullaniciAdi={gosterilenAd} cap={44} />
               <View style={stiller.mekanMetinler}>
                 <View style={stiller.mekanAdSatiri}>
                   <IgneIkonu boyut={18} />
@@ -209,6 +209,7 @@ export function CheckInDuzenle({
             <Text style={stiller.etiket}>{t('checkIn.fotograflar')}</Text>
             <FotografIzgarasiDuzenle
               testID="duzenle-foto"
+              sutun={4}
               kareler={kareler}
               pasif={kaydediliyor}
               onEklendi={(uriler) => {
@@ -262,7 +263,7 @@ export function CheckInDuzenle({
               <View style={stiller.cipler}>
                 {kalanEtiketler.map((e) => (
                   <View key={e.kullaniciId} style={stiller.cip} testID={`duzenle-etiket-${e.kullaniciId}`}>
-                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.kullaniciAdi ?? e.ad ?? ''} cap={26} />
+                    <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.kullaniciAdi ?? e.ad ?? ''} cap={22} />
                     <Text style={stiller.cipYazi}>{e.kullaniciAdi ?? e.ad ?? ''}</Text>
                     <Pressable
                       onPress={() => setKaldirilan((m) => [...m, e.kullaniciId])}
@@ -280,7 +281,7 @@ export function CheckInDuzenle({
                   const kisi = arkadaslar.find((a) => a.id === id)
                   return (
                     <View key={id} style={stiller.cip} testID={`duzenle-etiket-${id}`}>
-                      <Avatar fotografUrl={kisi?.avatarUrl ?? null} ad={kisi?.ad} kullaniciAdi={kisi?.kullaniciAdi ?? ''} cap={26} />
+                      <Avatar fotografUrl={kisi?.avatarUrl ?? null} ad={kisi?.ad} kullaniciAdi={kisi?.kullaniciAdi ?? ''} cap={22} />
                       <Text style={stiller.cipYazi}>{kisi?.kullaniciAdi ?? ''}</Text>
                       <Pressable
                         onPress={() => setEklenen((m) => m.filter((x) => x !== id))}
@@ -343,6 +344,10 @@ export function CheckInDuzenle({
   )
 }
 
+// OLCULER SECENEK A (kullanicinin secimi 2026-09-22, "biraz daha
+// daraltalim"): duzen ayni, dolgular ve yazilar bir kademe kucuk, not
+// kutusu 64, kareler 4 sutun. Sayfa ~760 -> ~630 px
+// (tasarim/checkin-duzenle-daralt/secenekler.png).
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     zeminRenk: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(23, 19, 15, 0.45)' },
@@ -356,67 +361,68 @@ const stilleriYap = (renk: Renk) =>
       paddingHorizontal: bosluk.m,
       maxHeight: '92%',
     },
-    tutamac: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: renk.cizgi, marginBottom: bosluk.m },
-    baslikSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: bosluk.m, marginHorizontal: bosluk.xs },
-    baslik: { fontFamily: yazi.ekranBasligi, fontSize: olcek.altBaslik + 2, letterSpacing: -0.3, color: renk.metin },
+    tutamac: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: renk.cizgi, marginBottom: 10 },
+    baslikSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginHorizontal: bosluk.xs },
+    baslik: { fontFamily: yazi.ekranBasligi, fontSize: olcek.altBaslik + 1, letterSpacing: -0.3, color: renk.metin },
     kaydirma: { flexShrink: 1 },
     icerik: { paddingHorizontal: bosluk.xs, paddingBottom: bosluk.m },
     // Mekan karti: cerceveli, seftali zeminsiz (referans: acik gri kart).
     mekanKarti: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: bosluk.m,
-      padding: bosluk.m,
+      gap: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
       borderRadius: yuvarlak.kart,
       borderWidth: 1,
       borderColor: renk.cizgi,
       backgroundColor: renk.karsilamaZemini,
-      marginBottom: bosluk.l,
+      marginBottom: 12,
     },
-    mekanMetinler: { flex: 1, gap: 4 },
+    mekanMetinler: { flex: 1, gap: 2 },
     mekanAdSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    mekanAdi: { flex: 1, fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 2, color: renk.metin },
-    mekanAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk + 1, color: renk.metinIkincil, marginLeft: 24 },
-    etiket: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin, marginBottom: bosluk.s },
-    etiketSatirIci: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
+    mekanAdi: { flex: 1, fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
+    mekanAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil, marginLeft: 24 },
+    etiket: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin, marginBottom: 6 },
+    etiketSatirIci: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
     notKutusu: {
-      minHeight: 88,
+      minHeight: 64,
       borderWidth: 1,
       borderColor: renk.cizgi,
       borderRadius: yuvarlak.kart,
-      padding: bosluk.m,
+      padding: 12,
       fontFamily: yazi.govde,
-      fontSize: olcek.govde,
+      fontSize: olcek.kucuk + 1,
       color: renk.metin,
       textAlignVertical: 'top',
       backgroundColor: renk.yuzey,
-      marginBottom: bosluk.l,
+      marginBottom: 12,
     },
-    bolumBaslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: bosluk.l, marginBottom: bosluk.s },
-    baglanti: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.turuncuYazi },
+    bolumBaslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 6 },
+    baglanti: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk + 1, color: renk.turuncuYazi },
     cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s },
     cip: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: bosluk.s,
-      paddingVertical: 8,
-      paddingLeft: 8,
-      paddingRight: bosluk.m,
+      gap: 6,
+      paddingVertical: 6,
+      paddingLeft: 6,
+      paddingRight: 12,
       borderRadius: yuvarlak.kart,
       borderWidth: 1,
       borderColor: renk.cizgi,
       backgroundColor: renk.yuzey,
     },
-    cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde, color: renk.metin },
-    cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 2, color: renk.metin, marginLeft: 4 },
-    altBolum: { borderTopWidth: 1, borderTopColor: renk.cizgi, paddingTop: bosluk.m, marginTop: bosluk.s },
-    altNot: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinSoluk, textAlign: 'center', marginBottom: bosluk.m },
+    cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk + 1, color: renk.metin },
+    cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin, marginLeft: 4 },
+    altBolum: { borderTopWidth: 1, borderTopColor: renk.cizgi, paddingTop: 10, marginTop: 12 },
+    altNot: { fontFamily: yazi.govde, fontSize: olcek.kucuk - 1, color: renk.metinSoluk, textAlign: 'center', marginBottom: 10 },
     hata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici, textAlign: 'center', marginBottom: bosluk.s },
-    eylemler: { flexDirection: 'row', gap: bosluk.m },
-    dugme: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 15, borderRadius: yuvarlak.kart },
+    eylemler: { flexDirection: 'row', gap: 12 },
+    dugme: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 13, borderRadius: yuvarlak.kart },
     ikincil: { borderWidth: 1, borderColor: renk.cizgi, backgroundColor: renk.yuzey },
-    ikincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
+    ikincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
     birincil: { flex: 1.4, backgroundColor: renk.turuncu },
-    birincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: '#FFFFFF' },
+    birincilYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
     basili: { opacity: 0.7 },
   })

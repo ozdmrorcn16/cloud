@@ -31,6 +31,7 @@ export function FotografIzgarasiDuzenle({
   onKaldir,
   onHata,
   pasif = false,
+  sutun = 3,
   testID = 'foto',
 }: {
   kareler: FotografKaresi[]
@@ -42,6 +43,8 @@ export function FotografIzgarasiDuzenle({
   /** Izin reddi gibi kullaniciya gosterilecek hatalar. */
   onHata?: (mesaj: string) => void
   pasif?: boolean
+  /** Satirdaki kare sayisi (form 3, duzenleme sayfasi 4 - secenek A). */
+  sutun?: number
   /** `${testID}-ekle`, `${testID}-<i>`, `${testID}-kaldir-<i>`, `${testID}-degistir-<i>`. */
   testID?: string
 }) {
@@ -52,6 +55,12 @@ export function FotografIzgarasiDuzenle({
   const [kaynakIcin, setKaynakIcin] = useState<number | null>(null)
 
   const kalanYer = Math.max(0, EN_FAZLA_FOTOGRAF - kareler.length)
+  // Kare eni: satir, aradaki 8 px bosluklar dusulerek `sutun`a bolunur
+  // (yuzdeyle: bosluk basina ~%2,4).
+  const kareEni = {
+    flexBasis: `${(100 - (sutun - 1) * 2.4) / sutun}%` as `${number}%`,
+    maxWidth: `${100 / sutun}%` as `${number}%`,
+  }
 
   async function kameradanCek() {
     const hedef = kaynakIcin
@@ -102,7 +111,7 @@ export function FotografIzgarasiDuzenle({
       ) : (
         <View style={stiller.izgara}>
           {kareler.map((kare, i) => (
-            <View key={`${i}-${kare.uri}`} style={stiller.kare} testID={`${testID}-${i}`}>
+            <View key={`${i}-${kare.uri}`} style={[stiller.kare, kareEni]} testID={`${testID}-${i}`}>
               <HizliImage source={{ uri: kare.uri }} style={stiller.kareFoto} contentFit="cover" />
               <Pressable
                 style={stiller.kaldir}
@@ -129,7 +138,7 @@ export function FotografIzgarasiDuzenle({
           ))}
           {kalanYer > 0 && (
             <Pressable
-              style={({ pressed }) => [stiller.kare, stiller.ekleKare, pressed && stiller.basili]}
+              style={({ pressed }) => [stiller.kare, kareEni, stiller.ekleKare, pressed && stiller.basili]}
               onPress={() => setKaynakIcin(-1)}
               disabled={pasif}
               accessibilityRole="button"
@@ -205,11 +214,9 @@ const stilleriYap = (renk: Renk) =>
     bosAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
     basili: { opacity: 0.85 },
     izgara: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s },
-    // Uc sutun: (100% - 2 bosluk) / 3; yuzdeyle sarmak icin flexBasis.
+    // Eni `kareEni` verir (sutun sayisina gore); burada yalnizca bicim.
     kare: {
-      width: '31%',
       flexGrow: 1,
-      maxWidth: '32%',
       aspectRatio: 1,
       borderRadius: 12,
       overflow: 'hidden',
@@ -240,7 +247,7 @@ const stilleriYap = (renk: Renk) =>
       paddingVertical: 7,
       backgroundColor: 'rgba(0,0,0,0.5)',
     },
-    degistirYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: '#FFFFFF' },
+    degistirYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk - 1, color: '#FFFFFF' },
     ekleKare: {
       alignItems: 'center',
       justifyContent: 'center',

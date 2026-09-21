@@ -1014,6 +1014,14 @@ Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
   `maxPointers(1)` (iki parmak yakinlastirmada kalir), `failOffsetX
   [-12,12]` (yatay sayfa kaydirmasi FlatList'te). Test
   `__tests__/tasarim/FotografGezgini.test.tsx` (5). OTA `5d6f0e5a`.
+- **CheckInDuzenle SECENEK A (kullanicinin secimi, "biraz daha
+  daraltalim"):** uc secenek gorsel sunuldu
+  (`tasarim/checkin-duzenle-daralt/secenekler.png`: A siki bosluklar,
+  B tek satir mekan + yan yana bolumler, C en siki); **A secildi**:
+  duzen ayni, avatar 44, not kutusu 64, dolgular/yazilar bir kademe
+  kucuk, fotograf izgarasi 4 sutun (`FotografIzgarasiDuzenle` yeni
+  `sutun` prop'u; form 3'te kaldi). Olculdu: ~760 -> ~625 px
+  (`tasarim/checkin-duzenle.png`). OTA asagida.
 - **CheckInDuzenle klavye:** `KeyboardAvoidingView` KALKTI (kullanici:
   "klavye acilinca Vazgec/Kaydet ustune gelmesin, asagida kalsin");
   ScrollView `automaticallyAdjustKeyboardInsets` - icerik klavye kadar
