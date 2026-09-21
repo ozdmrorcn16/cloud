@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   View,
   Text,
@@ -7,10 +7,12 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
+  Animated,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from 'react-native'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { useHareket } from './hareket'
 import { useDil } from '../../lib/dil'
 import { YakinlastirilabilirGorsel } from './YakinlastirilabilirGorsel'
 import { yazi, olcek, bosluk, type Renk } from './tema'
@@ -32,6 +34,12 @@ export type GezginFotografi = { id: string; url: string }
  * Altyazi cagirana birakildi: galeri "kisi + zaman"a, profil "mekan +
  * zaman"a baglanti veriyor; hangi baglantinin anlamli oldugu ekrana
  * gore degisiyor.
+ *
+ * DIKEY SURUKLEME KAPATIR (kullanicinin istegi 2026-09-22): tek parmakla
+ * yukari ya da asagi cekmek fotografi parmakla tasir ve soldurur; esik
+ * gecilince (120 px ya da hizli fiske) kapanir, gecilmezse yerine
+ * oturur. Yatay hareket 12 px'i gecince tutamac vazgecer - sayfa
+ * kaydirmasi FlatList'te kalir; iki parmak hic girmez (yakinlastirma).
  */
 export function FotografGezgini({
   fotograflar,
@@ -63,6 +71,60 @@ export function FotografGezgini({
   )
 
   const acik = acikIndeks !== null && acikIndeks >= 0 && acikIndeks < fotograflar.length
+
+  // Dikey surukleme: deger parmagi izler, kapanista ebeveyn Modal'i
+  // (fade) kapatir. Her acilista sifirlanir - onceki kapanistan kalan
+  // kayma yeni fotografi kaymis acmasin.
+  const hareket = useHareket()
+  const surukleme = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    if (acik) surukleme.setValue(0)
+  }, [acik, surukleme])
+  const solma = surukleme.interpolate({
+    inputRange: [-320, 0, 320],
+    outputRange: [0.25, 1, 0.25],
+    extrapolate: 'clamp',
+  })
+
+  const onKapatRef = useRef(onKapat)
+  onKapatRef.current = onKapat
+
+  function suruklemeBitti(translationY: number, velocityY: number) {
+    // Mesafe YA DA hiz yeter; yon fark etmez (yukari da asagi da kapatir).
+    if (Math.abs(translationY) > KAPATMA_MESAFESI || Math.abs(velocityY) > KAPATMA_HIZI) {
+      // Ref uzerinden: hareket nesnesi memo'lu, ebeveynin en guncel
+      // onKapat'i buradan okunur.
+      onKapatRef.current()
+      return
+    }
+    if (!hareket) {
+      surukleme.setValue(0)
+      return
+    }
+    Animated.spring(surukleme, {
+      toValue: 0,
+      velocity: velocityY / 1000,
+      speed: 22,
+      bounciness: 4,
+      useNativeDriver: true,
+    }).start()
+  }
+  // Yeni Gesture API (reanimated yok; geri cagrilar JS'te kosar, bu
+  // yuzden `runOnJS(true)`). Eski PanGestureHandler DEGIL: jest'te
+  // testID kaydini yalnizca bu API tutuyor.
+  const suruklemeHareketi = useMemo(
+    () =>
+      Gesture.Pan()
+        .withTestId(`${testID}-surukleme`)
+        .maxPointers(1)
+        .activeOffsetY([-12, 12])
+        .failOffsetX([-12, 12])
+        .onUpdate((e) => surukleme.setValue(e.translationY))
+        .onEnd((e) => suruklemeBitti(e.translationY, e.velocityY))
+        .runOnJS(true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [testID, hareket]
+  )
 
   function sayfaDegisti(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const i = Math.round(e.nativeEvent.contentOffset.x / genislik)
@@ -97,13 +159,14 @@ export function FotografGezgini({
         </View>
 
         {acik && (
-          <View
-            style={stiller.sayfalar}
-            onLayout={(e) => {
-              const h = e.nativeEvent.layout.height
-              if (h > 0 && Math.abs(h - sayfaYuksekligi) > 1) setSayfaYuksekligi(h)
-            }}
-          >
+          <GestureDetector gesture={suruklemeHareketi}>
+            <Animated.View
+              style={[stiller.sayfalar, { opacity: solma, transform: [{ translateY: surukleme }] }]}
+              onLayout={(e) => {
+                const h = e.nativeEvent.layout.height
+                if (h > 0 && Math.abs(h - sayfaYuksekligi) > 1) setSayfaYuksekligi(h)
+              }}
+            >
             <FlatList
               testID={`${testID}-sayfalar`}
               data={fotograflar}
@@ -125,7 +188,8 @@ export function FotografGezgini({
                 </View>
               )}
             />
-          </View>
+            </Animated.View>
+          </GestureDetector>
         )}
 
         {acik && altyazi ? altyazi(acikIndeks as number) : null}
@@ -133,6 +197,10 @@ export function FotografGezgini({
     </Modal>
   )
 }
+
+/** Surukleyerek kapatma esikleri: mesafe (px) ya da hiz (px/sn). */
+const KAPATMA_MESAFESI = 120
+const KAPATMA_HIZI = 900
 
 const stilleriYap = (_renk: Renk) =>
   StyleSheet.create({

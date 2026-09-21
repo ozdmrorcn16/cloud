@@ -180,6 +180,14 @@ describe('CheckInDuzenle', () => {
     expect(screen.getByTestId('duzenle-not').props.value).toBe('kaybolmasin')
   })
 
+  it('KLAVYE sayfayi itmez (2026-09-22): KeyboardAvoidingView yok, icerik klavye kadar kaydirilabilir', async () => {
+    const ekran = await render(<CheckInDuzenle acikMi oge={oge()} zamanYazisi="" onKapat={jest.fn()} onKaydet={jest.fn()} />)
+    const agac = JSON.stringify(ekran.toJSON())
+    expect(agac).not.toContain('KeyboardAvoidingView')
+    // ScrollView klavye icin alt bosluk ekler; alt serit yerinde kalir.
+    expect(agac).toContain('"automaticallyAdjustKeyboardInsets":true')
+  })
+
   it('kapaliyken hicbir sey cizmez', async () => {
     await render(<CheckInDuzenle acikMi={false} oge={oge()} zamanYazisi="" onKapat={jest.fn()} onKaydet={jest.fn()} />)
     expect(screen.queryByTestId('duzenle-sayfasi')).toBeNull()

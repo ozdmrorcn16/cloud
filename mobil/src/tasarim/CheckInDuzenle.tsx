@@ -8,8 +8,6 @@ import {
   StyleSheet,
   TextInput,
   Animated,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDil } from '../../lib/dil'
@@ -138,7 +136,13 @@ export function CheckInDuzenle({
   return (
     <Modal visible transparent animationType="none" onRequestClose={onKapat}>
       <Animated.View style={[stiller.zeminRenk, { opacity: ilerleme }]} pointerEvents="none" />
-      <KeyboardAvoidingView style={stiller.zemin} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* KLAVYE SAYFAYI ITMEZ (kullanicinin istegi 2026-09-22: "klavye
+          acilinca Vazgec/Kaydet ustune gelmesin, asagida kalsin"):
+          KeyboardAvoidingView yok; alt serit yerinde durur, klavye onu
+          orter. Icerik klavye kadar kaydirilabilir
+          (`automaticallyAdjustKeyboardInsets`) - yazilan satir gorunur
+          kalir, dugmeler klavye kapaninca yine yerinde. */}
+      <View style={stiller.zemin}>
         <Pressable style={stiller.disari} onPress={onKapat} accessibilityLabel={t('ortak.kapat')} />
         <Animated.View
           style={[
@@ -169,6 +173,7 @@ export function CheckInDuzenle({
             contentContainerStyle={stiller.icerik}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets
           >
             {/* MEKAN KARTI: avatar, igne + mekan adi, kullanici adi · zaman. */}
             <View style={stiller.mekanKarti}>
@@ -323,7 +328,7 @@ export function CheckInDuzenle({
             </View>
           </View>
         </Animated.View>
-      </KeyboardAvoidingView>
+      </View>
 
       <IfadeSecici acikMi={ifadeSecici} secili={ifade} onSec={setIfade} onKapat={() => setIfadeSecici(false)} />
       {/* Zaten etiketli olanlar (kaldirilmadiysa) listede yok. */}

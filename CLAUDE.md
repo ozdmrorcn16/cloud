@@ -966,6 +966,22 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### GEZGINDE DIKEY SURUKLEME KAPATIR; DUZENLEMEDE KLAVYE SERIDI ITMEZ - 2026-09-22
+
+- **FotografGezgini:** tek parmakla yukari/asagi surukleme fotografi
+  tasir + soldurur, 120 px ya da 900 px/sn'de kapanir, yoksa spring ile
+  oturur (kullanicinin istegi). YENI Gesture API (`Gesture.Pan()` +
+  `GestureDetector`, `runOnJS(true)`, reanimated yok): jest'te
+  `getByGestureTestId` yalnizca bu API'nin kaydini buluyor (eski
+  `PanGestureHandler` testID kaydetmiyor; RNTL 14'te `UNSAFE_*` de yok).
+  `maxPointers(1)` (iki parmak yakinlastirmada kalir), `failOffsetX
+  [-12,12]` (yatay sayfa kaydirmasi FlatList'te). Test
+  `__tests__/tasarim/FotografGezgini.test.tsx` (5). OTA `5d6f0e5a`.
+- **CheckInDuzenle klavye:** `KeyboardAvoidingView` KALKTI (kullanici:
+  "klavye acilinca Vazgec/Kaydet ustune gelmesin, asagida kalsin");
+  ScrollView `automaticallyAdjustKeyboardInsets` - icerik klavye kadar
+  kayar, alt serit yerinde (klavye orter). OTA asagida.
+
 ### COKLU FOTOGRAF (5) + "CHECK-IN'I DUZENLE" SAYFASI - 2026-09-22
 
 Kullanicinin referans gorseli (`tasarim/checkin-duzenle-referans.png`,
