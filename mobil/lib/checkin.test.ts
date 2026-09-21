@@ -173,6 +173,32 @@ describe('kullanicininAnilariniGetir', () => {
     expect(sonuc[1].mekanAdi).toBe('Kent Meydanı')
     expect(sonuc[1].canliMi).toBe(true)
   })
+
+  it('IFADEYI de seciyor ve tasiyor - profil kartinda ana sayfayla ayni gorunsun (2026-09-21)', async () => {
+    // Kullanicinin bildirimi: ifade ana sayfada gorunuyor, profilde
+    // gorunmuyordu. Sebep: bu sorgunun select listesinde `ifade` yoktu;
+    // ana sayfa akisi (lib/akis.ts) seciyordu. Uc ekranda ortak kart,
+    // uc sorgu da ayni alanlari tasimali.
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'checkin-5', mekan_id: 'mekan-1', not_metni: null, ifade: 'kahve', fotograf: null,
+          olusturma_zamani: '2026-09-21T10:00:00Z', bitis_zamani: '2026-09-21T11:00:00Z',
+          konum: null, bulunurluk: 'herkese_acik',
+          mekanlar: { ad: 'Sahil Kafe', semt: 'Nilüfer', konum: 'POINT(28.979 41.015)' },
+        },
+      ],
+      error: null,
+    })
+    const eq = jest.fn().mockReturnValue({ order })
+    const select = jest.fn().mockReturnValue({ eq })
+    ;(supabase.from as jest.Mock) = jest.fn().mockReturnValue({ select })
+
+    const sonuc = await kullanicininAnilariniGetir('kullanici-1')
+
+    expect(select.mock.calls[0][0]).toContain(' ifade,')
+    expect(sonuc[0].ifade).toBe('kahve')
+  })
 })
 
 describe('aktifCheckInimiGetir', () => {

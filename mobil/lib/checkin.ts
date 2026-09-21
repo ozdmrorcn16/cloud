@@ -173,8 +173,10 @@ type CheckInSatiriMekanli = CheckInSatiri & {
 export async function kullanicininAnilariniGetir(kullaniciId: string): Promise<AniGorunumu[]> {
   const { data, error } = await supabase
     .from('check_inler')
+    // `ifade` de seciliyor (2026-09-21): ana sayfa akisi seciyordu, bu
+    // sorgu secmiyordu; ayni kart profilde ifadesiz ciziliyordu.
     .select(
-      'id, mekan_id, kullanici_adi, not_metni, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
+      'id, mekan_id, kullanici_adi, not_metni, ifade, fotograf, olusturma_zamani, bitis_zamani, konum, bulunurluk, mekanlar(ad, konum, semt)'
     )
     .eq('kullanici_id', kullaniciId)
     // KONUM FILTRESI KALDIRILDI (kullanicinin bildirdigi eksik,
