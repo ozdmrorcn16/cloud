@@ -3352,6 +3352,10 @@ fotografi icin ucretsiz+yasal kaynak YOK; Commons/Wikidata yalnizca yer
 isaretleri (Bursa: 59 resimli oge, 0 kafe/bar); Mapillary cephe = tahmin.
 (3) IBB Acik Veri CC BY 4.0, ticari kullanim serbest - Istanbul'da kamu
 tesisleri (park/kutuphane/kultur merkezi) icin resmi tur kaynagi.
+**ATP x FSQ Bursa OLCULDU** (`araclar/atp-tur-olcum.py`): 212.162 mekanin
+903'u (%0,43) zincir subesiyle eslesti, sosyal turde yalnizca 80;
+ATP kayitlarinin %13'u koordinatsiz (BIM tamami). Uyusmazliklarda hakli
+taraf ATP - FSQ'nun kendi turu yanlis (08-24 denetimini dogruluyor).
 Yandex: Google ile ayni duvar (saklama yasak, kendi haritada gosterme
 yasak, ticari lisans ~120 bin ruble/yil). Overture elimizde ama 08-30'da
 kategori guvensizligi yuzunden birakilmisti - durum ayni.

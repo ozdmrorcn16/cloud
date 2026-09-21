@@ -61,3 +61,33 @@ Wikimedia Commons API, IBB CKAN API, duckdb (yerel olcumler).
   ve atif goruntusu ile) - kapsam kucuk, hukuki is dosya basina.
 - Bu tablo "tekrar arastirilmasin" listesidir; yeni kaynak cikarsa buraya
   eklenir.
+
+## Ek olcum - AllThePlaces x Foursquare, Bursa (2026-09-21)
+
+`araclar/atp-tur-olcum.py` (cikti `araclar/olcum-bursa-atp-cikti.txt`).
+48 `_tr` orumcegi + TR subesi tasiyan kuresel zincirler indirildi
+(103.832 TR kaydi; **%13'u koordinatsiz** - BIM'in tamami adres-only).
+Bursa kutusunda koordinatli 4.688 sube.
+
+| Olcut | Sonuc |
+|---|---|
+| Foursquare Bursa mekani | 212.162 |
+| ATP zincir subesiyle eslesen (100 m + marka adi FSQ adinda) | **903 (%0,43)** |
+| Eslesen ve turu yazili | 896 |
+| Bunlardan SOSYAL tur (kafe/restoran/bar) | **80** |
+| FSQ turu ile ATP turu ayni aileden | 469/651 (**%72**) |
+
+Eslesenlerin dagilimi: ATM 297, supermarket 261, banka 246, telefon
+bayisi 117, bakkal 55, fast food 44, kafe 36. Marka tarafinda SOK 593
+subeden 212'si eslesti; bankalarin cogu eslesmiyor (FSQ'da ATM/sube
+kaydi ayri ya da yok).
+
+Uyusmazliklar ATP'nin degil eslestirmenin hatasi: "Sok Marketler AS"
+adli bir Foursquare kaydi FSQ'da "Shopping Mall", "Park", "Street Art"
+diye etiketlenmis - yani Foursquare'in KENDI turu yanlis; ATP dogru.
+Bu, 2026-08-24 denetiminin bulgusunu bagimsiz bir kaynakla dogruluyor.
+
+SONUC: AllThePlaces guvenilir ama Slooin'in sosyal cekirdegi icin
+kapsam 80 mekan (Bursa'daki 23.285 kafe/restoran/bar icinde %0,3).
+Zincir subelerinde tur gostermek istenirse hazir; bagimsiz mekanlar
+icin cevap degismiyor: kullanici/moderator girisi.

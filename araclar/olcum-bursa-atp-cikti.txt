@@ -1,0 +1,123 @@
+  lc_waikiki: yok (HTTP Error 404: Not Found)
+  koton: yok (HTTP Error 404: Not Found)
+  gloria_jeans: yok (HTTP Error 404: Not Found)
+  kfc: yok (HTTP Error 404: Not Found)
+  dominos_pizza: yok (HTTP Error 404: Not Found)
+  pizza_hut: yok (HTTP Error 404: Not Found)
+  hard_rock_cafe: yok (HTTP Error 404: Not Found)
+  nusr_et: yok (HTTP Error 404: Not Found)
+  mado: yok (HTTP Error 404: Not Found)
+  simit_sarayi: yok (HTTP Error 404: Not Found)
+
+ATP Turkiye kaydi (indirilen orumcekler): 103,832; koordinatsiz: 13,220 (13%)
+ATP Bursa kutusunda koordinatli kayit: 4,688
+
+ATP Bursa - orumcek basina:
+  easy_point_tr              675  yes
+  sok_tr                     593  supermarket
+  garanti_bbva_tr            431  bank
+  yapi_kredi_tr              388  atm
+  ziraat_bankasi_tr          378  bank
+  vodafone_tr                257  mobile_phone
+  vakifbank_tr               246  bank
+  qnb_tr                     246  bank
+  halkbank_tr                238  bank
+  migros_tr                  175  convenience
+  denizbank_tr               167  bank
+  ekomini_tr                 148  convenience
+  teb_tr                     103  atm
+  kuveyt_turk_tr             103  atm
+  pudo_tr                     56  parcel_locker
+  erciyes_anadolu_holding_tr    49  furniture
+  starbucks_eu                42  cafe
+  turk_telekom_tr             41  mobile_phone
+  gratis_tr                   39  cosmetics
+  teco_tr                     36  fuel
+  burger_king_tr              34  fast_food
+  arcelik_global_tr           32  appliance
+  popeyes_tr                  23  fast_food
+  vakif_katilim_tr            23  atm
+  five_sarj_tr                21  charging_station
+  kahve_dunyasi               20  cafe
+  tavuk_dunyasi_tr            18  fast_food
+  mcdonalds_tr                14  
+  usta_donerci_tr             13  fast_food
+  espressolab                 12  cafe
+  rossmann_tr                 12  chemist
+  moil_tr                      9  fuel
+  defacto_tr                   8  clothes
+  kadoil_tr                    8  fuel
+  soil_tr                      5  fuel
+  sbarro                       5  fast_food
+  network_tr                   3  clothes
+  bpet_tr                      3  fuel
+  baydoner_tr                  2  fast_food
+  mango                        2  clothes
+  decathlon_tr                 2  sports
+  ikea_tr                      2  fast_food
+  beymen_tr                    1  clothes
+  bauhaus_tr                   1  doityourself
+  desa_tr                      1  clothes
+  hd_iskender_tr               1  fast_food
+  tchibo                       1  coffee
+  mitsubishi_tr                1  car_repair
+
+=== ALLTHEPLACES x FOURSQUARE - BURSA ===
+Foursquare mekani (Bursa)               : 212,162
+ATP zincir subesiyle eslesen (100 m+ad) : 903 (0.43%)
+  eslesen ve ATP turu yazili             : 896
+  bunlardan SOSYAL tur (kafe/restoran/bar): 80
+
+Eslesenlerde ATP turu dagilimi:
+  atm                297
+  supermarket        261
+  bank               246
+  mobile_phone       117
+  convenience         55
+  fast_food           44
+  cafe                36
+  cosmetics           16
+  furniture           11
+  fuel                11
+  appliance           10
+  clothes              8
+
+Marka basina eslesme (ATP Bursa sube / eslesen FSQ):
+  Şok                      593 /   212
+  Garanti Bankası          431 /     8
+  Yapı Kredi               388 /    52
+  Ziraat Bankası           378 /    68
+  Vodafone                 257 /    91
+  Vakıfbank                246 /    39
+  QNB                      246 /    18
+  Halkbank                 238 /    42
+  Denizbank                167 /    26
+  Ekomini                  148 /    47
+  Kuveyt Türk              103 /    18
+  TEB                      103 /    49
+  Migros Jet                82 /     8
+  Migros                    81 /    47
+  pudo                      56 /     0
+
+Ornek eslesmeler (10):
+  Yapı Kredi Bankası             = Yapı Kredi     fsq= Bank atp=bank  20 m
+  Türk Telekom                   = Türk Telekom   fsq= Business Center atp=mobile_phone  83 m
+  Kuveyt Türk                    = Kuveyt Türk    fsq= Bank atp=atm  12 m
+  Vodafone Degirmenler Yeşilyayl = Vodafone       fsq= Mobile Phone Store atp=mobile_phone  25 m
+  TEB ATM                        = TEB            fsq= ATM atp=atm  0 m
+  Ziraat Bankası Bursa Osb Giriş = Ziraat Bankası fsq= Bank atp=bank  19 m
+  Vodafone Nergis İletişim       = Vodafone       fsq= Mobile Phone Store atp=mobile_phone  73 m
+  Şok Marketler AŞ               = Şok            fsq= Shopping Mall atp=supermarket  94 m
+  Beko Yalmanlar 2 Ltd. Şti      = Beko           fsq= Department Store atp=appliance  14 m
+  Yapı Kredi                     = Yapı Kredi     fsq= Bank atp=atm  18 m
+
+FSQ turu ile ATP turu ayni aileden: 469/651 (72%)
+Uyusmayan ornekler (8):
+  fsq= Big Box Store atp=supermarket
+  fsq= ATM atp=supermarket
+  fsq=Arts and Entertainment atp=supermarket
+  fsq= Pedestrian Plaza atp=supermarket
+  fsq= Neighborhood atp=supermarket
+  fsq= Park atp=supermarket
+  fsq= Street Art atp=supermarket
+  fsq= Restaurant atp=supermarket
