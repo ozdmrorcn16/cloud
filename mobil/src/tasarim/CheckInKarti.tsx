@@ -508,7 +508,7 @@ export function CheckInKarti({
           turuncu - Slooin'de turuncu "eylem ya da su an oluyor" demek,
           uc ikonu birden turuncu yapmak o anlami tuketirdi. */}
       {ozet && (
-        <View style={[stiller.eylemler, !oge.fotografUrl && stiller.eylemlerCizgili]}>
+        <View style={stiller.eylemler}>
           <Pressable
             style={stiller.eylem}
             onPress={() => onBegen?.(oge.id)}
@@ -796,7 +796,6 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   birlikteAvatarUstUste: { marginLeft: -8 },
   birlikteYazi: { flex: 1, fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
   birlikteAd: { fontFamily: yazi.govdeKalin, color: renk.metin },
-  eylemlerCizgili: { borderTopWidth: 1, borderTopColor: renk.cizgi, paddingTop: bosluk.m },
 
   avatar: {
     width: AVATAR_CAPI,
