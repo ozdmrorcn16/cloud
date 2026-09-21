@@ -933,6 +933,24 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### KULLANICI ADI 24 SAATTE BIR; PANEL AKTIF KARTLA KAPALI - 2026-09-21
+
+- **Kullanici adi 24 saat (30 gundu):** migrasyon `20260921100000`
+  (`kullanici_adi_degistir`, mesaj "Kullanici adini 24 saatte bir
+  degistirebilirsin. Kalan sure: N saat"); `hata-metni.ts` deseni +
+  `hatalar.kullaniciAdi24Saat`; `lib/ayarlar.ts` BEKLEME_MS 24 saat.
+  Profili duzenle: alanin altindaki TARIH NOTU KALKTI; 24 saat icinde
+  ikinci degisiklik denenirse `OnayPenceresi` (tekDugme)
+  `kullaniciAdiEkrani.tekrarUyariBaslik/tekrarUyari` ({{saat}}) - sunucuya
+  gitmez (kural yine sunucuda). Hukuki metin 7 dil + docs "24 saatte
+  bir". Canli senaryo 13 "24 saat". OTA `062b095c`.
+- **Aktif check-in varken kapali panel YALNIZCA o kart** (kullanici:
+  "harita cok kapaniyor"): `aktifKartVar` iken baslik ve secili satir
+  gizli, altta "Yakinindaki mekanlari goster" (`kesfet.yakinMekanlariGoster`
+  7 dil) -> panel acilir, baslik + liste gelir; kart panelin ustunde
+  durur. TEST TUZAGI: `aktifCheckInimiGetir` mock'u testler arasinda
+  siziyordu (clearAllMocks uygulamayi sifirlamaz) - beforeEach null.
+
 ### SOHBET UST BARINDA KULLANICI ADI - 2026-09-21
 
 Kullanicinin istegi ("isim soyisimin altinda kullanici adi da yazsin"):
