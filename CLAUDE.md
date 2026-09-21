@@ -933,6 +933,12 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### SOHBET UST BARINDA KULLANICI ADI - 2026-09-21
+
+Kullanicinin istegi ("isim soyisimin altinda kullanici adi da yazsin"):
+`sohbet/[kullaniciId]` ust barinda adin altinda `@kullaniciadi`
+(`sohbet-kullanici-adi`, gri, 13). Ayni Pressable icinde, profile gider.
+
 ### SOHBETTE AVATAR VE AD PROFILE GIDER - 2026-09-18 AKSAM
 
 Kullanicinin istegi: "mesajlarda sohbette kullanicinin profil resmine
