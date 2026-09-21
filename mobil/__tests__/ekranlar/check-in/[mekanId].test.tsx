@@ -391,12 +391,36 @@ describe('CheckInEkrani fotograf kaynagi', () => {
     expect(screen.queryByTestId('ifade-cipi-cay-molasi')).toBeNull()
   })
 
-  it('kategori cipine basinca o kategorinin ifadeleri listelenir', async () => {
+  it('KATEGORILER YATAY SAYFALI (2026-09-21): cip secimi ve kaydirma birbirini izler', async () => {
+    const { IFADE_KATEGORILERI } = require('../../../lib/ifadeler')
+    const { Dimensions } = require('react-native')
+    const eni = Dimensions.get('window').width - 24
+    const ruhHali = IFADE_KATEGORILERI.findIndex((k: { slug: string }) => k.slug === 'ruh-hali')
+
     await render(<CheckInEkrani />)
     await fireEvent.press(await screen.findByTestId('ifade-ekle'))
     await screen.findByTestId('ifade-secici')
-    await fireEvent.press(screen.getByTestId('ifade-kategori-ruh-hali'))
-    expect(await screen.findByTestId('ifade-huzurluyum')).toBeTruthy()
-    expect(screen.queryByTestId('ifade-kahve-keyfi')).toBeNull()
+    // Butun sayfalar cizili (yatay sayfali liste); ilk cip icecekler.
+    expect(screen.getByTestId('ifade-kahve-keyfi')).toBeTruthy()
+    expect(screen.getByTestId('ifade-huzurluyum')).toBeTruthy()
+    expect(screen.getByTestId('ifade-kategori-icecekler').props.accessibilityState.selected).toBe(true)
+
+    // Parmakla kaydirma bitince cip o kategoriye gecer.
+    const sayfalar = screen.getByTestId('ifade-sayfalari')
+    await fireEvent.scroll(sayfalar, {
+      nativeEvent: {
+        contentOffset: { x: eni * ruhHali, y: 0 },
+        contentSize: { width: eni * IFADE_KATEGORILERI.length, height: 400 },
+        layoutMeasurement: { width: eni, height: 400 },
+      },
+    })
+    await fireEvent(sayfalar, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: eni * ruhHali, y: 0 } } })
+    await waitFor(() =>
+      expect(screen.getByTestId('ifade-kategori-ruh-hali').props.accessibilityState.selected).toBe(true)
+    )
+
+    // Cipe basmak da secimi degistirir (sayfaya kaydirir).
+    await fireEvent.press(screen.getByTestId('ifade-kategori-icecekler'))
+    expect(screen.getByTestId('ifade-kategori-icecekler').props.accessibilityState.selected).toBe(true)
   })
 })

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Animated, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useMemo, useRef, useState } from 'react'
+import { Animated, FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDil } from '../../lib/dil'
 import { IFADELER, IFADE_KATEGORILERI, ifadeBul, type Ifade, type IfadeKategorisi } from '../../lib/ifadeler'
@@ -41,7 +41,28 @@ export function IfadeSecici({
   const { gorunur, ilerleme } = useModalHareketi(acikMi, SURE.sayfaGiris, SURE.sayfaCikis)
   const baslangicKategori = (ifadeBul(secili ?? '')?.kategori ?? IFADE_KATEGORILERI[0].slug) as IfadeKategorisi
   const [kategori, setKategori] = useState<IfadeKategorisi>(baslangicKategori)
-  const liste = useMemo(() => IFADELER.filter((i) => i.kategori === kategori), [kategori])
+  /*
+   * KATEGORILER YATAY SAYFALI (kullanicinin istegi 2026-09-21: "sayfa
+   * elle yana kaydirilabilsin, kaydirinca obur ifadelere gecilsin").
+   * Her sayfa bir kategorinin 3 sutunlu izgarasi; genislik olculuyor
+   * (`sayfaEni`), `pagingEnabled` ile kaydirma sayfaya oturuyor.
+   * Kaydirma bitince cip de ona geciyor; cipe basmak sayfayi kaydiriyor.
+   */
+  const sayfalar = useMemo(
+    () => IFADE_KATEGORILERI.map((k) => ({ slug: k.slug as IfadeKategorisi, ifadeler: IFADELER.filter((i) => i.kategori === k.slug) })),
+    []
+  )
+  const [olculenEn, setOlculenEn] = useState(0)
+  // Olcum gelene kadar pencere genisligi - yan dolgu (ilk kare + jest).
+  const pencereEni = useWindowDimensions().width
+  const sayfaEni = olculenEn || Math.max(1, pencereEni - bosluk.m * 2)
+  const sayfaListesi = useRef<FlatList<(typeof sayfalar)[number]>>(null)
+  const baslangicIndeksi = Math.max(0, sayfalar.findIndex((s) => s.slug === baslangicKategori))
+  function kategoriyeGit(slug: IfadeKategorisi) {
+    setKategori(slug)
+    const i = sayfalar.findIndex((s) => s.slug === slug)
+    if (i >= 0) sayfaListesi.current?.scrollToIndex({ index: i, animated: true })
+  }
 
   if (!gorunur) return null
 
@@ -70,7 +91,7 @@ export function IfadeSecici({
                 return (
                   <Pressable
                     key={k.slug}
-                    onPress={() => setKategori(k.slug)}
+                    onPress={() => kategoriyeGit(k.slug as IfadeKategorisi)}
                     style={[stiller.kategori, seciliMi && stiller.kategoriSecili]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: seciliMi }}
@@ -81,37 +102,72 @@ export function IfadeSecici({
                 )
               })}
             </ScrollView>
-            <FlatList
-              data={liste}
-              key={kategori}
-              keyExtractor={(i) => i.slug}
-              numColumns={SUTUN}
-              columnWrapperStyle={stiller.satir}
-              contentContainerStyle={stiller.izgara}
-              renderItem={({ item }) => {
-                const seciliMi = item.slug === secili
-                return (
-                  <Pressable
-                    onPress={() => sec(item)}
-                    style={({ pressed }) => [stiller.ifade, seciliMi && stiller.ifadeSecili, pressed && stiller.ifadeBasili]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: seciliMi }}
-                    accessibilityLabel={item.etiket}
-                    testID={`ifade-${item.slug}`}
-                  >
-                    <Image source={item.kaynak} style={stiller.ikon} resizeMode="contain" />
-                    <Text style={stiller.etiket} numberOfLines={2}>
-                      {item.etiket}
-                    </Text>
-                  </Pressable>
-                )
-              }}
-            />
+            <View style={stiller.sayfaAlani} onLayout={(o) => setOlculenEn(o.nativeEvent.layout.width)}>
+              {(
+                <FlatList
+                  ref={sayfaListesi}
+                  data={sayfalar}
+                  keyExtractor={(sayfa) => sayfa.slug}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  initialScrollIndex={baslangicIndeksi}
+                  // 12 sayfa, 108 yerel PNG: hepsi bastan ciziliyor ki cipe
+                  // basip kaydirmak ve elle kaydirmak takilmadan calissin.
+                  initialNumToRender={IFADE_KATEGORILERI.length}
+                  windowSize={IFADE_KATEGORILERI.length}
+                  getItemLayout={(_, index) => ({ length: sayfaEni, offset: sayfaEni * index, index })}
+                  onMomentumScrollEnd={(o) => {
+                    const i = Math.round(o.nativeEvent.contentOffset.x / sayfaEni)
+                    const hedef = sayfalar[i]
+                    if (hedef && hedef.slug !== kategori) setKategori(hedef.slug)
+                  }}
+                  testID="ifade-sayfalari"
+                  renderItem={({ item: sayfa }) => (
+                    <ScrollView style={{ width: sayfaEni }} contentContainerStyle={stiller.izgara} showsVerticalScrollIndicator={false}>
+                      {satirlar(sayfa.ifadeler).map((satir, si) => (
+                        <View key={si} style={stiller.satir}>
+                          {satir.map((item) => {
+                            const seciliMi = item.slug === secili
+                            return (
+                              <Pressable
+                                key={item.slug}
+                                onPress={() => sec(item)}
+                                style={({ pressed }) => [stiller.ifade, seciliMi && stiller.ifadeSecili, pressed && stiller.ifadeBasili]}
+                                accessibilityRole="button"
+                                accessibilityState={{ selected: seciliMi }}
+                                accessibilityLabel={item.etiket}
+                                testID={`ifade-${item.slug}`}
+                              >
+                                <Image source={item.kaynak} style={stiller.ikon} resizeMode="contain" />
+                                <Text style={stiller.etiket} numberOfLines={2}>
+                                  {item.etiket}
+                                </Text>
+                              </Pressable>
+                            )
+                          })}
+                          {/* Eksik hucreler: son satir da uc sutuna bolunsun. */}
+                          {satir.length < SUTUN &&
+                            Array.from({ length: SUTUN - satir.length }).map((_, k) => <View key={`bos-${k}`} style={stiller.ifade} />)}
+                        </View>
+                      ))}
+                    </ScrollView>
+                  )}
+                />
+              )}
+            </View>
           </Pressable>
         </Animated.View>
       </Pressable>
     </Modal>
   )
+}
+
+/** Ifadeleri SUTUN'luk satirlara boler. */
+function satirlar(ifadeler: Ifade[]): Ifade[][] {
+  const sonuc: Ifade[][] = []
+  for (let i = 0; i < ifadeler.length; i += SUTUN) sonuc.push(ifadeler.slice(i, i + SUTUN))
+  return sonuc
 }
 
 /**
@@ -163,8 +219,9 @@ const stilleriYap = (renk: Renk) =>
     kategoriSecili: { backgroundColor: renk.turuncu, borderColor: renk.turuncu },
     kategoriYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.metinIkincil },
     kategoriYaziSecili: { color: '#FFFFFF' },
+    sayfaAlani: { flexShrink: 1 },
     izgara: { paddingBottom: bosluk.s },
-    satir: { gap: bosluk.s, marginBottom: bosluk.s },
+    satir: { flexDirection: 'row', gap: bosluk.s, marginBottom: bosluk.s },
     ifade: {
       flex: 1,
       alignItems: 'center',
