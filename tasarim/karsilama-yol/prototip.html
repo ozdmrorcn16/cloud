@@ -43,8 +43,14 @@
   .simge .logo img { width: 100%; height: 100%; display: block; border-radius: 16px; }
   .simge .on, .simge .arka { opacity: 0; }
   .simge img.tam { width: 100%; height: 100%; display: block; }
-  .simge .arka img.tam { filter: drop-shadow(0 12px 16px rgba(23,19,15,.22)); }
   .simge .on img.tam { filter: drop-shadow(0 12px 16px rgba(23,19,15,.22)); }
+  /* Arka gorunum: kollar govdenin ARKASINDA, omuzdan doner (pivot gorselden
+     olculdu: sol 199/1254, sag 1052/1254; y 641/1254). Kutu %90 - kullanici
+     arkasi donuk hali buyuk buldu; kokeni alt orta, igne ucu yerinde kalir. */
+  .simge .arka { transform-origin: 50% 97%; filter: drop-shadow(0 12px 16px rgba(23,19,15,.22)); }
+  .simge .arka img { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; }
+  .simge .arka .kolSol { transform-origin: 15.9% 51.1%; }
+  .simge .arka .kolSag { transform-origin: 83.9% 51.1%; }
 
   .etiket { position: absolute; opacity: 0; transform: translate3d(0, 6px, 0) scale(.97); filter: blur(2px); transition: opacity .2s var(--ease-out), transform .2s var(--ease-out), filter .2s var(--ease-out); }
   .etiket.sol { transform-origin: right center; } .etiket.sag { transform-origin: left center; }
@@ -87,7 +93,11 @@
       <div class="simge" id="simge">
         <div class="logo" id="logo"><img src="varlik/icon-192.png" alt="Slooin" /></div>
         <div class="on" id="on"><img class="tam" src="varlik/maskot-on.png" alt="" /></div>
-        <div class="arka" id="arka"><img class="tam" src="varlik/maskot-arka.png" alt="" /></div>
+        <div class="arka" id="arka">
+          <img class="kolSol" id="kolSol" src="varlik/maskot-arka-kol-sol.png" alt="" />
+          <img class="kolSag" id="kolSag" src="varlik/maskot-arka-kol-sag.png" alt="" />
+          <img class="govde" id="govde" src="varlik/maskot-arka-govde.png" alt="" />
+        </div>
       </div>
       <div class="etiket sol" id="e0"><i>01 / 04</i><b>Check-in Yap</b><span>Bulunduğun mekânda görün</span></div>
       <div class="etiket sag" id="e1"><i>02 / 04</i><b>Yakınında kimler var</b><span>Aynı yerdeki insanları keşfet</span></div>
@@ -107,8 +117,9 @@
 
 <script>
   // ---------- yol: duz bir giris parcasi + bes cubic kivrim, asagidan yukariya ----------
+  // Yol maskotun DURDUGU noktadan (195,1850) baslar; asagiya uzanan duz
+  // parca ve "iz asagi cekilir" girisi kullanicinin istegiyle kalkti.
   const PARCALAR = [
-    [[195,2150],[195,2050],[195,1950],[195,1850]],
     [[195,1850],[195,1750],[300,1720],[300,1600]],
     [[300,1600],[300,1480],[90,1470],[90,1350]],
     [[90,1350],[90,1230],[300,1220],[300,1100]],
@@ -133,7 +144,7 @@
     return { x: a[0] + (b[0]-a[0]) * k, y: a[1] + (b[1]-a[1]) * k, i }
   }
   const enYakinIlerleme = (p) => { let en = 0, enUz = 1e9; NOKTA.forEach((n, i) => { const u = Math.hypot(n[0]-p[0], n[1]-p[1]); if (u < enUz) { enUz = u; en = i } }); return UZ[en] / TOPLAM }
-  const P0 = enYakinIlerleme([195,1850])                 // maskotun baslangici; yol buradan baslar
+  const P0 = 0                                          // yolun basi = maskotun durdugu nokta
   const DONEMEC_ILERLEME = DONEMEC.map(d => enYakinIlerleme(d.p))
   const yolDizisi = (nok) => nok.length > 1 ? 'M' + nok.map(n => n[0].toFixed(1) + ' ' + n[1].toFixed(1)).join(' L') : ''
 
@@ -157,7 +168,10 @@
   // 6) GIRIS_IZ: gri yol belirir, turuncu iz maskotun ucundan asagi uzar
   // 7) bacaklar + duraklamalar (oncekiyle ayni)
   // 8) yol bitince: maskot ve yol soner, giris adimi kademeli gelir
-  const LOGO_BELIR = 900, LOGO_DUR = 500, DONUSUM = 1100, MASKOT_DUR = 700, DON = 480, GIRIS_IZ = 700
+  // Gecisler yumusatildi (kullanici): donusum 1,1 -> 1,5 s ve tam capraz
+  // solma + blur; donus 0,48 -> 0,8 s, cos/sin ile 3B donus hissi, ortada
+  // hafif ziplama ve basiklik. GIRIS_IZ artik yalnizca gri yolun belirmesi.
+  const LOGO_BELIR = 1000, LOGO_DUR = 500, DONUSUM = 1500, MASKOT_DUR = 800, DON = 800, GIRIS_IZ = 600
   const BACAK = 1500, DURAK = 850
   const T_LOGO_DUR = LOGO_BELIR, T_DONUSUM = T_LOGO_DUR + LOGO_DUR, T_MASKOT_DUR = T_DONUSUM + DONUSUM
   const T_DON = T_MASKOT_DUR + MASKOT_DUR, T_GIRIS_IZ = T_DON + DON, T_YOL = T_GIRIS_IZ + GIRIS_IZ
@@ -182,21 +196,49 @@
   const KUTU = 92, UC = 0.965   // ignenin ucu kutunun altina bu oranda (gorselden olculdu)
   const kirp = v => Math.min(1, Math.max(0, v))
 
-  // Karakter katmanlari: logo/on/arka opaklik + olcek. Cevirme scaleX ile.
-  function karakter(ms) {
-    let lo = 0, ls = 1, oo = 0, os = 1, ox = 1, ao = 0, ax = 1
+  const kolSol = document.getElementById('kolSol'), kolSag = document.getElementById('kolSag'), govde = document.getElementById('govde')
+  const ARKA_OLCEK = 0.9
+  const yumusak = (k, a, b) => kirp((k - a) / (b - a))          // k'yi [a,b] araligina gerer
+  const easeIn = bezierEasing(0.55, 0, 1, 0.45)
+
+  // Karakter katmanlari: logo/on/arka opaklik + olcek + blur. Cevirme cos/sin.
+  function karakter(ms, yuruyus) {
+    let lo = 0, ls = 1, lb = 0, oo = 0, os = 1, ob = 0, ox = 1, ao = 0, ax = 1, zip = 0, bas = 1
     if (ms < T_LOGO_DUR) { const k = easeOut(ms / LOGO_BELIR); lo = k; ls = .96 + .04 * k }
     else if (ms < T_DONUSUM) { lo = 1 }
     else if (ms < T_MASKOT_DUR) { const k = easeInOut((ms - T_DONUSUM) / DONUSUM)
-      lo = 1 - kirp(k * 1.6); ls = 1 - .12 * k           // logo hizli solar, hafif kuculur
-      oo = kirp((k - .25) / .75); os = .72 + .28 * k }   // maskot gecikmeli belirir, buyur
+      // logo buyuyerek ve bulanarak erir, maskot ayni merkezde netleserek gelir
+      lo = 1 - yumusak(k, .15, .7); ls = 1 + .10 * k; lb = 3 * yumusak(k, .1, .7)
+      oo = yumusak(k, .3, .85); os = .86 + .14 * k; ob = 3 * (1 - yumusak(k, .3, .9)) }
     else if (ms < T_DON) { oo = 1 }
-    else if (ms < T_GIRIS_IZ) { const k = easeInOut((ms - T_DON) / DON)
-      if (k < .5) { oo = 1; ox = 1 - 2 * k } else { ao = 1; ax = 2 * k - 1 } }
+    else if (ms < T_GIRIS_IZ) { const k = (ms - T_DON) / DON
+      const h1 = easeIn(kirp(k * 2)), h2 = easeOut(kirp(k * 2 - 1))
+      ox = Math.cos(h1 * Math.PI / 2); oo = 1 - yumusak(h1, .75, 1)
+      ax = Math.sin(h2 * Math.PI / 2); ao = yumusak(h2, 0, .25)
+      const s = Math.sin(k * Math.PI); zip = -5 * s; bas = 1 - .04 * s }   // donerken hafif ziplar, basilir
     else { ao = 1 }
-    logo.style.opacity = lo; logo.style.transform = `scale(${ls.toFixed(3)})`
-    on.style.opacity = oo; on.style.transform = `scale(${os.toFixed(3)}) scaleX(${Math.max(ox, 0.001).toFixed(3)})`
-    arka.style.opacity = ao; arka.style.transform = `scaleX(${Math.max(ax, 0.001).toFixed(3)})`
+    logo.style.opacity = lo; logo.style.transform = `scale(${ls.toFixed(3)})`; logo.style.filter = lb ? `blur(${lb.toFixed(2)}px)` : ''
+    on.style.opacity = oo; on.style.transform = `translate3d(0, ${zip.toFixed(2)}px, 0) scale(${os.toFixed(3)}) scaleX(${Math.max(ox, 0.001).toFixed(3)}) scaleY(${bas.toFixed(3)})`
+    on.style.filter = ob ? `blur(${ob.toFixed(2)}px)` : ''
+    const y = yuruyus || { zip: 0, sol: 0, sag: 0 }
+    arka.style.opacity = ao
+    arka.style.transform = `translate3d(0, ${(zip + y.zip).toFixed(2)}px, 0) scale(${ARKA_OLCEK}) scaleX(${Math.max(ax, 0.001).toFixed(3)}) scaleY(${bas.toFixed(3)})`
+    kolSol.style.transform = `rotate(${y.sol.toFixed(2)}deg)`
+    kolSag.style.transform = `rotate(${y.sag.toFixed(2)}deg)`
+  }
+
+  // Yurume: kollar omuzdan ileri-geri (arkadan bakinca govdeye dogru yukari /
+  // asagi), govde hafif iner-kalkar. Faz YOLA gore (adim ~30 birim), genlik
+  // HIZA gore: duraklamada kollar dogal olarak durur, hareket basinca acilir.
+  const ADIM = 30
+  let sonIlerleme = 0, sonMs = 0, genlik = 0
+  function yuruyusAt(ilerleme, ms) {
+    const dt = Math.max(1, ms - sonMs), hiz = Math.abs(ilerleme - sonIlerleme) * TOPLAM / dt   // birim/ms
+    sonIlerleme = ilerleme; sonMs = ms
+    genlik += (kirp(hiz / 0.22) - genlik) * 0.12
+    const faz = ilerleme * TOPLAM / ADIM * 2 * Math.PI
+    const salinim = Math.sin(faz)
+    return { zip: -1.6 * genlik * Math.abs(Math.sin(faz)), sol: genlik * (-4 - 10 * salinim), sag: genlik * (4 + 10 * -salinim) * -1 }
   }
 
   function ciz(ilerleme, izBas, yolOpak) {
@@ -216,10 +258,9 @@
   function adim(ts) {
     if (!bas) bas = ts
     const ms = ts - bas
-    karakter(ms)
-    if (ms < T_GIRIS_IZ) ciz(P0, P0, 0)
-    else if (ms < T_YOL) { const k = easeOut((ms - T_GIRIS_IZ) / GIRIS_IZ); ciz(P0, P0 * (1 - k), k) }
-    else ciz(ilerlemeAt(ms), 0, 1)
+    if (ms < T_GIRIS_IZ) { karakter(ms); ciz(P0, P0, 0) }
+    else if (ms < T_YOL) { karakter(ms); ciz(P0, P0, easeOut((ms - T_GIRIS_IZ) / GIRIS_IZ)) }
+    else { const il = ilerlemeAt(ms); karakter(ms, yuruyusAt(il, ms)); ciz(il, 0, 1) }
     if (ms < TOPLAM_SURE) raf = requestAnimationFrame(adim); else bitir()
   }
 
@@ -238,6 +279,7 @@
     dunya.style.transition = ''; simge.style.transition = ''; simge.style.opacity = 1
     svgYol.style.transition = ''; svgYol.style.opacity = 1
     etiketleriYerlestir()
+    sonIlerleme = 0; sonMs = 0; genlik = 0
     if (azHareket) { karakter(T_DON); bitir(); return }
     karakter(0); ciz(P0, P0, 0)
     raf = requestAnimationFrame(adim)
