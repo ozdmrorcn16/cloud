@@ -672,6 +672,39 @@ degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
 `auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
 `tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
 
+### CHECK-IN IFADELERI (108 IFADE) - 2026-09-21
+
+Kullanicinin verdigi tek sayfalik ifade seti (12 kategori x 9) kesildi
+(`araclar/ifade-seti-kes.py` -> `mobil/assets/ifadeler/<kat>/<slug>.png`
++ `manifest.json` + URETILEN `lib/ifadeler.ts` statik require haritasi).
+Karar: "check-in yaparken not ekleme kisminda kullanilacak" -> "Kararini
+uygula".
+- **Sunucu (migrasyon `20260921120000`, uygulandi):** `public.ifadeler`
+  sozlugu (slug PK, kategori, etiket, sira; anon+auth okur),
+  `check_inler.ifade` FK, `check_in_yap(..., p_ifade)` - ESKI IMZA
+  DUSURULDU (asiri yukleme tuzagi), sozlukte olmayan slug 'Gecersiz
+  ifade' ile REDDEDILIR; `verilerimi_disa_aktar` check_inler bloguna
+  `ifade` (canli tanimdan, 09-18 dersi). Canli test
+  `araclar/check-in-ifade-canli-test.py` 7/7.
+- **Istemci:** `src/tasarim/IfadeSecici.tsx` (alttan gelen sayfa,
+  useModalHareketi; 12 kategori cipi + 3 sutun izgara, ikon 56, TEK
+  secim, secince kapanir) + `IfadeCipi`; check-in formunda not alaninin
+  ustunde hayalet "İfade ekle" -> cip (x ile kaldir); `checkInYap` 7.
+  parametre `ifade`; akis/anilar select'lerine `ifade`; `CheckInKarti`
+  notun basinda 32 pt ikon + kalin etiket (` · ` ile not), not yoksa
+  yalnizca ifade; sozlukte olmayan slug cizilmez.
+- Metinler: `checkIn.ifadeEkle/ifadeBaslik/ifadeKaldir` + `hatalar.vt.
+  gecersiz_ifade` 7 dil; kullanim kosullari 6. madde "not, ifade ve
+  fotograf" 7 dil; KVKK listesine madde (dayanak notla ayni).
+- Ifade ETIKETLERI cevrilmedi (setin kendi adlari, manifestten) -
+  ayri is. SINIR: kaynak JPEG kolaj, ifade basina 68-125 px; 56 pt
+  izgara ve 32 pt kartta yeter, daha buyuk gosterimde bulanir; ozgun
+  PNG disa aktarimi gelirse ayni klasore konur, betik yerine koyar.
+- Yerinde duzenlemede ifade DEGISTIRILEMIYOR (yalnizca olustururken) -
+  istenirse `check_in_notunu_guncelle`ye p_ifade eklenir.
+Jest 84 paket / 1123 test. Yayin: web `slooin--dzjbxhil1p`, OTA grup
+`5cf2bc28-7520-4a2f-a9c2-6c72c243a8d5`.
+
 ### YEDI UYGULAMA ICI ANIMASYON + HAREKET SOZLUGU - 2026-09-20
 
 Kullanicinin istegi: "uygulama ici animasyon ornekleri ... ornekler
