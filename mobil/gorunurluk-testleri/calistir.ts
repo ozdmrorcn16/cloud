@@ -513,9 +513,9 @@ async function main() {
   }
 
   await senaryo('11 - Kullanici adi benzersizligi', async () => {
-    // Aktor C: RPC'de 30 gun kontrolu benzersizlik kontrolunden once
+    // Aktor C: RPC'de 24 saat kontrolu benzersizlik kontrolunden once
     // geliyor, dolayisiyla adi yakin zamanda degistirilmis bir hesapla
-    // denenirse beklenen "alinmis" mesaji yerine 30 gun mesaji doner.
+    // denenirse beklenen "alinmis" mesaji yerine 24 saat mesaji doner.
     // Onceden aktor A'ydi ve "A'nin adi hicbir senaryoda degismiyor"
     // varsayimina dayaniyordu; ama A ayni zamanda kullanicinin
     // TELEFONDA kullandigi test hesabi ve 2026-08-29'da adini uygulamadan
@@ -547,16 +547,16 @@ async function main() {
     esitMi(musait, false, 'musait_mi buyuk harfli adi musait saymaz')
   })
 
-  await senaryo('13 - 30 gun kurali sunucuda tutar', async () => {
+  await senaryo('13 - 24 saat kurali sunucuda tutar', async () => {
     // Bkz. yukaridaki tekrarlanabilirlik notu: basarili degistirme
     // dogrudan iddia edilemez, cunku bir kez basarili olunca hesap
-    // 30 gun kilitlenir ve betik tekrar calistirilamaz hale gelirdi.
+    // 24 saat kilitlenir ve betik tekrar calistirilamaz hale gelirdi.
     const ilkAd = `test_${Math.floor(Date.now() / 1000)}`.slice(0, 20)
     const { error: ilkHata } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: ilkAd })
     esitMi(
-      ilkHata === null || (ilkHata.message?.includes('30 gunde bir') ?? false),
+      ilkHata === null || (ilkHata.message?.includes('24 saatte bir') ?? false),
       true,
-      'ilk cagri ya kabul edilir ya da yalnizca 30 gun kuraliyla reddedilir'
+      'ilk cagri ya kabul edilir ya da yalnizca 24 saat kuraliyla reddedilir'
     )
 
     if (ilkHata === null) {
@@ -571,7 +571,7 @@ async function main() {
     const ikinciAd = `${ilkAd}x`.slice(0, 20)
     const { error: ikinciHata } = await b.rpc('kullanici_adi_degistir', { p_yeni_ad: ikinciAd })
     esitMi(
-      ikinciHata?.message?.includes('30 gunde bir') ?? false,
+      ikinciHata?.message?.includes('24 saatte bir') ?? false,
       true,
       'ardisik ikinci cagri her durumda 30 gun kuraliyla reddedilir'
     )

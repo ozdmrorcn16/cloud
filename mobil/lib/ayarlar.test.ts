@@ -83,7 +83,7 @@ describe('kullaniciAdiDurumunuGetir', () => {
     expect(supabase.from).toHaveBeenCalledWith('profiller')
   })
 
-  it('degistirilmis adin sonraki degisim tarihini 30 gun sonrasina hesaplar', async () => {
+  it('degistirilmis adin sonraki degisim tarihini 24 saat sonrasina hesaplar', async () => {
     const degisimTarihi = '2026-08-01T00:00:00.000Z'
     const maybeSingle = jest.fn().mockResolvedValue({
       data: { kullanici_adi: 'orcun', kullanici_adi_degistirildi: degisimTarihi },
@@ -96,7 +96,7 @@ describe('kullaniciAdiDurumunuGetir', () => {
     const durum = await kullaniciAdiDurumunuGetir()
 
     expect(durum.sonrakiDegisimTarihi).toEqual(
-      new Date(new Date(degisimTarihi).getTime() + 30 * 24 * 60 * 60 * 1000)
+      new Date(new Date(degisimTarihi).getTime() + 24 * 60 * 60 * 1000)
     )
   })
 

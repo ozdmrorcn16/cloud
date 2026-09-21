@@ -109,7 +109,7 @@ const en: HukukiMetin = {
       baslik: '3. Account',
       paragraflar: [
         'One person may create only one account.',
-        'Your username is unique and must follow a specific format (lowercase letters, digits, dot and underscore; 3-20 characters). You can change your username once every 30 days.',
+        'Your username is unique and must follow a specific format (lowercase letters, digits, dot and underscore; 3-20 characters). You can change your username once every 24 hours.',
         'Keeping the password you set for your account confidential is your responsibility. You are responsible for actions taken in your account if you share your password or fail to keep it secure.',
       ],
     },

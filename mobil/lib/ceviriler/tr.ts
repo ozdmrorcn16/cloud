@@ -490,7 +490,8 @@ export default {
   // `SekmeHapi` bileseninde de var.
   kullaniciAdiEkrani: {
     yerTutucu: 'Yeni kullanıcı adı',
-    sonrakiDegisim: 'Tekrar değiştirebileceğin tarih: {{tarih}}',
+    tekrarUyariBaslik: 'Kullanıcı adı 24 saatte bir değiştirilebilir',
+    tekrarUyari: 'Kullanıcı adını bugün zaten değiştirdin. Tekrar değiştirmek için {{saat}} saat beklemen gerekiyor.',
   },
 
   engellenenler: {
@@ -1100,7 +1101,7 @@ export default {
   // haritaliyor); Supabase kodlari ve Ingilizce desenler ayri.
   hatalar: {
     genel: 'Bir şeyler ters gitti. Biraz sonra tekrar dene.',
-    kullaniciAdi30Gun: 'Kullanıcı adını 30 günde bir değiştirebilirsin. {{gun}} gün kaldı.',
+    kullaniciAdi24Saat: 'Kullanıcı adını 24 saatte bir değiştirebilirsin. {{saat}} saat kaldı.',
     vt: {
       parola_yanlis: 'Parola yanlış.',
       su_anda_dogrulanamadi: 'Şu anda doğrulanamadı, biraz sonra tekrar dene.',

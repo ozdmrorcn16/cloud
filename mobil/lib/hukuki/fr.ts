@@ -109,7 +109,7 @@ const fr: HukukiMetin = {
       baslik: '3. Compte',
       paragraflar: [
         "Une personne ne peut créer qu'un seul compte.",
-        "Ton nom d'utilisateur est unique et doit respecter un format précis (minuscules, chiffres, point et tiret bas ; 3 à 20 caractères). Tu peux changer ton nom d'utilisateur une fois tous les 30 jours.",
+        "Ton nom d'utilisateur est unique et doit respecter un format précis (minuscules, chiffres, point et tiret bas ; 3 à 20 caractères). Tu peux changer ton nom d'utilisateur une fois toutes les 24 heures.",
         "La confidentialité du mot de passe que tu définis pour ton compte relève de ta responsabilité. Tu es responsable des actions effectuées sur ton compte si tu partages ton mot de passe ou ne le gardes pas en sécurité.",
       ],
     },

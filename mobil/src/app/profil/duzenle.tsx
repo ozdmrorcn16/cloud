@@ -16,18 +16,13 @@ import {
 import { hataMetni } from '../../../lib/hata-metni'
 import { useDil } from '../../../lib/dil'
 import { UstCubuk } from '../../tasarim/UstCubuk'
+import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 
 /** Biyografinin en fazla uzunlugu. */
 const EN_FAZLA_BIYOGRAFI = 160
-
-function tarihiBicimlendir(tarih: Date): string {
-  const gun = String(tarih.getDate()).padStart(2, '0')
-  const ay = String(tarih.getMonth() + 1).padStart(2, '0')
-  return `${gun}.${ay}.${tarih.getFullYear()}`
-}
 
 /**
  * PROFILINI DUZENLE.
@@ -77,6 +72,8 @@ export default function ProfilDuzenleEkrani() {
    */
   const [ilkKullaniciAdi, setIlkKullaniciAdi] = useState('')
   const [sonrakiDegisim, setSonrakiDegisim] = useState<Date | null>(null)
+  /** 24 saat icinde ikinci degisiklik denendi: uyari penceresi (kalan saat). */
+  const [kalanSaat, setKalanSaat] = useState<number | null>(null)
   /* OTURDUGU BOLGE BU EKRANDA YOK (kullanicinin karari 2026-09-18 aksam):
      bolge yalnizca hesap olusturma adiminda secilir, profilde
      gosterilmez, gizleme ayari yok; secim veri olarak saklanir. Bu
@@ -154,6 +151,13 @@ export default function ProfilDuzenleEkrani() {
       setHata(KULLANICI_ADI_KURALI)
       return
     }
+    // 24 SAAT KURALI (kullanicinin karari 2026-09-21): ikinci deneme
+    // sunucuya gitmeden uyari penceresi. Kural baglayici olarak yine
+    // sunucuda (`kullanici_adi_degistir`).
+    if (kadDegisti && sonrakiDegisim && sonrakiDegisim > new Date()) {
+      setKalanSaat(Math.max(1, Math.ceil((sonrakiDegisim.getTime() - Date.now()) / 3_600_000)))
+      return
+    }
 
     setKaydediliyor(true)
     try {
@@ -161,6 +165,7 @@ export default function ProfilDuzenleEkrani() {
         await kullaniciAdiniDegistir(kadSade)
         setIlkKullaniciAdi(kadSade)
         setKullaniciAdi(kadSade)
+        setSonrakiDegisim(new Date(Date.now() + 24 * 60 * 60 * 1000))
       }
       await profiliGuncelle({
         ad: ad.trim(),
@@ -221,13 +226,9 @@ export default function ProfilDuzenleEkrani() {
           autoCorrect={false}
           testID="kullanici-adi-girdisi"
         />
-        <Text style={stiller.ipucu}>
-          {sonrakiDegisim && sonrakiDegisim > new Date()
-            ? t('kullaniciAdiEkrani.sonrakiDegisim', {
-                tarih: tarihiBicimlendir(sonrakiDegisim),
-              })
-            : KULLANICI_ADI_KURALI}
-        </Text>
+        {/* Tarih notu KALKTI (kullanicinin istegi 2026-09-21): 24 saat
+            icinde ikinci degisiklik denenirse uyari penceresi cikar. */}
+        <Text style={stiller.ipucu}>{KULLANICI_ADI_KURALI}</Text>
 
         <View style={stiller.etiketSatiri}>
           <Text style={stiller.etiket}>{t('profilDuzenle.biyografiEtiket')}</Text>
@@ -296,6 +297,16 @@ export default function ProfilDuzenleEkrani() {
         </Pressable>
       </ScrollView>
 
+      <OnayPenceresi
+        acikMi={kalanSaat !== null}
+        baslik={t('kullaniciAdiEkrani.tekrarUyariBaslik')}
+        aciklama={t('kullaniciAdiEkrani.tekrarUyari', { saat: kalanSaat ?? 0 })}
+        eylemEtiketi={t('ortak.tamam')}
+        yikici={false}
+        tekDugme
+        onOnay={() => setKalanSaat(null)}
+        onVazgec={() => setKalanSaat(null)}
+      />
     </View>
   )
 }

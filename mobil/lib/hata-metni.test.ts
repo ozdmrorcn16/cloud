@@ -13,8 +13,8 @@ describe('hataMetni', () => {
 
   it('degisken tasiyan mesajdaki sayiyi korur', () => {
     expect(
-      hataMetni({ message: 'Kullanici adini 30 gunde bir degistirebilirsin. Kalan sure: 12 gun' })
-    ).toBe('Kullanıcı adını 30 günde bir değiştirebilirsin. 12 gün kaldı.')
+      hataMetni({ message: 'Kullanici adini 24 saatte bir degistirebilirsin. Kalan sure: 5 saat' })
+    ).toBe('Kullanıcı adını 24 saatte bir değiştirebilirsin. 5 saat kaldı.')
   })
 
   it('Supabase kodu varsa metinden once koda bakar', () => {

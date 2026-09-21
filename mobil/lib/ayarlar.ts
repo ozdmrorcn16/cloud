@@ -102,7 +102,8 @@ export async function etiketOnayiGerekliAyarla(deger: boolean): Promise<void> {
   if (error) throw new Error(hataMetni(error))
 }
 
-const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000
+// 24 saat (kullanicinin karari 2026-09-21; 30 gundu).
+const BEKLEME_MS = 24 * 60 * 60 * 1000
 
 export async function kullaniciAdiDurumunuGetir(): Promise<{
   kullaniciAdi: string
@@ -121,7 +122,7 @@ export async function kullaniciAdiDurumunuGetir(): Promise<{
     | null
 
   const sonrakiDegisimTarihi = satir?.kullanici_adi_degistirildi
-    ? new Date(new Date(satir.kullanici_adi_degistirildi).getTime() + OTUZ_GUN_MS)
+    ? new Date(new Date(satir.kullanici_adi_degistirildi).getTime() + BEKLEME_MS)
     : null
 
   return { kullaniciAdi: satir?.kullanici_adi ?? '', sonrakiDegisimTarihi }

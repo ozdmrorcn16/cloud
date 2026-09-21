@@ -143,8 +143,8 @@ const METIN: [RegExp, string][] = [
  */
 const DESENLI: [RegExp, (e: RegExpMatchArray) => string][] = [
   [
-    /^Kullanici adini 30 gunde bir degistirebilirsin\. Kalan sure: (\d+) gun$/,
-    (e) => cevir('hatalar.kullaniciAdi30Gun', { gun: e[1] }),
+    /^Kullanici adini 24 saatte bir degistirebilirsin\. Kalan sure: (\d+) saat$/,
+    (e) => cevir('hatalar.kullaniciAdi24Saat', { saat: e[1] }),
   ],
 ]
 

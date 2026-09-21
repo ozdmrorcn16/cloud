@@ -123,7 +123,7 @@ const tr: HukukiMetin = {
       baslik: '3. Hesap',
       paragraflar: [
         'Bir kişi yalnızca bir hesap açabilir.',
-        'Kullanıcı adın benzersizdir ve belirli bir biçime uymalıdır (küçük harf, rakam, nokta ve alt çizgi; 3-20 karakter). Kullanıcı adını 30 günde bir değiştirebilirsin.',
+        'Kullanıcı adın benzersizdir ve belirli bir biçime uymalıdır (küçük harf, rakam, nokta ve alt çizgi; 3-20 karakter). Kullanıcı adını 24 saatte bir değiştirebilirsin.',
         'Hesabına giriş için belirlediğin parolanın gizliliği senin sorumluluğundadır. Hesabında gerçekleşen işlemlerden, parolanı paylaşman ya da güvenli tutmaman durumunda sen sorumlusun.',
       ],
     },

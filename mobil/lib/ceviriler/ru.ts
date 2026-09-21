@@ -366,7 +366,8 @@ export default {
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'Новое имя пользователя',
-    sonrakiDegisim: 'Снова изменить можно: {{tarih}}',
+    tekrarUyariBaslik: 'Имя пользователя можно менять раз в 24 часа',
+    tekrarUyari: 'Ты уже менял имя пользователя сегодня. Подожди {{saat}} ч., чтобы изменить его снова.',
   },
   engellenenler: {
     baslik: 'Заблокированные',
@@ -902,7 +903,7 @@ export default {
   },
   hatalar: {
     genel: 'Что-то пошло не так. Попробуй чуть позже.',
-    kullaniciAdi30Gun: 'Имя пользователя можно менять раз в 30 дней. Осталось {{gun}} дн.',
+    kullaniciAdi24Saat: 'Имя пользователя можно менять раз в 24 часа. Осталось {{saat}} ч.',
     vt: {
       parola_yanlis: 'Неверный пароль.',
       su_anda_dogrulanamadi: 'Сейчас не удалось проверить, попробуйте чуть позже.',

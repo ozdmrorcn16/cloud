@@ -109,7 +109,7 @@ const de: HukukiMetin = {
       baslik: '3. Konto',
       paragraflar: [
         'Eine Person darf nur ein Konto anlegen.',
-        'Dein Benutzername ist eindeutig und muss einem bestimmten Format entsprechen (Kleinbuchstaben, Ziffern, Punkt und Unterstrich; 3-20 Zeichen). Du kannst deinen Benutzernamen alle 30 Tage ändern.',
+        'Dein Benutzername ist eindeutig und muss einem bestimmten Format entsprechen (Kleinbuchstaben, Ziffern, Punkt und Unterstrich; 3-20 Zeichen). Du kannst deinen Benutzernamen alle 24 Stunden ändern.',
         'Die Geheimhaltung des Passworts, das du für dein Konto festlegst, liegt in deiner Verantwortung. Für Vorgänge in deinem Konto bist du verantwortlich, wenn du dein Passwort weitergibst oder nicht sicher aufbewahrst.',
       ],
     },

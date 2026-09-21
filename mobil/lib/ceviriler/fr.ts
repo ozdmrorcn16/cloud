@@ -366,7 +366,8 @@ export default {
   },
   kullaniciAdiEkrani: {
     yerTutucu: "Nouveau nom d'utilisateur",
-    sonrakiDegisim: 'Tu pourras le changer à nouveau le : {{tarih}}',
+    tekrarUyariBaslik: "Le nom d'utilisateur se change toutes les 24 heures",
+    tekrarUyari: "Tu as déjà changé ton nom d'utilisateur aujourd'hui. Attends {{saat}} heures pour le changer à nouveau.",
   },
   engellenenler: {
     baslik: 'Personnes bloquées',
@@ -902,7 +903,7 @@ export default {
   },
   hatalar: {
     genel: 'Un problème est survenu. Réessaie dans un instant.',
-    kullaniciAdi30Gun: "Tu peux changer ton nom d'utilisateur une fois tous les 30 jours. Il reste {{gun}} jours.",
+    kullaniciAdi24Saat: "Tu peux changer ton nom d'utilisateur une fois toutes les 24 heures. Il reste {{saat}} heures.",
     vt: {
       parola_yanlis: 'Mot de passe incorrect.',
       su_anda_dogrulanamadi: 'Impossible de vérifier pour le moment, réessaie dans un instant.',

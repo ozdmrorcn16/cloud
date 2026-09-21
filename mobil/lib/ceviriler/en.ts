@@ -372,7 +372,8 @@ export default {
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'New username',
-    sonrakiDegisim: 'You can change it again on: {{tarih}}',
+    tekrarUyariBaslik: 'Username can be changed once every 24 hours',
+    tekrarUyari: 'You already changed your username today. Wait {{saat}} hours to change it again.',
   },
   engellenenler: {
     baslik: 'Blocked people',
@@ -908,7 +909,7 @@ export default {
   },
   hatalar: {
     genel: 'Something went wrong. Try again in a bit.',
-    kullaniciAdi30Gun: 'You can change your username once every 30 days. {{gun}} days left.',
+    kullaniciAdi24Saat: 'You can change your username once every 24 hours. {{saat}} hours left.',
     vt: {
       parola_yanlis: 'Wrong password.',
       su_anda_dogrulanamadi: 'Could not verify right now, try again in a moment.',

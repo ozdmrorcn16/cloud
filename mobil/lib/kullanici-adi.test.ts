@@ -94,12 +94,12 @@ describe('kullaniciAdiniDegistir', () => {
     })
   })
 
-  it('sunucudan gelen 30 gun mesajini oldugu gibi firlatir', async () => {
+  it('sunucudan gelen 24 saat mesajini oldugu gibi firlatir', async () => {
     mockRpc.mockResolvedValue({
       data: null,
-      error: { message: 'Kullanici adini 30 gunde bir degistirebilirsin. Kalan sure: 12 gun' },
+      error: { message: 'Kullanici adini 24 saatte bir degistirebilirsin. Kalan sure: 5 saat' },
     })
-    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('12 gün kaldı')
+    await expect(kullaniciAdiniDegistir('yeniad')).rejects.toThrow('5 saat kaldı')
   })
 
   it('ham kisit ihlali (23505) yerine anlasilir mesaj firlatir', async () => {

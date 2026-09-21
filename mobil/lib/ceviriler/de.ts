@@ -366,7 +366,8 @@ export default {
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'Neuer Benutzername',
-    sonrakiDegisim: 'Du kannst ihn wieder ändern am: {{tarih}}',
+    tekrarUyariBaslik: 'Benutzername nur alle 24 Stunden',
+    tekrarUyari: 'Du hast deinen Benutzernamen heute schon geändert. Warte {{saat}} Stunden, um ihn erneut zu ändern.',
   },
   engellenenler: {
     baslik: 'Blockierte Personen',
@@ -902,7 +903,7 @@ export default {
   },
   hatalar: {
     genel: 'Etwas ist schiefgelaufen. Versuch es gleich noch einmal.',
-    kullaniciAdi30Gun: 'Du kannst deinen Benutzernamen alle 30 Tage ändern. Noch {{gun}} Tage.',
+    kullaniciAdi24Saat: 'Du kannst deinen Benutzernamen alle 24 Stunden ändern. Noch {{saat}} Stunden.',
     vt: {
       parola_yanlis: 'Falsches Passwort.',
       su_anda_dogrulanamadi: 'Konnte gerade nicht überprüft werden, versuche es gleich noch einmal.',

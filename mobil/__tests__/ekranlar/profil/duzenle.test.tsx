@@ -166,6 +166,26 @@ describe('ProfilDuzenleEkrani - kullanici adi', () => {
     await waitFor(() => expect(kullaniciAdiniDegistir).toHaveBeenCalledWith('yeni.ad'))
   })
 
+  it('24 SAAT KURALI (2026-09-21): tarih notu YOK; sure dolmadan ikinci degisiklik uyari penceresi acar, sunucuya gitmez', async () => {
+    ;(kullaniciAdiDurumunuGetir as jest.Mock).mockResolvedValue({
+      kullaniciAdi: 'orcun',
+      sonrakiDegisimTarihi: new Date(Date.now() + 5 * 60 * 60 * 1000),
+    })
+    await render(<ProfilDuzenleEkrani />)
+    await screen.findByDisplayValue('orcun')
+    expect(screen.queryByText(/Tekrar değiştirebileceğin/)).toBeNull()
+
+    await fireEvent.changeText(screen.getByTestId('kullanici-adi-girdisi'), 'yeni.ad')
+    await fireEvent.press(screen.getByText('Kaydet'))
+
+    expect(await screen.findByText('Kullanıcı adı 24 saatte bir değiştirilebilir')).toBeTruthy()
+    expect(screen.getByText(/5 saat beklemen gerekiyor/)).toBeTruthy()
+    expect(kullaniciAdiniDegistir).not.toHaveBeenCalled()
+    expect(profiliGuncelle).not.toHaveBeenCalled()
+    await fireEvent.press(screen.getByTestId('onay-eylemi'))
+    await waitFor(() => expect(screen.queryByText('Kullanıcı adı 24 saatte bir değiştirilebilir')).toBeNull())
+  })
+
   /*
    * SIRA ONEMLI: reddedilebilen islem (kullanici adi) ONCE deneniyor.
    * Sonra yapilsaydi ad ve biyografi kaydedilir, kullanici adi

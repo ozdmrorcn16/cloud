@@ -366,7 +366,8 @@ export default {
   },
   kullaniciAdiEkrani: {
     yerTutucu: 'اسم مستخدم جديد',
-    sonrakiDegisim: 'يمكنك تغييره مجددا في: {{tarih}}',
+    tekrarUyariBaslik: 'يمكن تغيير اسم المستخدم مرة كل 24 ساعة',
+    tekrarUyari: 'لقد غيّرت اسم المستخدم اليوم بالفعل. انتظر {{saat}} ساعة لتغييره مرة أخرى.',
   },
   engellenenler: {
     baslik: 'الأشخاص المحظورون',
@@ -902,7 +903,7 @@ export default {
   },
   hatalar: {
     genel: 'حدث خطأ ما. حاول مجددا بعد قليل.',
-    kullaniciAdi30Gun: 'يمكنك تغيير اسم المستخدم مرة كل 30 يوما. بقي {{gun}} يوما.',
+    kullaniciAdi24Saat: 'يمكنك تغيير اسم المستخدم مرة كل 24 ساعة. بقي {{saat}} ساعة.',
     vt: {
       parola_yanlis: 'كلمة المرور خاطئة.',
       su_anda_dogrulanamadi: 'تعذّر التحقق الآن، حاول بعد قليل.',
