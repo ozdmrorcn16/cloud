@@ -11,7 +11,10 @@ const tarayici = await puppeteer.launch({ executablePath: CHROME, headless: true
 const sayfa = await tarayici.newPage()
 await sayfa.setViewport({ width: 430, height: 900 })
 await sayfa.goto(pathToFileURL(path.join(kok, 'prototip.html')).href, { waitUntil: 'networkidle0' })
-for (const [ad, ms] of [['a1', 2700], ['a2', 200], ['a3', 9400], ['a4', 400], ['a5', 1500]]) {
+// mutlak anlar: logo, donusum ortasi, maskot on, donus ortasi, iz, 1. etiket, giris adimi
+const ANLAR = [['a1', 650], ['a2', 1950], ['a3', 2800], ['a4', 3440], ['a5', 4800], ['a6', 6100], ['a7', 16200]]
+let gecen = 0
+for (const [ad, an] of ANLAR) { const ms = an - gecen; gecen = an
   await new Promise((r) => setTimeout(r, ms))
   await sayfa.screenshot({ path: path.join(kok, `kare-${ad}.png`) })
   console.log(ad)
