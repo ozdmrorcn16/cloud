@@ -5,7 +5,10 @@
       "namespace": "android_app",
       "package_name": "com.slooin.app",
       "sha256_cert_fingerprints": [
-        "6D:B8:0F:CB:E4:C1:DF:4D:89:74:06:30:6F:6C:49:45:E6:21:85:F9:C9:6B:F2:D4:10:6B:F9:18:BF:0B:42:C1"
+        "6D:B8:0F:CB:E4:C1:DF:4D:89:74:06:30:6F:6C:49:45:E6:21:85:F9:C9:6B:F2:D4:10:6B:F9:18:BF:0B:42:C1",
+        "4C:8D:F1:CF:F2:88:CE:7B:05:B6:21:0C:D0:42:1B:C4:69:E3:A6:9C:A3:F0:D7:FD:EC:B1:30:A6:81:5E:0B:BB",
+        "F4:1B:C4:88:29:6F:32:02:58:72:FD:B1:30:13:62:08:7A:73:71:A0:1B:29:B0:35:7F:88:22:3D:16:9B:58:8E",
+        "E6:25:D9:ED:D7:A8:4D:E2:82:3F:37:4D:82:31:BC:2B:C2:98:65:7A:C1:2B:71:BD:D3:88:DD:CC:F5:66:30:71"
       ]
     }
   }
