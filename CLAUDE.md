@@ -172,6 +172,10 @@ goruntu `tasarim/checkin-panel-referans.png`.
   `KAPAK_OLCUSU` 96 -> 72, ad 17, alt satir 13, rozet 4/9 dolgu, avatar
   yigini 22, dugmeler paddingVertical 10 (~40 pt), baslik 18, "Mesafe"
   13; aktif kart dolgu 12, ad 18, etiket 12, Ayrildim 7 px dolgu.
+- **2026-09-21:** aktif check-in karti "Yakinindaki mekanlar"
+  basliginin USTUNDE (tutamacin hemen altinda; panel acik/kapali fark
+  etmez, listeyle kaymaz). Mesafe secenegi "1 km icinde" - "(tumu)" eki
+  7 dilde kalkti. OTA asagida.
 
 ### AKIS KARTI: TEK CUMLE BASLIK, "ILE BIRLIKTE" - 2026-09-20 AKSAM
 
