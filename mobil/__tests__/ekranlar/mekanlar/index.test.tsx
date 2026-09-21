@@ -1617,7 +1617,7 @@ describe('MekanAramaEkrani - referans kart', () => {
 
     await fireEvent.press(dugme)
     expect(await screen.findByTestId('mesafe-100')).toBeTruthy()
-    expect(screen.getByText('1 km içinde (tümü)')).toBeTruthy()
+    expect(screen.getByText('1 km içinde')).toBeTruthy()
     await menudenSec('mesafe-100')
 
     // Etiket secimi soyluyor; 400 m'deki park listeden ve haritadan dustu

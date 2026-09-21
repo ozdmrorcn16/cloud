@@ -938,7 +938,7 @@ export default {
     aktifCheckIn: 'AKTİF CHECK-IN',
     mesafeSec: 'Mesafe seç',
     mesafeIcinde: '{{mesafe}} içinde',
-    mesafeTumu: '1 km içinde (tümü)',
+    mesafeTumu: '1 km içinde',
     digerMekanlar: 'Diğer mekânları göster',
     paneliKapat: 'Listeyi kapat',
     yolTarifi: 'Yol tarifi',

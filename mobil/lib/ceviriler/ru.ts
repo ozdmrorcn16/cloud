@@ -779,7 +779,7 @@ export default {
     aktifCheckIn: 'АКТИВНЫЙ ЧЕК-ИН',
     mesafeSec: 'Выбрать расстояние',
     mesafeIcinde: 'В радиусе {{mesafe}}',
-    mesafeTumu: 'В радиусе 1 км (все)',
+    mesafeTumu: 'В радиусе 1 км',
     digerMekanlar: 'Показать другие места',
     paneliKapat: 'Закрыть список',
     yolTarifi: 'Маршрут',

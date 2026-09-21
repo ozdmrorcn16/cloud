@@ -779,7 +779,7 @@ export default {
     aktifCheckIn: 'تسجيل وصول نشط',
     mesafeSec: 'اختيار المسافة',
     mesafeIcinde: 'ضمن {{mesafe}}',
-    mesafeTumu: 'ضمن 1 كم (الكل)',
+    mesafeTumu: 'ضمن 1 كم',
     digerMekanlar: 'عرض الأماكن الأخرى',
     paneliKapat: 'إغلاق القائمة',
     yolTarifi: 'الاتجاهات',

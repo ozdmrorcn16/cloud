@@ -1625,6 +1625,10 @@ export default function KesfetEkrani() {
                 <View style={stiller.tutamac} />
               </Pressable>
             </View>
+            {/* AKTIF CHECK-IN KARTI BASLIGIN USTUNDE (kullanicinin istegi
+                2026-09-21; referansta da oyle). Panel acik/kapali fark
+                etmez, listeyle kaymaz. */}
+            {buradaKarti}
             {bolumBasligi}
 
           {panelAcik ? (
@@ -1640,12 +1644,10 @@ export default function KesfetEkrani() {
               refreshControl={<RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.turuncu} />}
               testID="kesfet-kaydirma"
             >
-              {buradaKarti}
               {tamListe}
             </ScrollView>
           ) : (
             <View style={stiller.panelKapaliIcerik}>
-              {buradaKarti}
               {seciliMekan ? satirCiz(seciliMekan, true, false) : bosDurum}
               {sakinler.length > 1 && (
                 <Pressable

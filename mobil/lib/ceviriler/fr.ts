@@ -779,7 +779,7 @@ export default {
     aktifCheckIn: 'CHECK-IN ACTIF',
     mesafeSec: 'Choisir la distance',
     mesafeIcinde: 'À moins de {{mesafe}}',
-    mesafeTumu: 'À moins de 1 km (tous)',
+    mesafeTumu: 'À moins de 1 km',
     digerMekanlar: 'Voir les autres lieux',
     paneliKapat: 'Fermer la liste',
     yolTarifi: 'Itinéraire',

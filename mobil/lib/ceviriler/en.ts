@@ -785,7 +785,7 @@ export default {
     aktifCheckIn: 'ACTIVE CHECK-IN',
     mesafeSec: 'Choose distance',
     mesafeIcinde: 'Within {{mesafe}}',
-    mesafeTumu: 'Within 1 km (all)',
+    mesafeTumu: 'Within 1 km',
     digerMekanlar: 'Show other places',
     paneliKapat: 'Close the list',
     yolTarifi: 'Directions',
