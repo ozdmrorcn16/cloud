@@ -1,15 +1,18 @@
-"""CHECK-IN FOTOGRAFINI DEGISTIR / KALDIR - CANLI TEST (2026-09-21).
+"""CHECK-IN FOTOGRAFLARINI DEGISTIR / KALDIR - CANLI TEST (2026-09-21/22).
 
 Jest Supabase'i mock'ladigi icin sunucu kurali orada gorulemez. Olculen:
-  1. Kullanici kendi klasorune fotograf yukler; RPC yolu satira yazar,
-     eski yol yoktu -> null doner.
-  2. Ikinci fotograf: RPC ESKI yolu dondurur; kullanici eski dosyayi
-     kovadan SILEBILIR (yeni delete politikasi + kendi klasoru okuma
-     istisnasi) ve dosya gercekten gider.
-  3. Baskasinin klasorundeki yol -> 'Bu fotograf sana ait degil'.
-  4. Baskasinin check-in'i -> 'Bu paylasim bulunamadi'.
-  5. Kaldir (null) -> satirda fotograf null, eski yol doner.
-  6. anon cagiramaz.
+  1. check_in_yap p_fotograflar ile iki fotografli check-in acar; `fotograf`
+     (generated) ilk eleman.
+  2. check_in_fotograflarini_guncelle: [y1,y2] -> [y2,y3] kaldirilan [y1];
+     kullanici y1'i kovadan SILEBILIR ve dosya gercekten gider.
+  3. 6 yol -> 'En fazla 5 fotograf eklenebilir'.
+  4. Baskasinin klasorundeki yol -> 'Bu fotograf sana ait degil'.
+  5. Baskasinin check-in'i -> 'Bu paylasim bulunamadi'.
+  6. Tekil sarmalayici check_in_fotografini_guncelle hala calisir (eski OTA).
+  7. Hepsini kaldir ([]) -> fotograflar bos, fotograf null, kaldirilanlar doner.
+  8. mekan_fotograflari fotograf basina satir verir.
+  9. verilerimi_disa_aktar check_inler bloguna `fotograflar` koyar.
+ 10. anon cagiramaz.
 Actigi satir ve dosyalari siler. Kosum: python araclar/check-in-fotograf-degistir-canli-test.py
 """
 import os
@@ -46,66 +49,94 @@ b = create_client(URL, ANON)
 b.auth.sign_in_with_password({'email': 'test1@slooin.test', 'password': 'test1234'})
 b_id = b.auth.get_user().user.id
 
+def yukle(n):
+    yol = f'{a_id}/canli-{int(time.time() * 1000)}-{n}.jpg'
+    a.storage.from_(KOVA).upload(yol, JPEG, {'content-type': 'image/jpeg'})
+    yollar.append(yol)
+    return yol
+
+def kovada(yol):
+    return os.path.basename(yol) in [d['name'] for d in a.storage.from_(KOVA).list(a_id)]
+
+def guncelle(istemci, cid, liste):
+    return istemci.rpc('check_in_fotograflarini_guncelle', {'p_check_in_id': cid, 'p_fotograflar': liste}).execute().data
+
 acilan = None
 yollar = []
 try:
+    y1, y2 = yukle(1), yukle(2)
+
+    # 1. p_fotograflar ile check-in
     satir = a.rpc('check_in_yap', {
         'p_mekan_id': MEKAN_ID, 'p_lat': LAT, 'p_lng': LNG,
-        'p_not_metni': 'fotograf degistir canli testi', 'p_fotograf': None,
-        'p_bulunurluk': 'herkese_acik', 'p_ifade': None,
+        'p_not_metni': 'coklu fotograf canli testi', 'p_fotograf': None,
+        'p_bulunurluk': 'herkese_acik', 'p_ifade': None, 'p_fotograflar': [y1, y2],
     }).execute().data
     acilan = satir['id']
+    kontrol('check_in_yap p_fotograflar ile iki fotograf yazar', satir.get('fotograflar') == [y1, y2], str(satir.get('fotograflar')))
+    kontrol('generated `fotograf` = ilk fotograf', satir.get('fotograf') == y1)
 
-    # 1. ilk fotograf
-    yol1 = f'{a_id}/canli-{int(time.time())}-1.jpg'
-    a.storage.from_(KOVA).upload(yol1, JPEG, {'content-type': 'image/jpeg'})
-    yollar.append(yol1)
-    eski = a.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': yol1}).execute().data
-    kontrol('ilk fotograf: eski yol yok, RPC null doner', eski is None, str(eski))
-    okunan = a.table('check_inler').select('fotograf').eq('id', acilan).single().execute().data
-    kontrol('satirda yeni yol', okunan['fotograf'] == yol1)
+    # 2. degistir: [y1,y2] -> [y2,y3]
+    y3 = yukle(3)
+    kaldirilan = guncelle(a, acilan, [y2, y3])
+    kontrol('kaldirilan eski yollar [y1] doner', kaldirilan == [y1], str(kaldirilan))
+    okunan = a.table('check_inler').select('fotograf, fotograflar').eq('id', acilan).single().execute().data
+    kontrol('satirda [y2,y3]; fotograf = y2', okunan['fotograflar'] == [y2, y3] and okunan['fotograf'] == y2)
+    a.storage.from_(KOVA).remove([y1])
+    kontrol('y1 kovadan GERCEKTEN silindi', not kovada(y1))
+    yollar.remove(y1)
 
-    # 2. ikinci fotograf -> eski doner, eski silinebilir
-    yol2 = f'{a_id}/canli-{int(time.time())}-2.jpg'
-    a.storage.from_(KOVA).upload(yol2, JPEG, {'content-type': 'image/jpeg'})
-    yollar.append(yol2)
-    eski = a.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': yol2}).execute().data
-    kontrol('ikinci fotograf: RPC eski yolu dondurur', eski == yol1, str(eski))
-    a.storage.from_(KOVA).remove([yol1])
-    kalanlar = [d['name'] for d in a.storage.from_(KOVA).list(a_id)]
-    kontrol('eski dosya kovadan GERCEKTEN silindi', os.path.basename(yol1) not in kalanlar)
-    kontrol('yeni dosya kovada duruyor', os.path.basename(yol2) in kalanlar)
-    yollar.remove(yol1)
-
-    # 3. baskasinin klasoru
+    # 3. 6 yol
     try:
-        a.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': f'{b_id}/x.jpg'}).execute()
+        guncelle(a, acilan, [y2, y3, y2, y3, y2, y3])
+        kontrol('6 fotograf reddedilir', False, 'kabul edildi!')
+    except Exception as e:
+        kontrol('6 fotograf reddedilir', 'En fazla 5' in str(e), str(e)[:70])
+
+    # 4. baskasinin klasoru
+    try:
+        guncelle(a, acilan, [y2, f'{b_id}/x.jpg'])
         kontrol('baskasinin yolu reddedilir', False, 'kabul edildi!')
     except Exception as e:
-        kontrol('baskasinin yolu reddedilir', 'sana ait degil' in str(e), str(e)[:80])
+        kontrol('baskasinin yolu reddedilir', 'sana ait degil' in str(e), str(e)[:70])
 
-    # 4. baskasinin check-in'i
+    # 5. baskasinin check-in'i
     try:
-        b.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': None}).execute()
+        guncelle(b, acilan, [])
         kontrol("baskasinin check-in'i degistirilemez", False, 'kabul edildi!')
     except Exception as e:
-        kontrol("baskasinin check-in'i degistirilemez", 'bulunamadi' in str(e), str(e)[:80])
-    okunan = a.table('check_inler').select('fotograf').eq('id', acilan).single().execute().data
-    kontrol('B denemesinden sonra yol degismedi', okunan['fotograf'] == yol2)
+        kontrol("baskasinin check-in'i degistirilemez", 'bulunamadi' in str(e), str(e)[:70])
 
-    # 5. kaldir
-    eski = a.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': None}).execute().data
-    kontrol('kaldir: eski yol doner', eski == yol2, str(eski))
-    okunan = a.table('check_inler').select('fotograf').eq('id', acilan).single().execute().data
-    kontrol('kaldir: satirda fotograf null', okunan['fotograf'] is None)
-    a.storage.from_(KOVA).remove([yol2])
-    kalanlar = [d['name'] for d in a.storage.from_(KOVA).list(a_id)]
-    kontrol('kaldirilan dosya kovadan silindi', os.path.basename(yol2) not in kalanlar)
-    yollar.remove(yol2)
+    # 6. tekil sarmalayici (eski OTA)
+    y4 = yukle(4)
+    eski = a.rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': y4}).execute().data
+    okunan = a.table('check_inler').select('fotograflar').eq('id', acilan).single().execute().data
+    kontrol('tekil sarmalayici: satir [y4], ilk kaldirilan doner', okunan['fotograflar'] == [y4] and eski in (y2, y3), str(eski))
+    a.storage.from_(KOVA).remove([y2, y3]); yollar.remove(y2); yollar.remove(y3)
 
-    # 6. anon
+    # 8. mekan galerisi fotograf basina satir
+    y5 = yukle(5)
+    guncelle(a, acilan, [y4, y5])
+    galeri = a.rpc('mekan_fotograflari', {'p_mekan_id': MEKAN_ID, 'p_limit': 60, 'p_ofset': 0}).execute().data
+    benimkiler = [g['fotograf'] for g in galeri if g['id'] == acilan]
+    kontrol('mekan_fotograflari iki satir (sira korunur)', benimkiler == [y4, y5], str(benimkiler))
+
+    # 9. disa aktarim
+    dosya = a.rpc('verilerimi_disa_aktar').execute().data
+    benim = [c for c in dosya['check_inler'] if c['id'] == acilan]
+    kontrol('disa aktarimda fotograflar var', bool(benim) and benim[0].get('fotograflar') == [y4, y5])
+
+    # 7. hepsini kaldir
+    kaldirilan = guncelle(a, acilan, [])
+    okunan = a.table('check_inler').select('fotograf, fotograflar').eq('id', acilan).single().execute().data
+    kontrol('hepsini kaldir: fotograflar [] ve fotograf null', okunan['fotograflar'] == [] and okunan['fotograf'] is None)
+    kontrol('kaldirilanlar [y4,y5]', sorted(kaldirilan) == sorted([y4, y5]), str(kaldirilan))
+    a.storage.from_(KOVA).remove([y4, y5]); yollar.remove(y4); yollar.remove(y5)
+    kontrol('kaldirilan dosyalar kovada yok', not kovada(y4) and not kovada(y5))
+
+    # 10. anon
     try:
-        create_client(URL, ANON).rpc('check_in_fotografini_guncelle', {'p_check_in_id': acilan, 'p_fotograf': None}).execute()
+        create_client(URL, ANON).rpc('check_in_fotograflarini_guncelle', {'p_check_in_id': acilan, 'p_fotograflar': []}).execute()
         kontrol('anon cagiramaz', False, 'kabul edildi!')
     except Exception as e:
         kontrol('anon cagiramaz', True, str(e)[:60])
