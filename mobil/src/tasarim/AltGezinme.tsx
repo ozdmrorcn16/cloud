@@ -10,6 +10,7 @@ import { useHareket } from './hareket'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { cevir } from '../../lib/dil'
+import { ANAHTAR, onbellekOku, onbellekSil, onbellekYaz } from '../../lib/onbellek'
 
 /**
  * Yuzer alt gezinme cubugu.
@@ -343,8 +344,23 @@ export function AltGezinme() {
   // durur; web'de inset sifir, cubuk eskisi gibi en altta. Icerik
   // cubugun ALTINDAN ekranin dibine kadar akiyor (2026-08-30).
   const insets = useSafeAreaInsets()
-  const [okunmamisMesaj, setOkunmamisMesaj] = useState(0)
-  const [bekleyenBildirim, setBekleyenBildirim] = useState(0)
+  // ROZETLER ONBELLEKLI VE ARALIKLI (2026-09-22 performans olcumu).
+  //
+  // Onceden her YOL DEGISIMINDE dort istek gidiyordu (konusmalarim,
+  // sohbet_istekleri, bag_kisileri, bekleyen_etiketlerim) - yani her
+  // sekme dokunusunda, ekranin kendi istekleri USTUNE. Olcum: sekme
+  // gecisi basina 26-37 istek. Rozet ikincil bir bilgi; iki sekme
+  // arasinda gidip gelmek onu yeniden cekmeyi hak etmiyor.
+  //
+  // Artik son deger onbellekten aniden geliyor ve en fazla
+  // ROZET_TAZELEME_MS'de bir yeniden cekiliyor. Sayinin ANINDA dusmesi
+  // gereken yerler (bir konusma okundu, bir istek yanitlandi) zaten
+  // kendi ekranindan `rozetleriTazele()` cagiriyor.
+  const rozetOnbellegi = onbellekOku<{ mesaj: number; bildirim: number; zaman: number }>(
+    ANAHTAR.gezinmeRozetleri
+  )
+  const [okunmamisMesaj, setOkunmamisMesaj] = useState(rozetOnbellegi?.mesaj ?? 0)
+  const [bekleyenBildirim, setBekleyenBildirim] = useState(rozetOnbellegi?.bildirim ?? 0)
 
   // Rozet cubugun kendi isi: cubuk artik her ekranda duruyor (kullanicinin
   // karari 2026-08-25), dolayisiyla sayiyi tek tek ekranlardan prop olarak
@@ -353,13 +369,32 @@ export function AltGezinme() {
   // bir yola gidiyor.
   useEffect(() => {
     let iptal = false
-    konusmalarimiGetir()
-      .then((konusmalar) => {
-        if (!iptal) setOkunmamisMesaj(konusmalar.reduce((t, k) => t + k.okunmamis, 0))
-      })
-      .catch(() => {
-        if (!iptal) setOkunmamisMesaj(0)
-      })
+    const onceki = onbellekOku<{ mesaj: number; bildirim: number; zaman: number }>(
+      ANAHTAR.gezinmeRozetleri
+    )
+    // Taze onbellek varsa istek HIC atilmiyor.
+    if (onceki && Date.now() - onceki.zaman < ROZET_TAZELEME_MS) {
+      setOkunmamisMesaj(onceki.mesaj)
+      setBekleyenBildirim(onceki.bildirim)
+      return
+    }
+    Promise.allSettled([
+      konusmalarimiGetir(),
+      gelenIstekleriGetir(),
+      bekleyenEtiketleriGetir(),
+    ]).then(([konusmalar, istekler, etiketler]) => {
+      if (iptal) return
+      const mesaj =
+        konusmalar.status === 'fulfilled'
+          ? konusmalar.value.reduce((t, k) => t + k.okunmamis, 0)
+          : 0
+      const bildirim =
+        (istekler.status === 'fulfilled' ? istekler.value.takip.length : 0) +
+        (etiketler.status === 'fulfilled' ? etiketler.value.length : 0)
+      setOkunmamisMesaj(mesaj)
+      setBekleyenBildirim(bildirim)
+      onbellekYaz(ANAHTAR.gezinmeRozetleri, { mesaj, bildirim, zaman: Date.now() })
+    })
     return () => {
       iptal = true
     }
@@ -367,21 +402,8 @@ export function AltGezinme() {
 
   // BILDIRIM SAYACI (kullanicinin karari 2026-08-29): gelen arkadaslik
   // istekleri + bekleyen etiketler. Ikisi de KARAR BEKLEYEN seyler;
-  // bilgilendirme amacli bildirim sayilmiyor. Mesaj sayaciyla ayni
-  // desen: yol degistikce tazeleniyor, hata olursa sifira duesuyor.
-  useEffect(() => {
-    let iptal = false
-    Promise.all([gelenIstekleriGetir(), bekleyenEtiketleriGetir()])
-      .then(([istekler, etiketler]) => {
-        if (!iptal) setBekleyenBildirim(istekler.takip.length + etiketler.length)
-      })
-      .catch(() => {
-        if (!iptal) setBekleyenBildirim(0)
-      })
-    return () => {
-      iptal = true
-    }
-  }, [yol])
+  // bilgilendirme amacli bildirim sayilmiyor. Mesaj sayaciyla AYNI
+  // effect icinde cekiliyor (2026-09-22): uc istek tek turda gidiyor.
 
   // Check-in dugmesi bir SEKME degil eylem; aktifken hicbir sekme
   // aktif olmuyor ve daire soneuyor. Dugme kendi aktif halini zaten
@@ -594,6 +616,18 @@ export function AltGezinme() {
  * gostergesi) da paya dahil; web'de sifir. Cihaz olcusu uygulama
  * acilirken bir kez okunuyor - donmeyle degismiyor.
  */
+/** Rozetlerin yeniden cekilmesi icin en kisa aralik (2026-09-22). */
+const ROZET_TAZELEME_MS = 60 * 1000
+
+/**
+ * Rozet onbellegini DUSURUR: bir konusma okundugunda ya da bir istek
+ * yanitlandiginda sayinin bir dakika beklemeden dusmesi icin o ekranlar
+ * bunu cagiriyor. Bir sonraki yol degisiminde rozet yeniden cekilir.
+ */
+export function rozetleriTazele() {
+  onbellekSil(ANAHTAR.gezinmeRozetleri)
+}
+
 export const ALT_GEZINME_PAYI = 92 + (initialWindowMetrics?.insets.bottom ?? 0)
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({

@@ -17,7 +17,7 @@ import { useOturum } from '../../../lib/oturum'
 import { avatarlariGetir } from '../../../lib/akis'
 import { Avatar } from '../../tasarim/Avatar'
 import { GeriOkIkonu } from '../../tasarim/mekan-ikonlari'
-import { ALT_GEZINME_PAYI } from '../../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI, rozetleriTazele } from '../../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useRenk, useStiller } from '../../tasarim/tema-baglami'
 import { useDil, cevir } from '../../../lib/dil'
@@ -103,6 +103,8 @@ export default function SohbetEkrani() {
           if (iptalEdildi) return
           setMesajlar(gecmis)
           await konusmayiOkunduIsaretle(bulunan.konusmaId)
+          // Alt cubuktaki okunmamis rozeti hemen dussun (2026-09-22).
+          rozetleriTazele()
           return
         }
 

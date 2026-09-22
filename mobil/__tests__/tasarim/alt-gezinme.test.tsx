@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
 
 /**
@@ -38,7 +38,8 @@ jest.mock('../../lib/etiket', () => ({
  */
 jest.mock('../../src/tasarim/hareket', () => ({ useHareket: () => false }))
 
-import { AltGezinme } from '../../src/tasarim/AltGezinme'
+import { AltGezinme, rozetleriTazele } from '../../src/tasarim/AltGezinme'
+import { ANAHTAR, onbellekYaz } from '../../lib/onbellek'
 import { konusmalarimiGetir } from '../../lib/sohbet'
 
 beforeEach(() => {
@@ -125,6 +126,43 @@ describe('AltGezinme - aktif sekme dairesi', () => {
     await render(<AltGezinme />)
 
     expect(await screen.findByText('3')).toBeTruthy()
+  })
+
+  /**
+   * ROZETLER ARALIKLI (2026-09-22 performans turu): her sekme
+   * dokunusunda dort istek gidiyordu, ekranin kendi istekleri USTUNE.
+   * Rozet ikincil bilgi; taze onbellek varsa sunucuya hic gidilmiyor.
+   *
+   * IKI YON AYRI AYRI olculuyor: ayni testte `unmount()` edip yeniden
+   * render etmek RNTL'in `screen`ini bozuyor ve SONRAKI testler
+   * elemanlari bulamiyor (2026-09-09'da yasandi).
+   */
+  it('ROZET ONBELLEGI: taze onbellek varsa sunucuya HIC gidilmiyor, sayi yine gorunuyor', async () => {
+    onbellekYaz(ANAHTAR.gezinmeRozetleri, { mesaj: 2, bildirim: 0, zaman: Date.now() })
+
+    await render(<AltGezinme />)
+
+    expect(screen.getByText('2')).toBeTruthy()
+    expect(konusmalarimiGetir).not.toHaveBeenCalled()
+  })
+
+  it('ESKI onbellek yeniden cekiliyor (aralik doldu)', async () => {
+    onbellekYaz(ANAHTAR.gezinmeRozetleri, { mesaj: 2, bildirim: 0, zaman: Date.now() - 5 * 60 * 1000 })
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([{ okunmamis: 7 }])
+
+    await render(<AltGezinme />)
+
+    expect(await screen.findByText('7')).toBeTruthy()
+  })
+
+  it('rozetleriTazele onbellegi dusurur: sayac hemen yeniden cekilir', async () => {
+    onbellekYaz(ANAHTAR.gezinmeRozetleri, { mesaj: 2, bildirim: 0, zaman: Date.now() })
+    rozetleriTazele()
+    ;(konusmalarimiGetir as jest.Mock).mockResolvedValue([{ okunmamis: 5 }])
+
+    await render(<AltGezinme />)
+
+    expect(await screen.findByText('5')).toBeTruthy()
   })
 
   /**

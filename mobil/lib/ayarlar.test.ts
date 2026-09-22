@@ -8,7 +8,7 @@ import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
   supabase: {
-    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) },
+    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }), getSession: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'kullanici-1' } } } }) },
     from: jest.fn(),
     rpc: jest.fn(),
   },

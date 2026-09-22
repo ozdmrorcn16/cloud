@@ -6,7 +6,7 @@ jest.mock('./supabase', () => ({
   supabase: {
     from: jest.fn(),
     rpc: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
     functions: { invoke: jest.fn() },
   },
 }))
@@ -14,7 +14,7 @@ jest.mock('./supabase', () => ({
 const sahteSupabase = supabase as unknown as {
   from: jest.Mock
   rpc: jest.Mock
-  auth: { getUser: jest.Mock }
+  auth: { getUser: jest.Mock; getSession: jest.Mock }
   functions: { invoke: jest.Mock }
 }
 

@@ -60,6 +60,7 @@ import { ProfilHaritaZemini } from '../../tasarim/ProfilHaritaZemini'
 import { InstagramSatiri } from '../../tasarim/InstagramSatiri'
 import { SiraRozeti } from '../../tasarim/SiraRozeti'
 import { BasHarfAvatar } from '../../tasarim/BasHarfAvatar'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../../lib/onbellek'
 
 /**
  * Anilar bolumunde ILK ACILISTA kac kart CIZILIR.
@@ -230,15 +231,24 @@ export default function ProfilEkrani() {
   // suzulsun (bkz. _layout.tsx, `ustSerit`).
   const renk = useRenk()
   const guvenliAlan = useSafeAreaInsets()
-  const [profil, setProfil] = useState<KendiProfil | null>(null)
-  const [fotografUrl, setFotografUrl] = useState<string | null>(null)
-  const [anilar, setAnilar] = useState<AniGorunumu[]>([])
+  // ONBELLEKTEN BASLA (2026-09-22): profil sekmesi her donuste sifirdan
+  // kuruluyordu (kok duzen `Slot`); son veri elde varsa ekran dolu
+  // aciliyor, tazeleme arkada kosuyor.
+  const onbelleklenmis = onbellekOku<{
+    profil: KendiProfil | null
+    fotografUrl: string | null
+    anilar: AniGorunumu[]
+    baglar: BagKisi[]
+  }>(ANAHTAR.profil)
+  const [profil, setProfil] = useState<KendiProfil | null>(onbelleklenmis?.profil ?? null)
+  const [fotografUrl, setFotografUrl] = useState<string | null>(onbelleklenmis?.fotografUrl ?? null)
+  const [anilar, setAnilar] = useState<AniGorunumu[]>(onbelleklenmis?.anilar ?? [])
   // Sekme (kullanicinin secimi 2026-08-29): ayni veriye iki bakis -
   // zaman sirasi (anilar) ve yer sirasi (en cok gidilenler). Secim
   // rota parametresinde: mekana gidip geri gelince ayni sekme acilir
   // (kullanicinin bildirimi 2026-09-18).
   const [sekme, setSekme] = useSekmeParametresi(PROFIL_SEKMELERI, 'anilar')
-  const [baglar, setBaglar] = useState<BagKisi[]>([])
+  const [baglar, setBaglar] = useState<BagKisi[]>(onbelleklenmis?.baglar ?? [])
   // ARKADAS LISTESI (kullanicinin istegi 2026-09-14): profil resmi +
   // sagda "..." -> Arkadasliktan cikar / Engelle. Avatarlar listeden
   // sonra ve ayri (bildirimler/mesajlarla ayni yol).
@@ -283,7 +293,7 @@ export default function ProfilEkrani() {
   const [kimlikYuksekligi, setKimlikYuksekligi] = useState(KIMLIK_VARSAYILAN)
   const [kaldirOnayi, setKaldirOnayi] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
-  const [yukleniyor, setYukleniyor] = useState(true)
+  const [yukleniyor, setYukleniyor] = useState(onbelleklenmis === undefined)
 
   async function yukle() {
     try {
@@ -308,6 +318,12 @@ export default function ProfilEkrani() {
       setAnilar(anilarVerisi)
       setBaglar(baglar)
       setFotografUrl(foto)
+      onbellekYaz(ANAHTAR.profil, {
+        profil: kendi,
+        fotografUrl: foto,
+        anilar: anilarVerisi,
+        baglar,
+      })
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))

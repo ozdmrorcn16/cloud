@@ -207,8 +207,11 @@ describe('kullanicininAnilariniGetir', () => {
 
 describe('aktifCheckInimiGetir', () => {
   function oturumuKur(kullaniciId: string | null) {
+    const kullanici = kullaniciId ? { id: kullaniciId } : null
     ;(supabase as unknown as { auth: unknown }).auth = {
-      getUser: jest.fn().mockResolvedValue({ data: { user: kullaniciId ? { id: kullaniciId } : null } }),
+      getUser: jest.fn().mockResolvedValue({ data: { user: kullanici } }),
+      // Kimlik artik YEREL oturumdan okunuyor (2026-09-22 performans turu).
+      getSession: jest.fn().mockResolvedValue({ data: { session: kullanici ? { user: kullanici } : null } }),
     }
   }
 

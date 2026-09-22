@@ -15,7 +15,7 @@ import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { BosDurumGirisi } from '../tasarim/KademeliGiris'
-import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI, rozetleriTazele } from '../tasarim/AltGezinme'
 import { Avatar } from '../tasarim/Avatar'
 
 /**
@@ -98,6 +98,7 @@ export default function BildirimlerEkrani() {
     try {
       await takipIsteginiYanitla(kullaniciId, kabul)
       setTakipIstekleri((mevcut) => mevcut.filter((k) => k.id !== kullaniciId))
+      rozetleriTazele()
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
@@ -107,6 +108,7 @@ export default function BildirimlerEkrani() {
     try {
       await etiketiYanitla(checkInId, onay)
       setEtiketler((mevcut) => mevcut.filter((e) => e.checkInId !== checkInId))
+      rozetleriTazele()
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }

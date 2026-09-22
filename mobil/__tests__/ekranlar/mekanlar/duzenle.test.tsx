@@ -25,7 +25,7 @@ jest.mock('../../../lib/mekan-duzenleme', () => ({
   bekleyenTalebimVarMi: jest.fn(),
 }))
 jest.mock('../../../lib/supabase', () => ({
-  supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kisi-1' } } }) } },
+  supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kisi-1' } } }), getSession: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'kisi-1' } } } }) } },
 }))
 
 const mockGeri = jest.fn()

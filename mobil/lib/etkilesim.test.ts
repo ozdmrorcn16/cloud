@@ -6,7 +6,7 @@ jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
     from: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
   },
 }))
 jest.mock('./akis', () => ({ profilOzetleriniGetir: jest.fn() }))
@@ -14,6 +14,7 @@ jest.mock('./akis', () => ({ profilOzetleriniGetir: jest.fn() }))
 beforeEach(() => {
   jest.clearAllMocks()
   ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'ben' } } })
+  ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: 'ben' } } } })
 })
 
 describe('etkilesimOzetleriniGetir', () => {

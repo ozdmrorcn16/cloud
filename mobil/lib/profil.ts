@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 import { fotografYukle } from './fotograf-yukle'
+import { kimligiZorunluOku, kullaniciKimligi } from './kimlik'
 
 export type BaskaProfil = {
   id: string
@@ -58,8 +59,7 @@ type SunucuProfili = {
  */
 export async function kendiKullaniciIdim(): Promise<string | null> {
   try {
-    const { data } = await supabase.auth.getUser()
-    return data.user?.id ?? null
+    return await kullaniciKimligi()
   } catch {
     return null
   }
@@ -114,9 +114,7 @@ export type KendiProfil = {
  * olusturulmamis olabilir.
  */
 export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const kullaniciId = kullaniciVerisi.user?.id
-  if (!kullaniciId) throw new Error('Oturum bulunamadı')
+  const kullaniciId = await kimligiZorunluOku()
 
   const { data, error } = await supabase
     .from('profiller')
@@ -166,9 +164,7 @@ export async function kendiProfilimiGetir(): Promise<KendiProfil | null> {
  * aciyor, SAHIBINE DE (migrasyon 20260826210000 ve ...220000).
  */
 export async function profilFotografiniDegistir(yerelUri: string): Promise<string> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const kullaniciId = kullaniciVerisi.user?.id
-  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+  const kullaniciId = await kimligiZorunluOku('Oturumun düşmüş, tekrar giriş yap.')
 
   const yuklenenYol = await fotografYukle(kullaniciId, yerelUri)
 
@@ -191,9 +187,7 @@ export async function profilFotografiniDegistir(yerelUri: string): Promise<strin
  * acmiyor; dosya silme basarisiz olsa da fotograf gorunmez olur.
  */
 export async function profilFotografiniKaldir(): Promise<void> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const kullaniciId = kullaniciVerisi.user?.id
-  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+  const kullaniciId = await kimligiZorunluOku('Oturumun düşmüş, tekrar giriş yap.')
 
   const { error } = await supabase
     .from('profiller')
@@ -253,9 +247,7 @@ export async function profiliGuncelle(alanlar: {
    */
   instagram?: string | null
 }): Promise<void> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const kullaniciId = kullaniciVerisi.user?.id
-  if (!kullaniciId) throw new Error('Oturumun düşmüş, tekrar giriş yap.')
+  const kullaniciId = await kimligiZorunluOku('Oturumun düşmüş, tekrar giriş yap.')
 
   const { error } = await supabase
     .from('profiller')

@@ -24,7 +24,7 @@ jest.mock('../../../lib/mekan', () => ({
   }),
 }))
 jest.mock('../../../lib/supabase', () => ({
-  supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }) } },
+  supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'kullanici-1' } } }), getSession: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'kullanici-1' } } } }) } },
 }))
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),

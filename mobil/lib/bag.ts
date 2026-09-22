@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { kimligiZorunluOku } from './kimlik'
 
 export type BagDurumu = 'yok' | 'beklemede' | 'kabul'
 
@@ -12,10 +13,7 @@ export type BagKisi = {
 }
 
 async function kendiKullaniciId(): Promise<string> {
-  const { data } = await supabase.auth.getUser()
-  const id = data.user?.id
-  if (!id) throw new Error('Oturum bulunamadı')
-  return id
+  return kimligiZorunluOku()
 }
 
 async function rpcCagir(ad: string, parametreler: Record<string, unknown>): Promise<void> {

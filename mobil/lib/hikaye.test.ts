@@ -16,7 +16,7 @@ import { dosyayiOku } from './dosya-oku'
 jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
     storage: { from: jest.fn() },
   },
 }))
@@ -47,6 +47,7 @@ function satir(ek: Record<string, unknown>) {
 beforeEach(() => {
   jest.clearAllMocks()
   ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'ben' } } })
+  ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: 'ben' } } } })
   ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrls, upload, remove })
   createSignedUrls.mockImplementation(async (yollar: string[]) => ({
     data: yollar.map((y) => ({ path: y, signedUrl: `https://imzali/${y}`, error: null })),

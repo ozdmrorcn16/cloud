@@ -115,3 +115,21 @@ jest.mock('react-native-maps', () => {
 beforeEach(() => {
   require('./lib/paylasim').paylasimKorumasiniSifirla()
 })
+
+// PERFORMANS ONBELLEKLERI (2026-09-22) de modul duzeyinde: kimlik,
+// imzali adres ve ekran verisi. `jest.clearAllMocks()` modul durumunu
+// sifirlamaz, yani bir testte onbellege giren deger sonrakinde
+// "sunucuya hic sorulmadi" gibi gorunup iddiayi bos gecirirdi.
+beforeEach(() => {
+  // Modul MOCK'LANMIS olabilir (cogu ekran testi `lib/fotograf-url`u
+  // dar bir mock'la degistiriyor); o zaman sifirlanacak bir onbellek de
+  // yoktur, cagri atlanir.
+  for (const [modul, ad] of [
+    ['./lib/kimlik', 'kimlikOnbelleginiSifirla'],
+    ['./lib/fotograf-url', 'imzaOnbelleginiSifirla'],
+    ['./lib/onbellek', 'onbellegiSifirla'],
+  ]) {
+    const f = require(modul)[ad]
+    if (typeof f === 'function') f()
+  }
+})

@@ -1,12 +1,10 @@
 import { supabase } from './supabase'
 import type { Bulunurluk, AniGorunurlugu } from './checkin'
 import { hataMetni } from './hata-metni'
+import { kimligiZorunluOku } from './kimlik'
 
 async function kendiKullaniciId(): Promise<string> {
-  const { data } = await supabase.auth.getUser()
-  const id = data.user?.id
-  if (!id) throw new Error('Oturum bulunamadı')
-  return id
+  return kimligiZorunluOku()
 }
 
 export async function varsayilanBulunurluguGetir(): Promise<Bulunurluk> {

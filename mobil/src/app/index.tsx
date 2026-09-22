@@ -19,6 +19,7 @@ import { gorecelZaman } from '../../lib/zaman'
 import { SuAnDisarida } from '../tasarim/SuAnDisarida'
 import { HikayeSeridi } from '../tasarim/HikayeSeridi'
 import { hikayeSeridiVerisiniGetir, type HikayeSeridiVerisi } from '../../lib/hikaye'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../lib/onbellek'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
@@ -63,16 +64,25 @@ export default function AnaSayfa() {
   // yeniden mount olsa bile).
   const kademeOynatilanlar = useRef(new Set<string>())
   const { t } = useDil()
-  const [ogeler, setOgeler] = useState<AkisOgesi[]>([])
+  // ONBELLEKTEN BASLA (2026-09-22): ekran `Slot` yuzunden her donuste
+  // sifirdan kuruluyor; son veri elde varsa bos liste ve "Yukleniyor"
+  // hic gorunmuyor, tazeleme arkada kosuyor.
+  const [ogeler, setOgeler] = useState<AkisOgesi[]>(() => onbellekOku<AkisOgesi[]>(ANAHTAR.akis) ?? [])
   const [hata, setHata] = useState<string | null>(null)
-  const [yukleniyor, setYukleniyor] = useState(true)
+  const [yukleniyor, setYukleniyor] = useState(
+    () => onbellekOku<AkisOgesi[]>(ANAHTAR.akis) === undefined
+  )
   const [yenileniyor, setYenileniyor] = useState(false)
   // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
-  const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
+  const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>(
+    () => onbellekOku<Record<string, EtkilesimOzeti>>(ANAHTAR.akisOzetleri) ?? {}
+  )
   // HIKAYE SERIDI (2026-09-22): akistan ayri istek; okunamazsa akis yine
   // cizilir, yalnizca kendi dairem (ekleme yolu) kalir.
-  const [hikayeler, setHikayeler] = useState<HikayeSeridiVerisi>({ gruplar: [], ben: null })
+  const [hikayeler, setHikayeler] = useState<HikayeSeridiVerisi>(
+    () => onbellekOku<HikayeSeridiVerisi>(ANAHTAR.hikayeSeridi) ?? { gruplar: [], ben: null }
+  )
   // SAYFALAMA. Akis eskiden yalnizca en yeni sayfayi cekiyordu ve
   // devami hic yuklenmiyordu; sayfa boyunu asan eski paylasimlar ana
   // sayfada erisilemez oluyordu (kullanicinin kurali 2026-09-07:
@@ -97,12 +107,15 @@ export default function AnaSayfa() {
     try {
       const gelen = await akisiGetir(istenen)
       setOgeler(gelen)
+      onbellekYaz(ANAHTAR.akis, gelen)
       setDahaVarMi(gelen.length === istenen)
       // Begeni/yorum sayilari TEK cagrida: kart basina sorgu atmak otuz
       // gidis-donus demekti. Okunamazsa akis yine ciziliyor, yalnizca
       // eylem satiri gorunmuyor - sayilar yuzunden akisi kaybetmek
       // yanlis olur (etiketlerdeki desenin aynisi).
-      setOzetler(await etkilesimOzetleriniGetir(gelen.map((o) => o.id)).catch(() => ({})))
+      const yeniOzetler = await etkilesimOzetleriniGetir(gelen.map((o) => o.id)).catch(() => ({}))
+      setOzetler(yeniOzetler)
+      onbellekYaz(ANAHTAR.akisOzetleri, yeniOzetler)
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -110,7 +123,10 @@ export default function AnaSayfa() {
       setYukleniyor(false)
     }
     const hikayeVerisi = await hikayeSozu
-    if (hikayeVerisi) setHikayeler(hikayeVerisi)
+    if (hikayeVerisi) {
+      setHikayeler(hikayeVerisi)
+      onbellekYaz(ANAHTAR.hikayeSeridi, hikayeVerisi)
+    }
   }
 
   // Ekran her odaklandiginda tazeleniyor: kullanici check-in yapip geri

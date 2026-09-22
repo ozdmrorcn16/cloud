@@ -1039,6 +1039,76 @@ kimlerin begendigi gorunsun". OTA `760d92cb`, web guncel.
   begenenYok/paylasimBaslik/paylasimBulunamadi`. Jest 89 / 1169.
   KVKK listesi maddesi yazildi. Telefonda dogrulanmadi.
 
+### PERFORMANS: "HER SAYFA HER SEFERINDE YUKLENIYOR" - 2026-09-22
+
+Kullanicinin bildirimi: "uygulama icerisinde yavaslik var her sayfa
+herseferinde yuklenmeye calisiyor." OLCULDU, tahminle duzeltilmedi:
+yeni arac `mobil/araclar/gezinme-olcum.mjs` (puppeteer; giris yapar,
+alt gezinmeden sekme sekme gezer, her geciste Supabase'e giden istek
+sayisini ve sureyi yazar). OTA grup `0e8c037c`, web
+`slooin--q78h8gwboi` (pakette `getSession`/`onbellekOku`/
+`rozetleriTazele` dogrulandi).
+
+| | Once | Sonra (ilk) | Sonra (tekrar) |
+|---|---|---|---|
+| Ana sayfa | 37 istek / 1249 ms | 18 / 1291 | **13 / 689 ms** |
+| Profil | 26 / 951 ms | 18 / 658 | **10 / 356 ms** |
+| Mesajlar | ~12 | - | **4 / 311 ms** |
+
+**DORT KOK NEDEN (hepsi olculdu):**
+1. **Onbellek yok.** Kok duzen `Slot` kullaniyor; sekme degisince ekran
+   AGACTAN KALKIYOR, `useState` varsayilana donuyor, `useFocusEffect`
+   her seyi yeniden cekiyor. Ikinci donuste de 37 istek.
+2. **`auth.getUser()` sayfa basina DORT kez.** supabase-js v2'de o cagri
+   her seferinde SUNUCUYA gidip jetonu dogruluyor; oysa cagiran yerler
+   yalnizca "benim kimligim ne" diye soruyor ve o bilgi yerel oturumda.
+3. **Ayni avatar BES kez imzalaniyor.** Imza bir saat gecerli ama akis
+   karti, serit, etiketler ve hikaye seridi ayri ayri istiyordu.
+4. **Alt gezinme rozetleri her yol degisiminde dort istek** atiyordu -
+   ekranin kendi istekleri USTUNE.
+
+**COZUM - dort katman, ekran yapilarina dokunmadan:**
+- `lib/kimlik.ts`: `kullaniciKimligi()` / `kimligiZorunluOku()` -
+  `getSession()` ile YEREL okuma + 3 sn'lik bellek onbellegi + ayni anda
+  gelen cagrilari tek istege bindirme. 13 lib dosyasindaki kimlik okuma
+  buna gecti. **GUVENLIK-KRITIK UC YER BILEREK DISARIDA**
+  (`hesap-guvenlik.ts`, `hesap.ts`, `veri-disa-aktar.ts`): orada amac
+  kimligi okumak degil, jetonu sunucuya dogrulatmak.
+- `lib/fotograf-url.ts`: kova+yol basina imza onbellegi (50 dk sonra
+  yeniden imzalar) + `profilFotografiUrlHaritasi` (toplu
+  `createSignedUrls`). `profilOzetleriniGetir` artik kisi basina degil
+  TEK istekle imzaliyor.
+- `lib/onbellek.ts`: "once eldekini goster, arkada tazele". Ana sayfa,
+  profil, mesajlar, kesfet (liste + son bilinen KONUM - onceden her
+  girise GPS bekleniyordu) onbellekten aciliyor. Bellekte, DISKTE
+  DEGIL: imzali adres ve konum kisa omurlu, ustelik cihaza kisisel veri
+  yazmamak gizlilik cizgisiyle uyumlu. Cikista/giriste sifirlaniyor.
+- `AltGezinme`: uc rozet istegi TEK turda ve en fazla 60 sn'de bir;
+  `rozetleriTazele()` (sohbet okundu, istek/etiket yanitlandi) onbellegi
+  dusuruyor, yani sayi beklemeden guncelleniyor.
+- `akisiGetir` icindeki etiket + profil + imza zinciri `Promise.all`a
+  alindi (uc gidis-donus daha az).
+
+**DERSLER:**
+- Modul duzeyinde `supabase.auth.onAuthStateChange(...)` cagirmak 16
+  test paketini coktu: testler `supabase`i dar bir mock'la degistiriyor
+  ve `auth` yok. Abonelik tek bir savunmali kapiya alindi
+  (`lib/oturum-olayi.ts`, optional chaining + try/catch).
+- Modul duzeyi onbellek TESTLER ARASI SIZAR (`jest.clearAllMocks()` onu
+  sifirlamaz): `jest.setup.js` her testten once kimlik/imza/ekran
+  onbelleklerini dusuruyor - mock'lanmis modulde fonksiyon yoksa atlayan
+  savunmali dongu ile.
+- AYNI TUZAGA IKINCI KEZ DUSULDU (ilki 2026-09-09): ayni testte
+  `unmount()` edip yeniden render etmek RNTL'in `screen`ini bozuyor ve
+  SONRAKI testler elemanlari bulamiyor. Onbellek testleri iki yonu AYRI
+  AYRI olcuyor (onbellege dogrudan yazip ekranin okudugunu, ve ekranin
+  yazdigini).
+- Olcumde SURE degil ISTEK SAYISI ve TEKRAR bakilir: ayni RPC'nin ayni
+  cizimde kac kez gectigi kok nedeni dogrudan gosteriyor.
+
+Jest 95 paket / 1222 test, tsc temiz. GERCEK CIHAZDA DOGRULANMADI -
+telefonda sekme gecisinin hissi kullanicidan.
+
 ### HIKAYE AKISI (24 SAAT) - 2026-09-22
 
 Kullanicinin istegi: "ana sayfaya Instagram gibi hikaye ekleme akisi da

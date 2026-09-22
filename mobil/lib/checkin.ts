@@ -3,6 +3,7 @@ import { noktayiCoz } from './konum'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
 import { checkInFotografiUrlHaritasi } from './fotograf-url'
+import { kimligiZorunluOku } from './kimlik'
 
 /**
  * CHECK-IN YAKINLIK KURALI: en fazla 1 km.
@@ -287,9 +288,7 @@ export type AktifCheckIn = CheckIn & { mekanAdi: string }
  * `limit 1` var, cunku bu ekran tek bir satiri gosteriyor.
  */
 export async function aktifCheckInimiGetir(): Promise<AktifCheckIn | null> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const kullaniciId = kullaniciVerisi.user?.id
-  if (!kullaniciId) throw new Error('Oturum bulunamadı')
+  const kullaniciId = await kimligiZorunluOku()
 
   const { data, error } = await supabase
     .from('check_inler')

@@ -9,7 +9,7 @@ import {
 } from '../../lib/sohbet'
 import { useDil } from '../../lib/dil'
 import { UstCubuk } from '../tasarim/UstCubuk'
-import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ALT_GEZINME_PAYI, rozetleriTazele } from '../tasarim/AltGezinme'
 import { yazi, olcek, bosluk, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 
@@ -59,6 +59,7 @@ export default function MesajIstekleriEkrani() {
     try {
       await mesajIsteginiKabulEt(gonderenId)
       setIstekler((mevcut) => mevcut.filter((i) => i.gonderenId !== gonderenId))
+      rozetleriTazele()
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -69,6 +70,7 @@ export default function MesajIstekleriEkrani() {
     try {
       await mesajIsteginiReddet(gonderenId)
       setIstekler((mevcut) => mevcut.filter((i) => i.gonderenId !== gonderenId))
+      rozetleriTazele()
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))

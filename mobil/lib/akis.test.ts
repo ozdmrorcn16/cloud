@@ -4,7 +4,7 @@ import { takipcilerimiGetir } from './bag-listeleri'
 import { checkInFotografiUrlHaritasi } from './fotograf-url'
 
 jest.mock('./supabase', () => ({
-  supabase: { from: jest.fn(), auth: { getUser: jest.fn() } },
+  supabase: { from: jest.fn(), auth: { getUser: jest.fn(), getSession: jest.fn() } },
 }))
 jest.mock('./bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 jest.mock('./fotograf-url', () => ({ checkInFotografiUrlHaritasi: jest.fn().mockResolvedValue({}) }))
@@ -40,6 +40,9 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({
     data: { user: { id: 'kullanici-1' } },
+  })
+  ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+    data: { session: { user: { id: 'kullanici-1' } } },
   })
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
   ;(checkInFotografiUrlHaritasi as jest.Mock).mockResolvedValue({})
@@ -149,6 +152,7 @@ describe('akisiGetir', () => {
 
   it('oturum yoksa hata firlatir', async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: null } })
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: null } } })
     await expect(akisiGetir()).rejects.toThrow('Oturum bulunamadı')
   })
 })

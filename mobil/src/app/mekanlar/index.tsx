@@ -73,6 +73,7 @@ import {
 } from '../../../lib/yol-tarifi'
 import { Avatar } from '../../tasarim/Avatar'
 import { SecimPenceresi, UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../../lib/onbellek'
 
 /** Satir sonundaki check-in kisayolu ikonu. */
 /** Sekme ikonu: buyutec. Ana sayfadaki arama kutusundaki cizimle ayni. */
@@ -154,7 +155,12 @@ export default function KesfetEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
-  const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(null)
+  // KONUM ONBELLEKTEN (2026-09-22): sekmeye her donuste GPS'in
+  // cevaplamasi bekleniyordu ve liste o kadar gec geliyordu. Son bilinen
+  // konumla liste hemen cekiliyor; GPS arkada tazeleniyor.
+  const [cihazKonumu, setCihazKonumu] = useState<{ lat: number; lng: number } | null>(
+    () => onbellekOku<{ lat: number; lng: number }>(ANAHTAR.cihazKonumu) ?? null
+  )
   const [arama, setArama] = useState('')
   /*
    * ONERI PANELI ACIK MI. Bir oneriye dokununca kapaniyor; yeni bir
@@ -198,7 +204,9 @@ export default function KesfetEkrani() {
    */
   const [durum, setDurum] = useState<'tumu' | MekanDurumu>('tumu')
 
-  const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>([])
+  const [mekanlar, setMekanlar] = useState<MekanYogunlukIle[]>(
+    () => onbellekOku<MekanYogunlukIle[]>(ANAHTAR.mekanlar) ?? []
+  )
   // AKTIF CHECK-IN (kullanicinin istegi 2026-08-29): check-in yapilmis
   // mekanda kart artik "Check-in yap" demiyor; "Şu an buradasın" deyip
   // Ayrıldım ve Sil sunuyor. Baska bir mekan secilene kadar boyle.
@@ -208,7 +216,9 @@ export default function KesfetEkrani() {
   // Silme GERI ALINAMAZ: once onay satiri aciliyor.
   const [hata, setHata] = useState<string | null>(null)
   const [yenileniyor, setYenileniyor] = useState(false)
-  const [yukleniyor, setYukleniyor] = useState(true)
+  const [yukleniyor, setYukleniyor] = useState(
+    () => onbellekOku<MekanYogunlukIle[]>(ANAHTAR.mekanlar) === undefined
+  )
   // Ilk acilis bittikten sonra ekran duzeni bir daha tam ekran
   // durumlara gecmiyor; bkz. asagidaki not.
   const [ilkYuklemeBitti, setIlkYuklemeBitti] = useState(false)
@@ -467,6 +477,7 @@ export default function KesfetEkrani() {
     try {
       const konum = cihazKonumu ?? (await cihazKonumunuAl())
       setCihazKonumu(konum)
+      onbellekYaz(ANAHTAR.cihazKonumu, konum)
       /**
        * ARAMA BOSKEN: yaricap, tur suzgeci ve limit SUNUCUYA
        * gonderiliyor (kullanicinin istegi 2026-08-31).
@@ -528,6 +539,9 @@ export default function KesfetEkrani() {
        */
       if (sira !== istekSirasi.current) return
       setMekanlar(sonuc)
+      // Yalnizca VARSAYILAN liste onbellege giriyor: arama sonucu ya da
+      // sayfalanmis liste geri gelindiginde gosterilecek hal degil.
+      if (!aramaVarMi) onbellekYaz(ANAHTAR.mekanlar, sonuc)
       void kartEkleriniYukle(sonuc)
       // ARAMADA SAYFALAMA YOK: orada limit hic gonderilmiyor, sunucu
       // kendi tavaniyla (200) donuyor ve ikinci sayfa istemek anlamsiz.

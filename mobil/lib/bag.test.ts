@@ -12,7 +12,7 @@ jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
     from: jest.fn(),
-    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'ben' } } }) },
+    auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'ben' } } }), getSession: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'ben' } } } }) },
   },
 }))
 
@@ -246,6 +246,7 @@ describe('bagDurumunuGetir', () => {
 
   it("oturum yoksa 'Oturum bulunamadı' firlatir", async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({ data: { user: null } })
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({ data: { session: null } })
 
     await expect(bagDurumunuGetir('kisi-1')).rejects.toThrow('Oturum bulunamadı')
   })

@@ -332,9 +332,24 @@ moderasyon RPC'si, disa aktarimda `hikayelerim` +
 Jest 93 / 1203, test:sema yesil, canli `araclar/hikaye-canli-test.py`
 20/20. Ayrinti CLAUDE.md "HIKAYE AKISI (24 SAAT)".
 
+**Ek (2026-09-22 gece, YAYINDA - OTA `0e8c037c`, web guncel):**
+PERFORMANS. Kullanicinin bildirimi "her sayfa her seferinde yuklenmeye
+calisiyor" olculdu (`mobil/araclar/gezinme-olcum.mjs`): sekme basina
+26-37 istek, ve ikinci donuste de ayni. Dort kok neden: onbellek yok
+(`Slot` ekrani unmount ediyor), `auth.getUser()` sayfa basina dort kez
+AGA gidiyor, ayni avatar bes kez imzalaniyor, alt gezinme rozetleri her
+yol degisiminde dort istek. Dort katman eklendi: `lib/kimlik.ts`
+(kimlik yerel oturumdan), `lib/fotograf-url.ts` imza onbellegi + toplu
+imzalama, `lib/onbellek.ts` "once eldekini goster arkada tazele" (ana
+sayfa, profil, mesajlar, kesfet + son bilinen konum), rozetler tek
+turda ve 60 sn'de bir. Olcum: ana sayfa 37/1249 ms -> 13/689 ms, profil
+26/951 -> 10/356, mesajlar ~12 -> 4. Jest 95 / 1222. Ayrinti CLAUDE.md
+"PERFORMANS".
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
-fotograf secimi, begeni/yorum push'u, Paylasim ekrani ve HIKAYE AKISININ
-TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma).
+fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
+TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS
+DUZELTMESININ HISSI (sekme gecisleri).
 
 ## 8a. Onceki kayit (2026-09-19)
 

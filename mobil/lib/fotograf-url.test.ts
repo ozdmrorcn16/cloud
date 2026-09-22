@@ -1,4 +1,10 @@
-import { profilFotografiUrl, profilFotograflariUrl, checkInFotografiUrlHaritasi, checkInFotografiUrlleri } from './fotograf-url'
+import {
+  profilFotografiUrl,
+  profilFotograflariUrl,
+  checkInFotografiUrlHaritasi,
+  checkInFotografiUrlleri,
+  imzaOnbelleginiSifirla,
+} from './fotograf-url'
 import { supabase } from './supabase'
 
 jest.mock('./supabase', () => ({
@@ -32,17 +38,52 @@ describe('profilFotografiUrl', () => {
 })
 
 describe('profilFotograflariUrl', () => {
-  it('coklu surumde basarisiz olan atlanir', async () => {
-    const createSignedUrlMock = jest
-      .fn()
-      .mockResolvedValueOnce({ data: { signedUrl: 'https://ornek/1.jpg' }, error: null })
-      .mockResolvedValueOnce({ data: null, error: { message: 'yetkisiz' } })
-      .mockResolvedValueOnce({ data: { signedUrl: 'https://ornek/3.jpg' }, error: null })
-    ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrl: createSignedUrlMock })
+  // TEK ISTEK (2026-09-22): onceden kisi basina bir `createSignedUrl`
+  // gidiyordu; olcumde ayni avatar bes kez imzalaniyordu.
+  it('hepsini TEK cagriyla imzalar, basarisiz olan atlanir', async () => {
+    const createSignedUrlsMock = jest.fn().mockResolvedValue({
+      data: [
+        { path: 'a.jpg', signedUrl: 'https://ornek/1.jpg', error: null },
+        { path: 'b.jpg', signedUrl: null, error: 'yetkisiz' },
+        { path: 'c.jpg', signedUrl: 'https://ornek/3.jpg', error: null },
+      ],
+      error: null,
+    })
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrls: createSignedUrlsMock })
 
     const sonuc = await profilFotograflariUrl(['a.jpg', 'b.jpg', 'c.jpg'])
 
+    expect(createSignedUrlsMock).toHaveBeenCalledTimes(1)
+    expect(createSignedUrlsMock).toHaveBeenCalledWith(['a.jpg', 'b.jpg', 'c.jpg'], 60 * 60)
     expect(sonuc).toEqual(['https://ornek/1.jpg', 'https://ornek/3.jpg'])
+  })
+
+  // ONBELLEK: ayni yol saniyeler icinde yeniden imzalanmiyor.
+  it('ONBELLEK: ikinci istekte ayni yol icin sunucuya gidilmiyor', async () => {
+    const createSignedUrlsMock = jest.fn().mockResolvedValue({
+      data: [{ path: 'a.jpg', signedUrl: 'https://ornek/1.jpg', error: null }],
+      error: null,
+    })
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrls: createSignedUrlsMock })
+
+    expect(await profilFotograflariUrl(['a.jpg'])).toEqual(['https://ornek/1.jpg'])
+    expect(await profilFotograflariUrl(['a.jpg'])).toEqual(['https://ornek/1.jpg'])
+
+    expect(createSignedUrlsMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ONBELLEK oturum degisince dusuyor', async () => {
+    const createSignedUrlsMock = jest.fn().mockResolvedValue({
+      data: [{ path: 'a.jpg', signedUrl: 'https://ornek/1.jpg', error: null }],
+      error: null,
+    })
+    ;(supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrls: createSignedUrlsMock })
+
+    await profilFotograflariUrl(['a.jpg'])
+    imzaOnbelleginiSifirla()
+    await profilFotograflariUrl(['a.jpg'])
+
+    expect(createSignedUrlsMock).toHaveBeenCalledTimes(2)
   })
 
   it('bos liste bos dizi doner', async () => {

@@ -9,6 +9,7 @@ import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
 import { useDil } from '../../../lib/dil'
 import { useHataStili } from '../../tasarim/hata-stili'
+import { rozetleriTazele } from '../../tasarim/AltGezinme'
 
 /**
  * BEKLEYEN ETIKETLER (Gizlilik > Etiketler > Bekleyen etiketler):
@@ -45,6 +46,7 @@ export default function BekleyenEtiketlerEkrani() {
     try {
       await etiketiYanitla(checkInId, onay)
       setEtiketler((m) => (m ? m.filter((e) => e.checkInId !== checkInId) : m))
+      rozetleriTazele()
       setHata(null)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))

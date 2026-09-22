@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import { checkinFotograflariniYukle } from './checkin-fotograf-yukle'
 import { checkInFotografiUrlleri } from './fotograf-url'
 import { hataMetni } from './hata-metni'
+import { kimligiZorunluOku } from './kimlik'
 
 const KOVA = 'check-in-fotograflari'
 
@@ -36,9 +37,7 @@ export async function checkInFotograflariniDegistir(
 ): Promise<{ yollar: string[]; urller: string[] }> {
   const yeniYollar: string[] = []
   if (degisiklik.yeniUriler.length > 0) {
-    const { data: kullaniciVerisi } = await supabase.auth.getUser()
-    const kullaniciId = kullaniciVerisi.user?.id
-    if (!kullaniciId) throw new Error('Oturum bulunamadi')
+    const kullaniciId = await kimligiZorunluOku('Oturum bulunamadi')
     try {
       await checkinFotograflariniYukle(kullaniciId, degisiklik.yeniUriler, yeniYollar)
     } catch (hata) {

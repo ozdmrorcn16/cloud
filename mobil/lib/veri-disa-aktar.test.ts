@@ -5,7 +5,7 @@ import { profilFotografiUrl } from './fotograf-url'
 jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
     storage: { from: jest.fn() },
   },
 }))

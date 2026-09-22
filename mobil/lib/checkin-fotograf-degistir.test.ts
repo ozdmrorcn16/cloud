@@ -6,7 +6,7 @@ import { checkInFotografiUrlleri } from './fotograf-url'
 jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
     storage: { from: jest.fn() },
   },
 }))
@@ -18,6 +18,7 @@ const remove = jest.fn()
 beforeEach(() => {
   jest.clearAllMocks()
   ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'kullanici-1' } } })
+  ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: 'kullanici-1' } } } })
   ;(supabase.storage.from as jest.Mock).mockReturnValue({ remove })
   remove.mockResolvedValue({ data: [], error: null })
   // Gercek yukleyici gibi: yollari hem dondurur hem `kismi` listesine iter.

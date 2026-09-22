@@ -2,6 +2,7 @@ import { sistemPaylasimi } from './paylasim'
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 import { profilOzetleriniGetir } from './akis'
+import { kimligiZorunluOku } from './kimlik'
 
 /**
  * BEGENI, YORUM VE PAYLASMA.
@@ -32,10 +33,7 @@ export type Yorum = {
 }
 
 async function kendiId(): Promise<string> {
-  const { data } = await supabase.auth.getUser()
-  const id = data.user?.id
-  if (!id) throw new Error('Oturum bulunamadı')
-  return id
+  return kimligiZorunluOku()
 }
 
 /**

@@ -8,7 +8,7 @@ const mockInsert = jest.fn()
 jest.mock('../../lib/supabase', () => ({
   supabase: {
     auth: {
-      getUser: jest.fn(),
+      getUser: jest.fn(), getSession: jest.fn(),
       updateUser: jest.fn(),
       signOut: jest.fn(),
     },

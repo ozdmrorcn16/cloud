@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 import { profilOzetleriniGetir } from './akis'
+import { kimligiZorunluOku } from './kimlik'
 
 /**
  * CHECK-IN'DE ARKADAS ETIKETLEME.
@@ -169,9 +170,7 @@ export async function bekleyenEtiketleriGetir(): Promise<BekleyenEtiket[]> {
  * duruyor, silinmiyor.
  */
 export async function etiketiYanitla(checkInId: string, onay: boolean): Promise<void> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const benimId = kullaniciVerisi.user?.id
-  if (!benimId) throw new Error('Oturum bulunamadı')
+  const benimId = await kimligiZorunluOku()
 
   const { error } = await supabase
     .from('check_in_etiketleri')

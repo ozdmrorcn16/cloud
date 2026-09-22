@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
 import { etkilesimOzetleriniGetir, yorumlariGetir, begenenleriGetir } from '../../lib/etkilesim'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../lib/onbellek'
 
 // AKIS_SAYFA_BOYU testte KUCULTULUYOR (3): FlatList sanallastirmasi
 // varsayilan olarak yalnizca ilk 10 satiri ciziyor, yani 30'luk bir
@@ -60,6 +61,7 @@ jest.mock('../../lib/etkilesim', () => ({
 const mockRouterPush = jest.fn()
 jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
 jest.mock('../../lib/hikaye', () => ({ hikayeSeridiVerisiniGetir: jest.fn() }))
+
 jest.mock('../../lib/fotograf-url', () => ({
   profilFotografiUrl: jest.fn().mockResolvedValue('https://imzali/kisi.jpg'),
 }))
@@ -258,6 +260,37 @@ describe('AnaSayfa', () => {
     expect(screen.queryByPlaceholderText('Ara')).toBeNull()
     await fireEvent.press(screen.getByTestId('kisi-ara'))
     expect(mockRouterPush).toHaveBeenCalledWith('/kisiler')
+  })
+
+  /**
+   * ONBELLEKTEN ACILIS (kullanicinin bildirimi 2026-09-22: "her sayfa
+   * her seferinde yuklenmeye calisiyor").
+   *
+   * Ekran `Slot` yuzunden sekme degisince agactan kalkiyor; geri
+   * donuste eldeki veri ANINDA cizilmeli, tazeleme arkada kosmali.
+   * Olcum: donus basina 37 istek / ~1250 ms -> 13 istek / ~690 ms.
+   *
+   * Onbellek DOGRUDAN doldurulup olculuyor: ayni testte `unmount()`
+   * edip yeniden render etmek RNTL'in `screen`ini bozuyor (2026-09-09).
+   */
+  it('ONBELLEK: eldeki akis ANINDA cizilir, ag cevabi beklenmez', async () => {
+    onbellekYaz(ANAHTAR.akis, [oge()])
+    // Ag CEVAP VERMIYOR: yine de liste dolu gorunmeli.
+    ;(akisiGetir as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await render(<AnaSayfa />)
+
+    expect(screen.getByText('Sahil Kafe')).toBeTruthy()
+  })
+
+  it('ONBELLEK BOSKEN eski davranis: once yukleme, sonra liste', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+
+    await render(<AnaSayfa />)
+
+    expect(await screen.findByText('Sahil Kafe')).toBeTruthy()
+    // Tazeleme sonucu onbellege yazildi: sonraki acilis aninda dolu gelir.
+    expect(onbellekOku(ANAHTAR.akis)).toHaveLength(1)
   })
 
   it('akis bosken kesfetmeye yonlendirir', async () => {

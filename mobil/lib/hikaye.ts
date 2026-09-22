@@ -3,6 +3,7 @@ import { hataMetni } from './hata-metni'
 import { dosyayiOku } from './dosya-oku'
 import { profilOzetleriniGetir } from './akis'
 import { mesajGonder } from './sohbet'
+import { kimligiZorunluOku, kullaniciKimligi } from './kimlik'
 
 /**
  * HIKAYELER (2026-09-22): Instagram benzeri 24 saatlik tek fotograf +
@@ -96,9 +97,8 @@ export function hikayeGruplariniSirala(gruplar: HikayeGrubu[]): HikayeGrubu[] {
  * de var (RPC kendini de donduruyor).
  */
 export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
-  const [{ data, error }, kullanici] = await Promise.all([supabase.rpc('hikaye_akisi'), supabase.auth.getUser()])
+  const [{ data, error }, benimId] = await Promise.all([supabase.rpc('hikaye_akisi'), kullaniciKimligi()])
   if (error) throw new Error(hataMetni(error))
-  const benimId = kullanici.data.user?.id ?? null
   const satirlar = (data ?? []) as AkisSatiri[]
   if (satirlar.length === 0) return []
 
@@ -154,9 +154,7 @@ export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
  * siniri, yazi uzun, askida hesap) yuklenen dosya geri silinir.
  */
 export async function hikayeEkle(yerelUri: string, yazi: string | null, mekanId: string | null): Promise<string> {
-  const { data: kullanici } = await supabase.auth.getUser()
-  const uid = kullanici.user?.id
-  if (!uid) throw new Error('Oturum bulunamadi')
+  const uid = await kimligiZorunluOku('Oturum bulunamadi')
   const baytlar = await dosyayiOku(yerelUri)
   const yol = `${uid}/${Date.now()}.jpg`
   const yukleme = await supabase.storage.from(KOVA).upload(yol, baytlar, { contentType: 'image/jpeg' })
@@ -248,8 +246,7 @@ export async function hikayeSeridiVerisiniGetir(): Promise<HikayeSeridiVerisi> {
       ben: { id: benimGrubum.kullaniciId, ad: benimGrubum.ad, kullaniciAdi: benimGrubum.kullaniciAdi, avatarUrl: benimGrubum.avatarUrl },
     }
   }
-  const { data } = await supabase.auth.getUser()
-  const uid = data.user?.id
+  const uid = await kullaniciKimligi()
   if (!uid) return { gruplar, ben: null }
   const ozet = (await profilOzetleriniGetir([uid]))[uid]
   return { gruplar, ben: ozet ? { id: uid, ad: ozet.ad, kullaniciAdi: ozet.rumuz, avatarUrl: ozet.avatarUrl } : null }

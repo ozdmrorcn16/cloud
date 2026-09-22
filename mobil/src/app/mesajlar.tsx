@@ -16,14 +16,23 @@ import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../lib/onbellek'
 
 export default function MesajlarEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
-  const [konusmalar, setKonusmalar] = useState<Konusma[]>([])
-  const [istekSayisi, setIstekSayisi] = useState(0)
-  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
+  // ONBELLEKTEN BASLA (2026-09-22): sekme her donuste sifirdan kuruluyordu.
+  const onbelleklenmis = onbellekOku<{
+    konusmalar: Konusma[]
+    istekSayisi: number
+    avatarlar: Record<string, string | null>
+  }>(ANAHTAR.mesajlar)
+  const [konusmalar, setKonusmalar] = useState<Konusma[]>(onbelleklenmis?.konusmalar ?? [])
+  const [istekSayisi, setIstekSayisi] = useState(onbelleklenmis?.istekSayisi ?? 0)
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>(
+    onbelleklenmis?.avatarlar ?? {}
+  )
   // Silme onayi (kullanicinin istegi 2026-09-14): kaydirip Sil'e basmak
   // sormaya yeter, silmeye yetmez. Bekleyen konusma id'si.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
@@ -43,13 +52,30 @@ export default function MesajlarEkrani() {
     if (gelenKonusmalar.status === 'fulfilled') {
       setKonusmalar(gelenKonusmalar.value)
       setHata(null)
+      onbellegeYaz({ konusmalar: gelenKonusmalar.value })
       avatarlariYukle(gelenKonusmalar.value)
     } else {
       const e = gelenKonusmalar.reason
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
 
-    setIstekSayisi(gelenIstekler.status === 'fulfilled' ? gelenIstekler.value.length : 0)
+    const yeniIstekSayisi = gelenIstekler.status === 'fulfilled' ? gelenIstekler.value.length : 0
+    setIstekSayisi(yeniIstekSayisi)
+    onbellegeYaz({ istekSayisi: yeniIstekSayisi })
+  }
+
+  /** Onbellegi PARCA PARCA gunceller: konusmalar, rozet ve avatarlar ayri ayri geliyor. */
+  function onbellegeYaz(parca: {
+    konusmalar?: Konusma[]
+    istekSayisi?: number
+    avatarlar?: Record<string, string | null>
+  }) {
+    const mevcut = onbellekOku<{
+      konusmalar: Konusma[]
+      istekSayisi: number
+      avatarlar: Record<string, string | null>
+    }>(ANAHTAR.mesajlar) ?? { konusmalar: [], istekSayisi: 0, avatarlar: {} }
+    onbellekYaz(ANAHTAR.mesajlar, { ...mevcut, ...parca })
   }
 
   // PROFIL RESMI (kullanicinin istegi 2026-09-14). Bildirimler
@@ -62,7 +88,9 @@ export default function MesajlarEkrani() {
     )
     if (kimlikler.length === 0) return
     try {
-      setAvatarlar(await avatarlariGetir(kimlikler))
+      const gelen = await avatarlariGetir(kimlikler)
+      setAvatarlar(gelen)
+      onbellegeYaz({ avatarlar: gelen })
     } catch {
       // sessiz: fotograf ikincil bilgi
     }

@@ -5,7 +5,7 @@ jest.mock('./supabase', () => ({
   supabase: {
     rpc: jest.fn(),
     from: jest.fn(),
-    auth: { getUser: jest.fn() },
+    auth: { getUser: jest.fn(), getSession: jest.fn() },
     storage: { from: jest.fn() },
   },
 }))
@@ -74,8 +74,10 @@ describe('baskasininProfiliniGetir', () => {
 
 describe('kendiProfilimiGetir', () => {
   function oturumuKur(kullaniciId: string | null) {
-    ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({
-      data: { user: kullaniciId ? { id: kullaniciId } : null },
+    const kullanici = kullaniciId ? { id: kullaniciId } : null
+    ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: kullanici } })
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      data: { session: kullanici ? { user: kullanici } : null },
     })
   }
 
@@ -126,6 +128,7 @@ describe('kendiProfilimiGetir', () => {
 describe('profilFotografiniKaldir', () => {
   it('profil satirini bosaltir, sonra klasordeki her dosyayi siler', async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'kullanici-1' } } })
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: 'kullanici-1' } } } })
     const eq = jest.fn().mockResolvedValue({ error: null })
     const update = jest.fn(() => ({ eq }))
     ;(supabase.from as jest.Mock).mockReturnValue({ update })
@@ -143,6 +146,7 @@ describe('profilFotografiniKaldir', () => {
 
   it('satir guncellenemezse hata firlatir ve dosyaya dokunmaz', async () => {
     ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: { id: 'kullanici-1' } } })
+    ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: { user: { id: 'kullanici-1' } } } })
     const eq = jest.fn().mockResolvedValue({ error: { message: 'izin yok' } })
     ;(supabase.from as jest.Mock).mockReturnValue({ update: jest.fn(() => ({ eq })) })
     const list = jest.fn()

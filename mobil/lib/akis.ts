@@ -1,9 +1,10 @@
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
-import { checkInFotografiUrlHaritasi, profilFotografiUrl } from './fotograf-url'
+import { checkInFotografiUrlHaritasi, profilFotografiUrlHaritasi } from './fotograf-url'
 import type { AniGorunumu } from './checkin'
 import { hataMetni } from './hata-metni'
 import { etiketleriGetir, type Etiket } from './etiket'
+import { kimligiZorunluOku } from './kimlik'
 
 /**
  * Ana sayfa akisi.
@@ -131,9 +132,7 @@ export async function akisiGetir(
   adet: number = AKIS_SAYFA_BOYU,
   oncesi?: string
 ): Promise<AkisOgesi[]> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const benimId = kullaniciVerisi.user?.id
-  if (!benimId) throw new Error('Oturum bulunamadı')
+  const benimId = await kimligiZorunluOku()
 
   const baglar = await takipcilerimiGetir()
   const kimlikler = [benimId, ...baglar.map((k) => k.id)]
@@ -153,23 +152,22 @@ export async function akisiGetir(
 
   const satirlar = data as unknown as AkisSatiri[]
 
-  // Etiketler TEK SORGUDA: satir basina sorgu atmak 30 gidis-donus
-  // demekti. Etiketler okunamazsa akis yine ciziliyor - etiket
-  // yuzunden butun akisi kaybetmek yanlis olur.
-  const etiketler: Record<string, Etiket[]> = await etiketleriGetir(
-    satirlar.map((s) => s.id)
-  ).catch(() => ({}))
-
-  // Profil ozetleri (kullanici adi + avatar) TEK CAGRIDA, kisi basina
-  // bir kere - ayni kisinin birden fazla kaydi olabilir.
-  const ozetler = await profilOzetleriniGetir([
-    ...new Set(satirlar.map((s) => s.kullanici_id)),
-  ]).catch(() => ({}) as Record<string, ProfilOzeti>)
-
-  // Butun fotograflar TEK imza istegiyle (coklu fotograf, 2026-09-21).
-  const urlHaritasi = await checkInFotografiUrlHaritasi(
-    satirlar.flatMap((s) => s.fotograflar ?? [])
-  )
+  // UCU BIRDEN PARALEL (2026-09-22 performans turu): etiketler, profil
+  // ozetleri ve imzali adresler birbirini beklemiyor. Onceden `await`
+  // zinciriyle siralı gidiyorlardi, yani akis uc gidis-donus daha
+  // bekliyordu. Her biri kendi `catch`ine sahip: biri okunamazsa akis
+  // yine ciziliyor (etiket yuzunden butun akisi kaybetmek yanlis olur).
+  const [etiketler, ozetler, urlHaritasi] = await Promise.all([
+    // Etiketler TEK SORGUDA: satir basina sorgu atmak 30 gidis-donus demekti.
+    etiketleriGetir(satirlar.map((s) => s.id)).catch(() => ({}) as Record<string, Etiket[]>),
+    // Profil ozetleri (kullanici adi + avatar) TEK CAGRIDA, kisi basina
+    // bir kere - ayni kisinin birden fazla kaydi olabilir.
+    profilOzetleriniGetir([...new Set(satirlar.map((s) => s.kullanici_id))]).catch(
+      () => ({}) as Record<string, ProfilOzeti>
+    ),
+    // Butun fotograflar TEK imza istegiyle (coklu fotograf, 2026-09-21).
+    checkInFotografiUrlHaritasi(satirlar.flatMap((s) => s.fotograflar ?? [])),
+  ])
 
   return Promise.all(
     satirlar.map(async (satir) => ({
@@ -230,16 +228,20 @@ export async function profilOzetleriniGetir(
     ad: string
     fotograf: string | null
   }[]
-  const eslesme: Record<string, ProfilOzeti> = {}
-  await Promise.all(
-    satirlar.map(async (s) => {
-      eslesme[s.id] = {
-        rumuz: s.kullanici_adi,
-        ad: s.ad,
-        avatarUrl: s.fotograf ? await profilFotografiUrl(s.fotograf) : null,
-      }
-    })
+  // Avatarlar TEK istekte imzalaniyor (2026-09-22 performans olcumu):
+  // onceden kisi basina bir `createSignedUrl` gidiyordu ve ayni avatar
+  // ekranda bes kez imzalaniyordu.
+  const urller = await profilFotografiUrlHaritasi(
+    satirlar.map((s) => s.fotograf).filter((f): f is string => Boolean(f))
   )
+  const eslesme: Record<string, ProfilOzeti> = {}
+  for (const s of satirlar) {
+    eslesme[s.id] = {
+      rumuz: s.kullanici_adi,
+      ad: s.ad,
+      avatarUrl: s.fotograf ? (urller[s.fotograf] ?? null) : null,
+    }
+  }
   return eslesme
 }
 
@@ -271,9 +273,7 @@ export function fotografBirimleri<T extends { id: string; fotografUrller: string
  * vermiyorsa (silinmis, gizlenmis, arkadaslik kopmus) null doner.
  */
 export async function checkInGetir(id: string): Promise<AkisOgesi | null> {
-  const { data: kullaniciVerisi } = await supabase.auth.getUser()
-  const benimId = kullaniciVerisi.user?.id
-  if (!benimId) throw new Error('Oturum bulunamadı')
+  const benimId = await kimligiZorunluOku()
 
   const { data, error } = await supabase
     .from('check_inler')
