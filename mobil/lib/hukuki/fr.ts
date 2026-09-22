@@ -22,6 +22,7 @@ const fr: HukukiMetin = {
         "Tes préférences de notification (quelles notifications tu reçois, heures calmes la nuit) et, pour les heures calmes, le fuseau horaire de ton appareil. Les enregistrements de session des appareils depuis lesquels tu t'es connecté : type d'appareil, adresse IP et heure de la dernière activité ; tu peux les consulter et les fermer un par un dans Réglages → Compte et sécurité → Sessions actives. Ta préférence d'apparence (thème) est stockée uniquement sur ton appareil et n'est jamais envoyée au serveur.",
         "Les signalements que tu as faits ou qui ont été faits à ton sujet. Si tu joins une photo à un signalement, elle est conservée avec ce signalement et vue uniquement par l'équipe de modération ; elle n'est jamais montrée aux autres utilisateurs.",
         "Les notes que tu attribues aux lieux (Mauvais / Bien / Génial). Tout le monde ne voit que les totaux ; la note que tu as donnée n'est visible que par toi. Tes photos de check-in apparaissent aussi dans l'espace photos de ce lieu, selon la règle de visibilité que tu as choisie.",
+        "Tes stories : la photo partagée, le texte facultatif et le lieu. Une story n'est visible que par tes amis et est supprimée automatiquement, avec sa photo, au bout de 24 heures (aucune archive). Qui a vu ta story et quand est enregistré ; toi seul vois cette liste, et elle est supprimée avec la story. Tu peux supprimer une story toi-même à tout moment.",
       ],
     },
     {
@@ -78,6 +79,7 @@ const fr: HukukiMetin = {
         "Prévu (pas encore mis en œuvre) : suppression des signalements tranchés 1 an après la décision. Il n'existe pas aujourd'hui de tâche de suppression automatique pour les enregistrements de signalements.",
         "Si tu bloques un utilisateur : tous les messages individuels et la conversation entre vous, les demandes en attente et l'amitié sont supprimés définitivement. La suppression vaut des deux côtés et ne peut pas être annulée ; lever le blocage ne restaure pas les messages supprimés.",
         "Si tu supprimes ton compte : ton profil, tes souvenirs, tes amis et ta liste de conversations sont supprimés définitivement. Les messages que tu as envoyés ne sont pas supprimés mais ton identité d'expéditeur est détachée. Dans les signalements que tu as faits, le lien d'identité est coupé ; dans les signalements te concernant, le lien N'EST PAS coupé, l'identité visée reste dans l'enregistrement de modération. Tes photos de profil et de check-in sont supprimées du stockage.",
+        "Les stories et leurs enregistrements de vues sont supprimés, avec la photo, 24 heures après la publication par une tâche de nettoyage horaire. Cette règle est EN VIGUEUR aujourd'hui.",
       ],
     },
     {

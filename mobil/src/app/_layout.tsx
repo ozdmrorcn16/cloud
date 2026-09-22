@@ -190,7 +190,10 @@ function YonlendirmeKontrolu() {
   // "ekranin ust tarafini sonsuz gibi yap, butun profiller icin").
   const baskasininProfili = segments[0] === 'kullanici' && !!segments[1]
   const karsilamaEkrani = segments[0] === '(auth)' && segments[1] === 'karsilama'
-  const kendiUstPayiniKoyar = profilKoku || baskasininProfili || karsilamaEkrani
+  // HIKAYE EKRANLARI (2026-09-22): tam ekran siyah sahne - ust payi
+  // kendileri koyar, alt gezinme cizilmez (Instagram deseni).
+  const hikayeEkrani = segments[0] === 'hikaye'
+  const kendiUstPayiniKoyar = profilKoku || baskasininProfili || karsilamaEkrani || hikayeEkrani
   // DURUM CUBUGU TEMAYI TAKIP EDER (cihaz uyumu 2026-09-19). Onceden hic
   // ayarlanmiyordu: kullanici uygulamayi "Acik"a zorlayip cihazi koyu
   // moddaysa saat/pil BEYAZ zeminde beyaz kaliyordu (Android'de
@@ -209,7 +212,7 @@ function YonlendirmeKontrolu() {
             yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
         {yukleniyor || hedef ? null : <Slot />}
       </View>
-      {uygulamaIcinde && <AltGezinme />}
+      {uygulamaIcinde && !hikayeEkrani && <AltGezinme />}
       {/* Paylasim sayfasi kapanisindan sonraki dokunuslari yutan
           gorunmez katman - agacin EN SONUNDA ki her seyin ustunde olsun. */}
       <PaylasimKalkani />

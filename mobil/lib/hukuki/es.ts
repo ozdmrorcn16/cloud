@@ -22,6 +22,7 @@ const es: HukukiMetin = {
         'Tus preferencias de notificaciones (qué notificaciones recibes, horas de silencio por la noche) y, para las horas de silencio, la zona horaria de tu dispositivo. Registros de sesión de los dispositivos desde los que iniciaste sesión: tipo de dispositivo, dirección IP y hora de la última actividad; puedes verlos y cerrarlos uno por uno en Ajustes → Cuenta y seguridad → Sesiones activas. Tu preferencia de apariencia (tema) se guarda solo en tu dispositivo y nunca se envía al servidor.',
         'Las denuncias que has presentado o las presentadas sobre ti. Si adjuntas una foto a una denuncia, se guarda junto con esa denuncia y solo la ve el equipo de moderación; nunca se muestra a otros usuarios.',
         'Las valoraciones que das a los lugares (Malo / Bueno / Genial). Todos ven solo los totales; qué valoración diste solo lo ves tú. Tus fotos de check-in también aparecen en el área de fotos de ese lugar, con la regla de visibilidad que elegiste.',
+        'Tus historias: la foto que compartes, el texto opcional y la etiqueta de lugar. Una historia solo la ven tus amigos y se elimina automáticamente, junto con su foto, a las 24 horas (no se guarda archivo). Se registra quién vio tu historia y cuándo; solo tú ves esa lista, y se elimina con la historia. Puedes eliminar una historia tú mismo en cualquier momento.',
       ],
     },
     {
@@ -78,6 +79,7 @@ const es: HukukiMetin = {
         'Previsto (aún no aplicado): borrar las denuncias resueltas 1 año después de la decisión. Hoy no existe una tarea de borrado automático para los registros de denuncias.',
         'Si bloqueas a un usuario: todos los mensajes individuales y la conversación entre vosotros, las solicitudes pendientes y la amistad se borran de forma permanente. El borrado se aplica en ambos lados y no se puede deshacer; desbloquear no recupera los mensajes borrados.',
         'Si eliminas tu cuenta: tu perfil, tus recuerdos, tus amigos y tu lista de conversaciones se borran de forma permanente. Los mensajes que enviaste no se borran, pero tu identidad como remitente se desvincula. En las denuncias que presentaste se corta el vínculo de identidad; en las denuncias sobre ti el vínculo NO se corta, la identidad del denunciado queda en el registro de moderación. Tus fotos de perfil y de check-in se borran del almacenamiento.',
+        'Las historias y sus registros de visualización se eliminan, junto con la foto, 24 horas después de publicarse mediante una tarea de limpieza que se ejecuta cada hora. Esta regla está EN VIGOR hoy.',
       ],
     },
     {

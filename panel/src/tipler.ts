@@ -2,8 +2,9 @@
 // eslesir; bir imza degisirse burasi da degismeli.
 
 export type SikayetDurumu = 'yeni' | 'incelendi' | 'islem_yapildi' | 'reddedildi'
-// 'yorum' 2026-09-02'de eklendi (begeni/yorum ozelligiyle birlikte).
-export type HedefTuru = 'kullanici' | 'check_in' | 'mesaj' | 'yorum'
+// 'yorum' 2026-09-02'de eklendi (begeni/yorum ozelligiyle birlikte),
+// 'hikaye' 2026-09-22'de (24 saatlik hikaye akisi).
+export type HedefTuru = 'kullanici' | 'check_in' | 'mesaj' | 'yorum' | 'hikaye'
 
 export type SikayetSatiri = {
   id: string
@@ -71,6 +72,23 @@ export type YorumOzeti = {
   mekan_adi: string
 }
 
+/**
+ * Sikayet edilen HIKAYE (2026-09-22). 24 saat sonra cron satiri ve
+ * dosyayi siler; o zaman `hedef` null gelir ve panel "artik yok" yazar.
+ * `fotograf` kovadaki yol - panel `hikaye-medyalari`nden imzali adres
+ * uretir (kova politikasi moderatore okuma veriyor).
+ */
+export type HikayeOzeti = {
+  id: string
+  kullanici_id: string
+  fotograf: string
+  yazi: string | null
+  mekan_adi: string | null
+  olusturuldu: string
+  bitis: string
+  moderasyon_gizli: boolean
+}
+
 export type Mesaj = {
   id: string
   konusma_id: string
@@ -96,7 +114,7 @@ export type SikayetDetayi = {
     moderator_notu: string | null
   }
   sikayet_eden: Profil | null
-  hedef: Profil | CheckInOzeti | Mesaj | YorumOzeti | null
+  hedef: Profil | CheckInOzeti | Mesaj | YorumOzeti | HikayeOzeti | null
 }
 
 export type KullaniciOzeti = {

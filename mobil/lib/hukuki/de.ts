@@ -22,6 +22,7 @@ const de: HukukiMetin = {
         'Deine Benachrichtigungseinstellungen (welche Benachrichtigungen du erhältst, Ruhezeiten in der Nacht) und für die Ruhezeiten die Zeitzone deines Geräts. Sitzungsdaten der Geräte, auf denen du dich angemeldet hast: Gerätetyp, IP-Adresse und Zeitpunkt der letzten Aktivität; du kannst sie unter Einstellungen → Konto und Sicherheit → Aktive Sitzungen einsehen und einzeln beenden. Deine Darstellungseinstellung (Design) wird nur auf deinem Gerät gespeichert und nie an den Server gesendet.',
         'Meldungen, die du erstattet hast oder die über dich erstattet wurden. Fügst du einer Meldung ein Foto bei, wird es zusammen mit der Meldung gespeichert und nur vom Moderationsteam gesehen; anderen Nutzern wird es nie angezeigt.',
         'Deine Bewertungen von Orten (Schlecht / Gut / Großartig). Alle sehen nur die Summen; welche Bewertung du abgegeben hast, siehst nur du. Deine Check-in-Fotos erscheinen mit der von dir gewählten Sichtbarkeitsregel auch im Fotobereich dieses Ortes.',
+        'Deine Storys: das geteilte Foto, der optionale Text und die Ortsmarkierung. Eine Story ist nur für deine Freunde sichtbar und wird nach 24 Stunden zusammen mit ihrem Foto automatisch gelöscht (kein Archiv). Wer deine Story wann gesehen hat, wird erfasst; nur du siehst diese Liste, und sie wird mit der Story gelöscht. Du kannst eine Story jederzeit selbst löschen.',
       ],
     },
     {
@@ -78,6 +79,7 @@ const de: HukukiMetin = {
         'Geplant (noch nicht umgesetzt): Löschung entschiedener Meldungen 1 Jahr nach der Entscheidung. Für Meldungsdatensätze gibt es heute keinen automatischen Löschlauf.',
         'Wenn du einen Nutzer blockierst: Alle Einzelnachrichten und die Unterhaltung zwischen euch, ausstehende Anfragen und die Freundschaft werden dauerhaft gelöscht. Die Löschung gilt auf beiden Seiten und kann nicht rückgängig gemacht werden; das Aufheben der Blockierung bringt die gelöschten Nachrichten nicht zurück.',
         'Wenn du dein Konto löschst: Dein Profil, deine Erinnerungen, deine Freunde und deine Unterhaltungsliste werden dauerhaft gelöscht. Von dir gesendete Nachrichten werden nicht gelöscht, aber deine Absenderidentität wird abgetrennt. Bei Meldungen, die du erstattet hast, wird die Identitätsverknüpfung gekappt; bei Meldungen über dich wird sie NICHT gekappt, die Zielidentität bleibt im Moderationsdatensatz. Deine Profil- und Check-in-Fotos werden aus dem Speicher gelöscht.',
+        'Storys und ihre Ansichtsprotokolle werden 24 Stunden nach dem Teilen durch einen stündlichen Bereinigungslauf zusammen mit dem Foto gelöscht. Diese Regel ist heute IN KRAFT.',
       ],
     },
     {

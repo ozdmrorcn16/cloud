@@ -250,7 +250,7 @@ Yeni oturum bunlari bilerek baslar.
 16. **Oturumlar arasi hafiza hep bir sonrakine aktarilir**: is
     bitmeden/kesilmeden once CLAUDE.md + gunluk + bu dosya guncel olsun.
 
-## 8. Kaldigi yer (2026-09-21)
+## 8. Kaldigi yer (2026-09-22)
 
 **Son bitirilen isler (2026-09-20 / 21, hepsi YAYINDA - son OTA grup
 `ed53c110`, web `slooin.expo.app` guncel, iki depoya push):** kullanicinin
@@ -316,13 +316,25 @@ Ifade/Birlikte kutulu satirlar), dip not kalkti, gezginde dikey
 surukleme kapatir, izgarada fotografa dokununca buyuk acilir. Ayrinti
 CLAUDE.md 2026-09-22 basliklari. Jest 89 / 1169.
 
-**SIRADAKI IS (kullanicinin istegi, henuz tasarlanmadi):** ana sayfaya
-Instagram benzeri HIKAYE akisi. Buyuk is: tablo + 24 saat omur + medya
-kovasi + izleyici ekrani + "kimler gordu" + gizlilik/KVKK. Once kisa
-tasarim sunulacak, onay sonrasi spec + plan.
+**Ek (2026-09-22 aksam, YAYINDA - OTA `5f57ccfc`, web guncel, panel
+yeniden yayinlandi):** ana sayfaya INSTAGRAM BENZERI HIKAYE AKISI
+(kullanicinin "dediklerinin hepsini yap" onayiyla sikayet dahil). Tek
+fotograf + yazi (<= 200) + mekan etiketi (aktif check-in'den), 24 saat
+(saatlik cron satiri ve dosyayi siler), yalnizca arkadaslara gorunur,
+kisi basina 10 hikaye; ana sayfa seridi (kendi dairem + gorulmemis
+turuncu halka), ekleme ekrani, tam ekran izleyici (5 sn ilerleme,
+dokunusla ileri/geri, basili tut durdur, dikey surukleme kapatir),
+"N kisi gordu" + gorenler listesi, mesajla yanit, silme; sikayet hedefi
+'hikaye' ve panelde "Hikayeyi gizle / Gizlemeyi kaldir". PUSH YOK.
+Sunucu: migrasyon `20260922150000`, kova `hikaye-medyalari`, 7 RPC + 2
+moderasyon RPC'si, disa aktarimda `hikayelerim` +
+`hikaye_goruntulemelerim`. Gizlilik metni 7 dil + docs + KVKK listesi.
+Jest 93 / 1203, test:sema yesil, canli `araclar/hikaye-canli-test.py`
+20/20. Ayrinti CLAUDE.md "HIKAYE AKISI (24 SAAT)".
 
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
-fotograf secimi, begeni/yorum push'u ve Paylasim ekrani.
+fotograf secimi, begeni/yorum push'u, Paylasim ekrani ve HIKAYE AKISININ
+TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma).
 
 ## 8a. Onceki kayit (2026-09-19)
 

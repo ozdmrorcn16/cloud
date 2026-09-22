@@ -71,6 +71,12 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
   Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin
   fotograf alaninda da gorunur.
+- Hikayelerin: paylastigin fotograf, istege bagli yazi ve mekan
+  etiketi. Hikaye yalnizca arkadaslarina gorunur ve 24 saat sonra
+  fotografiyla birlikte otomatik silinir (arsiv tutulmaz). Kimin
+  hikayeni ne zaman gordugu kaydedilir; bu listeyi yalnizca sen
+  gorursun ve hikaye silinince o kayit da silinir. Bir hikayeyi
+  diledigin an kendin silebilirsin.
 
 ## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple
 
@@ -235,6 +241,9 @@ FAZLA** (tek bir kural degil):
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
   donustugunde otomatik olarak silinir (null'a cekilir).
+- Hikayeler ve goruntulenme kayitlari paylasimdan 24 saat sonra her
+  saat calisan bir temizlik isiyle fotografiyla birlikte silinir. Bu
+  kural bugun YURURLUKTEDIR.
 - **Moderasyon erisim kayitlari** (`moderasyon_kayitlari`, bkz. madde
   4) **2 YIL** saklanir. Her gun 04:45'te calisan
   `moderasyon-izi-buda` adli temizlik isi bundan eski satirlari siler.

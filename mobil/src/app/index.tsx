@@ -17,6 +17,8 @@ import {
 } from '../../lib/etkilesim'
 import { gorecelZaman } from '../../lib/zaman'
 import { SuAnDisarida } from '../tasarim/SuAnDisarida'
+import { HikayeSeridi } from '../tasarim/HikayeSeridi'
+import { hikayeSeridiVerisiniGetir, type HikayeSeridiVerisi } from '../../lib/hikaye'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
@@ -68,6 +70,9 @@ export default function AnaSayfa() {
   // Silme GERI ALINAMAZ, bu yuzden iki adimli: once onay satiri acilir.
   const [silOnayi, setSilOnayi] = useState<string | null>(null)
   const [ozetler, setOzetler] = useState<Record<string, EtkilesimOzeti>>({})
+  // HIKAYE SERIDI (2026-09-22): akistan ayri istek; okunamazsa akis yine
+  // cizilir, yalnizca kendi dairem (ekleme yolu) kalir.
+  const [hikayeler, setHikayeler] = useState<HikayeSeridiVerisi>({ gruplar: [], ben: null })
   // SAYFALAMA. Akis eskiden yalnizca en yeni sayfayi cekiyordu ve
   // devami hic yuklenmiyordu; sayfa boyunu asan eski paylasimlar ana
   // sayfada erisilemez oluyordu (kullanicinin kurali 2026-09-07:
@@ -87,6 +92,8 @@ export default function AnaSayfa() {
     // kullanici asagi kaydirip baska bir ekrana gidip donduegunde liste
     // ilk sayfaya duesuer, okudugu yeri kaybederdi.
     const istenen = Math.max(ogelerRef.current.length, AKIS_SAYFA_BOYU)
+    // Hikayeler akisla PARALEL; kendi hatasi akisi dusurmez.
+    const hikayeSozu = hikayeSeridiVerisiniGetir().catch(() => null)
     try {
       const gelen = await akisiGetir(istenen)
       setOgeler(gelen)
@@ -102,6 +109,8 @@ export default function AnaSayfa() {
     } finally {
       setYukleniyor(false)
     }
+    const hikayeVerisi = await hikayeSozu
+    if (hikayeVerisi) setHikayeler(hikayeVerisi)
   }
 
   // Ekran her odaklandiginda tazeleniyor: kullanici check-in yapip geri
@@ -291,7 +300,12 @@ export default function AnaSayfa() {
         // yer 100 pikselden fazla azalirdi. Serit kendi verisini
         // `ogeler`den turetiyor, yeni bir ag cagrisi yok; kimse
         // disarida degilse hic cizilmiyor.
-        ListHeaderComponent={<SuAnDisarida ogeler={ogeler} />}
+        ListHeaderComponent={
+          <>
+            <HikayeSeridi gruplar={hikayeler.gruplar} ben={hikayeler.ben} />
+            <SuAnDisarida ogeler={ogeler} />
+          </>
+        }
         renderItem={({ item, index }) => (
           // ORTAK KART (kullanicinin karari 2026-08-30): ana sayfa,
           // profil ve Anilarim ayni CheckInKarti'yi kullaniyor. Zaman

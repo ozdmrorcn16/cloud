@@ -42,6 +42,10 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-22 — [2026-09-22-d888d851.md](oturumlar/2026-09-22-d888d851.md) — burdan devam edicez slooin projesine
+- 2026-09-22 — [2026-09-22-b75722cc.md](oturumlar/2026-09-22-b75722cc.md) — açılış animasyonun tasarımına dönelim
+- 2026-09-21 — [2026-09-21-d888d851.md](oturumlar/2026-09-21-d888d851.md) — burdan devam edicez slooin projesine
+- 2026-09-21 — [2026-09-21-b75722cc.md](oturumlar/2026-09-21-b75722cc.md) — açılış animasyonun tasarımına dönelim
 - 2026-09-21 — [2026-09-21-70668709.md](oturumlar/2026-09-21-70668709.md) — devam et
 - 2026-09-21 — [2026-09-21-70447846.md](oturumlar/2026-09-21-70447846.md) — login
 - 2026-09-21 — [2026-09-21-556d60d8.md](oturumlar/2026-09-21-556d60d8.md) — claude mem çalışıyor dimi

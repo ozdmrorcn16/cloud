@@ -32,6 +32,14 @@ jest.mock('expo-router', () => {
   }
 })
 
+// jest.setup AltGezinme'yi null yapiyor; burada "cizildi mi" olculdugu
+// icin gorunur bir yer tutucuyla eziliyor.
+jest.mock('../../src/tasarim/AltGezinme', () => {
+  const React = require('react')
+  const { View } = require('react-native')
+  return { AltGezinme: () => React.createElement(View, { testID: 'alt-gezinme-cubugu' }), ALT_GEZINME_PAYI: 0 }
+})
+
 jest.mock('../../lib/oturum', () => ({
   OturumSaglayici: ({ children }: { children: ReactNode }) => children,
   useOturum: jest.fn(),
@@ -472,6 +480,20 @@ describe('Ust guvenli alan', () => {
     mockSegments = ['kullanici', 'k2']
     const ekran = await render(<KokLayout />)
     expect(ustPay(ekran)).toBeUndefined()
+  })
+
+  it('HIKAYE EKRANLARI: ust pay YOK ve alt gezinme CIZILMIYOR (tam ekran sahne)', async () => {
+    // Hikaye akisi 2026-09-22: izleyici ve ekleme ekrani siyah tam ekran.
+    mockSegments = ['hikaye', 'izle']
+    const ekran = await render(<KokLayout />)
+    expect(ustPay(ekran)).toBeUndefined()
+    expect(ekran.queryByTestId('alt-gezinme-cubugu')).toBeNull()
+  })
+
+  it('DIGER EKRANLARDA alt gezinme var (karsi kontrol)', async () => {
+    mockSegments = ['bazi-ekran']
+    const ekran = await render(<KokLayout />)
+    expect(ekran.getByTestId('alt-gezinme-cubugu')).toBeTruthy()
   })
 
   it('PROFIL DISINDAKI diger ekranlar ust payi kok duzenden aliyor', async () => {

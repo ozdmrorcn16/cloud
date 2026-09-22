@@ -22,6 +22,7 @@ const en: HukukiMetin = {
         "Your notification preferences (which notifications you receive, quiet hours at night) and, for quiet hours, your device's time zone. Session records of the devices you signed in from: device type, IP address and last activity time; you can view and close them one by one under Settings → Account and security → Active sessions. Your appearance (theme) preference is stored only on your device and never sent to the server.",
         'Reports you filed or reports filed about you. If you attach a photo to a report, it is stored with that report and seen only by the moderation team; it is never shown to other users.',
         'The ratings you give to places (Bad / Good / Great). Everyone sees only the totals; which rating you gave is visible only to you. Your check-in photos also appear in the photo area of that place, under the visibility rule you chose.',
+        'Your stories: the photo you share, the optional text and place tag. A story is visible only to your friends and is deleted automatically, together with its photo, after 24 hours (no archive is kept). Who viewed your story and when is recorded; only you see that list, and it is deleted with the story. You can delete a story yourself at any time.',
       ],
     },
     {
@@ -78,6 +79,7 @@ const en: HukukiMetin = {
         'Planned (not yet implemented): deleting decided reports 1 year after the decision. There is no automatic deletion job for report records today.',
         'If you block a user: all one-to-one messages and the conversation between you, pending requests and the friendship are permanently deleted. Deletion applies on both sides and cannot be undone; unblocking does not bring the deleted messages back.',
         'If you delete your account: your profile, memories, friends and conversation list are permanently deleted. Messages you sent are not deleted but your sender identity is detached. In reports you filed the identity link is cut; in reports filed about you the identity link is NOT cut, the target identity stays in the moderation record. Your profile and check-in photos are deleted from storage.',
+        'Stories and their view records are deleted, together with the photo, 24 hours after posting by an hourly cleanup job. This rule is IN EFFECT today.',
       ],
     },
     {

@@ -123,6 +123,7 @@ const HEDEF: Record<HedefTuru, { etiket: string; ikon: string }> = {
   check_in: { etiket: 'Check-in', ikon: '📍' },
   mesaj: { etiket: 'Mesaj', ikon: '💬' },
   yorum: { etiket: 'Yorum', ikon: '💭' },
+  hikaye: { etiket: 'Hikâye', ikon: '🕘' },
 }
 
 export function hedefEtiketi(tur: string): string {

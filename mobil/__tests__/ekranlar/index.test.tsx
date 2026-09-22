@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor, within, act } from '@testing-librar
 import { StyleSheet } from 'react-native'
 import { acikRenk } from '../../src/tasarim/tema'
 import AnaSayfa from '../../src/app/index'
+import { hikayeSeridiVerisiniGetir } from '../../lib/hikaye'
 import { akisiGetir } from '../../lib/akis'
 import type { AkisOgesi } from '../../lib/akis'
 import { konusmalarimiGetir } from '../../lib/sohbet'
@@ -58,6 +59,7 @@ jest.mock('../../lib/etkilesim', () => ({
 
 const mockRouterPush = jest.fn()
 jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
+jest.mock('../../lib/hikaye', () => ({ hikayeSeridiVerisiniGetir: jest.fn() }))
 jest.mock('../../lib/fotograf-url', () => ({
   profilFotografiUrl: jest.fn().mockResolvedValue('https://imzali/kisi.jpg'),
 }))
@@ -109,6 +111,7 @@ beforeEach(() => {
     'checkin-1': { begeni: 2, yorum: 1, begendim: false },
   })
   ;(yorumlariGetir as jest.Mock).mockResolvedValue([])
+  ;(hikayeSeridiVerisiniGetir as jest.Mock).mockResolvedValue({ gruplar: [], ben: null })
 })
 
 
@@ -125,6 +128,28 @@ async function menudenSec(testID: string) {
 }
 
 describe('AnaSayfa', () => {
+  it('HIKAYE SERIDI akisin ustunde: kendi dairem hep var, arkadas gruplari sirayla; okunamazsa akis yine cizilir', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+    ;(hikayeSeridiVerisiniGetir as jest.Mock).mockResolvedValue({
+      gruplar: [
+        { kullaniciId: 'kullanici-3', ad: 'Can', kullaniciAdi: 'can_k', avatarUrl: null, benimMi: false, gorulmemisVar: true, hikayeler: [] },
+      ],
+      ben: { id: 'kullanici-1', ad: 'Orçun', kullaniciAdi: 'byorcun', avatarUrl: null },
+    })
+    await render(<AnaSayfa />)
+    expect(await screen.findByTestId('hikaye-seridi')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-benim')).toBeTruthy()
+    expect(await screen.findByTestId('hikaye-kullanici-3')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('hikaye-kullanici-3'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/hikaye/izle?kullanici=kullanici-3')
+
+    // Hikaye istegi kirilirsa akis etkilenmez.
+    ;(hikayeSeridiVerisiniGetir as jest.Mock).mockRejectedValue(new Error('ag'))
+    await render(<AnaSayfa />)
+    expect(await screen.findAllByText('Sahil Kafe')).toBeTruthy()
+    expect(screen.getAllByTestId('hikaye-benim').length).toBeGreaterThan(0)
+  })
+
   it('akistaki check-ini kisi ve mekan adiyla gosterir', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
 

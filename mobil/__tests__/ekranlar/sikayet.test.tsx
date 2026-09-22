@@ -180,6 +180,21 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
     expect(screen.getByText('Bu mesajı neden şikâyet ediyorsun?')).toBeTruthy()
   })
 
+  it('hikaye sikayetinde hikaye alt basligi; engelleme icin kullaniciId tasinir', async () => {
+    // Hikaye akisi 2026-09-22: izleyicideki uc nokta -> Sikayet et.
+    mockAramaParametreleri = { hedefTur: 'hikaye', hedefId: 'hikaye-1', kullaniciId: 'kullanici-2' }
+    ;(sikayetGonder as jest.Mock).mockResolvedValue(undefined)
+
+    await render(<SikayetEkrani />)
+
+    expect(screen.getByText('Bu hikâyeyi neden şikâyet ediyorsun?')).toBeTruthy()
+    expect(screen.queryByText(/çevresindeki mesajlar/i)).toBeNull()
+    await fireEvent.press(screen.getByText('Spam veya reklam'))
+    await fireEvent.press(screen.getByText('Şikâyeti gönder'))
+    await screen.findByText('Şikâyetin alındı')
+    expect(sikayetGonder).toHaveBeenCalledWith('hikaye', 'hikaye-1', 'spam', undefined, null)
+  })
+
   it('kullanici sikayetinde baglam bildirimi gosterilmez', async () => {
     await render(<SikayetEkrani />)
 

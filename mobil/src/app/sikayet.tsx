@@ -266,7 +266,11 @@ export default function SikayetEkrani() {
         </View>
         <Text style={stiller.kahramanBaslik}>{t('sikayet.kahramanBaslik')}</Text>
         <Text style={stiller.kahramanAlt}>
-          {hedefTur === 'mesaj' ? t('sikayet.altBaslikMesaj') : t('sikayet.altBaslikHesap')}
+          {hedefTur === 'mesaj'
+            ? t('sikayet.altBaslikMesaj')
+            : hedefTur === 'hikaye'
+              ? t('sikayet.altBaslikHikaye')
+              : t('sikayet.altBaslikHesap')}
         </Text>
         {/* Karar 76: kademe 1 baglami sikayet edenin kendi konusmasindan
             da mesaj tasir, bu yuzden bildirilir. Ayri bir onay kutusu YOK -

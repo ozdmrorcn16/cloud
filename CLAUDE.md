@@ -1039,6 +1039,73 @@ kimlerin begendigi gorunsun". OTA `760d92cb`, web guncel.
   begenenYok/paylasimBaslik/paylasimBulunamadi`. Jest 89 / 1169.
   KVKK listesi maddesi yazildi. Telefonda dogrulanmadi.
 
+### HIKAYE AKISI (24 SAAT) - 2026-09-22
+
+Kullanicinin istegi: "ana sayfaya Instagram gibi hikaye ekleme akisi da
+ekle", ardindan "sikayet etme ekleme geri kalanini yap" -> "sikayetle
+alakali dediginide yap" -> **"dediklerinin hepsini yap"** (yani sikayet
+DAHIL). Spec `docs/superpowers/specs/2026-09-22-hikaye-akisi-design.md`,
+migrasyon `20260922150000_hikayeler.sql`, taslak `tasarim/hikaye/taslak.png`.
+OTA grup `5f57ccfc`, web `slooin--oidto4ech6` (pakette `hikaye-seridi`
+dogrulandi), panel yeniden yayinlandi.
+
+**Kararlar:** tek fotograf + istege bagli yazi (<= 200) + istege bagli
+mekan etiketi (AKTIF CHECK-IN'den otomatik; elle mekan secimi YOK);
+24 saat, saatlik cron satiri VE kova dosyasini siler (arsiv yok);
+gorunurluk check-in ile ayni (sahibi + arkadaslar, engel iki yonlu,
+moderasyon gizli kimseye); kisi basina en fazla 10 aktif hikaye;
+goruntuleyen listesi yalnizca sahibine; yanit = normal sohbet mesaji
+(`mesaj_gonder`, "Hikâyene yanıt:" on ekiyle); PUSH YOK.
+
+**Sunucu:** tablolar `hikayeler` / `hikaye_goruntulemeler`, yardimci
+`hikaye_gorunur_mu`, kova `hikaye-medyalari` (ozel, 10 MB, jpeg/png/webp;
+SELECT kendi klasoru VEYA hikaye satirina bagli VEYA moderator), RPC'ler
+`hikaye_ekle` / `hikaye_akisi` (invoker; `gordum` + `goruntulenme_sayisi`
++ mekan adi) / `hikaye_goruntulendi` / `hikaye_goruntuleyenler` /
+`hikaye_sil` (yol doner, dosyayi istemci siler) /
+`moderasyon_hikayeyi_gizle` + `..._gizlemeyi_kaldir`; `sikayet_gonder`
+'hikaye' hedefi (yalnizca GOREN sikayet edebilir, kendi hikayesi olamaz),
+`moderasyon_sikayet_detayi` hikaye kolu, cron
+`hikaye-suresi-dolanlari-sil` (`7 * * * *`), `verilerimi_disa_aktar`
+`hikayelerim` + `hikaye_goruntulemelerim`. Hepsinde `revoke ... from
+public, anon` acikca yazili.
+
+**Istemci:** `lib/hikaye.ts` (grup kurma + siralama saf fonksiyon
+`hikayeGruplariniSirala`: BEN once, sonra gorulmemisi olanlar, sonra
+gorulmusler - her ikisinde en yeni once; imzalar TEK `createSignedUrls`;
+`hikayeSeridiVerisiniGetir` grubum yoksa kendi gorunumumu ayrica okur),
+`src/tasarim/HikayeSeridi.tsx` (ana sayfa ListHeaderComponent, "Su an
+disarida"nin USTUNDE; kendi dairem HER ZAMAN var - hikayem yoksa kesikli
+halka, arti rozeti hep ekleme ekranini acar; gorulmemis turuncu / gorulmus
+gri halka), `src/app/hikaye/ekle.tsx`, `src/app/hikaye/izle.tsx`
+(ilerleme cubuklari + 5 sn `Animated.timing`, sag/sol dokunus, basili tut
+durdur, dikey surukleme kapatir - FotografGezgini deseni; uc nokta
+sahibinde Sil (onayli) baskasinda Sikayet et), `KisiListesiSayfasi`
+(BegenenlerSayfasi'ndan genellendi; gorenler listesi de onu kullaniyor).
+Hikaye rotalarinda ALT GEZINME CIZILMIYOR ve ust payi ekran kendi koyuyor
+(`_layout.tsx` `hikayeEkrani`).
+
+**DERSLER:**
+- `SecimPenceresi` secimde de `onKapat` cagiriyor (once kapanir, eylem
+  80 ms sonra kosar). Ekleme ekraninda "secim yapilmadan kapatildi mi"
+  karari bu yuzden 400 ms sonra ve IKI REF ile veriliyor
+  (`seciliyorRef`, `kaynakAcikRef`); yoksa kullanici galeriye basar
+  basmaz ekran geri donuyordu.
+- Izleyicide duraklatma kaynaklari (menu, onay, gorenler sayfasi,
+  klavye, basili tutma) TEK yerde toplandi; `ilerleme.stopAnimation
+  ((deger) => oynat(deger))` ile kaldigi yerden devam ediyor.
+- `_layout` testinde alt gezinmenin CIZILDIGI olculecekse jest.setup'in
+  `AltGezinme: () => null` mock'u dosya icinde ezilmeli.
+- Sozluk anahtari eklerken `console.log('
+...')` gibi kacisli metinleri
+  Python betigiyle yazarken tek tirnak/kacis karisabiliyor; `sed -n` ile
+  sonuc satirina bakmak sart (bu turda `sema-dogrula.ts` bir kez
+  "Unterminated string literal" ile kirildi).
+
+Jest 93 paket / 1203 test, tsc temiz, `test:sema` yesil (15 yeni hikaye
+dogrulamasi), canli `araclar/hikaye-canli-test.py` 20/20. GERCEK CIHAZDA
+DOGRULANMADI: serit, izleyici dokunus/zamanlama, dikey kapatma.
+
 ### GEZGINDE DIKEY SURUKLEME KAPATIR; DUZENLEMEDE KLAVYE SERIDI ITMEZ - 2026-09-22
 
 - **FotografGezgini:** tek parmakla yukari/asagi surukleme fotografi

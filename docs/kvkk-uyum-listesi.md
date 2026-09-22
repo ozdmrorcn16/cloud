@@ -765,3 +765,38 @@ sayisina dokununca begenenler listesi.
   Canli olcum: `araclar/begeni-yorum-bildirim-canli-test.py` 5/5 +
   Edge Function gunlugu ("alici islendi olay=begeni/yorum").
 
+## Hikaye akisi: 24 saatlik fotograf + yazi + mekan, goruntuleyenler, sikayet (2026-09-22)
+
+Ana sayfada Instagram benzeri hikaye seridi. Spec
+`docs/superpowers/specs/2026-09-22-hikaye-akisi-design.md`, migrasyon
+`20260922150000_hikayeler.sql`.
+
+- Hangi veri: hikaye fotografi (kova `hikaye-medyalari`, ozel), istege
+  bagli yazi (<= 200), istege bagli mekan etiketi (aktif check-in'den);
+  goruntuleme kaydi (hikaye, kim, ne zaman). Hikayeye yanit = normal
+  sohbet mesaji (mevcut mesaj kurallari).
+- Dayanak: sozlesmenin ifasi (m.5/2-c) - kullanicinin kendi paylasimi;
+  goruntuleme kaydi hizmetin parcasi ("kimler gordu"), yalnizca sahibine.
+- Sure: 24 saat. Saatlik cron `hikaye-suresi-dolanlari-sil` once
+  kovadaki dosyayi, sonra satiri siler; goruntulemeler cascade. Arsiv
+  yok. Kullanici istedigi an siler (`hikaye_sil` + dosya). Hesap silme
+  mevcut cascade ile hikayeleri de goturur (`kullanici_id` FK).
+- Kim gorur: sahibi + karsilikli arkadaslar (`takipler` 'kabul'); engel
+  iki yonlu (`gizli.engelli_mi`); moderasyonla gizlenen KIMSEYE (sahibi
+  dahil) gorunmez. Kova SELECT ayni kuralla (hikayeler RLS uzerinden) +
+  moderator. Goruntuleyen listesi YALNIZCA sahibine (`hikaye_goruntuleyenler`
+  baskasina bos doner). Kendi hikayeni izlemek kayit uretmez.
+- Moderasyon: sikayet hedefi 'hikaye' (yalnizca goren sikayet edebilir,
+  kendi hikayesi olamaz); panelde fotograf + yazi + mekan + sahibi,
+  "Hikayeyi gizle" / "Gizlemeyi kaldir" -> `moderasyon_denetim_izi`
+  (`hikaye_gizle` / `hikaye_gizleme_kaldir`, gerekce zorunlu).
+- Disa aktarim: `verilerimi_disa_aktar` -> `hikayelerim` +
+  `hikaye_goruntulemelerim` (kendi hikayelerimi kimin gordugu; kimi
+  izledigim baskasinin verisi sayildi, DAHIL DEGIL).
+- Aydinlatma: gizlilik metni 1. madde "Hikayelerin" + 6. madde saklama
+  satiri, 7 dil + `docs/gizlilik-metni.md`.
+- Canli olcum: `araclar/hikaye-canli-test.py` 20/20 (arkadas gorur /
+  yabanci gormez, kova imzasi, goruntuleme sayaci ve listesi, 10 siniri,
+  sikayet kurallari, moderasyon gizleme, disa aktarim, silme -> dosya
+  gider, anon kapali).
+

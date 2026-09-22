@@ -6,10 +6,10 @@ import {
 } from '../ortak/Durum'
 import { GerekceSor } from '../ortak/GerekceSor'
 import type {
-  YorumOzeti, CheckInOzeti, Mesaj, Profil, SikayetDetayi as Detay, SikayetDurumu,
+  YorumOzeti, CheckInOzeti, HikayeOzeti, Mesaj, Profil, SikayetDetayi as Detay, SikayetDurumu,
 } from '../tipler'
 
-type AcikKutu = 'askiya_al' | 'yasakla' | 'gizle' | 'yorum_gizle' | 'yorum_ac' | null
+type AcikKutu = 'askiya_al' | 'yasakla' | 'gizle' | 'yorum_gizle' | 'yorum_ac' | 'hikaye_gizle' | 'hikaye_ac' | null
 
 /**
  * SIKAYET DETAYI. Sol: sikayet, hedef icerik, hedefin gecmisi. Sag
@@ -31,6 +31,8 @@ export function SikayetDetayi() {
   // Sikayet edenin ekledigi fotograf: kova ozel, moderator kendi
   // oturumuyla imzali adres uretir (mekan-fotograflari ile ayni desen).
   const [fotoUrl, setFotoUrl] = useState<string | null>(null)
+  // Sikayet edilen hikayenin fotografi (hedef 'hikaye', 2026-09-22).
+  const [hikayeFotoUrl, setHikayeFotoUrl] = useState<string | null>(null)
 
   const yukle = useCallback(async () => {
     if (!id) return
@@ -52,6 +54,14 @@ export function SikayetDetayi() {
         setFotoUrl(imza?.signedUrl ?? null)
       } else {
         setFotoUrl(null)
+      }
+      if (gelen.sikayet.hedef_tur === 'hikaye' && gelen.hedef) {
+        const { data: imza } = await supabase.storage
+          .from('hikaye-medyalari')
+          .createSignedUrl((gelen.hedef as HikayeOzeti).fotograf, 60 * 60)
+        setHikayeFotoUrl(imza?.signedUrl ?? null)
+      } else {
+        setHikayeFotoUrl(null)
       }
 
       const { data: g } = await supabase.rpc('moderasyon_hedef_gecmisi', {
@@ -129,7 +139,7 @@ export function SikayetDetayi() {
   const hedefKullaniciId: string | null =
     s.hedef_tur === 'kullanici'
       ? s.hedef_id
-      : s.hedef_tur === 'check_in' || s.hedef_tur === 'yorum'
+      : s.hedef_tur === 'check_in' || s.hedef_tur === 'yorum' || s.hedef_tur === 'hikaye'
         ? ((detay.hedef as { kullanici_id?: string | null } | null)?.kullanici_id ?? null)
         : ((detay.hedef as Mesaj | null)?.gonderen_id ?? null)
 
@@ -247,6 +257,25 @@ export function SikayetDetayi() {
                 <p className="ipucu">«Reddedildi» kararı yorumu geri getirir; «İşlem yapıldı» kalıcı olarak gizler.</p>
               </>
             )}
+
+            {s.hedef_tur === 'hikaye' && detay.hedef && (
+              <>
+                {hikayeFotoUrl ? (
+                  <a href={hikayeFotoUrl} target="_blank" rel="noreferrer"><img className="onizleme" src={hikayeFotoUrl} alt="Şikâyet edilen hikâye" /></a>
+                ) : (
+                  <p className="k">Fotoğraf açılamadı.</p>
+                )}
+                <dl className="ozet" style={{ marginTop: 10 }}>
+                  <dt>Yazı</dt><dd>{(detay.hedef as HikayeOzeti).yazi ?? <span className="k">yok</span>}</dd>
+                  <dt>Mekân</dt><dd>{(detay.hedef as HikayeOzeti).mekan_adi ?? <span className="k">etiket yok</span>}</dd>
+                  <dt>Paylaşıldı</dt><dd>{zaman((detay.hedef as HikayeOzeti).olusturuldu)}</dd>
+                  <dt>Süresi dolar</dt><dd>{zaman((detay.hedef as HikayeOzeti).bitis)}</dd>
+                  <dt>Şu an</dt>
+                  <dd>{(detay.hedef as HikayeOzeti).moderasyon_gizli ? <span className="rozet kirmizi">Moderasyon kararıyla gizli</span> : <span className="rozet yesil">Görünür</span>}</dd>
+                </dl>
+                <p className="ipucu">Hikâye 24 saat sonra kendiliğinden silinir; gizleme o ana kadar geçerlidir ve geri alınabilir.</p>
+              </>
+            )}
           </div>
 
           <div className="blok">
@@ -299,7 +328,7 @@ export function SikayetDetayi() {
             </button>
           </div>
 
-          {(hedefKullaniciId || s.hedef_tur === 'check_in' || s.hedef_tur === 'yorum') && (
+          {(hedefKullaniciId || s.hedef_tur === 'check_in' || s.hedef_tur === 'yorum' || s.hedef_tur === 'hikaye') && (
             <div className="blok tehlike">
               <h3>Hesap ve içerik işlemleri</h3>
               <div className="satir">
@@ -317,6 +346,13 @@ export function SikayetDetayi() {
                     <button type="button" onClick={() => setKutu('yorum_ac')}>Gizlemeyi kaldır</button>
                   ) : (
                     <button type="button" onClick={() => setKutu('yorum_gizle')}>Yorumu gizle</button>
+                  )
+                )}
+                {s.hedef_tur === 'hikaye' && detay.hedef && (
+                  (detay.hedef as HikayeOzeti).moderasyon_gizli ? (
+                    <button type="button" onClick={() => setKutu('hikaye_ac')}>Gizlemeyi kaldır</button>
+                  ) : (
+                    <button type="button" onClick={() => setKutu('hikaye_gizle')}>Hikâyeyi gizle</button>
                   )
                 )}
               </div>
@@ -382,6 +418,25 @@ export function SikayetDetayi() {
         />
       )}
 
+      {kutu === 'hikaye_gizle' && (
+        <GerekceSor
+          baslik="Hikâyeyi gizle"
+          aciklama="Gizlenen hikâye sahibi dahil kimseye görünmez. Geri alınabilir."
+          eylemEtiketi="Gizle"
+          onayGerekli
+          onIptal={() => setKutu(null)}
+          onSonuc={(gerekce) => aksiyon('moderasyon_hikayeyi_gizle', { p_hikaye_id: s.hedef_id, p_gerekce: gerekce })}
+        />
+      )}
+      {kutu === 'hikaye_ac' && (
+        <GerekceSor
+          baslik="Hikâyenin gizlemesini kaldır"
+          aciklama="Hikâye süresi dolana kadar yeniden görünür olur."
+          eylemEtiketi="Gizlemeyi kaldır"
+          onIptal={() => setKutu(null)}
+          onSonuc={(gerekce) => aksiyon('moderasyon_hikaye_gizlemeyi_kaldir', { p_hikaye_id: s.hedef_id, p_gerekce: gerekce })}
+        />
+      )}
       {kutu === 'yorum_ac' && (
         <GerekceSor
           baslik="Yorumun gizlemesini kaldır"

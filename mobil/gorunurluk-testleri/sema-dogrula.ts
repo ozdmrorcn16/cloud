@@ -920,6 +920,51 @@ async function main() {
     .upload(`${aId}/sema-dogrula-${Date.now()}.txt`, Buffer.from('x'), { contentType: 'text/plain' })
   esitMi(mimeHatasi?.message, 'mime type text/plain is not supported', 'kova yalnizca gorsel kabul ediyor')
 
+  console.log('\n--- Hikayeler 2026-09-22: tablolar, RPC, kova ---')
+  // Tablolara dogrudan yazma KAPALI (yalnizca RPC); okuma RLS ile.
+  const { error: hikayeInsertHatasi } = await a
+    .from('hikayeler')
+    .insert({ kullanici_id: aId, fotograf: `${aId}/sema.jpg` })
+  esitMi(hikayeInsertHatasi?.code, '42501', 'hikayeler tablosuna dogrudan insert reddediliyor (yalnizca RPC)')
+  const { error: goruntulemeInsertHatasi } = await a
+    .from('hikaye_goruntulemeler')
+    .insert({ hikaye_id: bosId, kullanici_id: aId })
+  esitMi(goruntulemeInsertHatasi?.code, '42501', 'hikaye_goruntulemeler tablosuna dogrudan insert reddediliyor')
+  const { data: hikayeAkisi, error: hikayeAkisiHatasi } = await a.rpc('hikaye_akisi')
+  esitMi(hikayeAkisiHatasi, null, 'hikaye_akisi giris yapana calisiyor')
+  esitMi(Array.isArray(hikayeAkisi), true, 'hikaye_akisi dizi donduruyor')
+  for (const [ad, parametreler] of [
+    ['hikaye_akisi', {}],
+    ['hikaye_ekle', { p_fotograf: 'x/y.jpg' }],
+    ['hikaye_goruntulendi', { p_hikaye_id: bosId }],
+    ['hikaye_goruntuleyenler', { p_hikaye_id: bosId }],
+    ['hikaye_sil', { p_hikaye_id: bosId }],
+    ['moderasyon_hikayeyi_gizle', { p_hikaye_id: bosId, p_gerekce: 'sema' }],
+    ['moderasyon_hikaye_gizlemeyi_kaldir', { p_hikaye_id: bosId, p_gerekce: 'sema' }],
+  ] as const) {
+    const { error } = await anon.rpc(ad, parametreler)
+    esitMi(error?.code, '42501', `kimliksiz ${ad} cagrisi reddediliyor`)
+  }
+  // Yol sahipligi RPC'de: baskasinin klasoru reddedilir.
+  const { error: yabanciYolHatasi } = await a.rpc('hikaye_ekle', { p_fotograf: `${bosId}/x.jpg` })
+  esitMi(yabanciYolHatasi?.message, 'Bu fotograf sana ait degil', 'hikaye_ekle baskasinin yolunu reddediyor')
+  // Kova: gorsel disi tur 415; baskasinin klasorune yazma politika reddi.
+  const { error: hikayeMimeHatasi } = await a.storage
+    .from('hikaye-medyalari')
+    .upload(`${aId}/sema-dogrula-${Date.now()}.txt`, Buffer.from('x'), { contentType: 'text/plain' })
+  esitMi(hikayeMimeHatasi?.message, 'mime type text/plain is not supported', 'hikaye kovasi yalnizca gorsel kabul ediyor')
+  const { error: yabanciKlasorHatasi } = await a.storage
+    .from('hikaye-medyalari')
+    .upload(`${bosId}/sema-dogrula-${Date.now()}.jpg`, Buffer.from([0xff, 0xd8, 0xff]), { contentType: 'image/jpeg' })
+  esitMi(yabanciKlasorHatasi !== null, true, 'hikaye kovasinda baskasinin klasorune yazilamiyor')
+  // Sikayet hedefi 'hikaye' kabul, olmayan hikaye 'sikayet edemezsin' ile duser.
+  const { error: hikayeSikayetHatasi } = await a.rpc('sikayet_gonder', {
+    p_hedef_tur: 'hikaye',
+    p_hedef_id: bosId,
+    p_sebep: 'spam',
+  })
+  esitMi(hikayeSikayetHatasi?.message, 'Bu hikayeyi sikayet edemezsin', "sikayet_gonder 'hikaye' hedefini taniyor, gormeyen sikayet edemiyor")
+
   sonucuBildirVeCik()
 }
 

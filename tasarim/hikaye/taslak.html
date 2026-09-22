@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<title>Hikâye akışı – taslak</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--tur:#FE7813;--metin:#17130F;--ikincil:#6E6660;--soluk:#A39B93;--cizgi:#DCD3C9;--sef:#FFF3E8;--krem:#FAF7F3}
+  *{box-sizing:border-box}
+  body{margin:0;background:#ECE8E2;font-family:"Instrument Sans",system-ui,sans-serif;color:var(--metin);padding:28px 24px}
+  h1{font-size:22px;margin:0 0 6px}.alt{color:var(--ikincil);font-size:14px;margin:0 0 22px}
+  .sira{display:flex;gap:26px;align-items:flex-start}
+  .kolon{width:390px;flex:none}
+  .etiketK{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ikincil);margin:0 0 4px}
+  .aciklama{font-size:13px;color:var(--ikincil);margin:0 0 10px;min-height:54px;line-height:1.35}
+  .tel{width:390px;height:844px;background:#fff;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.18)}
+  .ust{display:flex;align-items:center;justify-content:center;height:96px;position:relative}
+  .ust .marka{font-weight:700;font-size:30px;letter-spacing:-1px}
+  .ust .marka i{color:var(--tur);font-style:normal}
+  .ust .ara{position:absolute;left:22px;top:52px;width:22px;height:22px;border:2.4px solid var(--metin);border-radius:50%}
+  .serit{display:flex;gap:14px;padding:6px 16px 14px;overflow:hidden}
+  .kisi{width:72px;text-align:center;flex:none}
+  .halka{width:68px;height:68px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#FE7813,#FFB26B);margin:0 auto}
+  .halka.gri{background:var(--cizgi)}
+  .halka.yok{background:transparent;border:1.5px dashed var(--cizgi);padding:2px}
+  .halka .ic{width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;background:#8a6b8f center/cover;position:relative}
+  .halka .ic.a{background:linear-gradient(135deg,#7a2b5a,#2c1633)}.halka .ic.b{background:linear-gradient(135deg,#2f6b8f,#0f2c3f)}.halka .ic.c{background:linear-gradient(135deg,#c98a4a,#5a3a1a)}.halka .ic.d{background:linear-gradient(135deg,#6b8f2f,#203f0f)}
+  .arti{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:var(--tur);color:#fff;border:2px solid #fff;font-size:16px;line-height:18px;text-align:center;font-weight:700}
+  .kisi span{display:block;font-size:12px;margin-top:6px;color:var(--metin);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kisi.soluk span{color:var(--ikincil)}
+  .kart{margin:6px 8px;border:1px solid var(--cizgi);border-radius:16px;padding:14px;height:330px}
+  .kart .b{display:flex;gap:12px;align-items:flex-start}
+  .kart .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7a2b5a,#2c1633);flex:none}
+  .kart .t{font-size:17px;line-height:1.35}.kart .t b{font-weight:700}.kart .t .m{color:var(--tur);font-weight:700}
+  .kart .z{color:var(--ikincil);font-size:14px;margin-top:2px}
+  .kart .foto{margin-top:12px;height:170px;border-radius:14px;background:linear-gradient(135deg,#1a1a1a,#3a3a3a)}
+  .altgez{position:absolute;left:16px;right:16px;bottom:22px;height:64px;border-radius:32px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:space-around}
+  .altgez i{width:24px;height:24px;border-radius:6px;background:var(--cizgi);display:block}.altgez i.a{background:var(--tur);border-radius:50%}
+  /* ekleme */
+  .ekle{background:#111;color:#fff;height:100%;position:relative}
+  .ekle .onizleme{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#4a2c1a 0%,#1b1b1b 55%,#0c0c0c 100%)}
+  .ekle .kapat{position:absolute;top:56px;left:20px;font-size:26px}
+  .ekle .baslik{position:absolute;top:58px;left:0;right:0;text-align:center;font-weight:700;font-size:17px}
+  .ekle .yazi{position:absolute;left:24px;right:24px;top:48%;text-align:center;font-size:22px;font-weight:600;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+  .ekle .mekan{position:absolute;left:24px;bottom:160px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border-radius:999px;padding:8px 14px 8px 10px;font-size:14px;font-weight:600}
+  .pin{width:12px;height:12px;background:var(--tur);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-block}
+  .ekle .yazikutu{position:absolute;left:16px;right:16px;bottom:96px;background:rgba(255,255,255,.14);border-radius:14px;padding:12px 14px;color:rgba(255,255,255,.75);font-size:15px}
+  .ekle .alt{position:absolute;left:16px;right:16px;bottom:28px;display:flex;gap:12px;align-items:center}
+  .ekle .alt .cip{flex:1;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:12px;text-align:center;font-weight:600;font-size:15px}
+  .ekle .alt .payl{flex:1.4;background:var(--tur);border-radius:999px;padding:12px;text-align:center;font-weight:700;font-size:15px}
+  /* izleyici */
+  .izle{background:#000;color:#fff;height:100%;position:relative}
+  .izle .foto{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#2b4a5a 0%,#101c22 60%,#050708 100%)}
+  .izle .cubuklar{position:absolute;top:54px;left:12px;right:12px;display:flex;gap:4px}
+  .izle .cubuklar i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);display:block;overflow:hidden;position:relative}
+  .izle .cubuklar i.dolu::after,.izle .cubuklar i.yarim::after{content:"";position:absolute;left:0;top:0;bottom:0;background:#fff;width:100%}
+  .izle .cubuklar i.yarim::after{width:45%}
+  .izle .kimlik{position:absolute;top:70px;left:16px;right:16px;display:flex;align-items:center;gap:10px}
+  .izle .kimlik .av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2f6b8f,#0f2c3f);border:2px solid #fff}
+  .izle .kimlik b{font-size:15px}.izle .kimlik span{font-size:13px;color:rgba(255,255,255,.7);margin-left:6px}
+  .izle .kimlik .x{margin-left:auto;font-size:24px}
+  .izle .mekan{position:absolute;left:16px;bottom:118px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border-radius:999px;padding:8px 14px 8px 10px;font-size:14px;font-weight:600}
+  .izle .yazi{position:absolute;left:24px;right:24px;top:44%;text-align:center;font-size:22px;font-weight:600;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+  .izle .yanit{position:absolute;left:16px;right:16px;bottom:34px;display:flex;gap:10px;align-items:center}
+  .izle .yanit .kutu{flex:1;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:12px 16px;color:rgba(255,255,255,.75);font-size:15px}
+  .izle .yanit .gonder{width:44px;height:44px;border-radius:50%;background:var(--tur);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .izle .gordu{position:absolute;left:16px;right:16px;bottom:34px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .izle .gordu .avs{display:flex}.izle .gordu .avs i{width:26px;height:26px;border-radius:50%;border:2px solid #000;background:#8a6b8f;margin-left:-8px;display:block}
+  .izle .gordu .avs i:first-child{margin-left:0}
+  .ipucu{position:absolute;left:0;right:0;top:42%;display:flex;justify-content:space-between;padding:0 12px;color:rgba(255,255,255,.35);font-size:12px}
+</style></head><body>
+<h1>Hikâye akışı — taslak (3 ekran)</h1>
+<p class="alt">Tek fotoğraf, isteğe bağlı yazı ve mekân etiketi; 24 saat; yalnızca arkadaşlar görür.</p>
+<div class="sira">
+
+<div class="kolon">
+  <p class="etiketK">1 · Ana sayfa şeridi</p>
+  <p class="aciklama">Marka başlığının altında yatay şerit. İlk daire kendi hikâyen (yoksa kesikli halka + turuncu artı; varsa kendi hikâyen açılır, artı ekler). Görülmemişler turuncu halka, görülenler gri; görülmemişler önce.</p>
+  <div class="tel">
+    <div class="ust"><div class="ara"></div><div class="marka">slo<i>o</i>in</div></div>
+    <div class="serit">
+      <div class="kisi"><div class="halka yok"><div class="ic a"><div class="arti">+</div></div></div><span>Hikâyen</span></div>
+      <div class="kisi"><div class="halka"><div class="ic b"></div></div><span>ozdemrs</span></div>
+      <div class="kisi"><div class="halka"><div class="ic c"></div></div><span>denizy</span></div>
+      <div class="kisi soluk"><div class="halka gri"><div class="ic d"></div></div><span>mertcan</span></div>
+      <div class="kisi soluk"><div class="halka gri"><div class="ic a"></div></div><span>ayse.k</span></div>
+    </div>
+    <div class="kart"><div class="b"><div class="av"></div><div><div class="t"><b>byorcun</b>, <span class="m">Özdemir kafe</span>'de check-in yaptı.</div><div class="z">2 saat önce</div></div></div><div class="foto"></div></div>
+    <div class="altgez"><i class="a"></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</div>
+
+<div class="kolon">
+  <p class="etiketK">2 · Hikâye ekle</p>
+  <p class="aciklama">"+"a basınca Kamera / Galeri seçimi, ardından tam ekran önizleme. Üstte yazı (isteğe bağlı), solda mekân etiketi (aktif check-in varsa otomatik önerilir, kaldırılabilir). Altta Vazgeç / Paylaş.</p>
+  <div class="tel"><div class="ekle">
+    <div class="onizleme"></div>
+    <div class="kapat">✕</div><div class="baslik">Yeni hikâye</div>
+    <div class="yazi">Kahve molası ☕</div>
+    <div class="mekan"><span class="pin"></span>Özdemir kafe <span style="opacity:.6;margin-left:4px">✕</span></div>
+    <div class="yazikutu">Bir şeyler yaz… (isteğe bağlı)</div>
+    <div class="alt"><div class="cip">Vazgeç</div><div class="payl">Paylaş</div></div>
+  </div></div>
+</div>
+
+<div class="kolon">
+  <p class="etiketK">3 · İzleyici</p>
+  <p class="aciklama">Tam ekran; üstte kişinin hikâye sayısı kadar ilerleme çubuğu (5 sn), sağa dokun ileri / sola geri, basılı tut durdur, aşağı kaydır kapat. Başkasının hikâyesinde altta "Mesaj gönder" (sohbete düşer); kendi hikâyende "N kişi gördü" → liste.</p>
+  <div class="tel"><div class="izle">
+    <div class="foto"></div>
+    <div class="cubuklar"><i class="dolu"></i><i class="yarim"></i><i></i></div>
+    <div class="kimlik"><div class="av"></div><b>ozdemrs</b><span>3 sa</span><div class="x">✕</div></div>
+    <div class="ipucu"><span>‹ geri</span><span>ileri ›</span></div>
+    <div class="yazi">Bugün burası çok güzeldi</div>
+    <div class="mekan"><span class="pin"></span>Nilüfer Sahil</div>
+    <div class="yanit"><div class="kutu">Mesaj gönder…</div><div class="gonder">➤</div></div>
+  </div></div>
+  <p class="aciklama" style="margin-top:12px">Kendi hikâyende alt satır: <b style="color:var(--metin)">● ● ● 12 kişi gördü ›</b> (dokununca liste); mesaj kutusu yok.</p>
+</div>
+
+</div>
+</body></html>

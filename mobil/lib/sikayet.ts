@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 import { dosyayiOku } from './dosya-oku'
 
-export type SikayetHedefTuru = 'kullanici' | 'check_in' | 'mesaj'
+export type SikayetHedefTuru = 'kullanici' | 'check_in' | 'mesaj' | 'hikaye'
 
 export const SIKAYET_SEBEPLERI = [
   { anahtar: 'taciz', etiket: 'Taciz veya rahatsiz etme' },
