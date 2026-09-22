@@ -1022,6 +1022,20 @@ Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
   kucuk, fotograf izgarasi 4 sutun (`FotografIzgarasiDuzenle` yeni
   `sutun` prop'u; form 3'te kaldi). Olculdu: ~760 -> ~625 px
   (`tasarim/checkin-duzenle.png`). OTA asagida.
+- **CheckInDuzenle REFERANS 2 (kullanicinin gorseli
+  `tasarim/checkin-duzenle-referans-2.jpg`, "duzenleyi boyle yap";
+  once ikon secenekleri sunuldu `checkin-duzenle-daralt/ikon-secenekler.png`):**
+  basliklar ikonlu (kalem / resim, `duzenle-ikonlari.tsx`), sagda gri
+  "Istege bagli" (`checkIn.istegeBagliKisa` - `istegeBagli` formun uzun
+  ipucu!) / "N fotograf" (`fotografSayisi`); not kutusu krem zemin;
+  kareler yine 3 sutun, ekle karesi "+ Fotograf ekle" krem; **Ifade ve
+  Birlikte SATIR oldu**: 52'lik seftali kutu (gulen yuz / KisilerIkonu),
+  baslik + alt yazi (`ifadeEkleAlt`, `birlikteAlt`), sagda ok / turuncu
+  +; satirin tamami seciciyi acar. Ifade seciliyse kutuda ifadenin ikonu
+  (`duzenle-ifade-<slug>`), baslikta etiketi, alt yazi
+  `degistirmekIcinDokun`, sagda x (`ifade-kaldir`). Etiket cipleri
+  Birlikte satirinin altinda. Araya ince ayiraclar. Secenek A'nin
+  4 sutunu bu referansla 3'e dondu. Goruntu `tasarim/checkin-duzenle.png`.
 - **CheckInDuzenle klavye:** `KeyboardAvoidingView` KALKTI (kullanici:
   "klavye acilinca Vazgec/Kaydet ustune gelmesin, asagida kalsin");
   ScrollView `automaticallyAdjustKeyboardInsets` - icerik klavye kadar

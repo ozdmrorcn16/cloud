@@ -657,6 +657,11 @@ export default {
     kameraVeyaGaleri: 'Камера или галерея',
     ifade: 'Настроение',
     kaydedinceUygulanir: 'Изменения применяются после сохранения.',
+    istegeBagliKisa: 'Необязательно',
+    fotografSayisi: '{{n}} фото',
+    ifadeEkleAlt: 'Добавь настроение к этому моменту',
+    birlikteAlt: 'Отметь друзей',
+    degistirmekIcinDokun: 'Нажми, чтобы изменить',
   },
   mekanDuzenle: {
     baslik: 'Исправить данные',

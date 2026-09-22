@@ -145,7 +145,7 @@ export function FotografIzgarasiDuzenle({
               testID={`${testID}-ekle`}
             >
               <Text style={stiller.ekleArti}>+</Text>
-              <Text style={stiller.ekleYazi}>{t('checkIn.ekle')}</Text>
+              <Text style={stiller.ekleYazi}>{t('checkIn.fotografEkle')}</Text>
             </Pressable>
           )}
         </View>
@@ -254,8 +254,9 @@ const stilleriYap = (renk: Renk) =>
       borderWidth: 1.5,
       borderStyle: 'dashed',
       borderColor: renk.turuncu,
-      backgroundColor: renk.yuzey,
+      backgroundColor: renk.karsilamaZemini,
+      gap: 4,
     },
     ekleArti: { fontFamily: yazi.govde, fontSize: 30, lineHeight: 34, color: renk.turuncu },
-    ekleYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi },
+    ekleYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: renk.turuncuYazi, textAlign: 'center', paddingHorizontal: 4 },
   })

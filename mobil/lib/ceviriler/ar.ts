@@ -657,6 +657,11 @@ export default {
     kameraVeyaGaleri: 'اختر من الكاميرا أو المعرض',
     ifade: 'الحالة',
     kaydedinceUygulanir: 'تُطبَّق التغييرات عند الحفظ.',
+    istegeBagliKisa: 'اختياري',
+    fotografSayisi: '{{n}} صور',
+    ifadeEkleAlt: 'أضف حالة لهذه اللحظة',
+    birlikteAlt: 'ضع وسمًا لأصدقائك',
+    degistirmekIcinDokun: 'اضغط للتغيير',
   },
   mekanDuzenle: {
     baslik: 'تصحيح المعلومات',

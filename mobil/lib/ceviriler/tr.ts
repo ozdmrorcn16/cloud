@@ -806,6 +806,11 @@ export default {
     kameraVeyaGaleri: 'Kamera veya galeriden seç',
     ifade: 'İfade',
     kaydedinceUygulanir: 'Değişiklikler kaydedildiğinde uygulanır.',
+    istegeBagliKisa: 'İsteğe bağlı',
+    fotografSayisi: '{{n}} fotoğraf',
+    ifadeEkleAlt: 'Bu ana bir ifade kat',
+    birlikteAlt: 'Arkadaşlarını etiketle',
+    degistirmekIcinDokun: 'Değiştirmek için dokun',
   },
 
   // MEKAN BILGILERINI DUZELT (i18n turu 2026-09-13).

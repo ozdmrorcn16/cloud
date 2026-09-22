@@ -330,7 +330,7 @@ describe('AnaSayfa', () => {
     await menudenSec('menu-duzenle')
     await fireEvent.press(screen.getByTestId('duzenle-ifade-degistir'))
     await fireEvent.press(await screen.findByTestId('ifade-kahve-keyfi'))
-    expect(await screen.findByTestId('ifade-cipi-kahve-keyfi')).toBeTruthy()
+    expect(await screen.findByTestId('duzenle-ifade-kahve-keyfi')).toBeTruthy()
     await fireEvent.press(screen.getByText('Kaydet'))
     await waitFor(() => expect(checkInIfadesiniGuncelle).toHaveBeenCalledWith('checkin-1', 'kahve-keyfi'))
     // Kart notun basinda ifadeyi gosteriyor.
@@ -340,7 +340,7 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await menudenSec('menu-duzenle')
     await fireEvent.press(await screen.findByTestId('ifade-kaldir'))
-    expect(screen.getByTestId('duzenle-ifade-degistir')).toHaveTextContent('Ekle')
+    expect(screen.getByText('İfade ekle')).toBeTruthy()
     await fireEvent.press(screen.getByText('Kaydet'))
     await waitFor(() => expect(checkInIfadesiniGuncelle).toHaveBeenLastCalledWith('checkin-1', null))
     await waitFor(() => expect(screen.queryByTestId('kart-ifade-kahve-keyfi')).toBeNull())

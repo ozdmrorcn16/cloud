@@ -657,6 +657,11 @@ export default {
     kameraVeyaGaleri: 'Elige cámara o galería',
     ifade: 'Estado',
     kaydedinceUygulanir: 'Los cambios se aplican al guardar.',
+    istegeBagliKisa: 'Opcional',
+    fotografSayisi: '{{n}} fotos',
+    ifadeEkleAlt: 'Añade un estado a este momento',
+    birlikteAlt: 'Etiqueta a tus amigos',
+    degistirmekIcinDokun: 'Toca para cambiar',
   },
   mekanDuzenle: {
     baslik: 'Corregir la información',

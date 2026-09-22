@@ -657,6 +657,11 @@ export default {
     kameraVeyaGaleri: 'Kamera oder Galerie wählen',
     ifade: 'Stimmung',
     kaydedinceUygulanir: 'Änderungen gelten nach dem Speichern.',
+    istegeBagliKisa: 'Optional',
+    fotografSayisi: '{{n}} Fotos',
+    ifadeEkleAlt: 'Gib diesem Moment eine Stimmung',
+    birlikteAlt: 'Markiere deine Freunde',
+    degistirmekIcinDokun: 'Zum Ändern tippen',
   },
   mekanDuzenle: {
     baslik: 'Angaben korrigieren',

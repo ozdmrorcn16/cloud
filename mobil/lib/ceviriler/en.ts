@@ -663,6 +663,11 @@ export default {
     kameraVeyaGaleri: 'Pick from camera or gallery',
     ifade: 'Mood',
     kaydedinceUygulanir: 'Changes apply when you save.',
+    istegeBagliKisa: 'Optional',
+    fotografSayisi: '{{n}} photos',
+    ifadeEkleAlt: 'Add a mood to this moment',
+    birlikteAlt: 'Tag your friends',
+    degistirmekIcinDokun: 'Tap to change',
   },
   mekanDuzenle: {
     baslik: 'Fix the details',

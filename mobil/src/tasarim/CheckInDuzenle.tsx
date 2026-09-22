@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   View,
   Text,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -19,9 +20,11 @@ import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { SURE, useModalHareketi } from './hareket'
 import { Avatar } from './Avatar'
-import { IgneIkonu } from './mekan-ikonlari'
+import { IgneIkonu, KisilerIkonu } from './mekan-ikonlari'
 import { KapatIkonu } from './sikayet-ikonlari'
-import { IfadeSecici, IfadeCipi } from './IfadeSecici'
+import { IfadeSecici } from './IfadeSecici'
+import { ifadeBul } from '../../lib/ifadeler'
+import { KalemInceIkonu, ResimIkonu, GulenYuzIkonu, OkSagIkonu } from './duzenle-ikonlari'
 import { ArkadasSecici } from './ArkadasSecici'
 import { FotografIzgarasiDuzenle, type FotografKaresi } from './FotografIzgarasiDuzenle'
 
@@ -191,8 +194,14 @@ export function CheckInDuzenle({
               </View>
             </View>
 
-            {/* NOTUN */}
-            <Text style={stiller.etiket}>{t('checkIn.notEtiket')}</Text>
+            {/* NOTUN: kalem ikonu + baslik, sagda "Istege bagli" (referans 2026-09-22). */}
+            <View style={stiller.bolumBaslik}>
+              <View style={stiller.baslikSol}>
+                <KalemInceIkonu />
+                <Text style={stiller.etiketSatirIci}>{t('checkIn.notEtiket')}</Text>
+              </View>
+              <Text style={stiller.sagNot}>{t('checkIn.istegeBagliKisa')}</Text>
+            </View>
             <TextInput
               testID="duzenle-not"
               style={stiller.notKutusu}
@@ -205,11 +214,20 @@ export function CheckInDuzenle({
               editable={!kaydediliyor}
             />
 
-            {/* FOTOGRAFLAR */}
-            <Text style={stiller.etiket}>{t('checkIn.fotograflar')}</Text>
+            {/* FOTOGRAFLAR: resim ikonu + baslik, sagda "N fotograf". */}
+            <View style={stiller.bolumBaslik}>
+              <View style={stiller.baslikSol}>
+                <ResimIkonu />
+                <Text style={stiller.etiketSatirIci}>{t('checkIn.fotograflar')}</Text>
+              </View>
+              {kareler.length > 0 && (
+                <Text style={stiller.sagNot} testID="duzenle-foto-sayisi">
+                  {t('checkIn.fotografSayisi', { n: kareler.length })}
+                </Text>
+              )}
+            </View>
             <FotografIzgarasiDuzenle
               testID="duzenle-foto"
-              sutun={4}
               kareler={kareler}
               pasif={kaydediliyor}
               onEklendi={(uriler) => {
@@ -227,40 +245,67 @@ export function CheckInDuzenle({
               onHata={setHata}
             />
 
-            {/* IFADE: baslik + sagda Degistir/Ekle; altinda cip. */}
-            <View style={stiller.bolumBaslik}>
-              <Text style={stiller.etiketSatirIci}>{t('checkIn.ifade')}</Text>
-              <Pressable
-                onPress={() => setIfadeSecici(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                testID="duzenle-ifade-degistir"
-                disabled={kaydediliyor}
-              >
-                <Text style={stiller.baglanti}>{ifade ? t('checkIn.degistir') : t('checkIn.ekle')}</Text>
-              </Pressable>
-            </View>
-            {ifade && (
-              <View style={stiller.cipler}>
-                <IfadeCipi slug={ifade} onPress={() => setIfadeSecici(true)} onKaldir={() => setIfade(null)} />
+            {/* IFADE SATIRI (referans 2026-09-22): seftali kutuda ikon,
+                baslik + alt yazi, sagda ok; satirin tamami seciciyi acar.
+                Ifade seciliyse kutuda ifadenin kendisi, baslikta etiketi,
+                sagda x (kaldir). */}
+            <View style={stiller.ayirac} />
+            <Pressable
+              style={({ pressed }) => [stiller.bolumSatiri, pressed && stiller.basili]}
+              onPress={() => setIfadeSecici(true)}
+              accessibilityRole="button"
+              testID="duzenle-ifade-degistir"
+              disabled={kaydediliyor}
+            >
+              <View style={stiller.ikonKutusu}>
+                {ifade && ifadeBul(ifade) ? (
+                  <Image source={ifadeBul(ifade)!.kaynak} style={stiller.ikonKutusuIfade} resizeMode="contain" testID={`duzenle-ifade-${ifade}`} />
+                ) : (
+                  <GulenYuzIkonu />
+                )}
               </View>
-            )}
+              <View style={stiller.bolumMetinler}>
+                <Text style={stiller.bolumBaslikYazi}>{ifade && ifadeBul(ifade) ? ifadeBul(ifade)!.etiket : t('checkIn.ifadeEkle')}</Text>
+                <Text style={stiller.bolumAltYazi}>{ifade ? t('checkIn.degistirmekIcinDokun') : t('checkIn.ifadeEkleAlt')}</Text>
+              </View>
+              {ifade ? (
+                <Pressable
+                  onPress={() => setIfade(null)}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('checkIn.ifadeKaldir')}
+                  testID="ifade-kaldir"
+                  disabled={kaydediliyor}
+                >
+                  <Text style={stiller.satirCarpi}>×</Text>
+                </Pressable>
+              ) : (
+                <OkSagIkonu />
+              )}
+            </Pressable>
 
-            {/* BIRLIKTE: baslik + sagda "+ Ekle"; altinda kullanici adi cipleri. */}
-            <View style={stiller.bolumBaslik}>
-              <Text style={stiller.etiketSatirIci}>{t('checkIn.birlikte')}</Text>
-              <Pressable
-                onPress={() => setArkadasSecici(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                testID="duzenle-birlikte-ekle"
-                disabled={kaydediliyor}
-              >
-                <Text style={stiller.baglanti}>+ {t('checkIn.ekle')}</Text>
-              </Pressable>
-            </View>
+            {/* BIRLIKTE SATIRI: seftali kutuda kisiler ikonu, baslik + alt
+                yazi, sagda turuncu +; satir arkadas secicisini acar.
+                Etiketli kisiler satirin altinda cip olarak. */}
+            <View style={stiller.ayirac} />
+            <Pressable
+              style={({ pressed }) => [stiller.bolumSatiri, pressed && stiller.basili]}
+              onPress={() => setArkadasSecici(true)}
+              accessibilityRole="button"
+              testID="duzenle-birlikte-ekle"
+              disabled={kaydediliyor}
+            >
+              <View style={stiller.ikonKutusu}>
+                <KisilerIkonu boyut={24} />
+              </View>
+              <View style={stiller.bolumMetinler}>
+                <Text style={stiller.bolumBaslikYazi}>{t('checkIn.birlikte')}</Text>
+                <Text style={stiller.bolumAltYazi}>{t('checkIn.birlikteAlt')}</Text>
+              </View>
+              <Text style={stiller.arti}>+</Text>
+            </Pressable>
             {(kalanEtiketler.length > 0 || eklenen.length > 0) && (
-              <View style={stiller.cipler}>
+              <View style={[stiller.cipler, stiller.ciplerSatirAlti]}>
                 {kalanEtiketler.map((e) => (
                   <View key={e.kullaniciId} style={stiller.cip} testID={`duzenle-etiket-${e.kullaniciId}`}>
                     <Avatar fotografUrl={e.avatarUrl} ad={e.ad} kullaniciAdi={e.kullaniciAdi ?? e.ad ?? ''} cap={22} />
@@ -383,8 +428,21 @@ const stilleriYap = (renk: Renk) =>
     mekanAdSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     mekanAdi: { flex: 1, fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
     mekanAlt: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil, marginLeft: 24 },
-    etiket: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin, marginBottom: 6 },
-    etiketSatirIci: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
+    etiketSatirIci: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
+    baslikSol: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    sagNot: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
+    // Referans (2026-09-22): bolum satiri - seftali kutu 52, baslik +
+    // alt yazi, sagda ok ya da +; araya ince ayirac.
+    ayirac: { height: 1, backgroundColor: renk.cizgi, opacity: 0.6, marginTop: 14 },
+    bolumSatiri: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12 },
+    ikonKutusu: { width: 52, height: 52, borderRadius: 14, backgroundColor: renk.turuncuZemin, alignItems: 'center', justifyContent: 'center' },
+    ikonKutusuIfade: { width: 36, height: 36 },
+    bolumMetinler: { flex: 1, gap: 2 },
+    bolumBaslikYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
+    bolumAltYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk + 1, color: renk.metinIkincil },
+    arti: { fontFamily: yazi.govde, fontSize: 30, lineHeight: 32, color: renk.turuncu, paddingHorizontal: 4 },
+    satirCarpi: { fontFamily: yazi.govdeKalin, fontSize: 24, lineHeight: 26, color: renk.metin, paddingHorizontal: 6 },
+    ciplerSatirAlti: { paddingLeft: 66, paddingBottom: 12 },
     notKutusu: {
       minHeight: 64,
       borderWidth: 1,
@@ -395,11 +453,11 @@ const stilleriYap = (renk: Renk) =>
       fontSize: olcek.kucuk + 1,
       color: renk.metin,
       textAlignVertical: 'top',
-      backgroundColor: renk.yuzey,
-      marginBottom: 12,
+      // Referans: krem zemin, cerceve cok silik.
+      backgroundColor: renk.karsilamaZemini,
+      marginBottom: 4,
     },
-    bolumBaslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 6 },
-    baglanti: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk + 1, color: renk.turuncuYazi },
+    bolumBaslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 8 },
     cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: bosluk.s },
     cip: {
       flexDirection: 'row',

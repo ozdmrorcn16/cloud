@@ -242,12 +242,13 @@ describe('CheckInEkrani', () => {
     expect(await screen.findByTestId('foto-0')).toBeTruthy()
     expect(screen.getByTestId('foto-1')).toBeTruthy()
     expect(screen.getByTestId('foto-ekle')).toBeTruthy()
-    expect(screen.queryByText('Fotoğraf ekle')).toBeNull()
+    // Buyuk kesikli kutu gitti (alt yazisi yok); kucuk "Fotograf ekle" karesi var.
+    expect(screen.queryByText('Kamera veya galeriden seç')).toBeNull()
 
     await fireEvent.press(screen.getByTestId('foto-kaldir-0'))
     expect(screen.queryByTestId('foto-1')).toBeNull()
     await fireEvent.press(screen.getByTestId('foto-kaldir-0'))
-    expect(await screen.findByText('Fotoğraf ekle')).toBeTruthy()
+    expect(await screen.findByText('Kamera veya galeriden seç')).toBeTruthy()
 
     // Yeniden iki sec, gonder: yukleme tek cagri, checkInYap dizi alir.
     await fireEvent.press(screen.getByTestId('foto-ekle'))

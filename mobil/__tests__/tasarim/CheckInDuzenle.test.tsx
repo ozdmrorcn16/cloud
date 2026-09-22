@@ -62,7 +62,9 @@ describe('CheckInDuzenle', () => {
     expect(screen.getByTestId('duzenle-foto-0')).toBeTruthy()
     expect(screen.getByTestId('duzenle-foto-1')).toBeTruthy()
     expect(screen.getByTestId('duzenle-foto-ekle')).toBeTruthy()
-    expect(screen.getByTestId('ifade-cipi-kahve-keyfi')).toBeTruthy()
+    // Ifade satiri: kutuda ifadenin ikonu, baslikta etiketi (referans 2026-09-22).
+    expect(screen.getByTestId('duzenle-ifade-kahve-keyfi')).toBeTruthy()
+    expect(screen.getByText('Kahve keyfi')).toBeTruthy()
     expect(screen.getByTestId('duzenle-etiket-kisi-2')).toBeTruthy()
     expect(screen.getByText('Değişiklikler kaydedildiğinde uygulanır.')).toBeTruthy()
   })
@@ -134,9 +136,10 @@ describe('CheckInDuzenle', () => {
     const onKaydet = jest.fn().mockResolvedValue(undefined)
     await render(<CheckInDuzenle acikMi oge={oge()} zamanYazisi="3 saat önce" onKapat={jest.fn()} onKaydet={onKaydet} />)
     await fireEvent.press(screen.getByTestId('ifade-kaldir'))
-    expect(screen.queryByTestId('ifade-cipi-kahve-keyfi')).toBeNull()
-    // Ifade yokken baglanti "Ekle" yazar.
-    expect(screen.getByTestId('duzenle-ifade-degistir')).toHaveTextContent('Ekle')
+    expect(screen.queryByTestId('duzenle-ifade-kahve-keyfi')).toBeNull()
+    // Ifade yokken satir "Ifade ekle" + alt yazi.
+    expect(screen.getByText('İfade ekle')).toBeTruthy()
+    expect(screen.getByText('Bu ana bir ifade kat')).toBeTruthy()
 
     await fireEvent.press(screen.getByTestId('duzenle-etiket-kaldir-kisi-2'))
     expect(screen.queryByTestId('duzenle-etiket-kisi-2')).toBeNull()

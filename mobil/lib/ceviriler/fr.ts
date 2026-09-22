@@ -657,6 +657,11 @@ export default {
     kameraVeyaGaleri: 'Caméra ou galerie',
     ifade: 'Humeur',
     kaydedinceUygulanir: 'Les modifications s’appliquent à l’enregistrement.',
+    istegeBagliKisa: 'Facultatif',
+    fotografSayisi: '{{n}} photos',
+    ifadeEkleAlt: 'Ajoute une humeur à ce moment',
+    birlikteAlt: 'Identifie tes amis',
+    degistirmekIcinDokun: 'Touche pour changer',
   },
   mekanDuzenle: {
     baslik: 'Corriger les infos',
