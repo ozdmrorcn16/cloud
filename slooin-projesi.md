@@ -354,6 +354,15 @@ alti sirali tur yerine iki turda (kimlik sorgulari paralel, kisiler tek
 adimi kalkti (listeler avatari zaten tasiyor). 8 istek -> 6, ekran dolu
 aciliyor. Jest 95 / 1225.
 
+**Ek (OTA `8122ea6e`):** kullanicinin "Olc" talimatiyla `bag_kisileri`
+ve `akis_profilleri` canlida karsilastirildi (rollback'li gecici veri):
+yasakli/askida/dondurulmus/iki yonlu engelleme senaryolarinda sonuc
+birebir ayni. Kisi cozumu tek RPC'ye indi (bir gidis-donus daha az).
+Ayni olcumde ikinci turda yaptigim birlestirmenin 200 kimlik sinirinda
+kirilabildigi bulundu (150+150 bekleyen istek -> ekran hata verirdi);
+`profilOzetleriniGetir` artik 200'luk dilimlere bolup paralel soruyor.
+test:gorunurluk 453 dogrulama ve test:sema yesil, jest 95 / 1229.
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS

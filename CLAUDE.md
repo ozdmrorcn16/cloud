@@ -1121,8 +1121,32 @@ tekrar bulundu:
   sorulur, hicbiri eksik degilse istek yok - `akis_profilleri` 2x -> 1x.
 Olcum: Bildirimler 8 istek -> 6, ve ekran artik dolu aciliyor.
 
-Jest 95 paket / 1225 test, tsc temiz. OTA `f4847f7e`, web
-`slooin--us8w53iv2y`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
+**UCUNCU TUR - KISI COZUMU TEK TURDA (kullanicinin "Olc" talimati):**
+`bag_kisileri` ile `akis_profilleri` CANLIDA karsilastirildi (MCP,
+`begin ... rollback` ile gecici veri - canliya hicbir sey yazilmadi):
+yasakli, askida, dondurulmus hesap, IKI YONDE engelleme, bos ve null
+dizi senaryolarinin HEPSINDE sonuc BIREBIR AYNI. Sebep tanimlarda:
+ikisi de `moderasyon.hesap_aktif_mi` + iki yonlu engelleme kullaniyor
+(`gizli.engelli_mi` ile `akis_profilleri`nin satir ici sorgusu ayni
+metin). Bu yuzden `kisileriCoz` artik TEK cagri yapiyor
+(`profilOzetleriniGetir`, avatar dahil); `bag_kisileri` RPC'si
+sunucuda duruyor ama ISTEMCIDEN ARTIK CAGRILMIYOR.
+
+**AYNI OLCUMDE KENDI HATAM BULUNDU:** ikinci turda takip + sohbet
+kimliklerini tek cagrida birlestirmistim; RPC'nin 200 kimlik siniri
+oldugu icin (201'de `Cok fazla kimlik`) 150 takip + 150 sohbet
+istegi olan birinde bildirimler ekrani BASTAN HATA verirdi. Ayni
+risk `takipcilerimiGetir`de zaten vardi: 200'den fazla arkadasi olan
+kisinin listesi hic gelmiyordu. `profilOzetleriniGetir` artik 200'luk
+dilimlere bolup PARALEL soruyor.
+Bir ayrim korundu: ozet okunamazsa akis SESSIZCE ozetsiz cizilir, ama
+bag listelerinde ozet listenin KENDISI oldugu icin hata firlatilir
+(`hatayiFirlat`) - bos liste "kimse yok" diye okunur ve yalan soyler.
+
+Jest 95 paket / 1229 test, tsc temiz; `test:gorunurluk` 453 dogrulama
+ve `test:sema` TAMAMEN yesil (kisi cozumu artik baska bir RPC'den
+gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
+`slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
 ### HIKAYE AKISI (24 SAAT) - 2026-09-22

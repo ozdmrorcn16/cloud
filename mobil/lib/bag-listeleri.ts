@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import type { BagKisi } from './bag'
 import { hataMetni } from './hata-metni'
-import { avatarlariGetir } from './akis'
+import { avatarlariGetir, profilOzetleriniGetir } from './akis'
 import { kimligiZorunluOku } from './kimlik'
 
 type SunucuKisi = { id: string; kullanici_adi: string; ad: string }
@@ -19,19 +19,36 @@ async function kendiKullaniciId(): Promise<string> {
 async function kisileriCoz(kimlikler: string[]): Promise<BagKisi[]> {
   if (kimlikler.length === 0) return []
 
-  const { data, error } = await supabase.rpc('bag_kisileri', { p_kimlikler: kimlikler })
-  if (error) throw new Error(hataMetni(error))
+  /*
+   * TEK TUR (2026-09-22 performans olcumu). Onceden `bag_kisileri` ile
+   * ad okunuyor, ARDINDAN `akis_profilleri` ile avatar aliniyordu - iki
+   * sirali gidis-donus, ustelik ikisi de AYNI kisiler icin ad ve
+   * kullanici adi donduruyordu.
+   *
+   * Ikisinin AYNI kumeyi verdigi canlida olculdu (MCP, `rollback`li
+   * gecici veriyle): yasakli, askida, dondurulmus hesap ve iki yonde
+   * engelleme senaryolarinin dordunde de sonuc birebir ayni. Filtreler
+   * zaten ozdes: `moderasyon.hesap_aktif_mi` + iki yonlu engelleme
+   * (`gizli.engelli_mi`, `akis_profilleri`de satir ici ayni sorgu).
+   *
+   * `hatayiFirlat`: bag listesi ozetin KENDISI, bos liste "kimse yok"
+   * diye okunurdu - hata gorunur olmali. Akis ise ozetsiz de cizilir,
+   * orada varsayilan sessizlik suruyor.
+   *
+   * 200 kimlik siniri `profilOzetleriniGetir` icinde parcalaniyor.
+   */
+  const ozetler = await profilOzetleriniGetir(kimlikler, { hatayiFirlat: true })
 
-  // Avatarlar ikincil bilgi: okunamazsa liste yine gelir, bas harf cizilir.
-  const satirlar = data as SunucuKisi[]
-  const avatarlar = await avatarlariGetir(satirlar.map((s) => s.id)).catch(() => ({}) as Record<string, string | null>)
-
-  return satirlar.map((satir) => ({
-    id: satir.id,
-    kullaniciAdi: satir.kullanici_adi,
-    ad: satir.ad,
-    avatarUrl: avatarlar[satir.id] ?? null,
-  }))
+  // Sira KIMLIK SIRASI: cagiran taraf (bekleyen istekler) o sirayi
+  // koruyor. Gorunmeyen kisi (engelli/askida) listeden duesuer.
+  return kimlikler
+    .filter((id) => ozetler[id])
+    .map((id) => ({
+      id,
+      kullaniciAdi: ozetler[id].rumuz,
+      ad: ozetler[id].ad,
+      avatarUrl: ozetler[id].avatarUrl,
+    }))
 }
 
 async function kimlikleriOku(

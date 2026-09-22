@@ -212,15 +212,40 @@ export type ProfilOzeti = {
  * Disari acik: bildirim ekrani da ayni yardimciyla avatar cekiyor,
  * boylece "kim gorunur" kurali tek yerde (RPC) kaliyor.
  */
+/**
+ * RPC tek cagrida en fazla bu kadar kimlik kabul ediyor (sunucuda
+ * `Cok fazla kimlik istendi`). Ustunde parcalanip paralel soruluyor -
+ * 200'den fazla arkadasi olan birinin listesi bastan hata veriyordu
+ * (2026-09-22 olcumu).
+ */
+const KIMLIK_SINIRI = 200
+
 export async function profilOzetleriniGetir(
-  kimlikler: string[]
+  kimlikler: string[],
+  secenekler: { hatayiFirlat?: boolean } = {}
 ): Promise<Record<string, ProfilOzeti>> {
   if (kimlikler.length === 0) return {}
+
+  // 200'luk dilimler PARALEL; tek dilimde ekstra is yok.
+  if (kimlikler.length > KIMLIK_SINIRI) {
+    const dilimler: string[][] = []
+    for (let i = 0; i < kimlikler.length; i += KIMLIK_SINIRI) {
+      dilimler.push(kimlikler.slice(i, i + KIMLIK_SINIRI))
+    }
+    const parcalar = await Promise.all(dilimler.map((d) => profilOzetleriniGetir(d, secenekler)))
+    return Object.assign({}, ...parcalar)
+  }
 
   const { data, error } = await supabase.rpc('akis_profilleri', {
     p_kimlikler: kimlikler,
   })
-  if (error) return {}
+  if (error) {
+    // Varsayilan SESSIZ: akis ozet olmadan da cizilmeli. Bag listeleri
+    // ise ozetin KENDISI oldugu icin hatayi gormek zorunda - bos liste
+    // "kimse yok" gibi okunur ve yalan soyler.
+    if (secenekler.hatayiFirlat) throw new Error(hataMetni(error))
+    return {}
+  }
 
   const satirlar = (data ?? []) as {
     id: string

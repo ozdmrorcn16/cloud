@@ -1,13 +1,16 @@
-import { akisiGetir } from './akis'
+import { profilOzetleriniGetir, akisiGetir } from './akis'
 import { supabase } from './supabase'
 import { takipcilerimiGetir } from './bag-listeleri'
 import { checkInFotografiUrlHaritasi } from './fotograf-url'
 
 jest.mock('./supabase', () => ({
-  supabase: { from: jest.fn(), auth: { getUser: jest.fn(), getSession: jest.fn() } },
+  supabase: { from: jest.fn(), rpc: jest.fn(), auth: { getUser: jest.fn(), getSession: jest.fn() } },
 }))
 jest.mock('./bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
-jest.mock('./fotograf-url', () => ({ checkInFotografiUrlHaritasi: jest.fn().mockResolvedValue({}) }))
+jest.mock('./fotograf-url', () => ({
+  checkInFotografiUrlHaritasi: jest.fn().mockResolvedValue({}),
+  profilFotografiUrlHaritasi: jest.fn().mockResolvedValue({}),
+}))
 // Etiketler ayri bir sorgudan geliyor; akisin kendi donusumunu test
 // ederken o sorgu mock'lanıyor.
 jest.mock('./etiket', () => ({ etiketleriGetir: jest.fn().mockResolvedValue({}) }))
@@ -191,5 +194,48 @@ describe('akisiGetir sayfalama', () => {
     await akisiGetir(30)
 
     expect(lt).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * 200 KIMLIK SINIRI (2026-09-22, canlida olculdu): `akis_profilleri`
+ * 201 kimlikte 'Cok fazla kimlik istendi' ile reddediyor. Onceden
+ * 200'den fazla arkadasi olan birinin listesi BASTAN hata veriyordu.
+ */
+describe('profilOzetleriniGetir - 200 siniri ve hata secenegi', () => {
+  const satir = (i: number) => ({ id: `k${i}`, kullanici_adi: `ad${i}`, ad: `Ad ${i}`, fotograf: null })
+
+  it('200 USTU kimlik 200-lik dilimlere bolunup paralel soruluyor', async () => {
+    ;(supabase.rpc as jest.Mock).mockImplementation((_ad: string, arg: { p_kimlikler: string[] }) =>
+      Promise.resolve({ data: arg.p_kimlikler.map((k) => satir(Number(k.slice(1)))), error: null })
+    )
+    const kimlikler = Array.from({ length: 450 }, (_, i) => `k${i}`)
+
+    const sonuc = await profilOzetleriniGetir(kimlikler)
+
+    expect(Object.keys(sonuc)).toHaveLength(450)
+    const cagrilar = (supabase.rpc as jest.Mock).mock.calls.filter((c) => c[0] === 'akis_profilleri')
+    expect(cagrilar).toHaveLength(3)
+    expect(cagrilar.map((c) => c[1].p_kimlikler.length)).toEqual([200, 200, 50])
+  })
+
+  it('200 VE ALTI tek cagri', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [satir(1)], error: null })
+
+    await profilOzetleriniGetir(Array.from({ length: 200 }, (_, i) => `k${i}`))
+
+    expect((supabase.rpc as jest.Mock).mock.calls.filter((c) => c[0] === 'akis_profilleri')).toHaveLength(1)
+  })
+
+  it('varsayilan SESSIZ: hata bos harita doner (akis ozetsiz de cizilir)', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: { message: 'patladi' } })
+
+    await expect(profilOzetleriniGetir(['k1'])).resolves.toEqual({})
+  })
+
+  it('hatayiFirlat: bag listeleri hatayi GORMELI - bos liste "kimse yok" diye okunur', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: { message: 'patladi' } })
+
+    await expect(profilOzetleriniGetir(['k1'], { hatayiFirlat: true })).rejects.toThrow()
   })
 })
