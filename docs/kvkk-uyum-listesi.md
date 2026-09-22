@@ -800,3 +800,34 @@ Ana sayfada Instagram benzeri hikaye seridi. Spec
   sikayet kurallari, moderasyon gizleme, disa aktarim, silme -> dosya
   gider, anon kapali).
 
+
+## Hikayede ifade ve arkadas etiketi (2026-09-22)
+
+Hikayeye check-in'dekiyle AYNI ifade sozlugunden tek bir ifade ve
+arkadas etiketi eklenebiliyor (kullanicinin istegi). Dort soru:
+
+- **Hangi veri:** `hikayeler.ifade` (sozluk slug'i) ve
+  `hikaye_etiketleri` (hikaye, etiketlenen kisi, durum, zaman).
+  Etiket BASKA BIR KISININ verisi oldugu icin ayri ele alindi.
+- **Hangi dayanak:** hikayenin kendisiyle ayni - sozlesmenin ifasi
+  (KVKK m.5/2-c); kisi ifadeyi ve etiketi kendisi seciyor. Etiketlenen
+  kisi acisindan dayanak ACIK RIZA degil, ONAY MEKANIZMASI: profilinde
+  "Etiket onayi gerekli" aciksa etiket onaylanana kadar KIMSEYE
+  gorunmez (`durum = 'bekliyor'`), reddedilebilir. Karari sunucudaki
+  tetikleyici koyuyor, istemcinin yazdigi deger yok sayiliyor.
+- **Ne kadar sure:** hikayeyle birlikte 24 saat; saatlik temizlik
+  hikayeyi silince etiket satirlari cascade ile gider. Arsiv yok.
+- **Kim gorur, kaydediliyor mu:** yalnizca hikayeyi gorebilenler
+  (sahibi + arkadaslar; engel iki yonlu, moderasyon gizli kimseye).
+  Onaylanmamis etiket hicbir yerde gorunmez. Askidaki/yasakli hesap ve
+  engelli kisi etiketi de gizlenir (`gizli.hikaye_etiketleri_json`).
+  Ayri bir denetim izi tutulmuyor - etiket zaten hikayenin bir parcasi.
+
+Erisim hakki (m.11): `verilerimi_disa_aktar` iki yonu de tasiyor -
+kendi hikayemde `etiketlediklerim` ve baskasinin hikayesinde
+`hikaye_etiketlerim` (kim etiketledi, durum, zaman). Ikincisinde
+hikayenin fotografi ya da yazisi YOK; o baskasinin verisi.
+
+Bekleyen etiketler check-in etiketleriyle AYNI listede (Bildirimler ve
+Gizlilik > Etiketler > Bekleyen etiketler): kisi ayni yerden onaylayip
+reddediyor, iki ayri kutu yok.

@@ -32,6 +32,7 @@ import { Avatar } from '../../tasarim/Avatar'
 import { SecimPenceresi, UcNoktaIkonu, CopIkonu } from '../../tasarim/SecimPenceresi'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
+import { IfadeCipi } from '../../tasarim/IfadeSecici'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
 
@@ -633,13 +634,36 @@ export default function HikayeIzleEkrani() {
             pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
           >
             <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
-              {hikaye.yazi ? (
+              {/* IFADE + YAZI ayni kutuda (2026-09-22): ikisi de hikayenin
+                  "ustune eklenen" seyler, ayri kutular ekrani bolerdi. */}
+              {(hikaye.yazi || hikaye.ifade) && (
                 <View style={stiller.yaziKutusu}>
-                  <Text style={stiller.yazi} testID="hikaye-yazi-metni">
-                    {hikaye.yazi}
-                  </Text>
+                  {hikaye.ifade && <IfadeCipi slug={hikaye.ifade} />}
+                  {hikaye.yazi ? (
+                    <Text style={stiller.yazi} testID="hikaye-yazi-metni">
+                      {hikaye.yazi}
+                    </Text>
+                  ) : null}
                 </View>
-              ) : null}
+              )}
+
+              {/* ETIKETLENENLER: yalnizca ONAYLANMIS olanlar sunucudan
+                  geliyor. Dokununca kisinin profili. */}
+              {hikaye.etiketler.length > 0 && (
+                <View style={stiller.etiketSatiri} testID="hikaye-etiketler">
+                  <KisiIgnesi />
+                  {hikaye.etiketler.map((e) => (
+                    <Pressable
+                      key={e.kullaniciId}
+                      onPress={() => router.push(`/kullanici/${e.kullaniciId}` as never)}
+                      accessibilityRole="link"
+                      testID={`hikaye-etiketli-${e.kullaniciId}`}
+                    >
+                      <Text style={stiller.etiketYazi}>{e.kullaniciAdi}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
               {grup.benimMi ? (
                 <Pressable onPress={() => setGorenlerAcik(true)} style={stiller.gorenler} accessibilityRole="button" testID="hikaye-gorenler">
                   <GozCizimi />
@@ -713,6 +737,16 @@ function IgneCizimi() {
   )
 }
 
+/** Etiket satirinin basindaki kucuk kisi ignesi. */
+function KisiIgnesi() {
+  return (
+    <Svg width={14} height={14} viewBox="0 0 24 24">
+      <Circle cx={12} cy={8} r={3.4} stroke="#FFFFFF" strokeWidth={2} fill="none" />
+      <Path d="M5 19c0-3.3 3-5.6 7-5.6s7 2.3 7 5.6" stroke="#FFFFFF" strokeWidth={2} fill="none" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
 function GozCizimi() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24">
@@ -755,6 +789,19 @@ const stilleriYap = (renk: Renk) =>
     alt: { paddingHorizontal: bosluk.sayfa, gap: bosluk.s },
     yaziKutusu: { alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: yuvarlak.kart, paddingHorizontal: bosluk.m, paddingVertical: bosluk.s, maxWidth: '92%' },
     yazi: { color: '#FFFFFF', fontFamily: yazi.govdeOrta, fontSize: olcek.govde, textAlign: 'center' },
+    etiketSatiri: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+      alignSelf: 'center',
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      borderRadius: yuvarlak.hap,
+      paddingHorizontal: bosluk.m,
+      paddingVertical: 6,
+      maxWidth: '92%',
+    },
+    etiketYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
     gorenler: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 },
     gorenlerYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
     gizli: { opacity: 0 },

@@ -157,6 +157,8 @@ export default {
     etiketBolumu: 'Demandes de tag',
     arkadaslikMetni: 'veut devenir ton ami.',
     etiketMetni: 'veut te taguer dans un check-in à {{mekan}}.',
+    hikayeEtiketMetni: 'veut te taguer dans sa story.',
+    hikayeEtiketMetniMekan: 'veut te taguer dans sa story à {{mekan}}.',
     etkilesimBolumu: 'Interactions',
     begeniMetni: 'a aimé ta publication',
     yorumMetni: 'a commenté ta publication',
@@ -590,6 +592,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'Note',
+    ifadeEkle: 'Expression',
+    arkadasEkle: 'Ami',
+    etiketKaldir: "Retirer l’identification {{ad}}",
     tepkiGonder: 'Envoyer la réaction {{emoji}}',
     tepkiGonderildi: '{{emoji}} envoyé',
     sonrakiKisi: 'Personne suivante',

@@ -10,6 +10,7 @@ import { useStiller } from '../../tasarim/tema-baglami'
 import { useDil } from '../../../lib/dil'
 import { useHataStili } from '../../tasarim/hata-stili'
 import { rozetleriTazele } from '../../tasarim/AltGezinme'
+import { etiketMetni } from '../../../lib/etiket-metni'
 
 /**
  * BEKLEYEN ETIKETLER (Gizlilik > Etiketler > Bekleyen etiketler):
@@ -42,10 +43,10 @@ export default function BekleyenEtiketlerEkrani() {
     }, [t])
   )
 
-  async function karar(checkInId: string, onay: boolean) {
+  async function karar(etiket: BekleyenEtiket, onay: boolean) {
     try {
-      await etiketiYanitla(checkInId, onay)
-      setEtiketler((m) => (m ? m.filter((e) => e.checkInId !== checkInId) : m))
+      await etiketiYanitla(etiket.id, onay, etiket.tur)
+      setEtiketler((m) => (m ? m.filter((e) => e.id !== etiket.id) : m))
       rozetleriTazele()
       setHata(null)
     } catch (e) {
@@ -66,9 +67,9 @@ export default function BekleyenEtiketlerEkrani() {
         <View style={stiller.kart}>
           {etiketler.map((e, sira) => (
             <View
-              key={e.checkInId}
+              key={`${e.tur}-${e.id}`}
               style={[stiller.satir, sira < etiketler.length - 1 && stiller.satirCizgili]}
-              testID={`bekleyen-${e.checkInId}`}
+              testID={`bekleyen-${e.id}`}
             >
               <Pressable onPress={() => router.push(`/kullanici/${e.etiketleyenId}`)} accessibilityRole="button">
                 <Avatar
@@ -83,22 +84,22 @@ export default function BekleyenEtiketlerEkrani() {
                   {e.etiketleyenAd || e.etiketleyenKullaniciAdi}
                 </Text>
                 <Text style={stiller.aciklama} numberOfLines={2}>
-                  {t('bildirimler.etiketMetni', { mekan: e.mekanAdi })}
+                  {etiketMetni(t, e)}
                 </Text>
                 <View style={stiller.dugmeler}>
                   <Pressable
                     style={stiller.onayla}
-                    onPress={() => karar(e.checkInId, true)}
+                    onPress={() => karar(e, true)}
                     accessibilityRole="button"
-                    testID={`onayla-${e.checkInId}`}
+                    testID={`onayla-${e.id}`}
                   >
                     <Text style={stiller.onaylaYazi}>{t('bildirimler.onayla')}</Text>
                   </Pressable>
                   <Pressable
                     style={stiller.reddet}
-                    onPress={() => karar(e.checkInId, false)}
+                    onPress={() => karar(e, false)}
                     accessibilityRole="button"
-                    testID={`reddet-${e.checkInId}`}
+                    testID={`reddet-${e.id}`}
                   >
                     <Text style={stiller.reddetYazi}>{t('bildirimler.reddet')}</Text>
                   </Pressable>

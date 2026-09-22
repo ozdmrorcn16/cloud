@@ -163,6 +163,8 @@ export default {
     etiketBolumu: 'Tag requests',
     arkadaslikMetni: 'wants to be your friend.',
     etiketMetni: 'wants to tag you in a check-in at {{mekan}}.',
+    hikayeEtiketMetni: 'wants to tag you in their story.',
+    hikayeEtiketMetniMekan: 'wants to tag you in their story at {{mekan}}.',
     etkilesimBolumu: 'Interactions',
     begeniMetni: 'liked your post',
     yorumMetni: 'commented on your post',
@@ -596,6 +598,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'Note',
+    ifadeEkle: 'Expression',
+    arkadasEkle: 'Friend',
+    etiketKaldir: 'Remove tag {{ad}}',
     tepkiGonder: 'Send {{emoji}} reaction',
     tepkiGonderildi: '{{emoji}} sent',
     sonrakiKisi: 'Next person',

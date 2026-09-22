@@ -51,7 +51,8 @@ jest.mock('expo-location', () => ({
 
 const BEKLEYEN = [
   {
-    checkInId: 'c1',
+    id: 'c1',
+    tur: 'checkin' as const,
     mekanAdi: 'Hozee',
     etiketleyenId: 'u1',
     etiketleyenAd: 'Deniz',
@@ -59,7 +60,8 @@ const BEKLEYEN = [
     olusturuldu: new Date().toISOString(),
   },
   {
-    checkInId: 'c2',
+    id: 'c2',
+    tur: 'hikaye' as const,
     mekanAdi: 'Kafe',
     etiketleyenId: 'u2',
     etiketleyenAd: 'Ece',
@@ -168,11 +170,27 @@ describe('BekleyenEtiketlerEkrani', () => {
     expect(await screen.findByTestId('bekleyen-c1')).toBeTruthy()
     expect(screen.getByText('Deniz')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('onayla-c1'))
-    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('c1', true))
+    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('c1', true, 'checkin'))
     await waitFor(() => expect(screen.queryByTestId('bekleyen-c1')).toBeNull())
     await fireEvent.press(screen.getByTestId('reddet-c2'))
-    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('c2', false))
+    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('c2', false, 'hikaye'))
     expect(await screen.findByText('Bekleyen etiket yok.')).toBeTruthy()
+  })
+
+  // Check-in ve HIKAYE etiketi ayni listede ama metinleri ayri; hikayede
+  // mekan istege bagli oldugu icin iki hikaye metni var.
+  it('hikaye etiketi kendi metnini gosterir', async () => {
+    await render(<BekleyenEtiketlerEkrani />)
+    expect(await screen.findByText('Hozee check-in’inde seni etiketlemek istiyor.')).toBeTruthy()
+    expect(screen.getByText('Kafe hikâyesinde seni etiketlemek istiyor.')).toBeTruthy()
+  })
+
+  it('mekansiz hikaye etiketinde sade metin', async () => {
+    ;(bekleyenEtiketleriGetir as jest.Mock).mockResolvedValue([
+      { ...BEKLEYEN[1], mekanAdi: null },
+    ])
+    await render(<BekleyenEtiketlerEkrani />)
+    expect(await screen.findByText('hikâyesinde seni etiketlemek istiyor.')).toBeTruthy()
   })
 })
 

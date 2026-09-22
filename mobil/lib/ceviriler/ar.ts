@@ -157,6 +157,8 @@ export default {
     etiketBolumu: 'طلبات الإشارة',
     arkadaslikMetni: 'يريد أن يكون صديقك.',
     etiketMetni: 'يريد الإشارة إليك في تسجيل حضور في {{mekan}}.',
+    hikayeEtiketMetni: 'يريد الإشارة إليك في قصته.',
+    hikayeEtiketMetniMekan: 'يريد الإشارة إليك في قصته في {{mekan}}.',
     etkilesimBolumu: 'التفاعلات',
     begeniMetni: 'أعجبه منشورك',
     yorumMetni: 'علّق على منشورك',
@@ -590,6 +592,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'ملاحظة',
+    ifadeEkle: 'تعبير',
+    arkadasEkle: 'صديق',
+    etiketKaldir: 'إزالة وسم {{ad}}',
     tepkiGonder: 'إرسال تفاعل {{emoji}}',
     tepkiGonderildi: 'تم إرسال {{emoji}}',
     sonrakiKisi: 'الشخص التالي',

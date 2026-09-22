@@ -157,6 +157,8 @@ export default {
     etiketBolumu: 'Markierungsanfragen',
     arkadaslikMetni: 'möchte mit dir befreundet sein.',
     etiketMetni: 'möchte dich bei einem Check-in in {{mekan}} markieren.',
+    hikayeEtiketMetni: 'möchte dich in seiner Story markieren.',
+    hikayeEtiketMetniMekan: 'möchte dich in seiner Story bei {{mekan}} markieren.',
     etkilesimBolumu: 'Interaktionen',
     begeniMetni: 'gefällt dein Beitrag',
     yorumMetni: 'hat deinen Beitrag kommentiert',
@@ -590,6 +592,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'Notiz',
+    ifadeEkle: 'Ausdruck',
+    arkadasEkle: 'Freund',
+    etiketKaldir: 'Markierung {{ad}} entfernen',
     tepkiGonder: 'Reaktion {{emoji}} senden',
     tepkiGonderildi: '{{emoji}} gesendet',
     sonrakiKisi: 'Nächste Person',

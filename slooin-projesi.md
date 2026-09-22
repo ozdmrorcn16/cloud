@@ -408,10 +408,26 @@ YAPILACAK: bir sonraki NATIVE DERLEMEYLE birlikte
 olceklesin (ayni desen check-in fotograflari icin de dusunulmeli).
 Jest 95 / 1241.
 
+**Ek (OTA `ce83f5eb`, web `slooin--yny6f8inhp`):** kullanicinin istegiyle
+hikaye ekleme ekrani yeniden - once SIYAH TUVAL, fotograf gelince arac
+seridi; mekan cipi (aktif check-in'den, kaldirilabilir), not, KENDI
+IFADE SETIMIZDEN ifade ve ARKADAS ETIKETI. Sunucu: `hikayeler.ifade` +
+`hikaye_etiketleri` (migrasyon `20260922180000`), etiket onayi check-in
+ile ayni kurala tabi (onaylanmamis etiket kimseye gorunmez), yalnizca
+arkadas etiketlenir. Bekleyen etiketler artik check-in ile TEK LISTE
+(Bildirimler + Gizlilik > Bekleyen etiketler); `BekleyenEtiket` tipi
+`{id, tur}` oldu. Canli test iki gercek hata yakaladi: `hikaye_akisi`
+invoker oldugu icin gomulu `profiller` join'i etiketi sessizce
+dusuruyordu (2026-09-18 tuzaginin aynisi) -> `gizli.hikaye_etiketleri_json`
+definer yardimcisi. `verilerimi_disa_aktar` iki yonu de tasiyor.
+Canli `araclar/hikaye-ifade-etiket-canli-test.py` 21/21, jest 95 / 1253,
+test:sema yesil. Ayrinti CLAUDE.md "HIKAYEYE IFADE VE ARKADAS ETIKETI".
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
-TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS
-DUZELTMESININ HISSI (sekme gecisleri).
+TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma, ifade ve
+arkadas etiketi ekleme) ve PERFORMANS DUZELTMESININ HISSI (sekme
+gecisleri).
 
 ## 8a. Onceki kayit (2026-09-19)
 

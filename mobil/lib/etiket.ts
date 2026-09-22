@@ -39,8 +39,11 @@ export type Etiket = {
 
 /** Bildirim ekranindaki bekleyen etiket istegi. */
 export type BekleyenEtiket = {
-  checkInId: string
-  mekanAdi: string
+  /** Check-in ya da hikaye kimligi - `tur` hangisi oldugunu soyler. */
+  id: string
+  tur: 'checkin' | 'hikaye'
+  /** Hikayede mekan istege bagli oldugu icin bos olabilir. */
+  mekanAdi: string | null
   etiketleyenId: string
   etiketleyenAd: string
   etiketleyenKullaniciAdi: string
@@ -139,12 +142,15 @@ export async function etiketiKaldir(
   if (error) throw new Error(hataMetni(error))
 }
 
-/** Bildirim ekrani: beni etiketlemek isteyen bekleyen istekler. */
+/**
+ * Bildirim ekrani: beni etiketlemek isteyen bekleyen istekler.
+ *
+ * CHECK-IN VE HIKAYE TEK LISTE (2026-09-22): kullanici acisindan ikisi
+ * de "biri beni etiketledi"; ayri iki liste ayni karari iki yerde
+ * sordururdu. Iki RPC paralel gidiyor, sonuc en yeniden eskiye.
+ */
 export async function bekleyenEtiketleriGetir(): Promise<BekleyenEtiket[]> {
-  const { data, error } = await supabase.rpc('bekleyen_etiketlerim')
-  if (error) throw new Error(hataMetni(error))
-
-  type Satir = {
+  type CheckInSatiri = {
     check_in_id: string
     mekan_adi: string
     etiketleyen_id: string
@@ -152,30 +158,63 @@ export async function bekleyenEtiketleriGetir(): Promise<BekleyenEtiket[]> {
     etiketleyen_kullanici_adi: string
     olusturuldu: string
   }
-  return (data as Satir[]).map((s) => ({
-    checkInId: s.check_in_id,
-    mekanAdi: s.mekan_adi,
+  type HikayeSatiri = Omit<CheckInSatiri, 'check_in_id'> & { hikaye_id: string }
+
+  const [checkIn, hikaye] = await Promise.all([
+    supabase.rpc('bekleyen_etiketlerim'),
+    supabase.rpc('bekleyen_hikaye_etiketlerim'),
+  ])
+  if (checkIn.error) throw new Error(hataMetni(checkIn.error))
+  if (hikaye.error) throw new Error(hataMetni(hikaye.error))
+
+  const ortak = (s: CheckInSatiri | HikayeSatiri) => ({
+    mekanAdi: s.mekan_adi ?? null,
     etiketleyenId: s.etiketleyen_id,
     etiketleyenAd: s.etiketleyen_ad,
     etiketleyenKullaniciAdi: s.etiketleyen_kullanici_adi,
     olusturuldu: s.olusturuldu,
-  }))
+  })
+
+  return [
+    ...(checkIn.data as CheckInSatiri[]).map((s) => ({
+      id: s.check_in_id,
+      tur: 'checkin' as const,
+      ...ortak(s),
+    })),
+    ...(hikaye.data as HikayeSatiri[]).map((s) => ({
+      id: s.hikaye_id,
+      tur: 'hikaye' as const,
+      ...ortak(s),
+    })),
+  ].sort((a, b) => b.olusturuldu.localeCompare(a.olusturuldu))
 }
 
 /**
  * Bekleyen bir etiketi onaylar ya da reddeder.
  *
  * Yalnizca ETIKETLENEN kisi cagirabilir ve yalnizca bekleyen bir
- * etikette calisir; ikisini de politika zorluyor. Reddedilen satir
+ * etikette calisir; ikisini de sunucu zorluyor. Reddedilen satir
  * duruyor, silinmiyor.
  */
-export async function etiketiYanitla(checkInId: string, onay: boolean): Promise<void> {
-  const benimId = await kimligiZorunluOku()
+export async function etiketiYanitla(
+  id: string,
+  onay: boolean,
+  tur: 'checkin' | 'hikaye' = 'checkin'
+): Promise<void> {
+  if (tur === 'hikaye') {
+    const { error } = await supabase.rpc('hikaye_etiketini_yanitla', {
+      p_hikaye_id: id,
+      p_onay: onay,
+    })
+    if (error) throw new Error(hataMetni(error))
+    return
+  }
 
+  const benimId = await kimligiZorunluOku()
   const { error } = await supabase
     .from('check_in_etiketleri')
     .update({ durum: onay ? 'onaylandi' : 'reddedildi' })
-    .eq('check_in_id', checkInId)
+    .eq('check_in_id', id)
     .eq('kullanici_id', benimId)
   if (error) throw new Error(hataMetni(error))
 }

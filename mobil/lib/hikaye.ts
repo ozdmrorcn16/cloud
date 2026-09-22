@@ -22,6 +22,8 @@ export const EN_FAZLA_AKTIF_HIKAYE = 10
 /** Her hikaye izleyicide bu kadar kalir (ms). */
 export const HIKAYE_SURESI_MS = 5000
 
+export type HikayeEtiketi = { kullaniciId: string; kullaniciAdi: string }
+
 export type Hikaye = {
   id: string
   kullaniciId: string
@@ -30,6 +32,10 @@ export type Hikaye = {
   /** Imzali adres; imzalanamadiysa null (cagiran kareyi atlar). */
   fotografUrl: string | null
   yazi: string | null
+  /** `public.ifadeler` slug'i; check-in ile ayni sozluk. */
+  ifade: string | null
+  /** ONAYLANMIS etiketler (onay bekleyen sunucudan hic gelmiyor). */
+  etiketler: HikayeEtiketi[]
   mekanId: string | null
   mekanAdi: string | null
   olusturuldu: string
@@ -56,6 +62,8 @@ type AkisSatiri = {
   kullanici_id: string
   fotograf: string
   yazi: string | null
+  ifade: string | null
+  etiketler: HikayeEtiketi[] | null
   mekan_id: string | null
   mekan_adi: string | null
   olusturuldu: string
@@ -131,6 +139,8 @@ export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
       fotograf: s.fotograf,
       fotografUrl: urller[s.fotograf] ?? null,
       yazi: s.yazi,
+      ifade: s.ifade ?? null,
+      etiketler: s.etiketler ?? [],
       mekanId: s.mekan_id,
       mekanAdi: s.mekan_adi,
       olusturuldu: s.olusturuldu,
@@ -153,7 +163,13 @@ export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
  * sahipligini dogruluyor), sonra `hikaye_ekle`. RPC reddederse (10
  * siniri, yazi uzun, askida hesap) yuklenen dosya geri silinir.
  */
-export async function hikayeEkle(yerelUri: string, yazi: string | null, mekanId: string | null): Promise<string> {
+export async function hikayeEkle(
+  yerelUri: string,
+  yazi: string | null,
+  mekanId: string | null,
+  ifade: string | null = null,
+  etiketler: string[] = []
+): Promise<string> {
   const uid = await kimligiZorunluOku('Oturum bulunamadi')
   const baytlar = await dosyayiOku(yerelUri)
   const yol = `${uid}/${Date.now()}.jpg`
@@ -165,6 +181,8 @@ export async function hikayeEkle(yerelUri: string, yazi: string | null, mekanId:
     p_fotograf: yukleme.data.path,
     p_yazi: temiz,
     p_mekan_id: mekanId,
+    p_ifade: ifade,
+    p_etiketler: etiketler.length > 0 ? etiketler : null,
   })
   if (error) {
     await supabase.storage.from(KOVA).remove([yukleme.data.path])
@@ -295,4 +313,51 @@ export async function hikayeSeridiVerisiniGetir(): Promise<HikayeSeridiVerisi> {
   }
   seritOnbellegineYaz(veri)
   return veri
+}
+
+export type BekleyenHikayeEtiketi = {
+  hikayeId: string
+  fotograf: string
+  mekanAdi: string | null
+  etiketleyenId: string
+  etiketleyenAd: string
+  etiketleyenKullaniciAdi: string
+  olusturuldu: string
+}
+
+/**
+ * Onayimi bekleyen HIKAYE etiketleri (2026-09-22). Kural check-in ile
+ * ayni: `profiller.etiket_onayi_gerekli` aciksa etiket once onaya
+ * duesuer ve onaylanana kadar izleyicide GORUNMEZ.
+ */
+export async function bekleyenHikayeEtiketleriniGetir(): Promise<BekleyenHikayeEtiketi[]> {
+  const { data, error } = await supabase.rpc('bekleyen_hikaye_etiketlerim')
+  if (error) throw new Error(hataMetni(error))
+  type Satir = {
+    hikaye_id: string
+    fotograf: string
+    mekan_adi: string | null
+    etiketleyen_id: string
+    etiketleyen_ad: string
+    etiketleyen_kullanici_adi: string
+    olusturuldu: string
+  }
+  return (data as Satir[]).map((s) => ({
+    hikayeId: s.hikaye_id,
+    fotograf: s.fotograf,
+    mekanAdi: s.mekan_adi,
+    etiketleyenId: s.etiketleyen_id,
+    etiketleyenAd: s.etiketleyen_ad,
+    etiketleyenKullaniciAdi: s.etiketleyen_kullanici_adi,
+    olusturuldu: s.olusturuldu,
+  }))
+}
+
+export async function hikayeEtiketiniYanitla(hikayeId: string, onay: boolean): Promise<void> {
+  const { error } = await supabase.rpc('hikaye_etiketini_yanitla', {
+    p_hikaye_id: hikayeId,
+    p_onay: onay,
+  })
+  if (error) throw new Error(hataMetni(error))
+  seritOnbelleginiDusur()
 }

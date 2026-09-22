@@ -25,6 +25,8 @@ function grup(id: string, ek: Partial<HikayeGrubu> = {}): HikayeGrubu {
         fotograf: 'x',
         fotografUrl: 'https://imzali/x.jpg',
         yazi: null,
+        ifade: null,
+        etiketler: [],
         mekanId: null,
         mekanAdi: null,
         olusturuldu: '2026-09-22T10:00:00Z',

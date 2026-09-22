@@ -1357,6 +1357,52 @@ sorun yok).
 
 Jest 95 paket / 1229 test. OTA `c6b5d227`, web `slooin--agicpq0mxl`.
 
+### HIKAYEYE IFADE VE ARKADAS ETIKETI - 2026-09-22
+
+Kullanicinin istegi (hikaye ekleme ekrani yeniden): "siyah ekran gelsin,
+altta yaptigi check-in yeri gelsin isterse kaldirabilsin, not ekleme
+kalsin, kendi ifade setimizden de ekleme yapabilsin, arkadas ekleme
+bunlar eklensin." Migrasyon `20260922180000`. OTA `ce83f5eb`, web
+`slooin--yny6f8inhp`.
+- **Ekleme ekrani** (`hikaye/ekle.tsx` bastan): once SIYAH TUVAL +
+  kaynak secici; galeriyi iptal etmek ekrani KAPATMIYOR (bos tuval
+  kalir, cikis yalnizca ×). Fotograf gelince altta arac seridi
+  (`hikaye-arac-not/-ifade/-arkadas`) ve cip seridi - mekan (aktif
+  check-in'den, kaldirilabilir), ifade, etiketlenen arkadaslar; hepsi
+  x ile kalkiyor. TUZAK: `SecimPenceresi` secimde de `onKapat`
+  cagiriyor; "secim yapilmadan kapatildi mi" karari 400 ms sonra ve IKI
+  REF ile veriliyor, yoksa galeriye basar basmaz ekran geri donuyordu.
+- **Sunucu:** `hikayeler.ifade` (check-in ile AYNI `ifadeler` sozlugu),
+  `hikaye_etiketleri` tablosu + RLS + `gizli.hikaye_etiket_durumu()`
+  tetikleyicisi. Etiket onayi kurali check-in ile ayni: karsi tarafin
+  `etiket_onayi_gerekli` ayari 'bekliyor'/'onaylandi' yaziyor, istemci
+  degeri yok sayiliyor; onaylanmamis etiket KIMSEYE gorunmuyor.
+  `hikaye_ekle` yeni imza (eski 3 parametreli DROP), yalnizca arkadas
+  etiketlenir, kendini etiketleyemezsin. `bekleyen_hikaye_etiketlerim`
+  + `hikaye_etiketini_yanitla`.
+- **DERS (canli test yakaladi, 2 dogrulama kirikti):** `hikaye_akisi`
+  security INVOKER ve `profiller` uzerinde okuma politikasi YOK - gomulu
+  `profiller` join'i etiketi SESSIZCE dusuruyordu (etiketlenen kendi
+  satirini goruyor, hikaye sahibi gormuyordu). 2026-09-18'de check-in
+  etiketlerinde yasanan tuzagin aynisi. Cozum `gizli.hikaye_etiketleri_json`
+  (security definer, `gizli` semasinda = PostgREST'e kapali; askidaki
+  hesap ve iki yonlu engel orada eleniyor).
+- **Bekleyen etiketler TEK LISTE:** `bekleyenEtiketleriGetir` iki RPC'yi
+  paralel cekip birlestiriyor; `BekleyenEtiket` artik `{id, tur}`
+  tasiyor (`checkInId` KALKTI), `etiketiYanitla(id, onay, tur)`.
+  Metin `lib/etiket-metni.ts` (hikayede mekan istege bagli, iki ayri
+  anahtar: `bildirimler.hikayeEtiketMetni/…Mekan`, 7 dil). Bildirimler,
+  Gizlilik > Bekleyen etiketler, etiket sayaci ve alt gezinme rozeti
+  birlikte duzeldi.
+- **Izleyici:** ifade yazi kutusunun icinde `IfadeCipi`, altinda
+  etiketlenenler satiri (kullanici adlari, dokununca profil).
+- KVKK listesine madde yazildi; gizlilik metni 7 dil + docs guncellendi;
+  `verilerimi_disa_aktar` iki yonu de tasiyor (`etiketlediklerim` ve
+  `hikaye_etiketlerim`).
+Canli `araclar/hikaye-ifade-etiket-canli-test.py` **21/21**; jest 95
+paket / 1253 test, `test:sema` yesil (4 yeni dogrulama). TELEFONDA
+DOGRULANMADI.
+
 ### HIKAYE AKISI (24 SAAT) - 2026-09-22
 
 Kullanicinin istegi: "ana sayfaya Instagram gibi hikaye ekleme akisi da

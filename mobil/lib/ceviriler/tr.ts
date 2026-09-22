@@ -220,6 +220,8 @@ export default {
     // Kullanici adi satirda AYRI ve kalin basiliyor; metin onun devami.
     arkadaslikMetni: 'seninle arkadaş olmak istiyor.',
     etiketMetni: '{{mekan}} check-in’inde seni etiketlemek istiyor.',
+    hikayeEtiketMetni: 'hikâyesinde seni etiketlemek istiyor.',
+    hikayeEtiketMetniMekan: '{{mekan}} hikâyesinde seni etiketlemek istiyor.',
     etkilesimBolumu: 'Etkileşimler',
     begeniMetni: 'paylaşımını beğendi',
     yorumMetni: 'paylaşımına yorum yaptı',
@@ -733,6 +735,10 @@ export default {
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'Not',
+    ifadeEkle: 'İfade',
+    arkadasEkle: 'Arkadaş',
+    etiketKaldir: '{{ad}} etiketini kaldır',
     tepkiGonder: '{{emoji}} tepkisi gönder',
     tepkiGonderildi: '{{emoji}} gönderildi',
     sonrakiKisi: 'Sonraki kişi',

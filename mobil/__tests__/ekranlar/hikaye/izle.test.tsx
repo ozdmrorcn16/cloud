@@ -56,6 +56,8 @@ function hikaye(id: string, kullaniciId: string, ek: Partial<HikayeGrubu['hikaye
     fotograf: `${kullaniciId}/${id}.jpg`,
     fotografUrl: `https://imzali/${id}.jpg`,
     yazi: null,
+    ifade: null,
+    etiketler: [],
     mekanId: null,
     mekanAdi: null,
     olusturuldu: '2026-09-22T10:00:00Z',

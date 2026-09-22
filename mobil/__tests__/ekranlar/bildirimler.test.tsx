@@ -25,7 +25,8 @@ jest.mock('expo-router', () => ({
 }))
 
 const ETIKET = {
-  checkInId: 'checkin-1',
+  id: 'checkin-1',
+  tur: 'checkin' as const,
   mekanAdi: 'Kahve Durağı',
   etiketleyenId: 'kullanici-2',
   etiketleyenAd: 'Ada',
@@ -150,7 +151,7 @@ describe('BildirimlerEkrani', () => {
     await render(<BildirimlerEkrani />)
     await fireEvent.press(await screen.findByText('Onayla'))
 
-    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('checkin-1', true))
+    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('checkin-1', true, 'checkin'))
   })
 
   it('etiketi REDDEDINCE sunucuya red gonderir ve satir kalkar', async () => {
@@ -159,7 +160,7 @@ describe('BildirimlerEkrani', () => {
     await render(<BildirimlerEkrani />)
     await fireEvent.press(await screen.findByText('Reddet'))
 
-    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('checkin-1', false))
+    await waitFor(() => expect(etiketiYanitla).toHaveBeenCalledWith('checkin-1', false, 'checkin'))
     await waitFor(() => expect(screen.queryByText('Onayla')).toBeNull())
   })
 

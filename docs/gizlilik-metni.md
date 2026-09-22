@@ -71,8 +71,10 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
   Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin
   fotograf alaninda da gorunur.
-- Hikayelerin: paylastigin fotograf, istege bagli yazi ve mekan
-  etiketi. Hikaye yalnizca arkadaslarina gorunur ve 24 saat sonra
+- Hikayelerin: paylastigin fotograf, istege bagli yazi, ifade,
+  arkadas etiketi ve mekan etiketi. Bir arkadasini etiketlersen adi
+  hikayeyi gorenlere gorunur; etiket onayi acik olan biri onaylamadan
+  gorunmez. Hikaye yalnizca arkadaslarina gorunur ve 24 saat sonra
   fotografiyla birlikte otomatik silinir (arsiv tutulmaz). Kimin
   hikayeni ne zaman gordugu kaydedilir; bu listeyi yalnizca sen
   gorursun ve hikaye silinince o kayit da silinir. Bir hikayeyi

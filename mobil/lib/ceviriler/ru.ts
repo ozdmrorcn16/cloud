@@ -157,6 +157,8 @@ export default {
     etiketBolumu: 'Запросы на отметку',
     arkadaslikMetni: 'хочет добавить тебя в друзья.',
     etiketMetni: 'хочет отметить тебя в чек-ине в {{mekan}}.',
+    hikayeEtiketMetni: 'хочет отметить тебя в своей истории.',
+    hikayeEtiketMetniMekan: 'хочет отметить тебя в своей истории в {{mekan}}.',
     etkilesimBolumu: 'Взаимодействия',
     begeniMetni: 'понравилась ваша публикация',
     yorumMetni: 'прокомментировал(а) вашу публикацию',
@@ -590,6 +592,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    notEkle: 'Заметка',
+    ifadeEkle: 'Эмоция',
+    arkadasEkle: 'Друг',
+    etiketKaldir: 'Убрать отметку {{ad}}',
     tepkiGonder: 'Отправить реакцию {{emoji}}',
     tepkiGonderildi: '{{emoji}} отправлено',
     sonrakiKisi: 'Следующий человек',

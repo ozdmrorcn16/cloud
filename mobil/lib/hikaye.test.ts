@@ -36,6 +36,8 @@ function satir(ek: Record<string, unknown>) {
     kullanici_id: 'ben',
     fotograf: 'ben/1.jpg',
     yazi: null,
+    ifade: null,
+    etiketler: [],
     mekan_id: null,
     mekan_adi: null,
     olusturuldu: '2026-09-22T10:00:00Z',
@@ -121,6 +123,8 @@ describe('hikayeGruplariniSirala', () => {
         fotograf: 'x',
         fotografUrl: null,
         yazi: null,
+        ifade: null,
+        etiketler: [],
         mekanId: null,
         mekanAdi: null,
         olusturuldu: zaman,
@@ -150,10 +154,36 @@ describe('hikayeEkle', () => {
     expect(id).toBe('h-yeni')
     expect(supabase.storage.from).toHaveBeenCalledWith('hikaye-medyalari')
     expect(upload).toHaveBeenCalledWith(expect.stringMatching(/^ben\/\d+\.jpg$/), expect.anything(), { contentType: 'image/jpeg' })
-    expect(supabase.rpc).toHaveBeenCalledWith('hikaye_ekle', { p_fotograf: 'ben/123.jpg', p_yazi: 'selam', p_mekan_id: 'mekan-1' })
+    expect(supabase.rpc).toHaveBeenCalledWith('hikaye_ekle', {
+      p_fotograf: 'ben/123.jpg',
+      p_yazi: 'selam',
+      p_mekan_id: 'mekan-1',
+      p_ifade: null,
+      p_etiketler: null,
+    })
 
     await hikayeEkle('file:///a.jpg', '   ', null)
-    expect(supabase.rpc).toHaveBeenLastCalledWith('hikaye_ekle', { p_fotograf: 'ben/123.jpg', p_yazi: null, p_mekan_id: null })
+    expect(supabase.rpc).toHaveBeenLastCalledWith('hikaye_ekle', {
+      p_fotograf: 'ben/123.jpg',
+      p_yazi: null,
+      p_mekan_id: null,
+      p_ifade: null,
+      p_etiketler: null,
+    })
+  })
+
+  it('IFADE ve ETIKETLER gonderiliyor (2026-09-22); bos etiket listesi null gider', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: { id: 'h-yeni' }, error: null })
+
+    await hikayeEkle('file:///a.jpg', 'selam', 'mekan-1', 'kahve-keyfi', ['k1', 'k2'])
+
+    expect(supabase.rpc).toHaveBeenCalledWith('hikaye_ekle', {
+      p_fotograf: 'ben/123.jpg',
+      p_yazi: 'selam',
+      p_mekan_id: 'mekan-1',
+      p_ifade: 'kahve-keyfi',
+      p_etiketler: ['k1', 'k2'],
+    })
   })
 
   it('RPC reddederse yuklenen dosyayi geri siler ve hatayi firlatir', async () => {

@@ -939,12 +939,33 @@ async function main() {
     ['hikaye_goruntulendi', { p_hikaye_id: bosId }],
     ['hikaye_goruntuleyenler', { p_hikaye_id: bosId }],
     ['hikaye_sil', { p_hikaye_id: bosId }],
+    ['bekleyen_hikaye_etiketlerim', {}],
+    ['hikaye_etiketini_yanitla', { p_hikaye_id: bosId, p_onay: true }],
     ['moderasyon_hikayeyi_gizle', { p_hikaye_id: bosId, p_gerekce: 'sema' }],
     ['moderasyon_hikaye_gizlemeyi_kaldir', { p_hikaye_id: bosId, p_gerekce: 'sema' }],
   ] as const) {
     const { error } = await anon.rpc(ad, parametreler)
     esitMi(error?.code, '42501', `kimliksiz ${ad} cagrisi reddediliyor`)
   }
+  // HIKAYE IFADESI VE ETIKETI (2026-09-22): ifade check-in ile ayni
+  // sozlukten; etiket tablosuna dogrudan yazilamaz, durumu sunucu koyar.
+  const { error: hikayeIfadeHatasi } = await a.rpc('hikaye_ekle', {
+    p_fotograf: `${aId}/sema.jpg`,
+    p_ifade: 'boyle-bir-ifade-yok',
+  })
+  esitMi(hikayeIfadeHatasi?.message, 'Gecersiz ifade', 'hikaye_ekle sozlukte olmayan ifadeyi reddediyor')
+  const { error: hikayeEtiketInsertHatasi } = await a
+    .from('hikaye_etiketleri')
+    .insert({ hikaye_id: bosId, kullanici_id: aId })
+  esitMi(hikayeEtiketInsertHatasi?.code, '42501', 'hikaye_etiketleri tablosuna dogrudan insert reddediliyor')
+  const { error: hikayeKendiEtiketHatasi } = await a.rpc('hikaye_ekle', {
+    p_fotograf: `${aId}/sema.jpg`,
+    p_etiketler: [aId],
+  })
+  esitMi(hikayeKendiEtiketHatasi?.message, 'Kendini etiketleyemezsin', 'hikaye_ekle kendini etiketlemeyi reddediyor')
+  const { error: bekleyenHikayeHatasi } = await a.rpc('bekleyen_hikaye_etiketlerim')
+  esitMi(bekleyenHikayeHatasi, null, 'bekleyen_hikaye_etiketlerim giris yapana calisiyor')
+
   // Yol sahipligi RPC'de: baskasinin klasoru reddedilir.
   const { error: yabanciYolHatasi } = await a.rpc('hikaye_ekle', { p_fotograf: `${bosId}/x.jpg` })
   esitMi(yabanciYolHatasi?.message, 'Bu fotograf sana ait degil', 'hikaye_ekle baskasinin yolunu reddediyor')

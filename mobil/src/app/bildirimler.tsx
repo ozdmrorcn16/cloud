@@ -8,6 +8,7 @@ import {
   etiketiYanitla,
   type BekleyenEtiket,
 } from '../../lib/etiket'
+import { etiketMetni } from '../../lib/etiket-metni'
 import { avatarlariGetir } from '../../lib/akis'
 import { etkilesimBildirimleriniGetir, type EtkilesimBildirimi } from '../../lib/etkilesim'
 import { gorecelZaman } from '../../lib/zaman'
@@ -132,10 +133,10 @@ export default function BildirimlerEkrani() {
     }
   }
 
-  async function etiketiKararaBagla(checkInId: string, onay: boolean) {
+  async function etiketiKararaBagla(etiket: BekleyenEtiket, onay: boolean) {
     try {
-      await etiketiYanitla(checkInId, onay)
-      setEtiketler((mevcut) => mevcut.filter((e) => e.checkInId !== checkInId))
+      await etiketiYanitla(etiket.id, onay, etiket.tur)
+      setEtiketler((mevcut) => mevcut.filter((e) => e.id !== etiket.id))
       rozetleriTazele()
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -189,18 +190,18 @@ export default function BildirimlerEkrani() {
             <Text style={stiller.bolumAd}>{t('bildirimler.etiketBolumu')}</Text>
             {etiketler.map((e) => (
               <BildirimSatiri
-                key={e.checkInId}
+                key={`${e.tur}-${e.id}`}
                 kullaniciId={e.etiketleyenId}
                 gosterilenAd={e.etiketleyenAd || e.etiketleyenKullaniciAdi}
                 ad={e.etiketleyenAd}
                 kullaniciAdi={e.etiketleyenKullaniciAdi}
                 fotografUrl={avatarlar[e.etiketleyenId] ?? null}
-                metin={t('bildirimler.etiketMetni', { mekan: e.mekanAdi })}
+                metin={etiketMetni(t, e)}
                 olumluYazi={t('bildirimler.onayla')}
                 olumsuzYazi={t('bildirimler.reddet')}
                 onProfil={() => router.push(`/kullanici/${e.etiketleyenId}`)}
-                onOlumlu={() => etiketiKararaBagla(e.checkInId, true)}
-                onOlumsuz={() => etiketiKararaBagla(e.checkInId, false)}
+                onOlumlu={() => etiketiKararaBagla(e, true)}
+                onOlumsuz={() => etiketiKararaBagla(e, false)}
               />
             ))}
           </>
