@@ -372,6 +372,18 @@ parlaklik farki 18 -> 190. Yeni arac
 `araclar/hikaye-ekran-goruntusu.mjs` (hikaye ekrani genel arac ile
 cekilemiyor: fotograf imzali adresten geliyor, ileri dokunmak gerekiyor).
 
+**Ek (OTA `cf04722e`):** kullanicinin istegi "Instagram'in hikaye
+isleyisini tam ogren ve aynisini yap" - isleyis arastirilip farklar
+uygulandi: YATAY KAYDIRMA kisi degistiriyor (sola sonraki, saga
+onceki; son kisiden sola kaydirmak kapatiyor), YUKARI KAYDIRMA artik
+kapatmiyor - baskasinin hikayesinde yanit kutusunu, kendi hikayende
+izleyen listesini aciyor; BASILI TUTARKEN arayuz gizleniyor; HIZLI
+EMOJI TEPKILERI eklendi (dokunmak emojiyi sohbete gonderiyor).
+Kapsam disi birakilanlar (ayri ozellik, isleyis degil): video, muzik,
+sticker, anket, yakin arkadaslar, one cikanlar, arsiv, baglanti.
+Jest 95 / 1238 (izleyici 18 test). Ayrinti CLAUDE.md "HIKAYE IZLEYICI
+= INSTAGRAM ISLEYISI".
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS
