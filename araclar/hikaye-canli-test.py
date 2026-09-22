@@ -48,6 +48,7 @@ def giris(eposta):
     return c, c.auth.get_user().user.id
 
 a, a_id = giris('test0@slooin.test')
+A_KIMLIGI = [a_id]
 b, b_id = giris('test1@slooin.test')
 c, c_id = giris('test2@slooin.test')
 
@@ -57,7 +58,10 @@ def yukle(istemci, uid, n):
     return yol
 
 def akista(istemci, hid):
-    return [h for h in istemci.rpc('hikaye_akisi').execute().data if h['id'] == hid]
+    # p_kullanici: bir kisinin hikayeleri (profil yolu). Serit dali
+    # yalnizca kendim + arkadaslarim oldugu icin yabanciyi buradan
+    # olcmek gerekiyor (2026-09-22).
+    return [h for h in istemci.rpc('hikaye_akisi', {'p_kullanici': A_KIMLIGI[0]}).execute().data if h['id'] == hid]
 
 acilanlar = []
 yollar = []
@@ -111,8 +115,27 @@ try:
     except Exception as e:
         kontrol('C dosyayi imzalayamaz', True, str(e)[:60])
 
+    # 5b. GORUNURLUK (2026-09-22): "herkese_acik" secilen hikayeyi
+    # YABANCI da gorur; engel her iki halde de mutlak.
+    y_acik = yukle(a, a_id, 99); yollar.append(y_acik)
+    h_acik = a.rpc('hikaye_ekle', {'p_fotograf': y_acik, 'p_gorunurluk': 'herkese_acik'}).execute().data
+    acilanlar.append(h_acik['id'])
+    kontrol('herkese acik hikaye yabanciya GORUNUR', bool(akista(c, h_acik['id'])))
+    kontrol('herkese acik hikaye serit akisina DUSMEZ (yabancida)',
+            not [x for x in c.rpc('hikaye_akisi').execute().data if x['id'] == h_acik['id']])
+    try:
+        a.rpc('hikaye_ekle', {'p_fotograf': yukle(a, a_id, 98), 'p_gorunurluk': 'yanlis'}).execute()
+        kontrol('gecersiz gorunurluk reddedilir', False, 'kabul edildi!')
+    except Exception as e:
+        kontrol('gecersiz gorunurluk reddedilir', 'Gecersiz gorunurluk' in str(e))
+
     # 6. 10 siniri
-    for i in range(2, 11):
+    # DIKKAT: test0 gercek bir hesap (byorcun) ve uzerinde kullanicinin
+    # kendi hikayeleri olabilir - onlara DOKUNULMAZ. Sinira kadar kac
+    # hikaye kaldigini sayip yalnizca o kadar acilir, yoksa test kendi
+    # kurdugu duzende degil kullanicinin verisinde patlar (2026-09-22).
+    mevcut = len(a.table('hikayeler').select('id').eq('kullanici_id', a_id).gt('bitis', 'now()').execute().data)
+    for i in range(mevcut + 1, 11):
         y = yukle(a, a_id, i); yollar.append(y)
         acilanlar.append(a.rpc('hikaye_ekle', {'p_fotograf': y}).execute().data['id'])
     try:
