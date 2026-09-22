@@ -805,7 +805,6 @@ export default {
     fotograflar: 'Fotoğraflar',
     kameraVeyaGaleri: 'Kamera veya galeriden seç',
     ifade: 'İfade',
-    kaydedinceUygulanir: 'Değişiklikler kaydedildiğinde uygulanır.',
     istegeBagliKisa: 'İsteğe bağlı',
     fotografSayisi: '{{n}} fotoğraf',
     ifadeEkleAlt: 'Bu ana bir ifade kat',

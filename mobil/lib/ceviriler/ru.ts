@@ -656,7 +656,6 @@ export default {
     fotograflar: 'Фото',
     kameraVeyaGaleri: 'Камера или галерея',
     ifade: 'Настроение',
-    kaydedinceUygulanir: 'Изменения применяются после сохранения.',
     istegeBagliKisa: 'Необязательно',
     fotografSayisi: '{{n}} фото',
     ifadeEkleAlt: 'Добавь настроение к этому моменту',

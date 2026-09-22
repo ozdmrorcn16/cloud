@@ -656,7 +656,6 @@ export default {
     fotograflar: 'الصور',
     kameraVeyaGaleri: 'اختر من الكاميرا أو المعرض',
     ifade: 'الحالة',
-    kaydedinceUygulanir: 'تُطبَّق التغييرات عند الحفظ.',
     istegeBagliKisa: 'اختياري',
     fotografSayisi: '{{n}} صور',
     ifadeEkleAlt: 'أضف حالة لهذه اللحظة',

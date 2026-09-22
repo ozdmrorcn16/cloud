@@ -656,7 +656,6 @@ export default {
     fotograflar: 'Fotos',
     kameraVeyaGaleri: 'Elige cámara o galería',
     ifade: 'Estado',
-    kaydedinceUygulanir: 'Los cambios se aplican al guardar.',
     istegeBagliKisa: 'Opcional',
     fotografSayisi: '{{n}} fotos',
     ifadeEkleAlt: 'Añade un estado a este momento',

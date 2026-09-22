@@ -662,7 +662,6 @@ export default {
     fotograflar: 'Photos',
     kameraVeyaGaleri: 'Pick from camera or gallery',
     ifade: 'Mood',
-    kaydedinceUygulanir: 'Changes apply when you save.',
     istegeBagliKisa: 'Optional',
     fotografSayisi: '{{n}} photos',
     ifadeEkleAlt: 'Add a mood to this moment',

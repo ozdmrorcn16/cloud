@@ -656,7 +656,6 @@ export default {
     fotograflar: 'Photos',
     kameraVeyaGaleri: 'Caméra ou galerie',
     ifade: 'Humeur',
-    kaydedinceUygulanir: 'Les modifications s’appliquent à l’enregistrement.',
     istegeBagliKisa: 'Facultatif',
     fotografSayisi: '{{n}} photos',
     ifadeEkleAlt: 'Ajoute une humeur à ce moment',

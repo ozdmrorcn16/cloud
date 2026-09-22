@@ -8,6 +8,7 @@ import { EN_FAZLA_FOTOGRAF } from '../../lib/checkin'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
 import { SecimPenceresi } from './SecimPenceresi'
+import { FotografGezgini } from './FotografGezgini'
 
 /** Izgaradaki bir kare: sunucudaki mevcut fotograf (`yol` dolu) ya da yeni yerel dosya. */
 export type FotografKaresi = { uri: string; yol?: string }
@@ -53,6 +54,9 @@ export function FotografIzgarasiDuzenle({
   const { t } = useDil()
   // Kaynak penceresi hangi is icin acik: -1 ekle, >=0 o kareyi degistir.
   const [kaynakIcin, setKaynakIcin] = useState<number | null>(null)
+  // KAREYE DOKUNMAK BUYUK ACAR (kullanicinin istegi 2026-09-22): ortak
+  // gezgin, dokunulan kareden; x ve "Degistir" ayri hedefler.
+  const [acikIndeks, setAcikIndeks] = useState<number | null>(null)
 
   const kalanYer = Math.max(0, EN_FAZLA_FOTOGRAF - kareler.length)
   // Kare eni: satir, aradaki 8 px bosluklar dusulerek `sutun`a bolunur
@@ -112,7 +116,15 @@ export function FotografIzgarasiDuzenle({
         <View style={stiller.izgara}>
           {kareler.map((kare, i) => (
             <View key={`${i}-${kare.uri}`} style={[stiller.kare, kareEni]} testID={`${testID}-${i}`}>
-              <HizliImage source={{ uri: kare.uri }} style={stiller.kareFoto} contentFit="cover" />
+              <Pressable
+                style={stiller.kareFoto}
+                onPress={() => setAcikIndeks(i)}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={t('anaSayfa.fotografiBuyut')}
+                testID={`${testID}-ac-${i}`}
+              >
+                <HizliImage source={{ uri: kare.uri }} style={stiller.kareFoto} contentFit="cover" />
+              </Pressable>
               <Pressable
                 style={stiller.kaldir}
                 onPress={() => onKaldir(i)}
@@ -150,6 +162,14 @@ export function FotografIzgarasiDuzenle({
           )}
         </View>
       )}
+
+      <FotografGezgini
+        testID={testID}
+        fotograflar={kareler.map((k, i) => ({ id: `${i}-${k.uri}`, url: k.uri }))}
+        acikIndeks={acikIndeks}
+        onIndeks={setAcikIndeks}
+        onKapat={() => setAcikIndeks(null)}
+      />
 
       <SecimPenceresi
         acikMi={kaynakIcin !== null}

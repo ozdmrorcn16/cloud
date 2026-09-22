@@ -1036,6 +1036,12 @@ Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
   `degistirmekIcinDokun`, sagda x (`ifade-kaldir`). Etiket cipleri
   Birlikte satirinin altinda. Araya ince ayiraclar. Secenek A'nin
   4 sutunu bu referansla 3'e dondu. Goruntu `tasarim/checkin-duzenle.png`.
+- **Ayni gun iki ek:** (1) izgaradaki kareye dokunmak ortak
+  `FotografGezgini`ni o kareden acar (`FotografIzgarasiDuzenle` icinde,
+  testID `${testID}-ac-<i>`; form ve duzenleme ikisinde de). (2) Alt
+  seritteki "Degisiklikler kaydedildiginde uygulanir." notu ve ust
+  cizgi KALKTI (`kaydedinceUygulanir` anahtari 7 dilden silindi); serit
+  yalnizca hata satiri + Vazgec/Kaydet, sayfa ~50 px kisaldi.
 - **CheckInDuzenle klavye:** `KeyboardAvoidingView` KALKTI (kullanici:
   "klavye acilinca Vazgec/Kaydet ustune gelmesin, asagida kalsin");
   ScrollView `automaticallyAdjustKeyboardInsets` - icerik klavye kadar

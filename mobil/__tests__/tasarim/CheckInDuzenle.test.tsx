@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { CheckInDuzenle, type DuzenlemeDegisiklikleri } from '../../src/tasarim/CheckInDuzenle'
 import type { AkisOgesi } from '../../lib/akis'
@@ -66,7 +66,8 @@ describe('CheckInDuzenle', () => {
     expect(screen.getByTestId('duzenle-ifade-kahve-keyfi')).toBeTruthy()
     expect(screen.getByText('Kahve keyfi')).toBeTruthy()
     expect(screen.getByTestId('duzenle-etiket-kisi-2')).toBeTruthy()
-    expect(screen.getByText('Değişiklikler kaydedildiğinde uygulanır.')).toBeTruthy()
+    // Dip not ve cizgi KALKTI (kullanicinin istegi 2026-09-22).
+    expect(screen.queryByText('Değişiklikler kaydedildiğinde uygulanır.')).toBeNull()
   })
 
   it('hicbir seye dokunmadan Kaydet: not ve ifade aynen, fotograflar NULL (dokunulmadi), etiket listeleri bos', async () => {
@@ -181,6 +182,19 @@ describe('CheckInDuzenle', () => {
     expect(await screen.findByTestId('duzenle-hata')).toHaveTextContent('En fazla 5 fotoğraf')
     expect(onKapat).not.toHaveBeenCalled()
     expect(screen.getByTestId('duzenle-not').props.value).toBe('kaybolmasin')
+  })
+
+  it('FOTOGRAFA DOKUNUNCA BUYUK ACILIR (2026-09-22): gezgin o kareden, sayacli; x ve Degistir ayri', async () => {
+    await render(<CheckInDuzenle acikMi oge={oge()} zamanYazisi="" onKapat={jest.fn()} onKaydet={jest.fn()} />)
+    await fireEvent.press(screen.getByTestId('duzenle-foto-ac-1'))
+    expect(await screen.findByTestId('duzenle-foto-buyuk-gorunum')).toBeTruthy()
+    expect(screen.getByTestId('duzenle-foto-sayac')).toHaveTextContent('2 / 2')
+    await fireEvent.press(within(screen.getByTestId('duzenle-foto-buyuk-gorunum')).getByLabelText('Kapat'))
+    await waitFor(() => expect(screen.queryByTestId('duzenle-foto-buyuk-gorunum')).toBeNull())
+    // Kaldirma hala calisiyor, buyuk gorunumu acmiyor.
+    await fireEvent.press(screen.getByTestId('duzenle-foto-kaldir-0'))
+    expect(screen.queryByTestId('duzenle-foto-buyuk-gorunum')).toBeNull()
+    expect(screen.queryByTestId('duzenle-foto-1')).toBeNull()
   })
 
   it('KLAVYE sayfayi itmez (2026-09-22): KeyboardAvoidingView yok, icerik klavye kadar kaydirilabilir', async () => {

@@ -345,8 +345,9 @@ export function CheckInDuzenle({
             )}
           </ScrollView>
 
+          {/* ALT SERIT: dip not ve ust cizgi KALKTI (kullanicinin istegi
+              2026-09-22) - yalnizca hata satiri (varsa) + Vazgec/Kaydet. */}
           <View style={stiller.altBolum}>
-            <Text style={stiller.altNot}>{t('checkIn.kaydedinceUygulanir')}</Text>
             {hata && (
               <Text style={stiller.hata} testID="duzenle-hata">
                 {hata}
@@ -473,8 +474,7 @@ const stilleriYap = (renk: Renk) =>
     },
     cipYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk + 1, color: renk.metin },
     cipCarpi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin, marginLeft: 4 },
-    altBolum: { borderTopWidth: 1, borderTopColor: renk.cizgi, paddingTop: 10, marginTop: 12 },
-    altNot: { fontFamily: yazi.govde, fontSize: olcek.kucuk - 1, color: renk.metinSoluk, textAlign: 'center', marginBottom: 10 },
+    altBolum: { paddingTop: 14 },
     hata: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: renk.yikici, textAlign: 'center', marginBottom: bosluk.s },
     eylemler: { flexDirection: 'row', gap: 12 },
     dugme: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 13, borderRadius: yuvarlak.kart },
