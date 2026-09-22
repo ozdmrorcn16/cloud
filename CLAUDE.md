@@ -709,6 +709,65 @@ degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
 `auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
 `tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
 
+### HIKAYE: GORUNURLUK SECIMI VE TUVAL ETIKETLERI - 2026-09-22
+
+Kullanicinin iki referansi ve kararlari. Hikaye ozelligi (24 saat,
+serit, izleyici, gorenler) paralel oturumda zaten kurulmustu; bu tur
+TASARIM ve GORUNURLUK.
+- **Gorunurluk HIKAYE BASINA** (migrasyon `20260922200000`):
+  `hikayeler.gorunurluk` = `arkadaslar` (varsayilan) | `herkese_acik`.
+  RLS `hikaye_gorunur_mu(sahip, gorunurluk)`; herkese acik dalda ayrica
+  `moderasyon.hesap_aktif_mi` araniyor. Secim OLDUGU GIBI uygulanir:
+  profil gizli olsa da "Herkese" secilen hikaye herkese acilir - bu
+  sahibinin o icerik icin verdigi acik karar. Ekranda **aciklama metni
+  YOK**, yalnizca iki satir: "Arkadaslar" / "Herkese" (kullanicinin
+  karari: "Aciklama yok arkadaslar ve herkese secenegi sadece").
+  Engel her iki halde mutlak.
+- **Serit KESIF AKISI DEGIL:** `hikaye_akisi(p_kullanici default null)` -
+  null dali kendim + arkadaslarim, yabancinin herkese acik hikayesi ana
+  sayfaya DUSMEZ; bir kisinin hikayeleri p_kullanici ile aciliyor.
+- **Etiketler tuvalde** (migrasyon `20260922210000`, `yerlesim` jsonb):
+  yazi, ifade, mekan ve arkadas etiketleri fotografin UZERINDE
+  suruklenip boyutlandiriliyor. Konum ORANSAL (x,y 0..1 + olcek) -
+  baska boyda telefonda ayni yerde durur. Bilesen
+  `src/tasarim/HikayeOgesi.tsx`: `PanResponder`, pinch icin ayri
+  kutuphane YOK (olay iki dokunusu da tasiyor, olcek parmak arasi
+  uzaklik oranindan). Reanimated degil `Animated` (2026-09-20 karari).
+- **Olusturma ekrani** referansa gore bastan: fotograf tam ekran
+  (cover), ust cubuk × + "Yeni hikaye" + Aa + ifade, alt cipler
+  Mekan/Ifade/Etiketle, altta "Arkadaslar ⌄" + Paylas. **× fotografi
+  KALDIRIR** ve kaynak secimini yeniden acar (ayri "Fotografi degistir"
+  dugmesi YOK - kullanicinin duzeltmesi). Mekan ISTEGE BAGLI: aktif
+  check-in'den gelir, elle de secilir (yakin mekanlar), kaldirilir;
+  hikaye paylasmak check-in OLUSTURMAZ.
+- **Izleyici:** etiketler paylasanin biraktigi yerde; mekan hapi mekan
+  sayfasini, kisi etiketi profili acar. Ust kimlikteki mekan satiri
+  KALKTI (iki yerde birden gorunuyordu, test yakaladi). Altta **mesaj
+  kutusu + kalp** (2026-09-22 referansi; 09-22 sabahindaki "yanit
+  kutusu kalkti" karari bununla GECERSIZ), kendi hikayemde onun yerinde
+  **Gorenler + Sil**. Kalp ve mesaj ayni yoldan gidiyor
+  (`hikayeyeYanitVer` -> sohbet mesaji), yeni sunucu isi yok.
+- **Serit:** kendi dairemde kesikli halka kalkti; sade daire + turuncu
+  arti rozeti.
+- **UYGULAMA ICI GALERI IZGARASI YAPILMADI:** ilk referanstaki "Son
+  fotograflar" ekrani ikinci referansta yok; "Hikayen +" dogrudan
+  kamera/galeri aciyor, yani `expo-media-library` ve yeni derleme
+  GEREKMEDI. **VIDEO hikaye de bu turun disinda** - expo-video yeni
+  native modul, sonraki derlemeye birakildi.
+- **DERS (canli test yakaladi):** `hikaye_gorunur_mu` imzasi degisince
+  `sikayet_gonder` ve `hikaye_goruntulendi` eski imzayi cagirmaya devam
+  etti ("function does not exist"). Bir fonksiyonun imzasi degisirse
+  `pg_proc.prosrc` icinde adi aranip BUTUN cagiranlar ayni migrasyonda
+  guncellenir (`20260922220000`).
+- **DERS:** `test0@slooin.test` GERCEK bir hesap (byorcun) ve uzerinde
+  kullanicinin kendi hikayeleri olabiliyor; canli testin "10 siniri"
+  senaryosu bos hesap varsayiyordu ve kullanicinin verisinde patliyordu.
+  Artik mevcut sayidan devam ediyor. Test hesaplarinin gercek veri
+  tasidigi varsayilir.
+Jest 96 paket / 1262 test, tsc temiz, test:sema ve test:gorunurluk
+yesil, `araclar/hikaye-canli-test.py` 23/23. Yayin: web
+`slooin--drn94cxt7w`, OTA grup `ad668c29-e5ab-42d0-ab0b-27b74f1addf7`.
+
 ### CHECK-IN IFADELERI (108 IFADE) - 2026-09-21
 
 Kullanicinin verdigi tek sayfalik ifade seti (12 kategori x 9) kesildi
