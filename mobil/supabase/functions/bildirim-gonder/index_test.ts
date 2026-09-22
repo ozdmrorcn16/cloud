@@ -236,10 +236,16 @@ Deno.test('bildirim tercihleri: olay dogru anahtara bagli, ana anahtar ve gece s
   assertEquals(tercihAnahtari('etiket_istegi'), 'bildirim_ani')
   assertEquals(tercihAnahtari('ani_hatirlatma'), 'bildirim_ani_hatirlatma')
 
+  assertEquals(tercihAnahtari('begeni'), 'bildirim_etkilesim')
+  assertEquals(tercihAnahtari('yorum'), 'bildirim_etkilesim')
+
   const acik = {
     bildirim_anlik: true, bildirim_mesaj: true, bildirim_arkadas: true, bildirim_ani: true,
-    bildirim_ani_hatirlatma: true, sessiz_gece: false, saat_dilimi: 'Europe/Istanbul',
+    bildirim_ani_hatirlatma: true, bildirim_etkilesim: true, sessiz_gece: false, saat_dilimi: 'Europe/Istanbul',
   }
+  assertEquals(gonderilsinMi('begeni', { ...acik, bildirim_etkilesim: false }), false)
+  assertEquals(gonderilsinMi('yorum', { ...acik, bildirim_etkilesim: false }), false)
+  assertEquals(gonderilsinMi('begeni', acik), true)
   assertEquals(gonderilsinMi('mesaj', { ...acik, bildirim_mesaj: false }), false)
   assertEquals(gonderilsinMi('takip_istegi', { ...acik, bildirim_mesaj: false }), true)
   // Ana anahtar kapali: hicbiri gitmez.
@@ -267,4 +273,27 @@ Deno.test('ani hatirlatmasi: govde cozumlenir, alici sahibi, metin mekan adiyla'
   const olay: Olay = { olay: 'ani_hatirlatma', kullanici_id: A, check_in_id: CI, aktor_id: null }
   assertEquals(hedefleriBelirle(olay, []), [{ aliciId: A, karsiTarafId: A }])
   assertEquals(bildirimGovdesi('ani_hatirlatma', 'Hozee'), 'Bir yıl önce bugün: Hozee')
+})
+
+Deno.test('begeni ve yorum (2026-09-22): govde cozumlenir, alici SAHIP, karsi taraf begenen/yorumlayan, metin icerik tasimaz', () => {
+  const a = '11111111-1111-4111-8111-111111111111'
+  const b = '22222222-2222-4222-8222-222222222222'
+  const c = '33333333-3333-4333-8333-333333333333'
+  const y = '44444444-4444-4444-8444-444444444444'
+
+  const begeni = govdeyiCozumle({ olay: 'begeni', check_in_id: c, begenen_id: b, sahip_id: a, aktor_id: b })
+  assertEquals(begeni?.olay, 'begeni')
+  assertEquals(hedefleriBelirle(begeni!, []), [{ aliciId: a, karsiTarafId: b }])
+  assertEquals(bildirimGovdesi('begeni', 'Deniz'), 'Deniz paylaşımını beğendi')
+
+  const yorum = govdeyiCozumle({ olay: 'yorum', check_in_id: c, yorum_id: y, yorumlayan_id: b, sahip_id: a, aktor_id: b })
+  assertEquals(yorum?.olay, 'yorum')
+  assertEquals(hedefleriBelirle(yorum!, []), [{ aliciId: a, karsiTarafId: b }])
+  assertEquals(bildirimGovdesi('yorum', 'Deniz'), 'Deniz paylaşımına yorum yaptı')
+
+  // Eksik alan reddedilir.
+  assertEquals(govdeyiCozumle({ olay: 'begeni', check_in_id: c, begenen_id: b }), null)
+  assertEquals(govdeyiCozumle({ olay: 'yorum', check_in_id: c, yorumlayan_id: b, sahip_id: a }), null)
+  // Kendi paylasimini begenen: aktor == alici -> susar.
+  assertEquals(ozBildirimMi(a, a), true)
 })

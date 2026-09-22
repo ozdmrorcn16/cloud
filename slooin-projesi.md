@@ -307,9 +307,22 @@ fotograf seridi (yana kaydirmali), duzenleme sayfasi, form coklu secim,
 galeriler fotograf birimi. Yerinde duzenleme KALKTI. Ayrinti CLAUDE.md
 "COKLU FOTOGRAF (5)". Jest 87 / 1154; canli paketler yesil.
 
-**ACIK / bekleyen:** yok. Telefonda dogrulanmamis: duzenleme sayfasi,
-kamera/galeri coklu secim, kartta yana kaydirma (web'de olculdu:
-`tasarim/checkin-duzenle.png`).
+**Ek (2026-09-22 ogle, YAYINDA - OTA `760d92cb`, EF v8):** begeni ve
+yorum PUSH bildirimleri (yeni anahtar "Begeniler ve yorumlar"),
+Bildirimler'de "Etkilesimler" bolumu, bildirimden acilan yeni PAYLASIM
+ekrani (`/paylasim/<id>`), kartta begeni sayisina dokununca BEGENENLER
+listesi. Ayrica duzenleme sayfasi referans 2'ye gecti (ikonlu basliklar,
+Ifade/Birlikte kutulu satirlar), dip not kalkti, gezginde dikey
+surukleme kapatir, izgarada fotografa dokununca buyuk acilir. Ayrinti
+CLAUDE.md 2026-09-22 basliklari. Jest 89 / 1169.
+
+**SIRADAKI IS (kullanicinin istegi, henuz tasarlanmadi):** ana sayfaya
+Instagram benzeri HIKAYE akisi. Buyuk is: tablo + 24 saat omur + medya
+kovasi + izleyici ekrani + "kimler gordu" + gizlilik/KVKK. Once kisa
+tasarim sunulacak, onay sonrasi spec + plan.
+
+**ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
+fotograf secimi, begeni/yorum push'u ve Paylasim ekrani.
 
 ## 8a. Onceki kayit (2026-09-19)
 

@@ -9,6 +9,8 @@ import {
   type BekleyenEtiket,
 } from '../../lib/etiket'
 import { avatarlariGetir } from '../../lib/akis'
+import { etkilesimBildirimleriniGetir, type EtkilesimBildirimi } from '../../lib/etkilesim'
+import { gorecelZaman } from '../../lib/zaman'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../tasarim/tema'
 import { useRenk, useStiller } from '../tasarim/tema-baglami'
@@ -50,18 +52,24 @@ export default function BildirimlerEkrani() {
   const { t } = useDil()
   const [takipIstekleri, setTakipIstekleri] = useState<BagKisi[]>([])
   const [etiketler, setEtiketler] = useState<BekleyenEtiket[]>([])
+  // ETKILESIMLER (kullanicinin istegi 2026-09-22): paylasimlarima gelen
+  // begeni ve yorumlar; avatar ve ad ozetle birlikte geliyor.
+  const [etkilesimler, setEtkilesimler] = useState<EtkilesimBildirimi[]>([])
   const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
   const [yukleniyor, setYukleniyor] = useState(true)
   const [hata, setHata] = useState<string | null>(null)
 
   async function yukle() {
     try {
-      const [istekler, bekleyen] = await Promise.all([
+      const [istekler, bekleyen, gelenEtkilesimler] = await Promise.all([
         gelenIstekleriGetir(),
         bekleyenEtiketleriGetir(),
+        // Etkilesimler okunamazsa diger bolumler yine gelir.
+        etkilesimBildirimleriniGetir().catch(() => [] as EtkilesimBildirimi[]),
       ])
       setTakipIstekleri(istekler.takip)
       setEtiketler(bekleyen)
+      setEtkilesimler(gelenEtkilesimler)
       setHata(null)
 
       // Avatarlar listeden SONRA ve ayri geliyor: fotograf okunamazsa
@@ -104,7 +112,7 @@ export default function BildirimlerEkrani() {
     }
   }
 
-  const bosMu = takipIstekleri.length === 0 && etiketler.length === 0
+  const bosMu = takipIstekleri.length === 0 && etiketler.length === 0 && etkilesimler.length === 0
 
   return (
     <View style={stiller.kok}>
@@ -164,6 +172,42 @@ export default function BildirimlerEkrani() {
                 onOlumlu={() => etiketiKararaBagla(e.checkInId, true)}
                 onOlumsuz={() => etiketiKararaBagla(e.checkInId, false)}
               />
+            ))}
+          </>
+        )}
+
+        {etkilesimler.length > 0 && (
+          <>
+            <Text style={stiller.bolumAd}>{t('bildirimler.etkilesimBolumu')}</Text>
+            {etkilesimler.map((e) => (
+              <Pressable
+                key={e.id}
+                style={({ pressed }) => [stiller.satir, pressed && stiller.basili]}
+                onPress={() => router.push(`/paylasim/${e.checkInId}` as never)}
+                accessibilityRole="button"
+                testID={`etkilesim-${e.id}`}
+              >
+                <Pressable
+                  onPress={() => router.push(`/kullanici/${e.aktorId}`)}
+                  accessibilityRole="button"
+                  accessibilityLabel={e.aktorKullaniciAdi}
+                >
+                  <Avatar fotografUrl={e.avatarUrl} ad={e.aktorAd} kullaniciAdi={e.aktorKullaniciAdi} cap={AVATAR_CAPI} />
+                </Pressable>
+                <View style={stiller.sag}>
+                  <Text style={stiller.metin}>
+                    <Text style={stiller.kullaniciAdi}>{e.aktorKullaniciAdi}</Text>{' '}
+                    {t(e.tur === 'begeni' ? 'bildirimler.begeniMetni' : 'bildirimler.yorumMetni')}
+                    {e.mekanAdi ? <Text style={stiller.soluk}> · {e.mekanAdi}</Text> : null}
+                  </Text>
+                  {e.metin ? (
+                    <Text style={stiller.yorumOnizleme} numberOfLines={2}>
+                      “{e.metin}”
+                    </Text>
+                  ) : null}
+                  <Text style={stiller.zaman}>{gorecelZaman(e.zaman, t)}</Text>
+                </View>
+              </Pressable>
             ))}
           </>
         )}
@@ -284,6 +328,10 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     borderBottomColor: renk.cizgi,
   },
   sag: { flex: 1 },
+  basili: { opacity: 0.7 },
+  soluk: { color: renk.metinIkincil },
+  yorumOnizleme: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil, marginTop: 2 },
+  zaman: { fontFamily: yazi.govde, fontSize: olcek.minik, color: renk.metinSoluk, marginTop: 4 },
   metin: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,

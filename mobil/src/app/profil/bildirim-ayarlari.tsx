@@ -62,7 +62,7 @@ export default function BildirimAyarlariEkrani() {
       </View>
       <Switch
         accessibilityLabel={baslik}
-        value={tercih?.[anahtar] ?? (anahtar === 'anlik' || anahtar === 'mesaj' || anahtar === 'arkadas' || anahtar === 'ani')}
+        value={tercih?.[anahtar] ?? (anahtar === 'anlik' || anahtar === 'mesaj' || anahtar === 'arkadas' || anahtar === 'ani' || anahtar === 'etkilesim')}
         onValueChange={(d) => degistir(anahtar, d)}
         disabled={tercih === null || pasif}
         trackColor={{ true: renk.turuncu, false: renk.cizgi }}
@@ -85,7 +85,8 @@ export default function BildirimAyarlariEkrani() {
       <View style={stiller.kart}>
         {satir('arkadas', t('bildirimAyarlari.arkadaslik'), t('bildirimAyarlari.arkadaslikAciklama'), false, anaKapali)}
         {satir('mesaj', t('bildirimAyarlari.mesajlar'), t('bildirimAyarlari.mesajlarAciklama'), false, anaKapali)}
-        {satir('ani', t('bildirimAyarlari.etiketler'), t('bildirimAyarlari.etiketlerAciklama'), true, anaKapali)}
+        {satir('ani', t('bildirimAyarlari.etiketler'), t('bildirimAyarlari.etiketlerAciklama'), false, anaKapali)}
+        {satir('etkilesim', t('bildirimAyarlari.etkilesim'), t('bildirimAyarlari.etkilesimAciklama'), true, anaKapali)}
       </View>
 
       <AyarBolumBasligi>{t('bildirimAyarlari.kesif')}</AyarBolumBasligi>

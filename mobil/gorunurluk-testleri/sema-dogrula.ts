@@ -1169,6 +1169,9 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
   esitMi(
     bildirimTetikleyicileri,
     [
+      // begeni_bildirimi + yorum_bildirimi 2026-09-22'de eklendi
+      // (kullanicinin istegi: begeni ve yorum bildirimi).
+      'begeni_bildirimi',
       'etiket_bildirimi',
       'mesaj_bildirimi',
       'sohbet_istegi_bildirimi',
@@ -1176,8 +1179,9 @@ async function bildirimTetikleyicileriniDogrula(a: SupabaseClient, anon: Supabas
       'takip_eklendi_bildirimi',
       'takip_istegi_bildirimi',
       'takip_kabul_bildirimi',
+      'yorum_bildirimi',
     ],
-    'tam olarak yedi bildirim tetikleyicisi kayitli'
+    'tam olarak dokuz bildirim tetikleyicisi kayitli'
   )
 }
 

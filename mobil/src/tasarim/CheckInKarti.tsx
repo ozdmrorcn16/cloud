@@ -18,6 +18,7 @@ import type { EtkilesimOzeti } from '../../lib/etkilesim'
 import { FotografAltyazisi } from './FotografAltyazisi'
 import { FotografSeridi } from './FotografSeridi'
 import { FotografGezgini } from './FotografGezgini'
+import { BegenenlerSayfasi } from './BegenenlerSayfasi'
 import { Avatar } from './Avatar'
 
 /**
@@ -122,6 +123,8 @@ export function CheckInKarti({
   // gidiyordu.
   // COKLU FOTOGRAF (2026-09-21): acik fotografin indeksi; null kapali.
   const [buyukIndeks, setBuyukIndeks] = useState<number | null>(null)
+  // BEGENENLER (2026-09-22): kalbin yanindaki SAYIYA dokununca liste.
+  const [begenenlerAcik, setBegenenlerAcik] = useState(false)
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
@@ -347,8 +350,21 @@ export function CheckInKarti({
             hitSlop={8}
           >
             <BegeniKalbi dolu={ozet.begendim} />
-            {ozet.begeni > 0 && <Text style={stiller.sayac}>{ozet.begeni}</Text>}
           </Pressable>
+          {/* SAYI AYRI HEDEF (kullanicinin istegi 2026-09-22): kalp
+              begenir, sayi kimlerin begendigini acar. */}
+          {ozet.begeni > 0 && (
+            <Pressable
+              onPress={() => setBegenenlerAcik(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('etkilesim.begenenler')}
+              hitSlop={8}
+              style={stiller.sayacDugmesi}
+              testID="begeni-sayisi"
+            >
+              <Text style={stiller.sayac}>{ozet.begeni}</Text>
+            </Pressable>
+          )}
 
           <Pressable
             style={stiller.eylem}
@@ -444,6 +460,8 @@ export function CheckInKarti({
         onKapat={() => setMenuAcik(false)}
       />
 
+      <BegenenlerSayfasi acikMi={begenenlerAcik} checkInId={oge.id} onKapat={() => setBegenenlerAcik(false)} />
+
       <YorumSayfasi
         acikMi={yorumlarAcik}
         checkInId={oge.id}
@@ -477,6 +495,7 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     gap: bosluk.xxl,
     marginTop: bosluk.m,
   },
+  sayacDugmesi: { marginLeft: -22, paddingVertical: 4, paddingRight: 4 },
   eylem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   // Paylas sag uca (referans).
   eylemSag: { marginLeft: 'auto' },

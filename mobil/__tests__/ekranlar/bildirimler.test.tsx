@@ -4,6 +4,7 @@ import { gelenIstekleriGetir } from '../../lib/bag-listeleri'
 import { takipIsteginiYanitla } from '../../lib/bag'
 import { bekleyenEtiketleriGetir, etiketiYanitla } from '../../lib/etiket'
 import { avatarlariGetir } from '../../lib/akis'
+import { etkilesimBildirimleriniGetir } from '../../lib/etkilesim'
 
 jest.mock('../../lib/bag-listeleri', () => ({ gelenIstekleriGetir: jest.fn() }))
 jest.mock('../../lib/bag', () => ({ takipIsteginiYanitla: jest.fn() }))
@@ -12,6 +13,7 @@ jest.mock('../../lib/etiket', () => ({
   etiketiYanitla: jest.fn(),
 }))
 jest.mock('../../lib/akis', () => ({ avatarlariGetir: jest.fn() }))
+jest.mock('../../lib/etkilesim', () => ({ etkilesimBildirimleriniGetir: jest.fn() }))
 
 const mockRouterPush = jest.fn()
 jest.mock('expo-router', () => ({
@@ -37,9 +39,30 @@ beforeEach(() => {
   ;(takipIsteginiYanitla as jest.Mock).mockResolvedValue(undefined)
   ;(etiketiYanitla as jest.Mock).mockResolvedValue(undefined)
   ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
+  ;(etkilesimBildirimleriniGetir as jest.Mock).mockResolvedValue([])
 })
 
 describe('BildirimlerEkrani', () => {
+  it('ETKILESIMLER (2026-09-22): begeni ve yorum satirlari; satir paylasimi, avatar kisiyi acar', async () => {
+    ;(etkilesimBildirimleriniGetir as jest.Mock).mockResolvedValue([
+      { id: 'yorum-y-1', tur: 'yorum', checkInId: 'c-1', aktorId: 'k-2', aktorAd: 'Mert', aktorKullaniciAdi: 'mert', avatarUrl: null, mekanAdi: 'Sahil Kafe', metin: 'harika bir yer', zaman: new Date().toISOString() },
+      { id: 'begeni-c-1-k-1', tur: 'begeni', checkInId: 'c-1', aktorId: 'k-1', aktorAd: 'Ada', aktorKullaniciAdi: 'ada', avatarUrl: null, mekanAdi: 'Sahil Kafe', metin: null, zaman: new Date().toISOString() },
+    ])
+    await render(<BildirimlerEkrani />)
+    expect(await screen.findByText('Etkileşimler')).toBeTruthy()
+    expect(screen.getByText('mert')).toBeTruthy()
+    expect(screen.getByText(/paylaşımına yorum yaptı/)).toBeTruthy()
+    expect(screen.getByText('“harika bir yer”')).toBeTruthy()
+    expect(screen.getByText(/paylaşımını beğendi/)).toBeTruthy()
+    // Bos durum metni YOK.
+    expect(screen.queryByText('Henüz bildirim yok')).toBeNull()
+
+    await fireEvent.press(screen.getByTestId('etkilesim-begeni-c-1-k-1'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/paylasim/c-1')
+    await fireEvent.press(screen.getByLabelText('ada'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k-1')
+  })
+
   it('bekleyen bir sey yoksa yon veren bir metin gosterir', async () => {
     await render(<BildirimlerEkrani />)
 

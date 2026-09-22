@@ -1003,6 +1003,42 @@ profil-duzenlede ulke secici anlatimi ARTIK GECERSIZ.
 Jest 77 paket / 1025 test. Yayin: web guncel, OTA grup
 `870c4f6b-a090-49a1-8910-665fc0396aec`; site push ile.
 
+### BEGENI/YORUM BILDIRIMLERI, PAYLASIM EKRANI, BEGENENLER LISTESI - 2026-09-22
+
+Kullanicinin istekleri: "begeni ve yorum yapan kisilerden bildirim gelsin,
+bildirimlerde de gorunsun" + "begeni kalbin yanindaki sayiya basilinca
+kimlerin begendigi gorunsun". OTA `760d92cb`, web guncel.
+- **Sunucu (migrasyon `20260922120000`):** `bildirim.olay_gonder`'e
+  `begeniler`/`yorumlar` kollari (olay `begeni` {check_in_id, begenen_id,
+  sahip_id}, `yorum` {+yorum_id, yorumlayan_id}); kendi paylasimi ve gizli
+  yorum olay uretmez; tetikleyiciler `begeni_bildirimi`, `yorum_bildirimi`
+  (sema testi artik DOKUZ tetikleyici bekliyor). `profiller.
+  bildirim_etkilesim` (+ grant update). **Edge Function v8:** iki olay,
+  kaynak dogrulama (begeni satiri + sahip; yorum gizli degil), metinler
+  icerik tasimaz, tercih `bildirim_etkilesim`, push data'ya `checkInId`.
+  Deno 16/16. Canli: `araclar/begeni-yorum-bildirim-canli-test.py` 5/5;
+  EF gunlugunde olay=begeni/yorum "alici islendi" olculdu (test0'in
+  jetonuna push gitti). Betik on kosul olarak B->A arkadasligini kurar
+  (RLS: B, A'nin check-in'ini ancak arkadassa gorur) ve sonunda birakir.
+- **Uygulama ici:** Bildirimler ekraninda "Etkilesimler" bolumu -
+  `etkilesimBildirimleriniGetir` (ayri tablo YOK; begeniler/yorumlar
+  `check_inler!inner` gomulu suzgeciyle RLS'ten okunur, aktor ozetleri
+  `akis_profilleri`); satir `/paylasim/<id>`, avatar kisiye gider.
+  Yorum satirinda yorumun metni gorunur (alicinin kendi paylasimindaki
+  yorum). Ayarlar > Bildirimler: "Begeniler ve yorumlar" anahtari.
+- **YENI EKRAN `src/app/paylasim/[id].tsx`:** tek check-in karti
+  (`checkInGetir`), begeni/yorum/paylas calisir, duzenle/sil menusu YOK
+  (kart prop'lari verilmiyor); RLS gostermezse "artik gorunmuyor".
+  Push dokunusu (`lib/bildirim.ts` rotaUret) begeni/yorum'da buraya.
+- **Begenenler:** kartta kalbin yanindaki sayi AYRI hedef
+  (`begeni-sayisi`) -> `BegenenlerSayfasi` (alttan yarim sayfa, avatar +
+  ad + @kullanici; kisiye dokununca sayfa kapanir, 80 ms sonra profil).
+  `begenenleriGetir`: begeniler RLS + akis_profilleri (engelli gorunmez).
+- Sozluk 7 dil: `bildirimAyarlari.etkilesim/…Aciklama`, `bildirimler.
+  etkilesimBolumu/begeniMetni/yorumMetni`, `etkilesim.begenenler/
+  begenenYok/paylasimBaslik/paylasimBulunamadi`. Jest 89 / 1169.
+  KVKK listesi maddesi yazildi. Telefonda dogrulanmadi.
+
 ### GEZGINDE DIKEY SURUKLEME KAPATIR; DUZENLEMEDE KLAVYE SERIDI ITMEZ - 2026-09-22
 
 - **FotografGezgini:** tek parmakla yukari/asagi surukleme fotografi

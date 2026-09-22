@@ -10,7 +10,7 @@ import { checkInFotograflariniDegistir } from '../../lib/checkin-fotograf-degist
 import * as ImagePicker from 'expo-image-picker'
 import { etiketiKaldir, etiketleriKaydet, etiketleriGetir } from '../../lib/etiket'
 import { takipcilerimiGetir } from '../../lib/bag-listeleri'
-import { etkilesimOzetleriniGetir, yorumlariGetir } from '../../lib/etkilesim'
+import { etkilesimOzetleriniGetir, yorumlariGetir, begenenleriGetir } from '../../lib/etkilesim'
 
 // AKIS_SAYFA_BOYU testte KUCULTULUYOR (3): FlatList sanallastirmasi
 // varsayilan olarak yalnizca ilk 10 satiri ciziyor, yani 30'luk bir
@@ -53,6 +53,7 @@ jest.mock('../../lib/etkilesim', () => ({
   yorumEkle: jest.fn(),
   yorumSil: jest.fn(),
   yorumuSikayetEt: jest.fn(),
+  begenenleriGetir: jest.fn(),
 }))
 
 const mockRouterPush = jest.fn()
@@ -621,6 +622,26 @@ describe('AnaSayfa', () => {
   // ---------------------------------------------------------------- //
   // YORUMLAR ALTTAN ACILIYOR (kullanicinin karari 2026-09-03)
   // ---------------------------------------------------------------- //
+
+  it('BEGENI SAYISINA basinca begenenler listesi acilir; kalp yine begenir (2026-09-22)', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
+    ;(etkilesimOzetleriniGetir as jest.Mock).mockResolvedValue({ 'checkin-1': { begeni: 2, yorum: 0, begendim: false } })
+    ;(begenenleriGetir as jest.Mock).mockResolvedValue([
+      { id: 'k-1', ad: 'Ada', kullaniciAdi: 'ada', avatarUrl: null },
+      { id: 'k-2', ad: 'Mert', kullaniciAdi: 'mert', avatarUrl: null },
+    ])
+    await render(<AnaSayfa />)
+    await screen.findByText('Sahil Kafe')
+
+    await fireEvent.press(await screen.findByTestId('begeni-sayisi'))
+    expect(await screen.findByTestId('begenenler-sayfasi')).toBeTruthy()
+    expect(await screen.findByText('@ada')).toBeTruthy()
+    expect(screen.getByText('Mert')).toBeTruthy()
+    expect(begenenleriGetir).toHaveBeenCalledWith('checkin-1')
+    // Kisiye dokununca profil (sayfa once kapanir).
+    await fireEvent.press(screen.getByTestId('begenen-k-1'))
+    await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/k-1'))
+  })
 
   it('yorum ikonu ALT SAYFAYI aciyor, yeni sayfaya GITMIYOR', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])

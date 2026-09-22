@@ -164,6 +164,8 @@ export type BildirimTercihleri = {
   ani: boolean
   /** Ani hatirlatmalari: "bir yil once bugun" (gunluk cron). */
   aniHatirlatma: boolean
+  /** Begeniler ve yorumlar (2026-09-22). */
+  etkilesim: boolean
   /** Gece sessize al: 22.00-08.00 yerel saat. */
   sessizGece: boolean
 }
@@ -174,6 +176,7 @@ const TERCIH_SUTUNU: Record<keyof BildirimTercihleri, string> = {
   arkadas: 'bildirim_arkadas',
   ani: 'bildirim_ani',
   aniHatirlatma: 'bildirim_ani_hatirlatma',
+  etkilesim: 'bildirim_etkilesim',
   sessizGece: 'sessiz_gece',
 }
 
@@ -186,7 +189,7 @@ export async function bildirimTercihleriniGetir(): Promise<BildirimTercihleri> {
   const id = await kendiKullaniciId()
   const { data, error } = await supabase
     .from('profiller')
-    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, sessiz_gece')
+    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, bildirim_etkilesim, sessiz_gece')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(hataMetni(error))
@@ -196,6 +199,7 @@ export async function bildirimTercihleriniGetir(): Promise<BildirimTercihleri> {
     arkadas: data?.bildirim_arkadas ?? true,
     ani: data?.bildirim_ani ?? true,
     aniHatirlatma: data?.bildirim_ani_hatirlatma ?? false,
+    etkilesim: data?.bildirim_etkilesim ?? true,
     sessizGece: data?.sessiz_gece ?? false,
   }
 }

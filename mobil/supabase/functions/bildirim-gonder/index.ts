@@ -175,6 +175,49 @@ async function kaynakDogrula(yonetici: SupabaseClient, olay: Olay): Promise<bool
       return (checkIn ?? []).length > 0
     }
 
+    if (olay.olay === 'begeni') {
+      // Begeni satiri duruyor mu ve check-in gercekten sahip_id'nin mi.
+      const { data: begeni, error: begeniHatasi } = await yonetici
+        .from('begeniler')
+        .select('check_in_id')
+        .eq('check_in_id', olay.check_in_id)
+        .eq('kullanici_id', olay.begenen_id)
+        .limit(1)
+      if (begeniHatasi) throw begeniHatasi
+      if ((begeni ?? []).length === 0) return false
+      const { data: checkIn, error: checkInHatasi } = await yonetici
+        .from('check_inler')
+        .select('id')
+        .eq('id', olay.check_in_id)
+        .eq('kullanici_id', olay.sahip_id)
+        .limit(1)
+      if (checkInHatasi) throw checkInHatasi
+      return (checkIn ?? []).length > 0
+    }
+
+    if (olay.olay === 'yorum') {
+      // Yorum duruyor, gizlenmemis ve check-in sahip_id'nin.
+      const { data: yorum, error: yorumHatasi } = await yonetici
+        .from('yorumlar')
+        .select('id')
+        .eq('id', olay.yorum_id)
+        .eq('check_in_id', olay.check_in_id)
+        .eq('kullanici_id', olay.yorumlayan_id)
+        .eq('sikayet_gizli', false)
+        .eq('moderasyon_gizli', false)
+        .limit(1)
+      if (yorumHatasi) throw yorumHatasi
+      if ((yorum ?? []).length === 0) return false
+      const { data: checkIn, error: checkInHatasi } = await yonetici
+        .from('check_inler')
+        .select('id')
+        .eq('id', olay.check_in_id)
+        .eq('kullanici_id', olay.sahip_id)
+        .limit(1)
+      if (checkInHatasi) throw checkInHatasi
+      return (checkIn ?? []).length > 0
+    }
+
     if (olay.olay === 'ani_hatirlatma') {
       // Check-in gercekten bu kisinin mi.
       const { data, error } = await yonetici
@@ -244,7 +287,7 @@ async function konusmaDigerUyeleri(
 async function tercihleriOku(yonetici: SupabaseClient, aliciId: string): Promise<BildirimTercihleri | null> {
   const { data, error } = await yonetici
     .from('profiller')
-    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, sessiz_gece, saat_dilimi')
+    .select('bildirim_anlik, bildirim_mesaj, bildirim_arkadas, bildirim_ani, bildirim_ani_hatirlatma, bildirim_etkilesim, sessiz_gece, saat_dilimi')
     .eq('id', aliciId)
     .maybeSingle()
   if (error || !data) return null
@@ -505,6 +548,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { hata, olu } = await expoyaGonder(jetonlar, govde, {
       tur: olay.olay,
       kullaniciId: hedef.karsiTarafId,
+      // Begeni/yorumda istemci paylasimi acar (2026-09-22).
+      ...('check_in_id' in olay ? { checkInId: olay.check_in_id } : {}),
     })
     await olecekJetonlariSil(yonetici, hedef.aliciId, olu)
 

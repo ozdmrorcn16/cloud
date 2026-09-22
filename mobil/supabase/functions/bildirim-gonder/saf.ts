@@ -44,6 +44,18 @@ export type Olay =
   // ANI HATIRLATMASI (2026-09-19): gunluk cron, "bir yil once bugun".
   // Aktor yok; alici check-in'in sahibi. Metin mekan adiyla kurulur.
   | { olay: 'ani_hatirlatma'; kullanici_id: string; check_in_id: string; aktor_id: string | null }
+  // BEGENI / YORUM (kullanicinin istegi 2026-09-22). Alici paylasimin
+  // sahibi (`sahip_id` tetikleyiciden gelir, kaynak satirdan yeniden
+  // dogrulanir). Yorum METNI hicbir zaman gitmez (karar 48).
+  | { olay: 'begeni'; check_in_id: string; begenen_id: string; sahip_id: string; aktor_id: string | null }
+  | {
+      olay: 'yorum'
+      check_in_id: string
+      yorum_id: string
+      yorumlayan_id: string
+      sahip_id: string
+      aktor_id: string | null
+    }
 
 const UUID_DESENI = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -127,6 +139,21 @@ export function govdeyiCozumle(ham: unknown): Olay | null {
       if (!uuidMi(k.kullanici_id) || !uuidMi(k.check_in_id)) return null
       return { olay: 'ani_hatirlatma', kullanici_id: k.kullanici_id, check_in_id: k.check_in_id, aktor_id: aktor }
 
+    case 'begeni':
+      if (!uuidMi(k.check_in_id) || !uuidMi(k.begenen_id) || !uuidMi(k.sahip_id)) return null
+      return { olay: 'begeni', check_in_id: k.check_in_id, begenen_id: k.begenen_id, sahip_id: k.sahip_id, aktor_id: aktor }
+
+    case 'yorum':
+      if (!uuidMi(k.check_in_id) || !uuidMi(k.yorum_id) || !uuidMi(k.yorumlayan_id) || !uuidMi(k.sahip_id)) return null
+      return {
+        olay: 'yorum',
+        check_in_id: k.check_in_id,
+        yorum_id: k.yorum_id,
+        yorumlayan_id: k.yorumlayan_id,
+        sahip_id: k.sahip_id,
+        aktor_id: aktor,
+      }
+
     default:
       return null
   }
@@ -181,6 +208,10 @@ export function hedefleriBelirle(olay: Olay, konusmaDigerUyeleri: string[]): Hed
     case 'ani_hatirlatma':
       // Karsi taraf yok; ad yerine mekan adi yazilir (index.ts).
       return [{ aliciId: olay.kullanici_id, karsiTarafId: olay.kullanici_id }]
+    case 'begeni':
+      return [{ aliciId: olay.sahip_id, karsiTarafId: olay.begenen_id }]
+    case 'yorum':
+      return [{ aliciId: olay.sahip_id, karsiTarafId: olay.yorumlayan_id }]
   }
 }
 
@@ -235,6 +266,11 @@ export function bildirimGovdesi(olay: Olay['olay'], ad: string): string {
       // `ad` burada MEKAN ADI. Bulunma eki YOK (2026-09-13 karari: ek
       // uretimi tutturulamiyor) - iki nokta ile.
       return `Bir yıl önce bugün: ${ad}`
+    case 'begeni':
+      return `${ad} paylaşımını beğendi`
+    case 'yorum':
+      // Yorumun kendisi GECMEZ (karar 48).
+      return `${ad} paylaşımına yorum yaptı`
   }
 }
 
@@ -249,6 +285,8 @@ export type BildirimTercihleri = {
   bildirim_arkadas: boolean
   bildirim_ani: boolean
   bildirim_ani_hatirlatma: boolean
+  /** Begeniler ve yorumlar (2026-09-22). */
+  bildirim_etkilesim: boolean
   sessiz_gece: boolean
   /** IANA saat dilimi (Europe/Istanbul); istemci yazar. Yoksa Europe/Istanbul. */
   saat_dilimi: string | null
@@ -260,6 +298,7 @@ export type BildirimTercihleri = {
  *   takip_* ("Arkadaslik istekleri")                                 -> bildirim_arkadas
  *   etiket_* ("Etiketler - istek ve onaylar")                        -> bildirim_ani
  *   ani_hatirlatma                                                   -> bildirim_ani_hatirlatma
+ *   begeni, yorum ("Begeniler ve yorumlar", 2026-09-22)              -> bildirim_etkilesim
  * Saf fonksiyon.
  */
 export function tercihAnahtari(olay: Olay['olay']): keyof BildirimTercihleri {
@@ -273,6 +312,9 @@ export function tercihAnahtari(olay: Olay['olay']): keyof BildirimTercihleri {
       return 'bildirim_ani'
     case 'ani_hatirlatma':
       return 'bildirim_ani_hatirlatma'
+    case 'begeni':
+    case 'yorum':
+      return 'bildirim_etkilesim'
     default:
       return 'bildirim_arkadas'
   }

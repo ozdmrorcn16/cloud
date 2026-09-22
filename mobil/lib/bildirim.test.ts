@@ -155,6 +155,16 @@ describe('bildirimeDokunmaDinle', () => {
     expect(yonlendir).toHaveBeenCalledWith('/kullanici/kisi-3')
   })
 
+  it('BEGENI ve YORUM bildirimi paylasimin kendisine yonlendirir (2026-09-22)', () => {
+    const yonlendir = jest.fn()
+    mockDinle.mockReturnValue({ remove: jest.fn() })
+    bildirimeDokunmaDinle(yonlendir)
+    dinleyiciyiCalistir({ tur: 'begeni', kullaniciId: 'kisi-4', checkInId: 'checkin-7' })
+    dinleyiciyiCalistir({ tur: 'yorum', kullaniciId: 'kisi-5', checkInId: 'checkin-8' })
+    expect(yonlendir).toHaveBeenNthCalledWith(1, '/paylasim/checkin-7')
+    expect(yonlendir).toHaveBeenNthCalledWith(2, '/paylasim/checkin-8')
+  })
+
   it('bilinmeyen turde yonlendirme yapmaz', () => {
     const yonlendir = jest.fn()
     mockDinle.mockReturnValue({ remove: jest.fn() })

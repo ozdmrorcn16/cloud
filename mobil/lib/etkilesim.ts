@@ -1,6 +1,7 @@
 import { sistemPaylasimi } from './paylasim'
 import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
+import { profilOzetleriniGetir } from './akis'
 
 /**
  * BEGENI, YORUM VE PAYLASMA.
@@ -167,4 +168,121 @@ export async function paylas(mekanAdi: string, kim: string): Promise<void> {
   await sistemPaylasimi({
     message: `${kim}, Slooin'de ${mekanAdi} mekanında.`,
   })
+}
+
+// ---------------------------------------------------------------------
+// BEGENENLER LISTESI + ETKILESIM BILDIRIMLERI (kullanicinin istegi 2026-09-22)
+// ---------------------------------------------------------------------
+
+export type Begenen = { id: string; ad: string; kullaniciAdi: string; avatarUrl: string | null }
+
+/**
+ * Bir paylasimi begenenler (en yeni once). `begeniler` RLS ile okunur
+ * (check-in'i goren begenilerini de gorur); ad/avatar `akis_profilleri`
+ * RPC'sinden gelir - engelleme iki yonlu orada kesildigi icin engellenen
+ * kisi listede GORUNMEZ (ozet gelmeyen atilir).
+ */
+export async function begenenleriGetir(checkInId: string): Promise<Begenen[]> {
+  const { data, error } = await supabase
+    .from('begeniler')
+    .select('kullanici_id, olusturuldu')
+    .eq('check_in_id', checkInId)
+    .order('olusturuldu', { ascending: false })
+    .limit(200)
+  if (error) throw new Error(hataMetni(error))
+  const kimlikler = ((data ?? []) as { kullanici_id: string }[]).map((s) => s.kullanici_id)
+  const ozetler = await profilOzetleriniGetir(kimlikler)
+  return kimlikler
+    .filter((id) => ozetler[id])
+    .map((id) => ({ id, ad: ozetler[id].ad, kullaniciAdi: ozetler[id].rumuz, avatarUrl: ozetler[id].avatarUrl }))
+}
+
+export type EtkilesimBildirimi = {
+  /** `begeni-<checkInId>-<aktorId>` ya da `yorum-<yorumId>`. */
+  id: string
+  tur: 'begeni' | 'yorum'
+  checkInId: string
+  aktorId: string
+  aktorAd: string
+  aktorKullaniciAdi: string
+  avatarUrl: string | null
+  mekanAdi: string
+  /** Yorum metni (yalnizca tur = yorum). Kendi paylasimindaki yorum - zaten gorebiliyor. */
+  metin: string | null
+  zaman: string
+}
+
+type BegeniSatiri = {
+  check_in_id: string
+  kullanici_id: string
+  olusturuldu: string
+  check_inler: { kullanici_id: string; mekanlar: { ad: string } | null } | null
+}
+type YorumSatiri = BegeniSatiri & { id: string; metin: string }
+
+/**
+ * Uygulama ici "Etkilesimler" bolumu: KENDI paylasimlarima gelen begeni
+ * ve yorumlar (kendi eylemlerim haric), en yeni once. Ayri bildirim
+ * tablosu YOK: satirlar dogrudan begeniler/yorumlar'dan RLS ile okunur
+ * (Bildirimler ekranindaki takip/etiket bolumleriyle ayni desen).
+ * `check_inler!inner` + `check_inler.kullanici_id = ben` gomulu suzgeci:
+ * yalnizca sahibi oldugum paylasimlar.
+ */
+export async function etkilesimBildirimleriniGetir(limit = 50): Promise<EtkilesimBildirimi[]> {
+  const ben = await kendiId()
+  const [begeniler, yorumlar] = await Promise.all([
+    supabase
+      .from('begeniler')
+      .select('check_in_id, kullanici_id, olusturuldu, check_inler!inner(kullanici_id, mekanlar(ad))')
+      .eq('check_inler.kullanici_id', ben)
+      .neq('kullanici_id', ben)
+      .order('olusturuldu', { ascending: false })
+      .limit(limit),
+    supabase
+      .from('yorumlar')
+      .select('id, check_in_id, kullanici_id, metin, olusturuldu, check_inler!inner(kullanici_id, mekanlar(ad))')
+      .eq('check_inler.kullanici_id', ben)
+      .neq('kullanici_id', ben)
+      .order('olusturuldu', { ascending: false })
+      .limit(limit),
+  ])
+  if (begeniler.error) throw new Error(hataMetni(begeniler.error))
+  if (yorumlar.error) throw new Error(hataMetni(yorumlar.error))
+
+  const b = (begeniler.data ?? []) as unknown as BegeniSatiri[]
+  const y = (yorumlar.data ?? []) as unknown as YorumSatiri[]
+  const kimlikler = [...new Set([...b, ...y].map((s) => s.kullanici_id))]
+  const ozetler = await profilOzetleriniGetir(kimlikler)
+
+  const mekanAdi = (s: BegeniSatiri) => s.check_inler?.mekanlar?.ad ?? ''
+  const satirlar: EtkilesimBildirimi[] = [
+    ...b.map((s) => ({
+      id: `begeni-${s.check_in_id}-${s.kullanici_id}`,
+      tur: 'begeni' as const,
+      checkInId: s.check_in_id,
+      aktorId: s.kullanici_id,
+      mekanAdi: mekanAdi(s),
+      metin: null,
+      zaman: s.olusturuldu,
+    })),
+    ...y.map((s) => ({
+      id: `yorum-${s.id}`,
+      tur: 'yorum' as const,
+      checkInId: s.check_in_id,
+      aktorId: s.kullanici_id,
+      mekanAdi: mekanAdi(s),
+      metin: s.metin,
+      zaman: s.olusturuldu,
+    })),
+  ]
+    // Ozeti gelmeyen (engellenen / silinmis hesap) atlanir.
+    .filter((s) => ozetler[s.aktorId])
+    .map((s) => ({
+      ...s,
+      aktorAd: ozetler[s.aktorId].ad,
+      aktorKullaniciAdi: ozetler[s.aktorId].rumuz,
+      avatarUrl: ozetler[s.aktorId].avatarUrl,
+    }))
+    .sort((x, z) => (x.zaman < z.zaman ? 1 : -1))
+  return satirlar.slice(0, limit)
 }

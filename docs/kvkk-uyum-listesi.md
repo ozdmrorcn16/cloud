@@ -739,3 +739,29 @@ sey SILME disiplini:
 - Canli olcum: `araclar/check-in-fotograf-degistir-canli-test.py` 15/15
   (5 siniri, baskasinin yolu/check-in'i, kaldirilan dosyanin kovadan
   silinmesi, disa aktarimda `fotograflar`).
+
+## Begeni ve yorum bildirimleri; begenenler listesi (2026-09-22)
+
+Paylasim sahibine, paylasimini begenen/yorumlayan kisi icin push
+(`bildirim_etkilesim` anahtari, varsayilan acik, Bildirimler ayarinda
+kapatilabilir) ve uygulama ici "Etkilesimler" bolumu; kartta begeni
+sayisina dokununca begenenler listesi.
+
+- Hangi veri: push metni YALNIZCA aktorun adi ("X paylasimini begendi",
+  "X paylasimina yorum yapti") - yorum metni push'a GIRMEZ (karar 48).
+  Uygulama ici listede yorumun metni gorunur: o zaten alicinin kendi
+  paylasimindaki, gorebildigi yorum.
+- Dayanak: sozlesmenin ifasi (m.5/2-c) - etkilesim bildirimi sosyal
+  uygulamanin temel islevi; kullanici anahtarla kapatabilir.
+- Sure: ayri bildirim tablosu YOK; liste begeniler/yorumlar satirlarindan
+  RLS ile okunur, yani saklama suresi o satirlarinki (paylasim silinince
+  cascade). Push'un kendisi Expo'da gecici.
+- Kim gorur: yalnizca paylasim sahibi (RLS `check_inler.kullanici_id =
+  ben` gomulu suzgeci). Begenenler listesi: paylasimi gorebilen herkes
+  begenenleri gorur (begeniler RLS zaten boyleydi); engellenen kisi iki
+  yonde de listede gorunmez (`akis_profilleri`).
+- Kayit: Edge Function her olayda kaynak satiri dogrular; gizli
+  (sikayet/moderasyon) yorum olay uretmez; kendi eylemi bildirilmez.
+  Canli olcum: `araclar/begeni-yorum-bildirim-canli-test.py` 5/5 +
+  Edge Function gunlugu ("alici islendi olay=begeni/yorum").
+

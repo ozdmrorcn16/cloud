@@ -19,6 +19,8 @@ Notifications.setNotificationHandler({
 type BildirimData = {
   tur?: string
   kullaniciId?: string
+  /** Begeni/yorum (2026-09-22): acilacak paylasim. */
+  checkInId?: string
 }
 
 // Web'de push yok; gercek cihaz olmayan ortamda (emulator/simulator)
@@ -39,6 +41,10 @@ function rotaUret(data: BildirimData | undefined | null): string | null {
   // gorunecek bir sey de yok - ekleyenin profiline gider.
   if (data.tur === 'takip_eklendi' && data.kullaniciId) {
     return `/kullanici/${data.kullaniciId}`
+  }
+  // Begeni / yorum (2026-09-22): paylasimin kendisi acilir.
+  if ((data.tur === 'begeni' || data.tur === 'yorum') && data.checkInId) {
+    return `/paylasim/${data.checkInId}`
   }
   if (
     data.tur === 'takip_istegi' ||

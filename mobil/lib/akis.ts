@@ -264,3 +264,49 @@ export function fotografBirimleri<T extends { id: string; fotografUrller: string
     (ani.fotografUrller ?? []).map((url, indeks) => ({ id: `${ani.id}-${indeks}`, ani, indeks, url }))
   )
 }
+
+/**
+ * TEK PAYLASIM (Paylasim ekrani, 2026-09-22): bildirimden acilan
+ * check-in. Akisla ayni alanlar, ayni donusum; RLS gormeye izin
+ * vermiyorsa (silinmis, gizlenmis, arkadaslik kopmus) null doner.
+ */
+export async function checkInGetir(id: string): Promise<AkisOgesi | null> {
+  const { data: kullaniciVerisi } = await supabase.auth.getUser()
+  const benimId = kullaniciVerisi.user?.id
+  if (!benimId) throw new Error('Oturum bulunamadı')
+
+  const { data, error } = await supabase
+    .from('check_inler')
+    .select(
+      'id, kullanici_id, kullanici_adi, mekan_id, not_metni, ifade, fotograflar, olusturma_zamani, konum, mekanlar(ad, semt)'
+    )
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(hataMetni(error))
+  if (!data) return null
+
+  const satir = data as unknown as AkisSatiri
+  const [etiketler, ozetler, urlHaritasi] = await Promise.all([
+    etiketleriGetir([satir.id]).catch(() => ({}) as Record<string, Etiket[]>),
+    profilOzetleriniGetir([satir.kullanici_id]).catch(() => ({}) as Record<string, ProfilOzeti>),
+    checkInFotografiUrlHaritasi(satir.fotograflar ?? []),
+  ])
+  return {
+    id: satir.id,
+    kullaniciId: satir.kullanici_id,
+    kullaniciAdi: satir.kullanici_adi,
+    mekanId: satir.mekan_id,
+    mekanAdi: satir.mekanlar?.ad ?? '',
+    mekanSemti: satir.mekanlar?.semt ?? null,
+    notMetni: satir.not_metni,
+    ifade: satir.ifade ?? null,
+    fotograflar: satir.fotograflar ?? [],
+    fotografUrller: (satir.fotograflar ?? []).map((y) => urlHaritasi[y]).filter((u): u is string => Boolean(u)),
+    olusturmaZamani: satir.olusturma_zamani,
+    canliMi: satir.konum !== null,
+    benimMi: satir.kullanici_id === benimId,
+    etiketler: etiketler[satir.id] ?? [],
+    avatarUrl: ozetler[satir.kullanici_id]?.avatarUrl ?? null,
+    rumuz: ozetler[satir.kullanici_id]?.rumuz ?? null,
+  }
+}
