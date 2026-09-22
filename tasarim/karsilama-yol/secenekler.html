@@ -1,0 +1,278 @@
+<title>Slooin Açılış Seçenekleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Bes acilis konsepti, yan yana. Her telefon kendi kendine oynar; "Yeniden"
+     bastan alir. Yalnizca transform/opacity/stroke-dashoffset animasyonu;
+     Kowalski egrileri; reduced motion'da solma kalir.
+     Tek tema (koyu studyo tahtasi) bilerek: telefon icleri uygulamanin
+     kendi beyaz zemini. */
+  :root {
+    --tahta: #221E1B; --tahta-metin: #F1ECE6; --tahta-soluk: #9C938B; --tahta-cizgi: #3A342F;
+    --zemin: #FFFFFF; --metin: #17130F; --ikincil: #6E6660; --soluk: #A39B93; --cizgi: #E2DAD2;
+    --turuncu: #FE7813; --seftali: #FFF1E7; --seftali-koyu: #FFD9BF;
+    --govde: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --marka: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-otur: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--tahta); color: var(--tahta-metin); font-family: var(--govde); padding-block: 28px 40px; padding-inline: 16px; }
+  .baslik { max-width: 1280px; margin: 0 auto 22px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; }
+  .baslik h1 { font-family: var(--marka); font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -.02em; }
+  .baslik p { margin: 0; color: var(--tahta-soluk); font-size: 14px; }
+  .izgara { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px 22px; justify-items: center; }
+  .secenek { width: 100%; max-width: 330px; display: flex; flex-direction: column; gap: 12px; }
+  .secenek header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .secenek h2 { margin: 0; font-size: 17px; font-weight: 600; }
+  .secenek h2 b { color: var(--turuncu); font-weight: 700; margin-right: 6px; }
+  .secenek p { margin: 0; font-size: 13px; color: var(--tahta-soluk); line-height: 1.45; }
+  .yeniden { font: inherit; font-size: 12px; color: var(--tahta-metin); background: transparent; border: 1px solid var(--tahta-cizgi); border-radius: 999px; padding: 5px 11px; cursor: pointer; white-space: nowrap; }
+  .yeniden:hover { border-color: var(--tahta-soluk); }
+  .yeniden:focus-visible { outline: 2px solid var(--turuncu); outline-offset: 2px; }
+
+  /* telefon */
+  .cihaz { width: 100%; aspect-ratio: 390 / 780; max-width: 100%; background: var(--zemin); border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 30px 60px -28px rgba(0,0,0,.8), inset 0 0 0 8px #16151a; }
+  .ekran { position: absolute; inset: 8px; border-radius: 33px; overflow: hidden; background: var(--zemin); font-family: var(--govde); color: var(--metin); container-type: inline-size; }
+  .ekran > * { position: absolute; }
+  .ekran img { display: block; }
+
+  /* giris adimi (ortak): marka + slogan + buton */
+  .giris { inset: auto 0 0 0; height: 46%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 0 24px; text-align: center; gap: 0; }
+  .giris .g { width: 100%; opacity: 0; transform: translate3d(0, 8px, 0) scale(.97); filter: blur(2px); }
+  .giris .marka { width: 42%; }
+  .giris h3 { font-size: 6cqw; margin: 8px 0 0; font-weight: 700; letter-spacing: -.02em; }
+  .giris h3 em { font-style: normal; color: var(--turuncu); }
+  .giris .eylem { margin-top: 22px; background: var(--turuncu); color: #fff; font-weight: 600; font-size: 4.2cqw; padding: 4cqw 7cqw; border-radius: 999px; box-shadow: 0 14px 30px -14px rgba(254,120,19,.7); }
+  .giris .ikincil { margin-top: 12px; font-size: 3.6cqw; color: var(--ikincil); }
+  .giris .ikincil b { color: var(--metin); font-weight: 600; }
+  .oynat .giris .g { animation: girisGel .32s var(--ease-out) forwards; }
+  .oynat .giris .g:nth-child(1) { animation-delay: var(--gt) } .oynat .giris .g:nth-child(2) { animation-delay: calc(var(--gt) + .06s) }
+  .oynat .giris .g:nth-child(3) { animation-delay: calc(var(--gt) + .12s) } .oynat .giris .g:nth-child(4) { animation-delay: calc(var(--gt) + .18s) }
+  @keyframes girisGel { to { opacity: 1; transform: none; filter: blur(0) } }
+  .atif { inset: auto 0 12px 0; text-align: center; font-size: 2.6cqw; color: var(--soluk); }
+
+  /* ---------- A: igne dususu ---------- */
+  .a .maskot { left: 50%; top: 24%; width: 30%; transform: translate(-50%, -140%); opacity: 0; transform-origin: 50% 97%; }
+  .oynat.a .maskot { animation: aDus 1.1s var(--ease-otur) .5s forwards, aOtur .5s var(--ease-out) 1.6s; }
+  @keyframes aDus { 0% { transform: translate(-50%, -140%); opacity: 0 } 15% { opacity: 1 } 100% { transform: translate(-50%, 0); opacity: 1 } }
+  @keyframes aOtur { 0% { transform: translate(-50%, 0) scale(1.06, .92) } 40% { transform: translate(-50%, 0) scale(.97, 1.04) } 100% { transform: translate(-50%, 0) scale(1) } }
+  .a .halka { left: 50%; top: 38.6%; width: 14%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--turuncu); transform: translate(-50%, -50%) scale(.2); opacity: 0; }
+  .oynat.a .halka { animation: aHalka 1.4s var(--ease-out) forwards; }
+  .oynat.a .halka:nth-of-type(1) { animation-delay: 1.55s } .oynat.a .halka:nth-of-type(2) { animation-delay: 1.85s } .oynat.a .halka:nth-of-type(3) { animation-delay: 2.15s }
+  @keyframes aHalka { 0% { transform: translate(-50%, -50%) scale(.2); opacity: .9 } 100% { transform: translate(-50%, -50%) scale(4.2); opacity: 0 } }
+  .a .nokta { left: 50%; top: 38.6%; width: 3.2%; aspect-ratio: 1; border-radius: 50%; background: var(--turuncu); transform: translate(-50%, -50%) scale(0); }
+  .oynat.a .nokta { animation: aNokta .4s var(--ease-out) 1.55s forwards; }
+  @keyframes aNokta { to { transform: translate(-50%, -50%) scale(1) } }
+  .a .giris { --gt: 2.3s; }
+
+  /* ---------- B: harita cizilir ---------- */
+  .b svg.harita { inset: 0; width: 100%; height: 100%; }
+  .b .yol { fill: none; stroke: var(--cizgi); stroke-width: 1.6; stroke-dasharray: 900; stroke-dashoffset: 900; }
+  .oynat.b .yol { animation: bCiz 1.6s var(--ease-in-out) forwards; }
+  .oynat.b .yol:nth-child(2) { animation-delay: .15s } .oynat.b .yol:nth-child(3) { animation-delay: .3s } .oynat.b .yol:nth-child(4) { animation-delay: .45s } .oynat.b .yol:nth-child(5) { animation-delay: .6s }
+  @keyframes bCiz { to { stroke-dashoffset: 0 } }
+  .b .igne { width: 5.5%; aspect-ratio: 1; border-radius: 50% 50% 50% 0; background: var(--turuncu); transform: rotate(-45deg) scale(0); transform-origin: 0 100%; box-shadow: 0 6px 10px -6px rgba(23,19,15,.4); }
+  .oynat.b .igne { animation: bIgne .45s var(--ease-out) forwards; }
+  .oynat.b .igne:nth-of-type(1) { animation-delay: 1.5s } .oynat.b .igne:nth-of-type(2) { animation-delay: 1.65s } .oynat.b .igne:nth-of-type(3) { animation-delay: 1.8s } .oynat.b .igne:nth-of-type(4) { animation-delay: 1.95s } .oynat.b .igne:nth-of-type(5) { animation-delay: 2.1s }
+  @keyframes bIgne { 0% { transform: rotate(-45deg) scale(0) } 70% { transform: rotate(-45deg) scale(1.15) } 100% { transform: rotate(-45deg) scale(1) } }
+  .b .maskot { left: 50%; top: 20%; width: 32%; transform: translateX(-50%) scale(.86); opacity: 0; filter: blur(3px); transform-origin: 50% 97%; }
+  .oynat.b .maskot { animation: bMaskot .5s var(--ease-out) 2.4s forwards; }
+  @keyframes bMaskot { to { opacity: 1; transform: translateX(-50%) scale(1); filter: blur(0) } }
+  .b .giris { --gt: 2.9s; }
+
+  /* ---------- C: harf harf ---------- */
+  .c .harfler { left: 0; right: 0; top: 33%; display: flex; justify-content: center; gap: 0; font-family: var(--marka); font-weight: 800; font-size: 17cqw; letter-spacing: -.045em; color: var(--metin); line-height: 1; }
+  .c .harfler span { display: inline-block; opacity: 0; transform: translate3d(0, 10px, 0) scale(.96); filter: blur(3px); }
+  .oynat.c .harfler span { animation: cHarf .42s var(--ease-out) forwards; }
+  .oynat.c .harfler span:nth-child(1) { animation-delay: .4s } .oynat.c .harfler span:nth-child(2) { animation-delay: .48s } .oynat.c .harfler span:nth-child(3) { animation-delay: .56s }
+  .oynat.c .harfler span:nth-child(4) { animation-delay: .64s } .oynat.c .harfler span:nth-child(5) { animation-delay: .72s } .oynat.c .harfler span:nth-child(6) { animation-delay: .8s }
+  @keyframes cHarf { to { opacity: 1; transform: none; filter: blur(0) } }
+  .c .harfler .yuva { position: relative; }
+  /* maskot son "o"nun arkasindan kafasini uzatir */
+  .c .maskot { width: 26%; left: 50%; top: 33%; transform: translate(6%, 40%) rotate(8deg); opacity: 0; transform-origin: 50% 100%; }
+  .oynat.c .maskot { animation: cKafa .6s var(--ease-out) 1.35s forwards; }
+  @keyframes cKafa { 0% { opacity: 0; transform: translate(6%, 40%) rotate(8deg) } 100% { opacity: 1; transform: translate(6%, -78%) rotate(-6deg) } }
+  .c .giris { --gt: 2.1s; height: 40%; }
+  .c .giris .marka { display: none; }
+
+  /* ---------- D: radar ---------- */
+  .d .maskot { left: 50%; top: 24%; width: 28%; transform: translateX(-50%) scale(.9); opacity: 0; transform-origin: 50% 97%; }
+  .oynat.d .maskot { animation: dMaskot .5s var(--ease-out) .3s forwards; }
+  @keyframes dMaskot { to { opacity: 1; transform: translateX(-50%) scale(1) } }
+  .d .nabiz { left: 50%; top: 32%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: var(--turuncu); opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+  .oynat.d .nabiz { animation: dNabiz 2.2s var(--ease-out) 2; }
+  .oynat.d .nabiz:nth-of-type(2) { animation-delay: .7s } .oynat.d .nabiz:nth-of-type(3) { animation-delay: 1.4s }
+  @keyframes dNabiz { 0% { transform: translate(-50%, -50%) scale(.3); opacity: .18 } 100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0 } }
+  .d .kisi { width: 12%; aspect-ratio: 1; border-radius: 50%; background: var(--seftali-koyu); color: #B5520C; font-weight: 700; font-size: 4cqw; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 8px 16px -10px rgba(23,19,15,.45); opacity: 0; transform: scale(.6); }
+  .oynat.d .kisi { animation: dKisi .45s var(--ease-out) forwards; }
+  .oynat.d .kisi:nth-of-type(1) { animation-delay: 1.3s } .oynat.d .kisi:nth-of-type(2) { animation-delay: 1.55s } .oynat.d .kisi:nth-of-type(3) { animation-delay: 1.8s } .oynat.d .kisi:nth-of-type(4) { animation-delay: 2.05s }
+  @keyframes dKisi { 0% { opacity: 0; transform: scale(.6) } 70% { transform: scale(1.08) } 100% { opacity: 1; transform: scale(1) } }
+  .d svg.baglar { inset: 0; width: 100%; height: 100%; }
+  .d .bag { fill: none; stroke: var(--turuncu); stroke-width: 1.6; stroke-dasharray: 8 6; stroke-dashoffset: 300; opacity: 0; }
+  .oynat.d .bag { animation: dBag .6s var(--ease-out) forwards; }
+  .oynat.d .bag:nth-child(1) { animation-delay: 1.45s } .oynat.d .bag:nth-child(2) { animation-delay: 1.7s } .oynat.d .bag:nth-child(3) { animation-delay: 1.95s } .oynat.d .bag:nth-child(4) { animation-delay: 2.2s }
+  @keyframes dBag { 0% { opacity: 0; stroke-dashoffset: 300 } 20% { opacity: 1 } 100% { opacity: 1; stroke-dashoffset: 0 } }
+  .d .giris { --gt: 2.6s; }
+
+  /* ---------- E: turuncu perde ---------- */
+  .e .perde { inset: 0; background: var(--turuncu); z-index: 3; display: flex; align-items: center; justify-content: center; }
+  .e .perde img { width: 22%; border-radius: 22%; box-shadow: 0 20px 40px -20px rgba(0,0,0,.5); opacity: 0; transform: scale(.94); }
+  .oynat.e .perde img { animation: eLogo .7s var(--ease-out) .2s forwards; }
+  @keyframes eLogo { to { opacity: 1; transform: scale(1) } }
+  .oynat.e .perde { animation: ePerde .8s var(--ease-in-out) 1.5s forwards; }
+  @keyframes ePerde { to { transform: translateY(-100%) } }
+  /* yuruyen maskot: soldan gelir, ortada durur, one doner, el sallar */
+  .e .yurur { left: 0; top: 24%; width: 30%; aspect-ratio: 1; transform: translateX(-120%); transform-origin: 50% 97%; }
+  .oynat.e .yurur { animation: eYuru 1.6s var(--ease-in-out) 1.9s forwards; }
+  @keyframes eYuru { 0% { transform: translateX(-120%) } 100% { transform: translateX(calc(50cqw - 50%)) } }
+  .e .yurur img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .e .yurur .arka { position: absolute; inset: 0; transform-origin: 50% 97%; }
+  .oynat.e .yurur .arka { animation: eZip .32s ease-in-out 1.9s 5 alternate, eDon .5s var(--ease-in-out) 3.55s forwards; }
+  @keyframes eZip { from { transform: translateY(0) } to { transform: translateY(-2.5%) } }
+  @keyframes eDon { 0% { transform: scaleX(1) } 49% { transform: scaleX(0.02) } 50% { opacity: 0 } 100% { transform: scaleX(0.02); opacity: 0 } }
+  .e .yurur .on { position: absolute; inset: 0; opacity: 0; transform: scaleX(.02); }
+  .oynat.e .yurur .on { animation: eOn .5s var(--ease-out) 3.8s forwards; }
+  @keyframes eOn { 0% { opacity: 0; transform: scaleX(.02) } 30% { opacity: 1 } 100% { opacity: 1; transform: scaleX(1) } }
+  .e .kolSol { transform-origin: 15.9% 51.1%; } .e .kolSag { transform-origin: 83.9% 51.1%; }
+  .oynat.e .kolSol { animation: eKol .32s ease-in-out 1.9s 5 alternate; }
+  .oynat.e .kolSag { animation: eKol .32s ease-in-out 2.06s 5 alternate-reverse; }
+  @keyframes eKol { from { transform: rotate(-4deg) } to { transform: rotate(12deg) } }
+  .e .giris { --gt: 4.2s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .oynat * { animation-duration: .25s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+
+<div class="baslik">
+  <h1>Slooin açılış seçenekleri</h1>
+  <p>Beş konsept, her biri ~5 sn. Beğendiğinin harfini söyle; onu tam prototipe çeviririm.</p>
+</div>
+
+<div class="izgara">
+
+  <!-- A -->
+  <section class="secenek">
+    <header><h2><b>A</b>İğne düşüşü</h2><button class="yeniden" data-hedef="pa">↻ Yeniden</button></header>
+    <div class="cihaz"><div class="ekran a" id="pa">
+      <img class="maskot" src="varlik/kucuk/maskot-on.png" alt="" />
+      <div class="halka"></div><div class="halka"></div><div class="halka"></div>
+      <div class="nokta"></div>
+      <div class="giris">
+        <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="slooin" /></div>
+        <div class="g"><h3>Yakınında kim var, <em>keşfet.</em></h3></div>
+        <div class="g"><span class="eylem">Hesap oluştur →</span></div>
+        <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      </div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+    </div></div>
+    <p>Maskot yukarıdan düşer, yere oturunca hafif ezilir; konum halkaları yayılır. En kısa ve en "check-in" olan.</p>
+  </section>
+
+  <!-- B -->
+  <section class="secenek">
+    <header><h2><b>B</b>Harita çizilir</h2><button class="yeniden" data-hedef="pb">↻ Yeniden</button></header>
+    <div class="cihaz"><div class="ekran b" id="pb">
+      <svg class="harita" viewBox="0 0 390 780" aria-hidden="true">
+        <path class="yol" d="M-10 210 C 90 190, 140 260, 230 240 S 380 200, 410 230" />
+        <path class="yol" d="M60 -10 C 70 120, 30 200, 80 330 S 120 420, 90 460" />
+        <path class="yol" d="M-10 330 C 120 300, 200 360, 300 330 S 400 320, 410 300" />
+        <path class="yol" d="M300 -10 C 280 90, 330 180, 290 290 S 250 400, 320 460" />
+        <path class="yol" d="M160 -10 C 170 80, 130 150, 190 210 S 230 330, 170 460" />
+      </svg>
+      <div class="igne" style="left:16%;top:25%"></div>
+      <div class="igne" style="left:76%;top:20%"></div>
+      <div class="igne" style="left:70%;top:41%"></div>
+      <div class="igne" style="left:24%;top:46%"></div>
+      <div class="igne" style="left:48%;top:12%"></div>
+      <img class="maskot" src="varlik/kucuk/maskot-on.png" alt="" />
+      <div class="giris">
+        <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="slooin" /></div>
+        <div class="g"><h3>Yakınında kim var, <em>keşfet.</em></h3></div>
+        <div class="g"><span class="eylem">Hesap oluştur →</span></div>
+        <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      </div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+    </div></div>
+    <p>Beyaz ekranda ince yollar çizilir, mekân iğneleri sırayla belirir, maskot ortaya gelir. Uygulamanın "harita" kimliğini öne alır.</p>
+  </section>
+
+  <!-- C -->
+  <section class="secenek">
+    <header><h2><b>C</b>Harf harf</h2><button class="yeniden" data-hedef="pc">↻ Yeniden</button></header>
+    <div class="cihaz"><div class="ekran c" id="pc">
+      <img class="maskot" src="varlik/kucuk/maskot-on.png" alt="" />
+      <div class="harfler"><span>s</span><span>l</span><span>o</span><span>o</span><span>i</span><span>n</span></div>
+      <div class="giris">
+        <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="slooin" /></div>
+        <div class="g"><h3>Yakınında kim var, <em>keşfet.</em></h3></div>
+        <div class="g"><span class="eylem">Hesap oluştur →</span></div>
+        <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      </div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+    </div></div>
+    <p>Marka adı harf harf netleşir; maskot son harflerin arkasından kafasını uzatır. Tipografi odaklı, en sakin olan.</p>
+  </section>
+
+  <!-- D -->
+  <section class="secenek">
+    <header><h2><b>D</b>Radar</h2><button class="yeniden" data-hedef="pd">↻ Yeniden</button></header>
+    <div class="cihaz"><div class="ekran d" id="pd">
+      <div class="nabiz"></div><div class="nabiz"></div><div class="nabiz"></div>
+      <svg class="baglar" viewBox="0 0 390 780" aria-hidden="true">
+        <path class="bag" d="M195 250 L 80 250" /><path class="bag" d="M195 250 L 304 265" /><path class="bag" d="M195 250 L 94 468" /><path class="bag" d="M195 250 L 300 452" />
+      </svg>
+      <img class="maskot" src="varlik/kucuk/maskot-on.png" alt="" />
+      <div class="kisi" style="left:14.5%;top:26%">EY</div>
+      <div class="kisi" style="left:72%;top:28%">MK</div>
+      <div class="kisi" style="left:18%;top:54%">AS</div>
+      <div class="kisi" style="left:71%;top:52%">DK</div>
+      <div class="giris">
+        <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="slooin" /></div>
+        <div class="g"><h3>Aynı yerde, <em>aynı anda.</em></h3></div>
+        <div class="g"><span class="eylem">Hesap oluştur →</span></div>
+        <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      </div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+    </div></div>
+    <p>Maskottan nabız gibi halkalar yayılır, yakındaki kişiler belirip maskota bağlanır. "Yakınındakilerle tanış" fikrini doğrudan anlatır.</p>
+  </section>
+
+  <!-- E -->
+  <section class="secenek">
+    <header><h2><b>E</b>Turuncu perde</h2><button class="yeniden" data-hedef="pe">↻ Yeniden</button></header>
+    <div class="cihaz"><div class="ekran e" id="pe">
+      <div class="yurur">
+        <div class="arka">
+          <img class="kolSol" src="varlik/kucuk/maskot-arka-kol-sol.png" alt="" />
+          <img class="kolSag" src="varlik/kucuk/maskot-arka-kol-sag.png" alt="" />
+          <img src="varlik/kucuk/maskot-arka-govde.png" alt="" />
+        </div>
+        <img class="on" src="varlik/kucuk/maskot-on.png" alt="" />
+      </div>
+      <div class="giris">
+        <div class="g"><img class="marka" src="varlik/marka-yazisi-koyu.png" alt="slooin" /></div>
+        <div class="g"><h3>Yakınında kim var, <em>keşfet.</em></h3></div>
+        <div class="g"><span class="eylem">Hesap oluştur →</span></div>
+        <div class="g ikincil">Hesabın var mı? <b>Giriş yap</b></div>
+      </div>
+      <div class="atif">Harita verisi © OpenStreetMap katkıcıları</div>
+      <div class="perde"><img src="varlik/icon-192.png" alt="Slooin" /></div>
+    </div></div>
+    <p>Tam turuncu açılış ve S logosu; perde yukarı kalkar, maskot yürüyerek gelir, ortada durup bize döner ve el sallar. En markalı, en uzun olan.</p>
+  </section>
+
+</div>
+
+<script>
+  function oynat(el) { el.classList.remove('oynat'); void el.offsetWidth; el.classList.add('oynat') }
+  document.querySelectorAll('.yeniden').forEach(b => b.addEventListener('click', () => oynat(document.getElementById(b.dataset.hedef))))
+  // ilk oynatma: gorunen telefonlar kademeli baslar
+  const ekranlar = [...document.querySelectorAll('.ekran')]
+  const gozcu = new IntersectionObserver((girdiler) => { girdiler.forEach((g, i) => { if (g.isIntersecting && !g.target.classList.contains('oynat')) setTimeout(() => oynat(g.target), 200 + i * 250) }) }, { threshold: .4 })
+  ekranlar.forEach(e => gozcu.observe(e))
+  // gorunmeden once bile son durum okunabilsin diye: 8 sn sonra hala oynamamis olan varsa oynat
+  setTimeout(() => ekranlar.forEach(e => { if (!e.classList.contains('oynat')) oynat(e) }), 8000)
+</script>
