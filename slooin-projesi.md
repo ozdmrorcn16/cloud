@@ -363,6 +363,15 @@ kirilabildigi bulundu (150+150 bekleyen istek -> ekran hata verirdi);
 `profilOzetleriniGetir` artik 200'luk dilimlere bolup paralel soruyor.
 test:gorunurluk 453 dogrulama ve test:sema yesil, jest 95 / 1229.
 
+**Ek (OTA `c6b5d227`):** kullanicinin bildirimi "hikayelerdeki dolma
+ibaresi beyaz bir fotografta hic gorunmuyor" - hikaye izleyicisinde
+ilerleme cubugu, kimlik satiri ve alt eylemler acik renkli fotografta
+kayboluyordu. Instagram deseni: ust ve alt koyu gradyan (fotografin
+kendisi karartilmiyor), cubugun bos kismi koyu. Olculdu: dolu/bos
+parlaklik farki 18 -> 190. Yeni arac
+`araclar/hikaye-ekran-goruntusu.mjs` (hikaye ekrani genel arac ile
+cekilemiyor: fotograf imzali adresten geliyor, ileri dokunmak gerekiyor).
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS

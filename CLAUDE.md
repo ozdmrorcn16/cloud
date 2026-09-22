@@ -1149,6 +1149,44 @@ gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
 `slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
+### HIKAYEDE OKUNURLUK: ACIK FOTOGRAFTA GRADYAN - 2026-09-22
+
+Kullanicinin bildirimi (iki ekran goruntusuyle): "hikayelerdeki dolma
+ibaresi beyaz bir fotografta hic gorunmuyor." Ilerleme cubugu, kimlik
+satiri, ucnokta/kapat ve alttaki yanit kutusu BEYAZ; acik renkli bir
+fotografta (tipik ornek: bir ekran goruntusu paylasmak) hepsi
+kayboluyordu.
+
+COZUM (Instagram deseni): icerigin ARKASINA usttan ve alttan koyu
+gradyan (`expo-linear-gradient` - 2026-09-03'ten beri bagimliliklarda
+ve native derlemede, OTA ile gitti). Fotografin KENDISI karartilmiyor;
+gradyan yalnizca kenarlarda, saydamdan koyuya. `pointerEvents="none"`:
+sag/sol dokunus ve dikey surukleme gradyana takilmiyor. Ayrica ilerleme
+cubugunun BOS kismi beyaz yerine koyu (`rgba(0,0,0,0.45)`) - dolu ve
+bos arasindaki fark gradyan ustunde de net.
+
+OLCULDU (gozle "duzeldi" denmedi): `araclar/hikaye-ekran-goruntusu.mjs`
+(yeni; genel ekran goruntusu araci bu ekranda yetmiyor - hikaye
+fotografi imzali adresten indigi icin sayfa bos cizilirken cekiliyor ve
+istenen kare cogu zaman ilk hikaye degil, ileri dokunmak gerekiyor).
+Kullanicinin sikayet ettigi GERCEK hikaye uzerinde, cubugun DOLU ve BOS
+kismi arasindaki parlaklik farki:
+
+    ONCESI   dolu 255 / bos 237  ->  fark  18   (gozle ayirt edilemez)
+    SONRASI  dolu 239 / bos  49  ->  fark 190   (on kat)
+
+Goruntuler `tasarim/hikaye-beyaz-oncesi.png`, `-sonrasi.png`,
+`-karsilastirma.png`. Olcum icin gecici beyaz hikaye kuran betik:
+`araclar/hikaye-beyaz-olcum.py` (`ekle` / `sil`; kendi actigi hikayeyi
+ve kova dosyasini siliyor).
+
+DERS: acik renkli KULLANICI ICERIGI uzerine beyaz arayuz konuyorsa
+kontrast icerige birakilamaz - arkaya gradyan ya da koyu zemin sart.
+Ayni sinif risk fotograf gezgininde de var (orada zemin zaten siyah,
+sorun yok).
+
+Jest 95 paket / 1229 test. OTA `c6b5d227`, web `slooin--agicpq0mxl`.
+
 ### HIKAYE AKISI (24 SAAT) - 2026-09-22
 
 Kullanicinin istegi: "ana sayfaya Instagram gibi hikaye ekleme akisi da

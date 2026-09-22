@@ -11,6 +11,7 @@ import {
   Keyboard,
 } from 'react-native'
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -33,6 +34,10 @@ import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
+
+/** Ust ve alt okunurluk gradyanlarinin guvenli alan USTUNE eklenen boyu. */
+const UST_GOLGE = 104
+const ALT_GOLGE = 132
 
 /** Dikey surukleme kapatma esikleri - FotografGezgini ile ayni. */
 const KAPATMA_MESAFESI = 120
@@ -344,6 +349,29 @@ export default function HikayeIzleEkrani() {
             </View>
           </View>
 
+          {/*
+            OKUNURLUK GOLGESI (kullanicinin bildirimi 2026-09-22:
+            "hikayelerdeki dolma ibaresi beyaz bir fotografta hic
+            gorunmuyor"). Ilerleme cubugu, kimlik satiri ve alttaki
+            eylemler BEYAZ; acik renkli bir fotografta (ornegin bir ekran
+            goruntusu) hepsi kayboluyordu. Instagram'in cozumu: icerigin
+            ARKASINA usttan ve alttan koyu gradyan. Fotografin kendisi
+            karartilmiyor - gradyan yalnizca kenarlarda ve saydamdan
+            koyuya gidiyor, ortadaki icerik dokunulmamis kaliyor.
+            `pointerEvents="none"`: sag/sol dokunus ve surukleme gradyana
+            takilmamali.
+          */}
+          <LinearGradient
+            colors={['rgba(0,0,0,0.70)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0)']}
+            style={[stiller.ustGolge, { height: guvenliAlan.top + UST_GOLGE }]}
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0.70)']}
+            style={[stiller.altGolge, { height: guvenliAlan.bottom + ALT_GOLGE }]}
+            pointerEvents="none"
+          />
+
           {/* Ust: ilerleme cubuklari + kimlik */}
           <View style={[stiller.ust, { paddingTop: guvenliAlan.top + bosluk.s }]} pointerEvents="box-none">
             <View style={stiller.cubuklar} testID="hikaye-ilerleme">
@@ -492,9 +520,13 @@ const stilleriYap = (renk: Renk) =>
     dokunmaSatiri: { flex: 1, flexDirection: 'row' },
     solBolge: { flex: 1 },
     sagBolge: { flex: 2 },
+    ustGolge: { position: 'absolute', left: 0, right: 0, top: 0 },
+    altGolge: { position: 'absolute', left: 0, right: 0, bottom: 0 },
     ust: { position: 'absolute', left: 0, right: 0, top: 0, paddingHorizontal: bosluk.m, gap: bosluk.s },
     cubuklar: { flexDirection: 'row', gap: 4 },
-    cubukZemin: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.35)', overflow: 'hidden' },
+    // Zemin KOYU (beyaz degil): dolu kisim beyaz, bos kisim koyu -
+    // ikisi arasindaki fark gradyanin ustunde de net kaliyor.
+    cubukZemin: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.45)', overflow: 'hidden' },
     cubukDolu: { height: 3, backgroundColor: '#FFFFFF' },
     kimlikSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     kimlik: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
