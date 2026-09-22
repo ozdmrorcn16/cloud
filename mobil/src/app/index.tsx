@@ -18,7 +18,11 @@ import {
 import { gorecelZaman } from '../../lib/zaman'
 import { SuAnDisarida } from '../tasarim/SuAnDisarida'
 import { HikayeSeridi } from '../tasarim/HikayeSeridi'
-import { hikayeSeridiVerisiniGetir, type HikayeSeridiVerisi } from '../../lib/hikaye'
+import {
+  hikayeSeridiVerisiniGetir,
+  seritOnbelleginiOku,
+  type HikayeSeridiVerisi,
+} from '../../lib/hikaye'
 import { ANAHTAR, onbellekOku, onbellekYaz } from '../../lib/onbellek'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, golge, type Renk } from '../tasarim/tema'
@@ -81,7 +85,7 @@ export default function AnaSayfa() {
   // HIKAYE SERIDI (2026-09-22): akistan ayri istek; okunamazsa akis yine
   // cizilir, yalnizca kendi dairem (ekleme yolu) kalir.
   const [hikayeler, setHikayeler] = useState<HikayeSeridiVerisi>(
-    () => onbellekOku<HikayeSeridiVerisi>(ANAHTAR.hikayeSeridi) ?? { gruplar: [], ben: null }
+    () => seritOnbelleginiOku() ?? { gruplar: [], ben: null }
   )
   // SAYFALAMA. Akis eskiden yalnizca en yeni sayfayi cekiyordu ve
   // devami hic yuklenmiyordu; sayfa boyunu asan eski paylasimlar ana
@@ -123,10 +127,10 @@ export default function AnaSayfa() {
       setYukleniyor(false)
     }
     const hikayeVerisi = await hikayeSozu
-    if (hikayeVerisi) {
-      setHikayeler(hikayeVerisi)
-      onbellekYaz(ANAHTAR.hikayeSeridi, hikayeVerisi)
-    }
+    // Onbellege YAZMAYI `hikayeSeridiVerisiniGetir` yapiyor (2026-09-22):
+    // hikaye eklenip silindiginde ayni yer onbellegi dusurebilsin diye
+    // yazma ve dusurme tek dosyada toplandi.
+    if (hikayeVerisi) setHikayeler(hikayeVerisi)
   }
 
   // Ekran her odaklandiginda tazeleniyor: kullanici check-in yapip geri

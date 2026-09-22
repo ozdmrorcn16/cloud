@@ -6,6 +6,8 @@ import {
   hikayeGruplariniSirala,
   hikayeyeYanitVer,
   hikayeSeridiVerisiniGetir,
+  seritOnbelleginiOku,
+  SERIT_ONBELLEK_OMRU_MS,
   type HikayeGrubu,
 } from './hikaye'
 import { supabase } from './supabase'
@@ -225,5 +227,49 @@ describe('hikaye fotograf adresleri - imza onbellegi', () => {
 
     expect(ikinci[0].hikayeler[0].fotografUrl).toBe(ilk[0].hikayeler[0].fotografUrl)
     expect(createSignedUrls).toHaveBeenCalledTimes(imzaSayisi)
+  })
+})
+
+/**
+ * BAYAT SERIT ONBELLEGI (kullanicinin bildirimi 2026-09-22: "burda iki
+ * hikaye var bir tane varmis gibi cubuk ilerliyor, ustte ikinci
+ * sonradan beliriyor"). Izleyici seridin onbellegiyle aninda aciliyor;
+ * hikaye eklendiginde/silindiginde o onbellek DUSMEZSE ekran bir
+ * hikaye eksik acilir ve cubuk sayisi sonradan degisir.
+ */
+describe('serit onbellegi', () => {
+  it('hikaye EKLENINCE onbellek dusuyor', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [satir({ kullanici_id: 'ben' })], error: null })
+    await hikayeSeridiVerisiniGetir()
+    expect(seritOnbelleginiOku()).not.toBeNull()
+
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: { id: 'h-yeni' }, error: null })
+    await hikayeEkle('file:///a.jpg', null, null)
+
+    expect(seritOnbelleginiOku()).toBeNull()
+  })
+
+  it('hikaye SILININCE onbellek dusuyor', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [satir({ kullanici_id: 'ben' })], error: null })
+    await hikayeSeridiVerisiniGetir()
+    expect(seritOnbelleginiOku()).not.toBeNull()
+
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: 'ben/1.jpg', error: null })
+    await hikayeSil('h1')
+
+    expect(seritOnbelleginiOku()).toBeNull()
+  })
+
+  it('YASLI onbellek okunmuyor', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [satir({ kullanici_id: 'ben' })], error: null })
+    await hikayeSeridiVerisiniGetir()
+
+    const gercek = Date.now
+    Date.now = () => gercek() + SERIT_ONBELLEK_OMRU_MS + 1000
+    try {
+      expect(seritOnbelleginiOku()).toBeNull()
+    } finally {
+      Date.now = gercek
+    }
   })
 })

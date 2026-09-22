@@ -24,9 +24,8 @@ import {
   hikayeyeYanitVer,
   HIKAYE_SURESI_MS,
   type HikayeGrubu,
-  type HikayeSeridiVerisi,
+  seritOnbelleginiOku,
 } from '../../../lib/hikaye'
-import { ANAHTAR, onbellekOku } from '../../../lib/onbellek'
 import { gorecelZaman } from '../../../lib/zaman'
 import { useHareket } from '../../tasarim/hareket'
 import { Avatar } from '../../tasarim/Avatar'
@@ -120,7 +119,7 @@ export default function HikayeIzleEkrani() {
 
   useEffect(() => {
     let gecerli = true
-    const onbellekli = onbellekOku<HikayeSeridiVerisi>(ANAHTAR.hikayeSeridi)?.gruplar
+    const onbellekli = seritOnbelleginiOku()?.gruplar
     if (onbellekli && onbellekli.length > 0) {
       setGruplar(onbellekli)
       setKonum(konumuSec(onbellekli))

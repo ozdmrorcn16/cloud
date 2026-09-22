@@ -60,7 +60,11 @@ jest.mock('../../lib/etkilesim', () => ({
 
 const mockRouterPush = jest.fn()
 jest.mock('../../lib/kisi-ara', () => ({ kisiAra: jest.fn() }))
-jest.mock('../../lib/hikaye', () => ({ hikayeSeridiVerisiniGetir: jest.fn() }))
+jest.mock('../../lib/hikaye', () => ({
+  hikayeSeridiVerisiniGetir: jest.fn(),
+  // Serit onbellegi lib'de yonetiliyor (2026-09-22); ekran yalnizca okuyor.
+  seritOnbelleginiOku: jest.fn(() => null),
+}))
 
 jest.mock('../../lib/fotograf-url', () => ({
   profilFotografiUrl: jest.fn().mockResolvedValue('https://imzali/kisi.jpg'),

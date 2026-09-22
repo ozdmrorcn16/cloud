@@ -3,6 +3,7 @@ import { hataMetni } from './hata-metni'
 import { dosyayiOku } from './dosya-oku'
 import { profilOzetleriniGetir } from './akis'
 import { hikayeMedyasiUrlHaritasi } from './fotograf-url'
+import { ANAHTAR, onbellekOku, onbellekSil, onbellekYaz } from './onbellek'
 import { mesajGonder } from './sohbet'
 import { kimligiZorunluOku, kullaniciKimligi } from './kimlik'
 
@@ -169,6 +170,9 @@ export async function hikayeEkle(yerelUri: string, yazi: string | null, mekanId:
     await supabase.storage.from(KOVA).remove([yukleme.data.path])
     throw new Error(hataMetni(error))
   }
+  // Serit artik eski: bir sonraki okuma sunucudan gelsin, yoksa
+  // izleyici bir hikaye EKSIK aciliyor (kullanicinin bildirimi).
+  seritOnbelleginiDusur()
   return (data as { id: string }).id
 }
 
@@ -210,6 +214,7 @@ export async function hikayeSil(hikayeId: string): Promise<void> {
   if (error) throw new Error(hataMetni(error))
   const yol = data as string | null
   if (yol) await supabase.storage.from(KOVA).remove([yol])
+  seritOnbelleginiDusur()
 }
 
 /** Hikaye yanit on eki (sohbette gorunur; 7 dile cevrilmez - gonderen kendi dilinde yazar). */
@@ -223,6 +228,41 @@ export function hikayeYanitMetni(onEk: string, metin: string): string {
  */
 export async function hikayeyeYanitVer(sahipId: string, onEk: string, metin: string): Promise<string> {
   return mesajGonder(sahipId, hikayeYanitMetni(onEk, metin))
+}
+
+/**
+ * SERIT ONBELLEGI BURADA YONETILIYOR (2026-09-22).
+ *
+ * Kullanicinin bildirimi: "burda iki hikaye var bir tane varmis gibi
+ * cubuk ilerliyor, ustte ikinci sonradan beliriyor." Sebep BAYAT
+ * ONBELLEK: izleyici seridin onbellegiyle aninda aciliyor ama hikaye
+ * eklendiginde/silindiginde o onbellek dusurulmuyordu. Ekran bir
+ * hikayelik eski veriyle acilip taze veri gelince cubuk sayisi
+ * degisiyordu.
+ *
+ * Artik yazma da dusurme de bu dosyada: `hikayeEkle` / `hikayeSil`
+ * onbellegi dusuruyor ve bir sonraki okuma sunucudan geliyor. Ayrica
+ * YASLI onbellek hic kullanilmiyor (uygulama acik unutulmus olabilir).
+ */
+export const SERIT_ONBELLEK_OMRU_MS = 90 * 1000
+
+type SeritOnbellegi = { veri: HikayeSeridiVerisi; zaman: number }
+
+/** Seritin son okunan hali; yasli ya da yoksa null. */
+export function seritOnbelleginiOku(): HikayeSeridiVerisi | null {
+  const kayit = onbellekOku<SeritOnbellegi>(ANAHTAR.hikayeSeridi)
+  if (!kayit) return null
+  if (Date.now() - kayit.zaman > SERIT_ONBELLEK_OMRU_MS) return null
+  return kayit.veri
+}
+
+function seritOnbellegineYaz(veri: HikayeSeridiVerisi) {
+  onbellekYaz<SeritOnbellegi>(ANAHTAR.hikayeSeridi, { veri, zaman: Date.now() })
+}
+
+/** Hikaye eklendi/silindi: bir sonraki okuma sunucudan gelsin. */
+export function seritOnbelleginiDusur() {
+  onbellekSil(ANAHTAR.hikayeSeridi)
 }
 
 export type HikayeSeridiVerisi = {
@@ -240,13 +280,19 @@ export async function hikayeSeridiVerisiniGetir(): Promise<HikayeSeridiVerisi> {
   const gruplar = await hikayeAkisiniGetir()
   const benimGrubum = gruplar.find((g) => g.benimMi)
   if (benimGrubum) {
-    return {
+    const veri: HikayeSeridiVerisi = {
       gruplar,
       ben: { id: benimGrubum.kullaniciId, ad: benimGrubum.ad, kullaniciAdi: benimGrubum.kullaniciAdi, avatarUrl: benimGrubum.avatarUrl },
     }
+    seritOnbellegineYaz(veri)
+    return veri
   }
   const uid = await kullaniciKimligi()
-  if (!uid) return { gruplar, ben: null }
-  const ozet = (await profilOzetleriniGetir([uid]))[uid]
-  return { gruplar, ben: ozet ? { id: uid, ad: ozet.ad, kullaniciAdi: ozet.rumuz, avatarUrl: ozet.avatarUrl } : null }
+  const ozet = uid ? (await profilOzetleriniGetir([uid]))[uid] : undefined
+  const veri: HikayeSeridiVerisi = {
+    gruplar,
+    ben: uid && ozet ? { id: uid, ad: ozet.ad, kullaniciAdi: ozet.rumuz, avatarUrl: ozet.avatarUrl } : null,
+  }
+  seritOnbellegineYaz(veri)
+  return veri
 }

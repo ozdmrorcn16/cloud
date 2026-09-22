@@ -1149,6 +1149,30 @@ gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
 `slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
+### BAYAT SERIT ONBELLEGI: CUBUK SAYISI SONRADAN DEGISIYORDU - 2026-09-22
+
+Kullanicinin bildirimi (ekran goruntusuyle): "burda iki hikaye var bir
+tane varmis gibi cubuk ilerliyor, ustte ikinci sonradan beliriyor."
+
+KOK NEDEN: izleyici seridin onbellegiyle ANINDA aciliyor (09-22 gecis
+turu), ama hikaye EKLENDIGINDE/SILINDIGINDE o onbellek dusurulmuyordu.
+Kullanici hikaye ekleyip hemen seride dokununca ana sayfanin tazelemesi
+daha bitmemis oluyor, izleyici BIR HIKAYELIK eski veriyle aciliyor ve
+taze veri gelince cubuk ikiye bolunuyordu.
+
+COZUM - onbellek yonetimi tek dosyada (`lib/hikaye.ts`):
+- `hikayeSeridiVerisiniGetir` onbellege KENDISI yaziyor (once ana sayfa
+  yaziyordu), yani yazan ve dusuren ayni yerde.
+- `hikayeEkle` ve `hikayeSil` bittiginde `seritOnbelleginiDusur()`.
+- Onbellek YAS damgasiyla tutuluyor; `SERIT_ONBELLEK_OMRU_MS` (90 sn)
+  gecmisse `seritOnbelleginiOku()` null doner ve ekran sunucuyu bekler -
+  uygulamayi acik unutup geri donen kullanici bayat veri gormez.
+DERS: "once eldekini goster" deseni, o veriyi DEGISTIREN her yolun
+onbellegi dusurmesiyle birlikte yazilmali; yoksa kazanc bayat ekrana
+donuser.
+
+Jest 95 paket / 1245 test.
+
 ### HIKAYE: YANIT KUTUSU KALKTI, IMZA ONBELLEGI, DOSYA BOYUTU - 2026-09-22
 
 Kullanicinin istegi: "koydugun yanit yazi kaldir birde hala biraz

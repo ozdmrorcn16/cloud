@@ -11,6 +11,7 @@ import {
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
   hikayeyeYanitVer,
+  SERIT_ONBELLEK_OMRU_MS,
   type HikayeGrubu,
 } from '../../../lib/hikaye'
 
@@ -358,12 +359,29 @@ describe('HikayeIzleEkrani', () => {
   })
 
   it('ONBELLEKTEN ACILIS: serit verisi eldeyse ag beklenmeden kare cizilir', async () => {
-    onbellekYaz(ANAHTAR.hikayeSeridi, { gruplar: gruplar(), ben: null })
+    // Onbellek YAS damgasiyla yaziliyor (2026-09-22): bayat veriyle
+    // acilip cubuk sayisinin sonradan degismesi boyle onleniyor.
+    onbellekYaz(ANAHTAR.hikayeSeridi, { veri: { gruplar: gruplar(), ben: null }, zaman: Date.now() })
     // Ag CEVAP VERMIYOR.
     ;(hikayeAkisiniGetir as jest.Mock).mockReturnValue(new Promise(() => {}))
 
     await render(<HikayeIzleEkrani />)
 
     expect(screen.getByTestId('hikaye-fotograf-a2')).toBeTruthy()
+  })
+
+  it('YASLI onbellek KULLANILMIYOR: bayat veriyle acilip cubuk sayisi degismesin', async () => {
+    // Kullanicinin bildirimi: "iki hikaye var bir tane varmis gibi cubuk
+    // ilerliyor, ustte ikinci sonradan beliriyor."
+    onbellekYaz(ANAHTAR.hikayeSeridi, {
+      veri: { gruplar: gruplar(), ben: null },
+      zaman: Date.now() - (SERIT_ONBELLEK_OMRU_MS + 1000),
+    })
+    ;(hikayeAkisiniGetir as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await render(<HikayeIzleEkrani />)
+
+    // Bayat veri cizilmedi; ekran sunucuyu bekliyor.
+    expect(screen.queryByTestId('hikaye-fotograf-a2')).toBeNull()
   })
 })
