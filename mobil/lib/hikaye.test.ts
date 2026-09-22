@@ -1,4 +1,5 @@
 import {
+  konumuDuzelt,
   hikayeAkisiniGetir,
   hikayeEkle,
   hikayeSil,
@@ -131,6 +132,8 @@ describe('hikayeGruplariniSirala', () => {
         bitis: zaman,
         gordum: !gorulmemisVar,
         goruntulenmeSayisi: 0,
+    gorunurluk: 'arkadaslar' as const,
+    yerlesim: null,
       },
     ],
   })
@@ -160,6 +163,8 @@ describe('hikayeEkle', () => {
       p_mekan_id: 'mekan-1',
       p_ifade: null,
       p_etiketler: null,
+      p_gorunurluk: 'arkadaslar',
+      p_yerlesim: null,
     })
 
     await hikayeEkle('file:///a.jpg', '   ', null)
@@ -169,6 +174,8 @@ describe('hikayeEkle', () => {
       p_mekan_id: null,
       p_ifade: null,
       p_etiketler: null,
+      p_gorunurluk: 'arkadaslar',
+      p_yerlesim: null,
     })
   })
 
@@ -183,6 +190,8 @@ describe('hikayeEkle', () => {
       p_mekan_id: 'mekan-1',
       p_ifade: 'kahve-keyfi',
       p_etiketler: ['k1', 'k2'],
+      p_gorunurluk: 'arkadaslar',
+      p_yerlesim: null,
     })
   })
 
@@ -301,5 +310,23 @@ describe('serit onbellegi', () => {
     } finally {
       Date.now = gercek
     }
+  })
+})
+
+/**
+ * Sunucudan gelen yerlesim istemcide TEMIZLENIYOR (2026-09-22): eski
+ * surumden kalan, elle yazilmis ya da bozuk bir deger ekrani kirmamali.
+ */
+describe('konumuDuzelt', () => {
+  const varsayilan = { x: 0.5, y: 0.5, olcek: 1 }
+
+  it('eksik/bozuk degeri varsayilana dusurur', () => {
+    expect(konumuDuzelt(null, varsayilan)).toEqual(varsayilan)
+    expect(konumuDuzelt({ x: 'a', y: null }, varsayilan)).toEqual(varsayilan)
+    expect(konumuDuzelt({ x: Number.NaN, y: 0.2, olcek: 2 }, varsayilan)).toEqual({ x: 0.5, y: 0.2, olcek: 2 })
+  })
+
+  it('ekran disini ve asiri olcegi kirpar', () => {
+    expect(konumuDuzelt({ x: 5, y: -3, olcek: 99 }, varsayilan)).toEqual({ x: 1, y: 0, olcek: 3 })
   })
 })

@@ -12,9 +12,10 @@ import { Avatar } from './Avatar'
  * gibi hikaye ekleme akisi"). Ana sayfada akisin ustunde
  * (ListHeaderComponent), "Su an disarida"nin USTUNDE.
  *
- * Ilk daire HER ZAMAN "Hikayen": hikayem yoksa kesikli halka + turuncu
- * arti (dokununca ekleme ekrani); varsa avatarim gri halkada + kucuk
- * arti rozeti (avatar izleyiciyi acar, rozet ekler). Sonra arkadaslar:
+ * Ilk daire HER ZAMAN "Hikayen": avatarim SADE bir dairede, sag altinda
+ * turuncu arti rozeti (2026-09-22 referansi - eski kesikli halka kalkti).
+ * Hikayem varsa daireye dokunmak izleyiciyi, rozet her halde ekleme
+ * ekranini aciyor. Sonra arkadaslar:
  * gorulmemis hikayesi olan TURUNCU halka, hepsi gorulmus GRI halka
  * (siralama `hikayeGruplariniSirala`: gorulmemisler once).
  *
@@ -60,7 +61,7 @@ export function HikayeSeridi({
             testID="hikaye-benim"
             style={({ pressed }) => [pressed && stiller.basili]}
           >
-            <View style={[stiller.halka, benimGrubum ? stiller.halkaGri : stiller.halkaKesikli]}>
+            <View style={[stiller.halka, stiller.halkaSade]}>
               {ben ? (
                 <Avatar fotografUrl={ben.avatarUrl} ad={ben.ad} kullaniciAdi={ben.kullaniciAdi} cap={AVATAR} />
               ) : (
@@ -131,14 +132,15 @@ const stilleriYap = (renk: Renk) =>
     },
     halkaTuruncu: { borderColor: renk.turuncu },
     halkaGri: { borderColor: renk.cizgi },
-    halkaKesikli: { borderColor: renk.cizgi, borderStyle: 'dashed' },
+    /** Kendi dairem: halka yok - ayirt eden sey arti rozeti. */
+    halkaSade: { borderColor: 'transparent' },
     bosAvatar: { width: AVATAR, height: AVATAR, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncuZemin },
     artiRozeti: {
       position: 'absolute',
       right: -2,
       bottom: -2,
-      width: 22,
-      height: 22,
+      width: 24,
+      height: 24,
       borderRadius: yuvarlak.hap,
       backgroundColor: renk.turuncu,
       borderWidth: 2,

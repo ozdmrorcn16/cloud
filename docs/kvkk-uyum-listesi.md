@@ -781,9 +781,21 @@ Ana sayfada Instagram benzeri hikaye seridi. Spec
   kovadaki dosyayi, sonra satiri siler; goruntulemeler cascade. Arsiv
   yok. Kullanici istedigi an siler (`hikaye_sil` + dosya). Hesap silme
   mevcut cascade ile hikayeleri de goturur (`kullanici_id` FK).
-- Kim gorur: sahibi + karsilikli arkadaslar (`takipler` 'kabul'); engel
-  iki yonlu (`gizli.engelli_mi`); moderasyonla gizlenen KIMSEYE (sahibi
-  dahil) gorunmez. Kova SELECT ayni kuralla (hikayeler RLS uzerinden) +
+- Kim gorur (2026-09-22 GUNCELLENDI, migrasyon
+  `20260922200000_hikaye_gorunurluk.sql`): artik HIKAYE BASINA secim -
+  `gorunurluk` sutunu `arkadaslar` (varsayilan) ya da `herkese_acik`.
+  'arkadaslar': sahibi + karsilikli arkadaslar (`takipler` 'kabul').
+  'herkese_acik': giris yapmis herkes, hesabin AKTIF olmasi sartiyla
+  (askidaki/yasakli hesabin icerigi yabancilara acilmaz). Secim oldugu
+  gibi uygulanir: profil gizli olsa da "herkese" secilen hikaye herkese
+  acilir - bu sahibinin o icerik icin verdigi acik karardir ve ekranda
+  iki secenek disinda bir sey yazmaz (kullanicinin karari: "Aciklama yok
+  arkadaslar ve herkese secenegi sadece"). Engel HER IKI halde de
+  mutlak (`gizli.engelli_mi`, iki yonlu); moderasyonla gizlenen KIMSEYE
+  (sahibi dahil) gorunmez. ANA SAYFA SERIDI yabanciya acilmaz: serit
+  yalnizca kendim + arkadaslarim (`hikaye_akisi` p_kullanici null dali);
+  "herkese acik" bir hikaye ancak o kisinin uzerinden acilir - yani
+  gorunurluk bir KESIF akisi yaratmiyor. Kova SELECT ayni kuralla (hikayeler RLS uzerinden) +
   moderator. Goruntuleyen listesi YALNIZCA sahibine (`hikaye_goruntuleyenler`
   baskasina bos doner). Kendi hikayeni izlemek kayit uretmez.
 - Moderasyon: sikayet hedefi 'hikaye' (yalnizca goren sikayet edebilir,
@@ -793,8 +805,14 @@ Ana sayfada Instagram benzeri hikaye seridi. Spec
 - Disa aktarim: `verilerimi_disa_aktar` -> `hikayelerim` +
   `hikaye_goruntulemelerim` (kendi hikayelerimi kimin gordugu; kimi
   izledigim baskasinin verisi sayildi, DAHIL DEGIL).
-- Aydinlatma: gizlilik metni 1. madde "Hikayelerin" + 6. madde saklama
-  satiri, 7 dil + `docs/gizlilik-metni.md`.
+- Etiket yerlesimi (2026-09-22, migrasyon `20260922210000`): yazi,
+  ifade, mekan ve arkadas etiketlerinin fotograf uzerindeki yeri
+  `yerlesim` jsonb'sinde ORANSAL saklanir (x,y 0..1 + olcek). Kisisel
+  veri degil, bicim verisi; sunucu icerigi yorumlamaz, yalnizca tipini
+  ve 4 KB sinirini dogrular. Hikaye silinince onunla gider.
+- Aydinlatma: gizlilik metni 1. madde "Hikayelerin" (gorunurluk secimi
+  2026-09-22'de eklendi) + 6. madde saklama satiri, 7 dil +
+  `docs/gizlilik-metni.md`.
 - Canli olcum: `araclar/hikaye-canli-test.py` 20/20 (arkadas gorur /
   yabanci gormez, kova imzasi, goruntuleme sayaci ve listesi, 10 siniri,
   sikayet kurallari, moderasyon gizleme, disa aktarim, silme -> dosya

@@ -593,6 +593,11 @@ export default {
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
     notEkle: 'ملاحظة',
+    mekanEkle: 'المكان',
+    etiketle: 'إشارة',
+    gorunurlukSec: 'من يمكنه رؤيتها',
+    arkadaslar: 'الأصدقاء',
+    herkese: 'الجميع',
     ifadeEkle: 'تعبير',
     arkadasEkle: 'صديق',
     etiketKaldir: 'إزالة وسم {{ad}}',

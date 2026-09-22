@@ -24,6 +24,48 @@ export const HIKAYE_SURESI_MS = 5000
 
 export type HikayeEtiketi = { kullaniciId: string; kullaniciAdi: string }
 
+/**
+ * Hikaye basina gorunurluk (kullanicinin karari, 2026-09-22):
+ * `arkadaslar` varsayilan, `herkese_acik` ise profil gizli olsa da
+ * herkese acilir - secim o icerik icin verilmis acik bir karardir.
+ * Engel her iki halde de mutlak (sunucu).
+ */
+export type HikayeGorunurlugu = 'arkadaslar' | 'herkese_acik'
+export const HIKAYE_GORUNURLUKLERI: HikayeGorunurlugu[] = ['arkadaslar', 'herkese_acik']
+
+/**
+ * Bir etiketin fotograf uzerindeki yeri. x/y ORANSAL (0..1, ogenin
+ * MERKEZI), olcek 1 = varsayilan boy. Oransal olmasi sart: hikayeyi
+ * baska boyda bir telefon aciyor ve etiket ayni yerde durmali.
+ */
+export type HikayeKonum = { x: number; y: number; olcek: number }
+export type HikayeYerlesimi = {
+  yazi?: HikayeKonum
+  ifade?: HikayeKonum
+  mekan?: HikayeKonum
+  /** Arkadas etiketleri kullanici kimligine gore. */
+  etiketler?: Record<string, HikayeKonum>
+}
+
+export const VARSAYILAN_KONUM: Record<'yazi' | 'ifade' | 'mekan', HikayeKonum> = {
+  yazi: { x: 0.5, y: 0.66, olcek: 1 },
+  mekan: { x: 0.5, y: 0.76, olcek: 1 },
+  ifade: { x: 0.5, y: 0.4, olcek: 1 },
+}
+
+/** Sunucudan gelen yerlesim cizilmeden once temizlenir: bozuk/eksik
+ *  deger varsayilana duser, konumlar ekranin disina tasamaz. */
+export function konumuDuzelt(konum: unknown, varsayilan: HikayeKonum): HikayeKonum {
+  const k = konum as Partial<HikayeKonum> | null | undefined
+  const sayi = (deger: unknown, yedek: number, alt: number, ust: number) =>
+    typeof deger === 'number' && Number.isFinite(deger) ? Math.min(ust, Math.max(alt, deger)) : yedek
+  return {
+    x: sayi(k?.x, varsayilan.x, 0, 1),
+    y: sayi(k?.y, varsayilan.y, 0, 1),
+    olcek: sayi(k?.olcek, varsayilan.olcek, 0.5, 3),
+  }
+}
+
 export type Hikaye = {
   id: string
   kullaniciId: string
@@ -43,6 +85,9 @@ export type Hikaye = {
   gordum: boolean
   /** Yalnizca sahibine anlamli; baskasinda sunucu 0 verir. */
   goruntulenmeSayisi: number
+  gorunurluk: HikayeGorunurlugu
+  /** Etiketlerin fotograf uzerindeki yerleri; yoksa varsayilan dizilim. */
+  yerlesim: HikayeYerlesimi | null
 }
 
 export type HikayeGrubu = {
@@ -70,6 +115,8 @@ type AkisSatiri = {
   bitis: string
   gordum: boolean
   goruntulenme_sayisi: number
+  gorunurluk: HikayeGorunurlugu | null
+  yerlesim: HikayeYerlesimi | null
 }
 
 /**
@@ -103,9 +150,17 @@ export function hikayeGruplariniSirala(gruplar: HikayeGrubu[]): HikayeGrubu[] {
  * ozetleri (akis_profilleri - engellenen/askidaki kisi gelmez, grubu
  * atlanir) ve toplu imzali adreslerle. Kendi profilim akis_profilleri'nde
  * de var (RPC kendini de donduruyor).
+ *
+ * `kullaniciId` verilirse YALNIZCA o kisinin hikayeleri gelir (profil
+ * halkasi). Serit modunda sunucu kendim + arkadaslarimla siniri kendi
+ * ciziyor: yabancinin "herkese acik" hikayesi ana sayfaya DUSMEZ, ancak
+ * profilinden acilir.
  */
-export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
-  const [{ data, error }, benimId] = await Promise.all([supabase.rpc('hikaye_akisi'), kullaniciKimligi()])
+export async function hikayeAkisiniGetir(kullaniciId?: string): Promise<HikayeGrubu[]> {
+  const [{ data, error }, benimId] = await Promise.all([
+    supabase.rpc('hikaye_akisi', kullaniciId ? { p_kullanici: kullaniciId } : {}),
+    kullaniciKimligi(),
+  ])
   if (error) throw new Error(hataMetni(error))
   const satirlar = (data ?? []) as AkisSatiri[]
   if (satirlar.length === 0) return []
@@ -147,6 +202,8 @@ export async function hikayeAkisiniGetir(): Promise<HikayeGrubu[]> {
       bitis: s.bitis,
       gordum: s.gordum,
       goruntulenmeSayisi: s.goruntulenme_sayisi ?? 0,
+      gorunurluk: s.gorunurluk ?? 'arkadaslar',
+      yerlesim: s.yerlesim ?? null,
     })
   }
   for (const grup of gruplar.values()) {
@@ -168,7 +225,9 @@ export async function hikayeEkle(
   yazi: string | null,
   mekanId: string | null,
   ifade: string | null = null,
-  etiketler: string[] = []
+  etiketler: string[] = [],
+  gorunurluk: HikayeGorunurlugu = 'arkadaslar',
+  yerlesim: HikayeYerlesimi | null = null
 ): Promise<string> {
   const uid = await kimligiZorunluOku('Oturum bulunamadi')
   const baytlar = await dosyayiOku(yerelUri)
@@ -183,6 +242,8 @@ export async function hikayeEkle(
     p_mekan_id: mekanId,
     p_ifade: ifade,
     p_etiketler: etiketler.length > 0 ? etiketler : null,
+    p_gorunurluk: gorunurluk,
+    p_yerlesim: yerlesim,
   })
   if (error) {
     await supabase.storage.from(KOVA).remove([yukleme.data.path])

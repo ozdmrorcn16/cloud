@@ -33,6 +33,8 @@ function grup(id: string, ek: Partial<HikayeGrubu> = {}): HikayeGrubu {
         bitis: '2026-09-23T10:00:00Z',
         gordum: false,
         goruntulenmeSayisi: 0,
+  gorunurluk: 'arkadaslar' as const,
+  yerlesim: null,
       },
     ],
     ...ek,

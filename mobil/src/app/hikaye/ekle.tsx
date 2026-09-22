@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  ScrollView,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -17,36 +16,44 @@ import * as ImagePicker from 'expo-image-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../../lib/dil'
-import { hikayeEkle, HIKAYE_YAZI_SINIRI } from '../../../lib/hikaye'
+import {
+  hikayeEkle,
+  HIKAYE_YAZI_SINIRI,
+  VARSAYILAN_KONUM,
+  type HikayeGorunurlugu,
+  type HikayeKonum,
+  type HikayeYerlesimi,
+} from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { cihazKonumunuAl } from '../../../lib/konum'
+import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
-import { IfadeSecici, IfadeCipi } from '../../tasarim/IfadeSecici'
+import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
-import { Avatar } from '../../tasarim/Avatar'
+import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
+import { ifadeBul } from '../../../lib/ifadeler'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
 
 /**
- * HIKAYE EKLE (2026-09-22, kullanicinin istegi: "hikaye eklemeye
- * basinca siyah ekran gelsin, altta yaptigi check-in yeri gelsin
- * isterse kaldirabilsin, not ekleme kalsin, kendi ifade setimizden de
- * ekleme yapabilsin, arkadas ekleme bunlar eklensin; once siyah ekran,
- * fotograf yuklenince ekrana geliyor ve sonra obur seceneklerden de
- * eklemeler yapabiliyor uzerine").
+ * HIKAYE OLUSTUR (2026-09-22, kullanicinin referansi "02 / Hikâye
+ * oluştur"): fotograf TAM EKRAN; yazi, Slooin ifadesi, mekan ve arkadas
+ * etiketleri fotografin UZERINE konur, SURUKLENIP BOYUTLANDIRILIR
+ * (`HikayeOgesi`). Altta gorunurluk secimi (Arkadaslar / Herkese) ve
+ * Paylas.
  *
- * EKRAN SIYAH BIR TUVAL olarak aciliyor; kaynak secimi onun USTUNDE
- * duruyor. Fotograf secilince tuvale yerlesiyor ve butun eklemeler
- * (mekan, not, ifade, arkadas) fotografin UZERINDE yapiliyor - arac
- * seridi yalnizca fotograf geldikten sonra ciziliyor.
+ * Ust cubuk: × (fotografi KALDIRIR ve kaynak secimini yeniden acar -
+ * kullanicinin karari, ayri "Fotografi degistir" dugmesi YOK), ortada
+ * "Yeni hikaye", sagda Aa (yazi) ve ifade.
  *
- * MEKAN OTOMATIK: aktif check-in varsa cip olarak geliyor, x ile
- * kaldirilabiliyor. Elle mekan secimi YOK - hikaye "su an buradayim"
- * anini paylasiyor.
+ * MEKAN ISTEGE BAGLI (kullanicinin karari): aktif check-in varsa cip
+ * hazir gelir, elle de secilebilir, x ile kaldirilir. Hikaye paylasmak
+ * check-in OLUSTURMAZ - ikisi ayri kayit.
  *
- * IFADE check-in ile AYNI sozlukten (`public.ifadeler`), ARKADAS
- * etiketi check-in ile ayni onay kuralina tabi (sunucu tarafinda).
+ * VIDEO henuz yok: yeni bir native modul (expo-video) gerektirdigi icin
+ * bir sonraki derlemeye birakildi; bugunku surumde fotograf.
  */
 export default function HikayeEkleEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -59,21 +66,21 @@ export default function HikayeEkleEkrani() {
   const [yaziMetni, setYaziMetni] = useState('')
   const [notAcik, setNotAcik] = useState(false)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
+  const [mekanSecenekleri, setMekanSecenekleri] = useState<{ id: string; ad: string }[]>([])
+  const [mekanAcik, setMekanAcik] = useState(false)
   const [ifade, setIfade] = useState<string | null>(null)
   const [ifadeAcik, setIfadeAcik] = useState(false)
   const [arkadaslar, setArkadaslar] = useState<BagKisi[]>([])
   const [etiketler, setEtiketler] = useState<string[]>([])
   const [arkadasAcik, setArkadasAcik] = useState(false)
+  const [gorunurluk, setGorunurluk] = useState<HikayeGorunurlugu>('arkadaslar')
+  const [gorunurlukAcik, setGorunurlukAcik] = useState(false)
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [hata, setHata] = useState<string | null>(null)
+  const [alan, setAlan] = useState({ en: 0, boy: 0 })
+  const [yerlesim, setYerlesim] = useState<HikayeYerlesimi>({})
 
-  // SecimPenceresi secimde de `onKapat` cagiriyor; "secim yapilmadan
-  // kapatildi mi" karari ancak eylem penceresinden SONRA verilebilir.
   const seciliyorRef = useRef(false)
-  const fotografUriRef = useRef<string | null>(null)
-  fotografUriRef.current = fotografUri
-  const kaynakAcikRef = useRef(kaynakAcik)
-  kaynakAcikRef.current = kaynakAcik
 
   useEffect(() => {
     let gecerli = true
@@ -82,7 +89,6 @@ export default function HikayeEkleEkrani() {
         if (gecerli && c) setMekan({ id: c.mekanId, ad: c.mekanAdi })
       })
       .catch(() => {})
-    // Arkadas listesi ONCEDEN: secici acildiginda bekleme olmasin.
     takipcilerimiGetir()
       .then((liste) => {
         if (gecerli) setArkadaslar(liste)
@@ -96,6 +102,18 @@ export default function HikayeEkleEkrani() {
   function geri() {
     if (router.canGoBack()) router.back()
     else router.replace('/' as never)
+  }
+
+  /** × : fotograf varsa once ONU kaldirir (kaynak secimi yeniden acilir),
+   *  fotograf yoksa ekrandan cikar. */
+  function kapat() {
+    if (fotografUri) {
+      setFotografUri(null)
+      setYerlesim({})
+      setKaynakAcik(true)
+      return
+    }
+    geri()
   }
 
   async function kameradanCek() {
@@ -126,12 +144,38 @@ export default function HikayeEkleEkrani() {
     }
   }
 
+  /** Mekan secimi: yakindakiler. Konum alinamazsa liste bos gelir ve
+   *  pencere "yakinda mekan yok" satiriyla acilir - sessiz kalmaz. */
+  async function mekanlariAc() {
+    setMekanAcik(true)
+    try {
+      const konum = await cihazKonumunuAl()
+      const liste = await yakinMekanlariGetir(konum.lat, konum.lng)
+      setMekanSecenekleri(liste.slice(0, 12).map((m) => ({ id: m.id, ad: m.ad })))
+    } catch {
+      setMekanSecenekleri([])
+    }
+  }
+
+  function konumAl(tur: 'yazi' | 'ifade' | 'mekan'): HikayeKonum {
+    return yerlesim[tur] ?? VARSAYILAN_KONUM[tur]
+  }
+  function konumYaz(tur: 'yazi' | 'ifade' | 'mekan', konum: HikayeKonum) {
+    setYerlesim((y) => ({ ...y, [tur]: konum }))
+  }
+  function etiketKonumu(id: string, sira: number): HikayeKonum {
+    return yerlesim.etiketler?.[id] ?? { x: 0.5, y: 0.84 + sira * 0.05, olcek: 1 }
+  }
+  function etiketKonumuYaz(id: string, konum: HikayeKonum) {
+    setYerlesim((y) => ({ ...y, etiketler: { ...(y.etiketler ?? {}), [id]: konum } }))
+  }
+
   async function paylas() {
     if (!fotografUri || gonderiliyor) return
     setGonderiliyor(true)
     setHata(null)
     try {
-      await hikayeEkle(fotografUri, yaziMetni, mekan?.id ?? null, ifade, etiketler)
+      await hikayeEkle(fotografUri, yaziMetni, mekan?.id ?? null, ifade, etiketler, gorunurluk, yerlesim)
       geri()
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
@@ -140,128 +184,158 @@ export default function HikayeEkleEkrani() {
   }
 
   const etiketliler = arkadaslar.filter((a) => etiketler.includes(a.id))
+  const ifadeKaynagi = ifade ? (ifadeBul(ifade)?.kaynak ?? null) : null
 
   return (
     <View style={stiller.zemin} testID="hikaye-ekle">
-      {fotografUri && (
-        <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="contain" testID="hikaye-onizleme" />
-      )}
+      <View
+        style={StyleSheet.absoluteFill}
+        onLayout={(o) => setAlan({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })}
+      >
+        {fotografUri && (
+          <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="cover" testID="hikaye-onizleme" />
+        )}
 
-      {/* Okunurluk golgeleri: acik renkli fotografta da arayuz gorunsun
-          (izleyicideki ayni cozum, 2026-09-22). */}
+        {/* Etiketler fotografin UZERINDE; her biri suruklenip
+            boyutlandirilabiliyor. Fotograf yokken cizilmezler. */}
+        {fotografUri && (
+          <>
+            {yaziMetni.trim() !== '' && (
+              <HikayeOgesi
+                konum={konumAl('yazi')}
+                alan={alan}
+                onDegis={(k) => konumYaz('yazi', k)}
+                testID="hikaye-oge-yazi"
+              >
+                <Text style={stiller.tuvalYazi}>{yaziMetni}</Text>
+              </HikayeOgesi>
+            )}
+
+            {ifadeKaynagi && (
+              <HikayeOgesi konum={konumAl('ifade')} alan={alan} onDegis={(k) => konumYaz('ifade', k)} testID="hikaye-oge-ifade">
+                <Image source={ifadeKaynagi} style={stiller.tuvalIfade} contentFit="contain" />
+              </HikayeOgesi>
+            )}
+
+            {mekan && (
+              <HikayeOgesi konum={konumAl('mekan')} alan={alan} onDegis={(k) => konumYaz('mekan', k)} testID="hikaye-oge-mekan">
+                <View style={stiller.mekanHapi}>
+                  <IgneCizimi renk="#FE7813" />
+                  <Text style={stiller.mekanYazi} numberOfLines={1}>
+                    {mekan.ad}
+                  </Text>
+                </View>
+              </HikayeOgesi>
+            )}
+
+            {etiketliler.map((k, i) => (
+              <HikayeOgesi
+                key={k.id}
+                konum={etiketKonumu(k.id, i)}
+                alan={alan}
+                onDegis={(konum) => etiketKonumuYaz(k.id, konum)}
+                testID={`hikaye-oge-etiket-${k.id}`}
+              >
+                <View style={stiller.etiketHapi}>
+                  <Text style={stiller.etiketYazi}>@{k.kullaniciAdi}</Text>
+                </View>
+              </HikayeOgesi>
+            ))}
+          </>
+        )}
+      </View>
+
       <LinearGradient
-        colors={['rgba(0,0,0,0.70)', 'rgba(0,0,0,0)']}
+        colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0)']}
         style={[stiller.ustGolge, { height: guvenliAlan.top + 96 }]}
         pointerEvents="none"
       />
       <LinearGradient
         colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.75)']}
-        style={[stiller.altGolge, { height: guvenliAlan.bottom + 260 }]}
+        style={[stiller.altGolge, { height: guvenliAlan.bottom + 220 }]}
         pointerEvents="none"
       />
 
-      <View style={[stiller.ustCubuk, { paddingTop: guvenliAlan.top + bosluk.s }]}>
-        <Pressable onPress={geri} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('ortak.kapat')} testID="hikaye-kapat" style={stiller.yuvarlakDugme}>
+      <View style={[stiller.ustCubuk, { paddingTop: guvenliAlan.top + bosluk.s }]} pointerEvents="box-none">
+        <YuvarlakDugme etiket={t('ortak.kapat')} testID="hikaye-kapat" onPress={kapat}>
           <Text style={stiller.kapatYazi}>×</Text>
-        </Pressable>
+        </YuvarlakDugme>
         <Text style={stiller.baslik}>{t('hikaye.ekleBaslik')}</Text>
-        {fotografUri ? (
-          <Pressable onPress={() => setKaynakAcik(true)} hitSlop={8} accessibilityRole="button" testID="hikaye-fotograf-degistir" style={stiller.degistir}>
-            <Text style={stiller.degistirYazi}>{t('checkIn.degistir')}</Text>
-          </Pressable>
-        ) : (
-          <View style={stiller.degistir} />
-        )}
+        <View style={stiller.ustSag}>
+          {fotografUri && (
+            <>
+              <YuvarlakDugme etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)}>
+                <Text style={stiller.aaYazi}>Aa</Text>
+              </YuvarlakDugme>
+              <YuvarlakDugme etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade-ust" onPress={() => setIfadeAcik(true)}>
+                <CikartmaCizimi />
+              </YuvarlakDugme>
+            </>
+          )}
+        </View>
       </View>
 
-      {/* Fotograf gelene kadar tuval BOS ve siyah; dokunmak kaynak
-          secimini yeniden acar (kullanici vazgecip geri gelebilir). */}
+      {/* Fotograf gelene kadar tuval bos: dokunmak kaynak secimini acar. */}
       {!fotografUri && !kaynakAcik && (
         <Pressable style={stiller.bosTuval} onPress={() => setKaynakAcik(true)} testID="hikaye-tuval">
           <Text style={stiller.bosTuvalYazi}>{t('hikaye.kameraVeyaGaleri')}</Text>
         </Pressable>
       )}
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={stiller.altKap} pointerEvents="box-none">
-        <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
-          {hata && (
-            <Text style={stiller.hata} testID="hikaye-hata">
-              {hata}
-            </Text>
-          )}
-
-          {/* Secilenler: mekan, ifade, etiketlenen arkadaslar - hepsi
-              kaldirilabilir cip. */}
-          {(mekan || ifade || etiketliler.length > 0) && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.cipSeridi}>
-              {mekan && (
-                <View style={stiller.cip} testID="hikaye-mekan-cipi">
-                  <IgneCizimi />
-                  <Text style={stiller.cipYazi} numberOfLines={1}>
-                    {mekan.ad}
-                  </Text>
-                  <Pressable onPress={() => setMekan(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hikaye.mekanKaldir')} testID="hikaye-mekan-kaldir">
-                    <Text style={stiller.cipKaldir}>×</Text>
-                  </Pressable>
-                </View>
-              )}
-              {ifade && <IfadeCipi slug={ifade} onKaldir={() => setIfade(null)} onPress={() => setIfadeAcik(true)} />}
-              {etiketliler.map((k) => (
-                <View key={k.id} style={stiller.cip} testID={`hikaye-etiket-${k.id}`}>
-                  <Avatar fotografUrl={k.avatarUrl ?? null} ad={k.ad} kullaniciAdi={k.kullaniciAdi} cap={20} />
-                  <Text style={stiller.cipYazi} numberOfLines={1}>
-                    {k.kullaniciAdi}
-                  </Text>
-                  <Pressable
-                    onPress={() => setEtiketler((m) => m.filter((id) => id !== k.id))}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.etiketKaldir', { ad: k.kullaniciAdi })}
-                    testID={`hikaye-etiket-kaldir-${k.id}`}
-                  >
-                    <Text style={stiller.cipKaldir}>×</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </ScrollView>
-          )}
-
-          {notAcik ? (
-            <View style={stiller.yaziKutusu}>
-              <TextInput
-                style={stiller.yaziGirdi}
-                value={yaziMetni}
-                onChangeText={(m) => setYaziMetni(m.slice(0, HIKAYE_YAZI_SINIRI))}
-                placeholder={t('hikaye.yaziYerTutucu')}
-                placeholderTextColor="rgba(255,255,255,0.6)"
-                maxLength={HIKAYE_YAZI_SINIRI}
-                multiline
-                autoFocus
-                testID="hikaye-yazi"
-              />
-              <Text style={stiller.sayac}>
-                {yaziMetni.length}/{HIKAYE_YAZI_SINIRI}
-              </Text>
-            </View>
-          ) : yaziMetni.trim() ? (
-            <Pressable onPress={() => setNotAcik(true)} style={stiller.notOnizleme} testID="hikaye-not-onizleme">
-              <Text style={stiller.notOnizlemeYazi} numberOfLines={2}>
-                {yaziMetni}
-              </Text>
+      {/* Yazi girisi: Aa'ya basinca acilan tam ekran katman. Yazilan
+          metin kapaninca tuvalde suruklenebilir bir ogeye donusuyor. */}
+      {notAcik && (
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={stiller.yaziKatmani}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setNotAcik(false)} accessibilityRole="button" accessibilityLabel={t('ortak.kapat')} />
+          <View style={stiller.yaziKutusu}>
+            <TextInput
+              style={stiller.yaziGirdi}
+              value={yaziMetni}
+              onChangeText={(m) => setYaziMetni(m.slice(0, HIKAYE_YAZI_SINIRI))}
+              placeholder={t('hikaye.yaziYerTutucu')}
+              placeholderTextColor="rgba(255,255,255,0.6)"
+              maxLength={HIKAYE_YAZI_SINIRI}
+              multiline
+              autoFocus
+              testID="hikaye-yazi"
+            />
+            <Pressable onPress={() => setNotAcik(false)} accessibilityRole="button" testID="hikaye-yazi-tamam" style={stiller.yaziTamam}>
+              <Text style={stiller.yaziTamamYazi}>{t('ortak.tamam')}</Text>
             </Pressable>
-          ) : null}
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
-          {/* ARAC SERIDI yalnizca fotograf geldikten sonra: fotografsiz
-              not/ifade/arkadas eklemek anlamsiz. */}
-          {fotografUri && (
-            <View style={stiller.araclar} testID="hikaye-araclar">
-              <AracDugmesi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<KalemCizimi />} />
-              <AracDugmesi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
-              <AracDugmesi etiket={t('hikaye.arkadasEkle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisilerCizimi />} />
-            </View>
-          )}
+      <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
+        {hata && (
+          <Text style={stiller.hata} testID="hikaye-hata">
+            {hata}
+          </Text>
+        )}
 
-          <Text style={stiller.sureNotu}>{t('hikaye.sureAciklama')}</Text>
+        {fotografUri && (
+          <View style={stiller.araclar} testID="hikaye-araclar">
+            <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
+            <AracHapi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
+            <AracHapi etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
+          </View>
+        )}
+
+        <View style={stiller.altSatir}>
+          <Pressable
+            onPress={() => setGorunurlukAcik(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('hikaye.gorunurlukSec')}
+            testID="hikaye-gorunurluk"
+            style={({ pressed }) => [stiller.gorunurlukHapi, pressed && stiller.basili]}
+          >
+            <KisilerCizimi />
+            <Text style={stiller.gorunurlukYazi} numberOfLines={1}>
+              {t(gorunurluk === 'herkese_acik' ? 'hikaye.herkese' : 'hikaye.arkadaslar')}
+            </Text>
+            <Text style={stiller.gorunurlukOk}>⌄</Text>
+          </Pressable>
+
           <Pressable
             onPress={paylas}
             disabled={!fotografUri || gonderiliyor}
@@ -273,19 +347,36 @@ export default function HikayeEkleEkrani() {
             {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </View>
 
       <SecimPenceresi
         acikMi={kaynakAcik}
-        onKapat={() => {
-          setKaynakAcik(false)
-          // Secim yapilmadan kapatildi ve elde fotograf yok: siyah tuval
-          // kaliyor, kullanici tuvale dokunup yeniden acabilir. Ekrandan
-          // ancak × ile cikilir - "once siyah ekran" istegi bu.
-        }}
+        onKapat={() => setKaynakAcik(false)}
         secimler={[
           { etiket: t('hikaye.kamera'), testID: 'hikaye-kamera', onSec: kameradanCek },
           { etiket: t('hikaye.galeri'), testID: 'hikaye-galeri', onSec: galeridenSec },
+        ]}
+      />
+
+      <SecimPenceresi
+        acikMi={gorunurlukAcik}
+        onKapat={() => setGorunurlukAcik(false)}
+        secimler={[
+          { etiket: t('hikaye.arkadaslar'), testID: 'hikaye-gorunurluk-arkadaslar', onSec: () => setGorunurluk('arkadaslar') },
+          { etiket: t('hikaye.herkese'), testID: 'hikaye-gorunurluk-herkese', onSec: () => setGorunurluk('herkese_acik') },
+        ]}
+      />
+
+      <SecimPenceresi
+        acikMi={mekanAcik}
+        onKapat={() => setMekanAcik(false)}
+        secimler={[
+          ...(mekan ? [{ etiket: t('hikaye.mekanKaldir'), yikici: true, testID: 'hikaye-mekan-kaldir', onSec: () => setMekan(null) }] : []),
+          ...mekanSecenekleri.map((m) => ({
+            etiket: m.ad,
+            testID: `hikaye-mekan-${m.id}`,
+            onSec: () => setMekan({ id: m.id, ad: m.ad }),
+          })),
         ]}
       />
 
@@ -304,18 +395,35 @@ export default function HikayeEkleEkrani() {
   )
 }
 
-/** Arac seridi dugmesi: ikon + etiket, ucu de ayni genislikte. */
-function AracDugmesi({
+/** Ust cubuktaki koyu yuvarlak dugme (×, Aa, cikartma). */
+function YuvarlakDugme({
   etiket,
-  ikon,
-  onPress,
   testID,
+  onPress,
+  children,
 }: {
   etiket: string
-  ikon: ReactNode
-  onPress: () => void
   testID: string
+  onPress: () => void
+  children: ReactNode
 }) {
+  const stiller = useStiller(stilleriYap)
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={etiket}
+      testID={testID}
+      style={({ pressed }) => [stiller.yuvarlakDugme, pressed && stiller.basili]}
+    >
+      {children}
+    </Pressable>
+  )
+}
+
+/** Alttaki koyu seffaf arac hapi: ikon + etiket. */
+function AracHapi({ etiket, ikon, onPress, testID }: { etiket: string; ikon: ReactNode; onPress: () => void; testID: string }) {
   const stiller = useStiller(stilleriYap)
   return (
     <Pressable
@@ -323,9 +431,9 @@ function AracDugmesi({
       accessibilityRole="button"
       accessibilityLabel={etiket}
       testID={testID}
-      style={({ pressed }) => [stiller.arac, pressed && stiller.basili]}
+      style={({ pressed }) => [stiller.aracHapi, pressed && stiller.basili]}
     >
-      <View style={stiller.aracIkon}>{ikon}</View>
+      {ikon}
       <Text style={stiller.aracYazi} numberOfLines={1}>
         {etiket}
       </Text>
@@ -333,26 +441,18 @@ function AracDugmesi({
   )
 }
 
-function IgneCizimi() {
+function IgneCizimi({ renk = '#FFFFFF' }: { renk?: string }) {
   return (
-    <Svg width={12} height={12} viewBox="0 0 24 24">
-      <Path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill="#FFFFFF" />
-      <Circle cx={12} cy={9} r={2.4} fill="#111111" />
-    </Svg>
-  )
-}
-
-function KalemCizimi() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M4 20h4L19 9l-4-4L4 16v4z" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinejoin="round" />
+    <Svg width={16} height={16} viewBox="0 0 24 24">
+      <Path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill={renk} />
+      <Circle cx={12} cy={9} r={2.4} fill="#FFFFFF" />
     </Svg>
   )
 }
 
 function GulenYuzCizimi() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
+    <Svg width={16} height={16} viewBox="0 0 24 24">
       <Circle cx={12} cy={12} r={9} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
       <Circle cx={9} cy={10} r={1.2} fill="#FFFFFF" />
       <Circle cx={15} cy={10} r={1.2} fill="#FFFFFF" />
@@ -361,12 +461,33 @@ function GulenYuzCizimi() {
   )
 }
 
-function KisilerCizimi() {
+function CikartmaCizimi() {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Circle cx={9} cy={8} r={3.2} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
-      <Path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
-      <Path d="M16 7.5a3 3 0 0 1 0 5.5M17.5 19c0-2-.7-3.6-1.9-4.6" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+      <Path d="M20 12a8 8 0 1 0-8 8c1.2 0 3-3 5-5s3-1.8 3-3z" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinejoin="round" />
+      <Circle cx={9.5} cy={10} r={1.2} fill="#FFFFFF" />
+      <Circle cx={14.5} cy={10} r={1.2} fill="#FFFFFF" />
+      <Path d="M9.5 14c.8.8 1.6 1.2 2.5 1.2" stroke="#FFFFFF" strokeWidth={1.6} fill="none" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function KisiEkleCizimi() {
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24">
+      <Circle cx={10} cy={8} r={3.4} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
+      <Path d="M4 19c0-3.3 2.7-5.2 6-5.2s6 1.9 6 5.2" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+      <Path d="M18 8v5M15.5 10.5h5" stroke="#FFFFFF" strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function KisilerCizimi() {
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24">
+      <Circle cx={9} cy={9} r={3.2} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
+      <Path d="M3 19c0-3.1 2.7-4.9 6-4.9s6 1.8 6 4.9" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+      <Path d="M16 6.2a3.2 3.2 0 0 1 0 5.6M18 19c0-2.4-.9-3.9-2.4-4.6" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
     </Svg>
   )
 }
@@ -374,81 +495,110 @@ function KisilerCizimi() {
 const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     zemin: { flex: 1, backgroundColor: '#000000' },
-    ustGolge: { position: 'absolute', left: 0, right: 0, top: 0 },
-    altGolge: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+    ustGolge: { position: 'absolute', top: 0, left: 0, right: 0 },
+    altGolge: { position: 'absolute', bottom: 0, left: 0, right: 0 },
+
     ustCubuk: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       paddingHorizontal: bosluk.sayfa,
-      paddingBottom: bosluk.s,
+      gap: bosluk.s,
     },
+    baslik: { flex: 1, textAlign: 'center', fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
+    ustSag: { flexDirection: 'row', gap: bosluk.s, minWidth: 40, justifyContent: 'flex-end' },
     yuvarlakDugme: {
-      width: 36,
-      height: 36,
+      width: 40,
+      height: 40,
       borderRadius: yuvarlak.hap,
       backgroundColor: 'rgba(0,0,0,0.45)',
       alignItems: 'center',
       justifyContent: 'center',
     },
-    kapatYazi: { color: '#FFFFFF', fontSize: 24, lineHeight: 26, fontFamily: yazi.govde },
-    baslik: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
-    degistir: { minWidth: 64, alignItems: 'flex-end' },
-    degistirYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
-    bosTuval: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    bosTuvalYazi: { color: 'rgba(255,255,255,0.5)', fontFamily: yazi.govde, fontSize: olcek.govde },
-    altKap: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-    alt: { paddingHorizontal: bosluk.sayfa, paddingTop: bosluk.l, gap: bosluk.s },
-    hata: { color: '#FFB4A2', fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk },
-    cipSeridi: { gap: bosluk.s, paddingVertical: 2 },
-    cip: {
+    kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
+    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#FFFFFF' },
+
+    bosTuval: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
+    bosTuvalYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: 'rgba(255,255,255,0.7)' },
+
+    // Tuval uzerindeki ogeler
+    tuvalYazi: {
+      fontFamily: yazi.govde,
+      fontWeight: '700',
+      fontSize: 26,
+      color: '#FFFFFF',
+      textAlign: 'center',
+      textShadowColor: 'rgba(0,0,0,0.45)',
+      textShadowRadius: 8,
+      maxWidth: 300,
+    },
+    tuvalIfade: { width: 88, height: 88 },
+    mekanHapi: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      backgroundColor: 'rgba(255,255,255,0.18)',
+      gap: 8,
+      backgroundColor: '#FFFFFF',
+      paddingVertical: 10,
+      paddingHorizontal: 14,
       borderRadius: yuvarlak.hap,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      maxWidth: 220,
     },
-    cipYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, flexShrink: 1 },
-    cipKaldir: { color: '#FFFFFF', fontSize: 18, lineHeight: 18, paddingLeft: 2 },
-    yaziKutusu: {
-      backgroundColor: 'rgba(255,255,255,0.14)',
-      borderRadius: yuvarlak.kart,
-      paddingHorizontal: bosluk.m,
-      paddingVertical: bosluk.s,
+    mekanYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#17130F', maxWidth: 220 },
+    etiketHapi: { backgroundColor: 'rgba(255,255,255,0.85)', paddingVertical: 6, paddingHorizontal: 12, borderRadius: yuvarlak.hap },
+    etiketYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#17130F' },
+
+    // Yazi girisi katmani
+    yaziKatmani: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', paddingHorizontal: bosluk.sayfa },
+    yaziKutusu: { gap: bosluk.s },
+    yaziGirdi: {
+      fontFamily: yazi.govde,
+      fontWeight: '700',
+      fontSize: 26,
+      color: '#FFFFFF',
+      textAlign: 'center',
+      minHeight: 80,
+      maxHeight: 220,
     },
-    yaziGirdi: { color: '#FFFFFF', fontFamily: yazi.govde, fontSize: olcek.govde, minHeight: 44, maxHeight: 110, textAlignVertical: 'top' },
-    sayac: { color: 'rgba(255,255,255,0.6)', fontFamily: yazi.govde, fontSize: olcek.minik, textAlign: 'right' },
-    notOnizleme: {
-      alignSelf: 'flex-start',
-      backgroundColor: 'rgba(0,0,0,0.55)',
-      borderRadius: yuvarlak.kart,
-      paddingHorizontal: bosluk.m,
-      paddingVertical: bosluk.s,
-      maxWidth: '100%',
+    yaziTamam: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 24, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncu },
+    yaziTamamYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
+
+    // Alt blok
+    alt: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: bosluk.sayfa, gap: bosluk.s },
+    hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
+    araclar: { flexDirection: 'row', justifyContent: 'center', gap: bosluk.s },
+    aracHapi: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      borderRadius: yuvarlak.hap,
     },
-    notOnizlemeYazi: { color: '#FFFFFF', fontFamily: yazi.govdeOrta, fontSize: olcek.govde },
-    araclar: { flexDirection: 'row', gap: bosluk.s },
-    arac: {
+    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF' },
+    altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
+    gorunurlukHapi: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      paddingVertical: 14,
+      paddingHorizontal: 18,
+      borderRadius: yuvarlak.hap,
+    },
+    gorunurlukYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF', maxWidth: 120 },
+    gorunurlukOk: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFFFFF' },
+    paylas: {
       flex: 1,
       alignItems: 'center',
-      gap: 4,
-      backgroundColor: 'rgba(255,255,255,0.14)',
-      borderRadius: yuvarlak.kart,
-      paddingVertical: 10,
-    },
-    aracIkon: { alignItems: 'center', justifyContent: 'center' },
-    aracYazi: { color: '#FFFFFF', fontFamily: yazi.govdeOrta, fontSize: olcek.minik },
-    sureNotu: { color: 'rgba(255,255,255,0.7)', fontFamily: yazi.govde, fontSize: olcek.minik },
-    paylas: {
-      backgroundColor: renk.turuncu,
+      justifyContent: 'center',
+      paddingVertical: 16,
       borderRadius: yuvarlak.hap,
-      paddingVertical: 14,
-      alignItems: 'center',
+      backgroundColor: renk.turuncu,
     },
     paylasPasif: { opacity: 0.5 },
+    paylasYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#FFFFFF' },
     basili: { opacity: 0.85 },
-    paylasYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.govde },
   })

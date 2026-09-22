@@ -62,32 +62,64 @@ describe('HikayeEkleEkrani', () => {
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  it('yazi 200 ile sinirli; aktif check-in varsa mekan cipi gelir ve kaldirilabilir; Paylas hikayeEkle cagirir ve geri doner', async () => {
+  it('yazi 200 ile sinirli; aktif check-in varsa mekan etiketi tuvale gelir; Paylas hikayeEkle cagirir ve geri doner', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
     await menudenSec('hikaye-galeri')
     await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
-    expect(await screen.findByTestId('hikaye-mekan-cipi')).toBeTruthy()
+    expect(await screen.findByTestId('hikaye-oge-mekan')).toBeTruthy()
     expect(screen.getByText('Hozee')).toBeTruthy()
 
     await fireEvent.press(screen.getByTestId('hikaye-arac-not'))
     await fireEvent.changeText(screen.getByTestId('hikaye-yazi'), 'a'.repeat(260))
-    expect(screen.getByText('200/200')).toBeTruthy()
+    // 200 ile sinirli: girdi degeri kirpilir.
+    expect(screen.getByTestId('hikaye-yazi').props.value).toHaveLength(200)
     await fireEvent.changeText(screen.getByTestId('hikaye-yazi'), 'selam')
+    await fireEvent.press(screen.getByTestId('hikaye-yazi-tamam'))
 
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    await waitFor(() => expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', 'selam', 'mekan-1', null, []))
+    await waitFor(() =>
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', 'selam', 'mekan-1', null, [], 'arkadaslar', expect.any(Object))
+    )
     await waitFor(() => expect(mockBack).toHaveBeenCalled())
   })
 
-  it('mekan cipi kaldirilinca mekansiz paylasilir', async () => {
+  it('mekan etiketi kaldirilinca mekansiz paylasilir', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
     await menudenSec('hikaye-galeri')
-    await fireEvent.press(await screen.findByTestId('hikaye-mekan-kaldir'))
-    expect(screen.queryByTestId('hikaye-mekan-cipi')).toBeNull()
+    await waitFor(() => expect(screen.getByTestId('hikaye-oge-mekan')).toBeTruthy())
+    await fireEvent.press(screen.getByTestId('hikaye-arac-mekan'))
+    await menudenSec('hikaye-mekan-kaldir')
+    await waitFor(() => expect(screen.queryByTestId('hikaye-oge-mekan')).toBeNull())
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    await waitFor(() => expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, []))
+    await waitFor(() =>
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
+    )
+  })
+
+  it('GORUNURLUK secilebiliyor: Herkese secilince oyle paylasiliyor', async () => {
+    await render(<HikayeEkleEkrani />)
+    await menudenSec('hikaye-galeri')
+    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    // Varsayilan Arkadaslar.
+    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('hikaye-gorunurluk'))
+    await menudenSec('hikaye-gorunurluk-herkese')
+    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
+    await waitFor(() =>
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, [], 'herkese_acik', expect.any(Object))
+    )
+  })
+
+  it('× fotografi KALDIRIR ve kaynak secimi yeniden acilir (ekrandan cikmaz)', async () => {
+    await render(<HikayeEkleEkrani />)
+    await menudenSec('hikaye-galeri')
+    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    await fireEvent.press(screen.getByTestId('hikaye-kapat'))
+    await waitFor(() => expect(screen.queryByTestId('hikaye-onizleme')).toBeNull())
+    expect(mockBack).not.toHaveBeenCalled()
+    expect(await screen.findByTestId('hikaye-galeri')).toBeTruthy()
   })
 
   it('sunucu reddederse hata metni ekranda, geri donmez', async () => {
@@ -123,12 +155,12 @@ describe('HikayeEkleEkrani', () => {
     await render(<HikayeEkleEkrani />)
     await menudenSec('hikaye-galeri')
     await waitFor(() => expect(screen.getByTestId('hikaye-araclar')).toBeTruthy())
-    expect(screen.getByTestId('hikaye-arac-not')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-arac-mekan')).toBeTruthy()
     expect(screen.getByTestId('hikaye-arac-ifade')).toBeTruthy()
     expect(screen.getByTestId('hikaye-arac-arkadas')).toBeTruthy()
   })
 
-  it('IFADE secilip kaldirilabiliyor; Paylas ifadeyi gonderiyor', async () => {
+  it('IFADE secilince tuvale gelir; Paylas ifadeyi gonderiyor', async () => {
     await render(<HikayeEkleEkrani />)
     await menudenSec('hikaye-galeri')
     await waitFor(() => expect(screen.getByTestId('hikaye-araclar')).toBeTruthy())
@@ -136,10 +168,11 @@ describe('HikayeEkleEkrani', () => {
     await fireEvent.press(screen.getByTestId('hikaye-arac-ifade'))
     await fireEvent.press(await screen.findByTestId('ifade-kahve-keyfi'))
 
-    expect(await screen.findByTestId('ifade-cipi-kahve-keyfi')).toBeTruthy()
+    // Ifade artik fotografin UZERINDE bir oge (suruklenebilir), cip degil.
+    expect(await screen.findByTestId('hikaye-oge-ifade')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, 'kahve-keyfi', [])
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, 'kahve-keyfi', [], 'arkadaslar', expect.any(Object))
     )
   })
 
@@ -153,11 +186,11 @@ describe('HikayeEkleEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('hikaye-arac-arkadas'))
     await fireEvent.press(await screen.findByText('ada'))
-    expect(await screen.findByTestId('hikaye-etiket-kullanici-2')).toBeTruthy()
+    expect(await screen.findByTestId('hikaye-oge-etiket-kullanici-2')).toBeTruthy()
 
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, ['kullanici-2'])
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, ['kullanici-2'], 'arkadaslar', expect.any(Object))
     )
   })
 })

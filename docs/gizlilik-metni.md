@@ -74,7 +74,10 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
 - Hikayelerin: paylastigin fotograf, istege bagli yazi, ifade,
   arkadas etiketi ve mekan etiketi. Bir arkadasini etiketlersen adi
   hikayeyi gorenlere gorunur; etiket onayi acik olan biri onaylamadan
-  gorunmez. Hikaye yalnizca arkadaslarina gorunur ve 24 saat sonra
+  gorunmez. Her hikayede kimlerin gorebilecegini sen secersin: "Arkadaslar"
+  (varsayilan) ya da "Herkese" - "Herkese" sectigin hikayeyi profilin
+  gizli olsa da uygulamadaki herkes acabilir, engelledigin kisiler
+  hicbir halde goremez. Hikaye 24 saat sonra
   fotografiyla birlikte otomatik silinir (arsiv tutulmaz). Kimin
   hikayeni ne zaman gordugu kaydedilir; bu listeyi yalnizca sen
   gorursun ve hikaye silinince o kayit da silinir. Bir hikayeyi

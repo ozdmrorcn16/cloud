@@ -64,6 +64,8 @@ function hikaye(id: string, kullaniciId: string, ek: Partial<HikayeGrubu['hikaye
     bitis: '2026-09-23T10:00:00Z',
     gordum: false,
     goruntulenmeSayisi: 0,
+    gorunurluk: 'arkadaslar' as const,
+    yerlesim: null,
     ...ek,
   }
 }
@@ -134,8 +136,10 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByText('Hozee')).toBeTruthy()
     expect(screen.getByTestId('hikaye-yazi-metni')).toHaveTextContent('selam')
     await waitFor(() => expect(hikayeGoruntulendi).toHaveBeenCalledWith('a2'))
-    // Baskasinin hikayesi: hizli tepkiler var, gorenler yok.
-    expect(screen.getByTestId('hikaye-tepkiler')).toBeTruthy()
+    // Mekan artik fotografin UZERINDE bir hapta; ust kimlikte tekrarlanmiyor.
+    expect(screen.getByTestId('hikaye-oge-mekan')).toBeTruthy()
+    // Baskasinin hikayesi: mesaj kutusu var, gorenler yok.
+    expect(screen.getByTestId('hikaye-mesaj')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
   })
 
@@ -185,13 +189,18 @@ describe('HikayeIzleEkrani', () => {
     expect(mockPush).toHaveBeenCalledWith('/sikayet?hedefTur=hikaye&hedefId=a2&kullaniciId=ayse')
   })
 
-  it('YANIT YAZMA KUTUSU YOK (kullanicinin istegi 2026-09-22), tepkiler duruyor', async () => {
+  /**
+   * Baskasinin hikayesinde altta MESAJ KUTUSU + KALP (2026-09-22
+   * referansi). Kendi hikayemde bu satirin yerinde GORENLER ve SIL var -
+   * ayri testte.
+   */
+  it('baskasinin hikayesinde mesaj kutusu ve kalp var', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    expect(screen.queryByTestId('hikaye-yanit')).toBeNull()
-    expect(screen.queryByTestId('hikaye-yanit-gonder')).toBeNull()
-    expect(screen.getByTestId('hikaye-tepkiler')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-mesaj')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-begen')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-sahip-eylemleri')).toBeNull()
   })
 
   it('ASAGI surukleme kapatir', async () => {
@@ -267,22 +276,37 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('gorenler-sayfasi')).toBeTruthy()
   })
 
-  it('HIZLI TEPKI: emojiye dokunmak yanit olarak gonderir', async () => {
+  it('KALP: dokunmak kalbi yanit olarak gonderir', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    await fireEvent.press(screen.getByTestId('hikaye-tepki-🔥'))
+    await fireEvent.press(screen.getByTestId('hikaye-begen'))
 
-    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', '🔥'))
-    expect(await screen.findByText('🔥 gönderildi')).toBeTruthy()
+    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', '❤️'))
+    expect(await screen.findByText('❤️ gönderildi')).toBeTruthy()
   })
 
-  it('KENDI hikayemde hizli tepki YOK (kendine tepki gonderilmez)', async () => {
+  it('MESAJ: yazilan metin yanit olarak gider, kutu temizlenir', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    await fireEvent.changeText(screen.getByTestId('hikaye-mesaj'), 'çok güzel')
+    await fireEvent.press(screen.getByTestId('hikaye-mesaj-gonder'))
+
+    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', 'çok güzel'))
+    expect(screen.getByTestId('hikaye-mesaj').props.value).toBe('')
+  })
+
+  it('KENDI hikayemde mesaj kutusu YOK; yerinde gorenler ve sil var', async () => {
     mockParams = { kullanici: 'ben' }
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-b1')
 
-    expect(screen.queryByTestId('hikaye-tepkiler')).toBeNull()
+    expect(screen.queryByTestId('hikaye-mesaj')).toBeNull()
+    expect(screen.queryByTestId('hikaye-begen')).toBeNull()
+    expect(screen.getByTestId('hikaye-sahip-eylemleri')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-gorenler')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-sil')).toBeTruthy()
   })
 
   it('BASILI TUTARKEN arayuz gizlenir, birakinca geri gelir', async () => {
