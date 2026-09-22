@@ -384,6 +384,16 @@ sticker, anket, yakin arkadaslar, one cikanlar, arsiv, baglanti.
 Jest 95 / 1238 (izleyici 18 test). Ayrinti CLAUDE.md "HIKAYE IZLEYICI
 = INSTAGRAM ISLEYISI".
 
+**Ek (OTA `80d32f0c`):** kullanicinin bildirimi "hikayeler arasi gecis
+cok kotu surekli yeniden yukleniyor" olculdu (yeni arac
+`araclar/hikaye-gecis-olcum.mjs`): acilista ilk fotograf 1581 ms,
+her ileri geciste yeni indirme (389-466 ms). Uc kok neden duzeltildi:
+izleyici seridin onbellegindeki veriyle ANINDA aciliyor (12 RPC -> 1),
+komsu kareler onceden iniyor (gorunen kare indikten SONRA - once
+denendi ve acilisi 3683 ms'ye cikardi), gorsel onbellegi acildi.
+Sonuc: acilis 26 ms, gecisler 7-20 ms ve ek indirme YOK.
+Jest 95 / 1240.
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS

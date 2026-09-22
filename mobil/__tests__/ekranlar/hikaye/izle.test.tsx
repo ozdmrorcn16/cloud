@@ -1,8 +1,10 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { StyleSheet } from 'react-native'
+import { Image } from 'expo-image'
 import { State } from 'react-native-gesture-handler'
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils'
 import HikayeIzleEkrani from '../../../src/app/hikaye/izle'
+import { ANAHTAR, onbellekYaz } from '../../../lib/onbellek'
 import {
   hikayeAkisiniGetir,
   hikayeGoruntulendi,
@@ -12,6 +14,13 @@ import {
   type HikayeGrubu,
 } from '../../../lib/hikaye'
 
+jest.mock('expo-image', () => {
+  const React = require('react')
+  const { Image: RNImage } = require('react-native')
+  const Image = (props: Record<string, unknown>) => React.createElement(RNImage, props)
+  Image.prefetch = jest.fn()
+  return { Image }
+})
 jest.mock('../../../lib/hikaye', () => ({
   ...jest.requireActual('../../../lib/hikaye'),
   hikayeAkisiniGetir: jest.fn(),
@@ -327,5 +336,35 @@ describe('HikayeIzleEkrani', () => {
     } finally {
       jest.useRealTimers()
     }
+  })
+
+  /**
+   * ON YUKLEME (kullanicinin bildirimi 2026-09-22: "hikayeler arasi
+   * gecis cok kotu surekli yeniden yukleniyor gecikmeli geliyor").
+   * Olculdu: her ileri gecisinde yeni medya istegi + ~390 ms bekleme.
+   */
+  it('KOMSU KARELER onceden indiriliyor (sonraki iki, onceki bir, sonraki KISININ ilki)', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    // On yukleme gorunen kare INDIKTEN sonra basliyor (`onLoadEnd`),
+    // jest'te o olay gelmedigi icin yedek zamanlayici devreye giriyor.
+    await waitFor(() => expect(Image.prefetch).toHaveBeenCalled(), { timeout: 2000 })
+    const istenen = (Image.prefetch as jest.Mock).mock.calls.flatMap((c) => c[0] as string[])
+    // Ayse'nin 2. hikayesindeyiz: onceki (a1) ve SONRAKI KISININ ilki (c1).
+    expect(istenen).toContain('https://imzali/a1.jpg')
+    expect(istenen).toContain('https://imzali/c1.jpg')
+    // Gorunen karenin kendisi on yukleme listesinde DEGIL - zaten cizili.
+    expect(istenen).not.toContain('https://imzali/a2.jpg')
+  })
+
+  it('ONBELLEKTEN ACILIS: serit verisi eldeyse ag beklenmeden kare cizilir', async () => {
+    onbellekYaz(ANAHTAR.hikayeSeridi, { gruplar: gruplar(), ben: null })
+    // Ag CEVAP VERMIYOR.
+    ;(hikayeAkisiniGetir as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await render(<HikayeIzleEkrani />)
+
+    expect(screen.getByTestId('hikaye-fotograf-a2')).toBeTruthy()
   })
 })

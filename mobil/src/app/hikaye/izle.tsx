@@ -26,7 +26,9 @@ import {
   hikayeyeYanitVer,
   HIKAYE_SURESI_MS,
   type HikayeGrubu,
+  type HikayeSeridiVerisi,
 } from '../../../lib/hikaye'
+import { ANAHTAR, onbellekOku } from '../../../lib/onbellek'
 import { gorecelZaman } from '../../../lib/zaman'
 import { useHareket } from '../../tasarim/hareket'
 import { Avatar } from '../../tasarim/Avatar'
@@ -49,6 +51,9 @@ const KAPATMA_HIZI = 900
  * mesaj olarak gonderiyor (Instagram'da da DM'e dusuyor).
  */
 const HIZLI_TEPKILER = ['❤️', '😂', '😮', '😢', '👏', '🔥', '🎉', '😍'] as const
+
+/** Komsu kareler bu kadar sonra indirilir - gorunen kareyi geciktirmesin. */
+const ON_YUKLEME_GECIKMESI_MS = 600
 
 /** Yatay kaydirmada kisi degistirme esikleri (Instagram: sola = sonraki hesap). */
 const KISI_GECIS_MESAFESI = 70
@@ -99,19 +104,41 @@ export default function HikayeIzleEkrani() {
   const hikaye = grup?.hikayeler[konum.h] ?? null
 
   // ---- Yukleme ----
+  /**
+   * SERIDIN VERISIYLE ANINDA AC (kullanicinin bildirimi 2026-09-22:
+   * "hikayeler arasi gecis cok kotu surekli yeniden yukleniyor").
+   *
+   * Izleyici acilirken `hikaye_akisi` + `akis_profilleri` + imzalama
+   * bastan kosuyordu; olculdu, ilk fotograf 1581 ms sonra geliyordu.
+   * Oysa ana sayfadaki serit AYNI veriyi saniyeler once cekip
+   * onbellege yazmisti. Artik once o veriyle aciliyor (dokunuldugu an
+   * kare hazir), tazeleme ARKADA kosuyor ve yalnizca liste degistiyse
+   * yaziyor.
+   */
+  function konumuSec(g: HikayeGrubu[]) {
+    const baslangic = Math.max(0, g.findIndex((x) => x.kullaniciId === kullanici))
+    // Baslangic hikayesi: ilk GORULMEMIS, hepsi gorulmusse ilk.
+    const ilkGorulmemis = g[baslangic]?.hikayeler.findIndex((h) => !h.gordum) ?? -1
+    return { g: baslangic, h: ilkGorulmemis >= 0 ? ilkGorulmemis : 0 }
+  }
+
   useEffect(() => {
     let gecerli = true
+    const onbellekli = onbellekOku<HikayeSeridiVerisi>(ANAHTAR.hikayeSeridi)?.gruplar
+    if (onbellekli && onbellekli.length > 0) {
+      setGruplar(onbellekli)
+      setKonum(konumuSec(onbellekli))
+    }
     hikayeAkisiniGetir()
       .then((g) => {
         if (!gecerli) return
-        const baslangic = Math.max(0, g.findIndex((x) => x.kullaniciId === kullanici))
         setGruplar(g)
-        // Baslangic hikayesi: ilk GORULMEMIS, hepsi gorulmusse ilk.
-        const ilkGorulmemis = g[baslangic]?.hikayeler.findIndex((h) => !h.gordum) ?? -1
-        setKonum({ g: baslangic, h: ilkGorulmemis >= 0 ? ilkGorulmemis : 0 })
+        // Konum YALNIZCA ilk yuklemede seciliyor: onbellekten acildiysa
+        // kullanici bu arada ilerlemis olabilir, onu geri sarmayiz.
+        if (!onbellekli || onbellekli.length === 0) setKonum(konumuSec(g))
       })
       .catch((e) => {
-        if (gecerli) setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+        if (gecerli && !onbellekli) setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
       })
     return () => {
       gecerli = false
@@ -220,6 +247,50 @@ export default function HikayeIzleEkrani() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hikaye?.id])
+
+  /**
+   * ON YUKLEME (Instagram deseni). Olculdu: her ileri gecisinde yeni bir
+   * medya istegi gidiyor ve kare ~390 ms sonra beliriyordu; geri
+   * donuste (dosya artik onbellekte) 66 ms. Yani gecikme indirmenin
+   * kendisi. Artik gorunen karenin KOMSULARI onceden indiriliyor:
+   * ayni kisinin sonraki iki ve onceki bir hikayesi + SONRAKI KISININ
+   * ilk hikayesi (yatay kaydirma oraya gidiyor).
+   */
+  const komsuAdreslerRef = useRef<string[]>([])
+  function komsulariIndir() {
+    const adresler = komsuAdreslerRef.current
+    if (adresler.length > 0) Image.prefetch(adresler, { cachePolicy: 'memory-disk' })
+  }
+
+  useEffect(() => {
+    if (!gruplar) return
+    const adresler: string[] = []
+    const grupSimdi = gruplar[konum.g]
+    if (grupSimdi) {
+      for (const i of [konum.h + 1, konum.h + 2, konum.h - 1]) {
+        const url = grupSimdi.hikayeler[i]?.fotografUrl
+        if (url) adresler.push(url)
+      }
+    }
+    const sonrakiGrup = gruplar[konum.g + 1]?.hikayeler[0]?.fotografUrl
+    if (sonrakiGrup) adresler.push(sonrakiGrup)
+    if (adresler.length === 0) return
+
+    /*
+     * GORUNEN KARENIN ONUNE GECMESIN. Ilk yazimda on yukleme kare
+     * cizilirken basliyordu ve olcumde acilis 1581 -> 3683 ms'ye
+     * CIKTI: ayni bant genisligini paylasan uc indirme, bakilan
+     * fotografi geciktiriyordu. Artik kisa bir gecikmeyle, yani
+     * gorunen kare indikten sonra basliyor.
+     */
+    komsuAdreslerRef.current = adresler
+    // Asil tetikleyici gorunen karenin `onLoadEnd`i; bu zamanlayici
+    // yalnizca YEDEK (kare onbellekten geldiyse ya da hic yuklenmezse
+    // olay gelmeyebilir). `prefetch` ayni adres icin zararsiz.
+    const zamanlayici = setTimeout(komsulariIndir, ON_YUKLEME_GECIKMESI_MS)
+    return () => clearTimeout(zamanlayici)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gruplar, konum])
 
   // Pencere/klavye acilinca dur, kapaninca kaldigi yerden devam.
   useEffect(() => {
@@ -452,7 +523,24 @@ export default function HikayeIzleEkrani() {
       <GestureDetector gesture={suruklemeHareketi}>
         <Animated.View style={[stiller.sahne, { opacity: solma, transform: [{ translateY: surukleme }] }]}>
           {hikaye.fotografUrl && (
-            <Image source={{ uri: hikaye.fotografUrl }} style={StyleSheet.absoluteFill} contentFit="contain" testID={`hikaye-fotograf-${hikaye.id}`} />
+            <Image
+              source={{ uri: hikaye.fotografUrl }}
+              style={StyleSheet.absoluteFill}
+              contentFit="contain"
+              // Bellek + disk onbellegi ACIKCA: ayni hikayeye geri
+              // donuldugunde dosya yeniden indirilmemeli.
+              cachePolicy="memory-disk"
+              // Gecerken bilesen GERI DONUSUYOR; anahtar verilmezse
+              // expo-image eski kareyi yenisiyle karistiriyor.
+              recyclingKey={hikaye.id}
+              // Kare ANINDA degissin: solma efekti gecikme gibi okunuyor.
+              transition={0}
+              // Gorunen kare indi: SIRA komsularda. Boylece on yukleme
+              // bakilan fotografin bant genisligini calmiyor (olculdu:
+              // once basladiginda acilis 1581 -> 3683 ms'ye cikiyordu).
+              onLoadEnd={komsulariIndir}
+              testID={`hikaye-fotograf-${hikaye.id}`}
+            />
           )}
 
           {/* Dokunma bolgeleri: sol 1/3 geri, sag 2/3 ileri; basili tut durdur. */}

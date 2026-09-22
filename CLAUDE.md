@@ -1149,6 +1149,52 @@ gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
 `slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
+### HIKAYE GECISLERI: ON YUKLEME VE ANINDA ACILIS - 2026-09-22
+
+Kullanicinin bildirimi: "hikayeler arasi gecis cok kotu surekli yeniden
+yukleniyor gecikmeli geliyor." OLCULDU (yeni arac
+`araclar/hikaye-gecis-olcum.mjs`: izleyiciyi SERITTEN aciyor, ilk
+karenin ekrana gelme suresini ve her geciste giden medya istegini
+yaziyor). OTA `80d32f0c`, web `slooin--q1ziqvzo6k`.
+
+|  | Once | Sonra |
+|---|---|---|
+| Acilis: ilk fotograf ekranda | 1581 ms | **26 ms** |
+| Acilista RPC | 12 (hikaye_akisi + akis_profilleri + imzalama) | **1** (arka plan tazeleme) |
+| Ileri gecis | 389-466 ms, HER geciste yeni medya istegi | **7-14 ms, 0 istek** |
+| Geri gecis | 66-140 ms | **11-20 ms, 0 istek** |
+
+**UC KOK NEDEN:**
+1. **Izleyici veriyi bastan cekiyordu.** Ana sayfadaki serit ayni
+   `hikaye_akisi` + `akis_profilleri` + imzalamayi saniyeler once
+   yapmisti. Artik `ANAHTAR.hikayeSeridi` onbelleginden ANINDA aciliyor,
+   tazeleme arkada. Konum yalnizca ILK yuklemede seciliyor - onbellekten
+   acildiysa kullanici bu arada ilerlemis olabilir, geri sarilmaz.
+2. **On yukleme yoktu.** Her ileri gecisinde fotograf o an indiriliyordu.
+   Artik gorunen karenin komsulari onceden iniyor: ayni kisinin sonraki
+   IKI ve onceki BIR hikayesi + SONRAKI KISININ ilk hikayesi (yatay
+   kaydirma oraya gidiyor).
+3. **Gorsel onbellegi acik degildi.** `cachePolicy="memory-disk"` +
+   `recyclingKey={hikaye.id}` + `transition={0}` (solma efekti gecikme
+   gibi okunuyordu).
+
+**OLCUM SIRASINDA YASANAN VE DUZELTILEN HATA:** on yukleme ilk yazimda
+kare CIZILIRKEN basliyordu ve acilis 1581 -> **3683 ms'ye CIKTI** -
+ayni bant genisligini paylasan uc indirme bakilan fotografi
+geciktiriyor. Tetikleyici artik gorunen karenin `onLoadEnd`i (600 ms'lik
+zamanlayici yalnizca YEDEK: kare onbellekten geldiyse olay gelmeyebilir).
+DERS: on yukleme her zaman kazanc degildir - GORUNEN isin onune gecerse
+zarardir; olcum bunu ancak gercek gezinmeyle gosterir.
+
+**OLCUM ARACI DERSI:** ilk surum izleyiciyi `page.goto` ile aciyordu;
+tam sayfa yenileme modul duzeyindeki onbellegi sifirladigi icin
+"seritten aninda acilis" yolu HIC olculemiyordu. Arac artik seritteki
+daireye dokunuyor ve kareler arasinda ~1,2 sn bekliyor (kullanici da
+bakiyor) - yoksa on yuklemeye hic firsat taniyanmayan, gercekte olmayan
+bir kosul olculur.
+
+Jest 95 paket / 1240 test (izleyici 20).
+
 ### HIKAYE IZLEYICI = INSTAGRAM ISLEYISI - 2026-09-22
 
 Kullanicinin istegi: "Instagram'in hikaye isleyisini tam ogren ve
