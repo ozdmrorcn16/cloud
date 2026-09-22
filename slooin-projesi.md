@@ -394,6 +394,17 @@ denendi ve acilisi 3683 ms'ye cikardi), gorsel onbellegi acildi.
 Sonuc: acilis 26 ms, gecisler 7-20 ms ve ek indirme YOK.
 Jest 95 / 1240.
 
+**Ek (OTA `dfb3217a`):** yanit YAZMA kutusu kaldirildi (hizli tepki
+emojileri duruyor; yukari kaydirma artik yalnizca kendi hikayende
+izleyenleri aciyor). Gecikmenin ilk kok nedeni bulundu: hikaye
+imzalari ortak imza onbellegine BAGLI DEGILDI, her cekiliste yeni
+adres uretiliyor ve gorsel onbellegi iskaliyordu - baglandi.
+**ACIK KARAR:** asil darbogaz hikaye fotograflarinin ~2 MB olmasi
+(olculdu: 1686/1892/2507 KB). Supabase gorsel donusumu canlida
+denendi, 1686 KB -> 311 KB; ama tekrarlayan gider oldugu icin karar
+kullanicida. Ucretsiz alternatif `expo-image-manipulator` yeni native
+derleme istiyor. Jest 95 / 1241.
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS

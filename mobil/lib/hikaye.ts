@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import { hataMetni } from './hata-metni'
 import { dosyayiOku } from './dosya-oku'
 import { profilOzetleriniGetir } from './akis'
+import { hikayeMedyasiUrlHaritasi } from './fotograf-url'
 import { mesajGonder } from './sohbet'
 import { kimligiZorunluOku, kullaniciKimligi } from './kimlik'
 
@@ -19,7 +20,6 @@ export const HIKAYE_YAZI_SINIRI = 200
 export const EN_FAZLA_AKTIF_HIKAYE = 10
 /** Her hikaye izleyicide bu kadar kalir (ms). */
 export const HIKAYE_SURESI_MS = 5000
-const GECERLILIK_SANIYE = 60 * 60
 
 export type Hikaye = {
   id: string
@@ -63,17 +63,16 @@ type AkisSatiri = {
   goruntulenme_sayisi: number
 }
 
-/** Yol -> imzali adres; imzalanamayan haritada yok. */
+/**
+ * Yol -> imzali adres; imzalanamayan haritada yok.
+ *
+ * ORTAK IMZA ONBELLEGINDEN geciyor (2026-09-22): daha once burada ayri
+ * bir `createSignedUrls` cagrisi vardi ve her akis cekilisinde ayni
+ * dosya icin YENI adres uretiyordu. Adres degisince gorsel onbellegi
+ * iskaliyor ve fotograf yeniden iniyordu.
+ */
 export async function hikayeFotografiUrlHaritasi(yollar: string[]): Promise<Record<string, string>> {
-  const tekil = [...new Set(yollar.filter((y) => y))]
-  if (tekil.length === 0) return {}
-  const { data, error } = await supabase.storage.from(KOVA).createSignedUrls(tekil, GECERLILIK_SANIYE)
-  if (error || !data) return {}
-  const harita: Record<string, string> = {}
-  data.forEach((satir, i) => {
-    if (!satir.error && satir.signedUrl) harita[satir.path ?? tekil[i]] = satir.signedUrl
-  })
-  return harita
+  return hikayeMedyasiUrlHaritasi(yollar)
 }
 
 /**

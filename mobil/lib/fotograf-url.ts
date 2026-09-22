@@ -146,6 +146,18 @@ export async function checkInFotografiUrlHaritasi(yollar: string[]): Promise<Rec
   return toplulukImzala('check-in-fotograflari', yollar)
 }
 
+/**
+ * HIKAYE MEDYALARI (2026-09-22). Hikaye kovasi once `lib/hikaye.ts`
+ * icinde KENDI imzalama fonksiyonunu kullaniyordu ve onbellegi yoktu:
+ * her akis cekilisinde AYNI dosya icin YENI imzali adres uretiliyordu.
+ * Imzali adres degisince `expo-image`in onbellegi (anahtar = adres)
+ * iskaliyor ve fotograf yeniden INIYOR - kullanicinin "hikayeler hala
+ * gecikmeli geliyor" bildiriminin sebeplerinden biri buydu.
+ */
+export async function hikayeMedyasiUrlHaritasi(yollar: string[]): Promise<Record<string, string>> {
+  return toplulukImzala('hikaye-medyalari', yollar)
+}
+
 /** Bir check-in'in fotograflarini SIRASIYLA imzalar; imzalanamayan atlanir. */
 export async function checkInFotografiUrlleri(yollar: string[]): Promise<string[]> {
   const harita = await checkInFotografiUrlHaritasi(yollar)

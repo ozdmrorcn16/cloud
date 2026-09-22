@@ -1149,6 +1149,50 @@ gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
 `slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
+### HIKAYE: YANIT KUTUSU KALKTI, IMZA ONBELLEGI, DOSYA BOYUTU - 2026-09-22
+
+Kullanicinin istegi: "koydugun yanit yazi kaldir birde hala biraz
+gecikmeli geliyor hikayeler." OTA `dfb3217a`, web `slooin--47fmyt1sjl`.
+
+**1. Yanit YAZMA kutusu kaldirildi.** Alttaki "Yanit yaz..." girdisi ve
+"Gonder" dugmesi yok; HIZLI TEPKI emojileri duruyor (dokunmak emojiyi
+yanit olarak sohbete gonderiyor). Yan sonuc: yukari kaydirma artik
+YALNIZCA kendi hikayende izleyen listesini aciyor, baskasininkinde bir
+sey yapmiyor. `hikaye.yanitYerTutucu` ve `hikaye.gonder` anahtarlari
+7 dilde DURUYOR ama kullanilmiyor.
+
+**2. GECIKMENIN ILK KOK NEDENI: hikaye imzalari onbelleksizdi.**
+`lib/hikaye.ts` kendi `createSignedUrls` cagrisini yapiyordu; 09-22
+sabahi `lib/fotograf-url.ts`e eklenen imza onbellegine BAGLI DEGILDI.
+Sonuc: her akis cekilisinde ayni dosya icin YENI imzali adres, ve
+`expo-image` onbellegi adresi anahtar aldigi icin her seferinde iskalama
+-> fotograf yeniden iniyor. Artik ortak `hikayeMedyasiUrlHaritasi`
+(`toplulukImzala`) kullaniliyor; test: "ikinci akis cekilisinde AYNI
+adres doner ve sunucuya yeniden imzalatilmaz".
+DERS: bir kova icin onbellek yazildiginda O KOVAYI KULLANAN HER YOL
+ona baglanmali; ayri bir imzalama fonksiyonu sessizce onbellegi
+bypass eder.
+
+**3. ASIL DARBOGAZ OLCULDU: HIKAYE FOTOGRAFLARI ~2 MB.** Canlidaki uc
+hikaye 1686 / 1892 / 2507 KB (ortalama 2028 KB). `hikayeEkle`
+`quality: 0.8` ile cekiyor ama COZUNURLUK kucultmuyor - telefon
+kamerasi 4032 px cekiyor. Mobil veride tek kare saniyeler suruyor; on
+yukleme ve onbellek bunu gizliyor ama on yuklenmemis bir kareye
+gidilince gecikme geri geliyor (olcumde bir kare 3832 ms).
+
+**COZUM SECENEKLERI OLCULDU, KARAR KULLANICIDA (tekrarlayan gider):**
+- Supabase gorsel donusumu (`createSignedUrl` + `transform`): CANLIDA
+  DENENDI, 1686 KB -> **311 KB** (1080 px, kalite 75; %18). OTA ile
+  gider, mevcut hikayeler de kucuelur. AMA Pro planda ayda 100 "origin
+  image" dahil, sonrasi 1000 basina ~5 $ - tekrarlayan gider.
+- `expo-image-manipulator` ile YUKLEME sirasinda kucultme: ucretsiz ve
+  daha dogru (depolama da kucuelur), ama paket KURULU DEGIL - yeni
+  native derleme ister, OTA ile gitmez.
+- Ucretsiz ve OTA ile giden kismi cozum: `ImagePicker` `quality`
+  0.8 -> 0.5 (yalnizca YENI hikayeler, cozunurluk ayni kalir).
+
+Jest 95 paket / 1241 test.
+
 ### HIKAYE GECISLERI: ON YUKLEME VE ANINDA ACILIS - 2026-09-22
 
 Kullanicinin bildirimi: "hikayeler arasi gecis cok kotu surekli yeniden

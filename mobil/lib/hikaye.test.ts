@@ -205,3 +205,25 @@ describe('hikayeSeridiVerisiniGetir', () => {
     expect(profilOzetleriniGetir).toHaveBeenCalledTimes(1)
   })
 })
+
+/**
+ * IMZA ONBELLEGI (kullanicinin bildirimi 2026-09-22: "hala biraz
+ * gecikmeli geliyor hikayeler").
+ *
+ * Hikaye kovasi once KENDI imzalama fonksiyonunu kullaniyordu; her akis
+ * cekilisinde ayni dosya icin YENI adres uretiliyordu. Gorsel onbellegi
+ * (expo-image) adresi anahtar aldigi icin her seferinde iskaliyor ve
+ * fotograf yeniden iniyordu.
+ */
+describe('hikaye fotograf adresleri - imza onbellegi', () => {
+  it('ikinci akis cekilisinde AYNI adres doner ve sunucuya yeniden imzalatilmaz', async () => {
+    ;(supabase.rpc as jest.Mock).mockResolvedValue({ data: [satir({ id: 'h1', kullanici_id: 'ayse' })], error: null })
+
+    const ilk = await hikayeAkisiniGetir()
+    const imzaSayisi = createSignedUrls.mock.calls.length
+    const ikinci = await hikayeAkisiniGetir()
+
+    expect(ikinci[0].hikayeler[0].fotografUrl).toBe(ilk[0].hikayeler[0].fotografUrl)
+    expect(createSignedUrls).toHaveBeenCalledTimes(imzaSayisi)
+  })
+})

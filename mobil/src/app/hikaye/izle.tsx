@@ -2,14 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   Animated,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  type TextInput as TextInputTipi,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -92,13 +90,11 @@ export default function HikayeIzleEkrani() {
   const [menuAcik, setMenuAcik] = useState(false)
   const [silOnayi, setSilOnayi] = useState(false)
   const [gorenlerAcik, setGorenlerAcik] = useState(false)
-  const [yanit, setYanit] = useState('')
   const [yanitDurumu, setYanitDurumu] = useState<string | null>(null)
   const [klavyeAcik, setKlavyeAcik] = useState(false)
   // Basili tutulurken arayuz gizlenir (Instagram): fotografin onunde
   // hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor.
   const [basiliTutuluyor, setBasiliTutuluyor] = useState(false)
-  const yanitAlaniRef = useRef<TextInputTipi>(null)
 
   const grup = gruplar?.[konum.g] ?? null
   const hikaye = grup?.hikayeler[konum.h] ?? null
@@ -334,7 +330,7 @@ export default function HikayeIzleEkrani() {
    * Instagram'in izleyicisinde tek bir surukleme DORT sonuc verir ve
    * hangisi oldugu parmagin BASKIN YONUYLE belirlenir:
    *   asagi  -> kapat
-   *   yukari -> yanit kutusu (baskasinin hikayesi) / izleyenler (kendi)
+   *   yukari -> izleyenler (kendi hikayen; baskasininkinde bos)
    *   sola   -> SONRAKI KISI      saga -> ONCEKI KISI
    * Dokunus ile karistirilmamali: dokunus AYNI kisinin hikayeleri
    * arasinda gezer, kaydirma kisiyi atlar.
@@ -350,10 +346,13 @@ export default function HikayeIzleEkrani() {
   const yatay = useRef(new Animated.Value(0)).current
   const solma = surukleme.interpolate({ inputRange: [-320, 0, 320], outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' })
 
-  /** Yukari kaydirma: sahibi izleyenleri, digerleri yanit kutusunu acar. */
+  /**
+   * Yukari kaydirma: KENDI hikayende izleyen listesini acar. Baskasinin
+   * hikayesinde artik bir sey yapmiyor - yanit yazma kutusu kullanicinin
+   * istegiyle kaldirildi (2026-09-22), tepki icin alttaki emojiler var.
+   */
   const yukariAc = useCallback(() => {
     if (gruplarRef.current?.[konumRef.current.g]?.benimMi) setGorenlerAcik(true)
-    else yanitAlaniRef.current?.focus()
   }, [])
 
   function suruklemeyiYerineOturt() {
@@ -469,19 +468,6 @@ export default function HikayeIzleEkrani() {
     setTimeout(() => setYanitDurumu(null), 1800)
   }
 
-  async function yanitGonder() {
-    if (!hikaye || !grup || !yanit.trim()) return
-    const metin = yanit
-    setYanit('')
-    Keyboard.dismiss()
-    try {
-      await hikayeyeYanitVer(grup.kullaniciId, t('hikaye.yanitOnEki'), metin)
-      setYanitDurumu(t('hikaye.yanitGonderildi'))
-    } catch (e) {
-      setYanitDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-    setTimeout(() => setYanitDurumu(null), 1800)
-  }
 
   // ---- Cizim ----
   if (hata) {
@@ -662,8 +648,13 @@ export default function HikayeIzleEkrani() {
                 </Pressable>
               ) : (
                 <>
-                  {/* HIZLI TEPKILER (Instagram): dokunmak emojiyi DM olarak
-                      gonderir - bizde de yanit, yani sohbete dusuyor. */}
+                  {/*
+                    YANIT YAZMA KUTUSU KALDIRILDI (kullanicinin istegi
+                    2026-09-22: "koydugun yanit yazi kaldir"). Geriye
+                    HIZLI TEPKILER kaliyor: dokunmak emojiyi yanit olarak
+                    sohbete gonderiyor. Uzun yanit yazmak isteyen kisi
+                    ustteki addan profile, oradan sohbete gidiyor.
+                  */}
                   <View style={stiller.tepkiSatiri} testID="hikaye-tepkiler">
                     {HIZLI_TEPKILER.map((emoji) => (
                       <Pressable
@@ -679,22 +670,6 @@ export default function HikayeIzleEkrani() {
                       </Pressable>
                     ))}
                   </View>
-                <View style={stiller.yanitSatiri}>
-                  <TextInput
-                    ref={yanitAlaniRef}
-                    style={stiller.yanitGirdi}
-                    value={yanit}
-                    onChangeText={setYanit}
-                    placeholder={t('hikaye.yanitYerTutucu')}
-                    placeholderTextColor="rgba(255,255,255,0.65)"
-                    returnKeyType="send"
-                    onSubmitEditing={yanitGonder}
-                    testID="hikaye-yanit"
-                  />
-                  <Pressable onPress={yanitGonder} disabled={!yanit.trim()} accessibilityRole="button" accessibilityLabel={t('hikaye.gonder')} testID="hikaye-yanit-gonder" style={[stiller.gonder, !yanit.trim() && stiller.gonderPasif]}>
-                    <Text style={stiller.gonderYazi}>{t('hikaye.gonder')}</Text>
-                  </Pressable>
-                </View>
                 </>
               )}
               {yanitDurumu && (
@@ -788,20 +763,5 @@ const stilleriYap = (renk: Renk) =>
     tepki: { paddingHorizontal: 2, paddingVertical: 2 },
     tepkiBasili: { transform: [{ scale: 1.25 }] },
     tepkiYazi: { fontSize: 26 },
-    yanitSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
-    yanitGirdi: {
-      flex: 1,
-      color: '#FFFFFF',
-      fontFamily: yazi.govde,
-      fontSize: olcek.govde,
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.6)',
-      borderRadius: yuvarlak.hap,
-      paddingHorizontal: bosluk.m,
-      paddingVertical: 10,
-    },
-    gonder: { paddingHorizontal: bosluk.m, paddingVertical: 10, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncu },
-    gonderPasif: { opacity: 0.5 },
-    gonderYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
     yanitDurumu: { color: '#FFFFFF', fontFamily: yazi.govde, fontSize: olcek.minik, textAlign: 'center' },
   })

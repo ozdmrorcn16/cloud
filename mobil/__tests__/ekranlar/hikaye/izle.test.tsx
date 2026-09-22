@@ -131,8 +131,8 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByText('Hozee')).toBeTruthy()
     expect(screen.getByTestId('hikaye-yazi-metni')).toHaveTextContent('selam')
     await waitFor(() => expect(hikayeGoruntulendi).toHaveBeenCalledWith('a2'))
-    // Baskasinin hikayesi: yanit kutusu var, gorenler yok.
-    expect(screen.getByTestId('hikaye-yanit')).toBeTruthy()
+    // Baskasinin hikayesi: hizli tepkiler var, gorenler yok.
+    expect(screen.getByTestId('hikaye-tepkiler')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
   })
 
@@ -182,14 +182,13 @@ describe('HikayeIzleEkrani', () => {
     expect(mockPush).toHaveBeenCalledWith('/sikayet?hedefTur=hikaye&hedefId=a2&kullaniciId=ayse')
   })
 
-  it('yanit: on ekli sohbet mesaji gider, "Yanit gonderildi" gorunur, kutu bosalir', async () => {
+  it('YANIT YAZMA KUTUSU YOK (kullanicinin istegi 2026-09-22), tepkiler duruyor', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    await fireEvent.changeText(screen.getByTestId('hikaye-yanit'), 'çok güzel')
-    await fireEvent.press(screen.getByTestId('hikaye-yanit-gonder'))
-    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', 'çok güzel'))
-    expect(await screen.findByText('Yanıt gönderildi')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-yanit').props.value).toBe('')
+
+    expect(screen.queryByTestId('hikaye-yanit')).toBeNull()
+    expect(screen.queryByTestId('hikaye-yanit-gonder')).toBeNull()
+    expect(screen.getByTestId('hikaye-tepkiler')).toBeTruthy()
   })
 
   it('ASAGI surukleme kapatir', async () => {
@@ -245,7 +244,7 @@ describe('HikayeIzleEkrani', () => {
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  it('YUKARI kaydirma KAPATMAZ: baskasinin hikayesinde yanit alanina odaklanir', async () => {
+  it('YUKARI kaydirma KAPATMAZ (baskasinin hikayesinde bir sey acmaz)', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
