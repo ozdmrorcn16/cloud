@@ -399,11 +399,14 @@ emojileri duruyor; yukari kaydirma artik yalnizca kendi hikayende
 izleyenleri aciyor). Gecikmenin ilk kok nedeni bulundu: hikaye
 imzalari ortak imza onbellegine BAGLI DEGILDI, her cekiliste yeni
 adres uretiliyor ve gorsel onbellegi iskaliyordu - baglandi.
-**ACIK KARAR:** asil darbogaz hikaye fotograflarinin ~2 MB olmasi
-(olculdu: 1686/1892/2507 KB). Supabase gorsel donusumu canlida
-denendi, 1686 KB -> 311 KB; ama tekrarlayan gider oldugu icin karar
-kullanicida. Ucretsiz alternatif `expo-image-manipulator` yeni native
-derleme istiyor. Jest 95 / 1241.
+**ACIK IS (kullanicinin karari):** asil darbogaz hikaye
+fotograflarinin ~2 MB olmasi (olculdu: 1686/1892/2507 KB). Supabase
+gorsel donusumu canlida denendi (1686 KB -> 311 KB) ama tekrarlayan
+gider oldugu icin ACILMADI; kullanici "sonra ucretsizi yapicaz" dedi.
+YAPILACAK: bir sonraki NATIVE DERLEMEYLE birlikte
+`expo-image-manipulator` kurulup `hikayeEkle` yukleme oncesi 1080 px'e
+olceklesin (ayni desen check-in fotograflari icin de dusunulmeli).
+Jest 95 / 1241.
 
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ

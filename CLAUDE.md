@@ -1180,16 +1180,25 @@ kamerasi 4032 px cekiyor. Mobil veride tek kare saniyeler suruyor; on
 yukleme ve onbellek bunu gizliyor ama on yuklenmemis bir kareye
 gidilince gecikme geri geliyor (olcumde bir kare 3832 ms).
 
-**COZUM SECENEKLERI OLCULDU, KARAR KULLANICIDA (tekrarlayan gider):**
-- Supabase gorsel donusumu (`createSignedUrl` + `transform`): CANLIDA
-  DENENDI, 1686 KB -> **311 KB** (1080 px, kalite 75; %18). OTA ile
-  gider, mevcut hikayeler de kucuelur. AMA Pro planda ayda 100 "origin
-  image" dahil, sonrasi 1000 basina ~5 $ - tekrarlayan gider.
-- `expo-image-manipulator` ile YUKLEME sirasinda kucultme: ucretsiz ve
-  daha dogru (depolama da kucuelur), ama paket KURULU DEGIL - yeni
-  native derleme ister, OTA ile gitmez.
-- Ucretsiz ve OTA ile giden kismi cozum: `ImagePicker` `quality`
-  0.8 -> 0.5 (yalnizca YENI hikayeler, cozunurluk ayni kalir).
+**KULLANICININ KARARI: UCRETSIZ YOL, SONRA.** Secenekler olculup
+sunuldu; kullanici "sonra ucretsizi yapicaz bu acik is kalsin" dedi.
+Yani:
+- **Supabase gorsel donusumu ACILMADI** (tekrarlayan gider). Canlida
+  DENENDI ve calisiyor: `createSignedUrl(yol, sure, { transform: {
+  width: 1080, quality: 75 } })` -> 1686 KB yerine **311 KB** (%18);
+  720 px / kalite 70 ise 188 KB. Bedeli Pro planda ayda 100 "origin
+  image" dahil, sonrasi 1000 basina ~5 $. Tekrar gundeme gelirse
+  olcum burada, yeniden denemeye gerek yok.
+- **ACIK IS (yapilacak): `expo-image-manipulator` ile YUKLEME sirasinda
+  kucultme** (1080 px + kalite ~0.75). Ucretsiz ve daha dogru: depolama
+  da kucuelur, her goruntulemede degil BIR KEZ islenir. Paket KURULU
+  DEGIL, yani `npx expo install expo-image-manipulator` + YENI NATIVE
+  DERLEME gerekiyor; bir sonraki derlemeyle birlikte yapilacak.
+  Dokunulacak yer: `lib/hikaye.ts` -> `hikayeEkle` (dosyayi okumadan
+  once olceklendir) ve ayni desen check-in fotograflari icin de
+  degerlendirilmeli (`lib/checkin-fotograf-yukle.ts`).
+- Denenmeyen kismi cozum: `ImagePicker` `quality` 0.8 -> 0.5 (ucretsiz,
+  OTA, ama cozunurluk ayni kaldigi icin yarim cozum).
 
 Jest 95 paket / 1241 test.
 
