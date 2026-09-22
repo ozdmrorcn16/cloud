@@ -346,6 +346,14 @@ turda ve 60 sn'de bir. Olcum: ana sayfa 37/1249 ms -> 13/689 ms, profil
 26/951 -> 10/356, mesajlar ~12 -> 4. Jest 95 / 1222. Ayrinti CLAUDE.md
 "PERFORMANS".
 
+**Ek (ayni gece, OTA `f4847f7e`):** kullanicinin "bildirimler birazcik
+yine yavas" bildirimi uzerine BILDIRIMLER ekrani da onbellege alindi
+(ilk turda listede yoktu) ve iki tekrar kaldirildi: `gelenIstekleriGetir`
+alti sirali tur yerine iki turda (kimlik sorgulari paralel, kisiler tek
+`bag_kisileri` + tek avatar cagrisi), ekranin avatarlari bastan sorma
+adimi kalkti (listeler avatari zaten tasiyor). 8 istek -> 6, ekran dolu
+aciliyor. Jest 95 / 1225.
+
 **ACIK / bekleyen:** telefonda dogrulanmamis: duzenleme sayfasi, cok
 fotograf secimi, begeni/yorum push'u, Paylasim ekrani, HIKAYE AKISININ
 TAMAMI (serit, izleyici dokunus/zamanlama, dikey kapatma) ve PERFORMANS

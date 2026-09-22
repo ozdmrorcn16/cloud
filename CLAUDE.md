@@ -1106,8 +1106,24 @@ sayisini ve sureyi yazar). OTA grup `0e8c037c`, web
 - Olcumde SURE degil ISTEK SAYISI ve TEKRAR bakilir: ayni RPC'nin ayni
   cizimde kac kez gectigi kok nedeni dogrudan gosteriyor.
 
-Jest 95 paket / 1222 test, tsc temiz. GERCEK CIHAZDA DOGRULANMADI -
-telefonda sekme gecisinin hissi kullanicidan.
+**IKINCI TUR - BILDIRIMLER (ayni gun, kullanicinin bildirimi "daha iyi
+bildirimler birazcik yine yavas sanki"):** ilk turda dort sekme
+onbellege alinmisti, BILDIRIMLER LISTEDE YOKTU. Ayrica iki gercek
+tekrar bulundu:
+- `gelenIstekleriGetir` ALTI SIRALI tur atiyordu: takip kimlikleri ->
+  sohbet kimlikleri -> takip kisileri (bag_kisileri + avatar) -> sohbet
+  kisileri (yine bag_kisileri + avatar). Artik iki kimlik sorgusu
+  PARALEL ve butun kisiler TEK `bag_kisileri` + tek avatar cagrisiyla
+  cozulup ayriliyor.
+- Bildirimler ekrani avatarlari BASTAN bir kez daha soruyordu; oysa
+  istek listesi (`BagKisi.avatarUrl`) ve etkilesimler avatarlarini
+  zaten tasiyor. Artik yalnizca EKSIK kalanlar (etiketleyenler)
+  sorulur, hicbiri eksik degilse istek yok - `akis_profilleri` 2x -> 1x.
+Olcum: Bildirimler 8 istek -> 6, ve ekran artik dolu aciliyor.
+
+Jest 95 paket / 1225 test, tsc temiz. OTA `f4847f7e`, web
+`slooin--us8w53iv2y`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
+gecisinin hissi kullanicidan.
 
 ### HIKAYE AKISI (24 SAAT) - 2026-09-22
 

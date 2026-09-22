@@ -53,16 +53,26 @@ async function kimlikleriOku(
 export async function gelenIstekleriGetir(): Promise<{ takip: BagKisi[]; sohbet: BagKisi[] }> {
   const benimId = await kendiKullaniciId()
 
-  const takipKimlikleri = await kimlikleriOku(
-    'takipler', 'takip_eden_id', 'takip_edilen_id', benimId, 'beklemede'
-  )
-  const sohbetKimlikleri = await kimlikleriOku(
-    'sohbet_istekleri', 'gonderen_id', 'alan_id', benimId, 'beklemede'
-  )
+  // IKI KIMLIK SORGUSU PARALEL, KISILER TEK TURDA (2026-09-22 performans
+  // turu). Onceden dort adim SIRAYLA gidiyordu (takip kimlikleri ->
+  // sohbet kimlikleri -> takip kisileri -> sohbet kisileri) ve son iki
+  // adimin her biri kendi icinde iki istek daha atiyordu: bildirimler
+  // ekrani alti gidis-donus bekliyordu. Artik iki tur:
+  // (1) iki kimlik sorgusu paralel, (2) BUTUN kisiler tek `bag_kisileri`
+  // + tek avatar cagrisiyla cozulup ayriliyor.
+  const [takipKimlikleri, sohbetKimlikleri] = await Promise.all([
+    kimlikleriOku('takipler', 'takip_eden_id', 'takip_edilen_id', benimId, 'beklemede'),
+    kimlikleriOku('sohbet_istekleri', 'gonderen_id', 'alan_id', benimId, 'beklemede'),
+  ])
+
+  const hepsi = await kisileriCoz([...new Set([...takipKimlikleri, ...sohbetKimlikleri])])
+  const kisiHaritasi = new Map(hepsi.map((k) => [k.id, k]))
+  const ayir = (kimlikler: string[]) =>
+    kimlikler.map((id) => kisiHaritasi.get(id)).filter((k): k is BagKisi => k !== undefined)
 
   return {
-    takip: await kisileriCoz(takipKimlikleri),
-    sohbet: await kisileriCoz(sohbetKimlikleri),
+    takip: ayir(takipKimlikleri),
+    sohbet: ayir(sohbetKimlikleri),
   }
 }
 

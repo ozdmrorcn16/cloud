@@ -17,6 +17,7 @@ import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { ALT_GEZINME_PAYI, rozetleriTazele } from '../tasarim/AltGezinme'
 import { Avatar } from '../tasarim/Avatar'
+import { ANAHTAR, onbellekOku, onbellekYaz } from '../../lib/onbellek'
 
 /**
  * BILDIRIMLER.
@@ -50,13 +51,28 @@ export default function BildirimlerEkrani() {
   const stiller = useStiller(stilleriYap)
   const router = useRouter()
   const { t } = useDil()
-  const [takipIstekleri, setTakipIstekleri] = useState<BagKisi[]>([])
-  const [etiketler, setEtiketler] = useState<BekleyenEtiket[]>([])
+  // ONBELLEKTEN BASLA (kullanicinin bildirimi 2026-09-22: "bildirimler
+  // birazcik yine yavas sanki"). Ekran `Slot` yuzunden her donuste
+  // sifirdan kuruluyordu; son liste elde varsa aninda cizilir.
+  const onbelleklenmis = onbellekOku<{
+    takipIstekleri: BagKisi[]
+    etiketler: BekleyenEtiket[]
+    etkilesimler: EtkilesimBildirimi[]
+    avatarlar: Record<string, string | null>
+  }>(ANAHTAR.bildirimler)
+  const [takipIstekleri, setTakipIstekleri] = useState<BagKisi[]>(
+    onbelleklenmis?.takipIstekleri ?? []
+  )
+  const [etiketler, setEtiketler] = useState<BekleyenEtiket[]>(onbelleklenmis?.etiketler ?? [])
   // ETKILESIMLER (kullanicinin istegi 2026-09-22): paylasimlarima gelen
   // begeni ve yorumlar; avatar ve ad ozetle birlikte geliyor.
-  const [etkilesimler, setEtkilesimler] = useState<EtkilesimBildirimi[]>([])
-  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>({})
-  const [yukleniyor, setYukleniyor] = useState(true)
+  const [etkilesimler, setEtkilesimler] = useState<EtkilesimBildirimi[]>(
+    onbelleklenmis?.etkilesimler ?? []
+  )
+  const [avatarlar, setAvatarlar] = useState<Record<string, string | null>>(
+    onbelleklenmis?.avatarlar ?? {}
+  )
+  const [yukleniyor, setYukleniyor] = useState(onbelleklenmis === undefined)
   const [hata, setHata] = useState<string | null>(null)
 
   async function yukle() {
@@ -72,15 +88,27 @@ export default function BildirimlerEkrani() {
       setEtkilesimler(gelenEtkilesimler)
       setHata(null)
 
-      // Avatarlar listeden SONRA ve ayri geliyor: fotograf okunamazsa
-      // bildirimler yine gorunur, yalnizca bas harf cizilir.
-      const kimlikler = Array.from(
-        new Set([
-          ...istekler.takip.map((k) => k.id),
-          ...bekleyen.map((e) => e.etiketleyenId),
-        ])
-      )
-      setAvatarlar(await avatarlariGetir(kimlikler))
+      // Avatarlarin cogu ZATEN ELDE (2026-09-22): istek listesi
+      // `BagKisi.avatarUrl` ile, etkilesimler kendi avatarlariyla
+      // geliyor. Onceden ekran hepsini bastan bir kez daha soruyordu -
+      // ucuncu bir `akis_profilleri` turu. Artik yalnizca EKSIK kalanlar
+      // (etiketleyenler) sorulur; hicbiri eksik degilse istek yok.
+      const eldeki: Record<string, string | null> = {}
+      for (const k of istekler.takip) eldeki[k.id] = k.avatarUrl ?? null
+      for (const e of gelenEtkilesimler) eldeki[e.aktorId] = e.avatarUrl
+      const eksik = bekleyen.map((e) => e.etiketleyenId).filter((id) => !(id in eldeki))
+      const tamamlayici =
+        eksik.length > 0
+          ? await avatarlariGetir([...new Set(eksik)]).catch(() => ({}) as Record<string, string | null>)
+          : {}
+      const tumAvatarlar = { ...eldeki, ...tamamlayici }
+      setAvatarlar(tumAvatarlar)
+      onbellekYaz(ANAHTAR.bildirimler, {
+        takipIstekleri: istekler.takip,
+        etiketler: bekleyen,
+        etkilesimler: gelenEtkilesimler,
+        avatarlar: tumAvatarlar,
+      })
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     } finally {

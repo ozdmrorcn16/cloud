@@ -82,7 +82,7 @@ try {
   const tur = []
   // Alt gezinme etiketleri (lib/ceviriler/tr.ts `altGezinme`). Check-in
   // dugmesinin yazisi yok, bu yuzden Kesfet olculmuyor.
-  for (const e of ['Bildirimler', 'Mesajlar', 'Profil', 'Ana sayfa', 'Profil', 'Ana sayfa']) {
+  for (const e of ['Bildirimler', 'Mesajlar', 'Profil', 'Ana sayfa', 'Bildirimler', 'Mesajlar', 'Profil', 'Ana sayfa']) {
     tur.push(await sekme(e))
     await new Promise((c) => setTimeout(c, 500))
   }
@@ -94,7 +94,7 @@ try {
       continue
     }
     console.log(`${s.etiket.padEnd(12)} ${String(s.istek).padStart(3)} istek  ${String(s.sureMs).padStart(5)} ms`)
-    for (const [yol, n] of Object.entries(s.dokum).sort((a, b) => b[1] - a[1])) {
+    for (const [yol, n] of Object.entries(s.dokum).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) {
       console.log(`             ${String(n).padStart(3)}x ${yol}`)
     }
   }

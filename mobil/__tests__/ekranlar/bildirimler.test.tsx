@@ -5,6 +5,7 @@ import { takipIsteginiYanitla } from '../../lib/bag'
 import { bekleyenEtiketleriGetir, etiketiYanitla } from '../../lib/etiket'
 import { avatarlariGetir } from '../../lib/akis'
 import { etkilesimBildirimleriniGetir } from '../../lib/etkilesim'
+import { ANAHTAR, onbellekYaz } from '../../lib/onbellek'
 
 jest.mock('../../lib/bag-listeleri', () => ({ gelenIstekleriGetir: jest.fn() }))
 jest.mock('../../lib/bag', () => ({ takipIsteginiYanitla: jest.fn() }))
@@ -40,6 +41,52 @@ beforeEach(() => {
   ;(etiketiYanitla as jest.Mock).mockResolvedValue(undefined)
   ;(avatarlariGetir as jest.Mock).mockResolvedValue({})
   ;(etkilesimBildirimleriniGetir as jest.Mock).mockResolvedValue([])
+})
+
+describe('BildirimlerEkrani - performans (2026-09-22)', () => {
+  /**
+   * Kullanicinin bildirimi: "bildirimler birazcik yine yavas sanki."
+   * Olculen iki sebep: (a) ekran `Slot` yuzunden her donuste sifirdan
+   * kuruluyordu, (b) istek listesi ve etkilesimler avatarlarini ZATEN
+   * tasirken ekran hepsini bir kez daha soruyordu (ucuncu bir
+   * `akis_profilleri` turu).
+   */
+  it('ELDEKI AVATARLAR yeniden sorulmuyor: hepsi listelerden geliyorsa istek YOK', async () => {
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({
+      takip: [{ id: 'kullanici-2', ad: 'Ada', kullaniciAdi: 'ada', avatarUrl: 'https://imzali/ada.jpg' }],
+      sohbet: [],
+    })
+    ;(bekleyenEtiketleriGetir as jest.Mock).mockResolvedValue([])
+
+    await render(<BildirimlerEkrani />)
+
+    expect(await screen.findByText(/Ada/)).toBeTruthy()
+    expect(avatarlariGetir).not.toHaveBeenCalled()
+  })
+
+  it('YALNIZCA EKSIK avatarlar sorulur (etiketleyen listede yoksa)', async () => {
+    ;(gelenIstekleriGetir as jest.Mock).mockResolvedValue({ takip: [], sohbet: [] })
+    ;(bekleyenEtiketleriGetir as jest.Mock).mockResolvedValue([ETIKET])
+
+    await render(<BildirimlerEkrani />)
+
+    await waitFor(() => expect(avatarlariGetir).toHaveBeenCalledWith(['kullanici-2']))
+  })
+
+  it('ONBELLEK: eldeki bildirimler ANINDA cizilir, ag cevabi beklenmez', async () => {
+    onbellekYaz(ANAHTAR.bildirimler, {
+      takipIstekleri: [{ id: 'kullanici-9', ad: 'Deniz', kullaniciAdi: 'deniz', avatarUrl: null }],
+      etiketler: [],
+      etkilesimler: [],
+      avatarlar: {},
+    })
+    // Ag CEVAP VERMIYOR: yine de liste dolu gorunmeli.
+    ;(gelenIstekleriGetir as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await render(<BildirimlerEkrani />)
+
+    expect(screen.getByText(/Deniz/)).toBeTruthy()
+  })
 })
 
 describe('BildirimlerEkrani', () => {
