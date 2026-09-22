@@ -733,6 +733,10 @@ export default {
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    tepkiGonder: '{{emoji}} tepkisi gönder',
+    tepkiGonderildi: '{{emoji}} gönderildi',
+    sonrakiKisi: 'Sonraki kişi',
+    oncekiKisi: 'Önceki kişi',
     hikayen: 'Hikâyen',
     hikayeEkle: 'Hikâye ekle',
     kisininHikayesi: '{{ad}} hikâyesi',

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  type TextInput as TextInputTipi,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -42,6 +43,16 @@ const ALT_GOLGE = 132
 /** Dikey surukleme kapatma esikleri - FotografGezgini ile ayni. */
 const KAPATMA_MESAFESI = 120
 const KAPATMA_HIZI = 900
+
+/**
+ * HIZLI TEPKILER - Instagram'in hikaye tepki seti. Dokunmak emojiyi
+ * mesaj olarak gonderiyor (Instagram'da da DM'e dusuyor).
+ */
+const HIZLI_TEPKILER = ['❤️', '😂', '😮', '😢', '👏', '🔥', '🎉', '😍'] as const
+
+/** Yatay kaydirmada kisi degistirme esikleri (Instagram: sola = sonraki hesap). */
+const KISI_GECIS_MESAFESI = 70
+const KISI_GECIS_HIZI = 650
 
 /**
  * HIKAYE IZLEYICI (2026-09-22). `/hikaye/izle?kullanici=<id>`: seridin
@@ -79,6 +90,10 @@ export default function HikayeIzleEkrani() {
   const [yanit, setYanit] = useState('')
   const [yanitDurumu, setYanitDurumu] = useState<string | null>(null)
   const [klavyeAcik, setKlavyeAcik] = useState(false)
+  // Basili tutulurken arayuz gizlenir (Instagram): fotografin onunde
+  // hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor.
+  const [basiliTutuluyor, setBasiliTutuluyor] = useState(false)
+  const yanitAlaniRef = useRef<TextInputTipi>(null)
 
   const grup = gruplar?.[konum.g] ?? null
   const hikaye = grup?.hikayeler[konum.h] ?? null
@@ -132,6 +147,26 @@ export default function HikayeIzleEkrani() {
     if (!g) return
     if (k.h > 0) setKonum({ g: k.g, h: k.h - 1 })
     else if (k.g > 0) setKonum({ g: k.g - 1, h: 0 })
+    else setKonum({ g: 0, h: 0 })
+  }, [])
+
+  /**
+   * KISI GECISI (Instagram: sola kaydir = sonraki hesap, saga kaydir =
+   * onceki hesap). Dokunustan FARKLI: dokunus ayni kisinin hikayeleri
+   * arasinda gezer, kaydirma kisiyi atlar. Son kisiden ileri kaydirmak
+   * izleyiciyi kapatir (Instagram da boyle).
+   */
+  const sonrakiKisi = useCallback(() => {
+    const g = gruplarRef.current
+    const k = konumRef.current
+    if (!g) return
+    if (k.g + 1 < g.length) setKonum({ g: k.g + 1, h: 0 })
+    else kapatRef.current()
+  }, [])
+
+  const oncekiKisi = useCallback(() => {
+    const k = konumRef.current
+    if (k.g > 0) setKonum({ g: k.g - 1, h: 0 })
     else setKonum({ g: 0, h: 0 })
   }, [])
 
@@ -214,44 +249,111 @@ export default function HikayeIzleEkrani() {
 
   function basiliBasladi() {
     basiliRef.current = true
+    setBasiliTutuluyor(true)
     durdur()
   }
   function basiliBitti() {
     basiliRef.current = false
+    setBasiliTutuluyor(false)
     if (!duraklatildiRef.current) ilerleme.stopAnimation((deger) => oynat(deger))
   }
 
-  // ---- Dikey surukleme ----
+  // ---- Surukleme: Instagram'in dort yonu ----
+  /*
+   * Instagram'in izleyicisinde tek bir surukleme DORT sonuc verir ve
+   * hangisi oldugu parmagin BASKIN YONUYLE belirlenir:
+   *   asagi  -> kapat
+   *   yukari -> yanit kutusu (baskasinin hikayesi) / izleyenler (kendi)
+   *   sola   -> SONRAKI KISI      saga -> ONCEKI KISI
+   * Dokunus ile karistirilmamali: dokunus AYNI kisinin hikayeleri
+   * arasinda gezer, kaydirma kisiyi atlar.
+   *
+   * Onceden yalnizca dikey vardi ve YUKARI da kapatiyordu (fotograf
+   * gezgininden gelen desen). Instagram'da yukari kaydirma kapatmaz -
+   * yanit/izleyen acar; kullanicinin istegi uzerine (2026-09-22,
+   * "Instagram'in hikaye isleyisini tam ogren ve aynisini yap") bu
+   * ekranda Instagram davranisi gecerli. Fotograf gezginindeki
+   * "yukari da kapatir" kurali DEGISMEDI, o ayri bir ekran.
+   */
   const surukleme = useRef(new Animated.Value(0)).current
+  const yatay = useRef(new Animated.Value(0)).current
   const solma = surukleme.interpolate({ inputRange: [-320, 0, 320], outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' })
+
+  /** Yukari kaydirma: sahibi izleyenleri, digerleri yanit kutusunu acar. */
+  const yukariAc = useCallback(() => {
+    if (gruplarRef.current?.[konumRef.current.g]?.benimMi) setGorenlerAcik(true)
+    else yanitAlaniRef.current?.focus()
+  }, [])
+
+  function suruklemeyiYerineOturt() {
+    if (hareket) {
+      Animated.spring(surukleme, { toValue: 0, speed: 22, bounciness: 4, useNativeDriver: true }).start()
+      Animated.spring(yatay, { toValue: 0, speed: 22, bounciness: 4, useNativeDriver: true }).start()
+    } else {
+      surukleme.setValue(0)
+      yatay.setValue(0)
+    }
+  }
+
   const suruklemeHareketi = useMemo(
     () =>
       Gesture.Pan()
         .withTestId('hikaye-surukleme')
         .maxPointers(1)
-        .activeOffsetY([-12, 12])
-        .failOffsetX([-12, 12])
+        .minDistance(12)
         .onBegin(() => {
           basiliRef.current = true
+          setBasiliTutuluyor(true)
           durdur()
         })
-        .onUpdate((e) => surukleme.setValue(e.translationY))
+        .onUpdate((e) => {
+          // Parmak hangi yonde baskinsa yalnizca o eksen kayar; ikisi
+          // birden kayarsa hareket "hangi karar verilecek" belirsizlesir.
+          if (Math.abs(e.translationX) > Math.abs(e.translationY)) {
+            yatay.setValue(e.translationX)
+            surukleme.setValue(0)
+          } else {
+            surukleme.setValue(e.translationY)
+            yatay.setValue(0)
+          }
+        })
         .onEnd((e) => {
           basiliRef.current = false
-          if (Math.abs(e.translationY) > KAPATMA_MESAFESI || Math.abs(e.velocityY) > KAPATMA_HIZI) {
-            kapatRef.current()
-            return
+          setBasiliTutuluyor(false)
+          const yatayMi = Math.abs(e.translationX) > Math.abs(e.translationY)
+
+          if (yatayMi) {
+            const gecer =
+              Math.abs(e.translationX) > KISI_GECIS_MESAFESI || Math.abs(e.velocityX) > KISI_GECIS_HIZI
+            if (gecer) {
+              // Sola kaydirma (negatif) SONRAKI kisi.
+              if (e.translationX < 0) sonrakiKisi()
+              else oncekiKisi()
+              yatay.setValue(0)
+              return
+            }
+          } else {
+            if (e.translationY > KAPATMA_MESAFESI || e.velocityY > KAPATMA_HIZI) {
+              kapatRef.current()
+              return
+            }
+            if (e.translationY < -KAPATMA_MESAFESI || e.velocityY < -KAPATMA_HIZI) {
+              suruklemeyiYerineOturt()
+              yukariAc()
+              return
+            }
           }
-          if (hareket) Animated.spring(surukleme, { toValue: 0, speed: 22, bounciness: 4, useNativeDriver: true }).start()
-          else surukleme.setValue(0)
+
+          suruklemeyiYerineOturt()
           if (!duraklatildiRef.current) ilerleme.stopAnimation((deger) => oynat(deger))
         })
         .onFinalize(() => {
           basiliRef.current = false
+          setBasiliTutuluyor(false)
         })
         .runOnJS(true),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hareket]
+    [hareket, sonrakiKisi, oncekiKisi, yukariAc]
   )
 
   // ---- Eylemler ----
@@ -282,6 +384,18 @@ export default function HikayeIzleEkrani() {
   function sikayetEt() {
     if (!hikaye || !grup) return
     router.push(`/sikayet?hedefTur=hikaye&hedefId=${hikaye.id}&kullaniciId=${grup.kullaniciId}` as never)
+  }
+
+  /** Hizli tepki: emoji, yanit olarak sohbete gider (Instagram deseni). */
+  async function tepkiGonder(emoji: string) {
+    if (!hikaye || !grup) return
+    try {
+      await hikayeyeYanitVer(grup.kullaniciId, t('hikaye.yanitOnEki'), emoji)
+      setYanitDurumu(t('hikaye.tepkiGonderildi', { emoji }))
+    } catch (e) {
+      setYanitDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+    setTimeout(() => setYanitDurumu(null), 1800)
   }
 
   async function yanitGonder() {
@@ -363,17 +477,30 @@ export default function HikayeIzleEkrani() {
           */}
           <LinearGradient
             colors={['rgba(0,0,0,0.70)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0)']}
-            style={[stiller.ustGolge, { height: guvenliAlan.top + UST_GOLGE }]}
+            style={[
+              stiller.ustGolge,
+              { height: guvenliAlan.top + UST_GOLGE },
+              basiliTutuluyor && stiller.gizli,
+            ]}
             pointerEvents="none"
           />
           <LinearGradient
             colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0.70)']}
-            style={[stiller.altGolge, { height: guvenliAlan.bottom + ALT_GOLGE }]}
+            style={[
+              stiller.altGolge,
+              { height: guvenliAlan.bottom + ALT_GOLGE },
+              basiliTutuluyor && stiller.gizli,
+            ]}
             pointerEvents="none"
           />
 
           {/* Ust: ilerleme cubuklari + kimlik */}
-          <View style={[stiller.ust, { paddingTop: guvenliAlan.top + bosluk.s }]} pointerEvents="box-none">
+          {/* BASILI TUTARKEN ARAYUZ GIZLENIR (Instagram): fotografin onunde
+              hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor. */}
+          <View
+            style={[stiller.ust, { paddingTop: guvenliAlan.top + bosluk.s }, basiliTutuluyor && stiller.gizli]}
+            pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
+          >
             <View style={stiller.cubuklar} testID="hikaye-ilerleme">
               {grup.hikayeler.map((h, i) => (
                 <View key={h.id} style={stiller.cubukZemin}>
@@ -427,7 +554,11 @@ export default function HikayeIzleEkrani() {
           </View>
 
           {/* Alt: yazi + (gorenler | yanit) */}
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={stiller.altKap} pointerEvents="box-none">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={[stiller.altKap, basiliTutuluyor && stiller.gizli]}
+            pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
+          >
             <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
               {hikaye.yazi ? (
                 <View style={stiller.yaziKutusu}>
@@ -442,8 +573,27 @@ export default function HikayeIzleEkrani() {
                   <Text style={stiller.gorenlerYazi}>{t('hikaye.kisiGordu', { sayi: hikaye.goruntulenmeSayisi })}</Text>
                 </Pressable>
               ) : (
+                <>
+                  {/* HIZLI TEPKILER (Instagram): dokunmak emojiyi DM olarak
+                      gonderir - bizde de yanit, yani sohbete dusuyor. */}
+                  <View style={stiller.tepkiSatiri} testID="hikaye-tepkiler">
+                    {HIZLI_TEPKILER.map((emoji) => (
+                      <Pressable
+                        key={emoji}
+                        onPress={() => tepkiGonder(emoji)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('hikaye.tepkiGonder', { emoji })}
+                        testID={`hikaye-tepki-${emoji}`}
+                        style={({ pressed }) => [stiller.tepki, pressed && stiller.tepkiBasili]}
+                        hitSlop={6}
+                      >
+                        <Text style={stiller.tepkiYazi}>{emoji}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
                 <View style={stiller.yanitSatiri}>
                   <TextInput
+                    ref={yanitAlaniRef}
                     style={stiller.yanitGirdi}
                     value={yanit}
                     onChangeText={setYanit}
@@ -457,6 +607,7 @@ export default function HikayeIzleEkrani() {
                     <Text style={stiller.gonderYazi}>{t('hikaye.gonder')}</Text>
                   </Pressable>
                 </View>
+                </>
               )}
               {yanitDurumu && (
                 <Text style={stiller.yanitDurumu} testID="hikaye-yanit-durumu">
@@ -544,6 +695,11 @@ const stilleriYap = (renk: Renk) =>
     yazi: { color: '#FFFFFF', fontFamily: yazi.govdeOrta, fontSize: olcek.govde, textAlign: 'center' },
     gorenler: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 },
     gorenlerYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
+    gizli: { opacity: 0 },
+    tepkiSatiri: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: bosluk.xs, paddingBottom: bosluk.xs },
+    tepki: { paddingHorizontal: 2, paddingVertical: 2 },
+    tepkiBasili: { transform: [{ scale: 1.25 }] },
+    tepkiYazi: { fontSize: 26 },
     yanitSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     yanitGirdi: {
       flex: 1,

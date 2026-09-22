@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
+import { StyleSheet } from 'react-native'
 import { State } from 'react-native-gesture-handler'
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils'
 import HikayeIzleEkrani from '../../../src/app/hikaye/izle'
@@ -87,6 +88,16 @@ function gruplar(): HikayeGrubu[] {
   ]
 }
 
+/** Tek parmakla surukleme: yatay (x) ya da dikey (y) baskin. */
+function surukle({ x = 0, y = 0 }: { x?: number; y?: number }) {
+  fireGestureHandler(getByGestureTestId('hikaye-surukleme'), [
+    { state: State.BEGAN, translationX: 0, translationY: 0 },
+    { state: State.ACTIVE, translationX: x / 2, translationY: y / 2 },
+    { state: State.ACTIVE, translationX: x, translationY: y },
+    { state: State.END, translationX: x, translationY: y, velocityX: 0, velocityY: 0 },
+  ])
+}
+
 async function menudenSec(testID: string) {
   await fireEvent.press(await screen.findByTestId(testID))
   await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
@@ -172,16 +183,112 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByTestId('hikaye-yanit').props.value).toBe('')
   })
 
-  it('dikey surukleme kapatir', async () => {
+  it('ASAGI surukleme kapatir', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    fireGestureHandler(getByGestureTestId('hikaye-surukleme'), [
-      { state: State.BEGAN, translationY: 0 },
-      { state: State.ACTIVE, translationY: 90 },
-      { state: State.ACTIVE, translationY: 180 },
-      { state: State.END, translationY: 180, velocityY: 0 },
-    ])
+    surukle({ y: 180 })
     await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1))
+  })
+
+  /**
+   * INSTAGRAM ISLEYISI (kullanicinin istegi 2026-09-22: "Instagram'in
+   * hikaye isleyisini tam ogren ve aynisini yap"). Dokunus AYNI kisinin
+   * hikayeleri arasinda gezer; KAYDIRMA kisiyi atlar.
+   */
+  it('SOLA kaydirma SONRAKI KISIYE gecer (dokunus gibi tek hikaye ilerletmez)', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    surukle({ x: -140 })
+
+    // Ayse'nin ikinci hikayesindeydik; kaydirma Burak'a atladi.
+    expect(await screen.findByTestId('hikaye-fotograf-c1')).toBeTruthy()
+    expect(screen.getByText('burak_k')).toBeTruthy()
+  })
+
+  it('SAGA kaydirma ONCEKI KISIYE doner', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    surukle({ x: 140 })
+
+    expect(await screen.findByTestId('hikaye-fotograf-b1')).toBeTruthy()
+    expect(screen.getByText('byorcun')).toBeTruthy()
+  })
+
+  it('SON kisiden sola kaydirmak izleyiciyi KAPATIR', async () => {
+    mockParams = { kullanici: 'burak' }
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-c1')
+
+    surukle({ x: -140 })
+
+    await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1))
+  })
+
+  it('kisa yatay kaydirma kisiyi DEGISTIRMEZ', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    surukle({ x: -30 })
+
+    expect(screen.getByTestId('hikaye-fotograf-a2')).toBeTruthy()
+    expect(mockBack).not.toHaveBeenCalled()
+  })
+
+  it('YUKARI kaydirma KAPATMAZ: baskasinin hikayesinde yanit alanina odaklanir', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    surukle({ y: -180 })
+
+    expect(mockBack).not.toHaveBeenCalled()
+    expect(screen.getByTestId('hikaye-fotograf-a2')).toBeTruthy()
+  })
+
+  it('YUKARI kaydirma KENDI hikayemde GORENLER listesini acar', async () => {
+    mockParams = { kullanici: 'ben' }
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-b1')
+
+    surukle({ y: -180 })
+
+    expect(await screen.findByTestId('gorenler-sayfasi')).toBeTruthy()
+  })
+
+  it('HIZLI TEPKI: emojiye dokunmak yanit olarak gonderir', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+
+    await fireEvent.press(screen.getByTestId('hikaye-tepki-🔥'))
+
+    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', '🔥'))
+    expect(await screen.findByText('🔥 gönderildi')).toBeTruthy()
+  })
+
+  it('KENDI hikayemde hizli tepki YOK (kendine tepki gonderilmez)', async () => {
+    mockParams = { kullanici: 'ben' }
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-b1')
+
+    expect(screen.queryByTestId('hikaye-tepkiler')).toBeNull()
+  })
+
+  it('BASILI TUTARKEN arayuz gizlenir, birakinca geri gelir', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+    const gorunur = () => {
+      const d = screen.getByTestId('hikaye-ilerleme').parent
+      const stil = StyleSheet.flatten(d?.props.style)
+      return stil?.opacity !== 0
+    }
+    expect(gorunur()).toBe(true)
+
+    await fireEvent(screen.getByTestId('hikaye-ileri'), 'pressIn')
+    expect(gorunur()).toBe(false)
+
+    await fireEvent(screen.getByTestId('hikaye-ileri'), 'pressOut')
+    expect(gorunur()).toBe(true)
   })
 
   it('kisi bulunamazsa / liste bosken "artik gorunmuyor" ve kapat', async () => {

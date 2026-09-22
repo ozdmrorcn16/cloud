@@ -1149,6 +1149,53 @@ gectigi icin ikisi de kosuldu). OTA `8122ea6e`, web
 `slooin--yxhdzirwei`. GERCEK CIHAZDA DOGRULANMADI - telefonda sekme
 gecisinin hissi kullanicidan.
 
+### HIKAYE IZLEYICI = INSTAGRAM ISLEYISI - 2026-09-22
+
+Kullanicinin istegi: "Instagram'in hikaye isleyisini tam ogren ve
+aynisini yap." Once ISLEYIS ARASTIRILDI (tahminle degil; kaynaklar
+oturum dokumunde), sonra bizimkiyle farki cikarildi ve uygulandi.
+OTA `cf04722e`, web `slooin--b1exhxndrp`, goruntu
+`tasarim/hikaye-instagram-isleyis.png`.
+
+| Hareket | Instagram | Bizde (once -> sonra) |
+|---|---|---|
+| Sag / sol DOKUNUS | ayni kisinin sonraki/onceki hikayesi | vardi |
+| **Sola / saga KAYDIRMA** | **sonraki / onceki KISI** | YOKTU -> var |
+| **Yukari kaydirma** | **yanit kutusu / izleyenler** | kapatiyordu -> Instagram gibi |
+| Asagi kaydirma | kapat | vardi |
+| Basili tutma | duraklat **+ arayuz gizlenir** | yalnizca duraklatiyordu -> arayuz de gizleniyor |
+| **Hizli emoji tepkileri** | var (DM'e duser) | YOKTU -> var (yanit olarak sohbete) |
+| Kisi bitince sonraki kisi, hepsi bitince kapanis | var | vardi |
+| Fotografta 5 sn, ilk GORULMEMISten baslama | var | vardi |
+
+**TEK PAN, DORT SONUC:** hareket artik tek bir `Gesture.Pan`; karar
+parmagin BASKIN YONUYLE veriliyor (`|dx| > |dy|` ise yatay). Eskiden
+`failOffsetX` ile yatay hareket vazgeciyordu - yatay kaydirma o yuzden
+hic yakalanamiyordu. Esikler: kisi gecisi 70 px / 650 px-sn, kapatma
+120 px / 900 px-sn (FotografGezgini ile ayni).
+
+**BILINCLI SAPMA:** kullanicinin 2026-09-22 sabahki istegi "fotograf
+buyuk acikken yukari YA DA asagi kaydirinca kapansin" idi; o kural
+`FotografGezgini`de AYNEN DURUYOR. Hikaye izleyicisinde yukari
+kaydirma Instagram'daki gibi yanit/izleyen aciyor - cunku bu turda
+"Instagram'in aynisi" istendi. Iki ekran ayri, kural ayri.
+
+**Hizli tepkiler** `HIZLI_TEPKILER` (Instagram'in seti: kalp, kahkaha,
+sasirma, uzgun, alkis, ates, konfeti, kalp gozler). Dokunmak emojiyi
+`hikayeyeYanitVer` ile gonderiyor - Instagram'da da tepki DM'e
+duesuyor, bizde de sohbete. Kendi hikayende tepki satiri CIZILMIYOR.
+
+**YAPILMAYANLAR (kapsam disi, bilerek):** video, muzik, sticker,
+anket/soru kutusu, yakin arkadaslar, one cikanlar (highlights), arsiv,
+baglanti (swipe up link), hikayeye mention/hashtag. Bunlarin hicbiri
+"isleyis" degil AYRI OZELLIK; hikaye bizde TEK FOTOGRAF + yazi + mekan
+(2026-09-22 karari).
+
+Jest 95 paket / 1238 test (izleyici 18); sozluk 7 dil
+(`hikaye.tepkiGonder/tepkiGonderildi/sonrakiKisi/oncekiKisi`).
+GERCEK CIHAZDA DOGRULANMADI - kaydirma hissi ve tepki gonderimi
+telefonda denenmeli.
+
 ### HIKAYEDE OKUNURLUK: ACIK FOTOGRAFTA GRADYAN - 2026-09-22
 
 Kullanicinin bildirimi (iki ekran goruntusuyle): "hikayelerdeki dolma

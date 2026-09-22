@@ -590,6 +590,10 @@ export default {
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
+    tepkiGonder: 'Отправить реакцию {{emoji}}',
+    tepkiGonderildi: '{{emoji}} отправлено',
+    sonrakiKisi: 'Следующий человек',
+    oncekiKisi: 'Предыдущий человек',
     hikayen: 'Твоя история',
     hikayeEkle: 'Добавить историю',
     kisininHikayesi: 'История {{ad}}',
