@@ -30,8 +30,6 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
-import { GaleriSayfasi } from '../../tasarim/GaleriSayfasi'
-import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../../lib/galeri'
 import { kameraGorunumu, kameraIzniAl, kameraKullanilabilirMi } from '../../../lib/kamera'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
@@ -41,35 +39,25 @@ import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
 
 /**
- * HIKAYE OLUSTUR (2026-09-22, kullanicinin referansi "02 / Hikâye
- * oluştur"): fotograf TAM EKRAN; yazi, Slooin ifadesi, mekan ve arkadas
- * etiketleri fotografin UZERINE konur, SURUKLENIP BOYUTLANDIRILIR
- * (`HikayeOgesi`). Altta gorunurluk secimi (Arkadaslar / Herkese) ve
- * Paylas.
+ * ANI EKLE (2026-09-23, kullanicinin karari: "hikaye kismini
+ * Instagram'in sipsak icerigi gibi yapicaz; galeriden fotograf
+ * yuklenemicek, sadece anlik fotograf cekilip paylasilabilcek; ismi de
+ * Anı ekle olacak").
  *
- * GIRIS AKISI (kullanicinin tarifi 2026-09-23): ekran SIYAH aciliyor;
- * CANLI KAMERA (kullanicinin istegi 2026-09-23): fotograf secilmeden
- * once ekran TAM EKRAN canli onizleme; alttaki YUVARLAK TUS fotografi
- * cekiyor, yanindaki dugme on/arka kamerayi degistiriyor. Kamera modulu
- * olmayan bir derlemede (OTA ile guncellenen eski surum) ya da izin
- * verilmediginde onizleme cizilmiyor, ekran siyah tuval olarak kaliyor -
- * galeri karesi ve diger araclar aynen calisiyor.
+ * GALERI YOLU TAMAMEN KALKTI: ne kucuk kare, ne alttan galeri sayfasi,
+ * ne sistem secicisi. Tek kaynak ANLIK CEKIM - icerik "su an" cekilmis
+ * olmali. (`lib/galeri.ts` ve `GaleriSayfasi` bu yuzden silindi.)
  *
- * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor; ona dokunmak
- * alttan GALERI SAYFASINI aciyor: ILK HUCRE KAMERA (dokununca canli
- * cekim), geri kalani telefonun son fotograflari (kullanicinin referansi
- * 2026-09-23). Galeri okunamiyorsa (modulu icermeyen eski derleme)
- * dogrudan sistem secicisi aciliyor - yarim bir sayfa gosterilmiyor.
+ * CEKIM EKRANI referansa gore: ust cubuk × + "Anı ekle", ortada
+ * yuvarlatilmis canli onizleme, altta flas / YUVARLAK DEKLANSOR /
+ * kamera cevirme, en altta gorunurluk hapi. Kare cekilince ekran
+ * DUZENLEME moduna geciyor: fotograf tam ekran, sol rafta Not/Mekan/
+ * Ifade/Etiketle, altta Arkadaslar + Paylas. × fotografi kaldirip
+ * cekim ekranina donduruyor.
  *
- * Ust cubuk: × (fotografi KALDIRIR, siyah ekrana doner - ayri
- * "Fotografi degistir" dugmesi YOK), ortada "Yeni hikaye".
- *
- * MEKAN ISTEGE BAGLI (kullanicinin karari): aktif check-in varsa cip
- * hazir gelir, elle de secilebilir, x ile kaldirilir. Hikaye paylasmak
- * check-in OLUSTURMAZ - ikisi ayri kayit.
- *
- * VIDEO henuz yok: yeni bir native modul (expo-video) gerektirdigi icin
- * bir sonraki derlemeye birakildi; bugunku surumde fotograf.
+ * CANLI KAMERA NATIVE: modulu icermeyen eski bir derlemede (OTA ile
+ * guncellenen surum) onizleme cizilmiyor ve deklansor SISTEM KAMERASINI
+ * aciyor - ekran hicbir halde islevsiz kalmiyor.
  */
 export default function HikayeEkleEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -81,9 +69,7 @@ export default function HikayeEkleEkrani() {
   // acildiginda (eski yol) kaynak secimi yine gosteriliyor.
   const { foto } = useLocalSearchParams<{ foto?: string }>()
   const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
-  /** Sol alttaki kucuk karede gosterilen son galeri fotografi. */
-  const [sonFotograf, setSonFotograf] = useState<string | null>(null)
-  const [galeriAcik, setGaleriAcik] = useState(false)
+  const [flas, setFlas] = useState<'off' | 'on'>('off')
   const [kameraHazir, setKameraHazir] = useState(false)
   const [onKamera, setOnKamera] = useState(false)
   const kameraRef = useRef<{ takePictureAsync: (s?: object) => Promise<{ uri: string } | undefined> } | null>(null)
@@ -125,13 +111,6 @@ export default function HikayeEkleEkrani() {
         })
         .catch(() => {})
     }
-    if (galeriKullanilabilirMi()) {
-      sonFotograflariGetir(1)
-        .then((liste) => {
-          if (gecerli && liste[0]) setSonFotograf(liste[0].uri)
-        })
-        .catch(() => {})
-    }
     return () => {
       gecerli = false
     }
@@ -169,38 +148,18 @@ export default function HikayeEkleEkrani() {
     }
   }
 
-  /**
-   * Sol alttaki kare: galeri okunabiliyorsa alttan GALERI SAYFASI
-   * (ilk hucre kamera, gerisi son fotograflar); okunamiyorsa dogrudan
-   * sistem secicisi - o durumda sayfa yarim kalirdi.
-   */
-  function galeriyeGit() {
-    if (galeriKullanilabilirMi()) {
-      setGaleriAcik(true)
+  /** Yuvarlak tus: canli onizlemeden kare alir; canli kamera yoksa
+   *  (eski derleme) sistem kamerasini acar. Galeri YOK. */
+  async function kareCek() {
+    if (!kameraRef.current) {
+      void kameradanCek()
       return
     }
-    void galeridenSec()
-  }
-
-  /** Yuvarlak tus: canli onizlemeden kare alir ve tuvale koyar. */
-  async function kareCek() {
-    if (!kameraRef.current) return
     try {
       const kare = await kameraRef.current.takePictureAsync({ quality: 0.8 })
       if (kare?.uri) setFotografUri(kare.uri)
     } catch (e) {
       setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-  }
-
-  async function galeridenSec() {
-    seciliyorRef.current = true
-    try {
-      const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 })
-      if (sonuc.canceled || !sonuc.assets[0]) return
-      setFotografUri(sonuc.assets[0].uri)
-    } finally {
-      seciliyorRef.current = false
     }
   }
 
@@ -363,32 +322,49 @@ export default function HikayeEkleEkrani() {
         </KeyboardAvoidingView>
       )}
 
-      {/* SOL RAF: ekranin dikey ORTASINDA, sol kenarda (kullanicinin
-          istegi 2026-09-23: "sol kenara ortaya olucak"). Alt blogun
-          icindeyken asagida kaliyordu. Kap `box-none`: bos alani
-          tutmuyor, yalnizca ikonlar dokunus aliyor. */}
-      <View style={stiller.solRafKabi} pointerEvents="box-none">
-        <View style={stiller.solRaf} testID="hikaye-araclar">
-          <AracIkonu etiket={t('hikaye.kamera')} testID="hikaye-arac-kamera" onPress={() => void kameradanCek()} ikon={<KameraCizimi />} />
-          <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
-          <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
-          <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
-          <AracIkonu etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
-        </View>
-      </View>
+      {/* CEKIM MODU (fotograf yok): ortada yuvarlatilmis canli onizleme,
+          altta flas / deklansor / kamera cevirme, en altta gorunurluk.
+          Galeri yolu YOK - icerik anlik cekilmis olmali. */}
+      {!fotografUri && (
+        <View style={[stiller.cekimKabi, { paddingBottom: guvenliAlan.bottom + bosluk.l }]} pointerEvents="box-none">
+          <View style={stiller.onizlemeKarti}>
+            {KameraGorunumu && kameraHazir ? (
+              <KameraGorunumu
+                ref={kameraRef}
+                style={StyleSheet.absoluteFill}
+                facing={onKamera ? 'front' : 'back'}
+                flash={flas}
+                testID="hikaye-kamera-onizleme"
+              />
+            ) : (
+              <View style={stiller.onizlemeBos}>
+                <KameraCizimi />
+              </View>
+            )}
+          </View>
 
-      <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
-        {hata && (
-          <Text style={stiller.hata} testID="hikaye-hata">
-            {hata}
-          </Text>
-        )}
+          {hata && (
+            <Text style={stiller.hata} testID="hikaye-hata">
+              {hata}
+            </Text>
+          )}
 
-        <View style={stiller.altSatir}>
-          {/* DEKLANSOR (kullanicinin istegi): canli onizleme varken yuvarlak
-            tus kareyi cekiyor, yanindaki dugme kamerayi ceviriyor. */}
-        {!fotografUri && kameraHazir && (
-          <View style={stiller.deklansorSatiri}>
+          <View style={stiller.cekimSatiri}>
+            {kameraHazir ? (
+              <Pressable
+                onPress={() => setFlas((f) => (f === 'on' ? 'off' : 'on'))}
+                accessibilityRole="button"
+                accessibilityState={{ selected: flas === 'on' }}
+                accessibilityLabel={t('hikaye.flas')}
+                testID="hikaye-flas"
+                style={({ pressed }) => [stiller.yanDugme, pressed && stiller.basili]}
+              >
+                <FlasCizimi acik={flas === 'on'} />
+              </Pressable>
+            ) : (
+              <View style={stiller.yanDugme} />
+            )}
+
             <Pressable
               onPress={kareCek}
               accessibilityRole="button"
@@ -398,35 +374,21 @@ export default function HikayeEkleEkrani() {
             >
               <View style={stiller.deklansorIc} />
             </Pressable>
-            <Pressable
-              onPress={() => setOnKamera((k) => !k)}
-              accessibilityRole="button"
-              accessibilityLabel={t('hikaye.kamerayiCevir')}
-              testID="hikaye-kamera-cevir"
-              style={({ pressed }) => [stiller.cevirDugmesi, pressed && stiller.basili]}
-            >
-              <CevirCizimi />
-            </Pressable>
-          </View>
-        )}
 
-        {/* SOL ALT: galerideki son fotograf (referans). Dokunmak
-              alttan galeri sayfasini aciyor. */}
-          {!fotografUri && (
-            <Pressable
-              onPress={galeriyeGit}
-              accessibilityRole="button"
-              accessibilityLabel={t('hikaye.fotografSec')}
-              testID="hikaye-galeri-karesi"
-              style={({ pressed }) => [stiller.galeriKaresi, pressed && stiller.basili]}
-            >
-              {sonFotograf ? (
-                <Image source={{ uri: sonFotograf }} style={stiller.galeriKaresiResim} contentFit="cover" />
-              ) : (
-                <ResimCizimi />
-              )}
-            </Pressable>
-          )}
+            {kameraHazir ? (
+              <Pressable
+                onPress={() => setOnKamera((k) => !k)}
+                accessibilityRole="button"
+                accessibilityLabel={t('hikaye.kamerayiCevir')}
+                testID="hikaye-kamera-cevir"
+                style={({ pressed }) => [stiller.yanDugme, pressed && stiller.basili]}
+              >
+                <CevirCizimi />
+              </Pressable>
+            ) : (
+              <View style={stiller.yanDugme} />
+            )}
+          </View>
 
           <Pressable
             onPress={() => setGorunurlukAcik(true)}
@@ -441,30 +403,56 @@ export default function HikayeEkleEkrani() {
             </Text>
             <Text style={stiller.gorunurlukOk}>⌄</Text>
           </Pressable>
-
-          <Pressable
-            onPress={paylas}
-            disabled={!fotografUri || gonderiliyor}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !fotografUri || gonderiliyor }}
-            testID="hikaye-paylas"
-            style={({ pressed }) => [stiller.paylas, (!fotografUri || gonderiliyor) && stiller.paylasPasif, pressed && stiller.basili]}
-          >
-            {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
-          </Pressable>
         </View>
-      </View>
+      )}
 
-      <GaleriSayfasi
-        acikMi={galeriAcik}
-        onKapat={() => setGaleriAcik(false)}
-        onFotograf={(uri) => {
-          setGaleriAcik(false)
-          setFotografUri(uri)
-        }}
-        onKamera={() => void kameradanCek()}
-        onSistemSecicisi={() => void galeridenSec()}
-      />
+      {/* DUZENLEME MODU (kare cekildi): sol raf + alt satir. */}
+      {fotografUri && (
+        <>
+          <View style={stiller.solRafKabi} pointerEvents="box-none">
+            <View style={stiller.solRaf} testID="hikaye-araclar">
+              <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
+              <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
+              <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
+              <AracIkonu etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
+            </View>
+          </View>
+
+          <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
+            {hata && (
+              <Text style={stiller.hata} testID="hikaye-hata">
+                {hata}
+              </Text>
+            )}
+            <View style={stiller.altSatir}>
+              <Pressable
+                onPress={() => setGorunurlukAcik(true)}
+                accessibilityRole="button"
+                accessibilityLabel={t('hikaye.gorunurlukSec')}
+                testID="hikaye-gorunurluk"
+                style={({ pressed }) => [stiller.gorunurlukHapi, pressed && stiller.basili]}
+              >
+                <KisilerCizimi />
+                <Text style={stiller.gorunurlukYazi} numberOfLines={1}>
+                  {t(gorunurluk === 'herkese_acik' ? 'hikaye.herkese' : 'hikaye.arkadaslar')}
+                </Text>
+                <Text style={stiller.gorunurlukOk}>⌄</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={paylas}
+                disabled={gonderiliyor}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: gonderiliyor }}
+                testID="hikaye-paylas"
+                style={({ pressed }) => [stiller.paylas, gonderiliyor && stiller.paylasPasif, pressed && stiller.basili]}
+              >
+                {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </>
+      )}
 
       <SecimPenceresi
         acikMi={gorunurlukAcik}
@@ -580,6 +568,15 @@ function KameraCizimi() {
     <Svg width={28} height={28} viewBox="0 0 24 24">
       <Path d="M4 8h3l1.4-2h7.2L17 8h3v11H4V8z" stroke="#FFFFFF" strokeWidth={1.7} fill="none" strokeLinejoin="round" />
       <Circle cx={12} cy={13} r={3.6} stroke="#FFFFFF" strokeWidth={1.7} fill="none" />
+    </Svg>
+  )
+}
+
+function FlasCizimi({ acik }: { acik: boolean }) {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 24 24">
+      <Path d="M13 2L5 13h5l-1 9 8-11h-5l1-9z" fill={acik ? '#FFFFFF' : 'none'} stroke="#FFFFFF" strokeWidth={1.8} strokeLinejoin="round" />
+      {!acik && <Path d="M4 4l16 16" stroke="#FFFFFF" strokeWidth={1.8} strokeLinecap="round" />}
     </Svg>
   )
 }
@@ -733,10 +730,36 @@ const stilleriYap = (renk: Renk) =>
       textShadowColor: 'rgba(0,0,0,0.5)',
       textShadowRadius: 6,
     },
+    /* CEKIM MODU (referans duzeni): onizleme ortada, altinda
+       flas / deklansor / cevir, en altta gorunurluk hapi. */
+    cekimKabi: {
+      ...StyleSheet.absoluteFill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: bosluk.xl,
+      paddingHorizontal: bosluk.sayfa,
+    },
+    onizlemeKarti: {
+      width: '100%',
+      aspectRatio: 0.88,
+      borderRadius: 44,
+      overflow: 'hidden',
+      backgroundColor: '#1C1A18',
+    },
+    onizlemeBos: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
+    cekimSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
+    yanDugme: {
+      width: 56,
+      height: 56,
+      borderRadius: yuvarlak.hap,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     deklansorSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
     deklansor: {
-      width: 74,
-      height: 74,
+      width: 86,
+      height: 86,
       borderRadius: yuvarlak.hap,
       borderWidth: 4,
       borderColor: '#FFFFFF',
@@ -744,7 +767,7 @@ const stilleriYap = (renk: Renk) =>
       justifyContent: 'center',
     },
     deklansorBasili: { transform: [{ scale: 0.94 }] },
-    deklansorIc: { width: 58, height: 58, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.9)' },
+    deklansorIc: { width: 70, height: 70, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.9)' },
     cevirDugmesi: {
       width: 44,
       height: 44,

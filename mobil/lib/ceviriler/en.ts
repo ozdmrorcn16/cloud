@@ -597,8 +597,18 @@ export default {
     adEtiketi: '{{ad}} label',
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
+  // GALERI SAYFASI (check-in formu ve check-in duzenleme; alttan
+  // gelen sayfa: ilk kare kamera, sonra telefonun son fotograflari).
+  galeri: {
+    baslik: 'Choose a photo',
+    sonFotograflar: 'Recent photos',
+    kamera: 'Camera',
+    galeridenSec: 'Choose from gallery',
+    ekle: 'Add ({{adet}})',
+  },
   hikaye: {
     notEkle: 'Note',
+    flas: 'Flash',
     kamerayiCevir: 'Flip camera',
     fotografSecBaslik: 'Add to story',
     kamerayiAc: 'Open the camera',
@@ -623,7 +633,7 @@ export default {
     hikayen: 'Your story',
     hikayeEkle: 'Add story',
     kisininHikayesi: "{{ad}}'s story",
-    ekleBaslik: 'New story',
+    ekleBaslik: 'Add moment',
     kamera: 'Take photo',
     galeri: 'Choose from gallery',
     kameraIzni: 'Camera permission is needed to take a photo.',

@@ -25,15 +25,22 @@ import { EYLEM_GECIKMESI_MS } from './SecimPenceresi'
 import { yazi, olcek, bosluk, yuvarlak } from './tema'
 
 /**
- * GALERI SAYFASI (2026-09-23, kullanicinin tarifi: "siyah ekranin sol
- * altinda kucuk kare icinde galerideki son fotograf gorunecek, basinca
- * boyle alttan ekran gelicek; kameraya basinca canli kamerayla cekim,
- * basmayinca galerideki fotograflar listelenecek").
+ * GALERI SAYFASI - alttan gelen koyu sayfa: ILK KARE KAMERA (dokununca
+ * canli cekim), arkasindan telefonun son fotograflari 3 sutunlu
+ * izgarada. Parmakla asagi cekilerek kapaniyor (`useModalHareketi` +
+ * PanGestureHandler).
  *
- * Alttan gelen koyu sayfa: ILK KARE KAMERA (dokununca canli cekim),
- * arkasindan telefonun son fotograflari 3 sutunlu izgarada. Parmakla
- * asagi cekilerek kapaniyor - uygulamadaki diger sayfalarla ayni
- * mekanizma (`useModalHareketi` + PanGestureHandler).
+ * KULLANIM YERI (2026-09-23, kullanicinin karari "check-in duzenleme ve
+ * yeni check-in kisminda ayni galeri akisini kullanicaz"): CHECK-IN
+ * formu ve "Check-in'i duzenle" - ikisi de `FotografIzgarasiDuzenle`
+ * uzerinden. Hikaye ("Anı ekle") artik galeri KULLANMIYOR, yalnizca
+ * anlik cekim; bu sayfa oradan cikti. Mekan duzenleme, sikayet ve
+ * profil fotografi eski Kamera/Galeri penceresinde kaldi (kullanicinin
+ * "obur yerlerde galeri yolu ayni kalicak" kurali).
+ *
+ * `enFazla > 1` iken izgara COKLU SECIM yapiyor: kareler numarali
+ * rozetle isaretleniyor, altta "Ekle (N)" cubugu cikiyor. `enFazla`
+ * 1 iken (Degistir) dokunmak fotografi aninda secer.
  *
  * Izgara `expo-media-library` istiyor; modul yoksa (OTA ile guncellenen
  * eski derleme) yalnizca kamera karesi ve "Galeriden sec" satiri
@@ -55,15 +62,18 @@ export function GaleriSayfasi({
   onFotograf,
   onKamera,
   onSistemSecicisi,
+  enFazla = 1,
 }: {
   acikMi: boolean
   onKapat: () => void
-  /** Izgaradan secilen fotografin yerel adresi. */
-  onFotograf: (uri: string) => void
+  /** Secilen fotograflarin yerel adresleri (tekli secimde tek ogeli). */
+  onFotograf: (uriler: string[]) => void
   /** Kamera karesi. */
   onKamera: () => void
   /** Izgara yokken kullanilan sistem secicisi. */
   onSistemSecicisi: () => void
+  /** En fazla kac fotograf secilebilir; 1 ise dokunus aninda secer. */
+  enFazla?: number
 }) {
   const { t } = useDil()
   const hareket = useHareket()
@@ -73,6 +83,7 @@ export function GaleriSayfasi({
 
   const [fotograflar, setFotograflar] = useState<{ id: string; uri: string }[]>([])
   const [izgaraVar, setIzgaraVar] = useState(false)
+  const [secilenler, setSecilenler] = useState<string[]>([])
 
   // Sayfa kapandiktan SONRA kosacak eylem (native pencere acanlar).
   const bekleyenEylem = useRef<(() => void) | null>(null)
@@ -90,6 +101,7 @@ export function GaleriSayfasi({
 
   useEffect(() => {
     if (!acikMi) return
+    setSecilenler([])
     let gecerli = true
     if (!galeriKullanilabilirMi()) {
       setIzgaraVar(false)
@@ -117,6 +129,21 @@ export function GaleriSayfasi({
 
   const ARA = 2
   const kare = Math.floor((width - ARA * 2) / 3)
+  const cokluMu = enFazla > 1
+
+  /** Izgaradan bir kareye dokunmak: tekli secimde aninda gonderir,
+   *  coklu secimde isaretler/kaldirir (tavana ulasinca yenisini almaz). */
+  function kareyeDokun(uri: string) {
+    if (!cokluMu) {
+      onFotograf([uri])
+      return
+    }
+    setSecilenler((onceki) => {
+      if (onceki.includes(uri)) return onceki.filter((u) => u !== uri)
+      if (onceki.length >= enFazla) return onceki
+      return [...onceki, uri]
+    })
+  }
 
   const girisY = ilerleme.interpolate({ inputRange: [0, 1], outputRange: [sayfaBoyu, 0] })
   const suruklemeY = surukleme.interpolate({
@@ -156,7 +183,7 @@ export function GaleriSayfasi({
             <Pressable style={stiller.ic} onPress={() => {}} accessibilityViewIsModal testID="galeri-sayfasi">
               <View style={stiller.tutamac} />
               <Text style={stiller.baslik}>
-                {t(izgaraVar ? 'hikaye.sonFotograflar' : 'hikaye.fotografSecBaslik')}
+                {t(izgaraVar ? 'galeri.sonFotograflar' : 'galeri.baslik')}
               </Text>
 
               <FlatList
@@ -175,7 +202,7 @@ export function GaleriSayfasi({
                       testID="galeri-sistem"
                       style={({ pressed }) => [stiller.sistemSatiri, pressed && stiller.basili]}
                     >
-                      <Text style={stiller.sistemYazi}>{t('hikaye.galeri')}</Text>
+                      <Text style={stiller.sistemYazi}>{t('galeri.galeridenSec')}</Text>
                       <Text style={stiller.sistemOk}>›</Text>
                     </Pressable>
                   ) : null
@@ -184,7 +211,7 @@ export function GaleriSayfasi({
                   <Pressable
                     onPress={() => sec(onKamera)}
                     accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.kamera')}
+                    accessibilityLabel={t('galeri.kamera')}
                     testID="galeri-kamera"
                     style={[stiller.kameraKaresi, { width: kare, height: kare }]}
                   >
@@ -200,39 +227,89 @@ export function GaleriSayfasi({
                       <Pressable
                         onPress={() => sec(onKamera)}
                         accessibilityRole="button"
-                        accessibilityLabel={t('hikaye.kamera')}
+                        accessibilityLabel={t('galeri.kamera')}
                         testID="galeri-kamera"
                         style={[stiller.kameraKaresi, { width: kare, height: kare }]}
                       >
                         <KameraCizimi />
                       </Pressable>
-                      <Pressable
-                        onPress={() => onFotograf(item.uri)}
-                        accessibilityRole="button"
-                        testID={`galeri-${item.id}`}
-                        style={{ width: kare, height: kare, marginLeft: ARA }}
-                      >
-                        <Image source={{ uri: item.uri }} style={stiller.resim} contentFit="cover" />
-                      </Pressable>
+                      <View style={{ marginLeft: ARA }}>
+                        <Kare
+                          uri={item.uri}
+                          id={item.id}
+                          boy={kare}
+                          sira={cokluMu ? secilenler.indexOf(item.uri) : -1}
+                          onDokun={kareyeDokun}
+                        />
+                      </View>
                     </View>
                   ) : (
-                    <Pressable
-                      onPress={() => onFotograf(item.uri)}
-                      accessibilityRole="button"
-                      testID={`galeri-${item.id}`}
-                      style={{ width: kare, height: kare }}
-                    >
-                      <Image source={{ uri: item.uri }} style={stiller.resim} contentFit="cover" />
-                    </Pressable>
+                    <Kare
+                      uri={item.uri}
+                      id={item.id}
+                      boy={kare}
+                      sira={cokluMu ? secilenler.indexOf(item.uri) : -1}
+                      onDokun={kareyeDokun}
+                    />
                   )
                 }
               />
+
+              {cokluMu && secilenler.length > 0 && (
+                <View style={[stiller.ekleCubugu, { paddingBottom: guvenliAlan.bottom + bosluk.s }]}>
+                  <Pressable
+                    onPress={() => onFotograf(secilenler)}
+                    accessibilityRole="button"
+                    testID="galeri-ekle"
+                    style={({ pressed }) => [stiller.ekleDugmesi, pressed && stiller.basili]}
+                  >
+                    <Text style={stiller.ekleYazi}>
+                      {t('galeri.ekle', { adet: String(secilenler.length) })}
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
             </Pressable>
           </Animated.View>
         </PanGestureHandler>
       </Pressable>
       </GestureHandlerRootView>
     </Modal>
+  )
+}
+
+/** Izgaradaki tek fotograf; `sira` >= 0 ise coklu secimde kacinci. */
+function Kare({
+  uri,
+  id,
+  boy,
+  sira,
+  onDokun,
+}: {
+  uri: string
+  id: string
+  boy: number
+  sira: number
+  onDokun: (uri: string) => void
+}) {
+  return (
+    <Pressable
+      onPress={() => onDokun(uri)}
+      accessibilityRole="button"
+      accessibilityState={{ selected: sira >= 0 }}
+      testID={`galeri-${id}`}
+      style={{ width: boy, height: boy }}
+    >
+      <Image source={{ uri }} style={stiller.resim} contentFit="cover" />
+      {sira >= 0 && (
+        <>
+          <View style={stiller.seciliOrtu} />
+          <View style={stiller.rozet}>
+            <Text style={stiller.rozetYazi}>{sira + 1}</Text>
+          </View>
+        </>
+      )}
+    </Pressable>
   )
 }
 
@@ -268,6 +345,35 @@ const stiller = StyleSheet.create({
   ilkSira: { flexDirection: 'row' },
   kameraKaresi: { backgroundColor: '#3A342F', alignItems: 'center', justifyContent: 'center' },
   resim: { width: '100%', height: '100%' },
+  seciliOrtu: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(254,120,19,0.28)' },
+  rozet: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 5,
+    backgroundColor: '#FE7813',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rozetYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, color: '#FFFFFF' },
+  ekleCubugu: {
+    paddingHorizontal: bosluk.sayfa,
+    paddingTop: bosluk.s,
+    backgroundColor: '#17130F',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.15)',
+  },
+  ekleDugmesi: {
+    height: 48,
+    borderRadius: yuvarlak.hap,
+    backgroundColor: '#FE7813',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ekleYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#FFFFFF' },
   sistemSatiri: {
     flexDirection: 'row',
     alignItems: 'center',

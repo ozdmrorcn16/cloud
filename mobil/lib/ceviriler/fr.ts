@@ -591,8 +591,18 @@ export default {
     adEtiketi: 'Étiquette {{ad}}',
   },
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
+  // GALERI SAYFASI (check-in formu ve check-in duzenleme; alttan
+  // gelen sayfa: ilk kare kamera, sonra telefonun son fotograflari).
+  galeri: {
+    baslik: 'Choisir une photo',
+    sonFotograflar: 'Photos récentes',
+    kamera: 'Appareil photo',
+    galeridenSec: 'Choisir dans la galerie',
+    ekle: 'Ajouter ({{adet}})',
+  },
   hikaye: {
     notEkle: 'Note',
+    flas: 'Flash',
     kamerayiCevir: 'Changer de caméra',
     fotografSecBaslik: 'Ajouter à la story',
     kamerayiAc: "Ouvrir l'appareil photo",
@@ -617,7 +627,7 @@ export default {
     hikayen: 'Ta story',
     hikayeEkle: 'Ajouter une story',
     kisininHikayesi: 'Story de {{ad}}',
-    ekleBaslik: 'Nouvelle story',
+    ekleBaslik: 'Ajouter un instant',
     kamera: 'Prendre une photo',
     galeri: 'Choisir dans la galerie',
     kameraIzni: "L'autorisation de l'appareil photo est nécessaire pour prendre une photo.",

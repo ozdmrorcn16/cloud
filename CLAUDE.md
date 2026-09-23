@@ -185,6 +185,50 @@ versionCode 7 (EAS 320ddc2a) yuklendi ve yayinlandi**, test listesi
   "Kurulusunuzu dogrulayin (dokuman yukleyin)" istemi gorundu - kimlik
   belgesi, kullanicinin isi.
 
+### DEVAM NOTU - 2026-09-23 GECE: "ANI EKLE" + CHECK-IN GALERI AKISI
+
+**Is YARIM, commit edildi, YAYINLANMADI** (jest kosulmadi, OTA/web
+yayini yok). Kullanicinin iki karari:
+
+1. **Hikaye artik "sipsak"**: galeriden fotograf YUKLENEMEZ, yalnizca
+   anlik cekim; ekranin adi **"Anı ekle"** (`hikaye.ekleBaslik`, 7 dil).
+   `src/app/hikaye/ekle.tsx` cekim modu (yuvarlatilmis canli onizleme +
+   flas / yuvarlak deklansor / kamera cevirme + gorunurluk hapi) ve
+   duzenleme modu (fotograf tam ekran, sol rafta Not/Mekan/Ifade/
+   Etiketle) olarak ikiye ayrildi; galeri karesi, `GaleriSayfasi`
+   cagrisi ve sistem secicisi oradan KALKTI. Canli kamera yoksa (eski
+   derleme) deklansor sistem kamerasini aciyor.
+2. **Check-in duzenleme ve yeni check-in AYNI GALERI AKISINI kullanir**
+   ("checkin duzenleme ve yeni checkin kisminda ayni galeri akisini
+   kullanicaz"): `FotografIzgarasiDuzenle` icindeki eski Kamera/Galeri
+   `SecimPenceresi` yerine `GaleriSayfasi` aciliyor. Sayfaya `enFazla`
+   prop'u eklendi: Ekle'de coklu secim (numarali rozet + "Ekle (N)"
+   cubugu, kalan yer kadar), Degistir'de tekli. Sozluge yeni **`galeri`
+   blogu** girdi (7 dil: baslik, sonFotograflar, kamera, galeridenSec,
+   ekle) - eski `hikaye.sonFotograflar/galeri/fotografSecBaslik`
+   anahtarlari artik kullanilmiyor, temizlenmedi.
+   **Obur yerler DOKUNULMADI** (kullanicinin kurali "obur yerlerde
+   galeri yolu ayni kalicak"): mekan duzenleme, sikayet, profil
+   fotografi hala kendi Kamera/Galeri penceresinde.
+
+**iOS TUZAGI korundu:** sayfa once kapanir, kamera/sistem secicisi
+`EYLEM_GECIKMESI_MS` sonra acilir; hedef kare `hedefRef`te tasiniyor
+cunku kapanista `kaynakIcin` null oluyor.
+
+**SIRADAKI ADIMLAR (yeni oturum buradan devam etsin):**
+- `__tests__/ekranlar/hikaye/ekle.test.tsx`: `lib/galeri` mock'lari ve
+  galeri yolu testleri kalkmali, cekim testleri kalmali.
+- `__tests__/ekranlar/check-in/[mekanId].test.tsx`,
+  `__tests__/tasarim/CheckInDuzenle.test.tsx`, `ekranlar/index.test.tsx`
+  ve `ekranlar/profil/index.test.tsx`: `foto-kamera`/`foto-galeri`
+  (SecimPenceresi) yerine `galeri-kamera` / `galeri-<id>` /
+  `galeri-sistem` / `galeri-ekle`. `mekanlar/duzenle` ve `sikayet`
+  testleri DEGISMEZ.
+- `npx jest --runInBand`, `npx tsc --noEmit` (tsc uygulama kodunda
+  su an TEMIZ), sonra `npm run yayinla` + `eas update`.
+- Telefonda dogrulanacaklar: canli onizleme ve deklansor, check-in
+  formunda alttan gelen galeri + coklu secim.
+
 ### CHECK-IN PANELI REFERANS DUZENINDE - 2026-09-20 AKSAM
 
 Kullanicinin referans gorseli ("boyle yap, tur ikonu yerine harita

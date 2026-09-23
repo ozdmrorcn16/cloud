@@ -734,8 +734,18 @@ export default {
   // SIKAYET EKRANI (i18n turu 2026-09-13). Sebep etiketleri anahtara
   // gore: `lib/sikayet.ts` yalnizca anahtarlari tasiyor.
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
+  // GALERI SAYFASI (check-in formu ve check-in duzenleme; alttan
+  // gelen sayfa: ilk kare kamera, sonra telefonun son fotograflari).
+  galeri: {
+    baslik: 'Fotoğraf seç',
+    sonFotograflar: 'Son fotoğraflar',
+    kamera: 'Kamera',
+    galeridenSec: 'Galeriden seç',
+    ekle: 'Ekle ({{adet}})',
+  },
   hikaye: {
     notEkle: 'Not',
+    flas: 'Flaş',
     kamerayiCevir: 'Kamerayı çevir',
     fotografSecBaslik: 'Hikâyeye ekle',
     kamerayiAc: 'Kamerayı aç',
@@ -760,7 +770,7 @@ export default {
     hikayen: 'Hikâyen',
     hikayeEkle: 'Hikâye ekle',
     kisininHikayesi: '{{ad}} hikâyesi',
-    ekleBaslik: 'Yeni hikâye',
+    ekleBaslik: 'Anı ekle',
     kamera: 'Fotoğraf çek',
     galeri: 'Galeriden seç',
     kameraIzni: 'Fotoğraf çekmek için kamera izni gerekiyor.',

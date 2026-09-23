@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
@@ -7,7 +7,7 @@ import { useDil } from '../../lib/dil'
 import { EN_FAZLA_FOTOGRAF } from '../../lib/checkin'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useRenk, useStiller } from './tema-baglami'
-import { SecimPenceresi } from './SecimPenceresi'
+import { GaleriSayfasi } from './GaleriSayfasi'
 import { FotografGezgini } from './FotografGezgini'
 
 /** Izgaradaki bir kare: sunucudaki mevcut fotograf (`yol` dolu) ya da yeni yerel dosya. */
@@ -21,9 +21,14 @@ export type FotografKaresi = { uri: string; yol?: string }
  *   - varken 3 sutun kare izgara: her karede sag ustte beyaz daire x
  *     (kaldir), altta yarim saydam "Degistir" seridi; son kare kesikli
  *     "+ Ekle" (EN_FAZLA_FOTOGRAF'a ulasinca gizlenir).
- * Kaynak secimi (Kamera / Galeri) ve secici cagrilari BURADA; galeri
- * coklu secim (kalan yer kadar), Degistir tekli. Sonuclar geri
- * cagrilarla bildirilir; sunucuya hicbir sey gitmez.
+ * FOTOGRAF SECIMI ALTTAN GELEN GALERI SAYFASINDA (2026-09-23,
+ * kullanicinin karari "check-in duzenleme ve yeni check-in kisminda
+ * ayni galeri akisini kullanicaz"): eski Kamera/Galeri penceresi yerine
+ * `GaleriSayfasi` aciliyor - ilk kare kamera, arkasindan telefonun son
+ * fotograflari. Ekle'de coklu secim (kalan yer kadar), Degistir'de
+ * tekli. Izgara `expo-media-library` istiyor; modul olmayan eski bir
+ * derlemede sayfa sistem secicisine dusuyor (coklu secim orada da var).
+ * Sonuclar geri cagrilarla bildirilir; sunucuya hicbir sey gitmez.
  */
 export function FotografIzgarasiDuzenle({
   kareler,
@@ -52,8 +57,16 @@ export function FotografIzgarasiDuzenle({
   const stiller = useStiller(stilleriYap)
   const renk = useRenk()
   const { t } = useDil()
-  // Kaynak penceresi hangi is icin acik: -1 ekle, >=0 o kareyi degistir.
+  // Galeri sayfasi hangi is icin acik: -1 ekle, >=0 o kareyi degistir.
   const [kaynakIcin, setKaynakIcin] = useState<number | null>(null)
+  // Sayfa kamerayi/sistem secicisini KAPANDIKTAN SONRA aciyor (iOS iki
+  // pencereyi ust uste sunamiyor), o an `kaynakIcin` null olmus oluyor;
+  // hedef bu yuzden ayrica ref'te tasiniyor.
+  const hedefRef = useRef(-1)
+  function kaynakAc(hedef: number) {
+    hedefRef.current = hedef
+    setKaynakIcin(hedef)
+  }
   // KAREYE DOKUNMAK BUYUK ACAR (kullanicinin istegi 2026-09-22): ortak
   // gezgin, dokunulan kareden; x ve "Degistir" ayri hedefler.
   const [acikIndeks, setAcikIndeks] = useState<number | null>(null)
@@ -67,8 +80,7 @@ export function FotografIzgarasiDuzenle({
   }
 
   async function kameradanCek() {
-    const hedef = kaynakIcin
-    setKaynakIcin(null)
+    const hedef = hedefRef.current
     // Izin REDDEDILIRSE sessizce gecmiyoruz: kullanici dugmeye basip
     // hicbir sey olmamasini "uygulama bozuk" diye okur.
     const izin = await ImagePicker.requestCameraPermissionsAsync()
@@ -78,14 +90,13 @@ export function FotografIzgarasiDuzenle({
     }
     const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.7 })
     if (sonuc.canceled || !sonuc.assets[0]) return
-    if (hedef !== null && hedef >= 0) onDegistirildi(hedef, sonuc.assets[0].uri)
+    if (hedef >= 0) onDegistirildi(hedef, sonuc.assets[0].uri)
     else onEklendi([sonuc.assets[0].uri])
   }
 
   async function galeridenSec() {
-    const hedef = kaynakIcin
-    setKaynakIcin(null)
-    const degistirMi = hedef !== null && hedef >= 0
+    const hedef = hedefRef.current
+    const degistirMi = hedef >= 0
     const sonuc = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.7,
@@ -98,12 +109,21 @@ export function FotografIzgarasiDuzenle({
     else onEklendi(sonuc.assets.slice(0, kalanYer).map((a) => a.uri))
   }
 
+  /** Alttan gelen sayfadaki izgaradan secilenler. */
+  function izgaradanSecildi(uriler: string[]) {
+    const hedef = hedefRef.current
+    setKaynakIcin(null)
+    if (uriler.length === 0) return
+    if (hedef >= 0) onDegistirildi(hedef, uriler[0])
+    else onEklendi(uriler.slice(0, kalanYer))
+  }
+
   return (
     <View>
       {kareler.length === 0 ? (
         <Pressable
           style={({ pressed }) => [stiller.bosKutu, pressed && stiller.basili]}
-          onPress={() => setKaynakIcin(-1)}
+          onPress={() => kaynakAc(-1)}
           disabled={pasif}
           accessibilityRole="button"
           testID={`${testID}-ekle`}
@@ -138,7 +158,7 @@ export function FotografIzgarasiDuzenle({
               </Pressable>
               <Pressable
                 style={stiller.degistir}
-                onPress={() => setKaynakIcin(i)}
+                onPress={() => kaynakAc(i)}
                 disabled={pasif}
                 accessibilityRole="button"
                 testID={`${testID}-degistir-${i}`}
@@ -151,7 +171,7 @@ export function FotografIzgarasiDuzenle({
           {kalanYer > 0 && (
             <Pressable
               style={({ pressed }) => [stiller.kare, kareEni, stiller.ekleKare, pressed && stiller.basili]}
-              onPress={() => setKaynakIcin(-1)}
+              onPress={() => kaynakAc(-1)}
               disabled={pasif}
               accessibilityRole="button"
               testID={`${testID}-ekle`}
@@ -171,13 +191,13 @@ export function FotografIzgarasiDuzenle({
         onKapat={() => setAcikIndeks(null)}
       />
 
-      <SecimPenceresi
+      <GaleriSayfasi
         acikMi={kaynakIcin !== null}
-        secimler={[
-          { etiket: t('checkIn.fotografCek'), testID: 'foto-kamera', onSec: kameradanCek },
-          { etiket: t('checkIn.galeridenSec'), testID: 'foto-galeri', onSec: galeridenSec },
-        ]}
         onKapat={() => setKaynakIcin(null)}
+        onKamera={kameradanCek}
+        onFotograf={izgaradanSecildi}
+        onSistemSecicisi={galeridenSec}
+        enFazla={kaynakIcin !== null && kaynakIcin >= 0 ? 1 : Math.max(1, kalanYer)}
       />
     </View>
   )
