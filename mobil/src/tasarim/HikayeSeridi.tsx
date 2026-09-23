@@ -46,7 +46,7 @@ export function HikayeSeridi({
     router.push(`/hikaye/izle?kullanici=${kullaniciId}` as never)
   }
   function ekle() {
-    router.push('/hikaye/fotograf' as never)
+    router.push('/hikaye/ekle' as never)
   }
 
   return (

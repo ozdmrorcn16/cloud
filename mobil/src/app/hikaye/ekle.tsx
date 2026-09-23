@@ -30,6 +30,8 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { GaleriSayfasi } from '../../tasarim/GaleriSayfasi'
+import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../../lib/galeri'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
@@ -44,9 +46,14 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * (`HikayeOgesi`). Altta gorunurluk secimi (Arkadaslar / Herkese) ve
  * Paylas.
  *
- * Ust cubuk: × (fotografi KALDIRIR ve kaynak secimini yeniden acar -
- * kullanicinin karari, ayri "Fotografi degistir" dugmesi YOK), ortada
- * "Yeni hikaye", sagda Aa (yazi) ve ifade.
+ * GIRIS AKISI (kullanicinin tarifi 2026-09-23): ekran SIYAH aciliyor;
+ * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor, ona dokunmak
+ * alttan galeri sayfasini aciyor (`GaleriSayfasi`); oradaki kamera
+ * karesi canli cekimi, digerleri galeriyi veriyor. Ayri bir "fotograf
+ * sec" EKRANI YOK.
+ *
+ * Ust cubuk: × (fotografi KALDIRIR, siyah ekrana doner - ayri
+ * "Fotografi degistir" dugmesi YOK), ortada "Yeni hikaye".
  *
  * MEKAN ISTEGE BAGLI (kullanicinin karari): aktif check-in varsa cip
  * hazir gelir, elle de secilebilir, x ile kaldirilir. Hikaye paylasmak
@@ -65,7 +72,9 @@ export default function HikayeEkleEkrani() {
   // acildiginda (eski yol) kaynak secimi yine gosteriliyor.
   const { foto } = useLocalSearchParams<{ foto?: string }>()
   const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
-  const [kaynakAcik, setKaynakAcik] = useState(!foto)
+  const [galeriAcik, setGaleriAcik] = useState(false)
+  /** Sol alttaki kucuk karede gosterilen son galeri fotografi. */
+  const [sonFotograf, setSonFotograf] = useState<string | null>(null)
   const [yaziMetni, setYaziMetni] = useState('')
   const [notAcik, setNotAcik] = useState(false)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
@@ -97,6 +106,13 @@ export default function HikayeEkleEkrani() {
         if (gecerli) setArkadaslar(liste)
       })
       .catch(() => {})
+    if (galeriKullanilabilirMi()) {
+      sonFotograflariGetir(1)
+        .then((liste) => {
+          if (gecerli && liste[0]) setSonFotograf(liste[0].uri)
+        })
+        .catch(() => {})
+    }
     return () => {
       gecerli = false
     }
@@ -107,13 +123,12 @@ export default function HikayeEkleEkrani() {
     else router.replace('/' as never)
   }
 
-  /** × : fotograf KALKAR ve yeniden fotograf secme ekranina donulur
-   *  (kullanicinin karari - ayri "Fotografi degistir" dugmesi yok). */
+  /** × : fotograf KALKAR ve siyah ekrana donulur (kullanicinin karari -
+   *  ayri "Fotografi degistir" dugmesi yok); fotograf yoksa cikar. */
   function kapat() {
     if (fotografUri) {
       setFotografUri(null)
       setYerlesim({})
-      router.replace('/hikaye/fotograf' as never)
       return
     }
     geri()
@@ -125,7 +140,6 @@ export default function HikayeEkleEkrani() {
       const izin = await ImagePicker.requestCameraPermissionsAsync()
       if (!izin.granted) {
         setHata(t('hikaye.kameraIzni'))
-        setKaynakAcik(true)
         return
       }
       const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.8 })
@@ -270,13 +284,6 @@ export default function HikayeEkleEkrani() {
         <View style={stiller.ustSag} />
       </View>
 
-      {/* Fotograf gelene kadar tuval bos: dokunmak kaynak secimini acar. */}
-      {!fotografUri && !kaynakAcik && (
-        <Pressable style={stiller.bosTuval} onPress={() => setKaynakAcik(true)} testID="hikaye-tuval">
-          <Text style={stiller.bosTuvalYazi}>{t('hikaye.fotografSec')}</Text>
-        </Pressable>
-      )}
-
       {/* Yazi girisi: Aa'ya basinca acilan tam ekran katman. Yazilan
           metin kapaninca tuvalde suruklenebilir bir ogeye donusuyor. */}
       {notAcik && (
@@ -308,7 +315,31 @@ export default function HikayeEkleEkrani() {
           </Text>
         )}
 
-        {fotografUri && (
+        {/* SIYAH EKRAN: galerideki son fotografin kucuk karesi (kullanicinin
+            tarifi 2026-09-23). Fotograf secilince yerini tuvale birakiyor. */}
+        {!fotografUri && (
+          <View style={stiller.galeriSatiri}>
+            <Pressable
+              onPress={() => setGaleriAcik(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('hikaye.fotografSec')}
+              testID="hikaye-galeri-karesi"
+              style={({ pressed }) => [stiller.galeriKaresi, pressed && stiller.basili]}
+            >
+              {sonFotograf ? (
+                <Image source={{ uri: sonFotograf }} style={stiller.galeriKaresiResim} contentFit="cover" />
+              ) : (
+                <ResimCizimi />
+              )}
+            </Pressable>
+            <Text style={stiller.bosTuvalYazi}>{t('hikaye.fotografSec')}</Text>
+          </View>
+        )}
+
+        {/* ARAC CIPLERI siyah ekranda da duruyor (kullanicinin istegi
+            2026-09-23: "O siyah ekrana bunlari yerlestir"). Paylas
+            fotograf gelene kadar pasif - bos hikaye paylasilmaz. */}
+        {(
           <View style={stiller.araclar} testID="hikaye-araclar">
             <AracHapi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
             <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
@@ -345,13 +376,21 @@ export default function HikayeEkleEkrani() {
         </View>
       </View>
 
-      <SecimPenceresi
-        acikMi={kaynakAcik}
-        onKapat={() => setKaynakAcik(false)}
-        secimler={[
-          { etiket: t('hikaye.kamera'), testID: 'hikaye-kamera', onSec: kameradanCek },
-          { etiket: t('hikaye.galeri'), testID: 'hikaye-galeri', onSec: galeridenSec },
-        ]}
+      <GaleriSayfasi
+        acikMi={galeriAcik}
+        onKapat={() => setGaleriAcik(false)}
+        onFotograf={(uri) => {
+          setGaleriAcik(false)
+          setFotografUri(uri)
+        }}
+        onKamera={() => {
+          setGaleriAcik(false)
+          void kameradanCek()
+        }}
+        onSistemSecicisi={() => {
+          setGaleriAcik(false)
+          void galeridenSec()
+        }}
       />
 
       <SecimPenceresi
@@ -457,6 +496,16 @@ function GulenYuzCizimi() {
   )
 }
 
+function ResimCizimi() {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24">
+      <Path d="M3.5 7.4A2.4 2.4 0 0 1 5.9 5h12.2a2.4 2.4 0 0 1 2.4 2.4v9.2a2.4 2.4 0 0 1-2.4 2.4H5.9a2.4 2.4 0 0 1-2.4-2.4V7.4z" stroke="#FFFFFF" strokeWidth={1.7} fill="none" />
+      <Circle cx={9} cy={10} r={1.6} fill="#FFFFFF" />
+      <Path d="M5 17l4.5-4.5 3 3 3-2.5L19 17" stroke="#FFFFFF" strokeWidth={1.7} fill="none" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
 function KisiEkleCizimi() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24">
@@ -504,10 +553,22 @@ const stilleriYap = (renk: Renk) =>
       justifyContent: 'center',
     },
     kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
-    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.kucuk, color: '#FFFFFF' },
+    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.minik, color: '#FFFFFF' },
 
-    bosTuval: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
-    bosTuvalYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: 'rgba(255,255,255,0.7)' },
+    galeriSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+    galeriKaresi: {
+      width: 56,
+      height: 56,
+      borderRadius: 12,
+      overflow: 'hidden',
+      backgroundColor: 'rgba(255,255,255,0.14)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.35)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    galeriKaresiResim: { width: '100%', height: '100%' },
+    bosTuvalYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: 'rgba(255,255,255,0.75)' },
 
     // Tuval uzerindeki ogeler
     tuvalYazi: {
@@ -552,25 +613,34 @@ const stilleriYap = (renk: Renk) =>
     // Alt blok
     alt: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: bosluk.sayfa, gap: bosluk.s },
     hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
-    araclar: { flexDirection: 'row', justifyContent: 'center', gap: bosluk.s },
+    araclar: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+    /* Hap SIYAH ekranda da gorunmeli: koyu dolgu + ince aydinlik
+       cerceve. Dolgu fotograf uzerinde referanstaki gibi koyu kaliyor,
+       cerceve siyah zeminde kenari veriyor. Dort hap 390 px'e sigsin
+       diye dolgu dar. */
     aracHapi: {
+      flexShrink: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      paddingVertical: 12,
-      paddingHorizontal: 18,
+      gap: 5,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.22)',
+      paddingVertical: 11,
+      paddingHorizontal: 11,
       borderRadius: yuvarlak.hap,
     },
-    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF' },
+    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.minik, color: '#FFFFFF' },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.22)',
       paddingVertical: 14,
-      paddingHorizontal: 18,
+      paddingHorizontal: 16,
       borderRadius: yuvarlak.hap,
     },
     gorunurlukYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF', maxWidth: 120 },
