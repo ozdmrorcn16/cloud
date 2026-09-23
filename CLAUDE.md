@@ -709,6 +709,40 @@ degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
 `auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
 `tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
 
+### HIKAYE 02 EKRANI VE TELEFONDA COKME - 2026-09-23
+
+Kullanicinin bildirimi ("Sana attigim referansla alakasi yok") ve
+ardindan ekran goruntusuyle iki gercek kusur:
+- **Ham ceviri anahtari ekranda:** kod `hikaye.kameraVeyaGaleri`
+  cagiriyordu ama o anahtar `checkIn` blogundaydi - hikaye blogunda HIC
+  yoktu. `ceviri-tamlik` testi bunu GORMEZ (diller arasi tamlik olcer,
+  kullanilan anahtarin varligini degil). Yeni anahtar `hikaye.fotografSec`.
+- **02 "Hikayeye ekle" ekrani hic yapilmamisti:** ikinci referansa
+  bakip uygulama ici galeri izgarasini kapsam disi birakmistim; kullanici
+  ilk referansi yeniden gonderince yapildi (`src/app/hikaye/fotograf.tsx`).
+  Serit "+" artik oraya gidiyor, secim `/hikaye/ekle?foto=...` ile
+  duzenlemeye geciyor. Duzenleme ekraninda ust sagdaki Aa/cikartma
+  KALKTI, Not alt cip seridine indi (kullanicinin duzeltmesi).
+
+**COKME (kullanicinin bildirimi "Slooin coktu diye uyari geldi hikaye
+eklemeye calisinca"), iki riskli nokta kaldirildi:**
+1. **Eksik native modulu `try/catch` icinde `require` etmek YETMIYOR.**
+   Yeni mimaride (bridgeless) eksik bir native modulu istemek JS'te
+   yakalanamayan olumcul hataya donusebiliyor. `lib/galeri.ts` artik
+   once NATIVE KAYITA bakiyor (`globalThis.expo.modules.ExpoMediaLibrary`)
+   ve modulu ancak oradaysa yukluyor. KURAL: OTA ile gonderilen kodda
+   yeni bir native modul kullanilacaksa once bu kayit okunur.
+2. **Yuzdeli `left/top` + yuzdeli `translate` telefonda risk.**
+   `HikayeOgesi` konumu artik OLCULEN alandan piksele ceviriyor (oge
+   kendi yarisini kendi `onLayout`undan aliyor); izleyici de alani
+   olcuyor. Regresyon testi yuzdeli degerin geri gelmesini engelliyor.
+
+**Yayin:** OTA `257bff33`, web `slooin--7hu89q5kyo`. Native derlemeler
+(expo-media-library icerir, izgara ancak bunlarda calisir): iOS
+`ae5ac897` -> **1.0.0 (14)** App Store Connect'e yuklendi, Android
+`2ea5b5f7` -> **versionCode 8** (AAB expo.dev artifacts). Jest 97 paket
+/ 1269 test.
+
 ### HIKAYE: GORUNURLUK SECIMI VE TUVAL ETIKETLERI - 2026-09-22
 
 Kullanicinin iki referansi ve kararlari. Hikaye ozelligi (24 saat,
