@@ -4,6 +4,7 @@ import HikayeEkleEkrani from '../../../src/app/hikaye/ekle'
 import { hikayeEkle } from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
+import { galeriKullanilabilirMi } from '../../../lib/galeri'
 
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(),
@@ -11,7 +12,7 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }))
 jest.mock('../../../lib/galeri', () => ({
-  galeriKullanilabilirMi: () => false,
+  galeriKullanilabilirMi: jest.fn(() => false),
   sonFotograflariGetir: jest.fn().mockResolvedValue([]),
 }))
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
@@ -35,15 +36,23 @@ jest.mock('expo-router', () => ({
  * alttan galeri sayfasi. Jest'te native galeri modulu yok, o yuzden
  * sayfa sistem secicisi satirini gosteriyor.
  */
+/**
+ * Izgara bu derlemede YOKKEN (jest varsayilani) sol alttaki kare
+ * DOGRUDAN sistem galerisini aciyor - arada sayfa yok (kullanicinin
+ * istegi 2026-09-23: "basinca da galeri direkt acilmiyor").
+ */
 async function galeridenFotografSec() {
   await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-  await fireEvent.press(await screen.findByTestId('galeri-sistem'))
   await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
 }
 
+/** Izgara VARKEN sayfa aciliyor; kamera karesi sayfa kapandiktan sonra kosuyor. */
 async function kameradanCek() {
+  ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(true)
   await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
   await fireEvent.press(await screen.findByTestId('galeri-kamera'))
+  await waitFor(() => expect(screen.queryByTestId('galeri-sayfasi')).toBeNull())
+  await act(() => new Promise<void>((r) => setTimeout(r, 160)))
 }
 
 async function menudenSec(testID: string) {
@@ -54,6 +63,7 @@ async function menudenSec(testID: string) {
 
 beforeEach(() => {
     mockFotoParam = {}
+    ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(false)
   jest.clearAllMocks()
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
@@ -176,15 +186,14 @@ describe('HikayeEkleEkrani', () => {
     ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: true, assets: [] })
     await render(<HikayeEkleEkrani />)
     await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-    await fireEvent.press(await screen.findByTestId('galeri-sistem'))
 
     await act(() => new Promise<void>((r) => setTimeout(r, 500)))
     expect(mockBack).not.toHaveBeenCalled()
     expect(screen.getByTestId('hikaye-galeri-karesi')).toBeTruthy()
 
-    // Kareye dokunmak galeri sayfasini yeniden aciyor.
+    // Kareye dokunmak sistem galerisini yeniden aciyor.
     await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-    expect(await screen.findByTestId('galeri-sayfasi')).toBeTruthy()
+    await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(2))
   })
 
   it('ARAC CIPLERI siyah ekranda da cizilir, Paylas fotografsiz pasif', async () => {

@@ -117,7 +117,7 @@ export type Secim = {
 const VARSAYILAN_YUKSEKLIK = 420
 
 /** Menu Modal'i kalktiktan sonra eylemin kosmasina kadar beklenen sure. */
-const EYLEM_GECIKMESI_MS = 80
+export const EYLEM_GECIKMESI_MS = 80
 
 export function SecimPenceresi({
   acikMi,

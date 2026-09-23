@@ -150,6 +150,21 @@ export default function HikayeEkleEkrani() {
     }
   }
 
+  /**
+   * Sol alttaki kare (kullanicinin bildirimi 2026-09-23: "basinca da
+   * galeri direkt acilmiyor"). Izgara bu derlemede varsa alttan galeri
+   * sayfasi aciliyor; YOKSA yarim bir sayfa gostermek yerine DOGRUDAN
+   * sistem galerisi aciliyor - kullanici tek dokunusla fotografina
+   * ulasiyor.
+   */
+  function galeriyeGit() {
+    if (galeriKullanilabilirMi()) {
+      setGaleriAcik(true)
+      return
+    }
+    void galeridenSec()
+  }
+
   async function galeridenSec() {
     seciliyorRef.current = true
     try {
@@ -332,7 +347,7 @@ export default function HikayeEkleEkrani() {
               alttan galeri sayfasini aciyor. */}
           {!fotografUri && (
             <Pressable
-              onPress={() => setGaleriAcik(true)}
+              onPress={galeriyeGit}
               accessibilityRole="button"
               accessibilityLabel={t('hikaye.fotografSec')}
               testID="hikaye-galeri-karesi"
@@ -380,14 +395,8 @@ export default function HikayeEkleEkrani() {
           setGaleriAcik(false)
           setFotografUri(uri)
         }}
-        onKamera={() => {
-          setGaleriAcik(false)
-          void kameradanCek()
-        }}
-        onSistemSecicisi={() => {
-          setGaleriAcik(false)
-          void galeridenSec()
-        }}
+        onKamera={() => void kameradanCek()}
+        onSistemSecicisi={() => void galeridenSec()}
       />
 
       <SecimPenceresi
@@ -618,10 +627,13 @@ const stilleriYap = (renk: Renk) =>
     /* Referans gorunumu: hap YOK, ikonlar cipcikip duruyor. Fotograf
        uzerinde de okunur kalsin diye ikonlarin altinda golge var
        (ustteki alt gradyan zaten koyultuyor). */
+    /* Ikonlar ortak bir dikey eksende dursun: her biri ayni genislikte
+       kutuda ORTALI. Yoksa 'Aa' genis, igne dar oldugu icin sol kenar
+       tirtikli gorunuyor (kullanicinin bildirimi 2026-09-23). */
     aracIkonu: {
-      width: 40,
-      height: 40,
-      alignItems: 'flex-start',
+      width: 44,
+      height: 44,
+      alignItems: 'center',
       justifyContent: 'center',
     },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },

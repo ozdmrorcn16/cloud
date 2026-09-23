@@ -16,6 +16,7 @@ import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
 import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../lib/galeri'
 import { SURE, useHareket, useModalHareketi } from './hareket'
+import { EYLEM_GECIKMESI_MS } from './SecimPenceresi'
 import { yazi, olcek, bosluk, yuvarlak } from './tema'
 
 /**
@@ -32,6 +33,13 @@ import { yazi, olcek, bosluk, yuvarlak } from './tema'
  * Izgara `expo-media-library` istiyor; modul yoksa (OTA ile guncellenen
  * eski derleme) yalnizca kamera karesi ve "Galeriden sec" satiri
  * kaliyor, sistem secicisi aciliyor - ekran bos kalmiyor.
+ *
+ * MODAL TUZAGI (kullanicinin bildirimi 2026-09-23 "basinca da galeri
+ * direkt acilmiyor / acilmiyor"): iOS acik bir Modal'in USTUNE ikinci
+ * bir pencere SUNAMAZ; sayfa kapanma animasyonunu bitirmeden kamera ya
+ * da sistem galerisi cagrilinca hicbir sey olmuyordu. Bu yuzden secim
+ * once sayfayi kapatiyor, eylem sayfa AGACTAN KALKTIKTAN sonra
+ * kosuyor - `SecimPenceresi`deki kanitlanmis desenin aynisi.
  */
 
 const KAPANMA_HIZI = 800
@@ -60,6 +68,20 @@ export function GaleriSayfasi({
 
   const [fotograflar, setFotograflar] = useState<{ id: string; uri: string }[]>([])
   const [izgaraVar, setIzgaraVar] = useState(false)
+
+  // Sayfa kapandiktan SONRA kosacak eylem (native pencere acanlar).
+  const bekleyenEylem = useRef<(() => void) | null>(null)
+  function sec(eylem: () => void) {
+    bekleyenEylem.current = eylem
+    onKapat()
+  }
+  useEffect(() => {
+    if (gorunur || !bekleyenEylem.current) return
+    const eylem = bekleyenEylem.current
+    bekleyenEylem.current = null
+    const zamanlayici = setTimeout(eylem, EYLEM_GECIKMESI_MS)
+    return () => clearTimeout(zamanlayici)
+  }, [gorunur])
 
   useEffect(() => {
     if (!acikMi) return
@@ -134,7 +156,7 @@ export function GaleriSayfasi({
                      kalmiyor; sistem secicisi satiri da geliyor. */
                   !izgaraVar ? (
                     <Pressable
-                      onPress={onSistemSecicisi}
+                      onPress={() => sec(onSistemSecicisi)}
                       accessibilityRole="button"
                       testID="galeri-sistem"
                       style={({ pressed }) => [stiller.sistemSatiri, pressed && stiller.basili]}
@@ -146,7 +168,7 @@ export function GaleriSayfasi({
                 }
                 ListEmptyComponent={
                   <Pressable
-                    onPress={onKamera}
+                    onPress={() => sec(onKamera)}
                     accessibilityRole="button"
                     accessibilityLabel={t('hikaye.kamera')}
                     testID="galeri-kamera"
@@ -162,7 +184,7 @@ export function GaleriSayfasi({
                        fotograf bir sonraki hucreye kayiyor. */
                     <View style={stiller.ilkSira}>
                       <Pressable
-                        onPress={onKamera}
+                        onPress={() => sec(onKamera)}
                         accessibilityRole="button"
                         accessibilityLabel={t('hikaye.kamera')}
                         testID="galeri-kamera"
