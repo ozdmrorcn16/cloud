@@ -10,9 +10,14 @@
  * uyari geldi hikaye eklemeye calisinca"): modulu `try/catch` icinde
  * `require` etmek YETMIYOR. Yeni mimaride (bridgeless) eksik bir native
  * modulu istemek JS'te yakalanamayan olumcul bir hataya donusebiliyor.
- * Bu yuzden once NATIVE KAYITA bakiliyor (`globalThis.expo.modules`) ve
- * modul ancak oradaysa `require` ediliyor - yoksa dosyaya hic
- * dokunulmuyor ve ekran sistem secicisine dusuyor.
+ *
+ * IKINCI DERS (ayni gun, kullanicinin bildirimi "hala boyle goruunuyor"):
+ * `globalThis.expo.modules` diye ELLE bakmak da YANLIS - o JSI nesnesi
+ * TEMBEL kuruluyor (`ensureNativeModulesAreInstalled`). Kurulum
+ * yapilmadan bakilinca modulu ICEREN derlemede bile "yok" cikiyordu.
+ * Dogrusu expo-modules-core'un bu is icin yazilmis API'si:
+ * `requireOptionalNativeModule` once kurulumu garantiliyor, modul yoksa
+ * null donuyor ve HIC atmiyor.
  */
 
 type MedyaModulu = {
@@ -29,12 +34,15 @@ type MedyaModulu = {
 
 let modul: MedyaModulu | null | undefined
 
-/** Native taraf bu derlemede kayitli mi - yalnizca duz nesne okumasi,
- *  hicbir modul yuklenmiyor. */
+/** Native taraf bu derlemede kayitli mi. `requireOptionalNativeModule`
+ *  kurulumu garantiliyor ve modul yoksa null donuyor - atmiyor. */
 function nativeKayitliMi(): boolean {
   try {
-    const kupe = globalThis as unknown as { expo?: { modules?: Record<string, unknown> } }
-    return Boolean(kupe?.expo?.modules?.ExpoMediaLibrary)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { requireOptionalNativeModule } = require('expo-modules-core') as {
+      requireOptionalNativeModule: (ad: string) => unknown
+    }
+    return requireOptionalNativeModule('ExpoMediaLibrary') != null
   } catch {
     return false
   }
