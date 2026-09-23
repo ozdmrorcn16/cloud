@@ -47,6 +47,23 @@
             "statusMessage": "claude-mem nobetcisi"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "C:/Users/orcns/projects/cloud/.claude/hooks/claude-md-boyut.ps1"
+            ],
+            "timeout": 20,
+            "statusMessage": "CLAUDE.md boyutu"
+          }
+        ]
       }
     ]
   },
