@@ -315,10 +315,22 @@ export default function HikayeEkleEkrani() {
           </Text>
         )}
 
-        {/* SIYAH EKRAN: galerideki son fotografin kucuk karesi (kullanicinin
-            tarifi 2026-09-23). Fotograf secilince yerini tuvale birakiyor. */}
-        {!fotografUri && (
-          <View style={stiller.galeriSatiri}>
+        {/* ARAC CIPLERI siyah ekranda da duruyor (kullanicinin istegi
+            2026-09-23: "O siyah ekrana bunlari yerlestir"). Paylas
+            fotograf gelene kadar pasif - bos hikaye paylasilmaz. */}
+        {(
+          <View style={stiller.solRaf} testID="hikaye-araclar">
+            <AracHapi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
+            <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
+            <AracHapi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
+            <AracHapi etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
+          </View>
+        )}
+
+        <View style={stiller.altSatir}>
+          {/* SOL ALT: galerideki son fotograf (referans). Dokunmak
+              alttan galeri sayfasini aciyor. */}
+          {!fotografUri && (
             <Pressable
               onPress={() => setGaleriAcik(true)}
               accessibilityRole="button"
@@ -332,23 +344,8 @@ export default function HikayeEkleEkrani() {
                 <ResimCizimi />
               )}
             </Pressable>
-            <Text style={stiller.bosTuvalYazi}>{t('hikaye.fotografSec')}</Text>
-          </View>
-        )}
+          )}
 
-        {/* ARAC CIPLERI siyah ekranda da duruyor (kullanicinin istegi
-            2026-09-23: "O siyah ekrana bunlari yerlestir"). Paylas
-            fotograf gelene kadar pasif - bos hikaye paylasilmaz. */}
-        {(
-          <View style={stiller.araclar} testID="hikaye-araclar">
-            <AracHapi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
-            <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
-            <AracHapi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
-            <AracHapi etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
-          </View>
-        )}
-
-        <View style={stiller.altSatir}>
           <Pressable
             onPress={() => setGorunurlukAcik(true)}
             accessibilityRole="button"
@@ -555,10 +552,10 @@ const stilleriYap = (renk: Renk) =>
     kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
     aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.minik, color: '#FFFFFF' },
 
-    galeriSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m },
+
     galeriKaresi: {
-      width: 56,
-      height: 56,
+      width: 48,
+      height: 48,
       borderRadius: 12,
       overflow: 'hidden',
       backgroundColor: 'rgba(255,255,255,0.14)',
@@ -613,24 +610,25 @@ const stilleriYap = (renk: Renk) =>
     // Alt blok
     alt: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: bosluk.sayfa, gap: bosluk.s },
     hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
-    araclar: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+    /* SOL RAF (2026-09-23 referansi): araclar solda, yukaridan asagiya.
+       `alignItems: flex-start` haplari icerikleri kadar birakiyor. */
+    solRaf: { alignItems: 'flex-start', gap: bosluk.xs },
     /* Hap SIYAH ekranda da gorunmeli: koyu dolgu + ince aydinlik
        cerceve. Dolgu fotograf uzerinde referanstaki gibi koyu kaliyor,
        cerceve siyah zeminde kenari veriyor. Dort hap 390 px'e sigsin
        diye dolgu dar. */
     aracHapi: {
-      flexShrink: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
       backgroundColor: 'rgba(0,0,0,0.55)',
       borderWidth: 1,
       borderColor: 'rgba(255,255,255,0.22)',
-      paddingVertical: 11,
-      paddingHorizontal: 11,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
       borderRadius: yuvarlak.hap,
     },
-    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.minik, color: '#FFFFFF' },
+    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF' },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
       flexDirection: 'row',
