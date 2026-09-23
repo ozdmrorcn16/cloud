@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Animated, PanResponder, StyleSheet, View } from 'react-native'
 import type { HikayeKonum } from '../../lib/hikaye'
 
@@ -66,6 +66,8 @@ export function HikayeOgesi({
   const ilkAralikRef = useRef(0)
   const konumRef = useRef(konum)
   konumRef.current = konum
+  /** Ogenin kendi olcusu: merkezi noktaya oturtmak icin gerekiyor. */
+  const [boyut, setBoyut] = useState({ en: 0, boy: 0 })
 
   const tepki = useRef(
     PanResponder.create({
@@ -91,16 +93,21 @@ export function HikayeOgesi({
     })
   ).current
 
-  const stil = {
-    left: `${konum.x * 100}%` as const,
-    top: `${konum.y * 100}%` as const,
-    transform: [{ translateX: '-50%' as const }, { translateY: '-50%' as const }, { scale: konum.olcek }],
-  }
+  // KONUM PIKSELE CEVRILIYOR (2026-09-23). Onceki surum `left: '50%'`
+  // ve `translateX: '-50%'` kullaniyordu; yuzdeli transform platformdan
+  // platforma farkli davraniyor ve telefonda risk. Artik olcum var:
+  // nokta alanin oraniyla, ogenin kendi yarisi kendi `onLayout`uyla.
+  const x = konum.x * alan.en - boyut.en / 2
+  const y = konum.y * alan.boy - boyut.boy / 2
 
   return (
     <Animated.View
       testID={testID}
-      style={[stiller.oge, stil]}
+      onLayout={(o) => {
+        const { width, height } = o.nativeEvent.layout
+        if (width !== boyut.en || height !== boyut.boy) setBoyut({ en: width, boy: height })
+      }}
+      style={[stiller.oge, { transform: [{ translateX: x }, { translateY: y }, { scale: konum.olcek }] }]}
       pointerEvents={duzenlenebilir ? 'auto' : 'box-none'}
       {...(duzenlenebilir ? tepki.panHandlers : {})}
     >

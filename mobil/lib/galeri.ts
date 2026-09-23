@@ -3,11 +3,16 @@
  * "02 / Fotoğraf seç"): hikayeye eklenecek fotograf uygulamanin KENDI
  * izgarasinda secilsin diye galeri okunuyor.
  *
- * `expo-media-library` NATIVE bir modul: OTA ile gelmiyor, yalnizca
- * onu iceren bir derlemede var. Bu yuzden modul DINAMIK yukleniyor ve
- * yoksa `galeriKullanilabilirMi()` false donuyor - ekran o zaman
- * sistem secicisine dusuyor, cokmuyor. Eski derlemelerdeki kullanici
- * icin davranis bugunkuyle ayni kaliyor.
+ * `expo-media-library` NATIVE bir modul: OTA ile GELMEZ, yalnizca onu
+ * iceren bir derlemede vardir.
+ *
+ * COKME DERSI (2026-09-23, kullanicinin bildirimi "Slooin coktu diye
+ * uyari geldi hikaye eklemeye calisinca"): modulu `try/catch` icinde
+ * `require` etmek YETMIYOR. Yeni mimaride (bridgeless) eksik bir native
+ * modulu istemek JS'te yakalanamayan olumcul bir hataya donusebiliyor.
+ * Bu yuzden once NATIVE KAYITA bakiliyor (`globalThis.expo.modules`) ve
+ * modul ancak oradaysa `require` ediliyor - yoksa dosyaya hic
+ * dokunulmuyor ve ekran sistem secicisine dusuyor.
  */
 
 type MedyaModulu = {
@@ -24,13 +29,26 @@ type MedyaModulu = {
 
 let modul: MedyaModulu | null | undefined
 
+/** Native taraf bu derlemede kayitli mi - yalnizca duz nesne okumasi,
+ *  hicbir modul yuklenmiyor. */
+function nativeKayitliMi(): boolean {
+  try {
+    const kupe = globalThis as unknown as { expo?: { modules?: Record<string, unknown> } }
+    return Boolean(kupe?.expo?.modules?.ExpoMediaLibrary)
+  } catch {
+    return false
+  }
+}
+
 function moduluAl(): MedyaModulu | null {
   if (modul !== undefined) return modul
+  if (!nativeKayitliMi()) {
+    modul = null
+    return modul
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     modul = require('expo-media-library') as MedyaModulu
-    // Modul JS'te var ama native tarafi yoksa cagri patlar; varligi
-    // fonksiyonlarindan anlasiliyor.
     if (typeof modul?.getAssetsAsync !== 'function') modul = null
   } catch {
     modul = null

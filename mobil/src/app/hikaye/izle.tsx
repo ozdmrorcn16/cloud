@@ -96,6 +96,9 @@ export default function HikayeIzleEkrani() {
   const [gorenlerAcik, setGorenlerAcik] = useState(false)
   const [yanitDurumu, setYanitDurumu] = useState<string | null>(null)
   const [mesaj, setMesaj] = useState('')
+  /** Fotograf alaninin olcusu: etiketler oransal konumlarindan piksele
+   *  bu olcuyle cevriliyor (2026-09-23). */
+  const [ogeAlani, setOgeAlani] = useState({ en: 0, boy: 0 })
   const [klavyeAcik, setKlavyeAcik] = useState(false)
   // Basili tutulurken arayuz gizlenir (Instagram): fotografin onunde
   // hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor.
@@ -553,11 +556,19 @@ export default function HikayeIzleEkrani() {
               (2026-09-22 referansi). Konumlar oransal; `konumuDuzelt`
               bozuk/eksik degeri varsayilana dusuruyor. Izleyicide
               surukleme YOK - yalnizca dokunma hedefleri. */}
-          <View style={StyleSheet.absoluteFill} pointerEvents="box-none" testID="hikaye-ogeler">
+          <View
+            style={StyleSheet.absoluteFill}
+            pointerEvents="box-none"
+            onLayout={(o) => {
+              const { width, height } = o.nativeEvent.layout
+              if (width !== ogeAlani.en || height !== ogeAlani.boy) setOgeAlani({ en: width, boy: height })
+            }}
+            testID="hikaye-ogeler"
+          >
             {hikaye.yazi ? (
               <HikayeOgesi
                 konum={konumuDuzelt(hikaye.yerlesim?.yazi, VARSAYILAN_KONUM.yazi)}
-                alan={{ en: 0, boy: 0 }}
+                alan={ogeAlani}
                 duzenlenebilir={false}
                 testID="hikaye-oge-yazi"
               >
@@ -570,7 +581,7 @@ export default function HikayeIzleEkrani() {
             {hikaye.ifade ? (
               <HikayeOgesi
                 konum={konumuDuzelt(hikaye.yerlesim?.ifade, VARSAYILAN_KONUM.ifade)}
-                alan={{ en: 0, boy: 0 }}
+                alan={ogeAlani}
                 duzenlenebilir={false}
                 testID="hikaye-oge-ifade"
               >
@@ -583,7 +594,7 @@ export default function HikayeIzleEkrani() {
             {hikaye.mekanAdi ? (
               <HikayeOgesi
                 konum={konumuDuzelt(hikaye.yerlesim?.mekan, VARSAYILAN_KONUM.mekan)}
-                alan={{ en: 0, boy: 0 }}
+                alan={ogeAlani}
                 duzenlenebilir={false}
                 testID="hikaye-oge-mekan"
               >
@@ -606,7 +617,7 @@ export default function HikayeIzleEkrani() {
               <HikayeOgesi
                 key={e.kullaniciId}
                 konum={konumuDuzelt(hikaye.yerlesim?.etiketler?.[e.kullaniciId], { x: 0.5, y: 0.84 + i * 0.05, olcek: 1 })}
-                alan={{ en: 0, boy: 0 }}
+                alan={ogeAlani}
                 duzenlenebilir={false}
                 testID={`hikaye-oge-etiket-${e.kullaniciId}`}
               >

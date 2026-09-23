@@ -1,4 +1,6 @@
-import { parmakAraligi, yeniKonum } from '../../src/tasarim/HikayeOgesi'
+import { render, screen } from '@testing-library/react-native'
+import { StyleSheet, Text } from 'react-native'
+import { HikayeOgesi, parmakAraligi, yeniKonum } from '../../src/tasarim/HikayeOgesi'
 
 /**
  * Sürüklenip boyutlandırılabilen hikâye etiketlerinin matematiği
@@ -46,5 +48,29 @@ describe('yeniKonum', () => {
     expect(yeniKonum(baslangic, { dx: 0, dy: 0 }, alan, 2).olcek).toBe(2)
     expect(yeniKonum(baslangic, { dx: 0, dy: 0 }, alan, 99).olcek).toBe(3)
     expect(yeniKonum(baslangic, { dx: 0, dy: 0 }, alan, 0.01).olcek).toBe(0.5)
+  })
+})
+
+/**
+ * COKME KORUMASI (2026-09-23): oge ARTIK yuzdeli left/top ya da yuzdeli
+ * translate kullanmiyor - konum piksele cevriliyor. Bu test yuzdeli bir
+ * degerin geri gelmesini engelliyor.
+ */
+describe('HikayeOgesi cizimi', () => {
+  it('konumu PIKSEL transform ile veriyor, yuzde ile degil', async () => {
+    await render(
+      <HikayeOgesi konum={{ x: 0.5, y: 0.25, olcek: 1 }} alan={{ en: 400, boy: 800 }} testID="oge">
+        <Text>merhaba</Text>
+      </HikayeOgesi>
+    )
+    const stil = StyleSheet.flatten(screen.getByTestId('oge').props.style)
+    expect(stil.left).toBeUndefined()
+    expect(stil.top).toBeUndefined()
+    const cevrimler = Object.assign({}, ...stil.transform)
+    expect(typeof cevrimler.translateX).toBe('number')
+    expect(typeof cevrimler.translateY).toBe('number')
+    // 0.5 * 400 = 200 (oge olculmeden once kendi yarisi 0)
+    expect(cevrimler.translateX).toBe(200)
+    expect(cevrimler.translateY).toBe(200)
   })
 })
