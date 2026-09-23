@@ -323,23 +323,24 @@ export default function HikayeEkleEkrani() {
         </KeyboardAvoidingView>
       )}
 
+      {/* SOL RAF: ekranin dikey ORTASINDA, sol kenarda (kullanicinin
+          istegi 2026-09-23: "sol kenara ortaya olucak"). Alt blogun
+          icindeyken asagida kaliyordu. Kap `box-none`: bos alani
+          tutmuyor, yalnizca ikonlar dokunus aliyor. */}
+      <View style={stiller.solRafKabi} pointerEvents="box-none">
+        <View style={stiller.solRaf} testID="hikaye-araclar">
+          <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
+          <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
+          <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
+          <AracIkonu etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
+        </View>
+      </View>
+
       <View style={[stiller.alt, { paddingBottom: guvenliAlan.bottom + bosluk.m }]} pointerEvents="box-none">
         {hata && (
           <Text style={stiller.hata} testID="hikaye-hata">
             {hata}
           </Text>
-        )}
-
-        {/* ARAC CIPLERI siyah ekranda da duruyor (kullanicinin istegi
-            2026-09-23: "O siyah ekrana bunlari yerlestir"). Paylas
-            fotograf gelene kadar pasif - bos hikaye paylasilmaz. */}
-        {(
-          <View style={stiller.solRaf} testID="hikaye-araclar">
-            <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
-            <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
-            <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
-            <AracIkonu etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
-          </View>
         )}
 
         <View style={stiller.altSatir}>
@@ -464,22 +465,26 @@ function YuvarlakDugme({
 }
 
 /**
- * Sol raftaki arac: YALNIZCA IKON (2026-09-23 referansi - hap ve yazi
- * yok). Ad erisilebilirlik etiketinde duruyor, yani ekran okuyucu ve
- * testler icin kayip yok.
+ * Sol raftaki arac (2026-09-23 referansi): IKON + YANINDA YAZI, hap
+ * yok. Ikon sabit genislikte bir sutunda ORTALI, yazilar boylece ortak
+ * bir hizada basliyor ('Aa' genis, igne dar oldugu icin hizasiz
+ * gorunuyordu).
  */
 function AracIkonu({ etiket, ikon, onPress, testID }: { etiket: string; ikon: ReactNode; onPress: () => void; testID: string }) {
   const stiller = useStiller(stilleriYap)
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={10}
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={etiket}
       testID={testID}
-      style={({ pressed }) => [stiller.aracIkonu, pressed && stiller.basili]}
+      style={({ pressed }) => [stiller.aracSatiri, pressed && stiller.basili]}
     >
-      {ikon}
+      <View style={stiller.aracIkonu}>{ikon}</View>
+      <Text style={stiller.aracYazi} numberOfLines={1}>
+        {etiket}
+      </Text>
     </Pressable>
   )
 }
@@ -623,18 +628,26 @@ const stilleriYap = (renk: Renk) =>
     hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
     /* SOL RAF (2026-09-23 referansi): araclar solda, yukaridan asagiya.
        `alignItems: flex-start` haplari icerikleri kadar birakiyor. */
-    solRaf: { alignItems: 'flex-start', gap: bosluk.s, paddingBottom: bosluk.s },
-    /* Referans gorunumu: hap YOK, ikonlar cipcikip duruyor. Fotograf
-       uzerinde de okunur kalsin diye ikonlarin altinda golge var
-       (ustteki alt gradyan zaten koyultuyor). */
-    /* Ikonlar ortak bir dikey eksende dursun: her biri ayni genislikte
-       kutuda ORTALI. Yoksa 'Aa' genis, igne dar oldugu icin sol kenar
-       tirtikli gorunuyor (kullanicinin bildirimi 2026-09-23). */
-    aracIkonu: {
-      width: 44,
-      height: 44,
-      alignItems: 'center',
+    solRafKabi: {
+      position: 'absolute',
+      left: bosluk.sayfa,
+      top: 0,
+      bottom: 0,
       justifyContent: 'center',
+    },
+    solRaf: { alignItems: 'flex-start', gap: bosluk.xs },
+    /* Referans duzeni: [ikon sutunu][yazi], hap YOK. Ikon sabit
+       genislikte kutuda ORTALI, yazilar boylece ortak hizada basliyor
+       ('Aa' genis, igne dar oldugu icin hizasiz goruniyordu). */
+    aracSatiri: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 6 },
+    aracIkonu: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+    aracYazi: {
+      fontFamily: yazi.govde,
+      fontWeight: '600',
+      fontSize: 16,
+      color: '#FFFFFF',
+      textShadowColor: 'rgba(0,0,0,0.5)',
+      textShadowRadius: 6,
     },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
