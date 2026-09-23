@@ -709,32 +709,27 @@ degerlendirilmeli. `auth_rls_initplan` uyarisi (24 politikada
 `auth.uid()` -> `(select auth.uid())`) olcek isi, bugun gerekmedi.
 `tr_kucuk` search_path uyarisi BILEREK acik: GIN indeks ifadesi.
 
-### ACIK IS: ANDROID versionCode 8 PLAY'E YUKLENMEDI - 2026-09-23
+### ANDROID versionCode 8 PLAY DAHILI TESTTE - 2026-09-23 (KAPANDI)
 
-Kullanicinin karari: "Acik is olarak birak sonra yapicaz."
+Acik is kapandi: **versionCode 8 (1.0.0)** Play dahili test kanalina
+yuklendi ve **23 Eylul 20:11'de kullanima sunuldu** ("Etkin", son surum
+8). AAB `2ea5b5f7` derlemesinden; `expo-media-library` icerir, yani
+hikayedeki galeri okumasi ancak bu surumde calisir. Onceki surum
+versionCode 7'ydi.
 
-- **Derleme HAZIR:** `2ea5b5f7`, **versionCode 8**, AAB
-  `https://expo.dev/artifacts/eas/FHinHZK8sGnhbUNO1A7F1lmcIvfMhz0AiaAK8IDv0EI.aab`
-  (84 MB). `expo-media-library` ICERIR - yani hikaye galerisi izgarasi
-  ancak bu surumde calisir. Play dahili testinde duran surum hala
-  **versionCode 7**.
-- **Neden yuklenemedi:** `eas submit --platform android` Google Play
-  SERVIS HESABI ANAHTARI istiyor, kurulu degil ("Google Service Account
-  Keys cannot be set up in --non-interactive mode"). Tarayici yolu da
-  takildi: **Play Console yuklemeyi ARKA PLANDAKI sekmede islemiyor** -
-  dosya input'a konuyor, yukleme hic baslamiyor. Chrome penceresi
-  masaustunde ONDE olmali (bugun ilk AAB'de de boyleydi).
-- **Play Console'da yarim bir TASLAK sürüm duruyor:** dahili test
-  kanalinda "releases/2/prepare", paket YOK. Yeni yuklemede ya o taslak
-  kullanilir ya silinir.
-- **Yapilacaklar (siradaki oturum):** (1) kullanici Chrome'u one alir,
-  AAB yuklenir, dahili teste yayinlanir; (2) kalici cozum icin Play
-  servis hesabi anahtari kurulur (Google Cloud'da Google Play Android
-  Developer API + servis hesabi + JSON anahtar, Play Console >
-  Kullanicilar ve izinler'de o hesaba yayin yetkisi, `eas.json` submit
-  blogu) - sonrasinda Android yuklemeleri tek komutla gider.
-- iOS tarafinda ayni icerik **1.0.0 (14)** olarak App Store Connect'e
-  YUKLENDI (build `ae5ac897`).
+- **Nasil yuklendi:** `eas submit --platform android` HALA kullanilamaz
+  (Google Play servis hesabi anahtari kurulu degil). Tarayici yolu
+  kullanildi: AAB yerel bir CORS'lu sunucudan (127.0.0.1:8123)
+  `fetch -> File -> DataTransfer -> input.files` ile Play Console'un
+  dosya girdisine verildi. **KOSUL: Chrome sekmesi GORUNUR olmali** -
+  arka planda Play Console yuklemeyi hic islemiyor (iki kez yasandi).
+- **Uyari zararsiz:** "kod gosterme dosyasi mevcut degil" (deobfuscation,
+  istege bagli; R8/proguard kullanilmiyor).
+- **Hala acik:** Play servis hesabi anahtari kurulursa Android
+  yuklemeleri tarayiciya hic ugramadan `eas submit` ile gider. Kurulum
+  Google Cloud'da (Google Play Android Developer API + servis hesabi +
+  JSON anahtar) ve Play Console'da (Kullanicilar ve izinler > yayin
+  yetkisi) birer adim, sonra `eas.json` submit blogu.
 
 ### HIKAYE 02 EKRANI VE TELEFONDA COKME - 2026-09-23
 
