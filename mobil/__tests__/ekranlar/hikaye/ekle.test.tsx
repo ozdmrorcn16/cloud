@@ -1,3 +1,5 @@
+import React from 'react'
+import { View } from 'react-native'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native'
 import * as ImagePicker from 'expo-image-picker'
 import HikayeEkleEkrani from '../../../src/app/hikaye/ekle'
@@ -11,11 +13,17 @@ jest.mock('expo-image-picker', () => ({
   launchCameraAsync: jest.fn(),
   launchImageLibraryAsync: jest.fn(),
 }))
+jest.mock('../../../lib/kamera', () => ({
+  kameraKullanilabilirMi: jest.fn(() => false),
+  kameraGorunumu: jest.fn(() => null),
+  kameraIzniAl: jest.fn().mockResolvedValue(false),
+}))
 jest.mock('../../../lib/galeri', () => ({
   galeriKullanilabilirMi: jest.fn(() => false),
   sonFotograflariGetir: jest.fn().mockResolvedValue([]),
 }))
 const { sonFotograflariGetir } = jest.requireMock('../../../lib/galeri')
+const kameraMock = jest.requireMock('../../../lib/kamera')
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ aktifCheckInimiGetir: jest.fn() }))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
@@ -62,6 +70,11 @@ beforeEach(() => {
     mockFotoParam = {}
     ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(false)
   jest.clearAllMocks()
+  // clearAllMocks cagrilari siler ama DAVRANISI silmez; kamera mock'lari
+  // her testte varsayilana donmeli (bkz. 2026-09-21 dersi).
+  kameraMock.kameraKullanilabilirMi.mockReturnValue(false)
+  kameraMock.kameraGorunumu.mockReturnValue(null)
+  kameraMock.kameraIzniAl.mockResolvedValue(false)
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
   ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///galeri.jpg' }] })
@@ -264,6 +277,40 @@ describe('HikayeEkleEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('galeri-g2'))
     await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+  })
+
+
+  /**
+   * CANLI KAMERA (kullanicinin istegi 2026-09-23). Modul YOKSA
+   * onizleme ve deklansor hic cizilmiyor - eski derlemede ekran bugunku
+   * siyah tuval olarak kaliyor.
+   */
+  it('kamera modulu yoksa canli onizleme ve deklansor CIZILMEZ', async () => {
+    await render(<HikayeEkleEkrani />)
+    expect(await screen.findByTestId('hikaye-galeri-karesi')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-kamera-onizleme')).toBeNull()
+    expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
+  })
+
+  it('kamera varken canli onizleme ve deklansor gelir; yuvarlak tus kareyi tuvale koyar', async () => {
+    const cek = jest.fn().mockResolvedValue({ uri: 'file:///cekilen.jpg' })
+    kameraMock.kameraKullanilabilirMi.mockReturnValue(true)
+    kameraMock.kameraIzniAl.mockResolvedValue(true)
+    // Sahte onizleme bileseni: ref'e takePictureAsync veriyor.
+    kameraMock.kameraGorunumu.mockReturnValue(
+      React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
+        React.useImperativeHandle(ref, () => ({ takePictureAsync: cek }))
+        return <View testID={props.testID as string} />
+      })
+    )
+
+    await render(<HikayeEkleEkrani />)
+    expect(await screen.findByTestId('hikaye-kamera-onizleme')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('hikaye-deklansor'))
+    await waitFor(() => expect(cek).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    // Fotograf gelince deklansor kalkiyor.
+    expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
   })
 
 })

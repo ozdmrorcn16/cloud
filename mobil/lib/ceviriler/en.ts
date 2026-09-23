@@ -599,6 +599,7 @@ export default {
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
     notEkle: 'Note',
+    kamerayiCevir: 'Flip camera',
     fotografSecBaslik: 'Add to story',
     kamerayiAc: 'Open the camera',
     galeriyiAc: 'Open your gallery',

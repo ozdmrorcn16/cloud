@@ -89,6 +89,14 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Slooin, hikâyene fotoğraf çekebilmen için kameranı kullanır.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-media-library",
         {
           "photosPermission": "Slooin, hikâyene ekleyeceğin fotoğrafı seçebilmen için son fotoğraflarını gösterir.",

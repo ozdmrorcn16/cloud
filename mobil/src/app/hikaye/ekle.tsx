@@ -32,6 +32,7 @@ import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { GaleriSayfasi } from '../../tasarim/GaleriSayfasi'
 import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../../lib/galeri'
+import { kameraGorunumu, kameraIzniAl, kameraKullanilabilirMi } from '../../../lib/kamera'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
@@ -47,6 +48,13 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * Paylas.
  *
  * GIRIS AKISI (kullanicinin tarifi 2026-09-23): ekran SIYAH aciliyor;
+ * CANLI KAMERA (kullanicinin istegi 2026-09-23): fotograf secilmeden
+ * once ekran TAM EKRAN canli onizleme; alttaki YUVARLAK TUS fotografi
+ * cekiyor, yanindaki dugme on/arka kamerayi degistiriyor. Kamera modulu
+ * olmayan bir derlemede (OTA ile guncellenen eski surum) ya da izin
+ * verilmediginde onizleme cizilmiyor, ekran siyah tuval olarak kaliyor -
+ * galeri karesi ve diger araclar aynen calisiyor.
+ *
  * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor; ona dokunmak
  * alttan GALERI SAYFASINI aciyor: ILK HUCRE KAMERA (dokununca canli
  * cekim), geri kalani telefonun son fotograflari (kullanicinin referansi
@@ -76,6 +84,9 @@ export default function HikayeEkleEkrani() {
   /** Sol alttaki kucuk karede gosterilen son galeri fotografi. */
   const [sonFotograf, setSonFotograf] = useState<string | null>(null)
   const [galeriAcik, setGaleriAcik] = useState(false)
+  const [kameraHazir, setKameraHazir] = useState(false)
+  const [onKamera, setOnKamera] = useState(false)
+  const kameraRef = useRef<{ takePictureAsync: (s?: object) => Promise<{ uri: string } | undefined> } | null>(null)
   const [yaziMetni, setYaziMetni] = useState('')
   const [notAcik, setNotAcik] = useState(false)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
@@ -107,6 +118,13 @@ export default function HikayeEkleEkrani() {
         if (gecerli) setArkadaslar(liste)
       })
       .catch(() => {})
+    if (kameraKullanilabilirMi()) {
+      kameraIzniAl()
+        .then((izin) => {
+          if (gecerli) setKameraHazir(izin)
+        })
+        .catch(() => {})
+    }
     if (galeriKullanilabilirMi()) {
       sonFotograflariGetir(1)
         .then((liste) => {
@@ -164,6 +182,17 @@ export default function HikayeEkleEkrani() {
     void galeridenSec()
   }
 
+  /** Yuvarlak tus: canli onizlemeden kare alir ve tuvale koyar. */
+  async function kareCek() {
+    if (!kameraRef.current) return
+    try {
+      const kare = await kameraRef.current.takePictureAsync({ quality: 0.8 })
+      if (kare?.uri) setFotografUri(kare.uri)
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+    }
+  }
+
   async function galeridenSec() {
     seciliyorRef.current = true
     try {
@@ -215,6 +244,8 @@ export default function HikayeEkleEkrani() {
   }
 
   const etiketliler = arkadaslar.filter((a) => etiketler.includes(a.id))
+  // Canli onizleme bileseni: modul yoksa null (eski derleme).
+  const KameraGorunumu = kameraGorunumu() as React.ComponentType<Record<string, unknown>> | null
   const ifadeKaynagi = ifade ? (ifadeBul(ifade)?.kaynak ?? null) : null
 
   return (
@@ -223,8 +254,18 @@ export default function HikayeEkleEkrani() {
         style={StyleSheet.absoluteFill}
         onLayout={(o) => setAlan({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })}
       >
-        {fotografUri && (
+        {fotografUri ? (
           <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="cover" testID="hikaye-onizleme" />
+        ) : (
+          KameraGorunumu &&
+          kameraHazir && (
+            <KameraGorunumu
+              ref={kameraRef}
+              style={StyleSheet.absoluteFill}
+              facing={onKamera ? 'front' : 'back'}
+              testID="hikaye-kamera-onizleme"
+            />
+          )
         )}
 
         {/* Etiketler fotografin UZERINDE; her biri suruklenip
@@ -344,7 +385,32 @@ export default function HikayeEkleEkrani() {
         )}
 
         <View style={stiller.altSatir}>
-          {/* SOL ALT: galerideki son fotograf (referans). Dokunmak
+          {/* DEKLANSOR (kullanicinin istegi): canli onizleme varken yuvarlak
+            tus kareyi cekiyor, yanindaki dugme kamerayi ceviriyor. */}
+        {!fotografUri && kameraHazir && (
+          <View style={stiller.deklansorSatiri}>
+            <Pressable
+              onPress={kareCek}
+              accessibilityRole="button"
+              accessibilityLabel={t('hikaye.kamera')}
+              testID="hikaye-deklansor"
+              style={({ pressed }) => [stiller.deklansor, pressed && stiller.deklansorBasili]}
+            >
+              <View style={stiller.deklansorIc} />
+            </Pressable>
+            <Pressable
+              onPress={() => setOnKamera((k) => !k)}
+              accessibilityRole="button"
+              accessibilityLabel={t('hikaye.kamerayiCevir')}
+              testID="hikaye-kamera-cevir"
+              style={({ pressed }) => [stiller.cevirDugmesi, pressed && stiller.basili]}
+            >
+              <CevirCizimi />
+            </Pressable>
+          </View>
+        )}
+
+        {/* SOL ALT: galerideki son fotograf (referans). Dokunmak
               alttan galeri sayfasini aciyor. */}
           {!fotografUri && (
             <Pressable
@@ -518,6 +584,15 @@ function KameraCizimi() {
   )
 }
 
+function CevirCizimi() {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24">
+      <Path d="M4 9a8 8 0 0 1 13.3-3M20 15A8 8 0 0 1 6.7 18" stroke="#FFFFFF" strokeWidth={1.9} fill="none" strokeLinecap="round" />
+      <Path d="M17.5 3.5V6.5h-3M6.5 20.5V17.5h3" stroke="#FFFFFF" strokeWidth={1.9} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
 function ResimCizimi() {
   return (
     <Svg width={26} height={26} viewBox="0 0 24 24">
@@ -657,6 +732,26 @@ const stilleriYap = (renk: Renk) =>
       color: '#FFFFFF',
       textShadowColor: 'rgba(0,0,0,0.5)',
       textShadowRadius: 6,
+    },
+    deklansorSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
+    deklansor: {
+      width: 74,
+      height: 74,
+      borderRadius: yuvarlak.hap,
+      borderWidth: 4,
+      borderColor: '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    deklansorBasili: { transform: [{ scale: 0.94 }] },
+    deklansorIc: { width: 58, height: 58, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.9)' },
+    cevirDugmesi: {
+      width: 44,
+      height: 44,
+      borderRadius: yuvarlak.hap,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
