@@ -15,6 +15,7 @@ jest.mock('../../../lib/galeri', () => ({
   galeriKullanilabilirMi: jest.fn(() => false),
   sonFotograflariGetir: jest.fn().mockResolvedValue([]),
 }))
+const { sonFotograflariGetir } = jest.requireMock('../../../lib/galeri')
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ aktifCheckInimiGetir: jest.fn() }))
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
@@ -239,4 +240,30 @@ describe('HikayeEkleEkrani', () => {
       expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, ['kullanici-2'], 'arkadaslar', expect.any(Object))
     )
   })
+
+  /**
+   * GALERI SAYFASI (kullanicinin referansi 2026-09-23): izgara
+   * okunabiliyorsa kare alttan sayfayi aciyor; ILK HUCRE KAMERA,
+   * gerisi son fotograflar. Web/jest'te native modul yok, bu yuzden
+   * izgarali yol yalnizca burada olculuyor.
+   */
+  it('izgara varken kare SAYFAYI acar: ilk hucre kamera, fotografa dokunmak tuvale koyar', async () => {
+    ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(true)
+    ;(sonFotograflariGetir as jest.Mock).mockResolvedValue([
+      { id: 'g1', uri: 'file:///g1.jpg' },
+      { id: 'g2', uri: 'file:///g2.jpg' },
+    ])
+    await render(<HikayeEkleEkrani />)
+    await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
+
+    expect(await screen.findByTestId('galeri-kamera')).toBeTruthy()
+    expect(await screen.findByTestId('galeri-g1')).toBeTruthy()
+    expect(screen.getByTestId('galeri-g2')).toBeTruthy()
+    // Izgara varken "Galeriden sec" satiri YOK.
+    expect(screen.queryByTestId('galeri-sistem')).toBeNull()
+
+    await fireEvent.press(screen.getByTestId('galeri-g2'))
+    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+  })
+
 })

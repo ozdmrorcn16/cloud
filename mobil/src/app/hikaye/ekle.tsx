@@ -30,6 +30,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { GaleriSayfasi } from '../../tasarim/GaleriSayfasi'
 import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../../lib/galeri'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
@@ -46,9 +47,11 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * Paylas.
  *
  * GIRIS AKISI (kullanicinin tarifi 2026-09-23): ekran SIYAH aciliyor;
- * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor ve ona dokunmak
- * DOGRUDAN telefonun galerisini aciyor. Arada uygulama ici bir sayfa
- * yok (alttan gelen izgara sayfasi denendi, kullanici sadelestirdi).
+ * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor; ona dokunmak
+ * alttan GALERI SAYFASINI aciyor: ILK HUCRE KAMERA (dokununca canli
+ * cekim), geri kalani telefonun son fotograflari (kullanicinin referansi
+ * 2026-09-23). Galeri okunamiyorsa (modulu icermeyen eski derleme)
+ * dogrudan sistem secicisi aciliyor - yarim bir sayfa gosterilmiyor.
  *
  * Ust cubuk: × (fotografi KALDIRIR, siyah ekrana doner - ayri
  * "Fotografi degistir" dugmesi YOK), ortada "Yeni hikaye".
@@ -72,6 +75,7 @@ export default function HikayeEkleEkrani() {
   const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
   /** Sol alttaki kucuk karede gosterilen son galeri fotografi. */
   const [sonFotograf, setSonFotograf] = useState<string | null>(null)
+  const [galeriAcik, setGaleriAcik] = useState(false)
   const [yaziMetni, setYaziMetni] = useState('')
   const [notAcik, setNotAcik] = useState(false)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
@@ -148,12 +152,15 @@ export default function HikayeEkleEkrani() {
   }
 
   /**
-   * Sol alttaki kare: DOGRUDAN telefonun galerisini aciyor
-   * (kullanicinin karari 2026-09-23: "sol altta galerideki son resim
-   * gorseli, basinca galerinin direkt gelmesi"). Arada uygulama ici bir
-   * sayfa YOK - eskiden alttan gelen izgara sayfasi vardi, kaldirildi.
+   * Sol alttaki kare: galeri okunabiliyorsa alttan GALERI SAYFASI
+   * (ilk hucre kamera, gerisi son fotograflar); okunamiyorsa dogrudan
+   * sistem secicisi - o durumda sayfa yarim kalirdi.
    */
   function galeriyeGit() {
+    if (galeriKullanilabilirMi()) {
+      setGaleriAcik(true)
+      return
+    }
     void galeridenSec()
   }
 
@@ -381,6 +388,17 @@ export default function HikayeEkleEkrani() {
           </Pressable>
         </View>
       </View>
+
+      <GaleriSayfasi
+        acikMi={galeriAcik}
+        onKapat={() => setGaleriAcik(false)}
+        onFotograf={(uri) => {
+          setGaleriAcik(false)
+          setFotografUri(uri)
+        }}
+        onKamera={() => void kameradanCek()}
+        onSistemSecicisi={() => void galeridenSec()}
+      />
 
       <SecimPenceresi
         acikMi={gorunurlukAcik}
