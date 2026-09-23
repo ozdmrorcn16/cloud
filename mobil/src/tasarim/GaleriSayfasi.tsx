@@ -155,7 +155,9 @@ export function GaleriSayfasi({
           <Animated.View style={[stiller.sayfa, { height: sayfaBoyu, transform: [{ translateY: toplamY }] }]}>
             <Pressable style={stiller.ic} onPress={() => {}} accessibilityViewIsModal testID="galeri-sayfasi">
               <View style={stiller.tutamac} />
-              <Text style={stiller.baslik}>{t('hikaye.sonFotograflar')}</Text>
+              <Text style={stiller.baslik}>
+                {t(izgaraVar ? 'hikaye.sonFotograflar' : 'hikaye.fotografSecBaslik')}
+              </Text>
 
               <FlatList
                 data={fotograflar}
