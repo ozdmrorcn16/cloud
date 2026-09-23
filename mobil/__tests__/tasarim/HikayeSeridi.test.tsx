@@ -51,9 +51,9 @@ describe('HikayeSeridi', () => {
     expect(screen.getByTestId('hikaye-seridi')).toBeTruthy()
     expect(screen.getByText('Hikâyen')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('hikaye-benim'))
-    expect(mockPush).toHaveBeenCalledWith('/hikaye/ekle')
+    expect(mockPush).toHaveBeenCalledWith('/hikaye/fotograf')
     await fireEvent.press(screen.getByTestId('hikaye-ekle-rozeti'))
-    expect(mockPush).toHaveBeenLastCalledWith('/hikaye/ekle')
+    expect(mockPush).toHaveBeenLastCalledWith('/hikaye/fotograf')
   })
 
   it('hikayem varken kendi dairem izleyiciyi acar, rozet yine ekler', async () => {
@@ -61,7 +61,7 @@ describe('HikayeSeridi', () => {
     await fireEvent.press(screen.getByTestId('hikaye-benim'))
     expect(mockPush).toHaveBeenCalledWith('/hikaye/izle?kullanici=ben')
     await fireEvent.press(screen.getByTestId('hikaye-ekle-rozeti'))
-    expect(mockPush).toHaveBeenLastCalledWith('/hikaye/ekle')
+    expect(mockPush).toHaveBeenLastCalledWith('/hikaye/fotograf')
   })
 
   it('arkadaslar sirayla; gorulmemis olan secili (turuncu) durumunda, gorulmus degil; dokununca izleyici', async () => {

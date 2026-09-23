@@ -593,6 +593,14 @@ export default {
   // HIKAYELER (2026-09-22): ana sayfa seridi, ekleme, izleyici.
   hikaye: {
     notEkle: 'Notiz',
+    fotografSecBaslik: 'Zur Story hinzufügen',
+    kamerayiAc: 'Kamera öffnen',
+    galeriyiAc: 'Galerie öffnen',
+    sonFotograflar: 'Letzte Fotos',
+    birFotografSec: 'Ein Foto wählen',
+    fotografSecildi: '{{sayi}} Foto ausgewählt',
+    ileri: 'Weiter',
+    fotografSec: 'Foto wählen',
     mekanEkle: 'Ort',
     etiketle: 'Markieren',
     gorunurlukSec: 'Wer es sehen kann',

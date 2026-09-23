@@ -88,6 +88,14 @@
           "microphonePermission": false
         }
       ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Slooin, hikâyene ekleyeceğin fotoğrafı seçebilmen için son fotoğraflarını gösterir.",
+          "savePhotosPermission": false,
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
       "expo-notifications",
       "expo-localization"
     ],

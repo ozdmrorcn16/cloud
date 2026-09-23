@@ -16,8 +16,10 @@ jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }
 
 const mockBack = jest.fn()
 const mockReplace = jest.fn()
+let mockFotoParam: { foto?: string } = {}
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, replace: mockReplace, push: jest.fn(), canGoBack: () => true }),
+  useLocalSearchParams: () => mockFotoParam,
 }))
 
 /**
@@ -31,6 +33,7 @@ async function menudenSec(testID: string) {
 }
 
 beforeEach(() => {
+    mockFotoParam = {}
   jest.clearAllMocks()
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
@@ -112,14 +115,25 @@ describe('HikayeEkleEkrani', () => {
     )
   })
 
-  it('× fotografi KALDIRIR ve kaynak secimi yeniden acilir (ekrandan cikmaz)', async () => {
+  it('× fotografi KALDIRIR ve fotograf secme ekranina doner (ekrandan cikmaz)', async () => {
     await render(<HikayeEkleEkrani />)
     await menudenSec('hikaye-galeri')
     await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
     await fireEvent.press(screen.getByTestId('hikaye-kapat'))
-    await waitFor(() => expect(screen.queryByTestId('hikaye-onizleme')).toBeNull())
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/hikaye/fotograf'))
     expect(mockBack).not.toHaveBeenCalled()
-    expect(await screen.findByTestId('hikaye-galeri')).toBeTruthy()
+  })
+
+  /** Fotograf secme ekranindan gelince kaynak secimi ACILMAZ. */
+  it('foto parametresiyle acilinca dogrudan duzenlemeye gecer', async () => {
+    mockFotoParam = { foto: 'file:///secilen.jpg' }
+    await render(<HikayeEkleEkrani />)
+    expect(await screen.findByTestId('hikaye-onizleme')).toBeTruthy()
+    expect(screen.queryByTestId('secim-penceresi')).toBeNull()
+    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
+    await waitFor(() =>
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///secilen.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
+    )
   })
 
   it('sunucu reddederse hata metni ekranda, geri donmez', async () => {

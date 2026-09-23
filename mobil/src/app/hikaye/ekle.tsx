@@ -11,7 +11,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle } from 'react-native-svg'
@@ -61,8 +61,11 @@ export default function HikayeEkleEkrani() {
   const { t } = useDil()
   const guvenliAlan = useSafeAreaInsets()
 
-  const [fotografUri, setFotografUri] = useState<string | null>(null)
-  const [kaynakAcik, setKaynakAcik] = useState(true)
+  // Fotograf secme ekranindan (`/hikaye/fotograf`) geliyor; dogrudan
+  // acildiginda (eski yol) kaynak secimi yine gosteriliyor.
+  const { foto } = useLocalSearchParams<{ foto?: string }>()
+  const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
+  const [kaynakAcik, setKaynakAcik] = useState(!foto)
   const [yaziMetni, setYaziMetni] = useState('')
   const [notAcik, setNotAcik] = useState(false)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
@@ -104,13 +107,13 @@ export default function HikayeEkleEkrani() {
     else router.replace('/' as never)
   }
 
-  /** × : fotograf varsa once ONU kaldirir (kaynak secimi yeniden acilir),
-   *  fotograf yoksa ekrandan cikar. */
+  /** × : fotograf KALKAR ve yeniden fotograf secme ekranina donulur
+   *  (kullanicinin karari - ayri "Fotografi degistir" dugmesi yok). */
   function kapat() {
     if (fotografUri) {
       setFotografUri(null)
       setYerlesim({})
-      setKaynakAcik(true)
+      router.replace('/hikaye/fotograf' as never)
       return
     }
     geri()
@@ -261,24 +264,16 @@ export default function HikayeEkleEkrani() {
           <Text style={stiller.kapatYazi}>×</Text>
         </YuvarlakDugme>
         <Text style={stiller.baslik}>{t('hikaye.ekleBaslik')}</Text>
-        <View style={stiller.ustSag}>
-          {fotografUri && (
-            <>
-              <YuvarlakDugme etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)}>
-                <Text style={stiller.aaYazi}>Aa</Text>
-              </YuvarlakDugme>
-              <YuvarlakDugme etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade-ust" onPress={() => setIfadeAcik(true)}>
-                <CikartmaCizimi />
-              </YuvarlakDugme>
-            </>
-          )}
-        </View>
+        {/* Sag taraf BOS: Aa ve ifade alt cip seridinde (kullanicinin
+            duzeltmesi 2026-09-22: "onu asagi cek ... ifade ekleme
+            simgesini de kaldir"). */}
+        <View style={stiller.ustSag} />
       </View>
 
       {/* Fotograf gelene kadar tuval bos: dokunmak kaynak secimini acar. */}
       {!fotografUri && !kaynakAcik && (
         <Pressable style={stiller.bosTuval} onPress={() => setKaynakAcik(true)} testID="hikaye-tuval">
-          <Text style={stiller.bosTuvalYazi}>{t('hikaye.kameraVeyaGaleri')}</Text>
+          <Text style={stiller.bosTuvalYazi}>{t('hikaye.fotografSec')}</Text>
         </Pressable>
       )}
 
@@ -315,6 +310,7 @@ export default function HikayeEkleEkrani() {
 
         {fotografUri && (
           <View style={stiller.araclar} testID="hikaye-araclar">
+            <AracHapi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
             <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
             <AracHapi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
             <AracHapi etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
@@ -461,17 +457,6 @@ function GulenYuzCizimi() {
   )
 }
 
-function CikartmaCizimi() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M20 12a8 8 0 1 0-8 8c1.2 0 3-3 5-5s3-1.8 3-3z" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinejoin="round" />
-      <Circle cx={9.5} cy={10} r={1.2} fill="#FFFFFF" />
-      <Circle cx={14.5} cy={10} r={1.2} fill="#FFFFFF" />
-      <Path d="M9.5 14c.8.8 1.6 1.2 2.5 1.2" stroke="#FFFFFF" strokeWidth={1.6} fill="none" strokeLinecap="round" />
-    </Svg>
-  )
-}
-
 function KisiEkleCizimi() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24">
@@ -519,7 +504,7 @@ const stilleriYap = (renk: Renk) =>
       justifyContent: 'center',
     },
     kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
-    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#FFFFFF' },
+    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.kucuk, color: '#FFFFFF' },
 
     bosTuval: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
     bosTuvalYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, color: 'rgba(255,255,255,0.7)' },
