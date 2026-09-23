@@ -10,7 +10,12 @@ import {
   useWindowDimensions,
 } from 'react-native'
 import { Image } from 'expo-image'
-import { PanGestureHandler, State, type PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler'
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+  type PanGestureHandlerStateChangeEvent,
+} from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
@@ -137,6 +142,13 @@ export function GaleriSayfasi({
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={onKapat}>
+      {/* ANDROID: Modal icerigi AYRI bir native hiyerarside aciliyor ve
+          koktekii GestureHandlerRootView'in disinda kaliyor - sarmadan
+          PanGestureHandler olay ALMIYOR, yani parmakla kapatma
+          calismiyor (RNGH 2.32 kaynagi: Android'de kok NATIVE bir
+          bilesen, iOS'ta duz View - bu yuzden iPhone'da sorun
+          gorunmuyordu). Sarmak iOS'ta zararsiz. */}
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       <Animated.View style={[stiller.zeminRenk, { opacity: ilerleme }]} pointerEvents="none" />
       <Pressable style={stiller.zemin} testID="galeri-zemini" onPress={onKapat}>
         <PanGestureHandler onGestureEvent={suruklemeOlayi} onHandlerStateChange={suruklemeBitti} activeOffsetY={6}>
@@ -217,6 +229,7 @@ export function GaleriSayfasi({
           </Animated.View>
         </PanGestureHandler>
       </Pressable>
+      </GestureHandlerRootView>
     </Modal>
   )
 }

@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { PanGestureHandler, State, type PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler'
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+  type PanGestureHandlerStateChangeEvent,
+} from 'react-native-gesture-handler'
 import Svg, { Circle, Path } from 'react-native-svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDil } from '../../lib/dil'
@@ -212,6 +217,13 @@ export function SecimPenceresi({
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={onKapat}>
+      {/* ANDROID: Modal icerigi AYRI bir native hiyerarside aciliyor ve
+          koktekii GestureHandlerRootView'in disinda kaliyor - sarmadan
+          PanGestureHandler olay ALMIYOR, yani parmakla kapatma
+          calismiyor (RNGH 2.32 kaynagi: Android'de kok NATIVE bir
+          bilesen, iOS'ta duz View - bu yuzden iPhone'da sorun
+          gorunmuyordu). Sarmak iOS'ta zararsiz. */}
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
       <Animated.View style={[stiller.zeminRenk, { opacity: ilerleme }]} pointerEvents="none" />
       <Pressable style={stiller.zemin} testID="secim-zemini" onPress={onKapat}>
         <PanGestureHandler onGestureEvent={suruklemeOlayi} onHandlerStateChange={suruklemeBitti} activeOffsetY={6}>
@@ -261,6 +273,7 @@ export function SecimPenceresi({
           </Animated.View>
         </PanGestureHandler>
       </Pressable>
+      </GestureHandlerRootView>
     </Modal>
   )
 }
