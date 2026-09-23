@@ -725,11 +725,26 @@ versionCode 7'ydi.
   arka planda Play Console yuklemeyi hic islemiyor (iki kez yasandi).
 - **Uyari zararsiz:** "kod gosterme dosyasi mevcut degil" (deobfuscation,
   istege bagli; R8/proguard kullanilmiyor).
-- **Hala acik:** Play servis hesabi anahtari kurulursa Android
-  yuklemeleri tarayiciya hic ugramadan `eas submit` ile gider. Kurulum
-  Google Cloud'da (Google Play Android Developer API + servis hesabi +
-  JSON anahtar) ve Play Console'da (Kullanicilar ve izinler > yayin
-  yetkisi) birer adim, sonra `eas.json` submit blogu.
+- **PLAY SERVIS HESABI KURULDU (ayni gun):** bundan sonra Android
+  yuklemeleri tarayiciya ugramadan `npx eas-cli submit --platform
+  android --latest` ile gidiyor.
+  - Google Cloud (proje `slooin`): "Google Play Android Developer API"
+    etkinlestirildi; servis hesabi
+    **`eas-play-yayin@slooin.iam.gserviceaccount.com`**; JSON anahtar
+    `mobil/gizli/play-servis-hesabi.json` (gitignored - `mobil/gizli/`
+    zaten .gitignore'da, dogrulandi).
+  - Play Console > Kullanicilar ve izinler: o hesap davet edildi,
+    YALNIZCA Slooin uygulamasina ve EN AZ YETKIYLE - "Uygulamalari test
+    kanallarina yayinlama" (+ varsayilan iki salt-okunur goruntuleme).
+    **URETIM surumu icin yetki YOK**; magazaya cikarken "Uretim
+    surumune yayinlama" izni ayrica verilmeli.
+  - `eas.json` > `submit.production.android`: `serviceAccountKeyPath`
+    ve `track: internal`.
+  - **Uctan uca dogrulandi:** gercek bir `eas submit` calistirildi,
+    Google Play'e ulasti ve anlamli cevap dondu ("You've already
+    submitted this version" - versionCode 8 elle yuklenmisti). Yani
+    kimlik dogrulama ve yetki calisiyor; siradaki YENI derleme tek
+    komutla gidecek.
 
 ### HIKAYE 02 EKRANI VE TELEFONDA COKME - 2026-09-23
 

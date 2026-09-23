@@ -34,6 +34,10 @@
     "production": {
       "ios": {
         "ascAppId": "6806677710"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./gizli/play-servis-hesabi.json",
+        "track": "internal"
       }
     }
   }
