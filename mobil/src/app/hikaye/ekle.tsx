@@ -320,10 +320,10 @@ export default function HikayeEkleEkrani() {
             fotograf gelene kadar pasif - bos hikaye paylasilmaz. */}
         {(
           <View style={stiller.solRaf} testID="hikaye-araclar">
-            <AracHapi etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
-            <AracHapi etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" />} />
-            <AracHapi etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
-            <AracHapi etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
+            <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
+            <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
+            <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
+            <AracIkonu etiket={t('hikaye.etiketle')} testID="hikaye-arac-arkadas" onPress={() => setArkadasAcik(true)} ikon={<KisiEkleCizimi />} />
           </View>
         )}
 
@@ -454,28 +454,30 @@ function YuvarlakDugme({
   )
 }
 
-/** Alttaki koyu seffaf arac hapi: ikon + etiket. */
-function AracHapi({ etiket, ikon, onPress, testID }: { etiket: string; ikon: ReactNode; onPress: () => void; testID: string }) {
+/**
+ * Sol raftaki arac: YALNIZCA IKON (2026-09-23 referansi - hap ve yazi
+ * yok). Ad erisilebilirlik etiketinde duruyor, yani ekran okuyucu ve
+ * testler icin kayip yok.
+ */
+function AracIkonu({ etiket, ikon, onPress, testID }: { etiket: string; ikon: ReactNode; onPress: () => void; testID: string }) {
   const stiller = useStiller(stilleriYap)
   return (
     <Pressable
       onPress={onPress}
+      hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={etiket}
       testID={testID}
-      style={({ pressed }) => [stiller.aracHapi, pressed && stiller.basili]}
+      style={({ pressed }) => [stiller.aracIkonu, pressed && stiller.basili]}
     >
       {ikon}
-      <Text style={stiller.aracYazi} numberOfLines={1}>
-        {etiket}
-      </Text>
     </Pressable>
   )
 }
 
-function IgneCizimi({ renk = '#FFFFFF' }: { renk?: string }) {
+function IgneCizimi({ renk = '#FFFFFF', boyut = 16 }: { renk?: string; boyut?: number }) {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
+    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
       <Path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill={renk} />
       <Circle cx={12} cy={9} r={2.4} fill="#FFFFFF" />
     </Svg>
@@ -484,7 +486,7 @@ function IgneCizimi({ renk = '#FFFFFF' }: { renk?: string }) {
 
 function GulenYuzCizimi() {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
+    <Svg width={28} height={28} viewBox="0 0 24 24">
       <Circle cx={12} cy={12} r={9} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
       <Circle cx={9} cy={10} r={1.2} fill="#FFFFFF" />
       <Circle cx={15} cy={10} r={1.2} fill="#FFFFFF" />
@@ -505,7 +507,7 @@ function ResimCizimi() {
 
 function KisiEkleCizimi() {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
+    <Svg width={28} height={28} viewBox="0 0 24 24">
       <Circle cx={10} cy={8} r={3.4} stroke="#FFFFFF" strokeWidth={1.8} fill="none" />
       <Path d="M4 19c0-3.3 2.7-5.2 6-5.2s6 1.9 6 5.2" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
       <Path d="M18 8v5M15.5 10.5h5" stroke="#FFFFFF" strokeWidth={1.8} strokeLinecap="round" />
@@ -550,7 +552,7 @@ const stilleriYap = (renk: Renk) =>
       justifyContent: 'center',
     },
     kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
-    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.minik, color: '#FFFFFF' },
+    aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: 24, color: '#FFFFFF' },
 
 
     galeriKaresi: {
@@ -612,23 +614,16 @@ const stilleriYap = (renk: Renk) =>
     hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
     /* SOL RAF (2026-09-23 referansi): araclar solda, yukaridan asagiya.
        `alignItems: flex-start` haplari icerikleri kadar birakiyor. */
-    solRaf: { alignItems: 'flex-start', gap: bosluk.xs },
-    /* Hap SIYAH ekranda da gorunmeli: koyu dolgu + ince aydinlik
-       cerceve. Dolgu fotograf uzerinde referanstaki gibi koyu kaliyor,
-       cerceve siyah zeminde kenari veriyor. Dort hap 390 px'e sigsin
-       diye dolgu dar. */
-    aracHapi: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      backgroundColor: 'rgba(0,0,0,0.55)',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.22)',
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      borderRadius: yuvarlak.hap,
+    solRaf: { alignItems: 'flex-start', gap: bosluk.s, paddingBottom: bosluk.s },
+    /* Referans gorunumu: hap YOK, ikonlar cipcikip duruyor. Fotograf
+       uzerinde de okunur kalsin diye ikonlarin altinda golge var
+       (ustteki alt gradyan zaten koyultuyor). */
+    aracIkonu: {
+      width: 40,
+      height: 40,
+      alignItems: 'flex-start',
+      justifyContent: 'center',
     },
-    aracYazi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.kucuk, color: '#FFFFFF' },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
       flexDirection: 'row',
