@@ -65,11 +65,16 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - TELEFONDA DOGRULANACAK: canli onizleme + deklansor + flas/cevir,
   check-in'de alttan galeri + coklu secim.
 
-**Yayin durumu:** iOS 1.0.0 (14) App Store Connect'te (TestFlight dahili
-grup "tesstt", public link testflight.apple.com/join/vfgCFp3b). Android
-versionCode 8 Play dahili testte (opt-in
-https://play.google.com/apps/internaltest/4700396095656408634). Her iki
-derleme `expo-media-library` icerir. Runtime 1.0.0, kanal production;
+**Yayin durumu:** en yeni native derlemeler (commit 01481244,
+`expo-camera` + `expo-media-library` icerir): iOS **1.0.0 (15)** TestFlight
+dahili grup "tesstt"te IN_BETA_TESTING (public link
+testflight.apple.com/join/vfgCFp3b); Android **versionCode 9** Play dahili
+testte (opt-in https://play.google.com/apps/internaltest/4700396095656408634).
+Canli kamera ancak bunlarda calisir; (14)/8'de kart gri kalir (olculdu,
+kullanicinin ekran goruntusu 2026-09-24). ASC durumunu API ile sormak:
+`mobil/gizli/AuthKey_ASC_T2DU3DFMW4.p8` + `asc-issuer.txt` ile ES256 JWT
+(python `jwt`), `/v1/builds?filter[app]=...`; `eas submit` "failed"
+diyorsa once derleme zaten yuklu mu bak. Runtime 1.0.0, kanal production;
 OTA'lar bunlara gider. Site https://slooin.com, panel
 https://panel.slooin.com, uygulama web `slooin.expo.app`.
 
