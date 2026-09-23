@@ -11,7 +11,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle } from 'react-native-svg'
@@ -45,8 +45,9 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * Anı ekle olacak").
  *
  * GALERI YOLU TAMAMEN KALKTI: ne kucuk kare, ne alttan galeri sayfasi,
- * ne sistem secicisi. Tek kaynak ANLIK CEKIM - icerik "su an" cekilmis
- * olmali. (`lib/galeri.ts` ve `GaleriSayfasi` bu yuzden silindi.)
+ * ne sistem secicisi, ne disaridan `?foto=` parametresi. Tek kaynak
+ * ANLIK CEKIM - icerik "su an" cekilmis olmali. (`lib/galeri.ts` ve
+ * `GaleriSayfasi` duruyor ama yalnizca check-in fotograflari icin.)
  *
  * CEKIM EKRANI referansa gore: ust cubuk × + "Anı ekle", ortada
  * yuvarlatilmis canli onizleme, altta flas / YUVARLAK DEKLANSOR /
@@ -65,10 +66,7 @@ export default function HikayeEkleEkrani() {
   const { t } = useDil()
   const guvenliAlan = useSafeAreaInsets()
 
-  // Fotograf secme ekranindan (`/hikaye/fotograf`) geliyor; dogrudan
-  // acildiginda (eski yol) kaynak secimi yine gosteriliyor.
-  const { foto } = useLocalSearchParams<{ foto?: string }>()
-  const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
+  const [fotografUri, setFotografUri] = useState<string | null>(null)
   const [flas, setFlas] = useState<'off' | 'on'>('off')
   const [kameraHazir, setKameraHazir] = useState(false)
   const [onKamera, setOnKamera] = useState(false)
@@ -89,8 +87,6 @@ export default function HikayeEkleEkrani() {
   const [hata, setHata] = useState<string | null>(null)
   const [alan, setAlan] = useState({ en: 0, boy: 0 })
   const [yerlesim, setYerlesim] = useState<HikayeYerlesimi>({})
-
-  const seciliyorRef = useRef(false)
 
   useEffect(() => {
     let gecerli = true
@@ -132,20 +128,17 @@ export default function HikayeEkleEkrani() {
     geri()
   }
 
+  /** Sistem kamerasi - canli onizleme olmayan (eski) derlemede. Iptal
+   *  edilirse cekim ekraninda kalinir. */
   async function kameradanCek() {
-    seciliyorRef.current = true
-    try {
-      const izin = await ImagePicker.requestCameraPermissionsAsync()
-      if (!izin.granted) {
-        setHata(t('hikaye.kameraIzni'))
-        return
-      }
-      const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.8 })
-      if (sonuc.canceled || !sonuc.assets[0]) return
-      setFotografUri(sonuc.assets[0].uri)
-    } finally {
-      seciliyorRef.current = false
+    const izin = await ImagePicker.requestCameraPermissionsAsync()
+    if (!izin.granted) {
+      setHata(t('hikaye.kameraIzni'))
+      return
     }
+    const sonuc = await ImagePicker.launchCameraAsync({ quality: 0.8 })
+    if (sonuc.canceled || !sonuc.assets[0]) return
+    setFotografUri(sonuc.assets[0].uri)
   }
 
   /** Yuvarlak tus: canli onizlemeden kare alir; canli kamera yoksa
@@ -213,18 +206,11 @@ export default function HikayeEkleEkrani() {
         style={StyleSheet.absoluteFill}
         onLayout={(o) => setAlan({ en: o.nativeEvent.layout.width, boy: o.nativeEvent.layout.height })}
       >
-        {fotografUri ? (
+        {/* Canli kamera BURADA DEGIL, yalnizca cekim modundaki yuvarlatilmis
+            kartta: ikisi birden cizilince ayni ref'i paylasan IKI kamera
+            oturumu aciliyordu (test yakaladi, 2026-09-24). */}
+        {fotografUri && (
           <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="cover" testID="hikaye-onizleme" />
-        ) : (
-          KameraGorunumu &&
-          kameraHazir && (
-            <KameraGorunumu
-              ref={kameraRef}
-              style={StyleSheet.absoluteFill}
-              facing={onKamera ? 'front' : 'back'}
-              testID="hikaye-kamera-onizleme"
-            />
-          )
         )}
 
         {/* Etiketler fotografin UZERINDE; her biri suruklenip
@@ -590,16 +576,6 @@ function CevirCizimi() {
   )
 }
 
-function ResimCizimi() {
-  return (
-    <Svg width={26} height={26} viewBox="0 0 24 24">
-      <Path d="M3.5 7.4A2.4 2.4 0 0 1 5.9 5h12.2a2.4 2.4 0 0 1 2.4 2.4v9.2a2.4 2.4 0 0 1-2.4 2.4H5.9a2.4 2.4 0 0 1-2.4-2.4V7.4z" stroke="#FFFFFF" strokeWidth={1.7} fill="none" />
-      <Circle cx={9} cy={10} r={1.6} fill="#FFFFFF" />
-      <Path d="M5 17l4.5-4.5 3 3 3-2.5L19 17" stroke="#FFFFFF" strokeWidth={1.7} fill="none" strokeLinejoin="round" />
-    </Svg>
-  )
-}
-
 function KisiEkleCizimi() {
   return (
     <Svg width={28} height={28} viewBox="0 0 24 24">
@@ -649,20 +625,6 @@ const stilleriYap = (renk: Renk) =>
     kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
     aaYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: 24, color: '#FFFFFF' },
 
-
-    galeriKaresi: {
-      width: 48,
-      height: 48,
-      borderRadius: 12,
-      overflow: 'hidden',
-      backgroundColor: 'rgba(255,255,255,0.14)',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.35)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    galeriKaresiResim: { width: '100%', height: '100%' },
-    bosTuvalYazi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: 'rgba(255,255,255,0.75)' },
 
     // Tuval uzerindeki ogeler
     tuvalYazi: {
@@ -756,7 +718,6 @@ const stilleriYap = (renk: Renk) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    deklansorSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
     deklansor: {
       width: 86,
       height: 86,
@@ -768,14 +729,6 @@ const stilleriYap = (renk: Renk) =>
     },
     deklansorBasili: { transform: [{ scale: 0.94 }] },
     deklansorIc: { width: 70, height: 70, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.9)' },
-    cevirDugmesi: {
-      width: 44,
-      height: 44,
-      borderRadius: yuvarlak.hap,
-      backgroundColor: 'rgba(0,0,0,0.45)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     altSatir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     gorunurlukHapi: {
       flexDirection: 'row',

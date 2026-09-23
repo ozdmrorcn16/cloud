@@ -266,9 +266,12 @@ Istemci (React Native / Expo)
   baglanmaz (PaylasimKalkani kilitlenmisti).
 - PanResponder islevleri duz `View`/`Animated.View`a; `Pressable`
   kendi responder'lariyla onlari ezer (jest gormez).
-- OTA ile giden kodda yeni native modul: once
-  `globalThis.expo.modules.<Ad>` kaydina bak; try/catch require COKMEYI
-  onlemez. Yuzdeli left/top + yuzdeli translate telefonda risk.
+- OTA ile giden kodda yeni native modul: once expo-modules-core
+  `requireOptionalNativeModule('<Ad>')` (null = yok, atmaz). try/catch
+  require COKMEYI onlemez; `globalThis.expo.modules`e elle bakmak da
+  YANLIS (tembel kurulur, modul varken "yok" der). SDK 57
+  `expo-media-library` klasik API `expo-media-library/legacy` altinda
+  (`lib/galeri.ts`). Yuzdeli left/top + yuzdeli translate telefonda risk.
 - react-native-maps: `anchor` yalnizca Android, `centerOffset` yalnizca
   iOS; Apple ozel isaretciyi ortalar. iOS'ta isaretci cocugu kabsiz
   hap. Native'e ozgu gorseli goremiyorum: once kutuphane kaynagini oku,

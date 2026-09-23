@@ -126,6 +126,16 @@ async function menudenSec(testID: string) {
   await act(() => new Promise<void>((r) => setTimeout(r, 120)))
 }
 
+/** Alttan gelen galeri sayfasinda bir hucreye bas (2026-09-23 galeri
+ *  akisi): sayfa once kapanir, kamera/sistem secicisi agactan kalktiktan
+ *  EYLEM_GECIKMESI_MS sonra acilir. jest'te expo-media-library native
+ *  kaydi yok, bu yuzden izgara yerine `galeri-sistem` satiri cizilir. */
+async function galeridenSec(testID: 'galeri-sistem' | 'galeri-kamera') {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('galeri-sayfasi')).toBeNull())
+  await new Promise((r) => setTimeout(r, 120))
+}
+
 describe('ProfilEkrani', () => {
   /**
    * Kullanicinin istegi (2026-09-17): buyuk acilan fotografin sol
@@ -808,7 +818,7 @@ describe('ProfilEkrani anilar listesi', () => {
     await menudenSec('menu-duzenle')
     expect(await screen.findByTestId('duzenle-sayfasi')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('duzenle-foto-ekle'))
-    await menudenSec('foto-galeri')
+    await galeridenSec('galeri-sistem')
     expect(await screen.findByTestId('duzenle-foto-0')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
     await waitFor(() => expect(checkInFotograflariniDegistir).toHaveBeenCalledWith('ani-1', { kalanYollar: [], yeniUriler: ['file:///yeni.jpg'] }))

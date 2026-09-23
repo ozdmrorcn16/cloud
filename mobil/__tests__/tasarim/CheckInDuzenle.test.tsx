@@ -39,9 +39,13 @@ function oge(ustune: Partial<AkisOgesi> = {}): AkisOgesi {
   }
 }
 
-async function menudenSec(testID: string) {
+/** Alttan gelen galeri sayfasinda bir hucreye bas (2026-09-23 galeri
+ *  akisi): sayfa once kapanir, kamera/sistem secicisi agactan kalktiktan
+ *  EYLEM_GECIKMESI_MS sonra acilir. jest'te expo-media-library native
+ *  kaydi yok, bu yuzden izgara yerine `galeri-sistem` satiri cizilir. */
+async function galeridenSec(testID: 'galeri-sistem' | 'galeri-kamera') {
   await fireEvent.press(await screen.findByTestId(testID))
-  await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+  await waitFor(() => expect(screen.queryByTestId('galeri-sayfasi')).toBeNull())
   await new Promise((r) => setTimeout(r, 120))
 }
 
@@ -90,7 +94,7 @@ describe('CheckInDuzenle', () => {
     await render(<CheckInDuzenle acikMi oge={oge()} zamanYazisi="3 saat önce" onKapat={jest.fn()} onKaydet={onKaydet} />)
 
     await fireEvent.press(screen.getByTestId('duzenle-foto-ekle'))
-    await menudenSec('foto-galeri')
+    await galeridenSec('galeri-sistem')
     // Galeri kalan yer kadar COKLU secimle acildi (5 - 2 = 3).
     expect((ImagePicker.launchImageLibraryAsync as jest.Mock).mock.calls[0][0]).toMatchObject({
       allowsMultipleSelection: true,
@@ -123,7 +127,7 @@ describe('CheckInDuzenle', () => {
     const onKaydet = jest.fn().mockResolvedValue(undefined)
     await render(<CheckInDuzenle acikMi oge={oge()} zamanYazisi="3 saat önce" onKapat={jest.fn()} onKaydet={onKaydet} />)
     await fireEvent.press(screen.getByTestId('duzenle-foto-degistir-1'))
-    await menudenSec('foto-galeri')
+    await galeridenSec('galeri-sistem')
     expect((ImagePicker.launchImageLibraryAsync as jest.Mock).mock.calls[0][0]).toMatchObject({ selectionLimit: 1 })
     await fireEvent.press(screen.getByTestId('duzenle-kaydet'))
     await waitFor(() => expect(onKaydet).toHaveBeenCalled())

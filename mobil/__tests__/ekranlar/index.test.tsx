@@ -133,6 +133,16 @@ async function menudenSec(testID: string) {
   await act(() => new Promise<void>((r) => setTimeout(r, 120)))
 }
 
+/** Alttan gelen galeri sayfasinda bir hucreye bas (2026-09-23 galeri
+ *  akisi): sayfa once kapanir, kamera/sistem secicisi agactan kalktiktan
+ *  EYLEM_GECIKMESI_MS sonra acilir. jest'te expo-media-library native
+ *  kaydi yok, bu yuzden izgara yerine `galeri-sistem` satiri cizilir. */
+async function galeridenSec(testID: 'galeri-sistem' | 'galeri-kamera') {
+  await fireEvent.press(await screen.findByTestId(testID))
+  await waitFor(() => expect(screen.queryByTestId('galeri-sayfasi')).toBeNull())
+  await new Promise((r) => setTimeout(r, 120))
+}
+
 describe('AnaSayfa', () => {
   it('HIKAYE SERIDI akisin ustunde: kendi dairem hep var, arkadas gruplari sirayla; okunamazsa akis yine cizilir', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([oge()])
@@ -426,7 +436,7 @@ describe('AnaSayfa', () => {
     await fireEvent.press(screen.getByLabelText('Paylaşım seçenekleri'))
     await menudenSec('menu-duzenle')
     await fireEvent.press(await screen.findByTestId('duzenle-foto-ekle'))
-    await menudenSec('foto-galeri')
+    await galeridenSec('galeri-sistem')
     // Secilenler izgarada; sunucuya HENUZ gitmedi.
     expect(await screen.findByTestId('duzenle-foto-1')).toBeTruthy()
     expect(checkInFotograflariniDegistir).not.toHaveBeenCalled()

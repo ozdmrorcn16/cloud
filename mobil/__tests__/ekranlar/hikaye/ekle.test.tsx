@@ -6,7 +6,6 @@ import HikayeEkleEkrani from '../../../src/app/hikaye/ekle'
 import { hikayeEkle } from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
 import { takipcilerimiGetir } from '../../../lib/bag-listeleri'
-import { galeriKullanilabilirMi } from '../../../lib/galeri'
 
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(),
@@ -18,11 +17,6 @@ jest.mock('../../../lib/kamera', () => ({
   kameraGorunumu: jest.fn(() => null),
   kameraIzniAl: jest.fn().mockResolvedValue(false),
 }))
-jest.mock('../../../lib/galeri', () => ({
-  galeriKullanilabilirMi: jest.fn(() => false),
-  sonFotograflariGetir: jest.fn().mockResolvedValue([]),
-}))
-const { sonFotograflariGetir } = jest.requireMock('../../../lib/galeri')
 const kameraMock = jest.requireMock('../../../lib/kamera')
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ aktifCheckInimiGetir: jest.fn() }))
@@ -30,34 +24,25 @@ jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }
 
 const mockBack = jest.fn()
 const mockReplace = jest.fn()
-let mockFotoParam: { foto?: string } = {}
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, replace: mockReplace, push: jest.fn(), canGoBack: () => true }),
-  useLocalSearchParams: () => mockFotoParam,
+  useLocalSearchParams: () => ({}),
 }))
 
 /**
- * HIKAYE EKLE (2026-09-22): kaynak secimi -> onizleme -> yazi/mekan -> Paylas.
+ * ANI EKLE (2026-09-23, kullanicinin karari: "sipsak" - galeriden
+ * yukleme YOK, yalnizca anlik cekim). Cekim ekrani: canli onizleme +
+ * flas / deklansor / cevir + gorunurluk hapi. Kare gelince duzenleme:
+ * sol raf (Not/Mekan/Ifade/Etiketle) + Arkadaslar + Paylas.
+ *
+ * Jest varsayilani canli kamera modulu YOK (eski derleme): deklansor
+ * SISTEM KAMERASINI aciyor. Canli kamerali yol en alttaki iki testte.
  */
 
-/**
- * YENI AKIS (2026-09-23): siyah ekranda sol alttaki galeri karesi ->
- * alttan galeri sayfasi. Jest'te native galeri modulu yok, o yuzden
- * sayfa sistem secicisi satirini gosteriyor.
- */
-/**
- * Izgara bu derlemede YOKKEN (jest varsayilani) sol alttaki kare
- * DOGRUDAN sistem galerisini aciyor - arada sayfa yok (kullanicinin
- * istegi 2026-09-23: "basinca da galeri direkt acilmiyor").
- */
-async function galeridenFotografSec() {
-  await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
+/** Deklansor -> sistem kamerasi -> kare tuvalde. */
+async function cek() {
+  await fireEvent.press(await screen.findByTestId('hikaye-deklansor'))
   await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
-}
-
-/** Kamera SOL RAFTA (alttan sayfa kalktiktan sonra oraya tasindi). */
-async function kameradanCek() {
-  await fireEvent.press(screen.getByTestId('hikaye-arac-kamera'))
 }
 
 async function menudenSec(testID: string) {
@@ -67,8 +52,6 @@ async function menudenSec(testID: string) {
 }
 
 beforeEach(() => {
-    mockFotoParam = {}
-    ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(false)
   jest.clearAllMocks()
   // clearAllMocks cagrilari siler ama DAVRANISI silmez; kamera mock'lari
   // her testte varsayilana donmeli (bkz. 2026-09-21 dersi).
@@ -77,39 +60,66 @@ beforeEach(() => {
   kameraMock.kameraIzniAl.mockResolvedValue(false)
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
-  ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///galeri.jpg' }] })
   ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true })
   ;(ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///kamera.jpg' }] })
   ;(hikayeEkle as jest.Mock).mockResolvedValue('h-yeni')
 })
 
 describe('HikayeEkleEkrani', () => {
-  it('acilista SIYAH EKRAN + galeri karesi; galeriden secince onizleme gelir, Paylas etkinlesir', async () => {
+  it('acilista CEKIM EKRANI: baslik "Anı ekle", deklansor ve gorunurluk; duzenleme araclari ve Paylas YOK', async () => {
     await render(<HikayeEkleEkrani />)
-    expect(await screen.findByTestId('hikaye-galeri-karesi')).toBeTruthy()
-    // Fotograf yokken Paylas pasif.
-    expect(screen.getByTestId('hikaye-paylas').props.accessibilityState).toEqual({ disabled: true })
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    expect(await screen.findByText('Anı ekle')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-deklansor')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-araclar')).toBeNull()
+    expect(screen.queryByTestId('hikaye-paylas')).toBeNull()
+
+    await cek()
+    expect(screen.getByTestId('hikaye-araclar')).toBeTruthy()
     expect(screen.getByTestId('hikaye-paylas').props.accessibilityState).toEqual({ disabled: false })
+    // Kare gelince deklansor kalkiyor.
+    expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
   })
 
-  it('kamera izni reddedilirse hata gosterir', async () => {
+  /** Kullanicinin karari: "galeriden fotograf yuklenemicek". */
+  it('GALERI YOK: hicbir galeri girisi cizilmez, sistem galerisi hic acilmaz', async () => {
+    await render(<HikayeEkleEkrani />)
+    await screen.findByTestId('hikaye-deklansor')
+    expect(screen.queryByTestId('hikaye-galeri-karesi')).toBeNull()
+    expect(screen.queryByTestId('galeri-sayfasi')).toBeNull()
+    expect(screen.queryByTestId('galeri-sistem')).toBeNull()
+    await cek()
+    await fireEvent.press(screen.getByTestId('hikaye-kapat'))
+    await screen.findByTestId('hikaye-deklansor')
+    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled()
+  })
+
+  it('kamera izni reddedilirse hata gosterir, ekranda kalir', async () => {
     ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false })
     await render(<HikayeEkleEkrani />)
-    await kameradanCek()
+    await fireEvent.press(await screen.findByTestId('hikaye-deklansor'))
     expect(await screen.findByText('Fotoğraf çekmek için kamera izni gerekiyor.')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-onizleme')).toBeNull()
-    // Kapatma zamanlayicisi (400 ms) menu yeniden acikken geri GONDERMEZ.
-    await act(() => new Promise<void>((r) => setTimeout(r, 500)))
+    expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled()
     expect(mockBack).not.toHaveBeenCalled()
+  })
+
+  it('kamera iptal edilince ekran KAPANMIYOR; deklansor yeniden kamerayi acar', async () => {
+    ;(ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValueOnce({ canceled: true, assets: [] })
+    await render(<HikayeEkleEkrani />)
+    await fireEvent.press(await screen.findByTestId('hikaye-deklansor'))
+    await act(() => new Promise<void>((r) => setTimeout(r, 200)))
+    expect(mockBack).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('hikaye-onizleme')).toBeNull()
+
+    await cek()
+    expect(ImagePicker.launchCameraAsync).toHaveBeenCalledTimes(2)
   })
 
   it('yazi 200 ile sinirli; aktif check-in varsa mekan etiketi tuvale gelir; Paylas hikayeEkle cagirir ve geri doner', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    await cek()
     expect(await screen.findByTestId('hikaye-oge-mekan')).toBeTruthy()
     expect(screen.getByText('Hozee')).toBeTruthy()
 
@@ -122,7 +132,7 @@ describe('HikayeEkleEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', 'selam', 'mekan-1', null, [], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', 'selam', 'mekan-1', null, [], 'arkadaslar', expect.any(Object))
     )
     await waitFor(() => expect(mockBack).toHaveBeenCalled())
   })
@@ -130,119 +140,71 @@ describe('HikayeEkleEkrani', () => {
   it('mekan etiketi kaldirilinca mekansiz paylasilir', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
+    await cek()
     await waitFor(() => expect(screen.getByTestId('hikaye-oge-mekan')).toBeTruthy())
     await fireEvent.press(screen.getByTestId('hikaye-arac-mekan'))
     await menudenSec('hikaye-mekan-kaldir')
     await waitFor(() => expect(screen.queryByTestId('hikaye-oge-mekan')).toBeNull())
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
     )
   })
 
-  it('GORUNURLUK secilebiliyor: Herkese secilince oyle paylasiliyor', async () => {
+  it('GORUNURLUK cekimden ONCE secilebiliyor ve duzenlemede korunuyor', async () => {
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
-    // Varsayilan Arkadaslar.
-    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
-    await fireEvent.press(screen.getByTestId('hikaye-gorunurluk'))
+    await fireEvent.press(await screen.findByTestId('hikaye-gorunurluk'))
     await menudenSec('hikaye-gorunurluk-herkese')
+    expect(screen.getByText('Herkese')).toBeTruthy()
+    await cek()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, [], 'herkese_acik', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, [], 'herkese_acik', expect.any(Object))
     )
   })
 
-  it('× fotografi KALDIRIR ve siyah ekrana doner (ekrandan cikmaz)', async () => {
+  it('× fotografi KALDIRIR ve cekim ekranina doner (ekrandan cikmaz); ikinci × cikar', async () => {
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    await cek()
     await fireEvent.press(screen.getByTestId('hikaye-kapat'))
     await waitFor(() => expect(screen.queryByTestId('hikaye-onizleme')).toBeNull())
-    expect(await screen.findByTestId('hikaye-galeri-karesi')).toBeTruthy()
+    expect(await screen.findByTestId('hikaye-deklansor')).toBeTruthy()
     expect(mockBack).not.toHaveBeenCalled()
-  })
 
-  /** Fotograf secme ekranindan gelince kaynak secimi ACILMAZ. */
-  it('foto parametresiyle acilinca dogrudan duzenlemeye gecer', async () => {
-    mockFotoParam = { foto: 'file:///secilen.jpg' }
-    await render(<HikayeEkleEkrani />)
-    expect(await screen.findByTestId('hikaye-onizleme')).toBeTruthy()
-    expect(screen.queryByTestId('hikaye-galeri-karesi')).toBeNull()
-    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///secilen.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
-    )
+    await fireEvent.press(screen.getByTestId('hikaye-kapat'))
+    expect(mockBack).toHaveBeenCalled()
   })
 
   it('sunucu reddederse hata metni ekranda, geri donmez', async () => {
     ;(hikayeEkle as jest.Mock).mockRejectedValue(new Error('Aynı anda en fazla 10 hikâyen olabilir.'))
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
+    await cek()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     expect(await screen.findByTestId('hikaye-hata')).toHaveTextContent('Aynı anda en fazla 10 hikâyen olabilir.')
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  /**
-   * "ONCE SIYAH EKRAN" (kullanicinin istegi 2026-09-22). Secim iptal
-   * edilince ekran KAPANMIYOR - siyah tuval kaliyor ve dokunmak
-   * kaynak secimini yeniden aciyor. Cikis yalnizca x ile.
-   */
-  it('galeri iptal edilince ekran KAPANMIYOR, siyah ekran kaliyor', async () => {
-    ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: true, assets: [] })
-    await render(<HikayeEkleEkrani />)
-    await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-
-    await act(() => new Promise<void>((r) => setTimeout(r, 500)))
-    expect(mockBack).not.toHaveBeenCalled()
-    expect(screen.getByTestId('hikaye-galeri-karesi')).toBeTruthy()
-
-    // Kareye dokunmak sistem galerisini yeniden aciyor.
-    await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-    await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(2))
-  })
-
-  it('ARAC CIPLERI siyah ekranda da cizilir, Paylas fotografsiz pasif', async () => {
-    await render(<HikayeEkleEkrani />)
-    // Fotograf YOKKEN de cipler ve alt satir duruyor.
-    expect(await screen.findByTestId('hikaye-araclar')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-arac-mekan')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-arac-ifade')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-arac-arkadas')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-paylas').props.accessibilityState.disabled).toBe(true)
-
-    await galeridenFotografSec()
-    expect(screen.getByTestId('hikaye-paylas').props.accessibilityState.disabled).toBe(false)
-  })
-
   it('IFADE secilince tuvale gelir; Paylas ifadeyi gonderiyor', async () => {
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-araclar')).toBeTruthy())
+    await cek()
 
     await fireEvent.press(screen.getByTestId('hikaye-arac-ifade'))
     await fireEvent.press(await screen.findByTestId('ifade-kahve-keyfi'))
 
-    // Ifade artik fotografin UZERINDE bir oge (suruklenebilir), cip degil.
+    // Ifade fotografin UZERINDE bir oge (suruklenebilir), cip degil.
     expect(await screen.findByTestId('hikaye-oge-ifade')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, 'kahve-keyfi', [], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, 'kahve-keyfi', [], 'arkadaslar', expect.any(Object))
     )
   })
 
-  it('ARKADAS etiketlenip kaldirilabiliyor; Paylas etiketi gonderiyor', async () => {
+  it('ARKADAS etiketlenebiliyor; Paylas etiketi gonderiyor', async () => {
     ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
       { id: 'kullanici-2', ad: 'Ada', kullaniciAdi: 'ada', avatarUrl: null },
     ])
     await render(<HikayeEkleEkrani />)
-    await galeridenFotografSec()
-    await waitFor(() => expect(screen.getByTestId('hikaye-araclar')).toBeTruthy())
+    await cek()
 
     await fireEvent.press(screen.getByTestId('hikaye-arac-arkadas'))
     await fireEvent.press(await screen.findByText('ada'))
@@ -250,67 +212,49 @@ describe('HikayeEkleEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///galeri.jpg', '', null, null, ['kullanici-2'], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, ['kullanici-2'], 'arkadaslar', expect.any(Object))
     )
   })
 
   /**
-   * GALERI SAYFASI (kullanicinin referansi 2026-09-23): izgara
-   * okunabiliyorsa kare alttan sayfayi aciyor; ILK HUCRE KAMERA,
-   * gerisi son fotograflar. Web/jest'te native modul yok, bu yuzden
-   * izgarali yol yalnizca burada olculuyor.
+   * CANLI KAMERA NATIVE. Modul YOKSA (OTA ile guncellenen eski derleme)
+   * onizleme, flas ve cevirme cizilmez ama deklansor DURUR ve sistem
+   * kamerasini acar - ekran islevsiz kalmaz.
    */
-  it('izgara varken kare SAYFAYI acar: ilk hucre kamera, fotografa dokunmak tuvale koyar', async () => {
-    ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(true)
-    ;(sonFotograflariGetir as jest.Mock).mockResolvedValue([
-      { id: 'g1', uri: 'file:///g1.jpg' },
-      { id: 'g2', uri: 'file:///g2.jpg' },
-    ])
+  it('kamera modulu yoksa canli onizleme/flas/cevir CIZILMEZ, deklansor sistem kamerasini acar', async () => {
     await render(<HikayeEkleEkrani />)
-    await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-
-    expect(await screen.findByTestId('galeri-kamera')).toBeTruthy()
-    expect(await screen.findByTestId('galeri-g1')).toBeTruthy()
-    expect(screen.getByTestId('galeri-g2')).toBeTruthy()
-    // Izgara varken "Galeriden sec" satiri YOK.
-    expect(screen.queryByTestId('galeri-sistem')).toBeNull()
-
-    await fireEvent.press(screen.getByTestId('galeri-g2'))
-    await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
-  })
-
-
-  /**
-   * CANLI KAMERA (kullanicinin istegi 2026-09-23). Modul YOKSA
-   * onizleme ve deklansor hic cizilmiyor - eski derlemede ekran bugunku
-   * siyah tuval olarak kaliyor.
-   */
-  it('kamera modulu yoksa canli onizleme ve deklansor CIZILMEZ', async () => {
-    await render(<HikayeEkleEkrani />)
-    expect(await screen.findByTestId('hikaye-galeri-karesi')).toBeTruthy()
+    expect(await screen.findByTestId('hikaye-deklansor')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-kamera-onizleme')).toBeNull()
-    expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
+    expect(screen.queryByTestId('hikaye-flas')).toBeNull()
+    expect(screen.queryByTestId('hikaye-kamera-cevir')).toBeNull()
+    await cek()
+    expect(ImagePicker.launchCameraAsync).toHaveBeenCalledTimes(1)
   })
 
-  it('kamera varken canli onizleme ve deklansor gelir; yuvarlak tus kareyi tuvale koyar', async () => {
-    const cek = jest.fn().mockResolvedValue({ uri: 'file:///cekilen.jpg' })
+  it('kamera varken canli onizleme, flas ve cevir gelir; yuvarlak tus kareyi tuvale koyar (sistem kamerasi acilmaz)', async () => {
+    const kareAl = jest.fn().mockResolvedValue({ uri: 'file:///cekilen.jpg' })
     kameraMock.kameraKullanilabilirMi.mockReturnValue(true)
     kameraMock.kameraIzniAl.mockResolvedValue(true)
     // Sahte onizleme bileseni: ref'e takePictureAsync veriyor.
     kameraMock.kameraGorunumu.mockReturnValue(
       React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
-        React.useImperativeHandle(ref, () => ({ takePictureAsync: cek }))
+        React.useImperativeHandle(ref, () => ({ takePictureAsync: kareAl }))
         return <View testID={props.testID as string} />
       })
     )
 
     await render(<HikayeEkleEkrani />)
     expect(await screen.findByTestId('hikaye-kamera-onizleme')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-flas')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-kamera-cevir')).toBeTruthy()
+
+    await fireEvent.press(screen.getByTestId('hikaye-flas'))
+    expect(screen.getByTestId('hikaye-flas').props.accessibilityState).toEqual({ selected: true })
+
     await fireEvent.press(screen.getByTestId('hikaye-deklansor'))
-    await waitFor(() => expect(cek).toHaveBeenCalled())
+    await waitFor(() => expect(kareAl).toHaveBeenCalled())
     await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
-    // Fotograf gelince deklansor kalkiyor.
+    expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled()
     expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
   })
-
 })
