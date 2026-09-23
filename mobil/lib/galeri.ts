@@ -18,6 +18,14 @@
  * Dogrusu expo-modules-core'un bu is icin yazilmis API'si:
  * `requireOptionalNativeModule` once kurulumu garantiliyor, modul yoksa
  * null donuyor ve HIC atmiyor.
+ *
+ * UCUNCU DERS (ayni gun, kullanicinin bildirimi "sol altta halen
+ * fotograf gorunmuyor"): SDK 57'de `expo-media-library`nin GIRIS
+ * NOKTASI yeni API'yi (Query/Asset) veriyor; `getAssetsAsync`,
+ * `MediaType`, `SortBy` gibi klasik API **`expo-media-library/legacy`**
+ * altinda. Kok paketten alinca `getAssetsAsync` yoktu, modul "yok"
+ * sayiliyordu ve kucuk kare hep bos kaliyordu. Paket surumu yukselirse
+ * once bu alt yolun durdugu dogrulanmali.
  */
 
 type MedyaModulu = {
@@ -55,9 +63,14 @@ function moduluAl(): MedyaModulu | null {
     return modul
   }
   try {
+    // Klasik API 'legacy' alt yolunda; kok paket yeni API'yi veriyor.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    modul = require('expo-media-library') as MedyaModulu
-    if (typeof modul?.getAssetsAsync !== 'function') modul = null
+    let aday = require('expo-media-library/legacy') as MedyaModulu
+    if (typeof aday?.getAssetsAsync !== 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      aday = require('expo-media-library') as MedyaModulu
+    }
+    modul = typeof aday?.getAssetsAsync === 'function' ? aday : null
   } catch {
     modul = null
   }
