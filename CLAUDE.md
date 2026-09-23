@@ -50,37 +50,20 @@ maddelerin cogunun tam anlatimi orada ayni baslik/tarihle duruyor.
   Ilk commit'e giren degisikligi `git checkout -- dosya` geri almaz;
   `git checkout <eski> -- dosya`.
 
-## Guncel durum ve DEVAM NOTU (2026-09-24)
+## Guncel durum (2026-09-24)
 
-**Yarim is: "Ani ekle" + check-in galeri akisi** (commit `b37fe89d`,
-YAYINLANMADI). Kullanicinin kararlari:
-1. Hikaye "sipsak": galeriden yukleme YOK, yalnizca anlik cekim; ekran
-   adi "Anı ekle" (`hikaye.ekleBaslik`). `src/app/hikaye/ekle.tsx` cekim
-   modu (canli onizleme + flas / deklansor / kamera cevirme +
-   gorunurluk hapi) ve duzenleme modu (sol rafta Not/Mekan/Ifade/
-   Etiketle). Canli kamera yoksa (eski derleme) deklansor sistem
-   kamerasini acar.
-2. Check-in formu ve check-in duzenleme AYNI GALERI AKISINI kullanir:
-   `FotografIzgarasiDuzenle` Kamera/Galeri `SecimPenceresi` yerine
-   `GaleriSayfasi` acar (`enFazla`: Ekle'de coklu + "Ekle (N)",
-   Degistir'de tekli). Sozlukte `galeri` blogu (7 dil). Eski
-   `hikaye.sonFotograflar/galeri/fotografSecBaslik` kullanilmiyor.
-   **Obur yerler degismez** (mekan duzenleme, sikayet, profil fotografi
-   kendi Kamera/Galeri penceresinde kalir).
-   iOS tuzagi korundu: sayfa once kapanir, kamera `EYLEM_GECIKMESI_MS`
-   sonra; hedef kare `hedefRef`te.
-
-**SIRADAKI ADIMLAR:**
-- Kirik testler (2026-09-24 olculdu, 6 dosya):
-  `__tests__/ekranlar/hikaye/ekle.test.tsx` (galeri yolu testleri
-  kalkar, cekim testleri kalir), `check-in/[mekanId].test.tsx`,
-  `tasarim/CheckInDuzenle.test.tsx`, `ekranlar/index.test.tsx`,
-  `ekranlar/profil/index.test.tsx`: `foto-kamera`/`foto-galeri` yerine
-  `galeri-kamera` / `galeri-<id>` / `galeri-sistem` / `galeri-ekle`.
-  `mekanlar/duzenle` ve `sikayet` testleri DEGISMEZ.
-- `npx jest --runInBand`, `npx tsc --noEmit`, sonra `npm run yayinla`
-  + `eas update`. Telefonda: canli onizleme/deklansor, check-in'de
-  alttan galeri + coklu secim.
+Acik yarim is YOK. Son yayin: "Ani ekle" sipsak akisi + check-in galeri
+sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
+- Hikaye = "Anı ekle": galeriden yukleme YOK (ne galeri karesi, ne
+  `?foto=` parametresi), yalnizca anlik cekim. Canli kamera YALNIZCA
+  cekim kartinda tek `CameraView` (iki tane acilinca ayni ref'i
+  paylasan iki kamera oturumu oluyordu). Modul yoksa deklansor sistem
+  kamerasini acar.
+- Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre
+  kamera, son fotograflar, Ekle'de coklu). Mekan duzenleme, sikayet,
+  profil fotografi eski Kamera/Galeri penceresinde KALIR.
+- TELEFONDA DOGRULANACAK: canli onizleme + deklansor + flas/cevir,
+  check-in'de alttan galeri + coklu secim.
 
 **Yayin durumu:** iOS 1.0.0 (14) App Store Connect'te (TestFlight dahili
 grup "tesstt", public link testflight.apple.com/join/vfgCFp3b). Android

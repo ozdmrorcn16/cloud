@@ -6,7 +6,7 @@
 > (kurallar ve tuzaklar), sonra `docs/konusma-gunlugu.md` (karar
 > defteri). Kullanici ile **Turkce** konus.
 >
-> Son guncelleme: **2026-09-14** (commit `ac800f7` sonrasi). Bu dosya her
+> Son guncelleme: **2026-09-24** (commit `ac800f7` sonrasi). Bu dosya her
 > onemli isin sonunda guncellenir; "Kaldigi yer" bolumu en guncel durum.
 
 ---
@@ -250,7 +250,17 @@ Yeni oturum bunlari bilerek baslar.
 16. **Oturumlar arasi hafiza hep bir sonrakine aktarilir**: is
     bitmeden/kesilmeden once CLAUDE.md + gunluk + bu dosya guncel olsun.
 
-## 8. Kaldigi yer (2026-09-22)
+## 8. Kaldigi yer (2026-09-24)
+
+**2026-09-24:** yarim is yok. "Anı ekle" (hikaye, yalnizca anlik cekim,
+galeri YOK) ve check-in galeri sayfasi (ilk hucre kamera + son
+fotograflar, coklu secim) YAYINDA: OTA `883713d6`, web
+`slooin--6qnel25x9a`. Yeni test cift kamera oturumu hatasini yakaladi,
+duzeltildi. Jest 96 paket / 1267 test. Telefonda dogrulanacak: canli
+onizleme/deklansor, check-in'de galeri + coklu secim. Ayni gun
+CLAUDE.md 286 bin -> 22 bin karaktere indirildi (anlatim
+`docs/claude-md-arsiv.md`de), oturum basi boyut bekcisi var.
+
 
 **Son bitirilen isler (2026-09-20 / 21, hepsi YAYINDA - son OTA grup
 `ed53c110`, web `slooin.expo.app` guncel, iki depoya push):** kullanicinin

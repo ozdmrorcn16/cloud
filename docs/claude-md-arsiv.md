@@ -10860,3 +10860,33 @@ Asagidakiler is gunlugunden ayiklandi. Tam baglam
 - Tuzak (yasandi):** toplu dize degistirme kod tanimlayicilarina  _[Ekran metinleri duzgun Turkce'ye cevrildi (2026-08-23, commi]_
 - hali, bilerek acik birakilan kirik pencereler ve ortam tuzaklari orada.  _[ARSIV - Faz 3a'nin ortasinda yazilmis devam notu (GECERSIZ)]_
 - Faz 3a'da ogrenilen ortam tuzaklari:**  _[Siradaki adim]_
+
+---
+
+## [ANI EKLE TESTLERI + CIFT KAMERA DUZELTMESI - 2026-09-24]
+
+Onceki oturumun yarim biraktigi "Ani ekle" + check-in galeri akisi
+(commit b37fe89d) kapatildi. Alti kirik test dosyasi yeni akisa gecti:
+check-in / CheckInDuzenle / ana sayfa / profil testleri eski
+`foto-kamera`/`foto-galeri` menusu yerine `galeridenSec('galeri-sistem'
+| 'galeri-kamera')` yardimcisiyla (jest'te expo-media-library kaydi
+olmadigi icin izgara yerine sistem satiri cizilir). `hikaye/ekle.test`
+bastan: galeri hic acilmaz, deklansor eski derlemede sistem kamerasina
+duser, kamera iptali ekrani kapatmaz, gorunurluk cekimden once secilir.
+
+YENI TEST GERCEK HATA YAKALADI: canli kamera modulu varken
+`KameraGorunumu` IKI KEZ cizilyordu (arka planda tam ekran + ortadaki
+yuvarlatilmis kart), ikisi ayni `kameraRef`i paylasiyordu. Telefonda
+iki eszamanli kamera oturumu demek. Arka plandaki kalkti. Ayrica
+`?foto=` parametresi (silinmis `/hikaye/fotograf` ekranindan kalma,
+galeri yasaginin arka kapisi), `seciliyorRef`, `ResimCizimi` ve olu
+stiller silindi; ekranin basindaki "lib/galeri silindi" yorumu
+duzeltildi (check-in hala kullaniyor).
+
+Ayni oturumda CLAUDE.md 286 bin -> 22 bin karaktere indirildi (tam
+kopya bu dosyada "TAM KOPYA" basligi altinda) ve boyut bekcisi hook'u
+(`.claude/hooks/claude-md-boyut.ps1`, tavan 50 bin) eklendi.
+
+Jest 96 paket / 1267 test, tsc uygulama kodunda temiz. Yayin: web
+`slooin--6qnel25x9a` (pakette `galeri-sistem` ve `hikaye-deklansor`
+dogrulandi), OTA grup `883713d6-0996-4ec1-aa25-4a992b571c85`.
