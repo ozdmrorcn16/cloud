@@ -30,7 +30,6 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
-import { GaleriSayfasi } from '../../tasarim/GaleriSayfasi'
 import { sonFotograflariGetir, galeriKullanilabilirMi } from '../../../lib/galeri'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
@@ -47,10 +46,9 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * Paylas.
  *
  * GIRIS AKISI (kullanicinin tarifi 2026-09-23): ekran SIYAH aciliyor;
- * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor, ona dokunmak
- * alttan galeri sayfasini aciyor (`GaleriSayfasi`); oradaki kamera
- * karesi canli cekimi, digerleri galeriyi veriyor. Ayri bir "fotograf
- * sec" EKRANI YOK.
+ * sol altta kucuk karede GALERIDEKI SON FOTOGRAF duruyor ve ona dokunmak
+ * DOGRUDAN telefonun galerisini aciyor. Arada uygulama ici bir sayfa
+ * yok (alttan gelen izgara sayfasi denendi, kullanici sadelestirdi).
  *
  * Ust cubuk: × (fotografi KALDIRIR, siyah ekrana doner - ayri
  * "Fotografi degistir" dugmesi YOK), ortada "Yeni hikaye".
@@ -72,7 +70,6 @@ export default function HikayeEkleEkrani() {
   // acildiginda (eski yol) kaynak secimi yine gosteriliyor.
   const { foto } = useLocalSearchParams<{ foto?: string }>()
   const [fotografUri, setFotografUri] = useState<string | null>(foto ?? null)
-  const [galeriAcik, setGaleriAcik] = useState(false)
   /** Sol alttaki kucuk karede gosterilen son galeri fotografi. */
   const [sonFotograf, setSonFotograf] = useState<string | null>(null)
   const [yaziMetni, setYaziMetni] = useState('')
@@ -151,17 +148,12 @@ export default function HikayeEkleEkrani() {
   }
 
   /**
-   * Sol alttaki kare (kullanicinin bildirimi 2026-09-23: "basinca da
-   * galeri direkt acilmiyor"). Izgara bu derlemede varsa alttan galeri
-   * sayfasi aciliyor; YOKSA yarim bir sayfa gostermek yerine DOGRUDAN
-   * sistem galerisi aciliyor - kullanici tek dokunusla fotografina
-   * ulasiyor.
+   * Sol alttaki kare: DOGRUDAN telefonun galerisini aciyor
+   * (kullanicinin karari 2026-09-23: "sol altta galerideki son resim
+   * gorseli, basinca galerinin direkt gelmesi"). Arada uygulama ici bir
+   * sayfa YOK - eskiden alttan gelen izgara sayfasi vardi, kaldirildi.
    */
   function galeriyeGit() {
-    if (galeriKullanilabilirMi()) {
-      setGaleriAcik(true)
-      return
-    }
     void galeridenSec()
   }
 
@@ -329,6 +321,7 @@ export default function HikayeEkleEkrani() {
           tutmuyor, yalnizca ikonlar dokunus aliyor. */}
       <View style={stiller.solRafKabi} pointerEvents="box-none">
         <View style={stiller.solRaf} testID="hikaye-araclar">
+          <AracIkonu etiket={t('hikaye.kamera')} testID="hikaye-arac-kamera" onPress={() => void kameradanCek()} ikon={<KameraCizimi />} />
           <AracIkonu etiket={t('hikaye.notEkle')} testID="hikaye-arac-not" onPress={() => setNotAcik(true)} ikon={<Text style={stiller.aaYazi}>Aa</Text>} />
           <AracIkonu etiket={t('hikaye.mekanEkle')} testID="hikaye-arac-mekan" onPress={mekanlariAc} ikon={<IgneCizimi renk="#FFFFFF" boyut={28} />} />
           <AracIkonu etiket={t('hikaye.ifadeEkle')} testID="hikaye-arac-ifade" onPress={() => setIfadeAcik(true)} ikon={<GulenYuzCizimi />} />
@@ -388,17 +381,6 @@ export default function HikayeEkleEkrani() {
           </Pressable>
         </View>
       </View>
-
-      <GaleriSayfasi
-        acikMi={galeriAcik}
-        onKapat={() => setGaleriAcik(false)}
-        onFotograf={(uri) => {
-          setGaleriAcik(false)
-          setFotografUri(uri)
-        }}
-        onKamera={() => void kameradanCek()}
-        onSistemSecicisi={() => void galeridenSec()}
-      />
 
       <SecimPenceresi
         acikMi={gorunurlukAcik}
@@ -505,6 +487,15 @@ function GulenYuzCizimi() {
       <Circle cx={9} cy={10} r={1.2} fill="#FFFFFF" />
       <Circle cx={15} cy={10} r={1.2} fill="#FFFFFF" />
       <Path d="M8.5 14.5c1 1.2 2.1 1.8 3.5 1.8s2.5-.6 3.5-1.8" stroke="#FFFFFF" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+function KameraCizimi() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24">
+      <Path d="M4 8h3l1.4-2h7.2L17 8h3v11H4V8z" stroke="#FFFFFF" strokeWidth={1.7} fill="none" strokeLinejoin="round" />
+      <Circle cx={12} cy={13} r={3.6} stroke="#FFFFFF" strokeWidth={1.7} fill="none" />
     </Svg>
   )
 }

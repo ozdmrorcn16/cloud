@@ -46,13 +46,9 @@ async function galeridenFotografSec() {
   await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
 }
 
-/** Izgara VARKEN sayfa aciliyor; kamera karesi sayfa kapandiktan sonra kosuyor. */
+/** Kamera SOL RAFTA (alttan sayfa kalktiktan sonra oraya tasindi). */
 async function kameradanCek() {
-  ;(galeriKullanilabilirMi as jest.Mock).mockReturnValue(true)
-  await fireEvent.press(screen.getByTestId('hikaye-galeri-karesi'))
-  await fireEvent.press(await screen.findByTestId('galeri-kamera'))
-  await waitFor(() => expect(screen.queryByTestId('galeri-sayfasi')).toBeNull())
-  await act(() => new Promise<void>((r) => setTimeout(r, 160)))
+  await fireEvent.press(screen.getByTestId('hikaye-arac-kamera'))
 }
 
 async function menudenSec(testID: string) {
