@@ -187,7 +187,7 @@ describe('SikayetEkrani - 01 sikayet olustur', () => {
 
     await render(<SikayetEkrani />)
 
-    expect(screen.getByText('Bu hikâyeyi neden şikâyet ediyorsun?')).toBeTruthy()
+    expect(screen.getByText('Bu anlığı neden şikâyet ediyorsun?')).toBeTruthy()
     expect(screen.queryByText(/çevresindeki mesajlar/i)).toBeNull()
     await fireEvent.press(screen.getByText('Spam veya reklam'))
     await fireEvent.press(screen.getByText('Şikâyeti gönder'))

@@ -30,14 +30,16 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * ANI EKLE (2026-09-23, kullanicinin karari: "hikaye kismini
  * Instagram'in sipsak icerigi gibi yapicaz; galeriden fotograf
  * yuklenemicek, sadece anlik fotograf cekilip paylasilabilcek; ismi de
- * Anı ekle olacak").
+ * Anı ekle olacak"). AD 2026-09-24'te "ANLIK" oldu (kullanicinin karari):
+ * "Anı" profildeki check-in gecmisiyle (Anılar) karisiyordu; ozellik
+ * her ekranda ve 7 dilde tek adla (tr Anlık, en moment, fr instant...).
  *
  * GALERI YOLU TAMAMEN KALKTI: ne kucuk kare, ne alttan galeri sayfasi,
  * ne sistem secicisi, ne disaridan `?foto=` parametresi. Tek kaynak
  * ANLIK CEKIM - icerik "su an" cekilmis olmali. (`lib/galeri.ts` ve
  * `GaleriSayfasi` duruyor ama yalnizca check-in fotograflari icin.)
  *
- * CEKIM EKRANI referansa gore: ust cubuk × + "Anı ekle", ortada
+ * CEKIM EKRANI referansa gore: ust cubuk × + "Anlık ekle", ortada
  * yuvarlatilmis canli onizleme, altta flas / YUVARLAK DEKLANSOR /
  * kamera cevirme, en altta gorunurluk hapi. Kare cekilince (2026-09-24,
  * kullanicinin tarifi) fotograf AYNI KARTTA kalir - izleyen de tam bu

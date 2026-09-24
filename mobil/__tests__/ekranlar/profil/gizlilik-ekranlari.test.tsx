@@ -182,7 +182,7 @@ describe('BekleyenEtiketlerEkrani', () => {
   it('hikaye etiketi kendi metnini gosterir', async () => {
     await render(<BekleyenEtiketlerEkrani />)
     expect(await screen.findByText('Hozee check-in’inde seni etiketlemek istiyor.')).toBeTruthy()
-    expect(screen.getByText('Kafe hikâyesinde seni etiketlemek istiyor.')).toBeTruthy()
+    expect(screen.getByText('Kafe anlığında seni etiketlemek istiyor.')).toBeTruthy()
   })
 
   it('mekansiz hikaye etiketinde sade metin', async () => {
@@ -190,7 +190,7 @@ describe('BekleyenEtiketlerEkrani', () => {
       { ...BEKLEYEN[1], mekanAdi: null },
     ])
     await render(<BekleyenEtiketlerEkrani />)
-    expect(await screen.findByText('hikâyesinde seni etiketlemek istiyor.')).toBeTruthy()
+    expect(await screen.findByText('anlığında seni etiketlemek istiyor.')).toBeTruthy()
   })
 })
 

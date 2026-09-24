@@ -175,7 +175,7 @@ describe('HikayeIzleEkrani', () => {
 
     await fireEvent.press(screen.getByTestId('hikaye-menu'))
     await menudenSec('hikaye-menu-sil')
-    expect(await screen.findByText('Hikâye silinsin mi?')).toBeTruthy()
+    expect(await screen.findByText('Anlık silinsin mi?')).toBeTruthy()
     await fireEvent.press(screen.getByText('Sil'))
     await waitFor(() => expect(hikayeSil).toHaveBeenCalledWith('b1'))
     // Tek hikayem silindi: grubum dustu, sonraki gruba (Ayse) gecildi.
@@ -297,12 +297,12 @@ describe('HikayeIzleEkrani', () => {
   })
 
   it('IFADE sunucu reddederse eski secime doner ve sebep yazilir', async () => {
-    ;(hikayeIfadesiGonder as jest.Mock).mockRejectedValue(new Error('Hikâye bulunamadı.'))
+    ;(hikayeIfadesiGonder as jest.Mock).mockRejectedValue(new Error('Anlık bulunamadı.'))
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
     await fireEvent.press(screen.getByTestId('hikaye-ifade-kahve-keyfi'))
-    expect(await screen.findByTestId('hikaye-ifade-durumu')).toHaveTextContent('Hikâye bulunamadı.')
+    expect(await screen.findByTestId('hikaye-ifade-durumu')).toHaveTextContent('Anlık bulunamadı.')
     expect(screen.getByTestId('hikaye-ifade-kahve-keyfi').props.accessibilityState).toEqual({ selected: false })
   })
 

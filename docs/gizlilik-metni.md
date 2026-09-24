@@ -71,18 +71,18 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
   Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin
   fotograf alaninda da gorunur.
-- Hikayelerin (anilarin): anlik cektigin fotograf ve check-in
-  yaptiysan mekan etiketi (2026-09-24'ten once paylasilanlarda yazi,
-  ifade ve arkadas etiketi de olabilir; 24 saatte silinirler). Her hikayede kimlerin gorebilecegini sen secersin: "Arkadaslar"
-  (varsayilan) ya da "Herkese" - "Herkese" sectigin hikayeyi profilin
-  gizli olsa da uygulamadaki herkes acabilir, engelledigin kisiler
-  hicbir halde goremez. Hikaye 24 saat sonra
-  fotografiyla birlikte otomatik silinir (arsiv tutulmaz). Kimin
-  hikayeni ne zaman gordugu ve hikayene hangi ifadeyi attigi
-  kaydedilir; bu listeyi yalnizca sen gorursun ve hikaye silinince o
-  kayit da silinir. Baskasinin hikayesine attigin ifadeyi de yalnizca
-  o hikayenin sahibi gorur. Bir hikayeyi
-  diledigin an kendin silebilirsin.
+- Anliklarin: anlik cektigin fotograf ve check-in yaptiysan mekan
+  etiketi (2026-09-24'ten once paylasilanlarda yazi, ifade ve arkadas
+  etiketi de olabilir; 24 saatte silinirler). Her anlikta kimlerin
+  gorebilecegini sen secersin: "Arkadaslar" (varsayilan) ya da
+  "Herkese" - "Herkese" sectigin anligi profilin gizli olsa da
+  uygulamadaki herkes acabilir, engelledigin kisiler hicbir halde
+  goremez. Anlik 24 saat sonra fotografiyla birlikte otomatik silinir
+  (arsiv tutulmaz). Kimin anligini ne zaman gordugu ve anligina hangi
+  ifadeyi attigi kaydedilir; bu listeyi yalnizca sen gorursun ve anlik
+  silinince o kayit da silinir. Baskasinin anligina attigin ifadeyi de
+  yalnizca o anligin sahibi gorur. Bir anligi diledigin an kendin
+  silebilirsin.
 
 ## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple
 
@@ -247,7 +247,7 @@ FAZLA** (tek bir kural degil):
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
   donustugunde otomatik olarak silinir (null'a cekilir).
-- Hikayeler ve goruntulenme kayitlari paylasimdan 24 saat sonra her
+- Anliklar ve goruntulenme kayitlari paylasimdan 24 saat sonra her
   saat calisan bir temizlik isiyle fotografiyla birlikte silinir. Bu
   kural bugun YURURLUKTEDIR.
 - **Moderasyon erisim kayitlari** (`moderasyon_kayitlari`, bkz. madde

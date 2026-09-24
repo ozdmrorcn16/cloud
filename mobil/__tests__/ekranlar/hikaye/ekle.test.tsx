@@ -65,9 +65,9 @@ beforeEach(() => {
 })
 
 describe('HikayeEkleEkrani', () => {
-  it('acilista CEKIM EKRANI: baslik "Anı ekle", deklansor ve gorunurluk; duzenleme araclari ve Paylas YOK', async () => {
+  it('acilista CEKIM EKRANI: baslik "Anlık ekle", deklansor ve gorunurluk; duzenleme araclari ve Paylas YOK', async () => {
     await render(<HikayeEkleEkrani />)
-    expect(await screen.findByText('Anı ekle')).toBeTruthy()
+    expect(await screen.findByText('Anlık ekle')).toBeTruthy()
     expect(screen.getByTestId('hikaye-deklansor')).toBeTruthy()
     expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-paylas')).toBeNull()
@@ -173,11 +173,11 @@ describe('HikayeEkleEkrani', () => {
   })
 
   it('sunucu reddederse hata metni ekranda, geri donmez', async () => {
-    ;(hikayeEkle as jest.Mock).mockRejectedValue(new Error('Aynı anda en fazla 10 hikâyen olabilir.'))
+    ;(hikayeEkle as jest.Mock).mockRejectedValue(new Error('Aynı anda en fazla 10 anlığın olabilir.'))
     await render(<HikayeEkleEkrani />)
     await cek()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    expect(await screen.findByTestId('hikaye-hata')).toHaveTextContent('Aynı anda en fazla 10 hikâyen olabilir.')
+    expect(await screen.findByTestId('hikaye-hata')).toHaveTextContent('Aynı anda en fazla 10 anlığın olabilir.')
     expect(mockBack).not.toHaveBeenCalled()
   })
 

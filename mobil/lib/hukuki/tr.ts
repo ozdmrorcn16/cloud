@@ -36,7 +36,7 @@ const tr: HukukiMetin = {
         'Bildirim tercihlerin (hangi bildirimlerin gelsin, gece sessizi) ve gece sessizi için cihazının saat dilimi. Giriş yaptığın cihazların oturum kayıtları: cihaz türü, IP adresi ve son etkinlik zamanı; bunları Ayarlar → Hesap ve güvenlik → Açık oturumlar bölümünden görüp tek tek kapatabilirsin. Görünüm (tema) tercihin yalnızca cihazında saklanır, sunucuya gitmez.',
         'Şikayet ettiğin ya da hakkında şikayet edilen bilgiler. Bir şikâyete fotoğraf eklersen o fotoğraf şikâyet kaydıyla birlikte saklanır ve yalnızca moderasyon ekibi görür; başka kullanıcılara hiçbir zaman gösterilmez.',
         'Mekânlara verdiğin puanlar (Kötü / İyi / Harika). Herkes yalnızca toplamları görür; hangi puanı verdiğini yalnızca sen görürsün. Check-in fotoğrafların, seçtiğin görünürlük kuralıyla o mekânın fotoğraf alanında da görünür.',
-        'Hikâyelerin (anıların): anlık çektiğin fotoğraf ve check-in yaptıysan mekân etiketi. Her hikâyede kimlerin görebileceğini sen seçersin: "Arkadaşlar" (varsayılan) ya da "Herkese" — "Herkese" seçtiğin hikâyeyi profilin gizli olsa da uygulamadaki herkes açabilir, engellediğin kişiler hiçbir hâlde göremez. Hikâye 24 saat sonra fotoğrafıyla birlikte otomatik silinir (arşiv tutulmaz). Kimin hikâyeni ne zaman gördüğü ve hikâyene hangi ifadeyi attığı kaydedilir; bu listeyi yalnızca sen görürsün ve hikâye silinince o kayıt da silinir. Başkasının hikâyesine attığın ifadeyi de yalnızca o hikâyenin sahibi görür. Bir hikâyeyi dilediğin an kendin silebilirsin.',
+        "Anlıkların: anlık çektiğin fotoğraf ve check-in yaptıysan mekân etiketi. Her anlıkta kimlerin görebileceğini sen seçersin: \"Arkadaşlar\" (varsayılan) ya da \"Herkese\" — \"Herkese\" seçtiğin anlığı profilin gizli olsa da uygulamadaki herkes açabilir, engellediğin kişiler hiçbir hâlde göremez. Anlık 24 saat sonra fotoğrafıyla birlikte otomatik silinir (arşiv tutulmaz). Kimin anlığını ne zaman gördüğü ve anlığına hangi ifadeyi attığı kaydedilir; bu listeyi yalnızca sen görürsün ve anlık silinince o kayıt da silinir. Başkasının anlığına attığın ifadeyi de yalnızca o anlığın sahibi görür. Bir anlığı dilediğin an kendin silebilirsin.",
       ],
     },
     {
@@ -93,7 +93,7 @@ const tr: HukukiMetin = {
         'Planlanan (henüz uygulanmadı): karara bağlanmış şikayetlerin karardan 1 yıl sonra silinmesi. Şikayet kayıtları için bugün otomatik bir silme işi yoktur.',
         'Bir kullanıcıyı engellersen: aranızdaki bütün birebir mesajlar ve konuşma, bekleyen istekler ve arkadaşlık bağı kalıcı olarak silinir. Silme her iki tarafta da geçerlidir ve geri alınamaz; engeli kaldırman silinen mesajları geri getirmez.',
         'Hesabını silersen: profilin, anıların, arkadaşların ve konuşma listen kalıcı olarak silinir. Gönderdiğin mesajlar silinmez ama gönderen kimliğin koparılır. Senin açtığın şikayetlerde kimlik bağı kopar; hakkında açılan şikayetlerde ise kimlik bağı KOPMAZ, hedef kimliği moderasyon kaydında kalır. Profil ve check-in fotoğrafların depolama alanından silinir.',
-        'Hikâyeler ve görüntülenme kayıtları paylaşımdan 24 saat sonra her saat çalışan bir temizlik işiyle fotoğrafıyla birlikte silinir. Bu kural bugün YÜRÜRLÜKTEDİR.',
+        "Anlıklar ve görüntülenme kayıtları paylaşımdan 24 saat sonra her saat çalışan bir temizlik işiyle fotoğrafıyla birlikte silinir. Bu kural bugün YÜRÜRLÜKTEDİR.",
       ],
     },
     {

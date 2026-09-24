@@ -33,7 +33,7 @@ import { yazi, olcek, bosluk, yuvarlak } from './tema'
  * KULLANIM YERI (2026-09-23, kullanicinin karari "check-in duzenleme ve
  * yeni check-in kisminda ayni galeri akisini kullanicaz"): CHECK-IN
  * formu ve "Check-in'i duzenle" - ikisi de `FotografIzgarasiDuzenle`
- * uzerinden. Hikaye ("Anı ekle") artik galeri KULLANMIYOR, yalnizca
+ * uzerinden. Hikaye ("Anlık ekle") artik galeri KULLANMIYOR, yalnizca
  * anlik cekim; bu sayfa oradan cikti. Mekan duzenleme, sikayet ve
  * profil fotografi eski Kamera/Galeri penceresinde kaldi (kullanicinin
  * "obur yerlerde galeri yolu ayni kalicak" kurali).
