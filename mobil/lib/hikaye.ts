@@ -397,6 +397,66 @@ export async function hikayeSeridiVerisiniGetir(): Promise<HikayeSeridiVerisi> {
   return veri
 }
 
+/**
+ * ANLIK ARSIVI (2026-09-24, kullanicinin karari): kisinin KENDI butun
+ * anliklari (suresi dolmuslar dahil), en yeni once. Yalnizca sahibi
+ * gorur (RLS "kendi anlik arsivi"); 24 saat sonra baskalari artik
+ * goremez. Gorenler ve ifadeler 24 saatte silindigi icin arsivde
+ * yalnizca fotograf, mekan ve zaman var. Izleyici bunu TEK GRUP olarak
+ * acar (`/hikaye/izle?arsiv=<id>`).
+ */
+export async function anlikArsiviniGetir(): Promise<HikayeGrubu | null> {
+  const uid = await kullaniciKimligi()
+  if (!uid) return null
+  const { data, error } = await supabase.rpc('anlik_arsivim', { p_adet: 200 })
+  if (error) throw new Error(hataMetni(error))
+  type Satir = {
+    id: string
+    fotograf: string
+    mekan_id: string | null
+    mekan_adi: string | null
+    olusturuldu: string
+    bitis: string
+    gorunurluk: HikayeGorunurlugu
+  }
+  const satirlar = (data ?? []) as Satir[]
+  const [urller, ozetler] = await Promise.all([
+    hikayeMedyasiUrlHaritasi(satirlar.map((s) => s.fotograf)),
+    profilOzetleriniGetir([uid]),
+  ])
+  const ozet = ozetler[uid]
+  return {
+    kullaniciId: uid,
+    ad: ozet?.ad ?? '',
+    kullaniciAdi: ozet?.rumuz ?? '',
+    avatarUrl: ozet?.avatarUrl ?? null,
+    benimMi: true,
+    gorulmemisVar: false,
+    hikayeler: satirlar.map((s) => ({
+      id: s.id,
+      kullaniciId: uid,
+      fotograf: s.fotograf,
+      fotografUrl: urller[s.fotograf] ?? null,
+      yazi: null,
+      ifade: null,
+      etiketler: [],
+      mekanId: s.mekan_id,
+      mekanAdi: s.mekan_adi,
+      olusturuldu: s.olusturuldu,
+      bitis: s.bitis,
+      gordum: true,
+      goruntulenmeSayisi: 0,
+      gorunurluk: s.gorunurluk,
+      yerlesim: null,
+    })),
+  }
+}
+
+/** Anlik hala seritte mi (24 saati dolmadi mi)? */
+export function anlikAktifMi(bitis: string, simdi: number = Date.now()): boolean {
+  return new Date(bitis).getTime() > simdi
+}
+
 export type BekleyenHikayeEtiketi = {
   hikayeId: string
   fotograf: string

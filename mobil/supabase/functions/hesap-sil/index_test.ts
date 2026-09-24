@@ -94,3 +94,10 @@ Deno.test('girisTazeMi: gelecekteki bir zaman taze degil (saat kaymasi kapiyi ac
   const simdi = new Date('2026-09-13T10:00:00Z')
   assertEquals(girisTazeMi('2026-09-13T10:05:00Z', simdi), false)
 })
+
+Deno.test('fotografYollari: anlik fotograflari ayri toplanir, yabanci klasor elenir', () => {
+  const sonuc = fotografYollari('kullanici-1', [], ['kullanici-1/c1.jpg', 'kullanici-1/c2.jpg'], ['kullanici-1/h.jpg', 'baska/h.jpg', null])
+  assertEquals(sonuc.checkIn, ['kullanici-1/c1.jpg', 'kullanici-1/c2.jpg'])
+  assertEquals(sonuc.anlik, ['kullanici-1/h.jpg'])
+  assertEquals(sonuc.yabanciElenen, 1)
+})

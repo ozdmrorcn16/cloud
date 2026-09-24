@@ -21,7 +21,8 @@ import {
   hikayeSil,
   hikayeIfadesiGonder,
   ANI_KART_ORANI,
-  HIKAYE_SURESI_MS,
+  anlikArsiviniGetir,
+  anlikAktifMi,
   type HikayeGrubu,
   seritOnbelleginiOku,
 } from '../../../lib/hikaye'
@@ -81,7 +82,9 @@ export default function HikayeIzleEkrani() {
   const { t } = useDil()
   const guvenliAlan = useSafeAreaInsets()
   const hareket = useHareket()
-  const { kullanici } = useLocalSearchParams<{ kullanici?: string }>()
+  // `arsiv=<id>`: ANLIK ARSIVI (2026-09-24) - kisinin kendi butun
+  // anliklari tek grup, verilen anliktan acilir.
+  const { kullanici, arsiv } = useLocalSearchParams<{ kullanici?: string; arsiv?: string }>()
 
   const [gruplar, setGruplar] = useState<HikayeGrubu[] | null>(null)
   const [hata, setHata] = useState<string | null>(null)
@@ -125,6 +128,21 @@ export default function HikayeIzleEkrani() {
 
   useEffect(() => {
     let gecerli = true
+    if (arsiv) {
+      anlikArsiviniGetir()
+        .then((g) => {
+          if (!gecerli) return
+          const liste = g && g.hikayeler.length > 0 ? [g] : []
+          setGruplar(liste)
+          setKonum({ g: 0, h: Math.max(0, g?.hikayeler.findIndex((h) => h.id === arsiv) ?? 0) })
+        })
+        .catch((e) => {
+          if (gecerli) setHata(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+        })
+      return () => {
+        gecerli = false
+      }
+    }
     const onbellekli = seritOnbelleginiOku()?.gruplar
     if (onbellekli && onbellekli.length > 0) {
       setGruplar(onbellekli)
@@ -145,7 +163,7 @@ export default function HikayeIzleEkrani() {
       gecerli = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kullanici])
+  }, [kullanici, arsiv])
 
   // ---- Kapatma / gezinme ----
   function kapat() {
@@ -198,7 +216,12 @@ export default function HikayeIzleEkrani() {
     else setKonum({ g: 0, h: 0 })
   }, [])
 
-  // ---- Ilerleme cubugu / zamanlayici ----
+  // ---- Zamanlayici YOK (2026-09-24, kullanicinin karari) ----
+  // "Sureli olmayacaklar; uzerine basilirsa ya da kaydirilirsa gecilecek,
+  // ustteki dolma ibaresini kaldir." Anliklar kendiliginden GECMEZ;
+  // dokunus ve kaydirma gezinir, cubuk cizilmez. `ilerleme` ve
+  // duraklatma kancalari zararsiz kaldi (basili tutunca arayuz gizlenmesi
+  // hala onlara bagli).
   const ilerleme = useRef(new Animated.Value(0)).current
   const duraklatildi = menuAcik || silOnayi || gorenlerAcik
   const duraklatildiRef = useRef(duraklatildi)
@@ -209,16 +232,8 @@ export default function HikayeIzleEkrani() {
     (baslangicDegeri: number) => {
       ilerleme.stopAnimation()
       ilerleme.setValue(baslangicDegeri)
-      Animated.timing(ilerleme, {
-        toValue: 1,
-        duration: Math.max(0, (1 - baslangicDegeri) * HIKAYE_SURESI_MS),
-        easing: (x) => x,
-        useNativeDriver: false,
-      }).start(({ finished }) => {
-        if (finished) ileri()
-      })
     },
-    [ilerleme, ileri]
+    [ilerleme]
   )
 
   const durdur = useCallback(() => {
@@ -355,7 +370,9 @@ export default function HikayeIzleEkrani() {
    * istegiyle kaldirildi (2026-09-22), tepki icin alttaki emojiler var.
    */
   const yukariAc = useCallback(() => {
-    if (gruplarRef.current?.[konumRef.current.g]?.benimMi) setGorenlerAcik(true)
+    const g = gruplarRef.current?.[konumRef.current.g]
+    const h = g?.hikayeler[konumRef.current.h]
+    if (g?.benimMi && h && anlikAktifMi(h.bitis)) setGorenlerAcik(true)
   }, [])
 
   function suruklemeyiYerineOturt() {
@@ -638,26 +655,14 @@ export default function HikayeIzleEkrani() {
             ) : null}
           </View>
 
-          {/* Ust: ilerleme cubuklari + kimlik */}
+          {/* Ust: kimlik (ilerleme cubugu YOK, 2026-09-24) */}
           {/* BASILI TUTARKEN ARAYUZ GIZLENIR (Instagram): fotografin onunde
               hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor. */}
           <View
+            testID="hikaye-ust"
             style={[stiller.ust, { paddingTop: guvenliAlan.top + bosluk.s }, basiliTutuluyor && stiller.gizli]}
             pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
           >
-            <View style={stiller.cubuklar} testID="hikaye-ilerleme">
-              {grup.hikayeler.map((h, i) => (
-                <View key={h.id} style={stiller.cubukZemin}>
-                  {i < konum.h ? (
-                    <View style={[stiller.cubukDolu, { width: '100%' }]} />
-                  ) : i === konum.h ? (
-                    <Animated.View
-                      style={[stiller.cubukDolu, { width: ilerleme.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]}
-                    />
-                  ) : null}
-                </View>
-              ))}
-            </View>
             <View style={stiller.kimlikSatiri}>
               <Pressable
                 style={stiller.kimlik}
@@ -694,10 +699,16 @@ export default function HikayeIzleEkrani() {
                 /* KENDI HIKAYEM: mesaj kutusunun yerinde GORENLER ve SIL
                    (kullanicinin karari 2026-09-22). */
                 <View style={stiller.sahipSatiri} testID="hikaye-sahip-eylemleri">
+                  {/* Gorenler 24 saatte silinir: arsivdeki (suresi dolmus)
+                      anlikta liste yok, dugme de yok. */}
+                  {anlikAktifMi(hikaye.bitis) ? (
                   <Pressable onPress={() => setGorenlerAcik(true)} style={stiller.gorenler} accessibilityRole="button" testID="hikaye-gorenler">
                     <GozCizimi />
                     <Text style={stiller.gorenlerYazi}>{t('hikaye.kisiGordu', { sayi: hikaye.goruntulenmeSayisi })}</Text>
                   </Pressable>
+                  ) : (
+                    <View />
+                  )}
                   <Pressable
                     onPress={() => setSilOnayi(true)}
                     style={({ pressed }) => [stiller.silDugmesi, pressed && stiller.basili]}

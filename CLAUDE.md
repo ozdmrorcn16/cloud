@@ -59,6 +59,15 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   hata metninde ve gizlilik metninde TEK AD (2026-09-24, kullanicinin
   karari). "Anı/Anılar" YALNIZCA profildeki check-in gecmisi; karistirma.
   Kod adi hala `hikaye` (tablo, RPC, dosya, sozluk anahtari).
+- ANLIK ARSIVI (2026-09-24): anlik seritte 24 saat, sonra YALNIZCA
+  SAHIBININ arsivinde suresiz (ana sayfa sag ust ikon -> `/anlik-arsivi`,
+  izleyici `?arsiv=<id>`). Gorenler/ifadeler/etiketler 24 saatte silinir
+  (cron artik yalnizca bunlari siler). Izleyicide ZAMANLAYICI ve
+  ilerleme cubugu YOK; dokunus/kaydirmayla gecilir. RLS "kendi anlik
+  arsivi"; `hikaye_akisi` sure suzgecini ACIKCA tasir. Hesap silme anlik
+  ve TUM check-in fotograflarini kovadan siler (hesap-sil v8). Canli
+  `araclar/anlik-arsivi-canli-test.py` 13/13. Ikon secenegi A (gecmis)
+  gecici - kullanici secimi bekleniyor (`tasarim/anlik-arsivi/`).
 - Anlık ekle: galeriden yukleme YOK (ne galeri karesi, ne
   `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
   kartta kalir (`ANI_KART_ORANI` 0.88, cover); izleyici de ayni oran
@@ -270,6 +279,11 @@ Veritabani / Supabase
   `ad` esitligi ve `il='Bursa' order by id` zaman asimina duser -
   toplu olcum yerel parquet'ten.
 - pg_cron'da `statement_timeout` cron KOMUTUNUN icine yazilir.
+- pg_cron (SQL) `storage.objects`ten SILEMEZ ("Direct deletion from
+  storage tables is not allowed"): eski anlik silme isi 22-24 Eylul arasi
+  HER SAAT bu hatayla dustu ve fark edilmedi. Dosya silme Storage API
+  (Edge Function / istemci) ile yapilir. Yeni cron isi kurunca
+  `cron.job_run_details` ile ilk kosumun `succeeded` oldugu OLCULUR.
 - `public.spatial_ref_sys` (PostGIS, sahibi supabase_admin) RLS'siz ve
   anon'a yazilabilirdi; RLS/REVOKE bizden YAPILAMAZ. PostgREST pre-request
   `public.istek_kapisi` o yolu 42501 ile kapatiyor (migrasyon

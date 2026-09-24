@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=Bricolage+Grotesque:wght@700&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#fff; font-family:'Instrument Sans',sans-serif; width:390px; padding:8px 0 20px; }
+  .etiket { font-size:13px; font-weight:700; color:#FE7813; letter-spacing:.4px; margin:20px 20px 6px; }
+  .aciklama { font-size:13px; color:#7A726B; margin:0 20px 6px; }
+  .ust { height:56px; position:relative; display:flex; align-items:center; justify-content:center; border-bottom:1px solid #F1ECE6; }
+  .marka { font-family:'Bricolage Grotesque',sans-serif; font-size:30px; font-weight:700; color:#17130F; letter-spacing:-1px; }
+  .marka i { color:#FE7813; font-style:normal; }
+  .sol, .sag { position:absolute; top:6px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; }
+  .sol { left:8px; } .sag { right:8px; }
+  svg { width:26px; height:26px; }
+</style>
+</head>
+<body>
+<svg style="display:none">
+  <symbol id="ara" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#17130F" stroke-width="2"/><path d="M16 16l4 4" stroke="#17130F" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+<div id="kok"></div>
+<script>
+  const ikonlar = [
+    ['A — Geçmiş (saat + geri ok)', 'Instagram arşivinin simgesi; "geçmişe dön" demek.',
+     '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" fill="none" stroke="#17130F" stroke-width="2" stroke-linecap="round"/><path d="M4 4.5v3.8h3.8" fill="none" stroke="#17130F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.3l2.8 1.8" fill="none" stroke="#17130F" stroke-width="2" stroke-linecap="round"/>'],
+    ['B — Arşiv kutusu', 'Saklama/arşiv için yaygın simge.',
+     '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.2" fill="none" stroke="#17130F" stroke-width="2"/><path d="M5 9v9.5a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V9" fill="none" stroke="#17130F" stroke-width="2"/><path d="M10 13h4" stroke="#17130F" stroke-width="2" stroke-linecap="round"/>'],
+    ['C — Anlık yığını', 'Üst üste fotoğraf kartları; "biriken anlıklar".',
+     '<rect x="7" y="3.5" width="12" height="15" rx="3" fill="none" stroke="#17130F" stroke-width="2"/><path d="M4.5 7.5v10A3 3 0 0 0 7.5 20.5H15" fill="none" stroke="#17130F" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="9.5" r="1.6" fill="#FE7813"/>'],
+  ];
+  const kok = document.getElementById('kok');
+  for (const [ad, not, yol] of ikonlar) {
+    kok.insertAdjacentHTML('beforeend', `
+      <div class="etiket">${ad}</div><div class="aciklama">${not}</div>
+      <div class="ust">
+        <div class="sol"><svg><use href="#ara"/></svg></div>
+        <div class="marka">slo<i>o</i>in</div>
+        <div class="sag"><svg viewBox="0 0 24 24">${yol}</svg></div>
+      </div>`);
+  }
+  document.fonts.load('700 30px "Bricolage Grotesque"').then(() => { document.body.dataset.hazir = '1' });
+</script>
+</body>
+</html>

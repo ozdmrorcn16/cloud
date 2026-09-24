@@ -30,6 +30,7 @@ import { useRenk, useStiller } from '../tasarim/tema-baglami'
 import { KademeliGiris, BosDurumGirisi } from '../tasarim/KademeliGiris'
 import { MarkaYazisi } from '../tasarim/MarkaYazisi'
 import { BuyutecIkonu } from '../tasarim/BuyutecIkonu'
+import { AnlikArsiviIkonu } from '../tasarim/AnlikArsiviIkonu'
 import { ALT_GEZINME_PAYI } from '../tasarim/AltGezinme'
 
 function KonumIkonu() {
@@ -292,6 +293,18 @@ export default function AnaSayfa() {
           <BuyutecIkonu />
         </Pressable>
         <MarkaYazisi genislik={88} />
+        {/* SAG USTTE ANLIK ARSIVI (2026-09-24): anliklar seritte 24
+            saat, arsivde suresiz; yalnizca sahibi gorur. */}
+        <Pressable
+          style={[stiller.aramaDugmesi, stiller.arsivDugmesi]}
+          onPress={() => router.push('/anlik-arsivi' as never)}
+          accessibilityRole="button"
+          accessibilityLabel={t('hikaye.arsivAc')}
+          hitSlop={8}
+          testID="anlik-arsivi"
+        >
+          <AnlikArsiviIkonu />
+        </Pressable>
       </View>
 
       {hata && <Text style={stiller.hata}>{hata}</Text>}
@@ -443,6 +456,8 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
     // Marka gorseli 88 genis / 26 yuksek; dugme dikeyde onunla ortali.
     marginTop: -9,
   },
+  // Ayni dugme, sag basta.
+  arsivDugmesi: { left: undefined, right: bosluk.sayfa },
 
   hata: {
     fontFamily: yazi.govdeOrta,

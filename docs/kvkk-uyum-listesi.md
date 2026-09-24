@@ -875,3 +875,30 @@ Erisim hakki (m.11): `verilerimi_disa_aktar` sahibin dosyasinda
 `hikaye_goruntulemelerim` satirlarina `ifade` ekledi, atanin dosyasinda
 yeni `hikaye_ifadelerim` blogu var. Gizlilik metni 7 dil + docs
 guncellendi.
+
+## Anlik arsivi: anliklar artik suresiz saklaniyor (2026-09-24)
+
+Kullanicinin karari: "anliklar 24 saat durucak; sag ustte atilan
+anliklarin kayitli kalabilecegi bir alan, sureli olmayacaklar". Arsivi
+YALNIZCA SAHIBI gorur; gorenler ve ifadeler 24 saatte silinir
+(kullanicinin secimi). Migrasyon `20260924120000_anlik_arsivi.sql`.
+
+- **Hangi veri:** kisinin kendi anlik fotografi, mekani, zamani ve
+  gorunurluk secimi - artik 24 saat degil SURESIZ. Baskasinin verisi
+  (goruntuleme, attigi ifade, etiket) arsive GIRMEZ.
+- **Hangi dayanak:** sozlesmenin ifasi (KVKK m.5/2-c): kisinin kendi
+  arsivi, kendi istegiyle tutulan bir hizmet ozelligi.
+- **Ne kadar sure:** anlik ve fotografi sahibi silene ya da hesabini
+  silene kadar. Goruntulemeler, ifadeler ve etiketler 24 saatte saatlik
+  cron ile silinir. HESAP SILINCE fotograflar kovadan da silinir
+  (`hesap-sil` v8; ayni turda eklendi - onceden saatlik temizlik
+  ortuyordu). Ayni duzeltmede check-in'lerin 2.-5. fotograflarinin
+  hesap silmede kovada kaldigi bulundu ve kapatildi.
+- **Kim gorur, kaydediliyor mu:** 24 saat icinde secilen gorunurlukla
+  arkadaslar/herkes; sonra YALNIZCA sahibi (RLS "kendi anlik arsivi";
+  kova okumasi satira bagli oldugu icin baskasi fotografa da erisemez).
+  Denetim izi yok.
+
+Erisim hakki (m.11): `verilerimi_disa_aktar` `hikayelerim` blogu sure
+suzgeci olmadan okudugu icin arsiv dosyada. Gizlilik metni 7 dil + docs
+guncellendi ("arsiv tutulmaz" ifadesi kalkti).

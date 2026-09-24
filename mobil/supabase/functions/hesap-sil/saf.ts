@@ -42,6 +42,9 @@ export function girisTazeMi(sonGiris: string | null | undefined, simdi: Date = n
 export type Yollar = {
   profil: string[]
   checkIn: string[]
+  /** Anlik (hikaye) fotograflari - 2026-09-24'ten beri arsivde SURESIZ
+   *  kaliyor, hesap silinince burada silinmeli. */
+  anlik: string[]
   // Kullanicinin KENDI klasoru disinda kalip elenen yol sayisi (bkz.
   // asagidaki guvenlik notu). Yolun kendisi disariya asla tasinmaz,
   // yalnizca sayaci - cagiran bunu loglar.
@@ -72,7 +75,8 @@ export type Yollar = {
 export function fotografYollari(
   kullaniciId: string,
   profilFotograflari: (string | null)[],
-  checkInFotograflari: (string | null)[]
+  checkInFotograflari: (string | null)[],
+  anlikFotograflari: (string | null)[] = []
 ): Yollar {
   const kendiKlasorundeMi = (y: string): boolean => y.split('/')[0] === kullaniciId
 
@@ -87,6 +91,7 @@ export function fotografYollari(
   return {
     profil: ayikla(profilFotograflari),
     checkIn: ayikla(checkInFotograflari),
+    anlik: ayikla(anlikFotograflari),
     yabanciElenen,
   }
 }

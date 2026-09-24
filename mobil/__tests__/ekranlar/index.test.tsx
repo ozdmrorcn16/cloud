@@ -914,6 +914,13 @@ describe('AnaSayfa', () => {
   // kart uzerinde 2,65:1 veriyordu. Ayrica zaman IKI KEZ yaziyordu.
   // ------------------------------------------------------------------ //
 
+  it('SAG USTTE ANLIK ARSIVI ikonu arsiv ekranini acar (2026-09-24)', async () => {
+    ;(akisiGetir as jest.Mock).mockResolvedValue([])
+    await render(<AnaSayfa />)
+    await fireEvent.press(await screen.findByTestId('anlik-arsivi'))
+    expect(mockRouterPush).toHaveBeenCalledWith('/anlik-arsivi')
+  })
+
   it('BASLIK TEK CUMLE (referans 2026-09-20): "<ad>, <mekan>-de check-in yapti." - ad kalin siyah, mekan kalin turuncu, ek Turkce', async () => {
     // 2026-09-07 karari "mekan adi turuncu" duruyor; 2026-09-18'in
     // igneli ayri satiri bu referansla kalkti.

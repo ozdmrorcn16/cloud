@@ -11,6 +11,7 @@ import {
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
   hikayeIfadesiGonder,
+  anlikArsiviniGetir,
   ANI_KART_ORANI,
   SERIT_ONBELLEK_OMRU_MS,
   type HikayeGrubu,
@@ -30,12 +31,13 @@ jest.mock('../../../lib/hikaye', () => ({
   hikayeGoruntuleyenleriGetir: jest.fn(),
   hikayeSil: jest.fn(),
   hikayeIfadesiGonder: jest.fn(),
+  anlikArsiviniGetir: jest.fn(),
 }))
 
 const mockBack = jest.fn()
 const mockReplace = jest.fn()
 const mockPush = jest.fn()
-let mockParams: { kullanici?: string } = { kullanici: 'ayse' }
+let mockParams: { kullanici?: string; arsiv?: string } = { kullanici: 'ayse' }
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, replace: mockReplace, push: mockPush, canGoBack: () => true }),
   useLocalSearchParams: () => mockParams,
@@ -62,7 +64,8 @@ function hikaye(id: string, kullaniciId: string, ek: Partial<HikayeGrubu['hikaye
     mekanId: null,
     mekanAdi: null,
     olusturuldu: '2026-09-22T10:00:00Z',
-    bitis: '2026-09-23T10:00:00Z',
+    // Hep AKTIF (arsivde degil): sabit gecmis tarih testleri arsiv moduna dusurur.
+    bitis: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
     gordum: false,
     goruntulenmeSayisi: 0,
     gorunurluk: 'arkadaslar' as const,
@@ -341,7 +344,7 @@ describe('HikayeIzleEkrani', () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
     const gorunur = () => {
-      const d = screen.getByTestId('hikaye-ilerleme').parent
+      const d = screen.getByTestId('hikaye-ust')
       const stil = StyleSheet.flatten(d?.props.style)
       return stil?.opacity !== 0
     }
@@ -362,34 +365,56 @@ describe('HikayeIzleEkrani', () => {
     expect(mockBack).toHaveBeenCalled()
   })
 
-  it('ilerleme cubugu hikaye sayisi kadar; × kapatir', async () => {
+  it('ILERLEME CUBUGU YOK (2026-09-24); × kapatir', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    expect(screen.getByTestId('hikaye-ilerleme').props.children).toHaveLength(2)
+    expect(screen.queryByTestId('hikaye-ilerleme')).toBeNull()
     await fireEvent.press(screen.getByTestId('hikaye-kapat'))
     expect(mockBack).toHaveBeenCalledTimes(1)
   })
 
-  it('5 saniye dolunca kendiliginden ilerler; basili tutunca durur', async () => {
+  /** Kullanicinin karari (2026-09-24): "sureli olmayacaklar; basilirsa
+   *  ya da kaydirilirsa gecilecek". */
+  it('SURE YOK: zaman gecse de kendiliginden ilerlemez; dokunus ilerletir', async () => {
     jest.useFakeTimers()
     try {
       await render(<HikayeIzleEkrani />)
       expect(await screen.findByTestId('hikaye-fotograf-a2')).toBeTruthy()
-      // Basili: zaman gecse de ilerlemez.
-      await fireEvent(screen.getByTestId('hikaye-ileri'), 'pressIn')
       await act(() => {
-        jest.advanceTimersByTime(6000)
+        jest.advanceTimersByTime(20000)
       })
       expect(screen.getByTestId('hikaye-fotograf-a2')).toBeTruthy()
-      // Birakinca kaldigi yerden: 6 sn sonra sonraki kisidedir.
-      await fireEvent(screen.getByTestId('hikaye-ileri'), 'pressOut')
-      await act(() => {
-        jest.advanceTimersByTime(6000)
-      })
+      await fireEvent.press(screen.getByTestId('hikaye-ileri'))
       expect(screen.getByTestId('hikaye-fotograf-c1')).toBeTruthy()
     } finally {
       jest.useRealTimers()
     }
+  })
+
+  /**
+   * ANLIK ARSIVI (2026-09-24): `?arsiv=<id>` kisinin kendi butun
+   * anliklarini tek grup acar; suresi dolmus anlikta Gorenler YOK (24
+   * saatte silinir), Sil var.
+   */
+  it('ARSIV: kendi anliklari, verilen anliktan acilir; dokunusla gezilir; eski anlikta Gorenler yok', async () => {
+    const eski = new Date(Date.now() - 5 * 86400000).toISOString()
+    ;(anlikArsiviniGetir as jest.Mock).mockResolvedValue({
+      kullaniciId: 'ben', ad: 'Ben', kullaniciAdi: 'ben', avatarUrl: null, benimMi: true, gorulmemisVar: false,
+      hikayeler: [
+        hikaye('x1', 'ben', { olusturuldu: eski, bitis: eski }),
+        hikaye('x2', 'ben', { olusturuldu: eski, bitis: eski }),
+      ],
+    })
+    mockParams = { arsiv: 'x2' }
+    await render(<HikayeIzleEkrani />)
+    expect(await screen.findByTestId('hikaye-fotograf-x2')).toBeTruthy()
+    expect(hikayeAkisiniGetir).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
+    expect(screen.getByTestId('hikaye-sil')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-ifade-seridi')).toBeNull()
+    expect(hikayeGoruntulendi).not.toHaveBeenCalled()
+    await fireEvent.press(screen.getByTestId('hikaye-geri'))
+    expect(screen.getByTestId('hikaye-fotograf-x1')).toBeTruthy()
   })
 
   /**

@@ -77,10 +77,12 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   gorebilecegini sen secersin: "Arkadaslar" (varsayilan) ya da
   "Herkese" - "Herkese" sectigin anligi profilin gizli olsa da
   uygulamadaki herkes acabilir, engelledigin kisiler hicbir halde
-  goremez. Anlik 24 saat sonra fotografiyla birlikte otomatik silinir
-  (arsiv tutulmaz). Kimin anligini ne zaman gordugu ve anligina hangi
-  ifadeyi attigi kaydedilir; bu listeyi yalnizca sen gorursun ve anlik
-  silinince o kayit da silinir. Baskasinin anligina attigin ifadeyi de
+  goremez. Anlik 24 saat sonra seritten kalkar ve artik yalnizca sen
+  gorursun: fotografi ve mekani senin anlik arsivinde, sen silene ya da
+  hesabini silene kadar saklanir (2026-09-24'ten beri; once 24 saatte
+  silinirdi). Kimin anligini ne zaman gordugu ve anligina hangi ifadeyi
+  attigi kaydedilir; bu listeyi yalnizca sen gorursun ve 24 saat dolunca
+  silinir. Baskasinin anligina attigin ifadeyi de
   yalnizca o anligin sahibi gorur. Bir anligi diledigin an kendin
   silebilirsin.
 
@@ -247,9 +249,12 @@ FAZLA** (tek bir kural degil):
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
   donustugunde otomatik olarak silinir (null'a cekilir).
-- Anliklar ve goruntulenme kayitlari paylasimdan 24 saat sonra her
-  saat calisan bir temizlik isiyle fotografiyla birlikte silinir. Bu
-  kural bugun YURURLUKTEDIR.
+- Anliklarin goruntulenme kayitlari, atilan ifadeler ve etiketler
+  paylasimdan 24 saat sonra her saat calisan bir temizlik isiyle
+  silinir; anligin fotografi ve mekani yalnizca sahibinin gordugu
+  arsivde, sahibi silene ya da hesabini silene kadar kalir (hesap
+  silinince fotograflar kovadan da silinir). Bu kural bugun
+  YURURLUKTEDIR.
 - **Moderasyon erisim kayitlari** (`moderasyon_kayitlari`, bkz. madde
   4) **2 YIL** saklanir. Her gun 04:45'te calisan
   `moderasyon-izi-buda` adli temizlik isi bundan eski satirlari siler.

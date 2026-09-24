@@ -84,6 +84,7 @@ import { fotografYollari, girisTazeMi } from './saf.ts'
 // okunamaz - fotograflar Storage'da SURESIZ kalirdi.
 const PROFIL_BUCKET = 'profil-fotograflari'
 const CHECKIN_BUCKET = 'check-in-fotograflari'
+const ANLIK_BUCKET = 'hikaye-medyalari'
 
 const CORS_BASLIKLARI: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -234,11 +235,27 @@ async function sil(yonetici: SupabaseClient<any, 'public', 'public'>, kimlik: st
   // erteleniyor.
   const { data: checkInler, error: checkInHata } = await yonetici
     .from('check_inler')
-    .select('fotograf')
+    // COKLU FOTOGRAF (2026-09-21): `fotograf` yalnizca ILK fotograf
+    // (generated); digerleri `fotograflar` dizisinde. Yalnizca `fotograf`
+    // okununca kalan 4 fotograf kovada SURESIZ kaliyordu (2026-09-24'te
+    // bulundu).
+    .select('fotograf, fotograflar')
     .eq('kullanici_id', kimlik)
 
   if (checkInHata) {
     console.error('hesap-sil: check-in fotograflari okunamadi')
+    return yanit({ hata: 'Silme tamamlanamadi' }, 500)
+  }
+
+  // ANLIKLAR (2026-09-24): arsivde suresiz kaliyorlar; hesapla birlikte
+  // kovadan da silinmeli (once saatlik temizlik 24 saatte siliyordu).
+  const { data: anliklar, error: anlikHata } = await yonetici
+    .from('hikayeler')
+    .select('fotograf')
+    .eq('kullanici_id', kimlik)
+
+  if (anlikHata) {
+    console.error('hesap-sil: anlik fotograflari okunamadi')
     return yanit({ hata: 'Silme tamamlanamadi' }, 500)
   }
 
@@ -248,7 +265,10 @@ async function sil(yonetici: SupabaseClient<any, 'public', 'public'>, kimlik: st
   const yollar = fotografYollari(
     kimlik,
     (profil?.fotograflar ?? []) as string[],
-    ((checkInler ?? []) as { fotograf: string | null }[]).map((c) => c.fotograf)
+    ((checkInler ?? []) as { fotograf: string | null; fotograflar: string[] | null }[]).flatMap((c) =>
+      c.fotograflar && c.fotograflar.length > 0 ? c.fotograflar : [c.fotograf]
+    ),
+    ((anliklar ?? []) as { fotograf: string | null }[]).map((h) => h.fotograf)
   )
 
   if (yollar.yabanciElenen > 0) {
@@ -284,8 +304,13 @@ async function sil(yonetici: SupabaseClient<any, 'public', 'public'>, kimlik: st
     if (error) console.error('hesap-sil: check-in fotograflari silinemedi')
   }
 
+  if (yollar.anlik.length > 0) {
+    const { error } = await yonetici.storage.from(ANLIK_BUCKET).remove(yollar.anlik)
+    if (error) console.error('hesap-sil: anlik fotograflari silinemedi')
+  }
+
   console.log(
-    `hesap-sil: tamamlandi, profil dosyasi=${yollar.profil.length}, checkin dosyasi=${yollar.checkIn.length}`
+    `hesap-sil: tamamlandi, profil dosyasi=${yollar.profil.length}, checkin dosyasi=${yollar.checkIn.length}, anlik dosyasi=${yollar.anlik.length}`
   )
   return yanit({ silindi: true }, 200)
 }
