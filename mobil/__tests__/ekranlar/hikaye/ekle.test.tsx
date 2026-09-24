@@ -19,6 +19,10 @@ jest.mock('../../../lib/kamera', () => ({
 const kameraMock = jest.requireMock('../../../lib/kamera')
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
 jest.mock('../../../lib/checkin', () => ({ aktifCheckInimiGetir: jest.fn() }))
+jest.mock('../../../lib/konum', () => ({ cihazKonumunuAl: jest.fn() }))
+jest.mock('../../../lib/mekan', () => ({ yakinMekanlariGetir: jest.fn() }))
+const { cihazKonumunuAl } = jest.requireMock('../../../lib/konum')
+const { yakinMekanlariGetir } = jest.requireMock('../../../lib/mekan')
 jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }))
 
 const mockBack = jest.fn()
@@ -63,6 +67,8 @@ beforeEach(() => {
   ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true })
   ;(ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///kamera.jpg' }] })
   ;(hikayeEkle as jest.Mock).mockResolvedValue('h-yeni')
+  cihazKonumunuAl.mockResolvedValue({ lat: 40.2, lng: 29 })
+  yakinMekanlariGetir.mockResolvedValue([])
 })
 
 describe('HikayeEkleEkrani', () => {
@@ -136,6 +142,29 @@ describe('HikayeEkleEkrani', () => {
       expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', 'mekan-1', null, [], 'arkadaslar', {})
     )
     await waitFor(() => expect(mockBack).toHaveBeenCalled())
+  })
+
+  /** KONUM HAPI (kullanicinin referansi 2026-09-24). */
+  it('check-in yokken hap "Konum ekle" der; dokununca yakin mekanlar, secilen mekanla paylasilir', async () => {
+    yakinMekanlariGetir.mockResolvedValue([{ id: 'm-7', ad: 'Kahve Durağı' }, { id: 'm-8', ad: 'Park' }])
+    await render(<HikayeEkleEkrani />)
+    await cek()
+    expect(screen.getByTestId('hikaye-konum')).toHaveTextContent(/Konum ekle/)
+    await fireEvent.press(screen.getByTestId('hikaye-konum'))
+    expect(await screen.findByText('Konum seç')).toBeTruthy()
+    await menudenSec('hikaye-mekan-m-7')
+    await waitFor(() => expect(screen.getByTestId('hikaye-mekan')).toHaveTextContent('Kahve Durağı'))
+    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
+    await waitFor(() =>
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', 'm-7', null, [], 'arkadaslar', {})
+    )
+  })
+
+  it('yakinda mekan yoksa secim penceresi bunu soyler', async () => {
+    await render(<HikayeEkleEkrani />)
+    await cek()
+    await fireEvent.press(screen.getByTestId('hikaye-konum'))
+    expect(await screen.findByText('Yakınında mekân bulunamadı.')).toBeTruthy()
   })
 
   it('check-in yoksa mekan satiri cizilmez', async () => {

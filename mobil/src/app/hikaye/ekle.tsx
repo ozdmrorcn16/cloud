@@ -22,6 +22,8 @@ import {
   type HikayeGorunurlugu,
 } from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
+import { cihazKonumunuAl } from '../../../lib/konum'
+import { yakinMekanlariGetir } from '../../../lib/mekan'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { useHareket } from '../../tasarim/hareket'
 import { AnlikArsiviIkonu } from '../../tasarim/AnlikArsiviIkonu'
@@ -77,6 +79,8 @@ export default function HikayeEkleEkrani() {
   const [onKamera, setOnKamera] = useState(false)
   const kameraRef = useRef<{ takePictureAsync: (s?: object) => Promise<{ uri: string } | undefined> } | null>(null)
   const [mekan, setMekan] = useState<{ id: string; ad: string } | null>(null)
+  const [mekanAcik, setMekanAcik] = useState(false)
+  const [mekanSecenekleri, setMekanSecenekleri] = useState<{ id: string; ad: string }[] | null>(null)
   const [gorunurluk, setGorunurluk] = useState<HikayeGorunurlugu>('arkadaslar')
   const [gorunurlukAcik, setGorunurlukAcik] = useState(false)
   const [gonderiliyor, setGonderiliyor] = useState(false)
@@ -163,6 +167,20 @@ export default function HikayeEkleEkrani() {
   }
 
 
+  /** Konum sec: yakindaki mekanlar. Konum alinamazsa liste bos gelir ve
+   *  pencere "yakininda mekan bulunamadi" der - sessiz kalmaz. */
+  async function mekanlariAc() {
+    setMekanSecenekleri(null)
+    setMekanAcik(true)
+    try {
+      const konum = await cihazKonumunuAl()
+      const liste = await yakinMekanlariGetir(konum.lat, konum.lng)
+      setMekanSecenekleri(liste.slice(0, 15).map((m) => ({ id: m.id, ad: m.ad })))
+    } catch {
+      setMekanSecenekleri([])
+    }
+  }
+
   async function paylas() {
     if (!fotografUri || gonderiliyor) return
     setGonderiliyor(true)
@@ -218,6 +236,11 @@ export default function HikayeEkleEkrani() {
           {fotografUri ? (
             <>
               <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="cover" testID="hikaye-onizleme" />
+              {/* KONUM HAPI fotografin altinda, ortada (kullanicinin
+                  referansi 2026-09-24). */}
+              <View style={stiller.konumKabi} pointerEvents="box-none">
+                <KonumHapi mekan={mekan} onAc={mekanlariAc} onKaldir={() => setMekan(null)} />
+              </View>
             </>
           ) : KameraGorunumu && kameraHazir ? (
             <KameraGorunumu
@@ -302,33 +325,16 @@ export default function HikayeEkleEkrani() {
           </View>
         ) : (
           <>
-            {/* Check-in yaptiysa mekan + yaninda Paylas. Mekan KALDIRILABILIR
-                (paylasmadan once konumu cikarmak bir gizlilik kontrolu). */}
+            {/* Paylas tam genislik; konum artik fotografin uzerindeki
+                hapta (2026-09-24). */}
             <View style={[stiller.paylasSatiri, { width: kartEn }]}>
-              {mekan && (
-                <View style={stiller.mekanCipi} testID="hikaye-mekan">
-                  <IgneCizimi renk="#FE7813" />
-                  <Text style={stiller.mekanCipYazi} numberOfLines={1}>
-                    {mekan.ad}
-                  </Text>
-                  <Pressable
-                    onPress={() => setMekan(null)}
-                    hitSlop={10}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.mekanKaldir')}
-                    testID="hikaye-mekan-kaldir"
-                  >
-                    <Text style={stiller.mekanCipKapat}>×</Text>
-                  </Pressable>
-                </View>
-              )}
               <Pressable
                 onPress={paylas}
                 disabled={gonderiliyor}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: gonderiliyor }}
                 testID="hikaye-paylas"
-                style={({ pressed }) => [stiller.paylas, !mekan && stiller.paylasGenis, gonderiliyor && stiller.paylasPasif, pressed && stiller.basili]}
+                style={({ pressed }) => [stiller.paylas, stiller.paylasGenis, gonderiliyor && stiller.paylasPasif, pressed && stiller.basili]}
               >
                 {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
               </Pressable>
@@ -355,6 +361,21 @@ export default function HikayeEkleEkrani() {
         </Pressable>
         )}
       </View>
+
+      <SecimPenceresi
+        acikMi={mekanAcik}
+        onKapat={() => setMekanAcik(false)}
+        baslik={
+          <Text style={stiller.secimBasligi} testID="hikaye-konum-basligi">
+            {mekanSecenekleri === null ? t('hikaye.konumAraniyor') : mekanSecenekleri.length === 0 ? t('hikaye.konumYok') : t('hikaye.konumSec')}
+          </Text>
+        }
+        secimler={(mekanSecenekleri ?? []).map((m) => ({
+          etiket: m.ad,
+          testID: `hikaye-mekan-${m.id}`,
+          onSec: () => setMekan({ id: m.id, ad: m.ad }),
+        }))}
+      />
 
       <SecimPenceresi
         acikMi={gorunurlukAcik}
@@ -436,6 +457,93 @@ function YuvarlakDugme({
         style={[stiller.yuvarlakDugme, buyuk && stiller.yuvarlakBuyuk]}
       >
         {children}
+      </Pressable>
+    </Animated.View>
+  )
+}
+
+/**
+ * KONUM HAPI (kullanicinin referansi 2026-09-24): fotografin uzerinde,
+ * koyu yari saydam, ince cerceveli hap. Check-in varsa mekan adi
+ * KENDILIGINDEN gelir, yaninda × ile kaldirilir; yoksa "Konum ekle ⌄".
+ * Hapin kendisine basmak mekan secimini acar (baskasini ekle/degistir).
+ * HAREKET: fotograf gelince asagidan kayarak ve buyuyerek belirir; mekan
+ * degisince kucuk bir "pop"; basinca yayli kuculur. "Hareketi azalt"ta
+ * hareket yok.
+ */
+function KonumHapi({
+  mekan,
+  onAc,
+  onKaldir,
+}: {
+  mekan: { id: string; ad: string } | null
+  onAc: () => void
+  onKaldir: () => void
+}) {
+  const stiller = useStiller(stilleriYap)
+  const { t } = useDil()
+  const hareket = useHareket()
+  const giris = useRef(new Animated.Value(0)).current
+  const pop = useRef(new Animated.Value(1)).current
+  const basma = useRef(new Animated.Value(1)).current
+
+  useEffect(() => {
+    if (!hareket) {
+      giris.setValue(1)
+      return
+    }
+    Animated.spring(giris, { toValue: 1, speed: 12, bounciness: 8, useNativeDriver: true }).start()
+  }, [hareket, giris])
+
+  const ilkRef = useRef(true)
+  useEffect(() => {
+    if (ilkRef.current) {
+      ilkRef.current = false
+      return
+    }
+    if (!hareket) return
+    pop.setValue(0.85)
+    Animated.spring(pop, { toValue: 1, speed: 16, bounciness: 12, useNativeDriver: true }).start()
+  }, [mekan?.id, hareket, pop])
+
+  const bas = (hedef: number) => {
+    if (!hareket) return
+    Animated.spring(basma, { toValue: hedef, speed: hedef < 1 ? 40 : 18, bounciness: hedef < 1 ? 0 : 10, useNativeDriver: true }).start()
+  }
+
+  const olcek = Animated.multiply(Animated.multiply(pop, basma), giris.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }))
+  const kayma = giris.interpolate({ inputRange: [0, 1], outputRange: [14, 0] })
+  return (
+    <Animated.View style={{ opacity: giris, transform: [{ translateY: kayma }, { scale: olcek }] }}>
+      <Pressable
+        onPress={onAc}
+        onPressIn={() => bas(0.94)}
+        onPressOut={() => bas(1)}
+        accessibilityRole="button"
+        accessibilityLabel={mekan ? mekan.ad : t('hikaye.konumEkle')}
+        testID="hikaye-konum"
+        style={stiller.konumHapi}
+      >
+        <IgneCizimi renk={mekan ? '#FE7813' : '#FFFFFF'} boyut={18} />
+        <Text style={stiller.konumYazi} numberOfLines={1} testID={mekan ? 'hikaye-mekan' : undefined}>
+          {mekan ? mekan.ad : t('hikaye.konumEkle')}
+        </Text>
+        {mekan ? (
+          <Pressable
+            onPress={onKaldir}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={t('hikaye.mekanKaldir')}
+            testID="hikaye-mekan-kaldir"
+            style={stiller.konumKaldir}
+          >
+            <Svg width={12} height={12} viewBox="0 0 24 24">
+              <Path d="M6 6l12 12M18 6L6 18" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" />
+            </Svg>
+          </Pressable>
+        ) : (
+          <Text style={stiller.konumOk}>⌄</Text>
+        )}
       </Pressable>
     </Animated.View>
   )
@@ -566,18 +674,32 @@ const stilleriYap = (renk: Renk) =>
     sutun: { ...StyleSheet.absoluteFill, alignItems: 'center', gap: bosluk.l, paddingHorizontal: bosluk.sayfa },
     kart: { aspectRatio: KART_ORANI, borderRadius: 44, overflow: 'hidden', backgroundColor: '#1C1A18' },
     paylasSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
-    mekanCipi: {
-      flex: 1,
+    secimBasligi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: renk.metin, paddingHorizontal: bosluk.sayfa, paddingVertical: bosluk.s },
+    konumKabi: { position: 'absolute', left: 0, right: 0, bottom: 18, alignItems: 'center' },
+    konumHapi: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      backgroundColor: '#FFFFFF',
-      paddingVertical: 14,
-      paddingHorizontal: 14,
+      maxWidth: 280,
+      paddingVertical: 11,
+      paddingLeft: 14,
+      paddingRight: 12,
       borderRadius: yuvarlak.hap,
+      backgroundColor: 'rgba(20,18,16,0.62)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.22)',
     },
-    mekanCipYazi: { flex: 1, fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#17130F' },
-    mekanCipKapat: { fontFamily: yazi.govde, fontSize: 22, lineHeight: 22, color: '#17130F' },
+    konumYazi: { flexShrink: 1, fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
+    konumOk: { fontFamily: yazi.govde, fontSize: olcek.govde, color: '#FFFFFF', marginTop: -4 },
+    konumKaldir: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: 'rgba(255,255,255,0.22)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: 2,
+    },
     paylasGenis: { flex: 1 },
     paylas: {
       minWidth: 124,

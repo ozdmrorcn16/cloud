@@ -73,8 +73,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
   kartta kalir (`ANI_KART_ORANI` 3:4 = 0.75 (2026-09-24; once 0.88), cover); izleyici de ayni oran
   ve kirpmayla ciziyor - paylasanin gordugu kare = izleyenin gordugu.
-  Cekim dugmeleri kalkar; altta check-in mekani (x ile kaldirilir) +
-  Paylas, en altta gizlilik. PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
+  Cekim dugmeleri kalkar; fotografin ALTINDA ortada animasyonlu KONUM
+  HAPI (check-in varsa mekan otomatik + x; yoksa "Konum ekle" -> yakin
+  mekanlar), altta Paylas, en altta gizlilik (cekimde gizlilik YOK). PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
 - Anlığa IFADEYI IZLEYEN atar (kartin altinda 108'lik serit; mesaj
   kutusu + kalp KALKTI), tek ifade, yeniden dokunus kaldirir; paylasan
   "Gorenler"de gorur (sohbete dusmez, push yok). RPC
