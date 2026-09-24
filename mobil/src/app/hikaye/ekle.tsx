@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   AppState,
+  Animated,
   Linking,
 } from 'react-native'
 import { Image } from 'expo-image'
@@ -22,6 +23,7 @@ import {
 } from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { useHareket } from '../../tasarim/hareket'
 import { AnlikArsiviIkonu } from '../../tasarim/AnlikArsiviIkonu'
 import { kameraGorunumu, kameraIzinDurumu, type KameraIzinDurumu } from '../../../lib/kamera'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
@@ -191,15 +193,15 @@ export default function HikayeEkleEkrani() {
   return (
     <View style={stiller.zemin} testID="hikaye-ekle">
       <View style={[stiller.ustCubuk, { paddingTop: guvenliAlan.top + bosluk.s }]} pointerEvents="box-none">
-        <YuvarlakDugme etiket={t('ortak.kapat')} testID="hikaye-kapat" onPress={kapat}>
-          <Text style={stiller.kapatYazi}>×</Text>
+        <YuvarlakDugme etiket={t('ortak.kapat')} testID="hikaye-kapat" onPress={kapat} sira={0}>
+          <CarpiCizimi />
         </YuvarlakDugme>
         <Text style={stiller.baslik}>{t('hikaye.ekleBaslik')}</Text>
         {/* SAG USTTE ANLIK ARSIVI (kullanicinin karari 2026-09-24: "ana
             sayfada gorunmeyecek, anlik ekle sayfasinda gorunecek"). */}
         <View style={stiller.ustSag}>
-          <YuvarlakDugme etiket={t('hikaye.arsivAc')} testID="anlik-arsivi" onPress={() => router.push('/anlik-arsivi' as never)}>
-            <AnlikArsiviIkonu renk="#FFFFFF" boyut={22} />
+          <YuvarlakDugme etiket={t('hikaye.arsivAc')} testID="anlik-arsivi" onPress={() => router.push('/anlik-arsivi' as never)} sira={1}>
+            <AnlikArsiviIkonu renk="#FFFFFF" boyut={23} kalinlik={2.3} />
           </YuvarlakDugme>
         </View>
       </View>
@@ -334,7 +336,10 @@ export default function HikayeEkleEkrani() {
           </>
         )}
 
-        {/* En altta gizlilik (iki modda da). */}
+        {/* En altta gizlilik - YALNIZCA fotograf cekildikten sonra
+            (kullanicinin karari 2026-09-24: cekim ekraninda "Arkadaslar"
+            dugmesi kalksin). Varsayilan Arkadaslar. */}
+        {fotografUri && (
         <Pressable
           onPress={() => setGorunurlukAcik(true)}
           accessibilityRole="button"
@@ -348,6 +353,7 @@ export default function HikayeEkleEkrani() {
           </Text>
           <Text style={stiller.gorunurlukOk}>⌄</Text>
         </Pressable>
+        )}
       </View>
 
       <SecimPenceresi
@@ -362,30 +368,77 @@ export default function HikayeEkleEkrani() {
   )
 }
 
-/** Ust cubuktaki koyu yuvarlak dugme (×, Aa, cikartma). */
+/**
+ * Ust cubuktaki yuvarlak dugme (× ve arsiv). BELIRGIN VE HAREKETLI
+ * (kullanicinin istegi 2026-09-24): yari saydam beyaz daire + ince
+ * cerceve; ekran acilirken sirayla YAYLI BELIRIR (olcek 0.6 -> 1 +
+ * solma, `sira` basina 70 ms), basinca yayli kuculur (0.86) ve
+ * birakinca hafif sekerek geri gelir. Yalnizca transform/opacity,
+ * native driver. "Hareketi azalt" aciksa hareket yok, dugme hazir.
+ */
 function YuvarlakDugme({
   etiket,
   testID,
   onPress,
   children,
+  sira = 0,
 }: {
   etiket: string
   testID: string
   onPress: () => void
   children: ReactNode
+  sira?: number
 }) {
   const stiller = useStiller(stilleriYap)
+  const hareket = useHareket()
+  const giris = useRef(new Animated.Value(0)).current
+  const basma = useRef(new Animated.Value(1)).current
+
+  useEffect(() => {
+    if (!hareket) {
+      giris.setValue(1)
+      return
+    }
+    const zamanlayici = setTimeout(() => {
+      Animated.spring(giris, { toValue: 1, speed: 14, bounciness: 9, useNativeDriver: true }).start()
+    }, 80 + sira * 70)
+    return () => clearTimeout(zamanlayici)
+  }, [hareket, giris, sira])
+
+  const bas = (hedef: number) => {
+    if (!hareket) return
+    Animated.spring(basma, {
+      toValue: hedef,
+      speed: hedef < 1 ? 40 : 18,
+      bounciness: hedef < 1 ? 0 : 12,
+      useNativeDriver: true,
+    }).start()
+  }
+
+  const olcek = Animated.multiply(basma, giris.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }))
   return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={8}
-      accessibilityRole="button"
-      accessibilityLabel={etiket}
-      testID={testID}
-      style={({ pressed }) => [stiller.yuvarlakDugme, pressed && stiller.basili]}
-    >
-      {children}
-    </Pressable>
+    <Animated.View style={{ opacity: giris, transform: [{ scale: olcek }] }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => bas(0.86)}
+        onPressOut={() => bas(1)}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={etiket}
+        testID={testID}
+        style={stiller.yuvarlakDugme}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
+  )
+}
+
+function CarpiCizimi() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M6 6l12 12M18 6L6 18" stroke="#FFFFFF" strokeWidth={2.8} strokeLinecap="round" />
+    </Svg>
   )
 }
 
@@ -452,14 +505,15 @@ const stilleriYap = (renk: Renk) =>
     baslik: { flex: 1, textAlign: 'center', fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
     ustSag: { flexDirection: 'row', gap: bosluk.s, minWidth: 40, justifyContent: 'flex-end' },
     yuvarlakDugme: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       borderRadius: yuvarlak.hap,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: 'rgba(255,255,255,0.16)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.28)',
       alignItems: 'center',
       justifyContent: 'center',
     },
-    kapatYazi: { fontFamily: yazi.govde, fontSize: 24, lineHeight: 26, color: '#FFFFFF' },
 
     hata: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: '#FFB4A2', textAlign: 'center' },
     onizlemeBos: {

@@ -66,11 +66,12 @@ beforeEach(() => {
 })
 
 describe('HikayeEkleEkrani', () => {
-  it('acilista CEKIM EKRANI: baslik "Anlık ekle", deklansor ve gorunurluk; duzenleme araclari ve Paylas YOK', async () => {
+  it('acilista CEKIM EKRANI: baslik "Anlık ekle", deklansor; gorunurluk (Arkadaslar) ve Paylas YOK', async () => {
     await render(<HikayeEkleEkrani />)
     expect(await screen.findByText('Anlık ekle')).toBeTruthy()
     expect(screen.getByTestId('hikaye-deklansor')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
+    // 2026-09-24: cekim ekraninda "Arkadaslar" dugmesi YOK.
+    expect(screen.queryByTestId('hikaye-gorunurluk')).toBeNull()
     expect(screen.queryByTestId('hikaye-paylas')).toBeNull()
 
     await cek()
@@ -155,12 +156,13 @@ describe('HikayeEkleEkrani', () => {
     )
   })
 
-  it('GORUNURLUK cekimden ONCE secilebiliyor ve duzenlemede korunuyor', async () => {
+  it('GORUNURLUK cekimden SONRA secilir (varsayilan Arkadaslar); Herkese secilince oyle paylasilir', async () => {
     await render(<HikayeEkleEkrani />)
-    await fireEvent.press(await screen.findByTestId('hikaye-gorunurluk'))
+    await cek()
+    expect(screen.getByText('Arkadaşlar')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('hikaye-gorunurluk'))
     await menudenSec('hikaye-gorunurluk-herkese')
     expect(screen.getByText('Herkese')).toBeTruthy()
-    await cek()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
       expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, [], 'herkese_acik', expect.any(Object))
