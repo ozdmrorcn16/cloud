@@ -64,8 +64,11 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   profil fotografi eski Kamera/Galeri penceresinde KALIR.
 - Kamera karti SESSIZ GRI KALMAZ: `kameraIzinDurumu` (verildi /
   sorulabilir / ayarlardan / modul-yok) karta yazilir; "Izin ver" ya da
-  "Ayarlari ac" (OTA `e46b9219`). Kullanici 2026-09-24'te iki kez gri
-  kart gordu - sebep henuz OLCULMEDI (surum 14 mu, izin mi).
+  "Ayarlari ac". KOK NEDEN (2026-09-24, kullanicinin "Izin ver'e basinca
+  bir sey olmuyor" bildirimi): expo-camera SDK 57 izin islevlerini
+  kokten degil `Camera` nesnesinden veriyor; kok duzeyden cagri
+  TypeError -> izin HIC sorulmuyordu. `lib/kamera.test.ts` paket
+  seklini node_modules dosyasindan kilitliyor.
 - TELEFONDA DOGRULANACAK: canli onizleme + deklansor + flas/cevir,
   check-in'de alttan galeri + coklu secim.
 
@@ -288,6 +291,9 @@ Istemci (React Native / Expo)
   Reanimated YOK (jest kurulumu yok). Hareket sozlugu
   `src/tasarim/hareket.ts`. Sarmal bilesende oynat karari mount'ta
   `useRef` (yoksa cocuk yeniden mount).
+- Native paketin API'sini cagiran sarmalayicida (lib/kamera, lib/galeri)
+  en az bir test paketin GERCEK disa aktarim seklini dogrulasin; ekran
+  testleri sarmalayiciyi taklit ettigi icin yanlis isim gorunmez.
 - Sessizce yutulan hata ozelligi "calisiyor" gosterir; `.catch(()=>{})`
   yazarken dikkat. Sunucudan gelen alani istemcide ayristiran yer en
   az bir testte GERCEK sunucu ciktisiyla (geography = hex EWKB).

@@ -12,11 +12,19 @@
  */
 
 type Izin = { granted: boolean; canAskAgain?: boolean }
-type KameraModulu = {
-  CameraView: unknown
+type IzinIslevleri = {
   getCameraPermissionsAsync: () => Promise<Izin>
   requestCameraPermissionsAsync: () => Promise<Izin>
 }
+/**
+ * IZIN ISLEVLERI `Camera` NESNESININ ICINDE (expo-camera SDK 57,
+ * build/index.js): paket kokunden `getCameraPermissionsAsync` DISA
+ * AKTARILMIYOR. 2026-09-24'e kadar kok duzeyden cagriliyordu -> her
+ * cagri TypeError, izin HIC sorulmuyor, kart gri kaliyor ve "Izin ver"
+ * hicbir sey yapmiyordu (kullanicinin bildirimi). Sekil
+ * `lib/kamera.test.ts` icinde paketin kendi dosyasindan kilitli.
+ */
+type KameraModulu = { CameraView: unknown; izinler: IzinIslevleri }
 
 /**
  * Canli kameranin durumu. Ekran gri karti SESSIZ birakmasin diye ayri
@@ -51,8 +59,14 @@ function moduluAl(): KameraModulu | null {
   }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const aday = require('expo-camera') as KameraModulu
-    modul = aday?.CameraView ? aday : null
+    const aday = require('expo-camera') as { CameraView?: unknown; Camera?: Partial<IzinIslevleri> } & Partial<IzinIslevleri>
+    const izinler = aday?.Camera?.getCameraPermissionsAsync ? aday.Camera : aday
+    modul =
+      aday?.CameraView &&
+      typeof izinler?.getCameraPermissionsAsync === 'function' &&
+      typeof izinler?.requestCameraPermissionsAsync === 'function'
+        ? { CameraView: aday.CameraView, izinler: izinler as IzinIslevleri }
+        : null
   } catch {
     modul = null
   }
@@ -82,8 +96,8 @@ export async function kameraIzinDurumu(sor = true): Promise<KameraIzinDurumu> {
   const m = moduluAl()
   if (!m) return 'modul-yok'
   try {
-    let izin = await m.getCameraPermissionsAsync()
-    if (!izin.granted && sor && izin.canAskAgain !== false) izin = await m.requestCameraPermissionsAsync()
+    let izin = await m.izinler.getCameraPermissionsAsync()
+    if (!izin.granted && sor && izin.canAskAgain !== false) izin = await m.izinler.requestCameraPermissionsAsync()
     return durumaCevir(izin)
   } catch {
     return 'sorulabilir'
