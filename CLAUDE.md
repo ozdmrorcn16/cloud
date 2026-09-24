@@ -248,6 +248,14 @@ Veritabani / Supabase
   `ad` esitligi ve `il='Bursa' order by id` zaman asimina duser -
   toplu olcum yerel parquet'ten.
 - pg_cron'da `statement_timeout` cron KOMUTUNUN icine yazilir.
+- `public.spatial_ref_sys` (PostGIS, sahibi supabase_admin) RLS'siz ve
+  anon'a yazilabilirdi; RLS/REVOKE bizden YAPILAMAZ. PostgREST pre-request
+  `public.istek_kapisi` o yolu 42501 ile kapatiyor (migrasyon
+  `20260924100000`, `alter role authenticator set pgrst.db_pre_request`).
+  Danisman ve haftalik "rls_disabled_in_public" postasi yine ERROR der -
+  RLS bayragina bakiyor, kapiyi gormuyor; bilinen durum. Istek kapisi HER
+  istekte kosar: degistirilirse test:sema kosulur. Geri alma: `alter role
+  authenticator reset pgrst.db_pre_request; notify pgrst, 'reload config'`.
 - Kovaya yukleme `image/jpeg` gondermeli (text/plain 415). Sizmis
   parola korumasi admin API'de de gecerli (test hesabina `test1234`
   verilemez). `test0@slooin.test` GERCEK hesap (byorcun) - test
