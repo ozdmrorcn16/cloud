@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --metin:#17130F; --ikincil:#7A726B; --cizgi:#ECE7E1; --turuncu:#E0640A; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#fff; font-family:'Instrument Sans',sans-serif; width:390px; padding:8px 0 16px; }
+  .etiket { font-size:13px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; margin:18px 20px 0; }
+  .etiket.a { color:#B42318; } .etiket.b { color:#1A7F37; }
+  .kart { margin:8px 8px 0; border:1px solid var(--cizgi); border-radius:16px; padding:16px; }
+  .ust { display:flex; gap:12px; align-items:flex-start; }
+  .av { width:52px; height:52px; border-radius:50%; flex:none; background:#B07A6A; }
+  .orta { flex:1; min-width:0; }
+  .baslik { font-size:17px; line-height:28px; color:var(--metin); }
+  .baslik b { font-weight:700; letter-spacing:-.2px; }
+  .baslik .mekan { color:var(--turuncu); font-weight:700; }
+  .zaman { font-size:14px; color:var(--ikincil); margin-top:2px; }
+</style>
+</head>
+<body>
+<div id="kok"></div>
+<script>
+  const kok = document.getElementById('kok');
+  function el(etiket, sinif, metin) {
+    const e = document.createElement(etiket);
+    if (sinif) e.className = sinif;
+    if (metin) e.textContent = metin;
+    return e;
+  }
+  function kart(sinif, ustYazi, kisi, mekan, tire) {
+    kok.appendChild(el('div', 'etiket ' + sinif, ustYazi));
+    const k = el('div', 'kart'), ust = el('div', 'ust'), orta = el('div', 'orta'), b = el('div', 'baslik');
+    b.appendChild(el('b', '', kisi));
+    b.appendChild(document.createTextNode(', '));
+    b.appendChild(el('span', 'mekan', mekan));
+    b.appendChild(document.createTextNode(`'de check${tire}in yaptı.`));
+    orta.appendChild(b);
+    orta.appendChild(el('div', 'zaman', '17 saat önce'));
+    ust.appendChild(el('div', 'av'));
+    ust.appendChild(orta);
+    k.appendChild(ust);
+    kok.appendChild(k);
+  }
+  Promise.all(['400 17px "Instrument Sans"', '700 17px "Instrument Sans"', '400 14px "Instrument Sans"'].map((f) => document.fonts.load(f))).then(() => {
+    kart('a', 'A — bölünen (şu anki hâli)', 'ozdemrs', 'Özdemir kafe', '-');
+    kart('b', 'B — bölünmeyen (önerim)', 'ozdemrs', 'Özdemir kafe', '‑');
+    kart('a', 'A — bölünen (şu anki hâli)', 'byorcun', 'Kahve Dünyası', '-');
+    kart('b', 'B — bölünmeyen (önerim)', 'byorcun', 'Kahve Dünyası', '‑');
+    document.body.dataset.hazir = '1';
+  });
+</script>
+</body>
+</html>

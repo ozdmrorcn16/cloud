@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --metin:#17130F; --ikincil:#7A726B; --cizgi:#ECE7E1; --turuncu:#E0640A; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#fff; font-family:'Instrument Sans',sans-serif; width:390px; padding:8px 0 16px; }
+  .etiket { font-size:13px; font-weight:600; color:#FE7813; letter-spacing:.4px; text-transform:uppercase; margin:18px 20px 0; }
+  .kart { margin:8px 8px 0; border:1px solid var(--cizgi); border-radius:16px; padding:16px; }
+  .ust { display:flex; gap:12px; align-items:flex-start; }
+  .av { width:52px; height:52px; border-radius:50%; flex:none; }
+  .orta { flex:1; min-width:0; }
+  .baslik { font-size:17px; line-height:28px; color:var(--metin); }
+  .baslik b { font-weight:700; letter-spacing:-.2px; }
+  .baslik .mekan { color:var(--turuncu); font-weight:700; }
+  /* Etiketliler cumlenin DEVAMINDA, metinle ayni akista: sigmayan
+     resimler alt satira gecer; "ile birlikte" en sonda. */
+  .k { display:inline-block; width:26px; height:26px; border-radius:50%; border:2px solid #fff; vertical-align:middle; margin-left:-10px; }
+  .k.ilk { margin-left:8px; }
+  .yazi { font-size:15px; color:var(--ikincil); white-space:nowrap; margin-left:6px; vertical-align:middle; }
+  .sonBirim { white-space:nowrap; }
+  .zaman { font-size:14px; color:var(--ikincil); margin-top:2px; }
+</style>
+</head>
+<body>
+<div id="kok"></div>
+<script>
+  const renkler = ['#C98B6B','#6B8FC9','#8BC96B','#C96BA8','#C9B26B','#6BC9C0','#9B6BC9','#C96B6B','#6BC98E','#C9986B','#6B9BC9','#B26BC9'];
+  const kok = document.getElementById('kok');
+  function el(etiket, sinif, metin) {
+    const e = document.createElement(etiket);
+    if (sinif) e.className = sinif;
+    if (metin) e.textContent = metin;
+    return e;
+  }
+  function kart(ustYazi, mekan, adet) {
+    kok.appendChild(el('div', 'etiket', ustYazi));
+    const kartEl = el('div', 'kart');
+    const ust = el('div', 'ust');
+    const av = el('div', 'av');
+    av.style.background = 'radial-gradient(circle at 40% 35%, #fff5 0 16%, transparent 17%), #B07A6A';
+    const orta = el('div', 'orta');
+    const baslik = el('div', 'baslik');
+    baslik.appendChild(el('b', '', 'ozdemrs'));
+    baslik.appendChild(document.createTextNode(', '));
+    baslik.appendChild(el('span', 'mekan', mekan));
+    baslik.appendChild(document.createTextNode("'de check‑in yaptı."));
+    const resimler = [];
+    // Son resim + "ile birlikte" BOLUNMEZ birim: yazi tek basina alt
+    // satira dusmez, gerekirse son resimle birlikte iner.
+    const son = el('span', 'sonBirim');
+    for (let i = 0; i < adet; i++) {
+      const k = el('span', 'k' + (i === 0 ? ' ilk' : ''));
+      k.style.background = `radial-gradient(circle at 35% 35%, #fff6 0 18%, transparent 19%), ${renkler[i % renkler.length]}`;
+      (i === adet - 1 ? son : baslik).appendChild(k);
+      resimler.push(k);
+    }
+    son.appendChild(el('span', 'yazi', 'ile birlikte'));
+    baslik.appendChild(son);
+    orta.appendChild(baslik);
+    orta.appendChild(el('div', 'zaman', '17 saat önce'));
+    ust.appendChild(av); ust.appendChild(orta);
+    kartEl.appendChild(ust);
+    kok.appendChild(kartEl);
+    // Yeni satira gecen ilk resim sola yapisir (ust uste binme payi yok).
+    if (Math.abs(resimler[0].getBoundingClientRect().left - 8 - baslik.getBoundingClientRect().left) < 2) resimler[0].style.marginLeft = '0px';
+    for (let i = 1; i < resimler.length; i++) {
+      if (resimler[i].getBoundingClientRect().top > resimler[i - 1].getBoundingClientRect().top + 4) {
+        resimler[i].style.marginLeft = '0px';
+      }
+    }
+  }
+  Promise.all(['400 17px "Instrument Sans"', '700 17px "Instrument Sans"', '400 15px "Instrument Sans"', '400 14px "Instrument Sans"'].map((f) => document.fonts.load(f))).then(() => {
+    kart('1 kişi', 'Özdemir kafe', 1);
+    kart('2 kişi', 'Özdemir kafe', 2);
+    kart('5 kişi', 'Özdemir kafe', 5);
+    kart('12 kişi — sığmayanlar alt satıra geçer', 'Özdemir kafe', 12);
+    kart('1 kişi — uzun mekân adı', 'Kültür Merkezi Kafeteryası', 1);
+    document.body.dataset.hazir = '1';
+  });
+</script>
+</body>
+</html>

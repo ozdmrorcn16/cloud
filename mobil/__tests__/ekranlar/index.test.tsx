@@ -775,14 +775,18 @@ describe('AnaSayfa', () => {
     expect(StyleSheet.flatten(gorsel.props.style).aspectRatio).toBeCloseTo(2)
   })
 
-  it('"Birlikte" satirindaki avatara basinca etiketlenen kisinin profili acilir', async () => {
+  it('etiketlenenin resmine basinca etiketlenen kisinin profili acilir', async () => {
     ;(akisiGetir as jest.Mock).mockResolvedValue([
       oge({ etiketler: [{ kullaniciId: 'kisi-9', ad: 'Deniz', kullaniciAdi: 'denizy', avatarUrl: null }] }),
     ])
     await render(<AnaSayfa />)
-    // Referans 2026-09-20: "<kullanici adi> ile birlikte" satiri, ad kalin.
-    expect(await screen.findByText('denizy')).toBeTruthy()
-    expect(screen.getByText(' ile birlikte')).toBeTruthy()
+    // 2026-09-24: etiketliler CUMLENIN DEVAMINDA, yalnizca resim + "ile
+    // birlikte"; kullanici adi YAZILMAZ (1 kiside de).
+    expect(await screen.findByTestId('birlikte-kisi-9')).toBeTruthy()
+    expect(screen.queryByText('denizy')).toBeNull()
+    expect(screen.getAllByText('ile birlikte').length).toBeGreaterThan(0)
+    // "check-in" bolunmez tireyle (U+2011): satir sonunda "check- / in" olmaz.
+    expect(screen.getAllByTestId('akis-basligi')[0]).toHaveTextContent(/check‑in/)
     await fireEvent.press(screen.getByTestId('birlikte-kisi-9'))
     expect(mockRouterPush).toHaveBeenCalledWith('/kullanici/kisi-9')
   })
@@ -923,7 +927,8 @@ describe('AnaSayfa', () => {
     expect(duzYazi(mekan).color).toBe('#FE7813')
     expect(duzYazi(ad).color).toBe(acikRenk.metin)
     expect(screen.getByText("'de")).toBeTruthy()
-    expect(screen.getByText(' check-in yaptı.')).toBeTruthy()
+    // Bolunmez tire (U+2011, 2026-09-24).
+    expect(screen.getByText(' check‑in yaptı.')).toBeTruthy()
     // Yer tutucular nobetciyle dolduruluyor; "[missing ... value]" ASLA
     // ekrana cikmamali (webde bir kez cikti, 2026-09-20).
     expect(screen.queryByText(/missing/)).toBeNull()

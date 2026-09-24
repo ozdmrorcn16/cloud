@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
+import { View, Text, Image, Pressable, StyleSheet, Platform } from 'react-native'
 import { Image as HizliImage } from 'expo-image'
 import { useRouter } from 'expo-router'
 import type { AkisOgesi } from '../../lib/akis'
@@ -20,6 +20,12 @@ import { FotografSeridi } from './FotografSeridi'
 import { FotografGezgini } from './FotografGezgini'
 import { BegenenlerSayfasi } from './BegenenlerSayfasi'
 import { Avatar } from './Avatar'
+import {
+  etiketYerlesimi,
+  birlikteParcalari,
+  ETIKET_RESIM_CAPI,
+  type MetinSatiri,
+} from './etiket-yerlesimi'
 
 /**
  * CHECK-IN KARTI - ana sayfada, profildeki anilarda ve Anilarim
@@ -48,6 +54,9 @@ import { Avatar } from './Avatar'
  * iki ayri bicimde tekrarliyordu. Tam tarih mekan sayfasinda duruyor.
  * Denetimden gelen degisikliklerden KORUNAN tek sey bu.
  */
+
+/** Webde etiketler metin akisinda (onTextLayout yok); telefonda olcumlu. */
+const WEB = Platform.OS === 'web'
 
 export function CheckInKarti({
   oge,
@@ -125,6 +134,12 @@ export function CheckInKarti({
   const [buyukIndeks, setBuyukIndeks] = useState<number | null>(null)
   // BEGENENLER (2026-09-22): kalbin yanindaki SAYIYA dokununca liste.
   const [begenenlerAcik, setBegenenlerAcik] = useState(false)
+  // ETIKETLER CUMLENIN DEVAMINDA (2026-09-24): basligin satirlari ve
+  // kabin eni olculuyor, resimlerin yeri `etiketYerlesimi`nden.
+  const [baslikSatirlari, setBaslikSatirlari] = useState<MetinSatiri[] | null>(null)
+  const [baslikKapEni, setBaslikKapEni] = useState(0)
+  const [onEkEni, setOnEkEni] = useState(0)
+  const [sonEkEni, setSonEkEni] = useState(0)
 
   const kisiYolu = oge.benimMi ? '/profil' : `/kullanici/${oge.kullaniciId}`
   // UC NOKTA MENUSU (kullanicinin karari 2026-09-02): silme de duzenleme
@@ -166,28 +181,119 @@ export function CheckInKarti({
           </Text>
         )
       if (parca === '') return <Text key={i}>{ek}</Text>
-      return <Text key={i}>{parca}</Text>
+      // "check-in" satir sonunda "check- / in" diye BOLUNMESIN
+      // (kullanicinin karari 2026-09-24): bolunmez tire (U+2011).
+      return <Text key={i}>{parca.replace(/check-in/gi, (m) => m.replace('-', '\u2011'))}</Text>
     })
   }
 
-  function ileBirlikteCiz() {
-    const sablon = t('anaSayfa.ileBirlikte', { adlar: '' })
-    const adlar = oge.etiketler.map((e) => e.kullaniciAdi ?? e.ad ?? '')
-    return sablon.split(/()/).map((parca, i) =>
-      parca === '' ? (
-        <Text key={i}>
-          {oge.etiketler.map((e, k) => (
-            <Text key={e.kullaniciId}>
-              {k > 0 ? ', ' : ''}
-              <Text style={stiller.birlikteAd} onPress={() => router.push(`/kullanici/${e.kullaniciId}`)}>
-                {adlar[k]}
-              </Text>
-            </Text>
-          ))}
-        </Text>
-      ) : (
-        <Text key={i}>{parca}</Text>
-      )
+  // "<resimler> ile birlikte" (tr) / "with <resimler>" (en): sablonun
+  // iki yani. Kullanici adi YAZILMAZ (1 kiside de) - 2026-09-24.
+  const birlikte = birlikteParcalari(t('anaSayfa.ileBirlikte', { adlar: '{{adlar}}' }))
+  const etiketler =
+    oge.etiketler.length > 0
+      ? {
+          yer: etiketYerlesimi({
+            satirlar: baslikSatirlari ?? [],
+            kapEn: baslikKapEni,
+            adet: oge.etiketler.length,
+            onEkEn: birlikte.onEk ? onEkEni : 0,
+            sonEkEn: birlikte.sonEk ? sonEkEni : 0,
+          }),
+          // Olcu gelene kadar gorunmez (ilk karede yanlis yerde parlamasin).
+          hazir: baslikSatirlari !== null && baslikKapEni > 0 && (!birlikte.onEk || onEkEni > 0) && (!birlikte.sonEk || sonEkEni > 0),
+        }
+      : null
+
+  /**
+   * WEB: react-native-web `onTextLayout` VERMIYOR (kaynakta yok), yani
+   * olcumlu yol webde hic cizmezdi. Orada metin icindeki gorunumler
+   * `inline-flex` ciziliyor - tarayicinin kendi metin akisi ayni
+   * davranisi (cumlenin devami, sigmayan alt satira, son resim + yazi
+   * bolunmez) kendiliginden veriyor.
+   */
+  function webEtiketleriCiz() {
+    const son = oge.etiketler.length - 1
+    const resim = (etiket: (typeof oge.etiketler)[number], i: number) => (
+      <Pressable
+        key={etiket.kullaniciId}
+        onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+        accessibilityRole="button"
+        accessibilityLabel={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+        testID={`birlikte-${etiket.kullaniciId}`}
+        style={[stiller.birlikteResimSatirIci, { marginLeft: i === 0 ? (birlikte.onEk ? 6 : 8) : 15 - ETIKET_RESIM_CAPI }]}
+      >
+        <Avatar
+          fotografUrl={etiket.avatarUrl}
+          ad={etiket.ad}
+          kullaniciAdi={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+          cap={ETIKET_RESIM_CAPI - 4}
+        />
+      </Pressable>
+    )
+    return (
+      <Text testID="birlikte-satiri">
+        {birlikte.onEk ? <Text style={stiller.birlikteYaziSatirIci}>{'  ' + birlikte.onEk}</Text> : null}
+        {oge.etiketler.slice(0, son).map(resim)}
+        {/* Son resim + son ek bolunmez birim. */}
+        <View style={stiller.birlikteSonBirim}>
+          {resim(oge.etiketler[son], son)}
+          {birlikte.sonEk ? <Text style={stiller.birlikteYaziSatirIci}>{birlikte.sonEk}</Text> : null}
+        </View>
+      </Text>
+    )
+  }
+
+  function etiketleriCiz(e: NonNullable<typeof etiketler>) {
+    const adlar = oge.etiketler.map((x) => x.kullaniciAdi ?? x.ad ?? '').join(', ')
+    return (
+      <View
+        style={[StyleSheet.absoluteFill, !e.hazir && stiller.gizli]}
+        pointerEvents="box-none"
+        testID="birlikte-satiri"
+        accessibilityLabel={t('anaSayfa.ileBirlikte', { adlar })}
+      >
+        {/* Olcum kopyalari: yazilarin gercek eni (gorunmez). */}
+        {birlikte.onEk ? (
+          <Text style={[stiller.birlikteYazi, stiller.olcum]} onLayout={(o) => setOnEkEni(o.nativeEvent.layout.width)}>
+            {birlikte.onEk}
+          </Text>
+        ) : null}
+        {birlikte.sonEk ? (
+          <Text style={[stiller.birlikteYazi, stiller.olcum]} onLayout={(o) => setSonEkEni(o.nativeEvent.layout.width)}>
+            {birlikte.sonEk}
+          </Text>
+        ) : null}
+
+        {e.yer.onEk && (
+          <Text style={[stiller.birlikteYazi, { position: 'absolute', left: e.yer.onEk.x, top: e.yer.onEk.y }]}>
+            {birlikte.onEk}
+          </Text>
+        )}
+        {oge.etiketler.map((etiket, i) => (
+          <Pressable
+            key={etiket.kullaniciId}
+            onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
+            accessibilityRole="button"
+            accessibilityLabel={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+            hitSlop={4}
+            testID={`birlikte-${etiket.kullaniciId}`}
+            style={[stiller.birlikteResim, { left: e.yer.resimler[i].x, top: e.yer.resimler[i].y, zIndex: i }]}
+          >
+            <Avatar
+              fotografUrl={etiket.avatarUrl}
+              ad={etiket.ad}
+              kullaniciAdi={etiket.kullaniciAdi ?? etiket.ad ?? ''}
+              cap={ETIKET_RESIM_CAPI - 4}
+            />
+          </Pressable>
+        ))}
+        {e.yer.sonEk && (
+          <Text style={[stiller.birlikteYazi, { position: 'absolute', left: e.yer.sonEk.x, top: e.yer.sonEk.y }]}>
+            {birlikte.sonEk}
+          </Text>
+        )}
+      </View>
     )
   }
 
@@ -238,9 +344,20 @@ export function CheckInKarti({
               Sablon sozlukte; parcalar {{ad}}/{{mekan}}/{{ek}}
               belirteclerinden bolunerek ic ice Text'le ciziliyor. Ek
               yalnizca Turkce'de (`bulunmaEki`), digerlerinde bos. */}
-          <Text style={stiller.baslik} testID="akis-basligi">
-            {basligiCiz()}
-          </Text>
+          <View
+            style={{ minHeight: etiketler ? etiketler.yer.boy : undefined }}
+            onLayout={(e) => setBaslikKapEni(e.nativeEvent.layout.width)}
+          >
+            <Text
+              style={stiller.baslik}
+              testID="akis-basligi"
+              onTextLayout={(e) => setBaslikSatirlari(e.nativeEvent.lines)}
+            >
+              {basligiCiz()}
+              {WEB && etiketler && webEtiketleriCiz()}
+            </Text>
+            {!WEB && etiketler && etiketleriCiz(etiketler)}
+          </View>
           {suAnBuradaMi(oge.olusturmaZamani, oge.canliMi) ? (
             <View style={stiller.canliSatir}>
               <View style={stiller.canliNokta} />
@@ -263,37 +380,6 @@ export function CheckInKarti({
           </Pressable>
         )}
       </View>
-
-      {/* "<adlar> ile birlikte" (referans): kucuk avatarlar + kullanici
-          adlari kalin, geri kalan gri; metin sutunuyla hizali. Her
-          avatar/ad o kisinin profiline gider. */}
-      {oge.etiketler.length > 0 && (
-        <View style={stiller.birlikteSatiri} testID="birlikte-satiri">
-          <View style={stiller.birlikteAvatarlar}>
-            {oge.etiketler.slice(0, 3).map((etiket, i) => (
-              <Pressable
-                key={etiket.kullaniciId}
-                onPress={() => router.push(`/kullanici/${etiket.kullaniciId}`)}
-                accessibilityRole="button"
-                accessibilityLabel={etiket.kullaniciAdi ?? etiket.ad ?? ''}
-                hitSlop={4}
-                testID={`birlikte-${etiket.kullaniciId}`}
-                style={i > 0 && stiller.birlikteAvatarUstUste}
-              >
-                <Avatar
-                  fotografUrl={etiket.avatarUrl}
-                  ad={etiket.ad}
-                  kullaniciAdi={etiket.kullaniciAdi ?? etiket.ad ?? ''}
-                  cap={ETIKET_AVATAR_CAPI}
-                />
-              </Pressable>
-            ))}
-          </View>
-          <Text style={stiller.birlikteYazi} numberOfLines={2}>
-            {ileBirlikteCiz()}
-          </Text>
-        </View>
-      )}
 
       {/* NOT ONCE, FOTOGRAF ALTINDA (kullanicinin istegi 2026-08-30). */}
       {(oge.notMetni || oge.ifade) && (
@@ -483,8 +569,6 @@ export function CheckInKarti({
 }
 
 const AVATAR_CAPI = 52
-/** "Birlikte" satirindaki etiket avatarlari. */
-const ETIKET_AVATAR_CAPI = 28
 
 
 const stilleriYap = (renk: Renk) => StyleSheet.create({
@@ -526,18 +610,37 @@ const stilleriYap = (renk: Renk) => StyleSheet.create({
   baslik: { fontFamily: yazi.govde, fontSize: olcek.govde + 2, lineHeight: 24, color: renk.metin },
   baslikAd: { fontFamily: yazi.ekranBasligi, color: renk.metin, letterSpacing: -0.2 },
   baslikMekan: { fontFamily: yazi.ekranBasligi, color: renk.turuncuYazi, letterSpacing: -0.2 },
-  // "<adlar> ile birlikte": metin sutunuyla hizali (avatar + aralik).
-  birlikteSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: bosluk.s,
-    marginTop: bosluk.m,
-    marginLeft: AVATAR_CAPI + bosluk.m,
+  // Etiketlenenler cumlenin devaminda (etiket-yerlesimi.ts).
+  birlikteResim: {
+    position: 'absolute',
+    width: ETIKET_RESIM_CAPI,
+    height: ETIKET_RESIM_CAPI,
+    borderRadius: ETIKET_RESIM_CAPI / 2,
+    borderWidth: 2,
+    borderColor: renk.yuzey,
+    backgroundColor: renk.yuzey,
+    overflow: 'hidden',
   },
-  birlikteAvatarlar: { flexDirection: 'row', alignItems: 'center' },
-  birlikteAvatarUstUste: { marginLeft: -8 },
-  birlikteYazi: { flex: 1, fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil },
-  birlikteAd: { fontFamily: yazi.govdeKalin, color: renk.metin },
+  birlikteYazi: {
+    fontFamily: yazi.govde,
+    fontSize: olcek.govde,
+    lineHeight: ETIKET_RESIM_CAPI,
+    color: renk.metinIkincil,
+  },
+  olcum: { position: 'absolute', opacity: 0, left: 0, top: 0 },
+  birlikteResimSatirIci: {
+    width: ETIKET_RESIM_CAPI,
+    height: ETIKET_RESIM_CAPI,
+    borderRadius: ETIKET_RESIM_CAPI / 2,
+    borderWidth: 2,
+    borderColor: renk.yuzey,
+    backgroundColor: renk.yuzey,
+    overflow: 'hidden',
+    verticalAlign: 'middle',
+  },
+  birlikteSonBirim: { flexDirection: 'row', alignItems: 'center', verticalAlign: 'middle' },
+  birlikteYaziSatirIci: { fontFamily: yazi.govde, fontSize: olcek.govde, color: renk.metinIkincil, marginLeft: 6 },
+  gizli: { opacity: 0 },
 
   avatar: {
     width: AVATAR_CAPI,
