@@ -55,10 +55,19 @@ maddelerin cogunun tam anlatimi orada ayni baslik/tarihle duruyor.
 Acik yarim is YOK. Son yayin: "Ani ekle" sipsak akisi + check-in galeri
 sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - Hikaye = "Anı ekle": galeriden yukleme YOK (ne galeri karesi, ne
-  `?foto=` parametresi), yalnizca anlik cekim. Canli kamera YALNIZCA
-  cekim kartinda tek `CameraView` (iki tane acilinca ayni ref'i
-  paylasan iki kamera oturumu oluyordu). Modul yoksa deklansor sistem
-  kamerasini acar.
+  `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
+  kartta kalir (`ANI_KART_ORANI` 0.88, cover); izleyici de ayni oran
+  ve kirpmayla ciziyor - paylasanin gordugu kare = izleyenin gordugu.
+  Cekim dugmeleri kalkar; altta check-in mekani (x ile kaldirilir) +
+  Paylas, en altta gizlilik. PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
+- Anıya IFADEYI IZLEYEN atar (kartin altinda 108'lik serit; mesaj
+  kutusu + kalp KALKTI), tek ifade, yeniden dokunus kaldirir; paylasan
+  "Gorenler"de gorur (sohbete dusmez, push yok). RPC
+  `hikaye_ifadesi_gonder`, `hikaye_goruntulendi` ifademi doner
+  (migrasyon `20260924110000`, canli `araclar/hikaye-ifade-tepkisi-canli-test.py`).
+  OTA `de9ceeea`. TELEFONDA DOGRULANMADI.
+- Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
+  sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre
   kamera, son fotograflar, Ekle'de coklu). Mekan duzenleme, sikayet,
   profil fotografi eski Kamera/Galeri penceresinde KALIR.
