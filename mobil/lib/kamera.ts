@@ -11,11 +11,23 @@
  * onizleme hic cizilmiyor, ekran bugunku siyah tuval olarak kaliyor.
  */
 
+type Izin = { granted: boolean; canAskAgain?: boolean }
 type KameraModulu = {
   CameraView: unknown
-  getCameraPermissionsAsync: () => Promise<{ granted: boolean }>
-  requestCameraPermissionsAsync: () => Promise<{ granted: boolean }>
+  getCameraPermissionsAsync: () => Promise<Izin>
+  requestCameraPermissionsAsync: () => Promise<Izin>
 }
+
+/**
+ * Canli kameranin durumu. Ekran gri karti SESSIZ birakmasin diye ayri
+ * tutuluyor (kullanicinin bildirimi 2026-09-24: "karenin icinde kamera
+ * gorunecek" - kart gri kaliyordu ve sebebi ekrandan okunamiyordu):
+ *   'verildi'   - canli onizleme cizilir
+ *   'sorulabilir' - reddedildi ama sistem yeniden sorabilir ("Izin ver")
+ *   'ayarlardan'  - kalici red, yalnizca Ayarlar'dan acilir
+ *   'modul-yok'   - bu derlemede expo-camera yok (OTA ile gelmez)
+ */
+export type KameraIzinDurumu = 'verildi' | 'sorulabilir' | 'ayarlardan' | 'modul-yok'
 
 let modul: KameraModulu | null | undefined
 
@@ -57,15 +69,23 @@ export function kameraGorunumu(): unknown {
   return moduluAl()?.CameraView ?? null
 }
 
-/** Kamera izni: verilmediyse istenir. Modul yoksa false. */
-export async function kameraIzniAl(): Promise<boolean> {
+function durumaCevir(izin: Izin): KameraIzinDurumu {
+  if (izin.granted) return 'verildi'
+  return izin.canAskAgain === false ? 'ayarlardan' : 'sorulabilir'
+}
+
+/**
+ * Kamera izni. `sor` true ise verilmemisse sistem penceresi acilir;
+ * false ise yalnizca okunur (Ayarlar'dan donuste). Hata red sayilir.
+ */
+export async function kameraIzinDurumu(sor = true): Promise<KameraIzinDurumu> {
   const m = moduluAl()
-  if (!m) return false
+  if (!m) return 'modul-yok'
   try {
     let izin = await m.getCameraPermissionsAsync()
-    if (!izin.granted) izin = await m.requestCameraPermissionsAsync()
-    return izin.granted
+    if (!izin.granted && sor && izin.canAskAgain !== false) izin = await m.requestCameraPermissionsAsync()
+    return durumaCevir(izin)
   } catch {
-    return false
+    return 'sorulabilir'
   }
 }

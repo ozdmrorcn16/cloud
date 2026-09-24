@@ -8,6 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  AppState,
+  Linking,
 } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -30,7 +32,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import type { BagKisi } from '../../../lib/bag'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
-import { kameraGorunumu, kameraIzniAl, kameraKullanilabilirMi } from '../../../lib/kamera'
+import { kameraGorunumu, kameraIzinDurumu, type KameraIzinDurumu } from '../../../lib/kamera'
 import { IfadeSecici } from '../../tasarim/IfadeSecici'
 import { ArkadasSecici } from '../../tasarim/ArkadasSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
@@ -68,7 +70,9 @@ export default function HikayeEkleEkrani() {
 
   const [fotografUri, setFotografUri] = useState<string | null>(null)
   const [flas, setFlas] = useState<'off' | 'on'>('off')
-  const [kameraHazir, setKameraHazir] = useState(false)
+  // null: henuz okunmadi. Kart her durumda NE OLDUGUNU yazar (2026-09-24).
+  const [kameraDurumu, setKameraDurumu] = useState<KameraIzinDurumu | null>(null)
+  const kameraHazir = kameraDurumu === 'verildi'
   const [onKamera, setOnKamera] = useState(false)
   const kameraRef = useRef<{ takePictureAsync: (s?: object) => Promise<{ uri: string } | undefined> } | null>(null)
   const [yaziMetni, setYaziMetni] = useState('')
@@ -100,17 +104,35 @@ export default function HikayeEkleEkrani() {
         if (gecerli) setArkadaslar(liste)
       })
       .catch(() => {})
-    if (kameraKullanilabilirMi()) {
-      kameraIzniAl()
-        .then((izin) => {
-          if (gecerli) setKameraHazir(izin)
-        })
-        .catch(() => {})
-    }
+    kameraIzinDurumu(true)
+      .then((d) => {
+        if (gecerli) setKameraDurumu(d)
+      })
+      .catch(() => {})
     return () => {
       gecerli = false
     }
   }, [])
+
+  // Ayarlar'dan izin verip donunce onizleme kendiliginden acilsin:
+  // uygulama one gelince izin SORMADAN yeniden okunur.
+  useEffect(() => {
+    const abonelik = AppState.addEventListener('change', (hal) => {
+      if (hal !== 'active') return
+      kameraIzinDurumu(false)
+        .then((d) => setKameraDurumu((onceki) => (onceki === 'verildi' || onceki === 'modul-yok' ? onceki : d)))
+        .catch(() => {})
+    })
+    return () => abonelik.remove()
+  }, [])
+
+  async function kameraIzniIste() {
+    if (kameraDurumu === 'ayarlardan') {
+      void Linking.openSettings()
+      return
+    }
+    setKameraDurumu(await kameraIzinDurumu(true))
+  }
 
   function geri() {
     if (router.canGoBack()) router.back()
@@ -323,8 +345,26 @@ export default function HikayeEkleEkrani() {
                 testID="hikaye-kamera-onizleme"
               />
             ) : (
-              <View style={stiller.onizlemeBos}>
+              <View style={stiller.onizlemeBos} testID="hikaye-kamera-durumu">
                 <KameraCizimi />
+                {kameraDurumu === 'modul-yok' && (
+                  <Text style={stiller.onizlemeYazi}>{t('hikaye.canliKameraYok')}</Text>
+                )}
+                {(kameraDurumu === 'sorulabilir' || kameraDurumu === 'ayarlardan') && (
+                  <>
+                    <Text style={stiller.onizlemeYazi}>{t('hikaye.kameraIzniKapali')}</Text>
+                    <Pressable
+                      onPress={kameraIzniIste}
+                      accessibilityRole="button"
+                      testID="hikaye-kamera-izin"
+                      style={({ pressed }) => [stiller.izinDugmesi, pressed && stiller.basili]}
+                    >
+                      <Text style={stiller.izinYazi}>
+                        {t(kameraDurumu === 'ayarlardan' ? 'hikaye.ayarlariAc' : 'hikaye.izinVer')}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
               </View>
             )}
           </View>
@@ -708,7 +748,16 @@ const stilleriYap = (renk: Renk) =>
       overflow: 'hidden',
       backgroundColor: '#1C1A18',
     },
-    onizlemeBos: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
+    onizlemeBos: {
+      ...StyleSheet.absoluteFill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: bosluk.m,
+      paddingHorizontal: bosluk.xl,
+    },
+    onizlemeYazi: { fontFamily: yazi.govde, fontSize: olcek.govde, lineHeight: 22, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
+    izinDugmesi: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncu },
+    izinYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#FFFFFF' },
     cekimSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
     yanDugme: {
       width: 56,

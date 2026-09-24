@@ -13,9 +13,8 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }))
 jest.mock('../../../lib/kamera', () => ({
-  kameraKullanilabilirMi: jest.fn(() => false),
   kameraGorunumu: jest.fn(() => null),
-  kameraIzniAl: jest.fn().mockResolvedValue(false),
+  kameraIzinDurumu: jest.fn().mockResolvedValue('modul-yok'),
 }))
 const kameraMock = jest.requireMock('../../../lib/kamera')
 jest.mock('../../../lib/hikaye', () => ({ ...jest.requireActual('../../../lib/hikaye'), hikayeEkle: jest.fn() }))
@@ -55,9 +54,8 @@ beforeEach(() => {
   jest.clearAllMocks()
   // clearAllMocks cagrilari siler ama DAVRANISI silmez; kamera mock'lari
   // her testte varsayilana donmeli (bkz. 2026-09-21 dersi).
-  kameraMock.kameraKullanilabilirMi.mockReturnValue(false)
   kameraMock.kameraGorunumu.mockReturnValue(null)
-  kameraMock.kameraIzniAl.mockResolvedValue(false)
+  kameraMock.kameraIzinDurumu.mockResolvedValue('modul-yok')
   ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue(null)
   ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([])
   ;(ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true })
@@ -233,8 +231,7 @@ describe('HikayeEkleEkrani', () => {
 
   it('kamera varken canli onizleme, flas ve cevir gelir; yuvarlak tus kareyi tuvale koyar (sistem kamerasi acilmaz)', async () => {
     const kareAl = jest.fn().mockResolvedValue({ uri: 'file:///cekilen.jpg' })
-    kameraMock.kameraKullanilabilirMi.mockReturnValue(true)
-    kameraMock.kameraIzniAl.mockResolvedValue(true)
+    kameraMock.kameraIzinDurumu.mockResolvedValue('verildi')
     // Sahte onizleme bileseni: ref'e takePictureAsync veriyor.
     kameraMock.kameraGorunumu.mockReturnValue(
       React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
@@ -256,5 +253,35 @@ describe('HikayeEkleEkrani', () => {
     await waitFor(() => expect(screen.getByTestId('hikaye-onizleme')).toBeTruthy())
     expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled()
     expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
+  })
+
+  /**
+   * GRI KART SESSIZ KALMAZ (kullanicinin bildirimi 2026-09-24: "karenin
+   * icinde kamera gorunecek" - kart gri kaliyordu, sebebi okunmuyordu).
+   */
+  it('modul yoksa kart "son surum gerekiyor" der', async () => {
+    await render(<HikayeEkleEkrani />)
+    expect(await screen.findByText(/Canlı kamera için uygulamanın son sürümü gerekiyor/)).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-kamera-izin')).toBeNull()
+  })
+
+  it('izin reddedilmis ama sorulabilirse "İzin ver" yeniden sorar; verilince canli onizleme acilir', async () => {
+    kameraMock.kameraGorunumu.mockReturnValue((props: Record<string, unknown>) => <View testID={props.testID as string} />)
+    kameraMock.kameraIzinDurumu.mockResolvedValueOnce('sorulabilir').mockResolvedValueOnce('verildi')
+    await render(<HikayeEkleEkrani />)
+    expect(await screen.findByText('Kamera izni kapalı.')).toBeTruthy()
+    await fireEvent.press(screen.getByText('İzin ver'))
+    expect(await screen.findByTestId('hikaye-kamera-onizleme')).toBeTruthy()
+    expect(kameraMock.kameraIzinDurumu).toHaveBeenLastCalledWith(true)
+  })
+
+  it('kalici redde dugme "Ayarları aç" olur ve sistem ayarlarini acar', async () => {
+    const { Linking } = jest.requireActual('react-native')
+    const ac = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined)
+    kameraMock.kameraIzinDurumu.mockResolvedValue('ayarlardan')
+    await render(<HikayeEkleEkrani />)
+    await fireEvent.press(await screen.findByText('Ayarları aç'))
+    expect(ac).toHaveBeenCalled()
+    ac.mockRestore()
   })
 })
