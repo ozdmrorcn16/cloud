@@ -71,7 +71,7 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   kullanicinin secimi; `tasarim/anlik-arsivi/`).
 - Anlık ekle: galeriden yukleme YOK (ne galeri karesi, ne
   `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
-  kartta kalir (`ANI_KART_ORANI` 0.88, cover); izleyici de ayni oran
+  kartta kalir (`ANI_KART_ORANI` 3:4 = 0.75 (2026-09-24; once 0.88), cover); izleyici de ayni oran
   ve kirpmayla ciziyor - paylasanin gordugu kare = izleyenin gordugu.
   Cekim dugmeleri kalkar; altta check-in mekani (x ile kaldirilir) +
   Paylas, en altta gizlilik. PAYLASAN yazi/ifade/etiket EKLEYEMEZ.

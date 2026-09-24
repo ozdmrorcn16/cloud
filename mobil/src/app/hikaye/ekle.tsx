@@ -55,7 +55,7 @@ import { useStiller } from '../../tasarim/tema-baglami'
  * guncellenen surum) onizleme cizilmiyor ve deklansor SISTEM KAMERASINI
  * aciyor - ekran hicbir halde islevsiz kalmiyor.
  */
-/** Kartin en/boy orani - izleyici (`hikaye/izle.tsx`) ayni sabiti kullanir. */
+/** Kartin en/boy orani (3:4, kameranin kendi orani) - izleyici ve arsiv ayni sabiti kullanir. */
 const KART_ORANI = ANI_KART_ORANI
 /** Ust cubugun guvenli alan altindaki boyu (kart bunun altinda baslar). */
 const UST_CUBUK_BOYU = 64
@@ -262,16 +262,16 @@ export default function HikayeEkleEkrani() {
           /* CEKIM: flas / deklansor / cevir. Kare gelince KALKAR. */
           <View style={stiller.cekimSatiri}>
             {kameraHazir ? (
-              <Pressable
-                onPress={() => setFlas((f) => (f === 'on' ? 'off' : 'on'))}
-                accessibilityRole="button"
-                accessibilityState={{ selected: flas === 'on' }}
-                accessibilityLabel={t('hikaye.flas')}
+              <YuvarlakDugme
+                etiket={t('hikaye.flas')}
                 testID="hikaye-flas"
-                style={({ pressed }) => [stiller.yanDugme, pressed && stiller.basili]}
+                onPress={() => setFlas((f) => (f === 'on' ? 'off' : 'on'))}
+                sira={2}
+                buyuk
+                secili={flas === 'on'}
               >
                 <FlasCizimi acik={flas === 'on'} />
-              </Pressable>
+              </YuvarlakDugme>
             ) : (
               <View style={stiller.yanDugme} />
             )}
@@ -287,15 +287,15 @@ export default function HikayeEkleEkrani() {
             </Pressable>
 
             {kameraHazir ? (
-              <Pressable
-                onPress={() => setOnKamera((k) => !k)}
-                accessibilityRole="button"
-                accessibilityLabel={t('hikaye.kamerayiCevir')}
+              <YuvarlakDugme
+                etiket={t('hikaye.kamerayiCevir')}
                 testID="hikaye-kamera-cevir"
-                style={({ pressed }) => [stiller.yanDugme, pressed && stiller.basili]}
+                onPress={() => setOnKamera((k) => !k)}
+                sira={3}
+                buyuk
               >
                 <CevirCizimi />
-              </Pressable>
+              </YuvarlakDugme>
             ) : (
               <View style={stiller.yanDugme} />
             )}
@@ -382,12 +382,18 @@ function YuvarlakDugme({
   onPress,
   children,
   sira = 0,
+  buyuk = false,
+  secili,
 }: {
   etiket: string
   testID: string
   onPress: () => void
   children: ReactNode
   sira?: number
+  /** Cekim satirindaki flas/cevir (56 pt); ust cubuk 44 pt. */
+  buyuk?: boolean
+  /** Flas gibi acik/kapali dugmelerde erisilebilirlik durumu. */
+  secili?: boolean
 }) {
   const stiller = useStiller(stilleriYap)
   const hareket = useHareket()
@@ -425,8 +431,9 @@ function YuvarlakDugme({
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={etiket}
+        accessibilityState={secili === undefined ? undefined : { selected: secili }}
         testID={testID}
-        style={stiller.yuvarlakDugme}
+        style={[stiller.yuvarlakDugme, buyuk && stiller.yuvarlakBuyuk]}
       >
         {children}
       </Pressable>
@@ -527,14 +534,10 @@ const stilleriYap = (renk: Renk) =>
     izinDugmesi: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncu },
     izinYazi: { fontFamily: yazi.govde, fontWeight: '700', fontSize: olcek.govde, color: '#FFFFFF' },
     cekimSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: bosluk.xl },
-    yanDugme: {
-      width: 56,
-      height: 56,
-      borderRadius: yuvarlak.hap,
-      backgroundColor: 'rgba(255,255,255,0.12)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+    // Kamera hazir degilken flas/cevir yerinde duran BOS yer tutucu
+    // (deklansor ortada kalsin); gorunur dugmeler YuvarlakDugme.
+    yanDugme: { width: 56, height: 56 },
+    yuvarlakBuyuk: { width: 56, height: 56 },
     deklansor: {
       width: 86,
       height: 86,

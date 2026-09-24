@@ -264,8 +264,13 @@ export async function hikayeGoruntulendi(hikayeId: string): Promise<string | nul
   return typeof data === 'string' ? data : null
 }
 
-/** Ani karti oran (en/boy): paylasan ve izleyen AYNI kareyi gorur. */
-export const ANI_KART_ORANI = 0.88
+/**
+ * Anlik karti oran (en/boy): paylasan ve izleyen AYNI kareyi gorur.
+ * 3:4 (2026-09-24, kullanicinin istegi "kamerayi biraz daha asagi uzat"):
+ * telefon kamerasinin kendi orani, onizleme ve fotograf neredeyse hic
+ * kirpilmiyor. Once 0.88'di.
+ */
+export const ANI_KART_ORANI = 0.75
 
 /**
  * ANIYA IFADE (2026-09-24, kullanicinin karari): izleyen, fotografin
