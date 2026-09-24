@@ -198,6 +198,12 @@ Check-in ve mekan
   generated); ifade (108'lik set, tek); arkadas etiketi (onay ayari
   karsi tarafin). Bulunurluk her zaman profil varsayilani (ilk kullanim
   ekrani kaldirildi).
+- Akis karti: etiketlenenler "check-in yaptı." cumlesinin DEVAMINDA,
+  yalnizca profil resmi + "ile birlikte" (kullanici adi YOK, 1 kiside
+  de); resimler ust uste, satir dolunca alt satirdan devam; yazi son
+  resimle bolunmez. Telefonda olcumlu (`etiket-yerlesimi.ts`), webde
+  inline akis (react-native-web `onTextLayout` VERMIYOR). "check-in"
+  bolunmez tireyle (U+2011). Ornek `tasarim/etiket-satir-ici/`.
 - Mekan sayfasi: puan blogu EN ALTTA; puan 3+ oyla, yalnizca o mekanda
   check-in yapan oy verir. Fotograflar sekmesi (RLS aynen).
 
