@@ -23,8 +23,9 @@ jest.mock('../../../lib/bag-listeleri', () => ({ takipcilerimiGetir: jest.fn() }
 
 const mockBack = jest.fn()
 const mockReplace = jest.fn()
+const mockPush = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack, replace: mockReplace, push: jest.fn(), canGoBack: () => true }),
+  useRouter: () => ({ back: mockBack, replace: mockReplace, push: mockPush, canGoBack: () => true }),
   useLocalSearchParams: () => ({}),
 }))
 
@@ -80,6 +81,12 @@ describe('HikayeEkleEkrani', () => {
     expect(screen.queryByTestId('hikaye-flas')).toBeNull()
     expect(screen.queryByTestId('hikaye-kamera-cevir')).toBeNull()
     expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
+  })
+
+  it('SAG USTTE anlik arsivi ikonu arsiv ekranini acar (2026-09-24)', async () => {
+    await render(<HikayeEkleEkrani />)
+    await fireEvent.press(await screen.findByTestId('anlik-arsivi'))
+    expect(mockPush).toHaveBeenCalledWith('/anlik-arsivi')
   })
 
   /** Kullanicinin karari: "galeriden fotograf yuklenemicek". */

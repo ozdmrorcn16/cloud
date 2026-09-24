@@ -22,6 +22,7 @@ import {
 } from '../../../lib/hikaye'
 import { aktifCheckInimiGetir } from '../../../lib/checkin'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
+import { AnlikArsiviIkonu } from '../../tasarim/AnlikArsiviIkonu'
 import { kameraGorunumu, kameraIzinDurumu, type KameraIzinDurumu } from '../../../lib/kamera'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
@@ -194,7 +195,13 @@ export default function HikayeEkleEkrani() {
           <Text style={stiller.kapatYazi}>×</Text>
         </YuvarlakDugme>
         <Text style={stiller.baslik}>{t('hikaye.ekleBaslik')}</Text>
-        <View style={stiller.ustSag} />
+        {/* SAG USTTE ANLIK ARSIVI (kullanicinin karari 2026-09-24: "ana
+            sayfada gorunmeyecek, anlik ekle sayfasinda gorunecek"). */}
+        <View style={stiller.ustSag}>
+          <YuvarlakDugme etiket={t('hikaye.arsivAc')} testID="anlik-arsivi" onPress={() => router.push('/anlik-arsivi' as never)}>
+            <AnlikArsiviIkonu renk="#FFFFFF" boyut={22} />
+          </YuvarlakDugme>
+        </View>
       </View>
 
       {/* Kart iki modda da AYNI YERDE: cekimde canli onizleme, cekimden

@@ -60,14 +60,15 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   karari). "Anı/Anılar" YALNIZCA profildeki check-in gecmisi; karistirma.
   Kod adi hala `hikaye` (tablo, RPC, dosya, sozluk anahtari).
 - ANLIK ARSIVI (2026-09-24): anlik seritte 24 saat, sonra YALNIZCA
-  SAHIBININ arsivinde suresiz (ana sayfa sag ust ikon -> `/anlik-arsivi`,
+  SAHIBININ arsivinde suresiz ("Anlık ekle" ekraninin SAG USTUNDEKI ikon -> `/anlik-arsivi`; ana
+  sayfada YOK -
   izleyici `?arsiv=<id>`). Gorenler/ifadeler/etiketler 24 saatte silinir
   (cron artik yalnizca bunlari siler). Izleyicide ZAMANLAYICI ve
   ilerleme cubugu YOK; dokunus/kaydirmayla gecilir. RLS "kendi anlik
   arsivi"; `hikaye_akisi` sure suzgecini ACIKCA tasir. Hesap silme anlik
   ve TUM check-in fotograflarini kovadan siler (hesap-sil v8). Canli
-  `araclar/anlik-arsivi-canli-test.py` 13/13. Ikon secenegi A (gecmis)
-  gecici - kullanici secimi bekleniyor (`tasarim/anlik-arsivi/`).
+  `araclar/anlik-arsivi-canli-test.py` 13/13. Ikon: B (arsiv kutusu,
+  kullanicinin secimi; `tasarim/anlik-arsivi/`).
 - Anlık ekle: galeriden yukleme YOK (ne galeri karesi, ne
   `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
   kartta kalir (`ANI_KART_ORANI` 0.88, cover); izleyici de ayni oran
