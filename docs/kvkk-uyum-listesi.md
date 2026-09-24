@@ -849,3 +849,29 @@ hikayenin fotografi ya da yazisi YOK; o baskasinin verisi.
 Bekleyen etiketler check-in etiketleriyle AYNI listede (Bildirimler ve
 Gizlilik > Etiketler > Bekleyen etiketler): kisi ayni yerden onaylayip
 reddediyor, iki ayri kutu yok.
+
+## Aniya ifade tepkisi; paylasan artik yazi/ifade/etiket eklemiyor (2026-09-24)
+
+Kullanicinin karari: "ani paylasan ifade ya da yazi ekleyemiyor,
+baskasi sadece o aniya ifade atabiliyor"; tepki paylasana "Gorenler"
+listesinde gorunur (sohbete dusmez, push yok). Migrasyon
+`20260924110000_hikaye_ifade_tepkisi.sql`.
+
+- **Hangi veri:** `hikaye_goruntulemeler.ifade` - hangi kisinin hangi
+  aniya hangi ifadeyi (108'lik sozlukten slug) attigi. Paylasan tarafta
+  yeni hikayelerde yazi, ifade ve arkadas etiketi artik HIC toplanmiyor
+  (veri azaldi).
+- **Hangi dayanak:** sozlesmenin ifasi (KVKK m.5/2-c): ozelligin
+  kendisi; kisi ifadeyi kendisi secip atiyor, geri alabiliyor.
+- **Ne kadar sure:** goruntuleme satiriyla birlikte - ani 24 saatte
+  silinince cascade ile gider; kisi ifadeyi her an kaldirabilir.
+- **Kim gorur, kaydediliyor mu:** yalnizca ani sahibi
+  (`hikaye_goruntuleyenler`, sahiplik kontrolu) ve atan kisinin
+  kendisi (`hikaye_goruntulendi` doner). Aniyi goremeyen (engel,
+  gizlilik, moderasyon) atamaz; kendi anina atilamaz; kurallar
+  `hikaye_ifadesi_gonder` icinde. Ayri denetim izi yok.
+
+Erisim hakki (m.11): `verilerimi_disa_aktar` sahibin dosyasinda
+`hikaye_goruntulemelerim` satirlarina `ifade` ekledi, atanin dosyasinda
+yeni `hikaye_ifadelerim` blogu var. Gizlilik metni 7 dil + docs
+guncellendi.

@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react'
 import { View, Text, Modal, Pressable, FlatList, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Image } from 'expo-image'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
 import { useStiller } from './tema-baglami'
 import { Avatar } from './Avatar'
+import { ifadeBul } from '../../lib/ifadeler'
 
 export type ListeKisisi = {
   id: string
   ad: string
   kullaniciAdi: string
   avatarUrl: string | null
+  /** Hikaye gorenlerinde: kisinin aniya attigi ifade (slug). Satirin
+   *  saginda cizilir (2026-09-24). Begenenlerde yok. */
+  ifade?: string | null
 }
 
 /**
@@ -120,6 +125,15 @@ export function KisiListesiSayfasi({
                     @{item.kullaniciAdi}
                   </Text>
                 </View>
+                {item.ifade && ifadeBul(item.ifade) ? (
+                  <Image
+                    source={ifadeBul(item.ifade)!.kaynak}
+                    style={stiller.ifade}
+                    contentFit="contain"
+                    accessibilityLabel={ifadeBul(item.ifade)!.etiket}
+                    testID={`${satirTestIDOnEki}-ifade-${item.id}`}
+                  />
+                ) : null}
               </Pressable>
             )}
           />
@@ -153,6 +167,7 @@ const stilleriYap = (renk: Renk) =>
     satir: { flexDirection: 'row', alignItems: 'center', gap: bosluk.m, paddingVertical: 10 },
     basili: { opacity: 0.7 },
     metinler: { flex: 1 },
+    ifade: { width: 36, height: 36 },
     ad: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
     kullaniciAdi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
   })

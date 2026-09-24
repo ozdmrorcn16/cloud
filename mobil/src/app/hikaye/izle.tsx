@@ -5,13 +5,10 @@ import {
   Pressable,
   StyleSheet,
   Animated,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  TextInput,
+  FlatList,
+  useWindowDimensions,
 } from 'react-native'
 import { Image } from 'expo-image'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -22,7 +19,8 @@ import {
   hikayeGoruntulendi,
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
-  hikayeyeYanitVer,
+  hikayeIfadesiGonder,
+  ANI_KART_ORANI,
   HIKAYE_SURESI_MS,
   type HikayeGrubu,
   seritOnbelleginiOku,
@@ -36,23 +34,13 @@ import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
-import { ifadeBul } from '../../../lib/ifadeler'
+import { ifadeBul, IFADELER } from '../../../lib/ifadeler'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
-
-/** Ust ve alt okunurluk gradyanlarinin guvenli alan USTUNE eklenen boyu. */
-const UST_GOLGE = 104
-const ALT_GOLGE = 132
 
 /** Dikey surukleme kapatma esikleri - FotografGezgini ile ayni. */
 const KAPATMA_MESAFESI = 120
 const KAPATMA_HIZI = 900
-
-/**
- * HIZLI TEPKILER - Instagram'in hikaye tepki seti. Dokunmak emojiyi
- * mesaj olarak gonderiyor (Instagram'da da DM'e dusuyor).
- */
-const HIZLI_TEPKILER = ['❤️', '😂', '😮', '😢', '👏', '🔥', '🎉', '😍'] as const
 
 /** Komsu kareler bu kadar sonra indirilir - gorunen kareyi geciktirmesin. */
 const ON_YUKLEME_GECIKMESI_MS = 600
@@ -60,6 +48,11 @@ const ON_YUKLEME_GECIKMESI_MS = 600
 /** Yatay kaydirmada kisi degistirme esikleri (Instagram: sola = sonraki hesap). */
 const KISI_GECIS_MESAFESI = 70
 const KISI_GECIS_HIZI = 650
+
+/** Kartin ustundeki (ilerleme + kimlik) ve altindaki (ifade seridi /
+ *  gorenler) bloklarin guvenli alan disindaki boylari. */
+const UST_BLOK_BOYU = 72
+const ALT_BLOK_BOYU = 96
 
 /**
  * HIKAYE IZLEYICI (2026-09-22). `/hikaye/izle?kullanici=<id>`: seridin
@@ -74,8 +67,10 @@ const KISI_GECIS_HIZI = 650
  *
  * Goruntuleme: baskasinin hikayesi ekrana gelince `hikaye_goruntulendi`
  * (sunucu kendi hikayemi ve gorunmeyeni zaten atliyor). Sahibi altta
- * "N kisi gordu" -> KisiListesiSayfasi; baskasi altta "Mesaj gonder"
- * (sohbete on ekli mesaj). Uc nokta: sahibiyse Sil (onayli), degilse
+ * "N kisi gordu" -> KisiListesiSayfasi (kim hangi ifadeyi atti); baskasi
+ * altta IFADE SERIDI - yalnizca ifade atabilir, mesaj/kalp yok
+ * (2026-09-24, kullanicinin karari). Fotograf paylasanin gordugu AYNI
+ * kartta (ANI_KART_ORANI, cover) - izleyen tam o kareyi gorur. Uc nokta: sahibiyse Sil (onayli), degilse
  * Sikayet et (mevcut sikayet ekrani, hedef 'hikaye').
  *
  * Alt gezinme bu rotada gizli (`_layout.tsx`).
@@ -94,12 +89,14 @@ export default function HikayeIzleEkrani() {
   const [menuAcik, setMenuAcik] = useState(false)
   const [silOnayi, setSilOnayi] = useState(false)
   const [gorenlerAcik, setGorenlerAcik] = useState(false)
-  const [yanitDurumu, setYanitDurumu] = useState<string | null>(null)
-  const [mesaj, setMesaj] = useState('')
+  const [ifadeDurumu, setIfadeDurumu] = useState<string | null>(null)
+  /** Baskasinin anilarina attigim ifadeler (hikaye id -> slug | null);
+   *  gorme kaydi sunucudan doner, secim yerelde aninda yazilir. */
+  const [ifadelerim, setIfadelerim] = useState<Record<string, string | null>>({})
+  const { width: ekranEni, height: ekranBoyu } = useWindowDimensions()
   /** Fotograf alaninin olcusu: etiketler oransal konumlarindan piksele
    *  bu olcuyle cevriliyor (2026-09-23). */
   const [ogeAlani, setOgeAlani] = useState({ en: 0, boy: 0 })
-  const [klavyeAcik, setKlavyeAcik] = useState(false)
   // Basili tutulurken arayuz gizlenir (Instagram): fotografin onunde
   // hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor.
   const [basiliTutuluyor, setBasiliTutuluyor] = useState(false)
@@ -203,7 +200,7 @@ export default function HikayeIzleEkrani() {
 
   // ---- Ilerleme cubugu / zamanlayici ----
   const ilerleme = useRef(new Animated.Value(0)).current
-  const duraklatildi = menuAcik || silOnayi || gorenlerAcik || klavyeAcik
+  const duraklatildi = menuAcik || silOnayi || gorenlerAcik
   const duraklatildiRef = useRef(duraklatildi)
   duraklatildiRef.current = duraklatildi
   const basiliRef = useRef(false)
@@ -233,8 +230,15 @@ export default function HikayeIzleEkrani() {
     if (!hikaye || !grup) return
     if (!duraklatildiRef.current && !basiliRef.current) oynat(0)
     else ilerleme.setValue(0)
+    // Gorme kaydi HER acilista (sunucu tekrari yok sayar): donen deger bu
+    // aniya daha once attigim ifade - serit secili acilsin (2026-09-24).
+    if (!grup.benimMi && !(hikaye.id in ifadelerim)) {
+      const id = hikaye.id
+      hikayeGoruntulendi(id)
+        .then((slug) => setIfadelerim((m) => (id in m ? m : { ...m, [id]: slug })))
+        .catch(() => {})
+    }
     if (!grup.benimMi && !hikaye.gordum) {
-      hikayeGoruntulendi(hikaye.id).catch(() => {})
       // Yerelde isaretle: geri gelince tekrar kaydetmesin, serit dogru cizsin.
       setGruplar((g) =>
         g
@@ -296,7 +300,7 @@ export default function HikayeIzleEkrani() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gruplar, konum])
 
-  // Pencere/klavye acilinca dur, kapaninca kaldigi yerden devam.
+  // Pencere acilinca dur, kapaninca kaldigi yerden devam.
   useEffect(() => {
     if (!hikaye) return
     if (duraklatildi) durdur()
@@ -312,15 +316,6 @@ export default function HikayeIzleEkrani() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hikaye?.id])
   )
-
-  useEffect(() => {
-    const a = Keyboard.addListener('keyboardDidShow', () => setKlavyeAcik(true))
-    const b = Keyboard.addListener('keyboardDidHide', () => setKlavyeAcik(false))
-    return () => {
-      a.remove()
-      b.remove()
-    }
-  }, [])
 
   function basiliBasladi() {
     basiliRef.current = true
@@ -464,33 +459,24 @@ export default function HikayeIzleEkrani() {
     router.push(`/sikayet?hedefTur=hikaye&hedefId=${hikaye.id}&kullaniciId=${grup.kullaniciId}` as never)
   }
 
-  /** Hizli tepki: emoji, yanit olarak sohbete gider (Instagram deseni). */
-  async function tepkiGonder(emoji: string) {
-    if (!hikaye || !grup) return
-    try {
-      await hikayeyeYanitVer(grup.kullaniciId, t('hikaye.yanitOnEki'), emoji)
-      setYanitDurumu(t('hikaye.tepkiGonderildi', { emoji }))
-    } catch (e) {
-      setYanitDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-    setTimeout(() => setYanitDurumu(null), 1800)
-  }
 
-  /** Mesaj kutusu: yazilan metin sohbete yanit olarak gider (kalple
-   *  ayni yol). Bos mesaj gonderilmez. */
-  async function mesajiGonder() {
-    const metin = mesaj.trim()
-    if (!metin || !grup) return
-    setMesaj('')
-    try {
-      await hikayeyeYanitVer(grup.kullaniciId, t('hikaye.yanitOnEki'), metin)
-      setYanitDurumu(t('hikaye.yanitGonderildi'))
-    } catch (e) {
-      setYanitDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
-    }
-    setTimeout(() => setYanitDurumu(null), 1800)
-  }
 
+  /** Ifade seridi: dokunmak atar, ayni ifadeye yeniden dokunmak kaldirir.
+   *  Iyimser; sunucu reddederse eski secime doner ve sebep yazilir. */
+  async function ifadeSec(slug: string) {
+    if (!hikaye || !grup || grup.benimMi) return
+    const id = hikaye.id
+    const onceki = ifadelerim[id] ?? null
+    const yeni = onceki === slug ? null : slug
+    setIfadelerim((m) => ({ ...m, [id]: yeni }))
+    try {
+      await hikayeIfadesiGonder(id, yeni)
+    } catch (e) {
+      setIfadelerim((m) => ({ ...m, [id]: onceki }))
+      setIfadeDurumu(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
+      setTimeout(() => setIfadeDurumu(null), 1800)
+    }
+  }
 
   // ---- Cizim ----
   if (hata) {
@@ -523,6 +509,11 @@ export default function HikayeIzleEkrani() {
     )
   }
 
+  // Kart: oran sabit (ANI_KART_ORANI), kisa ekranda yalnizca eni kuculur.
+  const ustPay = guvenliAlan.top + UST_BLOK_BOYU
+  const altPay = guvenliAlan.bottom + ALT_BLOK_BOYU
+  const kartEn = Math.max(200, Math.min(ekranEni - bosluk.sayfa * 2, (ekranBoyu - ustPay - altPay - 56) * ANI_KART_ORANI))
+
   const secimler = grup.benimMi
     ? [{ etiket: t('hikaye.sil'), ikon: <CopIkonu />, yikici: true, testID: 'hikaye-menu-sil', onSec: () => setSilOnayi(true) }]
     : [{ etiket: t('kullanici.sikayetEt'), yikici: true, testID: 'hikaye-menu-sikayet', onSec: sikayetEt }]
@@ -531,108 +522,6 @@ export default function HikayeIzleEkrani() {
     <GestureHandlerRootView style={stiller.zemin} testID="hikaye-izle">
       <GestureDetector gesture={suruklemeHareketi}>
         <Animated.View style={[stiller.sahne, { opacity: solma, transform: [{ translateY: surukleme }] }]}>
-          {hikaye.fotografUrl && (
-            <Image
-              source={{ uri: hikaye.fotografUrl }}
-              style={StyleSheet.absoluteFill}
-              contentFit="contain"
-              // Bellek + disk onbellegi ACIKCA: ayni hikayeye geri
-              // donuldugunde dosya yeniden indirilmemeli.
-              cachePolicy="memory-disk"
-              // Gecerken bilesen GERI DONUSUYOR; anahtar verilmezse
-              // expo-image eski kareyi yenisiyle karistiriyor.
-              recyclingKey={hikaye.id}
-              // Kare ANINDA degissin: solma efekti gecikme gibi okunuyor.
-              transition={0}
-              // Gorunen kare indi: SIRA komsularda. Boylece on yukleme
-              // bakilan fotografin bant genisligini calmiyor (olculdu:
-              // once basladiginda acilis 1581 -> 3683 ms'ye cikiyordu).
-              onLoadEnd={komsulariIndir}
-              testID={`hikaye-fotograf-${hikaye.id}`}
-            />
-          )}
-
-          {/* ETIKETLER FOTOGRAFIN UZERINDE, paylasanin biraktigi yerde
-              (2026-09-22 referansi). Konumlar oransal; `konumuDuzelt`
-              bozuk/eksik degeri varsayilana dusuruyor. Izleyicide
-              surukleme YOK - yalnizca dokunma hedefleri. */}
-          <View
-            style={StyleSheet.absoluteFill}
-            pointerEvents="box-none"
-            onLayout={(o) => {
-              const { width, height } = o.nativeEvent.layout
-              if (width !== ogeAlani.en || height !== ogeAlani.boy) setOgeAlani({ en: width, boy: height })
-            }}
-            testID="hikaye-ogeler"
-          >
-            {hikaye.yazi ? (
-              <HikayeOgesi
-                konum={konumuDuzelt(hikaye.yerlesim?.yazi, VARSAYILAN_KONUM.yazi)}
-                alan={ogeAlani}
-                duzenlenebilir={false}
-                testID="hikaye-oge-yazi"
-              >
-                <Text style={stiller.tuvalYazi} testID="hikaye-yazi-metni">
-                  {hikaye.yazi}
-                </Text>
-              </HikayeOgesi>
-            ) : null}
-
-            {hikaye.ifade ? (
-              <HikayeOgesi
-                konum={konumuDuzelt(hikaye.yerlesim?.ifade, VARSAYILAN_KONUM.ifade)}
-                alan={ogeAlani}
-                duzenlenebilir={false}
-                testID="hikaye-oge-ifade"
-              >
-                {ifadeBul(hikaye.ifade) ? (
-                  <Image source={ifadeBul(hikaye.ifade)!.kaynak} style={stiller.tuvalIfade} contentFit="contain" />
-                ) : null}
-              </HikayeOgesi>
-            ) : null}
-
-            {hikaye.mekanAdi ? (
-              <HikayeOgesi
-                konum={konumuDuzelt(hikaye.yerlesim?.mekan, VARSAYILAN_KONUM.mekan)}
-                alan={ogeAlani}
-                duzenlenebilir={false}
-                testID="hikaye-oge-mekan"
-              >
-                <Pressable
-                  onPress={() => hikaye.mekanId && router.push(`/harita/${hikaye.mekanId}` as never)}
-                  accessibilityRole="link"
-                  testID="hikaye-mekan"
-                  style={stiller.mekanHapi}
-                >
-                  <IgneCizimi />
-                  <Text style={stiller.mekanHapiYazi} numberOfLines={1}>
-                    {hikaye.mekanAdi}
-                  </Text>
-                  <Text style={stiller.mekanHapiOk}>›</Text>
-                </Pressable>
-              </HikayeOgesi>
-            ) : null}
-
-            {hikaye.etiketler.map((e, i) => (
-              <HikayeOgesi
-                key={e.kullaniciId}
-                konum={konumuDuzelt(hikaye.yerlesim?.etiketler?.[e.kullaniciId], { x: 0.5, y: 0.84 + i * 0.05, olcek: 1 })}
-                alan={ogeAlani}
-                duzenlenebilir={false}
-                testID={`hikaye-oge-etiket-${e.kullaniciId}`}
-              >
-                <Pressable
-                  onPress={() => router.push(`/kullanici/${e.kullaniciId}` as never)}
-                  accessibilityRole="link"
-                  testID={`hikaye-etiketli-${e.kullaniciId}`}
-                  style={stiller.etiketHapi}
-                >
-                  <Text style={stiller.etiketHapiYazi}>@{e.kullaniciAdi}</Text>
-                </Pressable>
-              </HikayeOgesi>
-            ))}
-          </View>
-
           {/* Dokunma bolgeleri: sol 1/3 geri, sag 2/3 ileri; basili tut durdur. */}
           <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
             <View style={stiller.dokunmaSatiri}>
@@ -641,36 +530,113 @@ export default function HikayeIzleEkrani() {
             </View>
           </View>
 
-          {/*
-            OKUNURLUK GOLGESI (kullanicinin bildirimi 2026-09-22:
-            "hikayelerdeki dolma ibaresi beyaz bir fotografta hic
-            gorunmuyor"). Ilerleme cubugu, kimlik satiri ve alttaki
-            eylemler BEYAZ; acik renkli bir fotografta (ornegin bir ekran
-            goruntusu) hepsi kayboluyordu. Instagram'in cozumu: icerigin
-            ARKASINA usttan ve alttan koyu gradyan. Fotografin kendisi
-            karartilmiyor - gradyan yalnizca kenarlarda ve saydamdan
-            koyuya gidiyor, ortadaki icerik dokunulmamis kaliyor.
-            `pointerEvents="none"`: sag/sol dokunus ve surukleme gradyana
-            takilmamali.
-          */}
-          <LinearGradient
-            colors={['rgba(0,0,0,0.70)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0)']}
-            style={[
-              stiller.ustGolge,
-              { height: guvenliAlan.top + UST_GOLGE },
-              basiliTutuluyor && stiller.gizli,
-            ]}
-            pointerEvents="none"
-          />
-          <LinearGradient
-            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.38)', 'rgba(0,0,0,0.70)']}
-            style={[
-              stiller.altGolge,
-              { height: guvenliAlan.bottom + ALT_GOLGE },
-              basiliTutuluyor && stiller.gizli,
-            ]}
-            pointerEvents="none"
-          />
+          {/* ANI KARTI (2026-09-24): paylasanin cektigi kare, AYNI oranda
+              ve ayni kirpmayla (cover). Dokunma bolgelerinin USTUNDE ama
+              box-none: fotografa dokunus alttaki ileri/geri bolgelerine
+              gecer; yalnizca eski anilardaki etiketler ve mekan satiri
+              dokunulabilir. */}
+          <View
+            style={[stiller.kartSutunu, { paddingTop: ustPay, paddingBottom: altPay }]}
+            pointerEvents="box-none"
+          >
+            <View style={[stiller.kart, { width: kartEn }]} pointerEvents="box-none" testID="hikaye-kart">
+              {hikaye.fotografUrl && (
+                <Image
+                  source={{ uri: hikaye.fotografUrl }}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                  pointerEvents="none"
+                  // Bellek + disk onbellegi ACIKCA: ayni hikayeye geri
+                  // donuldugunde dosya yeniden indirilmemeli.
+                  cachePolicy="memory-disk"
+                  // Gecerken bilesen GERI DONUSUYOR; anahtar verilmezse
+                  // expo-image eski kareyi yenisiyle karistiriyor.
+                  recyclingKey={hikaye.id}
+                  // Kare ANINDA degissin: solma efekti gecikme gibi okunuyor.
+                  transition={0}
+                  // Gorunen kare indi: SIRA komsularda. Boylece on yukleme
+                  // bakilan fotografin bant genisligini calmiyor (olculdu:
+                  // once basladiginda acilis 1581 -> 3683 ms'ye cikiyordu).
+                  onLoadEnd={komsulariIndir}
+                  testID={`hikaye-fotograf-${hikaye.id}`}
+                />
+              )}
+              {/* ETIKETLER FOTOGRAFIN UZERINDE, paylasanin biraktigi yerde
+                  (2026-09-22 referansi). Konumlar oransal; `konumuDuzelt`
+                  bozuk/eksik degeri varsayilana dusuruyor. Izleyicide
+                  surukleme YOK - yalnizca dokunma hedefleri. */}
+              <View
+                style={StyleSheet.absoluteFill}
+                pointerEvents="box-none"
+                onLayout={(o) => {
+                  const { width, height } = o.nativeEvent.layout
+                  if (width !== ogeAlani.en || height !== ogeAlani.boy) setOgeAlani({ en: width, boy: height })
+                }}
+                testID="hikaye-ogeler"
+              >
+                {hikaye.yazi ? (
+                  <HikayeOgesi
+                    konum={konumuDuzelt(hikaye.yerlesim?.yazi, VARSAYILAN_KONUM.yazi)}
+                    alan={ogeAlani}
+                    duzenlenebilir={false}
+                    testID="hikaye-oge-yazi"
+                  >
+                    <Text style={stiller.tuvalYazi} testID="hikaye-yazi-metni">
+                      {hikaye.yazi}
+                    </Text>
+                  </HikayeOgesi>
+                ) : null}
+
+                {hikaye.ifade ? (
+                  <HikayeOgesi
+                    konum={konumuDuzelt(hikaye.yerlesim?.ifade, VARSAYILAN_KONUM.ifade)}
+                    alan={ogeAlani}
+                    duzenlenebilir={false}
+                    testID="hikaye-oge-ifade"
+                  >
+                    {ifadeBul(hikaye.ifade) ? (
+                      <Image source={ifadeBul(hikaye.ifade)!.kaynak} style={stiller.tuvalIfade} contentFit="contain" />
+                    ) : null}
+                  </HikayeOgesi>
+                ) : null}
+
+
+                {hikaye.etiketler.map((e, i) => (
+                  <HikayeOgesi
+                    key={e.kullaniciId}
+                    konum={konumuDuzelt(hikaye.yerlesim?.etiketler?.[e.kullaniciId], { x: 0.5, y: 0.84 + i * 0.05, olcek: 1 })}
+                    alan={ogeAlani}
+                    duzenlenebilir={false}
+                    testID={`hikaye-oge-etiket-${e.kullaniciId}`}
+                  >
+                    <Pressable
+                      onPress={() => router.push(`/kullanici/${e.kullaniciId}` as never)}
+                      accessibilityRole="link"
+                      testID={`hikaye-etiketli-${e.kullaniciId}`}
+                      style={stiller.etiketHapi}
+                    >
+                      <Text style={stiller.etiketHapiYazi}>@{e.kullaniciAdi}</Text>
+                    </Pressable>
+                  </HikayeOgesi>
+                ))}
+              </View>
+            </View>
+
+            {hikaye.mekanAdi ? (
+              <Pressable
+                onPress={() => hikaye.mekanId && router.push(`/harita/${hikaye.mekanId}` as never)}
+                accessibilityRole="link"
+                testID="hikaye-mekan"
+                style={[stiller.mekanHapi, basiliTutuluyor && stiller.gizli]}
+              >
+                <IgneCizimi />
+                <Text style={stiller.mekanHapiYazi} numberOfLines={1}>
+                  {hikaye.mekanAdi}
+                </Text>
+                <Text style={stiller.mekanHapiOk}>›</Text>
+              </Pressable>
+            ) : null}
+          </View>
 
           {/* Ust: ilerleme cubuklari + kimlik */}
           {/* BASILI TUTARKEN ARAYUZ GIZLENIR (Instagram): fotografin onunde
@@ -719,8 +685,7 @@ export default function HikayeIzleEkrani() {
           </View>
 
           {/* Alt: yazi + (gorenler | yanit) */}
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          <View
             style={[stiller.altKap, basiliTutuluyor && stiller.gizli]}
             pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
           >
@@ -745,46 +710,40 @@ export default function HikayeIzleEkrani() {
                   </Pressable>
                 </View>
               ) : (
-                /* BASKASININ HIKAYESI: mesaj kutusu + kalp (2026-09-22
-                   referansi). Kalp, hizli tepkilerle ayni yoldan gidiyor:
-                   emoji sohbete yanit olarak dusuyor. */
-                <View style={stiller.yanitSatiri} testID="hikaye-yanit-satiri">
-                  <View style={stiller.mesajKutusu}>
-                    <TextInput
-                      style={stiller.mesajGirdi}
-                      value={mesaj}
-                      onChangeText={setMesaj}
-                      placeholder={t('hikaye.mesajGonder')}
-                      placeholderTextColor="rgba(255,255,255,0.7)"
-                      returnKeyType="send"
-                      onSubmitEditing={mesajiGonder}
-                      testID="hikaye-mesaj"
-                    />
-                    {mesaj.trim() !== '' && (
-                      <Pressable onPress={mesajiGonder} accessibilityRole="button" accessibilityLabel={t('hikaye.gonder')} testID="hikaye-mesaj-gonder" hitSlop={8}>
-                        <Text style={stiller.gonderYazi}>{t('hikaye.gonder')}</Text>
+                /* BASKASININ ANISI: yalnizca IFADE atilir (kullanicinin
+                   karari 2026-09-24). Paylasan onu "Gorenler"de gorur. */
+                <FlatList
+                  horizontal
+                  data={IFADELER}
+                  keyExtractor={(i) => i.slug}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={stiller.ifadeSeridiIc}
+                  initialNumToRender={10}
+                  testID="hikaye-ifade-seridi"
+                  renderItem={({ item }) => {
+                    const secili = ifadelerim[hikaye.id] === item.slug
+                    return (
+                      <Pressable
+                        onPress={() => ifadeSec(item.slug)}
+                        accessibilityRole="button"
+                        accessibilityLabel={item.etiket}
+                        accessibilityState={{ selected: secili }}
+                        testID={`hikaye-ifade-${item.slug}`}
+                        style={({ pressed }) => [stiller.ifadeHucre, secili && stiller.ifadeSecili, pressed && stiller.basili]}
+                      >
+                        <Image source={item.kaynak} style={stiller.ifadeResim} contentFit="contain" />
                       </Pressable>
-                    )}
-                  </View>
-                  <Pressable
-                    onPress={() => tepkiGonder('❤️')}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.tepkiGonder', { emoji: '❤️' })}
-                    testID="hikaye-begen"
-                    style={({ pressed }) => [stiller.kalp, pressed && stiller.tepkiBasili]}
-                    hitSlop={8}
-                  >
-                    <KalpCizimi />
-                  </Pressable>
-                </View>
+                    )
+                  }}
+                />
               )}
-              {yanitDurumu && (
-                <Text style={stiller.yanitDurumu} testID="hikaye-yanit-durumu">
-                  {yanitDurumu}
+              {ifadeDurumu && (
+                <Text style={stiller.yanitDurumu} testID="hikaye-ifade-durumu">
+                  {ifadeDurumu}
                 </Text>
               )}
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </Animated.View>
       </GestureDetector>
 
@@ -857,6 +816,12 @@ const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     zemin: { flex: 1, backgroundColor: '#000000' },
     sahne: { flex: 1 },
+    kartSutunu: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', gap: bosluk.m },
+    kart: { aspectRatio: ANI_KART_ORANI, borderRadius: 44, overflow: 'hidden', backgroundColor: '#1C1A18' },
+    ifadeSeridiIc: { gap: bosluk.s, paddingVertical: 4 },
+    ifadeHucre: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    ifadeSecili: { backgroundColor: 'rgba(254,120,19,0.28)', borderWidth: 1.5, borderColor: '#FE7813' },
+    ifadeResim: { width: 42, height: 42 },
     orta: { alignItems: 'center', justifyContent: 'center', gap: bosluk.l },
     durum: { color: '#FFFFFF', fontFamily: yazi.govde, fontSize: olcek.govde, textAlign: 'center', paddingHorizontal: bosluk.xl },
     kapatDugmeBuyuk: { paddingHorizontal: bosluk.xl, paddingVertical: 10, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.18)' },

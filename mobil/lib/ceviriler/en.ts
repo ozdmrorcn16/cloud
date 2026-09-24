@@ -1043,6 +1043,7 @@ export default {
       en_az_2_karakter_gerekli: 'Type at least 2 characters.',
       gecersiz_bulunurluk_degeri: 'Invalid availability value.',
       gecersiz_ifade: 'That mood expression was not recognized; update the app.',
+      kendi_anina_ifade_atamazsin: "You can't send an expression to your own moment.",
       en_fazla_5_fotograf: 'You can add up to 5 photos to a check-in.',
       gecersiz_gorunurluk_degeri: 'Invalid visibility value.',
       gecersiz_platform: 'Invalid platform.',

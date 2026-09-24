@@ -1037,6 +1037,7 @@ export default {
       en_az_2_karakter_gerekli: 'Escribe al menos 2 caracteres.',
       gecersiz_bulunurluk_degeri: 'Valor de disponibilidad no válido.',
       gecersiz_ifade: 'Esa expresión de estado no se reconoció; actualiza la app.',
+      kendi_anina_ifade_atamazsin: "No puedes enviar una expresión a tu propio momento.",
       en_fazla_5_fotograf: 'Puedes añadir como máximo 5 fotos a un check-in.',
       gecersiz_gorunurluk_degeri: 'Valor de visibilidad no válido.',
       gecersiz_platform: 'Plataforma no válida.',

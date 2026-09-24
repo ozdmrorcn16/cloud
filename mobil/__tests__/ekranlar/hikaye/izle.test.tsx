@@ -10,7 +10,8 @@ import {
   hikayeGoruntulendi,
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
-  hikayeyeYanitVer,
+  hikayeIfadesiGonder,
+  ANI_KART_ORANI,
   SERIT_ONBELLEK_OMRU_MS,
   type HikayeGrubu,
 } from '../../../lib/hikaye'
@@ -28,7 +29,7 @@ jest.mock('../../../lib/hikaye', () => ({
   hikayeGoruntulendi: jest.fn(),
   hikayeGoruntuleyenleriGetir: jest.fn(),
   hikayeSil: jest.fn(),
-  hikayeyeYanitVer: jest.fn(),
+  hikayeIfadesiGonder: jest.fn(),
 }))
 
 const mockBack = jest.fn()
@@ -46,7 +47,7 @@ jest.mock('expo-router', () => ({
 /**
  * HIKAYE IZLEYICI (2026-09-22): dokunusla ileri/geri, kisi bitince sonraki
  * kisi, son kisi bitince kapanir; goruntuleme kaydi; sahibine gorenler +
- * sil; baskasina yanit + sikayet; dikey surukleme kapatir.
+ * sil; baskasina IFADE SERIDI + sikayet; dikey surukleme kapatir.
  */
 
 function hikaye(id: string, kullaniciId: string, ek: Partial<HikayeGrubu['hikayeler'][number]> = {}) {
@@ -122,10 +123,10 @@ beforeEach(() => {
   jest.clearAllMocks()
   mockParams = { kullanici: 'ayse' }
   ;(hikayeAkisiniGetir as jest.Mock).mockResolvedValue(gruplar())
-  ;(hikayeGoruntulendi as jest.Mock).mockResolvedValue(undefined)
+  ;(hikayeGoruntulendi as jest.Mock).mockResolvedValue(null)
   ;(hikayeGoruntuleyenleriGetir as jest.Mock).mockResolvedValue([])
   ;(hikayeSil as jest.Mock).mockResolvedValue(undefined)
-  ;(hikayeyeYanitVer as jest.Mock).mockResolvedValue('konusma-1')
+  ;(hikayeIfadesiGonder as jest.Mock).mockResolvedValue(undefined)
 })
 
 describe('HikayeIzleEkrani', () => {
@@ -136,10 +137,11 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByText('Hozee')).toBeTruthy()
     expect(screen.getByTestId('hikaye-yazi-metni')).toHaveTextContent('selam')
     await waitFor(() => expect(hikayeGoruntulendi).toHaveBeenCalledWith('a2'))
-    // Mekan artik fotografin UZERINDE bir hapta; ust kimlikte tekrarlanmiyor.
-    expect(screen.getByTestId('hikaye-oge-mekan')).toBeTruthy()
-    // Baskasinin hikayesi: mesaj kutusu var, gorenler yok.
-    expect(screen.getByTestId('hikaye-mesaj')).toBeTruthy()
+    // Mekan kartin ALTINDA (2026-09-24), fotografin uzerinde degil.
+    expect(screen.getByTestId('hikaye-mekan')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-oge-mekan')).toBeNull()
+    // Baskasinin anisi: ifade seridi var, gorenler yok.
+    expect(screen.getByTestId('hikaye-ifade-seridi')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
   })
 
@@ -194,12 +196,13 @@ describe('HikayeIzleEkrani', () => {
    * referansi). Kendi hikayemde bu satirin yerinde GORENLER ve SIL var -
    * ayri testte.
    */
-  it('baskasinin hikayesinde mesaj kutusu ve kalp var', async () => {
+  it('baskasinin anisinda YALNIZCA ifade seridi var: mesaj kutusu ve kalp YOK', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    expect(screen.getByTestId('hikaye-mesaj')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-begen')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-ifade-seridi')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-mesaj')).toBeNull()
+    expect(screen.queryByTestId('hikaye-begen')).toBeNull()
     expect(screen.queryByTestId('hikaye-sahip-eylemleri')).toBeNull()
   })
 
@@ -276,34 +279,59 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('gorenler-sayfasi')).toBeTruthy()
   })
 
-  it('KALP: dokunmak kalbi yanit olarak gonderir', async () => {
+  /**
+   * ANIYA IFADE (2026-09-24, kullanicinin karari): izleyen fotografin
+   * altindaki listeden ifade atar; paylasan onu Gorenler'de gorur.
+   */
+  it('IFADE: dokunmak atar ve secili yapar; ayni ifadeye yeniden dokunmak KALDIRIR', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    await fireEvent.press(screen.getByTestId('hikaye-begen'))
+    await fireEvent.press(screen.getByTestId('hikaye-ifade-kahve-keyfi'))
+    await waitFor(() => expect(hikayeIfadesiGonder).toHaveBeenCalledWith('a2', 'kahve-keyfi'))
+    expect(screen.getByTestId('hikaye-ifade-kahve-keyfi').props.accessibilityState).toEqual({ selected: true })
 
-    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', '❤️'))
-    expect(await screen.findByText('❤️ gönderildi')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('hikaye-ifade-kahve-keyfi'))
+    await waitFor(() => expect(hikayeIfadesiGonder).toHaveBeenLastCalledWith('a2', null))
+    expect(screen.getByTestId('hikaye-ifade-kahve-keyfi').props.accessibilityState).toEqual({ selected: false })
   })
 
-  it('MESAJ: yazilan metin yanit olarak gider, kutu temizlenir', async () => {
+  it('IFADE sunucu reddederse eski secime doner ve sebep yazilir', async () => {
+    ;(hikayeIfadesiGonder as jest.Mock).mockRejectedValue(new Error('Hikâye bulunamadı.'))
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    await fireEvent.changeText(screen.getByTestId('hikaye-mesaj'), 'çok güzel')
-    await fireEvent.press(screen.getByTestId('hikaye-mesaj-gonder'))
-
-    await waitFor(() => expect(hikayeyeYanitVer).toHaveBeenCalledWith('ayse', 'Hikâyene yanıt:', 'çok güzel'))
-    expect(screen.getByTestId('hikaye-mesaj').props.value).toBe('')
+    await fireEvent.press(screen.getByTestId('hikaye-ifade-kahve-keyfi'))
+    expect(await screen.findByTestId('hikaye-ifade-durumu')).toHaveTextContent('Hikâye bulunamadı.')
+    expect(screen.getByTestId('hikaye-ifade-kahve-keyfi').props.accessibilityState).toEqual({ selected: false })
   })
 
-  it('KENDI hikayemde mesaj kutusu YOK; yerinde gorenler ve sil var', async () => {
+  it('daha once atilan ifade gorme kaydindan gelir ve SECILI acilir; gormus olsam da sorulur', async () => {
+    ;(hikayeGoruntulendi as jest.Mock).mockResolvedValue('cay-molasi')
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+    await waitFor(() =>
+      expect(screen.getByTestId('hikaye-ifade-cay-molasi').props.accessibilityState).toEqual({ selected: true })
+    )
+    // Onceki hikayeye (a1, gordum=true) donunce de ifadesi sorulur.
+    await fireEvent.press(screen.getByTestId('hikaye-geri'))
+    await waitFor(() => expect(hikayeGoruntulendi).toHaveBeenCalledWith('a1'))
+  })
+
+  it('ANI KARTI: fotograf paylasandaki ORANDA ve cover ile cizilir (izleyen ayni kareyi gorur)', async () => {
+    await render(<HikayeIzleEkrani />)
+    const foto = await screen.findByTestId('hikaye-fotograf-a2')
+    expect(foto.props.contentFit).toBe('cover')
+    const kart = StyleSheet.flatten(screen.getByTestId('hikaye-kart').props.style)
+    expect(kart.aspectRatio).toBe(ANI_KART_ORANI)
+  })
+
+  it('KENDI animda ifade seridi YOK; yerinde gorenler ve sil var', async () => {
     mockParams = { kullanici: 'ben' }
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-b1')
 
-    expect(screen.queryByTestId('hikaye-mesaj')).toBeNull()
-    expect(screen.queryByTestId('hikaye-begen')).toBeNull()
+    expect(screen.queryByTestId('hikaye-ifade-seridi')).toBeNull()
     expect(screen.getByTestId('hikaye-sahip-eylemleri')).toBeTruthy()
     expect(screen.getByTestId('hikaye-gorenler')).toBeTruthy()
     expect(screen.getByTestId('hikaye-sil')).toBeTruthy()

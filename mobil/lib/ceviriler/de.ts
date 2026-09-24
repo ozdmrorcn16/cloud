@@ -1037,6 +1037,7 @@ export default {
       en_az_2_karakter_gerekli: 'Gib mindestens 2 Zeichen ein.',
       gecersiz_bulunurluk_degeri: 'Ungültiger Verfügbarkeitswert.',
       gecersiz_ifade: 'Dieser Stimmungsausdruck wurde nicht erkannt; aktualisiere die App.',
+      kendi_anina_ifade_atamazsin: "Du kannst deinem eigenen Moment keine Stimmung schicken.",
       en_fazla_5_fotograf: 'Du kannst einem Check-in höchstens 5 Fotos hinzufügen.',
       gecersiz_gorunurluk_degeri: 'Ungültiger Sichtbarkeitswert.',
       gecersiz_platform: 'Ungültige Plattform.',

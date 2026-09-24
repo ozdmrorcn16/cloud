@@ -31,8 +31,9 @@ jest.mock('expo-router', () => ({
 /**
  * ANI EKLE (2026-09-23, kullanicinin karari: "sipsak" - galeriden
  * yukleme YOK, yalnizca anlik cekim). Cekim ekrani: canli onizleme +
- * flas / deklansor / cevir + gorunurluk hapi. Kare gelince duzenleme:
- * sol raf (Not/Mekan/Ifade/Etiketle) + Arkadaslar + Paylas.
+ * flas / deklansor / cevir + gorunurluk hapi. Kare gelince (2026-09-24):
+ * fotograf AYNI kartta, cekim dugmeleri kalkar, altta check-in mekani +
+ * Paylas, en altta gizlilik. Paylasan yazi/ifade/etiket EKLEYEMEZ.
  *
  * Jest varsayilani canli kamera modulu YOK (eski derleme): deklansor
  * SISTEM KAMERASINI aciyor. Canli kamerali yol en alttaki iki testte.
@@ -69,14 +70,16 @@ describe('HikayeEkleEkrani', () => {
     expect(await screen.findByText('Anı ekle')).toBeTruthy()
     expect(screen.getByTestId('hikaye-deklansor')).toBeTruthy()
     expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
-    expect(screen.queryByTestId('hikaye-araclar')).toBeNull()
     expect(screen.queryByTestId('hikaye-paylas')).toBeNull()
 
     await cek()
-    expect(screen.getByTestId('hikaye-araclar')).toBeTruthy()
     expect(screen.getByTestId('hikaye-paylas').props.accessibilityState).toEqual({ disabled: false })
-    // Kare gelince deklansor kalkiyor.
+    // Kare AYNI kartta; cekim dugmeleri kalkiyor, gizlilik duruyor.
+    expect(screen.getByTestId('hikaye-kart')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-deklansor')).toBeNull()
+    expect(screen.queryByTestId('hikaye-flas')).toBeNull()
+    expect(screen.queryByTestId('hikaye-kamera-cevir')).toBeNull()
+    expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
   })
 
   /** Kullanicinin karari: "galeriden fotograf yuklenemicek". */
@@ -114,38 +117,34 @@ describe('HikayeEkleEkrani', () => {
     expect(ImagePicker.launchCameraAsync).toHaveBeenCalledTimes(2)
   })
 
-  it('yazi 200 ile sinirli; aktif check-in varsa mekan etiketi tuvale gelir; Paylas hikayeEkle cagirir ve geri doner', async () => {
+  it('aktif check-in varsa MEKAN Paylas yaninda; Paylas mekanla (yazisiz, ifadesiz) gonderir ve geri doner', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
     await cek()
-    expect(await screen.findByTestId('hikaye-oge-mekan')).toBeTruthy()
-    expect(screen.getByText('Hozee')).toBeTruthy()
-
-    await fireEvent.press(screen.getByTestId('hikaye-arac-not'))
-    await fireEvent.changeText(screen.getByTestId('hikaye-yazi'), 'a'.repeat(260))
-    // 200 ile sinirli: girdi degeri kirpilir.
-    expect(screen.getByTestId('hikaye-yazi').props.value).toHaveLength(200)
-    await fireEvent.changeText(screen.getByTestId('hikaye-yazi'), 'selam')
-    await fireEvent.press(screen.getByTestId('hikaye-yazi-tamam'))
+    expect(await screen.findByTestId('hikaye-mekan')).toHaveTextContent(/Hozee/)
 
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', 'selam', 'mekan-1', null, [], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', 'mekan-1', null, [], 'arkadaslar', {})
     )
     await waitFor(() => expect(mockBack).toHaveBeenCalled())
   })
 
-  it('mekan etiketi kaldirilinca mekansiz paylasilir', async () => {
+  it('check-in yoksa mekan satiri cizilmez', async () => {
+    await render(<HikayeEkleEkrani />)
+    await cek()
+    expect(screen.queryByTestId('hikaye-mekan')).toBeNull()
+  })
+
+  it('mekan x ile kaldirilinca mekansiz paylasilir', async () => {
     ;(aktifCheckInimiGetir as jest.Mock).mockResolvedValue({ mekanId: 'mekan-1', mekanAdi: 'Hozee' })
     await render(<HikayeEkleEkrani />)
     await cek()
-    await waitFor(() => expect(screen.getByTestId('hikaye-oge-mekan')).toBeTruthy())
-    await fireEvent.press(screen.getByTestId('hikaye-arac-mekan'))
-    await menudenSec('hikaye-mekan-kaldir')
-    await waitFor(() => expect(screen.queryByTestId('hikaye-oge-mekan')).toBeNull())
+    await fireEvent.press(await screen.findByTestId('hikaye-mekan-kaldir'))
+    expect(screen.queryByTestId('hikaye-mekan')).toBeNull()
     await fireEvent.press(screen.getByTestId('hikaye-paylas'))
     await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, [], 'arkadaslar', expect.any(Object))
+      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, [], 'arkadaslar', {})
     )
   })
 
@@ -182,36 +181,14 @@ describe('HikayeEkleEkrani', () => {
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  it('IFADE secilince tuvale gelir; Paylas ifadeyi gonderiyor', async () => {
+  /** Kullanicinin karari (2026-09-24): ifadeyi IZLEYEN atar. */
+  it('paylasan YAZI, IFADE ya da ETIKET ekleyemez: hicbir arac cizilmez', async () => {
     await render(<HikayeEkleEkrani />)
     await cek()
-
-    await fireEvent.press(screen.getByTestId('hikaye-arac-ifade'))
-    await fireEvent.press(await screen.findByTestId('ifade-kahve-keyfi'))
-
-    // Ifade fotografin UZERINDE bir oge (suruklenebilir), cip degil.
-    expect(await screen.findByTestId('hikaye-oge-ifade')).toBeTruthy()
-    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, 'kahve-keyfi', [], 'arkadaslar', expect.any(Object))
-    )
-  })
-
-  it('ARKADAS etiketlenebiliyor; Paylas etiketi gonderiyor', async () => {
-    ;(takipcilerimiGetir as jest.Mock).mockResolvedValue([
-      { id: 'kullanici-2', ad: 'Ada', kullaniciAdi: 'ada', avatarUrl: null },
-    ])
-    await render(<HikayeEkleEkrani />)
-    await cek()
-
-    await fireEvent.press(screen.getByTestId('hikaye-arac-arkadas'))
-    await fireEvent.press(await screen.findByText('ada'))
-    expect(await screen.findByTestId('hikaye-oge-etiket-kullanici-2')).toBeTruthy()
-
-    await fireEvent.press(screen.getByTestId('hikaye-paylas'))
-    await waitFor(() =>
-      expect(hikayeEkle).toHaveBeenCalledWith('file:///kamera.jpg', '', null, null, ['kullanici-2'], 'arkadaslar', expect.any(Object))
-    )
+    for (const id of ['hikaye-araclar', 'hikaye-arac-not', 'hikaye-arac-ifade', 'hikaye-arac-arkadas', 'hikaye-ifadeler']) {
+      expect(screen.queryByTestId(id)).toBeNull()
+    }
+    expect(screen.queryByTestId('hikaye-oge-ifade')).toBeNull()
   })
 
   /**

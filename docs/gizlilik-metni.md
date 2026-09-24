@@ -71,16 +71,17 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   toplamlari gorur; hangi puani verdigini yalnizca sen gorursun.
   Check-in fotograflarin, sectigin gorunurluk kuraliyla o mekanin
   fotograf alaninda da gorunur.
-- Hikayelerin: paylastigin fotograf, istege bagli yazi, ifade,
-  arkadas etiketi ve mekan etiketi. Bir arkadasini etiketlersen adi
-  hikayeyi gorenlere gorunur; etiket onayi acik olan biri onaylamadan
-  gorunmez. Her hikayede kimlerin gorebilecegini sen secersin: "Arkadaslar"
+- Hikayelerin (anilarin): anlik cektigin fotograf ve check-in
+  yaptiysan mekan etiketi (2026-09-24'ten once paylasilanlarda yazi,
+  ifade ve arkadas etiketi de olabilir; 24 saatte silinirler). Her hikayede kimlerin gorebilecegini sen secersin: "Arkadaslar"
   (varsayilan) ya da "Herkese" - "Herkese" sectigin hikayeyi profilin
   gizli olsa da uygulamadaki herkes acabilir, engelledigin kisiler
   hicbir halde goremez. Hikaye 24 saat sonra
   fotografiyla birlikte otomatik silinir (arsiv tutulmaz). Kimin
-  hikayeni ne zaman gordugu kaydedilir; bu listeyi yalnizca sen
-  gorursun ve hikaye silinince o kayit da silinir. Bir hikayeyi
+  hikayeni ne zaman gordugu ve hikayene hangi ifadeyi attigi
+  kaydedilir; bu listeyi yalnizca sen gorursun ve hikaye silinince o
+  kayit da silinir. Baskasinin hikayesine attigin ifadeyi de yalnizca
+  o hikayenin sahibi gorur. Bir hikayeyi
   diledigin an kendin silebilirsin.
 
 ## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple

@@ -256,8 +256,25 @@ export async function hikayeEkle(
 }
 
 /** Goruntuleme kaydi; sunucu kendi hikayemde ve gorunmeyen hikayede sessizce atlar. */
-export async function hikayeGoruntulendi(hikayeId: string): Promise<void> {
-  const { error } = await supabase.rpc('hikaye_goruntulendi', { p_hikaye_id: hikayeId })
+/** Gorme kaydi; izleyenin bu aniya DAHA ONCE attigi ifadeyi doner
+ *  (yoksa, ya da kendi animsa null). */
+export async function hikayeGoruntulendi(hikayeId: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc('hikaye_goruntulendi', { p_hikaye_id: hikayeId })
+  if (error) throw new Error(hataMetni(error))
+  return typeof data === 'string' ? data : null
+}
+
+/** Ani karti oran (en/boy): paylasan ve izleyen AYNI kareyi gorur. */
+export const ANI_KART_ORANI = 0.88
+
+/**
+ * ANIYA IFADE (2026-09-24, kullanicinin karari): izleyen, fotografin
+ * altindaki listeden bir ifade atar; paylasan onu "Gorenler"de gorur.
+ * Kisi basina ani basina TEK ifade; null kaldirir. Kurallar sunucuda
+ * (goremeyen atamaz, kendi anina atamazsin, sozluk disi slug red).
+ */
+export async function hikayeIfadesiGonder(hikayeId: string, ifade: string | null): Promise<void> {
+  const { error } = await supabase.rpc('hikaye_ifadesi_gonder', { p_hikaye_id: hikayeId, p_ifade: ifade })
   if (error) throw new Error(hataMetni(error))
 }
 
@@ -267,23 +284,27 @@ export type HikayeGoruntuleyen = {
   kullaniciAdi: string
   avatarUrl: string | null
   goruldu: string
+  /** Attigi ifade (slug) ya da null. */
+  ifade: string | null
 }
 
 /** Yalnizca sahibine (sunucu baskasina bos doner). En yeni izleyen once. */
 export async function hikayeGoruntuleyenleriGetir(hikayeId: string): Promise<HikayeGoruntuleyen[]> {
   const { data, error } = await supabase.rpc('hikaye_goruntuleyenler', { p_hikaye_id: hikayeId })
   if (error) throw new Error(hataMetni(error))
-  const satirlar = (data ?? []) as { kullanici_id: string; goruldu: string }[]
+  const satirlar = (data ?? []) as { kullanici_id: string; goruldu: string; ifade?: string | null }[]
   const ozetler = await profilOzetleriniGetir(satirlar.map((s) => s.kullanici_id))
   return satirlar
     .filter((s) => ozetler[s.kullanici_id])
-    .sort((a, b) => b.goruldu.localeCompare(a.goruldu))
+    // Ifade atanlar ONCE (tepkiler gozden kacmasin), sonra en yeni.
+    .sort((a, b) => Number(!a.ifade) - Number(!b.ifade) || b.goruldu.localeCompare(a.goruldu))
     .map((s) => ({
       id: s.kullanici_id,
       ad: ozetler[s.kullanici_id].ad,
       kullaniciAdi: ozetler[s.kullanici_id].rumuz,
       avatarUrl: ozetler[s.kullanici_id].avatarUrl,
       goruldu: s.goruldu,
+      ifade: s.ifade ?? null,
     }))
 }
 

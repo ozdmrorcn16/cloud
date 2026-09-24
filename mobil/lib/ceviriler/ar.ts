@@ -1037,6 +1037,7 @@ export default {
       en_az_2_karakter_gerekli: 'اكتب حرفين على الأقل.',
       gecersiz_bulunurluk_degeri: 'قيمة توفر غير صالحة.',
       gecersiz_ifade: 'لم يتم التعرف على تعبير الحالة هذا؛ حدّث التطبيق.',
+      kendi_anina_ifade_atamazsin: "لا يمكنك إرسال تعبير إلى لحظتك.",
       en_fazla_5_fotograf: 'يمكنك إضافة 5 صور كحد أقصى إلى تسجيل الوصول.',
       gecersiz_gorunurluk_degeri: 'قيمة ظهور غير صالحة.',
       gecersiz_platform: 'منصة غير صالحة.',
