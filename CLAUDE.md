@@ -62,6 +62,10 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre
   kamera, son fotograflar, Ekle'de coklu). Mekan duzenleme, sikayet,
   profil fotografi eski Kamera/Galeri penceresinde KALIR.
+- Kamera karti SESSIZ GRI KALMAZ: `kameraIzinDurumu` (verildi /
+  sorulabilir / ayarlardan / modul-yok) karta yazilir; "Izin ver" ya da
+  "Ayarlari ac" (OTA `e46b9219`). Kullanici 2026-09-24'te iki kez gri
+  kart gordu - sebep henuz OLCULMEDI (surum 14 mu, izin mi).
 - TELEFONDA DOGRULANACAK: canli onizleme + deklansor + flas/cevir,
   check-in'de alttan galeri + coklu secim.
 
