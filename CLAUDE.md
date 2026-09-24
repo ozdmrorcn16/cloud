@@ -69,7 +69,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   kokten degil `Camera` nesnesinden veriyor; kok duzeyden cagri
   TypeError -> izin HIC sorulmuyordu. `lib/kamera.test.ts` paket
   seklini node_modules dosyasindan kilitliyor.
-- TELEFONDA DOGRULANACAK: canli onizleme + deklansor + flas/cevir,
+- TELEFONDA DOGRULANDI (2026-09-24, kullanici, iOS 1.0.0 (15) + OTA
+  `ae6d66cc`): izin penceresi + canli onizleme aciliyor.
+- HALA DOGRULANACAK: deklansorle cekim + flas/cevir,
   check-in'de alttan galeri + coklu secim.
 
 **Yayin durumu:** en yeni native derlemeler (commit 01481244,
