@@ -81,7 +81,7 @@ export function HikayeSeridi({
               <ArtiCizimi />
             </Pressable>
           </Pressable>
-          <Text style={stiller.ad} numberOfLines={1}>
+          <Text style={[stiller.ad, stiller.adBenim]} numberOfLines={1} testID="hikaye-benim-etiketi">
             {t('hikaye.hikayen')}
           </Text>
         </View>
@@ -158,4 +158,6 @@ const stilleriYap = (renk: Renk) =>
       maxWidth: 68,
     },
     adSoluk: { color: renk.metinIkincil },
+    /** Kendi dairemin "Anlık" yazisi kalin (2026-09-25). */
+    adBenim: { fontFamily: yazi.ekranBasligi },
   })

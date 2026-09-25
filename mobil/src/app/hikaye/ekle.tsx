@@ -531,7 +531,9 @@ const stilleriYap = (renk: Renk) =>
       paddingHorizontal: bosluk.sayfa,
       gap: bosluk.s,
     },
-    baslik: { flex: 1, textAlign: 'center', fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
+    /** Kalin (kullanicinin istegi 2026-09-25): tek dosyali fontta fontWeight
+     *  telefonda islemez, KALIN AILE verilir. */
+    baslik: { flex: 1, textAlign: 'center', fontFamily: yazi.ekranBasligi, fontSize: olcek.govde, color: '#FFFFFF' },
     ustSag: { flexDirection: 'row', gap: bosluk.s, minWidth: 40, justifyContent: 'flex-end' },
     yuvarlakDugme: {
       width: 44,
