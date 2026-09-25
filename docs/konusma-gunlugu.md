@@ -42,8 +42,11 @@ icinde `/hooks` menusunden devre disi birak.
 
 <!-- oturumlar:baslangic -->
 
+- 2026-09-25 — [2026-09-25-ad4a0a16.md](oturumlar/2026-09-25-ad4a0a16.md) — burdan devam edicez
+- 2026-09-24 — [2026-09-24-ad4a0a16.md](oturumlar/2026-09-24-ad4a0a16.md) — burdan devam edicez
 - 2026-09-23 — [2026-09-23-d888d851.md](oturumlar/2026-09-23-d888d851.md) — burdan devam edicez slooin projesine
 - 2026-09-23 — [2026-09-23-b75722cc.md](oturumlar/2026-09-23-b75722cc.md) — açılış animasyonun tasarımına dönelim
+- 2026-09-23 — [2026-09-23-ad4a0a16.md](oturumlar/2026-09-23-ad4a0a16.md) — burdan devam edicez
 - 2026-09-22 — [2026-09-22-d888d851.md](oturumlar/2026-09-22-d888d851.md) — burdan devam edicez slooin projesine
 - 2026-09-22 — [2026-09-22-b75722cc.md](oturumlar/2026-09-22-b75722cc.md) — açılış animasyonun tasarımına dönelim
 - 2026-09-21 — [2026-09-21-d888d851.md](oturumlar/2026-09-21-d888d851.md) — burdan devam edicez slooin projesine

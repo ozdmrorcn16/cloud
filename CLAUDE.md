@@ -76,12 +76,10 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   Cekim dugmeleri kalkar; fotografin ALTINDA ortada animasyonlu KONUM
   HAPI (check-in varsa mekan otomatik + x; yoksa "Konum ekle" -> yakin
   mekanlar), altta Paylas, en altta gizlilik (cekimde gizlilik YOK). PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
-- Anlığa IFADEYI IZLEYEN atar (kartin altinda 108'lik serit; mesaj
-  kutusu + kalp KALKTI), tek ifade, yeniden dokunus kaldirir; paylasan
-  "Gorenler"de gorur (sohbete dusmez, push yok). RPC
-  `hikaye_ifadesi_gonder`, `hikaye_goruntulendi` ifademi doner
-  (migrasyon `20260924110000`, canli `araclar/hikaye-ifade-tepkisi-canli-test.py`).
-  OTA `de9ceeea`. TELEFONDA DOGRULANMADI.
+- Baskasinin anliginda: fotografin ALTINDA standart emojiler (❤️😂😮😢👏🔥🎉😍),
+  en altta "Yanıt ver…"; ikisi de SOHBETE yanit (`hikayeyeYanitVer`).
+  108'lik ifade seridi ve "Gorenler'de ifade" 2026-09-24'te KALKTI
+  (sunucuda `hikaye_ifadesi_gonder` duruyor, istemci cagirmiyor).
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre

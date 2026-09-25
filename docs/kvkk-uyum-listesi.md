@@ -902,3 +902,14 @@ YALNIZCA SAHIBI gorur; gorenler ve ifadeler 24 saatte silinir
 Erisim hakki (m.11): `verilerimi_disa_aktar` `hikayelerim` blogu sure
 suzgeci olmadan okudugu icin arsiv dosyada. Gizlilik metni 7 dil + docs
 guncellendi ("arsiv tutulmaz" ifadesi kalkti).
+
+## Anliga ifade atma KALDIRILDI; standart emoji + yanit sohbete (2026-09-24)
+
+Kullanicinin karari: izleyicide 108'lik ifade seridi yerine fotografin
+altinda standart emojiler, en altta "Yanit ver". Ikisi de sahibine
+SOHBET MESAJI olarak gider (`hikayeyeYanitVer` -> `mesaj_gonder`); yeni
+bir veri kalemi yok, mesajlasma maddesinin dort cevabi gecerli.
+`hikaye_goruntulemeler.ifade` artik YAZILMIYOR (istemci
+`hikaye_ifadesi_gonder` cagirmiyor); sutun ve RPC sunucuda duruyor,
+eski satirlar 24 saatlik cron ile zaten siliniyor. Gizlilik metni 7 dil
++ docs "ifade kaydedilir" ifadesinden arindirildi.

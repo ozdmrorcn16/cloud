@@ -795,7 +795,7 @@ export default {
     paylasiliyor: 'Paylaşılıyor…',
     paylasildi: "Anlığın paylaşıldı",
     mesajGonder: 'Mesaj gönder',
-    yanitYerTutucu: 'Yanıt yaz…',
+    yanitYerTutucu: 'Yanıt ver…',
     yanitOnEki: "Anlığına yanıt:",
     yanitGonderildi: 'Yanıt gönderildi',
     gonder: 'Gönder',
