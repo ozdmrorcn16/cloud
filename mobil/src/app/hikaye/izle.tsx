@@ -35,6 +35,7 @@ import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
+import { KonumHapi } from '../../tasarim/KonumHapi'
 import { ifadeBul, IFADELER } from '../../../lib/ifadeler'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
 import { useStiller } from '../../tasarim/tema-baglami'
@@ -639,19 +640,17 @@ export default function HikayeIzleEkrani() {
               </View>
             </View>
 
+            {/* KONUM fotografin ALTINDA ortada, "Anlık ekle"deki hapla ayni
+                gorunum (kullanicinin istegi 2026-09-24); basinca mekan sayfasi. */}
             {hikaye.mekanAdi ? (
-              <Pressable
-                onPress={() => hikaye.mekanId && router.push(`/harita/${hikaye.mekanId}` as never)}
-                accessibilityRole="link"
-                testID="hikaye-mekan"
-                style={[stiller.mekanHapi, basiliTutuluyor && stiller.gizli]}
-              >
-                <IgneCizimi />
-                <Text style={stiller.mekanHapiYazi} numberOfLines={1}>
-                  {hikaye.mekanAdi}
-                </Text>
-                <Text style={stiller.mekanHapiOk}>›</Text>
-              </Pressable>
+              <View style={basiliTutuluyor && stiller.gizli}>
+                <KonumHapi
+                  ad={hikaye.mekanAdi}
+                  onPress={() => hikaye.mekanId && router.push(`/harita/${hikaye.mekanId}` as never)}
+                  testID="hikaye-mekan"
+                  erisimRolu="link"
+                />
+              </View>
             ) : null}
           </View>
 
@@ -781,15 +780,6 @@ export default function HikayeIzleEkrani() {
   )
 }
 
-function IgneCizimi() {
-  return (
-    <Svg width={11} height={11} viewBox="0 0 24 24">
-      <Path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill="#FFFFFF" />
-      <Circle cx={12} cy={9} r={2.4} fill="#111111" />
-    </Svg>
-  )
-}
-
 /** Etiket satirinin basindaki kucuk kisi ignesi. */
 function KisiIgnesi() {
   return (
@@ -827,7 +817,9 @@ const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     zemin: { flex: 1, backgroundColor: '#000000' },
     sahne: { flex: 1 },
-    kartSutunu: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', gap: bosluk.m },
+    // Fotograf UST CUBUGUN hemen altinda (kullanicinin istegi 2026-09-24:
+    // "fotografi daha yukari tasi"), konum altinda ortada.
+    kartSutunu: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'flex-start', gap: bosluk.l },
     kart: { aspectRatio: ANI_KART_ORANI, borderRadius: 44, overflow: 'hidden', backgroundColor: '#1C1A18' },
     ifadeSeridiIc: { gap: bosluk.s, paddingVertical: 4 },
     ifadeHucre: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -895,17 +887,6 @@ const stilleriYap = (renk: Renk) =>
       maxWidth: 300,
     },
     tuvalIfade: { width: 88, height: 88 },
-    mekanHapi: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      backgroundColor: '#FFFFFF',
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      borderRadius: yuvarlak.hap,
-    },
-    mekanHapiYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: '#17130F', maxWidth: 220 },
-    mekanHapiOk: { fontFamily: yazi.govde, fontSize: olcek.govde, color: '#17130F' },
     etiketHapi: { backgroundColor: 'rgba(255,255,255,0.85)', paddingVertical: 6, paddingHorizontal: 12, borderRadius: yuvarlak.hap },
     etiketHapiYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk, color: '#17130F' },
 

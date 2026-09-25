@@ -26,6 +26,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { useHareket } from '../../tasarim/hareket'
+import { KonumHapi } from '../../tasarim/KonumHapi'
 import { AnlikArsiviIkonu } from '../../tasarim/AnlikArsiviIkonu'
 import { kameraGorunumu, kameraIzinDurumu, type KameraIzinDurumu } from '../../../lib/kamera'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
@@ -239,7 +240,16 @@ export default function HikayeEkleEkrani() {
               {/* KONUM HAPI fotografin altinda, ortada (kullanicinin
                   referansi 2026-09-24). */}
               <View style={stiller.konumKabi} pointerEvents="box-none">
-                <KonumHapi mekan={mekan} onAc={mekanlariAc} onKaldir={() => setMekan(null)} />
+                <KonumHapi
+                  ad={mekan?.ad ?? null}
+                  bosEtiket={t('hikaye.konumEkle')}
+                  onPress={mekanlariAc}
+                  onKaldir={() => setMekan(null)}
+                  kaldirEtiketi={t('hikaye.mekanKaldir')}
+                  testID="hikaye-konum"
+                  metinTestID={mekan ? 'hikaye-mekan' : undefined}
+                  kaldirTestID="hikaye-mekan-kaldir"
+                />
               </View>
             </>
           ) : KameraGorunumu && kameraHazir ? (
@@ -462,106 +472,10 @@ function YuvarlakDugme({
   )
 }
 
-/**
- * KONUM HAPI (kullanicinin referansi 2026-09-24): fotografin uzerinde,
- * koyu yari saydam, ince cerceveli hap. Check-in varsa mekan adi
- * KENDILIGINDEN gelir, yaninda × ile kaldirilir; yoksa "Konum ekle ⌄".
- * Hapin kendisine basmak mekan secimini acar (baskasini ekle/degistir).
- * HAREKET: fotograf gelince asagidan kayarak ve buyuyerek belirir; mekan
- * degisince kucuk bir "pop"; basinca yayli kuculur. "Hareketi azalt"ta
- * hareket yok.
- */
-function KonumHapi({
-  mekan,
-  onAc,
-  onKaldir,
-}: {
-  mekan: { id: string; ad: string } | null
-  onAc: () => void
-  onKaldir: () => void
-}) {
-  const stiller = useStiller(stilleriYap)
-  const { t } = useDil()
-  const hareket = useHareket()
-  const giris = useRef(new Animated.Value(0)).current
-  const pop = useRef(new Animated.Value(1)).current
-  const basma = useRef(new Animated.Value(1)).current
-
-  useEffect(() => {
-    if (!hareket) {
-      giris.setValue(1)
-      return
-    }
-    Animated.spring(giris, { toValue: 1, speed: 12, bounciness: 8, useNativeDriver: true }).start()
-  }, [hareket, giris])
-
-  const ilkRef = useRef(true)
-  useEffect(() => {
-    if (ilkRef.current) {
-      ilkRef.current = false
-      return
-    }
-    if (!hareket) return
-    pop.setValue(0.85)
-    Animated.spring(pop, { toValue: 1, speed: 16, bounciness: 12, useNativeDriver: true }).start()
-  }, [mekan?.id, hareket, pop])
-
-  const bas = (hedef: number) => {
-    if (!hareket) return
-    Animated.spring(basma, { toValue: hedef, speed: hedef < 1 ? 40 : 18, bounciness: hedef < 1 ? 0 : 10, useNativeDriver: true }).start()
-  }
-
-  const olcek = Animated.multiply(Animated.multiply(pop, basma), giris.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }))
-  const kayma = giris.interpolate({ inputRange: [0, 1], outputRange: [14, 0] })
-  return (
-    <Animated.View style={{ opacity: giris, transform: [{ translateY: kayma }, { scale: olcek }] }}>
-      <Pressable
-        onPress={onAc}
-        onPressIn={() => bas(0.94)}
-        onPressOut={() => bas(1)}
-        accessibilityRole="button"
-        accessibilityLabel={mekan ? mekan.ad : t('hikaye.konumEkle')}
-        testID="hikaye-konum"
-        style={stiller.konumHapi}
-      >
-        <IgneCizimi renk={mekan ? '#FE7813' : '#FFFFFF'} boyut={18} />
-        <Text style={stiller.konumYazi} numberOfLines={1} testID={mekan ? 'hikaye-mekan' : undefined}>
-          {mekan ? mekan.ad : t('hikaye.konumEkle')}
-        </Text>
-        {mekan ? (
-          <Pressable
-            onPress={onKaldir}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={t('hikaye.mekanKaldir')}
-            testID="hikaye-mekan-kaldir"
-            style={stiller.konumKaldir}
-          >
-            <Svg width={12} height={12} viewBox="0 0 24 24">
-              <Path d="M6 6l12 12M18 6L6 18" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" />
-            </Svg>
-          </Pressable>
-        ) : (
-          <Text style={stiller.konumOk}>⌄</Text>
-        )}
-      </Pressable>
-    </Animated.View>
-  )
-}
-
 function CarpiCizimi() {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24">
       <Path d="M6 6l12 12M18 6L6 18" stroke="#FFFFFF" strokeWidth={2.8} strokeLinecap="round" />
-    </Svg>
-  )
-}
-
-function IgneCizimi({ renk = '#FFFFFF', boyut = 16 }: { renk?: string; boyut?: number }) {
-  return (
-    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
-      <Path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill={renk} />
-      <Circle cx={12} cy={9} r={2.4} fill="#FFFFFF" />
     </Svg>
   )
 }
@@ -676,30 +590,6 @@ const stilleriYap = (renk: Renk) =>
     paylasSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     secimBasligi: { fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: renk.metin, paddingHorizontal: bosluk.sayfa, paddingVertical: bosluk.s },
     konumKabi: { position: 'absolute', left: 0, right: 0, bottom: 18, alignItems: 'center' },
-    konumHapi: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      maxWidth: 280,
-      paddingVertical: 11,
-      paddingLeft: 14,
-      paddingRight: 12,
-      borderRadius: yuvarlak.hap,
-      backgroundColor: 'rgba(20,18,16,0.62)',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.22)',
-    },
-    konumYazi: { flexShrink: 1, fontFamily: yazi.govde, fontWeight: '600', fontSize: olcek.govde, color: '#FFFFFF' },
-    konumOk: { fontFamily: yazi.govde, fontSize: olcek.govde, color: '#FFFFFF', marginTop: -4 },
-    konumKaldir: {
-      width: 22,
-      height: 22,
-      borderRadius: 11,
-      backgroundColor: 'rgba(255,255,255,0.22)',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginLeft: 2,
-    },
     paylasGenis: { flex: 1 },
     paylas: {
       minWidth: 124,
