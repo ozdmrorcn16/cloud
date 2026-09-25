@@ -636,7 +636,7 @@ export default {
     tepkiGonderildi: '{{emoji}} отправлено',
     sonrakiKisi: 'Следующий человек',
     oncekiKisi: 'Предыдущий человек',
-    hikayen: "Твой момент",
+    hikayen: "Момент",
     hikayeEkle: "Добавить момент",
     kisininHikayesi: "Момент: {{ad}}",
     ekleBaslik: "Добавить момент",

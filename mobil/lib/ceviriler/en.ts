@@ -642,7 +642,7 @@ export default {
     tepkiGonderildi: '{{emoji}} sent',
     sonrakiKisi: 'Next person',
     oncekiKisi: 'Previous person',
-    hikayen: "Your moment",
+    hikayen: "Moment",
     hikayeEkle: "Add moment",
     kisininHikayesi: "{{ad}}'s moment",
     ekleBaslik: "Add moment",

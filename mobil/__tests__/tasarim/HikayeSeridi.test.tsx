@@ -49,7 +49,7 @@ describe('HikayeSeridi', () => {
   it('hikayem yokken kendi dairem ekleme ekranini acar; arti rozeti de', async () => {
     await render(<HikayeSeridi gruplar={[]} ben={ben} />)
     expect(screen.getByTestId('hikaye-seridi')).toBeTruthy()
-    expect(screen.getByText('Anlığın')).toBeTruthy()
+    expect(screen.getByText('Anlık')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('hikaye-benim'))
     expect(mockPush).toHaveBeenCalledWith('/hikaye/ekle')
     await fireEvent.press(screen.getByTestId('hikaye-ekle-rozeti'))

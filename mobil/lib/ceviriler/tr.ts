@@ -779,7 +779,7 @@ export default {
     tepkiGonderildi: '{{emoji}} gönderildi',
     sonrakiKisi: 'Sonraki kişi',
     oncekiKisi: 'Önceki kişi',
-    hikayen: "Anlığın",
+    hikayen: "Anlık",
     hikayeEkle: "Anlık ekle",
     kisininHikayesi: "{{ad}} anlığı",
     ekleBaslik: "Anlık ekle",
