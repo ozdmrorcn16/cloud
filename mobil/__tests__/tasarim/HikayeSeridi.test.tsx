@@ -75,6 +75,22 @@ describe('HikayeSeridi', () => {
     expect(mockPush).toHaveBeenCalledWith('/hikaye/izle?kullanici=burak')
   })
 
+  it('BOLUMLU HALKA: anlik sayisi kadar dilim; gorulmemis yeni, gorulen goruldu', async () => {
+    const g = grup('ayse')
+    const [h] = g.hikayeler
+    g.hikayeler = [
+      { ...h, id: 'a1', gordum: true },
+      { ...h, id: 'a2', gordum: false },
+      { ...h, id: 'a3', gordum: false },
+    ]
+    await render(<HikayeSeridi gruplar={[g, grup('burak', { gorulmemisVar: false, hikayeler: [{ ...h, gordum: true }] })]} ben={ben} />)
+    expect(screen.getByTestId('hikaye-dilim-ayse-0-goruldu')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-dilim-ayse-1-yeni')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-dilim-ayse-2-yeni')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-dilim-ayse-3-yeni')).toBeNull()
+    expect(screen.getByTestId('hikaye-dilim-burak-0-goruldu')).toBeTruthy()
+  })
+
   it('profil okunamadiysa (ben=null) serit yine cizilir', async () => {
     await render(<HikayeSeridi gruplar={[]} ben={null} />)
     expect(screen.getByTestId('hikaye-benim')).toBeTruthy()

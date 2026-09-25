@@ -1,0 +1,99 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:'Instrument Sans',sans-serif;background:#f3f1ee;padding:16px;width:812px}
+h2{font-size:22px;margin:4px 0 12px;color:#17130F}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kol{background:#fff;border-radius:16px;padding:14px;border:1px solid #e6e1db}
+.kol h3{font-size:15px;margin-bottom:10px;color:#17130F}
+.kol p{font-size:12px;color:#8a8178;margin-top:10px;line-height:1.4}
+.serit{display:flex;gap:10px;overflow:hidden}
+.kisi{width:66px;flex:none;display:flex;flex-direction:column;align-items:center;position:relative}
+.ad{margin-top:6px;font-size:12px;color:#17130F;white-space:nowrap;max-width:66px;overflow:hidden;text-overflow:ellipsis}
+.ad.b{font-weight:700}.ad.s{color:#8a8178}
+.av{border-radius:50%;background-size:cover}
+.p0{background:linear-gradient(135deg,#d9c3ae,#9b7a5e)}.p1{background:linear-gradient(135deg,#b7c6d9,#56708f)}
+.p2{background:linear-gradient(135deg,#e3b8c1,#a05b6b)}.p3{background:linear-gradient(135deg,#c9d9b7,#6f8f56)}
+.arti{position:absolute;right:0;top:44px;width:22px;height:22px;border-radius:50%;background:#FE7813;border:2px solid #fff;color:#fff;font-weight:700;font-size:15px;line-height:17px;text-align:center}
+/* Su an */
+.h0{width:66px;height:66px;border-radius:50%;border:2px solid #FE7813;display:flex;align-items:center;justify-content:center}
+.h0.g{border-color:#e6e1db}
+/* A gradyan kalin halka + bosluk */
+.hA{width:66px;height:66px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#FE7813,#FFB23F,#FF4E6A,#FE7813)}
+.hA.g{background:#dcd6cf;padding:1.5px}
+.hA .ic{width:100%;height:100%;border-radius:50%;background:#fff;padding:2.5px}
+.hA .ic .av{width:100%;height:100%}
+/* B yeni rozeti */
+.yeni{position:absolute;top:56px;left:50%;transform:translateX(-50%);background:#FE7813;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;border:2px solid #fff;letter-spacing:.3px}
+/* C bolumlu halka */
+svg{display:block}
+/* D kart */
+.kart{width:78px;flex:none;height:118px;border-radius:14px;position:relative;overflow:hidden}
+.kart .foto{position:absolute;inset:0}
+.kart .kart-ad{position:absolute;left:6px;right:6px;bottom:6px;color:#fff;font-size:11px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kart .mini{position:absolute;top:6px;left:6px;width:28px;height:28px;border-radius:50%;border:2.5px solid #FE7813}
+.kart.g .mini{border-color:#fff}
+.kart.g{opacity:.75}
+.kart.ben{background:#fbeee3;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:10px}
+.kart.ben .buyukarti{width:30px;height:30px;border-radius:50%;background:#FE7813;color:#fff;font-weight:700;font-size:20px;line-height:28px;text-align:center;margin-bottom:8px;border:2px solid #fff}
+.f1{background:linear-gradient(160deg,#3a4a66,#9aa9c2 60%,#e2c9a0)}
+.f2{background:linear-gradient(160deg,#6b3e2e,#d98e5a 60%,#f5d7a8)}
+.f3{background:linear-gradient(160deg,#294d3a,#7fae8a 60%,#dfe8c9)}
+</style></head><body>
+<h2>Ana sayfa anlık şeridi — yeni anlıklar nasıl görünsün?</h2>
+<div class="grid">
+
+<div class="kol"><h3>Şu an</h3>
+<div class="serit">
+ <div class="kisi"><div class="h0" style="border-color:transparent"><div class="av p0" style="width:60px;height:60px"></div></div><div class="arti">+</div><div class="ad b">Anlık</div></div>
+ <div class="kisi"><div class="h0"><div class="av p1" style="width:58px;height:58px"></div></div><div class="ad">ozdemrs</div></div>
+ <div class="kisi"><div class="h0"><div class="av p2" style="width:58px;height:58px"></div></div><div class="ad">elifk</div></div>
+ <div class="kisi"><div class="h0 g"><div class="av p3" style="width:58px;height:58px"></div></div><div class="ad s">mert</div></div>
+</div><p>İnce turuncu halka = yeni, gri = görüldü. Fark az.</p></div>
+
+<div class="kol"><h3>A · Kalın gradyan halka</h3>
+<div class="serit">
+ <div class="kisi"><div class="h0" style="border-color:transparent"><div class="av p0" style="width:60px;height:60px"></div></div><div class="arti">+</div><div class="ad b">Anlık</div></div>
+ <div class="kisi"><div class="hA"><div class="ic"><div class="av p1"></div></div></div><div class="ad b">ozdemrs</div></div>
+ <div class="kisi"><div class="hA"><div class="ic"><div class="av p2"></div></div></div><div class="ad b">elifk</div></div>
+ <div class="kisi"><div class="hA g"><div class="ic"><div class="av p3"></div></div></div><div class="ad s">mert</div></div>
+</div><p>3 pt turuncu→sarı→pembe halka, avatarla arasında beyaz boşluk; yeni olanın adı kalın. Görülen: ince gri, ad soluk. Tanıdık ve net.</p></div>
+
+<div class="kol"><h3>B · Halka + "YENİ" rozeti</h3>
+<div class="serit">
+ <div class="kisi"><div class="h0" style="border-color:transparent"><div class="av p0" style="width:60px;height:60px"></div></div><div class="arti">+</div><div class="ad b">Anlık</div></div>
+ <div class="kisi"><div class="hA"><div class="ic"><div class="av p1"></div></div></div><div class="yeni">YENİ</div><div class="ad b">ozdemrs</div></div>
+ <div class="kisi"><div class="hA"><div class="ic"><div class="av p2"></div></div></div><div class="yeni">YENİ</div><div class="ad b">elifk</div></div>
+ <div class="kisi"><div class="hA g"><div class="ic"><div class="av p3"></div></div></div><div class="ad s">mert</div></div>
+</div><p>A'nın halkası + dairenin altına küçük turuncu "YENİ" hapı. En açık mesaj; kalabalık şeritte biraz yoğun.</p></div>
+
+<div class="kol"><h3>C · Bölümlü halka (her anlık bir dilim)</h3>
+<div class="serit">
+ <div class="kisi"><div class="h0" style="border-color:transparent"><div class="av p0" style="width:60px;height:60px"></div></div><div class="arti">+</div><div class="ad b">Anlık</div></div>
+ <div class="kisi" id="c1"></div>
+ <div class="kisi" id="c2"></div>
+ <div class="kisi" id="c3"></div>
+</div><p>Halka, kişinin anlık sayısı kadar dilime bölünür: görülmemiş dilimler turuncu, görülenler gri. Kaç yeni anlık kaldığı bir bakışta okunur.</p></div>
+
+<div class="kol" style="grid-column:1/3"><h3>D · Önizleme kartları</h3>
+<div class="serit" style="gap:8px">
+ <div class="kart ben"><div class="buyukarti">+</div><div style="font-size:12px;font-weight:700;color:#17130F">Anlık</div></div>
+ <div class="kart"><div class="foto f1"></div><div class="mini av p1"></div><div class="kart-ad">ozdemrs</div></div>
+ <div class="kart"><div class="foto f2"></div><div class="mini av p2"></div><div class="kart-ad">elifk</div></div>
+ <div class="kart g"><div class="foto f3"></div><div class="mini av p3"></div><div class="kart-ad">mert</div></div>
+ <div class="kart"><div class="foto f2" style="filter:hue-rotate(40deg)"></div><div class="mini av p0"></div><div class="kart-ad">ayse</div></div>
+ <div class="kart"><div class="foto f1" style="filter:hue-rotate(-40deg)"></div><div class="mini av p2"></div><div class="kart-ad">deniz</div></div>
+</div><p>Daireler yerine anlığın FOTOĞRAFINDAN küçük dikey kartlar (3:4 değil, şerit için 2:3); köşede turuncu halkalı mini avatar. Yeni anlığın ne olduğu açmadan görünür. Görülen kart soluk. Şerit daha yüksek (~120 pt) ve en "canlı" seçenek; fotoğraflar önceden indirildiği için veri kullanımı artar.</p></div>
+</div>
+<script>
+function dilimli(id, av, n, gorulen){
+ const r=31, c=2*Math.PI*r, bosl=n>1?5:0, uz=c/n-bosl; let s='';
+ for(let i=0;i<n;i++){const renk=i<gorulen?'#dcd6cf':'#FE7813';
+  s+=`<circle cx="33" cy="33" r="${r}" fill="none" stroke="${renk}" stroke-width="${i<gorulen?2:3}" stroke-linecap="round" stroke-dasharray="${uz} ${c-uz}" stroke-dashoffset="${-(i*c/n)+c/4}"/>`}
+ const ad=document.getElementById(id).dataset;
+ document.getElementById(id).innerHTML=`<div style="position:relative;width:66px;height:66px"><svg width="66" height="66">${s}</svg><div class="av ${av}" style="position:absolute;left:6px;top:6px;width:54px;height:54px"></div></div><div class="ad ${gorulen>=n?'s':'b'}">${id=='c1'?'ozdemrs':id=='c2'?'elifk':'mert'}</div>`}
+dilimli('c1','p1',3,1);dilimli('c2','p2',1,0);dilimli('c3','p3',4,4);
+document.fonts.load('700 16px "Instrument Sans"').then(()=>document.body.setAttribute('data-hazir',''))
+</script>
+</body></html>

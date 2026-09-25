@@ -80,6 +80,11 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   en altta "Yanıt ver…"; ikisi de SOHBETE yanit (`hikayeyeYanitVer`).
   108'lik ifade seridi ve "Gorenler'de ifade" 2026-09-24'te KALKTI
   (sunucuda `hikaye_ifadesi_gonder` duruyor, istemci cagirmiyor).
+- Ana sayfa anlik seridi (2026-09-25, secim "A ile C"): halka kisinin anlik
+  SAYISI kadar dilim; gorulmemis dilim kalin turuncu->sari->pembe gradyan,
+  gorulen ince gri; avatarla halka arasi beyaz bosluk; yenisi olanin adi
+  kalin. "Anlık" ve "Anlık ekle" yazilari kalin (tek dosyali fontta
+  fontWeight telefonda ISLEMEZ - kalin AILE `yazi.ekranBasligi` verilir).
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre
