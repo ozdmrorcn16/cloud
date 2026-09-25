@@ -172,6 +172,10 @@ export default function MesajlarEkrani() {
                 friction={2}
                 rightThreshold={40}
                 overshootRight={false}
+                // Saga kaydirma satirda is yapmiyor: yakalama, ANA SEKME
+                // kaydirmasina (onceki sekme) birak (2026-09-24). Sola
+                // kaydirma "Sil"i acar - satir sekmeden once (10 px) kazanir.
+                dragOffsetFromLeftEdge={10000}
                 renderRightActions={() => (
                   <Pressable
                     style={stiller.silButonu}

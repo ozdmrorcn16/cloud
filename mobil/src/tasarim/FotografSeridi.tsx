@@ -8,6 +8,7 @@ import {
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from 'react-native'
+import { yatayAlan } from '../../lib/yatay-kilit'
 import { useDil } from '../../lib/dil'
 import { YakinlastirilabilirGorsel } from './YakinlastirilabilirGorsel'
 import { yazi, olcek, bosluk, type Renk } from './tema'
@@ -69,6 +70,7 @@ export function FotografSeridi({
     >
       {cokluMu ? (
         <FlatList
+          {...yatayAlan}
           testID={`${testID}-sayfalar`}
           data={urller}
           keyExtractor={(u, i) => `${i}-${u}`}

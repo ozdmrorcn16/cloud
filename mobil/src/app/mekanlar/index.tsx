@@ -18,6 +18,7 @@ import {
   ActionSheetIOS,
   Linking,
 } from 'react-native'
+import { yatayAlan } from '../../../lib/yatay-kilit'
 import { useRouter, useFocusEffect } from 'expo-router'
 import Svg, { Path, Circle } from 'react-native-svg'
 import { Image } from 'expo-image'
@@ -1356,7 +1357,7 @@ export default function KesfetEkrani() {
 
       {/* SECILI TURLER gorunur duruyor - listenin neden kisa oldugu okunsun. */}
       {seciliTurler.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.seciliSerit}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.seciliSerit} {...yatayAlan}>
           {seciliTurler.map((tur) => (
             <Pressable
               key={tur}
@@ -1592,6 +1593,8 @@ export default function KesfetEkrani() {
         style={stiller.haritaAlani}
         onLayout={(o) => setHaritaAlaniYuksekligi(o.nativeEvent.layout.height)}
         testID="kesfet-harita-cercevesi"
+        // Haritada kaydirmak haritayi gezdirir, sekme DEGISTIRMEZ.
+        {...yatayAlan}
       >
         <CanliHarita
           merkez={cihazKonumu}

@@ -1,4 +1,5 @@
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
+import { yatayAlan } from '../../lib/yatay-kilit'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import type { HikayeGrubu } from '../../lib/hikaye'
@@ -51,7 +52,7 @@ export function HikayeSeridi({
 
   return (
     <View style={stiller.kok} testID="hikaye-seridi">
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.serit}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.serit} {...yatayAlan}>
         {/* Kendi dairem */}
         <View style={stiller.kisi}>
           <Pressable

@@ -330,6 +330,13 @@ Istemci (React Native / Expo)
   (liste karti, panel ve cubuk ayni anahtari paylasabilir).
   `ceviri-tamlik` kullanilan anahtarin VARLIGINI olcmez. `t()`
   parametresiz cagrida yer tutucu "[missing ...]" olur.
+- ANA SEKMELER ARASI SAG/SOL KAYDIRMA (2026-09-24): `SekmeKaydirma` kok
+  duzende Slot'u sarar; yalnizca `/`, `/bildirimler`, `/mekanlar`,
+  `/mesajlar`, `/profil`. Bu ekranlara YENI YATAY kaydirilan oge (yatay
+  liste, harita, carousel) eklenirse kokune `{...yatayAlan}`
+  (`lib/yatay-kilit.ts`) konur, yoksa sekme de degisir. RNGH Swipeable
+  kendi 10 px esigiyle kazanir; saga hareketi olmayan satirlarda
+  `dragOffsetFromLeftEdge` buyuk verilir (mesajlar).
 - Girdili kaydirmasiz ekran = `FormSayfasi` (`flexGrow:1`). Kendi ust
   payini koyan ekran `_layout.tsx` `kendiUstPayiniKoyar` listesinde.
   Kisa ekran esigi `useWindowDimensions().height < 720`.

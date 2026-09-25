@@ -15,6 +15,7 @@ import { DilSaglayici, useDil } from '../../lib/dil'
 import { temaTercihiniYukle } from '../../lib/tema-tercihi'
 import { bildirimleriBaslat, bildirimeDokunmaDinle } from '../../lib/bildirim'
 import { AltGezinme } from '../tasarim/AltGezinme'
+import { SekmeKaydirma } from '../tasarim/SekmeKaydirma'
 import { PaylasimKalkani } from '../tasarim/PaylasimKalkani'
 import { type Renk } from '../tasarim/tema'
 import { StatusBar } from 'expo-status-bar'
@@ -210,7 +211,13 @@ function YonlendirmeKontrolu() {
       >
         {/* Gidilecek baska bir ekran varsa mevcut ekran HIC cizilmez -
             yanlis ekranin bir kare gorunmesi bundan boyle mumkun degil. */}
-        {yukleniyor || hedef ? null : <Slot />}
+        {/* Ana sekmeler arasi sag/sol kaydirma (2026-09-24); yalnizca bes
+            kok ekranda etkin, digerlerinde gecirgen. */}
+        {yukleniyor || hedef ? null : (
+          <SekmeKaydirma>
+            <Slot />
+          </SekmeKaydirma>
+        )}
       </View>
       {uygulamaIcinde && !hikayeEkrani && <AltGezinme />}
       {/* Paylasim sayfasi kapanisindan sonraki dokunuslari yutan

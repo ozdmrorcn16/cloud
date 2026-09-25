@@ -29,6 +29,7 @@ jest.mock('expo-router', () => {
     Slot: () => React.createElement(View, { testID: 'ekran-icerigi' }),
     useRouter: () => ({ replace: mockRouterReplace, push: mockRouterPush }),
     useSegments: () => mockSegments,
+    usePathname: () => '/',
   }
 })
 
