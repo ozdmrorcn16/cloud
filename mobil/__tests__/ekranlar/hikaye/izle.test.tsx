@@ -197,6 +197,18 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('hikaye-fotograf-a1')).toBeTruthy()
   })
 
+  it('KOYU CAM MENU (Secenek A, 2026-09-26): kendi anligimda baslik "Anlığın" + gorenler bilgisi', async () => {
+    mockParams = { kullanici: 'ben' }
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-b1')
+    await fireEvent.press(screen.getByTestId('hikaye-menu'))
+    expect(await screen.findByText('Anlığın')).toBeTruthy()
+    expect(screen.getByText(/ · 3 kişi gördü/)).toBeTruthy()
+    expect(screen.getByTestId('hikaye-menu-sil')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('anlik-menu-vazgec'))
+    await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
+  })
+
   it('baskasinin hikayesinde menu Sikayet et: sikayet ekranina hedef=hikaye ile gider', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')

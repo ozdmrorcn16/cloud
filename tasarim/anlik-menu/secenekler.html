@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:'Instrument Sans',sans-serif;background:#f3f1ee;padding:16px;width:1000px}
+h2{font-size:22px;margin:4px 0 12px;color:#17130F}
+.grid{display:flex;gap:14px}
+.kol{flex:1}
+.kol h3{font-size:15px;margin:0 0 8px;color:#17130F}
+.kol p{font-size:12px;color:#8a8178;margin-top:8px;line-height:1.45}
+.tel{position:relative;height:520px;border-radius:26px;overflow:hidden;background:#0b0b0b}
+.foto{position:absolute;left:14px;right:14px;top:70px;height:330px;border-radius:18px;background:linear-gradient(170deg,#3a3630,#1b1917 70%)}
+.ust{position:absolute;top:18px;left:14px;right:14px;display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px}
+.ust .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#8a4a6a,#2b1a22)}
+.ust .z{font-weight:500;opacity:.8;font-size:11px}
+.ust .sag{margin-left:auto;display:flex;gap:6px}
+.ust .d{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+.perde{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.perdeBulanik{position:absolute;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+.tutamac{width:36px;height:4px;border-radius:2px;margin:0 auto 12px}
+/* Su an */
+.s0{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 0 26px}
+.s0 .tutamac{background:#e3ded7}
+.s0 .satir{padding:14px 20px;font-size:15px;display:flex;gap:12px;align-items:center}
+.s0 .kirmizi{color:#C0392B;font-weight:600}
+.s0 hr{border:0;border-top:1px solid #eee;margin:0 10px}
+.s0 .gri{color:#666}
+/* A koyu cam */
+.sA{position:absolute;left:10px;right:10px;bottom:12px;background:rgba(38,35,32,.92);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:10px 10px 10px}
+.sA .tutamac{background:rgba(255,255,255,.25)}
+.sA .bas{display:flex;gap:10px;align-items:center;padding:4px 6px 12px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.sA .kucukfoto{width:34px;height:44px;border-radius:8px;background:linear-gradient(170deg,#6b645a,#2a2723)}
+.sA .bas b{color:#fff;font-size:14px;display:block}.sA .bas span{color:rgba(255,255,255,.6);font-size:11px}
+.sA .satir{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:rgba(255,77,64,.12);color:#FF6B5E;font-weight:700;font-size:15px}
+.sA .ik{width:34px;height:34px;border-radius:11px;background:rgba(255,77,64,.2);display:flex;align-items:center;justify-content:center}
+.sA .vaz{margin-top:8px;text-align:center;color:#fff;font-weight:600;font-size:15px;padding:13px;border-radius:16px;background:rgba(255,255,255,.08)}
+/* B yuzen kartlar */
+.sB{position:absolute;left:10px;right:10px;bottom:12px}
+.kart{background:#fff;border-radius:20px;overflow:hidden}
+.sB .satir{display:flex;align-items:center;gap:12px;padding:15px 16px;font-size:15px;font-weight:700;color:#D63A2F;justify-content:center}
+.sB .ac{padding:10px 16px 12px;text-align:center;font-size:12px;color:#8a8178;border-bottom:1px solid #eee;line-height:1.35}
+.sB .vaz{margin-top:8px;text-align:center;font-weight:700;font-size:15px;padding:15px;color:#17130F}
+/* C ikon kutulu beyaz */
+.sC{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:26px 26px 0 0;padding:10px 14px 22px}
+.sC .tutamac{background:#e3ded7}
+.sC .bas{display:flex;gap:10px;align-items:center;padding:2px 4px 12px}
+.sC .kucukfoto{width:36px;height:48px;border-radius:9px;background:linear-gradient(170deg,#6b645a,#2a2723)}
+.sC .bas b{font-size:15px;color:#17130F;display:block}.sC .bas span{font-size:12px;color:#8a8178}
+.sC .satir{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:#FDF1EF;color:#C0392B;font-weight:700;font-size:15px}
+.sC .ik{width:36px;height:36px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sC .ok{margin-left:auto;color:#d7a9a2}
+.sC .vaz{margin-top:10px;text-align:center;font-weight:600;font-size:15px;padding:13px;border-radius:16px;border:1px solid #e6e1db;color:#17130F}
+.anim{font-size:11px;color:#17130F;background:#fff;border:1px solid #e6e1db;border-radius:10px;padding:8px 10px;margin-top:8px;line-height:1.45}
+</style></head><body>
+<h2>Anlık menüsü (üç nokta) — seçenekler</h2>
+<div class="grid">
+<div class="kol"><h3>Şu an</h3><div class="tel"><div class="ust"><div class="av"></div>byorcun <span class="z">14 saat önce</span><div class="sag"><div class="d"></div><div class="d"></div></div></div><div class="foto"></div><div class="perde"></div>
+<div class="s0"><div class="tutamac"></div><div class="satir kirmizi">🗑 Anlığı sil</div><hr><div class="satir gri">Vazgeç</div></div></div>
+<p>Uygulamanın genel beyaz alt sayfası; koyu ekranın üzerinde sert duruyor, satırlar sade.</p></div>
+
+<div class="kol"><h3>A · Koyu cam kart</h3><div class="tel"><div class="ust"><div class="av"></div>byorcun <span class="z">14 saat önce</span><div class="sag"><div class="d"></div><div class="d"></div></div></div><div class="foto"></div><div class="perdeBulanik"></div>
+<div class="sA"><div class="tutamac"></div>
+<div class="bas"><div class="kucukfoto"></div><div><b>Anlığın</b><span>14 saat önce · 0 kişi gördü</span></div></div>
+<div class="satir"><div class="ik">🗑</div>Anlığı sil</div>
+<div class="vaz">Vazgeç</div></div></div>
+<p>İzleyicinin karanlığına uyan koyu, hafif saydam kart; kenarlardan boşluklu "yüzer". Üstte anlığın küçük önizlemesi. Arka plan bulanıklaşır.</p>
+<div class="anim"><b>Animasyon:</b> kart alttan yaylı kayar (hafif sekme), önizleme ve satırlar 40 ms arayla belirir; basınca satır %96'ya küçülür; arkadaki fotoğraf %94'e geri çekilir.</div></div>
+
+<div class="kol"><h3>B · iOS tarzı iki kart</h3><div class="tel"><div class="ust"><div class="av"></div>byorcun <span class="z">14 saat önce</span><div class="sag"><div class="d"></div><div class="d"></div></div></div><div class="foto"></div><div class="perde"></div>
+<div class="sB"><div class="kart"><div class="ac">Bu anlık kalıcı olarak silinir ve arşivinden de kalkar.</div><div class="satir">Anlığı sil</div></div><div class="kart vaz">Vazgeç</div></div></div>
+<p>Apple'ın eylem sayfası düzeni: eylemler bir kartta, Vazgeç ayrı kartta, ikisi de ortalı. Tanıdık; açıklama satırı ayrı onay penceresine gerek bırakmayabilir.</p>
+<div class="anim"><b>Animasyon:</b> iki kart ayrı ayrı alttan yaylı gelir (Vazgeç 60 ms sonra); basınca kart hafif kararır ve küçülür.</div></div>
+
+<div class="kol"><h3>C · Başlıklı, ikon kutulu</h3><div class="tel"><div class="ust"><div class="av"></div>byorcun <span class="z">14 saat önce</span><div class="sag"><div class="d"></div><div class="d"></div></div></div><div class="foto"></div><div class="perde"></div>
+<div class="sC"><div class="tutamac"></div>
+<div class="bas"><div class="kucukfoto"></div><div><b>Anlığın</b><span>14 saat önce · 0 kişi gördü</span></div></div>
+<div class="satir"><div class="ik">🗑</div>Anlığı sil<span class="ok">›</span></div>
+<div class="vaz">Vazgeç</div></div></div>
+<p>Bugünkü beyaz sayfa korunur ama zenginleşir: önizlemeli başlık, açık kırmızı zeminli satır, beyaz kutuda ikon, çerçeveli Vazgeç.</p>
+<div class="anim"><b>Animasyon:</b> A ile aynı: yaylı giriş, sıralı beliren satırlar, basınca küçülme; çöp kutusu ikonunun kapağı basınca hafif açılır.</div></div>
+</div>
+<script>document.fonts.load('700 16px "Instrument Sans"').then(()=>document.body.setAttribute('data-hazir',''))</script>
+</body></html>

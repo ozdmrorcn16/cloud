@@ -783,6 +783,7 @@ export default {
     hikayeEkle: "Anlık ekle",
     kisininHikayesi: "{{ad}} anlığı",
     ekleBaslik: "Anlık ekle",
+    anligin: "Anlığın",
     kamera: 'Fotoğraf çek',
     galeri: 'Galeriden seç',
     kameraIzni: 'Fotoğraf çekmek için kamera izni gerekiyor.',

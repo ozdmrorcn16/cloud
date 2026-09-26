@@ -640,6 +640,7 @@ export default {
     hikayeEkle: "إضافة لحظة",
     kisininHikayesi: "لحظة {{ad}}",
     ekleBaslik: "إضافة لحظة",
+    anligin: "لحظتك",
     kamera: 'التقاط صورة',
     galeri: 'اختيار من المعرض',
     kameraIzni: 'يلزم إذن الكاميرا لالتقاط صورة.',

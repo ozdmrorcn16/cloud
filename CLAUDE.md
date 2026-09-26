@@ -93,6 +93,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - Anlik izleyici (2026-09-26): kendi anligimda "Anlığı sil" dugmesi YOK
   (yalnizca uc nokta menusunde); uc nokta ve × `HareketliDugme`
   (`src/tasarim/HareketliDugme.tsx`, ekle ile ortak).
+  Uc nokta menusu `AnlikMenusu` (Secenek A "koyu cam kart": onizlemeli
+  baslik, yayli giris, kademeli satirlar, arkadaki kart %94); diger
+  ekranlar beyaz `SecimPenceresi`nde kalir.
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre

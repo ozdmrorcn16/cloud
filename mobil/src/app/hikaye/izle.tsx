@@ -32,8 +32,9 @@ import { gorecelZaman } from '../../../lib/zaman'
 import { konumuDuzelt, VARSAYILAN_KONUM } from '../../../lib/hikaye'
 import { useHareket } from '../../tasarim/hareket'
 import { Avatar } from '../../tasarim/Avatar'
-import { SecimPenceresi, UcNoktaIkonu, CopIkonu } from '../../tasarim/SecimPenceresi'
+import { UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import { HareketliDugme } from '../../tasarim/HareketliDugme'
+import { AnlikMenusu, type AnlikMenuSecimi } from '../../tasarim/AnlikMenusu'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
@@ -358,6 +359,11 @@ export default function HikayeIzleEkrani() {
    * "yukari da kapatir" kurali DEGISMEDI, o ayri bir ekran.
    */
   const surukleme = useRef(new Animated.Value(0)).current
+  // Menu acikken arkadaki anlik %94'e geri cekilir (Secenek A, 2026-09-26).
+  const menuGeriCekme = useRef(new Animated.Value(1)).current
+  useEffect(() => {
+    Animated.spring(menuGeriCekme, { toValue: menuAcik ? 0.94 : 1, speed: 16, bounciness: menuAcik ? 4 : 6, useNativeDriver: true }).start()
+  }, [menuAcik, menuGeriCekme])
   const yatay = useRef(new Animated.Value(0)).current
   const solma = surukleme.interpolate({ inputRange: [-320, 0, 320], outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' })
 
@@ -542,9 +548,15 @@ export default function HikayeIzleEkrani() {
   const altPay = guvenliAlan.bottom + ALT_BLOK_BOYU
   const kartEn = Math.max(200, Math.min(ekranEni - bosluk.sayfa * 2, (ekranBoyu - ustPay - altPay - (grup.benimMi ? 56 : 112)) * ANI_KART_ORANI))
 
-  const secimler = grup.benimMi
-    ? [{ etiket: t('hikaye.sil'), ikon: <CopIkonu />, yikici: true, testID: 'hikaye-menu-sil', onSec: () => setSilOnayi(true) }]
-    : [{ etiket: t('kullanici.sikayetEt'), yikici: true, testID: 'hikaye-menu-sikayet', onSec: sikayetEt }]
+  const secimler: AnlikMenuSecimi[] = grup.benimMi
+    ? [{ etiket: t('hikaye.sil'), ikon: 'cop', yikici: true, testID: 'hikaye-menu-sil', onSec: () => setSilOnayi(true) }]
+    : [{ etiket: t('kullanici.sikayetEt'), ikon: 'bayrak', yikici: true, testID: 'hikaye-menu-sikayet', onSec: sikayetEt }]
+  const menuAltBilgi = [
+    gorecelZaman(hikaye.olusturuldu, t),
+    grup.benimMi && anlikAktifMi(hikaye.bitis) ? t('hikaye.kisiGordu', { sayi: hikaye.goruntulenmeSayisi }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <GestureHandlerRootView style={stiller.zemin} testID="hikaye-izle">
@@ -563,8 +575,8 @@ export default function HikayeIzleEkrani() {
               box-none: fotografa dokunus alttaki ileri/geri bolgelerine
               gecer; yalnizca eski anilardaki etiketler ve mekan satiri
               dokunulabilir. */}
-          <View
-            style={[stiller.kartSutunu, { paddingTop: ustPay, paddingBottom: altPay }]}
+          <Animated.View
+            style={[stiller.kartSutunu, { paddingTop: ustPay, paddingBottom: altPay, transform: [{ scale: menuGeriCekme }] }]}
             pointerEvents="box-none"
           >
             <View style={[stiller.kart, { width: kartEn }]} pointerEvents="box-none" testID="hikaye-kart">
@@ -666,7 +678,7 @@ export default function HikayeIzleEkrani() {
                 />
               </View>
             ) : null}
-          </View>
+          </Animated.View>
 
           {/* Ust: kimlik (ilerleme cubugu YOK, 2026-09-24) */}
           {/* BASILI TUTARKEN ARAYUZ GIZLENIR (Instagram): fotografin onunde
@@ -758,7 +770,14 @@ export default function HikayeIzleEkrani() {
         </Animated.View>
       </GestureDetector>
 
-      <SecimPenceresi acikMi={menuAcik} onKapat={() => setMenuAcik(false)} secimler={secimler} />
+      <AnlikMenusu
+        acikMi={menuAcik}
+        onKapat={() => setMenuAcik(false)}
+        fotografUrl={hikaye.fotografUrl}
+        baslik={grup.benimMi ? t('hikaye.anligin') : grup.kullaniciAdi}
+        altBilgi={menuAltBilgi}
+        secimler={secimler}
+      />
       <OnayPenceresi
         acikMi={silOnayi}
         baslik={t('hikaye.silBaslik')}

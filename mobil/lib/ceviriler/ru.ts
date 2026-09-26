@@ -640,6 +640,7 @@ export default {
     hikayeEkle: "Добавить момент",
     kisininHikayesi: "Момент: {{ad}}",
     ekleBaslik: "Добавить момент",
+    anligin: "Твой момент",
     kamera: 'Сделать фото',
     galeri: 'Выбрать из галереи',
     kameraIzni: 'Для съёмки нужно разрешение на камеру.',
