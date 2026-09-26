@@ -28,6 +28,7 @@ import { cihazKonumunuAl } from '../../../lib/konum'
 import { yakinMekanlariGetir } from '../../../lib/mekan'
 import { SecimPenceresi } from '../../tasarim/SecimPenceresi'
 import { useHareket } from '../../tasarim/hareket'
+import { KonumHapi } from '../../tasarim/KonumHapi'
 import { AnlikArsiviIkonu } from '../../tasarim/AnlikArsiviIkonu'
 import { kameraGorunumu, kameraIzinDurumu, type KameraIzinDurumu } from '../../../lib/kamera'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from '../../tasarim/tema'
@@ -64,7 +65,7 @@ const KART_ORANI = ANI_KART_ORANI
 /** Ust cubugun guvenli alan altindaki boyu (kart bunun altinda baslar). */
 const UST_CUBUK_BOYU = 64
 /** Kartin altindaki blogun (paylas satiri + gizlilik) yaklasik boyu. */
-const ALT_BLOK_BOYU = 214
+const ALT_BLOK_BOYU = 150
 
 export default function HikayeEkleEkrani() {
   const stiller = useStiller(stilleriYap)
@@ -238,6 +239,20 @@ export default function HikayeEkleEkrani() {
           {fotografUri ? (
             <>
               <Image source={{ uri: fotografUri }} style={StyleSheet.absoluteFill} contentFit="cover" testID="hikaye-onizleme" />
+              {/* KONUM HAPI fotografin uzerinde, altta ortada (kullanicinin
+                  karari 2026-09-26: "onceki hali gibi"). */}
+              <View style={stiller.konumKabi} pointerEvents="box-none">
+                <KonumHapi
+                  ad={mekan?.ad ?? null}
+                  bosEtiket={t('hikaye.konumEkle')}
+                  onPress={mekanlariAc}
+                  onKaldir={() => setMekan(null)}
+                  kaldirEtiketi={t('hikaye.mekanKaldir')}
+                  testID="hikaye-konum"
+                  metinTestID={mekan ? 'hikaye-mekan' : undefined}
+                  kaldirTestID="hikaye-mekan-kaldir"
+                />
+              </View>
             </>
           ) : KameraGorunumu && kameraHazir ? (
             <KameraGorunumu
@@ -321,80 +336,34 @@ export default function HikayeEkleEkrani() {
             )}
           </View>
         ) : (
-          /* DUZENLEME (kullanicinin referansi 2026-09-26): kartin altinda
-             "Tekrar cek" + "Konum ekle" yan yana; en altta "Kimler
-             gorebilir?" etiketi, altinda gorunurluk + Paylas yan yana.
-             Butun dugmeler sirayla yayli belirir, basinca yayli kuculur. */
-          <>
-            <View style={[stiller.ikiliSatir, { width: kartEn }]}>
-              <HareketliDugme
-                sira={0}
-                onPress={() => setFotografUri(null)}
-                etiket={t('hikaye.tekrarCek')}
-                testID="hikaye-tekrar-cek"
-                style={stiller.griDugme}
-              >
-                <KameraCizimi boyut={22} />
-                <Text style={stiller.griDugmeYazi} numberOfLines={1}>
-                  {t('hikaye.tekrarCek')}
-                </Text>
-              </HareketliDugme>
-              <HareketliDugme
-                sira={1}
-                onPress={mekanlariAc}
-                etiket={mekan ? mekan.ad : t('hikaye.konumEkle')}
-                testID="hikaye-konum"
-                style={stiller.griDugme}
-              >
-                <IgneCizimi />
-                <Text style={[stiller.griDugmeYazi, stiller.esnekYazi]} numberOfLines={1} testID={mekan ? 'hikaye-mekan' : undefined}>
-                  {mekan ? mekan.ad : t('hikaye.konumEkle')}
-                </Text>
-                {mekan ? (
-                  <Pressable
-                    onPress={() => setMekan(null)}
-                    hitSlop={10}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.mekanKaldir')}
-                    testID="hikaye-mekan-kaldir"
-                  >
-                    <KucukCarpiCizimi />
-                  </Pressable>
-                ) : (
-                  <AsagiOkCizimi />
-                )}
-              </HareketliDugme>
-            </View>
-
-            <View style={[stiller.altBlok, { width: kartEn }]}>
-              <Text style={stiller.kimlerEtiketi}>{t('hikaye.kimlerGorebilir')}</Text>
-              <View style={stiller.ikiliSatir}>
-                <HareketliDugme
-                  sira={2}
-                  onPress={() => setGorunurlukAcik(true)}
-                  etiket={t('hikaye.gorunurlukSec')}
-                  testID="hikaye-gorunurluk"
-                  style={stiller.griDugme}
-                >
-                  <KisilerCizimi />
-                  <Text style={stiller.griDugmeYazi} numberOfLines={1}>
-                    {t(gorunurluk === 'herkese_acik' ? 'hikaye.herkese' : 'hikaye.arkadaslar')}
-                  </Text>
-                  <AsagiOkCizimi />
-                </HareketliDugme>
-                <HareketliDugme
-                  sira={3}
-                  onPress={paylas}
-                  disabled={gonderiliyor}
-                  etiket={t('hikaye.paylas')}
-                  testID="hikaye-paylas"
-                  style={[stiller.paylas, gonderiliyor && stiller.paylasPasif]}
-                >
-                  {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
-                </HareketliDugme>
-              </View>
-            </View>
-          </>
+          /* DUZENLEME (kullanicinin karari 2026-09-26): fotografin hemen
+             altinda solda gizlilik (Arkadaslar), saginda Paylas; ikisi de
+             hareketli dugme. */
+          <View style={[stiller.ikiliSatir, { width: kartEn }]}>
+            <HareketliDugme
+              sira={0}
+              onPress={() => setGorunurlukAcik(true)}
+              etiket={t('hikaye.gorunurlukSec')}
+              testID="hikaye-gorunurluk"
+              style={stiller.griDugme}
+            >
+              <KisilerCizimi />
+              <Text style={stiller.griDugmeYazi} numberOfLines={1}>
+                {t(gorunurluk === 'herkese_acik' ? 'hikaye.herkese' : 'hikaye.arkadaslar')}
+              </Text>
+              <AsagiOkCizimi />
+            </HareketliDugme>
+            <HareketliDugme
+              sira={1}
+              onPress={paylas}
+              disabled={gonderiliyor}
+              etiket={t('hikaye.paylas')}
+              testID="hikaye-paylas"
+              style={[stiller.paylas, gonderiliyor && stiller.paylasPasif]}
+            >
+              {gonderiliyor ? <ActivityIndicator color="#FFFFFF" /> : <Text style={stiller.paylasYazi}>{t('hikaye.paylas')}</Text>}
+            </HareketliDugme>
+          </View>
         )}
       </View>
 
@@ -483,7 +452,11 @@ function HareketliDugme({
 
   const olcek = Animated.multiply(basma, giris.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }))
   // Genis dugmeler satirda esit paylassin: dis kap flex alir.
-  const disEsnek = StyleSheet.flatten(style)?.flex !== undefined
+  // Ic Pressable'a flex VERILMEZ: sutun yonlu kapta flex:1 = flexBasis 0,
+  // yukseklik 0 olur (2026-09-26 telefonda zemin ve yazi kayboldu).
+  const duz = StyleSheet.flatten(style) ?? {}
+  const disEsnek = duz.flex !== undefined
+  const { flex: _flex, ...icStil } = duz
   return (
     <Animated.View style={[disEsnek && { flex: 1 }, { opacity: giris, transform: [{ scale: olcek }] }]}>
       <Pressable
@@ -498,7 +471,7 @@ function HareketliDugme({
           disabled !== undefined ? { disabled } : secili === undefined ? undefined : { selected: secili }
         }
         testID={testID}
-        style={style}
+        style={icStil}
       >
         {children}
       </Pressable>
@@ -531,9 +504,9 @@ function CarpiCizimi() {
   )
 }
 
-function KameraCizimi({ boyut = 28 }: { boyut?: number }) {
+function KameraCizimi() {
   return (
-    <Svg width={boyut} height={boyut} viewBox="0 0 24 24">
+    <Svg width={28} height={28} viewBox="0 0 24 24">
       <Path d="M4 8h3l1.4-2h7.2L17 8h3v11H4V8z" stroke="#FFFFFF" strokeWidth={1.7} fill="none" strokeLinejoin="round" />
       <Circle cx={12} cy={13} r={3.6} stroke="#FFFFFF" strokeWidth={1.7} fill="none" />
     </Svg>
@@ -558,27 +531,10 @@ function CevirCizimi() {
   )
 }
 
-function IgneCizimi() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FE7813" />
-      <Circle cx={12} cy={10} r={2.6} fill="#1C1A18" />
-    </Svg>
-  )
-}
-
 function AsagiOkCizimi() {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
       <Path d="M6 9l6 6 6-6" stroke="#FFFFFF" strokeWidth={2.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  )
-}
-
-function KucukCarpiCizimi() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
-      <Path d="M7 7l10 10M17 7L7 17" stroke="#FFFFFF" strokeWidth={2.6} strokeLinecap="round" />
     </Svg>
   )
 }
@@ -663,9 +619,7 @@ const stilleriYap = (renk: Renk) =>
       backgroundColor: '#242220',
     },
     griDugmeYazi: { fontFamily: yazi.govdeOrta, fontSize: olcek.govde + 1, color: '#FFFFFF', flexShrink: 1 },
-    esnekYazi: { flexShrink: 1 },
-    altBlok: { marginTop: 'auto', gap: 10 },
-    kimlerEtiketi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: 'rgba(255,255,255,0.5)' },
+    konumKabi: { position: 'absolute', left: 0, right: 0, bottom: 18, alignItems: 'center' },
     /* Tek sutun: kart + alttakiler. Kart iki modda da ayni yerde. */
     sutun: { ...StyleSheet.absoluteFill, alignItems: 'center', gap: bosluk.l, paddingHorizontal: bosluk.sayfa },
     kart: { aspectRatio: KART_ORANI, borderRadius: 28, overflow: 'hidden', backgroundColor: '#1C1A18' },

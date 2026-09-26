@@ -640,8 +640,6 @@ export default {
     hikayeEkle: "إضافة لحظة",
     kisininHikayesi: "لحظة {{ad}}",
     ekleBaslik: "إضافة لحظة",
-    tekrarCek: "إعادة الالتقاط",
-    kimlerGorebilir: "من يمكنه الرؤية؟",
     kamera: 'التقاط صورة',
     galeri: 'اختيار من المعرض',
     kameraIzni: 'يلزم إذن الكاميرا لالتقاط صورة.',

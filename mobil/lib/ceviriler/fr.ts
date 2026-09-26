@@ -640,8 +640,6 @@ export default {
     hikayeEkle: "Ajouter un instant",
     kisininHikayesi: "Instant de {{ad}}",
     ekleBaslik: "Ajouter un instant",
-    tekrarCek: "Reprendre",
-    kimlerGorebilir: "Qui peut le voir ?",
     kamera: 'Prendre une photo',
     galeri: 'Choisir dans la galerie',
     kameraIzni: "L'autorisation de l'appareil photo est nécessaire pour prendre une photo.",

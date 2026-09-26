@@ -783,8 +783,6 @@ export default {
     hikayeEkle: "Anlık ekle",
     kisininHikayesi: "{{ad}} anlığı",
     ekleBaslik: "Anlık ekle",
-    tekrarCek: "Tekrar çek",
-    kimlerGorebilir: "Kimler görebilir?",
     kamera: 'Fotoğraf çek',
     galeri: 'Galeriden seç',
     kameraIzni: 'Fotoğraf çekmek için kamera izni gerekiyor.',

@@ -640,8 +640,6 @@ export default {
     hikayeEkle: "Moment posten",
     kisininHikayesi: "Moment von {{ad}}",
     ekleBaslik: "Moment posten",
-    tekrarCek: "Neu aufnehmen",
-    kimlerGorebilir: "Wer kann das sehen?",
     kamera: 'Foto aufnehmen',
     galeri: 'Aus Galerie wählen',
     kameraIzni: 'Zum Fotografieren wird die Kameraberechtigung benötigt.',
