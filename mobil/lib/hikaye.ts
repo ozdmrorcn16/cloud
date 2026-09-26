@@ -208,9 +208,9 @@ export async function hikayeAkisiniGetir(kullaniciId?: string): Promise<HikayeGr
   }
   for (const grup of gruplar.values()) {
     grup.hikayeler.sort((a, b) => a.olusturuldu.localeCompare(b.olusturuldu))
-    // Kendi hikayelerimde "gorulmemis" halkasi anlamsiz - sunucu gordum'u
-    // sahibi icin true veriyor ama burada da acikca kapatiyoruz.
-    grup.gorulmemisVar = !grup.benimMi && grup.hikayeler.some((h) => !h.gordum)
+    // Kendi anligimda da yeni/goruldu (2026-09-26): sunucu sahibe
+    // `sahip_gordu` bayragini veriyor.
+    grup.gorulmemisVar = grup.hikayeler.some((h) => !h.gordum)
   }
   return hikayeGruplariniSirala([...gruplar.values()])
 }

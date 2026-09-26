@@ -86,7 +86,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - Ana sayfa anlik seridi (2026-09-25, secim "A ile C"): halka kisinin anlik
   SAYISI kadar dilim; gorulmemis dilim kalin turuncu->sari->pembe gradyan,
   gorulen ince gri; avatarla halka arasi beyaz bosluk; yenisi olanin adi
-  kalin. "Anlık" ve "Anlık ekle" yazilari kalin (tek dosyali fontta
+  kalin. KENDI dairemde de ayni halka (anligim varsa); sahibin izlemesi
+  `hikayeler.sahip_gordu` bayragina yazilir, Gorenler'e DEGIL (2026-09-26).
+  "Anlık" ve "Anlık ekle" yazilari kalin (tek dosyali fontta
   fontWeight telefonda ISLEMEZ - kalin AILE `yazi.ekranBasligi` verilir).
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.

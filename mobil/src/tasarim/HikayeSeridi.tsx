@@ -75,13 +75,31 @@ export function HikayeSeridi({
             testID="hikaye-benim"
             style={({ pressed }) => [pressed && stiller.basili]}
           >
-            <View style={[stiller.halka, stiller.halkaSade]}>
-              {ben ? (
-                <Avatar fotografUrl={ben.avatarUrl} ad={ben.ad} kullaniciAdi={ben.kullaniciAdi} cap={AVATAR} />
-              ) : (
-                <View style={stiller.bosAvatar} />
-              )}
-            </View>
+            {/* Anligim varsa arkadaslarinki gibi bolumlu halka: yeni dilim
+                gradyan, izledigim dilim gri (2026-09-26). */}
+            {benimGrubum ? (
+              <View style={stiller.dilimliKap}>
+                <DilimliHalka
+                  kimlik={benimGrubum.kullaniciId}
+                  goruldu={benimGrubum.hikayeler.map((h) => h.gordum)}
+                  griRenk={stiller.halkaGri.borderColor as string}
+                />
+                <Avatar
+                  fotografUrl={ben?.avatarUrl ?? benimGrubum.avatarUrl}
+                  ad={ben?.ad ?? benimGrubum.ad}
+                  kullaniciAdi={ben?.kullaniciAdi ?? benimGrubum.kullaniciAdi}
+                  cap={ARKADAS_AVATAR}
+                />
+              </View>
+            ) : (
+              <View style={[stiller.halka, stiller.halkaSade]}>
+                {ben ? (
+                  <Avatar fotografUrl={ben.avatarUrl} ad={ben.ad} kullaniciAdi={ben.kullaniciAdi} cap={AVATAR} />
+                ) : (
+                  <View style={stiller.bosAvatar} />
+                )}
+              </View>
+            )}
             {/* Arti rozeti: hikayem varken de ekleme yolu acik kalsin. */}
             <Pressable
               onPress={ekle}

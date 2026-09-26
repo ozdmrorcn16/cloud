@@ -913,3 +913,14 @@ bir veri kalemi yok, mesajlasma maddesinin dort cevabi gecerli.
 `hikaye_ifadesi_gonder` cagirmiyor); sutun ve RPC sunucuda duruyor,
 eski satirlar 24 saatlik cron ile zaten siliniyor. Gizlilik metni 7 dil
 + docs "ifade kaydedilir" ifadesinden arindirildi.
+
+## Kendi anligini izleme bayragi (2026-09-26)
+
+- Hangi veri: `hikayeler.sahip_gordu` - sahibi kendi anligini izledi mi
+  (tek bit). Baskasi hakkinda veri degil.
+- Dayanak: sozlesmenin ifasi (seritte kendi anliginin yeni/goruldu
+  gorunumu).
+- Sure: anligin kendisiyle ayni (anlik satiri silinince gider).
+- Kim gorur: yalnizca sahibi (`hikaye_akisi` baskasina bu bayragi
+  vermez; baskasi icin gordum = kendi goruntuleme kaydi). Sahibin
+  izlemesi Gorenler listesine YAZILMAZ.

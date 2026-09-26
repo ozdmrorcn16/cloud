@@ -164,6 +164,17 @@ describe('HikayeIzleEkrani', () => {
     expect(mockBack).toHaveBeenCalledTimes(1)
   })
 
+  it('KENDI yeni anligimi izleyince goruldu bayragi icin kayit gider (2026-09-26)', async () => {
+    mockParams = { kullanici: 'ben' }
+    ;(hikayeAkisiniGetir as jest.Mock).mockResolvedValue([
+      { kullaniciId: 'ben', ad: 'Ben', kullaniciAdi: 'ben', avatarUrl: null, benimMi: true, gorulmemisVar: true,
+        hikayeler: [hikaye('b9', 'ben', { gordum: false })] },
+    ])
+    await render(<HikayeIzleEkrani />)
+    expect(await screen.findByTestId('hikaye-fotograf-b9')).toBeTruthy()
+    await waitFor(() => expect(hikayeGoruntulendi).toHaveBeenCalledWith('b9'))
+  })
+
   it('kendi hikayemde "N kisi gordu" ve Sil (onayli); goruntuleme kaydi YOK', async () => {
     mockParams = { kullanici: 'ben' }
     await render(<HikayeIzleEkrani />)

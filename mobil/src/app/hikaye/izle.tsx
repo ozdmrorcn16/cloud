@@ -246,7 +246,9 @@ export default function HikayeIzleEkrani() {
     if (!hikaye || !grup) return
     if (!duraklatildiRef.current && !basiliRef.current) oynat(0)
     else ilerleme.setValue(0)
-    if (!grup.benimMi && !hikaye.gordum) {
+    // Kendi anligimda da (2026-09-26): sunucu sahibi Gorenler'e yazmaz,
+    // yalnizca `sahip_gordu` bayragini koyar.
+    if (!hikaye.gordum && !arsiv) {
       hikayeGoruntulendi(hikaye.id).catch(() => {})
       // Yerelde isaretle: geri gelince tekrar kaydetmesin, serit dogru cizsin.
       setGruplar((g) =>

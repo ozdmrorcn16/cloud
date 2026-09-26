@@ -91,6 +91,20 @@ describe('HikayeSeridi', () => {
     expect(screen.getByTestId('hikaye-dilim-burak-0-goruldu')).toBeTruthy()
   })
 
+  it('KENDI ANLIGIM da bolumlu halka: yeni dilim yeni, izledigim goruldu (2026-09-26)', async () => {
+    const g = grup('ben', { benimMi: true })
+    const [h] = g.hikayeler
+    g.hikayeler = [{ ...h, id: 'b1', gordum: true }, { ...h, id: 'b2', gordum: false }]
+    await render(<HikayeSeridi gruplar={[g]} ben={ben} />)
+    expect(screen.getByTestId('hikaye-dilim-ben-0-goruldu')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-dilim-ben-1-yeni')).toBeTruthy()
+  })
+
+  it('anligim yokken kendi dairemde halka YOK', async () => {
+    await render(<HikayeSeridi gruplar={[]} ben={ben} />)
+    expect(screen.queryByTestId('hikaye-halka-ben')).toBeNull()
+  })
+
   it('profil okunamadiysa (ben=null) serit yine cizilir', async () => {
     await render(<HikayeSeridi gruplar={[]} ben={null} />)
     expect(screen.getByTestId('hikaye-benim')).toBeTruthy()
