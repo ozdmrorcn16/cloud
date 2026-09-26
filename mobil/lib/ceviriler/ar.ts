@@ -640,6 +640,7 @@ export default {
     hikayeEkle: "إضافة لحظة",
     kisininHikayesi: "لحظة {{ad}}",
     ekleBaslik: "إضافة لحظة",
+    dahaFazlaIfade: "المزيد من التعابير",
     anligin: "لحظتك",
     kamera: 'التقاط صورة',
     galeri: 'اختيار من المعرض',

@@ -294,6 +294,17 @@ export type HikayeGoruntuleyen = {
 }
 
 /** Yalnizca sahibine (sunucu baskasina bos doner). En yeni izleyen once. */
+/**
+ * Anliga birakilacak EN SIK ifadeler (2026-09-26): once kisinin kendi en
+ * sik kullandiklari, sonra genel siklik, sonra sozluk sirasi. Sunucu
+ * yalnizca slug doner; sozlukte olmayan (eski surum) istemcide elenir.
+ */
+export async function sikIfadeleriGetir(adet = 6): Promise<string[]> {
+  const { data, error } = await supabase.rpc('sik_ifadeler', { p_adet: adet })
+  if (error) throw new Error(hataMetni(error))
+  return ((data ?? []) as { slug: string }[]).map((s) => s.slug)
+}
+
 export async function hikayeGoruntuleyenleriGetir(hikayeId: string): Promise<HikayeGoruntuleyen[]> {
   const { data, error } = await supabase.rpc('hikaye_goruntuleyenler', { p_hikaye_id: hikayeId })
   if (error) throw new Error(hataMetni(error))

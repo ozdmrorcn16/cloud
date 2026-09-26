@@ -80,10 +80,10 @@ isleri) dogrulanarak yazildi; her madde ilgili kaynaga atif yapar.
   goremez. Anlik 24 saat sonra seritten kalkar ve artik yalnizca sen
   gorursun: fotografi ve mekani senin anlik arsivinde, sen silene ya da
   hesabini silene kadar saklanir (2026-09-24'ten beri; once 24 saatte
-  silinirdi). Kimin anligini ne zaman gordugu kaydedilir; bu listeyi
-  yalnizca sen gorursun ve 24 saat dolunca silinir. Bir anliga verdigin
-  emoji tepkisi ve yazdigin yanit, o anligin sahibine sohbette mesaj
-  olarak gider. Bir anligi diledigin an kendin
+  silinirdi). Kimin anligini ne zaman gordugu ve anligina hangi ifadeyi
+  biraktigi kaydedilir; bu listeyi yalnizca sen gorursun ve 24 saat
+  dolunca silinir. Baskasinin anligina biraktigin ifadeyi yalnizca o
+  anligin sahibi gorur; yazdigin yanit sohbette mesaj olarak gider. Bir anligi diledigin an kendin
   silebilirsin.
 
 ## 2. Ne amacla isliyoruz - ve hangi hukuki sebeple
@@ -249,7 +249,7 @@ FAZLA** (tek bir kural degil):
   (`istek_gunlugu`) 2 gunden eski satirlar her gun otomatik silinir.
 - Check-in koordinatin (madde 3'te anlatildigi gibi) check-in aniya
   donustugunde otomatik olarak silinir (null'a cekilir).
-- Anliklarin goruntulenme kayitlari ve etiketler
+- Anliklarin goruntulenme kayitlari, birakilan ifadeler ve etiketler
   paylasimdan 24 saat sonra her saat calisan bir temizlik isiyle
   silinir; anligin fotografi ve mekani yalnizca sahibinin gordugu
   arsivde, sahibi silene ya da hesabini silene kadar kalir (hesap

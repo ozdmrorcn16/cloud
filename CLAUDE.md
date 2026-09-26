@@ -80,10 +80,11 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   kullanicinin karari; "Tekrar cek" ve "Kimler gorebilir?" YOK). Cekimde
   gizlilik YOK. TUZAK: Animated.View icindeki Pressable'a `flex:1` verme -
   sutun kapta yukseklik 0 olur (telefonda zemin/yazi kayboldu, jest gormez). PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
-- Baskasinin anliginda: fotografin ALTINDA standart emojiler (❤️😂😮😢👏🔥🎉😍),
-  en altta "Yanıt ver…"; ikisi de SOHBETE yanit (`hikayeyeYanitVer`).
-  108'lik ifade seridi ve "Gorenler'de ifade" 2026-09-24'te KALKTI
-  (sunucuda `hikaye_ifadesi_gonder` duruyor, istemci cagirmiyor).
+- Baskasinin anliginda (2026-09-26): fotografin ALTINDA en sik 6 IFADE (108'lik
+  set; `sik_ifadeler` RPC: once kisinin kendi sikliklari, sonra genel adet) +
+  ARTI (IfadeSecici, butun liste). Dokunmak ifadeyi ANLIGA birakir
+  (`hikaye_ifadesi_gonder`, sahibi Gorenler'de gorur), yeniden dokunmak
+  kaldirir. Standart emoji -> sohbet yolu KALKTI. En altta "Yanıt ver…" sohbete.
 - Ana sayfa anlik seridi: DAIRE DEGIL, cekim kartinin kucugu (3:4, 72x96,
   oval kose; 2026-09-26 secim B): icinde EN YENI anligin fotografi, sol altta
   kucuk profil resmi (anligi olmayan kendi kartimda profil resmim). Kenardaki

@@ -19,6 +19,8 @@ import { useDil } from '../../../lib/dil'
 import {
   hikayeAkisiniGetir,
   hikayeGoruntulendi,
+  hikayeIfadesiGonder,
+  sikIfadeleriGetir,
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
   hikayeyeYanitVer,
@@ -37,7 +39,7 @@ import { HareketliDugme } from '../../tasarim/HareketliDugme'
 import { AnlikMenusu, type AnlikMenuSecimi } from '../../tasarim/AnlikMenusu'
 import { AnlikSilOnayi } from '../../tasarim/AnlikSilOnayi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
-import { IfadeCipi } from '../../tasarim/IfadeSecici'
+import { IfadeCipi, IfadeSecici } from '../../tasarim/IfadeSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
 import { KonumHapi } from '../../tasarim/KonumHapi'
 import { ifadeBul } from '../../../lib/ifadeler'
@@ -98,6 +100,18 @@ export default function HikayeIzleEkrani() {
   const [silOnayi, setSilOnayi] = useState(false)
   const [gorenlerAcik, setGorenlerAcik] = useState(false)
   const [yanitDurumu, setYanitDurumu] = useState<string | null>(null)
+  /** Baskasinin anliklarina biraktigim ifade (anlik id -> slug | null);
+   *  gorme kaydi sunucudan doner, secim yerelde aninda yazilir. */
+  const [ifadelerim, setIfadelerim] = useState<Record<string, string | null>>({})
+  const ifadelerimRef = useRef(ifadelerim)
+  ifadelerimRef.current = ifadelerim
+  const [sikIfadeler, setSikIfadeler] = useState<string[]>([])
+  const [ifadeSeciciAcik, setIfadeSeciciAcik] = useState(false)
+  useEffect(() => {
+    sikIfadeleriGetir(6)
+      .then((l) => setSikIfadeler(l.filter((slug) => ifadeBul(slug))))
+      .catch(() => {})
+  }, [])
   const [mesaj, setMesaj] = useState('')
   const { width: ekranEni, height: ekranBoyu } = useWindowDimensions()
   /** Fotograf alaninin olcusu: etiketler oransal konumlarindan piksele
@@ -250,8 +264,16 @@ export default function HikayeIzleEkrani() {
     else ilerleme.setValue(0)
     // Kendi anligimda da (2026-09-26): sunucu sahibi Gorenler'e yazmaz,
     // yalnizca `sahip_gordu` bayragini koyar.
+    // Baskasinin anliginda HER acilista (sunucu tekrari yok sayar): donen
+    // deger bu anliga daha once biraktigim ifade - satir secili acilsin.
+    if (!arsiv && !grup.benimMi && !(hikaye.id in ifadelerimRef.current)) {
+      const id = hikaye.id
+      hikayeGoruntulendi(id)
+        .then((slug) => setIfadelerim((m) => (id in m ? m : { ...m, [id]: slug ?? null })))
+        .catch(() => {})
+    }
     if (!hikaye.gordum && !arsiv) {
-      hikayeGoruntulendi(hikaye.id).catch(() => {})
+      if (grup.benimMi) hikayeGoruntulendi(hikaye.id).catch(() => {})
       // Yerelde isaretle: geri gelince tekrar kaydetmesin, serit dogru cizsin.
       setGruplar((g) =>
         g
@@ -487,14 +509,20 @@ export default function HikayeIzleEkrani() {
     setTimeout(() => setYanitDurumu(null), 1800)
   }
 
-  /** STANDART EMOJI TEPKISI (kullanicinin karari 2026-09-24): emoji anlik
-   *  sahibine SOHBETTE yanit olarak gider (Instagram deseni). */
-  async function tepkiGonder(emoji: string) {
-    if (!grup || grup.benimMi) return
+  /** IFADE BIRAK (kullanicinin istegi 2026-09-26): dokunmak ifadeyi
+   *  anliga birakir, ayni ifadeye yeniden dokunmak kaldirir. Iyimser;
+   *  sunucu reddederse eski secime doner ve sebep yazilir. Paylasan
+   *  ifadeyi "Gorenler"de gorur. */
+  async function ifadeSec(slug: string | null) {
+    if (!hikaye || !grup || grup.benimMi) return
+    const id = hikaye.id
+    const onceki = ifadelerim[id] ?? null
+    const yeni = slug === onceki ? null : slug
+    setIfadelerim((m) => ({ ...m, [id]: yeni }))
     try {
-      await hikayeyeYanitVer(grup.kullaniciId, t('hikaye.yanitOnEki'), emoji)
-      durumYaz(t('hikaye.tepkiGonderildi', { emoji }))
+      await hikayeIfadesiGonder(id, yeni)
     } catch (e) {
+      setIfadelerim((m) => ({ ...m, [id]: onceki }))
       durumYaz(e instanceof Error ? e.message : t('ortak.birSorunOldu'))
     }
   }
@@ -664,7 +692,15 @@ export default function HikayeIzleEkrani() {
 
             {/* STANDART EMOJILER fotografin BITTIGI yerde (kullanicinin
                 karari 2026-09-24), yalnizca baskasinin anliginda. */}
-            {!grup.benimMi ? <EmojiSatiri onSec={tepkiGonder} gizli={basiliTutuluyor} /> : null}
+            {!grup.benimMi ? (
+              <IfadeSatiri
+                sik={sikIfadeler}
+                secili={ifadelerim[hikaye.id] ?? null}
+                onSec={ifadeSec}
+                onDahaFazla={() => setIfadeSeciciAcik(true)}
+                gizli={basiliTutuluyor}
+              />
+            ) : null}
 
             {/* KONUM fotografin ALTINDA ortada, "Anlık ekle"deki hapla ayni
                 gorunum (kullanicinin istegi 2026-09-24); basinca mekan sayfasi. */}
@@ -780,6 +816,17 @@ export default function HikayeIzleEkrani() {
         baslik={grup.benimMi ? t('hikaye.anligin') : grup.kullaniciAdi}
         altBilgi={menuAltBilgi}
         secimler={secimler}
+      />
+      <IfadeSecici
+        acikMi={ifadeSeciciAcik}
+        secili={ifadelerim[hikaye.id] ?? null}
+        onSec={(slug) => {
+          // Secici ayni ifadeye dokununca null verir; ifadeSec'in kendi
+          // gecis mantigi ile karismasin diye dogrudan yazilir.
+          const onceki = ifadelerim[hikaye.id] ?? null
+          void ifadeSec(slug ?? onceki)
+        }}
+        onKapat={() => setIfadeSeciciAcik(false)}
       />
       <AnlikSilOnayi
         acikMi={silOnayi}
@@ -899,39 +946,71 @@ function GozCizimi() {
   )
 }
 
-/** Standart emoji tepkileri (Instagram seti). */
-const HIZLI_TEPKILER = ['❤️', '😂', '😮', '😢', '👏', '🔥', '🎉', '😍'] as const
-
 /**
- * Fotografin altindaki emoji satiri. Dokunulan emoji yayli ziplar
- * (1.35 -> 1); "Hareketi azalt"ta ziplama yok.
+ * IFADE SATIRI (2026-09-26): fotografin altinda en sik kullanilan birkac
+ * ifade + sonda ARTI (butun liste, IfadeSecici). Secili ifade turuncu
+ * halkali; secim sik listede yoksa basa eklenir. Dokunulan ifade yayli
+ * ziplar; "Hareketi azalt"ta ziplama yok. Zemin her iki temada siyah
+ * izleyici - renkler sabit.
  */
-function EmojiSatiri({ onSec, gizli }: { onSec: (emoji: string) => void; gizli: boolean }) {
+function IfadeSatiri({
+  sik,
+  secili,
+  onSec,
+  onDahaFazla,
+  gizli,
+}: {
+  sik: string[]
+  secili: string | null
+  onSec: (slug: string) => void
+  onDahaFazla: () => void
+  gizli: boolean
+}) {
   const stiller = useStiller(stilleriYap)
   const { t } = useDil()
   const hareket = useHareket()
-  const olcekler = useRef(HIZLI_TEPKILER.map(() => new Animated.Value(1))).current
-  function sec(i: number) {
+  const liste = (secili && !sik.includes(secili) ? [secili, ...sik.slice(0, 5)] : sik.slice(0, 6)).filter((s) => ifadeBul(s))
+  const olcekler = useRef<Record<string, Animated.Value>>({}).current
+  const olcek = (slug: string) => (olcekler[slug] ??= new Animated.Value(1))
+  function sec(slug: string) {
     if (hareket) {
-      olcekler[i].setValue(1.35)
-      Animated.spring(olcekler[i], { toValue: 1, speed: 14, bounciness: 14, useNativeDriver: true }).start()
+      olcek(slug).setValue(1.3)
+      Animated.spring(olcek(slug), { toValue: 1, speed: 14, bounciness: 14, useNativeDriver: true }).start()
     }
-    onSec(HIZLI_TEPKILER[i])
+    onSec(slug)
   }
   return (
-    <View style={[stiller.emojiSatiri, gizli && stiller.gizli]} testID="hikaye-emojiler" pointerEvents={gizli ? 'none' : 'box-none'}>
-      {HIZLI_TEPKILER.map((emoji, i) => (
-        <Pressable
-          key={emoji}
-          onPress={() => sec(i)}
-          accessibilityRole="button"
-          accessibilityLabel={t('hikaye.tepkiGonder', { emoji })}
-          testID={`hikaye-tepki-${i}`}
-          style={stiller.emojiHucre}
-        >
-          <Animated.Text style={[stiller.emojiYazi, { transform: [{ scale: olcekler[i] }] }]}>{emoji}</Animated.Text>
-        </Pressable>
-      ))}
+    <View style={[stiller.ifadeSatiri, gizli && stiller.gizli]} testID="hikaye-ifadeler" pointerEvents={gizli ? 'none' : 'box-none'}>
+      {liste.map((slug) => {
+        const ifade = ifadeBul(slug)!
+        const seciliMi = slug === secili
+        return (
+          <Pressable
+            key={slug}
+            onPress={() => sec(slug)}
+            accessibilityRole="button"
+            accessibilityLabel={ifade.etiket}
+            accessibilityState={{ selected: seciliMi }}
+            testID={`hikaye-ifade-${slug}`}
+            style={[stiller.ifadeHucre, seciliMi && stiller.ifadeSecili]}
+          >
+            <Animated.View style={{ transform: [{ scale: olcek(slug) }] }}>
+              <Image source={ifade.kaynak} style={stiller.ifadeResim} contentFit="contain" />
+            </Animated.View>
+          </Pressable>
+        )
+      })}
+      <Pressable
+        onPress={onDahaFazla}
+        accessibilityRole="button"
+        accessibilityLabel={t('hikaye.dahaFazlaIfade')}
+        testID="hikaye-ifade-daha"
+        style={({ pressed }) => [stiller.ifadeHucre, stiller.ifadeArti, pressed && stiller.basili]}
+      >
+        <Svg width={20} height={20} viewBox="0 0 24 24">
+          <Path d="M12 5v14M5 12h14" stroke="#FFFFFF" strokeWidth={2.4} strokeLinecap="round" />
+        </Svg>
+      </Pressable>
     </View>
   )
 }
@@ -944,9 +1023,11 @@ const stilleriYap = (renk: Renk) =>
     // "fotografi daha yukari tasi"), konum altinda ortada.
     kartSutunu: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'flex-start', gap: bosluk.l },
     kart: { aspectRatio: ANI_KART_ORANI, borderRadius: 28, overflow: 'hidden', backgroundColor: '#1C1A18' },
-    emojiSatiri: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
-    emojiHucre: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-    emojiYazi: { fontSize: 28, lineHeight: 34 },
+    ifadeSatiri: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
+    ifadeHucre: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+    ifadeSecili: { backgroundColor: 'rgba(254,120,19,0.22)', borderWidth: 2, borderColor: renk.turuncu },
+    ifadeResim: { width: 34, height: 34 },
+    ifadeArti: { backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' },
     orta: { alignItems: 'center', justifyContent: 'center', gap: bosluk.l },
     durum: { color: '#FFFFFF', fontFamily: yazi.govde, fontSize: olcek.govde, textAlign: 'center', paddingHorizontal: bosluk.xl },
     kapatDugmeBuyuk: { paddingHorizontal: bosluk.xl, paddingVertical: 10, borderRadius: yuvarlak.hap, backgroundColor: 'rgba(255,255,255,0.18)' },

@@ -646,6 +646,7 @@ export default {
     hikayeEkle: "Add moment",
     kisininHikayesi: "{{ad}}'s moment",
     ekleBaslik: "Add moment",
+    dahaFazlaIfade: "More expressions",
     anligin: "Your moment",
     kamera: 'Take photo',
     galeri: 'Choose from gallery',

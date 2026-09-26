@@ -640,6 +640,7 @@ export default {
     hikayeEkle: "Moment posten",
     kisininHikayesi: "Moment von {{ad}}",
     ekleBaslik: "Moment posten",
+    dahaFazlaIfade: "Mehr Stimmungen",
     anligin: "Dein Moment",
     kamera: 'Foto aufnehmen',
     galeri: 'Aus Galerie wählen',

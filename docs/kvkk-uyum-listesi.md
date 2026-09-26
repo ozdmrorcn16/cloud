@@ -924,3 +924,15 @@ eski satirlar 24 saatlik cron ile zaten siliniyor. Gizlilik metni 7 dil
 - Kim gorur: yalnizca sahibi (`hikaye_akisi` baskasina bu bayragi
   vermez; baskasi icin gordum = kendi goruntuleme kaydi). Sahibin
   izlemesi Gorenler listesine YAZILMAZ.
+
+## Anliga ifade birakma GERI GELDI; en sik ifadeler (2026-09-26)
+
+- Hangi veri: izleyenin anliga biraktigi ifade (`hikaye_goruntulemeler.ifade`,
+  108'lik sozlukten slug). "En sik ifadeler" listesi (`sik_ifadeler` RPC)
+  kisinin KENDI birakma/check-in ifadelerinin adedinden ve butun uygulamanin
+  YALNIZCA ADET toplamindan hesaplanir - kimin neyi kullandigi donmez.
+- Dayanak: sozlesmenin ifasi (anliga tepki birakma ozelligi).
+- Sure: goruntuleme satiriyla birlikte 24 saatte silinir (mevcut cron).
+- Kim gorur: yalnizca anligin sahibi ("Gorenler" listesi). Standart emoji
+  -> sohbet yolu kalkti; "Yanit ver" sohbete mesaj olarak gitmeye devam eder.
+- Gizlilik metni 7 dil + docs guncellendi.

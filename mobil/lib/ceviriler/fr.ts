@@ -640,6 +640,7 @@ export default {
     hikayeEkle: "Ajouter un instant",
     kisininHikayesi: "Instant de {{ad}}",
     ekleBaslik: "Ajouter un instant",
+    dahaFazlaIfade: "Plus d’expressions",
     anligin: "Ton instant",
     kamera: 'Prendre une photo',
     galeri: 'Choisir dans la galerie',
