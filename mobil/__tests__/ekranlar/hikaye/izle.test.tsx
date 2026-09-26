@@ -337,7 +337,8 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.queryByTestId('hikaye-mesaj')).toBeNull()
     expect(screen.getByTestId('hikaye-sahip-eylemleri')).toBeTruthy()
     expect(screen.getByTestId('hikaye-gorenler')).toBeTruthy()
-    expect(screen.getByTestId('hikaye-sil')).toBeTruthy()
+    // Sil yalnizca uc nokta menusunde (2026-09-26).
+    expect(screen.queryByTestId('hikaye-sil')).toBeNull()
   })
 
   it('BASILI TUTARKEN arayuz gizlenir, birakinca geri gelir', async () => {
@@ -410,7 +411,11 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('hikaye-fotograf-x2')).toBeTruthy()
     expect(hikayeAkisiniGetir).not.toHaveBeenCalled()
     expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
-    expect(screen.getByTestId('hikaye-sil')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-sil')).toBeNull()
+    await fireEvent.press(screen.getByTestId('hikaye-menu'))
+    expect(await screen.findByTestId('hikaye-menu-sil')).toBeTruthy()
+    await fireEvent.press(screen.getByText('Vazgeç'))
+    await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
     expect(screen.queryByTestId('hikaye-emojiler')).toBeNull()
     expect(hikayeGoruntulendi).not.toHaveBeenCalled()
     await fireEvent.press(screen.getByTestId('hikaye-geri'))

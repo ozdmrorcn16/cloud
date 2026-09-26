@@ -90,6 +90,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   `hikayeler.sahip_gordu` bayragina yazilir, Gorenler'e DEGIL (2026-09-26).
   "Anlık" ve "Anlık ekle" yazilari kalin (tek dosyali fontta
   fontWeight telefonda ISLEMEZ - kalin AILE `yazi.ekranBasligi` verilir).
+- Anlik izleyici (2026-09-26): kendi anligimda "Anlığı sil" dugmesi YOK
+  (yalnizca uc nokta menusunde); uc nokta ve × `HareketliDugme`
+  (`src/tasarim/HareketliDugme.tsx`, ekle ile ortak).
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre

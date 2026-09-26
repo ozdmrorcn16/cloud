@@ -33,6 +33,7 @@ import { konumuDuzelt, VARSAYILAN_KONUM } from '../../../lib/hikaye'
 import { useHareket } from '../../tasarim/hareket'
 import { Avatar } from '../../tasarim/Avatar'
 import { SecimPenceresi, UcNoktaIkonu, CopIkonu } from '../../tasarim/SecimPenceresi'
+import { HareketliDugme } from '../../tasarim/HareketliDugme'
 import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
@@ -682,7 +683,7 @@ export default function HikayeIzleEkrani() {
                 accessibilityRole="link"
                 testID="hikaye-kimlik"
               >
-                <Avatar fotografUrl={grup.avatarUrl} ad={grup.ad} kullaniciAdi={grup.kullaniciAdi} cap={34} />
+                <Avatar fotografUrl={grup.avatarUrl} ad={grup.ad} kullaniciAdi={grup.kullaniciAdi} cap={38} />
                 <View style={stiller.kimlikMetinleri}>
                   <View style={stiller.adSatiri}>
                     <Text style={stiller.ad} numberOfLines={1}>
@@ -692,12 +693,14 @@ export default function HikayeIzleEkrani() {
                   </View>
                 </View>
               </Pressable>
-              <Pressable onPress={() => setMenuAcik(true)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('hikaye.secenekler')} testID="hikaye-menu" style={stiller.ustDugme}>
-                <UcNoktaIkonu boyut={20} renk="#FFFFFF" />
-              </Pressable>
-              <Pressable onPress={kapat} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('hikaye.kapat')} testID="hikaye-kapat" style={stiller.ustDugme}>
-                <Text style={stiller.kapatYazi}>×</Text>
-              </Pressable>
+              {/* Uc nokta ve × HAREKETLI (kullanicinin istegi 2026-09-26):
+                  yari saydam daire, yayli giris, basinca yayli kuculme. */}
+              <HareketliDugme sira={0} kucukme={0.86} onPress={() => setMenuAcik(true)} etiket={t('hikaye.secenekler')} testID="hikaye-menu" style={stiller.ustDugme}>
+                <UcNoktaIkonu boyut={22} renk="#FFFFFF" />
+              </HareketliDugme>
+              <HareketliDugme sira={1} kucukme={0.86} onPress={kapat} etiket={t('hikaye.kapat')} testID="hikaye-kapat" style={stiller.ustDugme}>
+                <KapatCarpisi />
+              </HareketliDugme>
             </View>
           </View>
 
@@ -722,16 +725,7 @@ export default function HikayeIzleEkrani() {
                   ) : (
                     <View />
                   )}
-                  <Pressable
-                    onPress={() => setSilOnayi(true)}
-                    style={({ pressed }) => [stiller.silDugmesi, pressed && stiller.basili]}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('hikaye.sil')}
-                    testID="hikaye-sil"
-                  >
-                    <CopIkonu />
-                    <Text style={stiller.silYazi}>{t('hikaye.sil')}</Text>
-                  </Pressable>
+                  {/* Sil YALNIZCA uc nokta menusunde (kullanicinin istegi 2026-09-26). */}
                 </View>
               ) : (
                 /* BASKASININ ANLIGI: en altta "Yanit ver" (2026-09-24);
@@ -811,9 +805,17 @@ function KalpCizimi() {
   )
 }
 
+function KapatCarpisi() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24">
+      <Path d="M6 6l12 12M18 6L6 18" stroke="#FFFFFF" strokeWidth={2.8} strokeLinecap="round" />
+    </Svg>
+  )
+}
+
 function GozCizimi() {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
+    <Svg width={20} height={20} viewBox="0 0 24 24">
       <Path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" stroke="#FFFFFF" strokeWidth={2} fill="none" />
       <Circle cx={12} cy={12} r={3} stroke="#FFFFFF" strokeWidth={2} fill="none" />
     </Svg>
@@ -887,11 +889,20 @@ const stilleriYap = (renk: Renk) =>
     kimlik: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     kimlikMetinleri: { flex: 1 },
     adSatiri: { flexDirection: 'row', alignItems: 'baseline', gap: bosluk.s },
-    ad: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk, flexShrink: 1 },
-    zaman: { color: 'rgba(255,255,255,0.7)', fontFamily: yazi.govde, fontSize: olcek.minik },
+    ad: { color: '#FFFFFF', fontFamily: yazi.ekranBasligi, fontSize: olcek.govde, flexShrink: 1 },
+    zaman: { color: 'rgba(255,255,255,0.85)', fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk },
     mekanSatiri: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
     mekan: { color: '#FFFFFF', fontFamily: yazi.govde, fontSize: olcek.minik },
-    ustDugme: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+    ustDugme: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255,255,255,0.16)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.28)',
+    },
     kapatYazi: { color: '#FFFFFF', fontSize: 26, lineHeight: 28, fontFamily: yazi.govde },
     altKap: { position: 'absolute', left: 0, right: 0, bottom: 0 },
     alt: { paddingHorizontal: bosluk.sayfa, gap: bosluk.s },
@@ -910,8 +921,19 @@ const stilleriYap = (renk: Renk) =>
       maxWidth: '92%',
     },
     etiketYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
-    gorenler: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 },
-    gorenlerYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.kucuk },
+    gorenler: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      alignSelf: 'flex-start',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 22,
+      backgroundColor: 'rgba(255,255,255,0.16)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.28)',
+    },
+    gorenlerYazi: { color: '#FFFFFF', fontFamily: yazi.ekranBasligi, fontSize: olcek.govde },
     gizli: { opacity: 0 },
     tepkiSatiri: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: bosluk.xs, paddingBottom: bosluk.xs },
     tepki: { paddingHorizontal: 2, paddingVertical: 2 },
@@ -935,17 +957,6 @@ const stilleriYap = (renk: Renk) =>
 
     // Alt satir
     sahipSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: bosluk.s },
-    silDugmesi: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: yuvarlak.hap,
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.5)',
-    },
-    silYazi: { color: '#FFFFFF', fontFamily: yazi.govdeOrta, fontSize: olcek.kucuk },
     yanitSatiri: { flexDirection: 'row', alignItems: 'center', gap: bosluk.s },
     mesajKutusu: {
       flex: 1,
