@@ -11,8 +11,8 @@ import {
   hikayeGoruntuleyenleriGetir,
   hikayeSil,
   hikayeyeYanitVer,
-  hikayeIfadesiGonder,
-  sikIfadeleriGetir,
+  hikayeEmojisiBirak,
+  sikEmojileriGetir,
   anlikArsiviniGetir,
   ANI_KART_ORANI,
   SERIT_ONBELLEK_OMRU_MS,
@@ -33,8 +33,8 @@ jest.mock('../../../lib/hikaye', () => ({
   hikayeGoruntuleyenleriGetir: jest.fn(),
   hikayeSil: jest.fn(),
   hikayeyeYanitVer: jest.fn(),
-  hikayeIfadesiGonder: jest.fn(),
-  sikIfadeleriGetir: jest.fn(),
+  hikayeEmojisiBirak: jest.fn(),
+  sikEmojileriGetir: jest.fn(),
   anlikArsiviniGetir: jest.fn(),
 }))
 
@@ -134,8 +134,8 @@ beforeEach(() => {
   ;(hikayeGoruntuleyenleriGetir as jest.Mock).mockResolvedValue([])
   ;(hikayeSil as jest.Mock).mockResolvedValue(undefined)
   ;(hikayeyeYanitVer as jest.Mock).mockResolvedValue('konusma-1')
-  ;(hikayeIfadesiGonder as jest.Mock).mockResolvedValue(undefined)
-  ;(sikIfadeleriGetir as jest.Mock).mockResolvedValue(['kahve-keyfi', 'cay-molasi', 'buzlu-kahve', 'pizza-zamani', 'hafif-bir-ogun', 'kalbim-burada'])
+  ;(hikayeEmojisiBirak as jest.Mock).mockResolvedValue(undefined)
+  ;(sikEmojileriGetir as jest.Mock).mockResolvedValue(['❤️', '😂', '😮', '😢', '👏', '🔥'])
 })
 
 describe('HikayeIzleEkrani', () => {
@@ -150,7 +150,7 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByTestId('hikaye-mekan')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-oge-mekan')).toBeNull()
     // Baskasinin anligi: emojiler ve yanit kutusu var, gorenler yok.
-    expect(screen.getByTestId('hikaye-ifadeler')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-emojiler')).toBeTruthy()
     expect(screen.getByTestId('hikaye-mesaj')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-gorenler')).toBeNull()
   })
@@ -241,13 +241,13 @@ describe('HikayeIzleEkrani', () => {
    * referansi). Kendi hikayemde bu satirin yerinde GORENLER ve SIL var -
    * ayri testte.
    */
-  it('baskasinin anliginda EN SIK IFADELER + arti ve YANIT VER var', async () => {
+  it('baskasinin anliginda EN SIK EMOJILER + arti ve YANIT VER var', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
 
-    expect(screen.getByTestId('hikaye-ifadeler')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-emojiler')).toBeTruthy()
     expect(screen.getByTestId('hikaye-mesaj').props.placeholder).toBe('Yanıt ver…')
-    expect(screen.getByTestId('hikaye-ifade-daha')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-emoji-daha')).toBeTruthy()
     expect(screen.queryByTestId('hikaye-sahip-eylemleri')).toBeNull()
   })
 
@@ -324,29 +324,28 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('gorenler-sayfasi')).toBeTruthy()
   })
 
-  /** Kullanicinin istegi (2026-09-26): en sik ifadeler; dokunmak ifadeyi
-   *  anliga birakir, yeniden dokunmak kaldirir; arti butun listeyi acar. */
-  it('IFADE: dokunmak birakir (secili olur), yeniden dokunmak kaldirir', async () => {
+  /** Kullanicinin istegi (2026-09-26): en sik STANDART EMOJILER; dokunmak
+   *  emojiyi anliga birakir, yeniden dokunmak kaldirir; arti butun listeyi acar. */
+  it('EMOJI: dokunmak anliga birakir (secili olur), yeniden dokunmak kaldirir', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    const kahve = await screen.findByTestId('hikaye-ifade-kahve-keyfi')
-    await fireEvent.press(kahve)
-    await waitFor(() => expect(hikayeIfadesiGonder).toHaveBeenCalledWith('a2', 'kahve-keyfi'))
-    expect(screen.getByTestId('hikaye-ifade-kahve-keyfi').props.accessibilityState).toEqual({ selected: true })
-    await fireEvent.press(screen.getByTestId('hikaye-ifade-kahve-keyfi'))
-    await waitFor(() => expect(hikayeIfadesiGonder).toHaveBeenLastCalledWith('a2', null))
+    await fireEvent.press(await screen.findByTestId('hikaye-tepki-0'))
+    await waitFor(() => expect(hikayeEmojisiBirak).toHaveBeenCalledWith('a2', '❤️'))
+    expect(screen.getByTestId('hikaye-tepki-0').props.accessibilityState).toEqual({ selected: true })
+    await fireEvent.press(screen.getByTestId('hikaye-tepki-0'))
+    await waitFor(() => expect(hikayeEmojisiBirak).toHaveBeenLastCalledWith('a2', null))
     expect(hikayeyeYanitVer).not.toHaveBeenCalled()
   })
 
-  it('IFADE: daha once biraktigim ifade secili acilir; arti butun listeyi acar', async () => {
-    ;(hikayeGoruntulendi as jest.Mock).mockResolvedValue('cay-molasi')
+  it('EMOJI: daha once biraktigim emoji secili acilir; arti butun listeyi acar ve oradan secilir', async () => {
+    ;(hikayeGoruntulendi as jest.Mock).mockResolvedValue('😂')
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    await waitFor(() =>
-      expect(screen.getByTestId('hikaye-ifade-cay-molasi').props.accessibilityState).toEqual({ selected: true })
-    )
-    await fireEvent.press(screen.getByTestId('hikaye-ifade-daha'))
-    expect(await screen.findByTestId('ifade-secici')).toBeTruthy()
+    await waitFor(() => expect(screen.getByTestId('hikaye-tepki-1').props.accessibilityState).toEqual({ selected: true }))
+    await fireEvent.press(screen.getByTestId('hikaye-emoji-daha'))
+    expect(await screen.findByTestId('emoji-secici')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('emoji-🍕'))
+    await waitFor(() => expect(hikayeEmojisiBirak).toHaveBeenCalledWith('a2', '🍕'))
   })
 
   it('YANIT VER: yazilan metin sohbete gider, kutu temizlenir', async () => {
@@ -358,11 +357,11 @@ describe('HikayeIzleEkrani', () => {
     expect(screen.getByTestId('hikaye-mesaj').props.value).toBe('')
   })
 
-  it('ifade birakilamazsa eski secime doner ve sebep yazilir', async () => {
-    ;(hikayeIfadesiGonder as jest.Mock).mockRejectedValue(new Error('Bu kullanıcı bulunamadı.'))
+  it('emoji birakilamazsa eski secime doner ve sebep yazilir', async () => {
+    ;(hikayeEmojisiBirak as jest.Mock).mockRejectedValue(new Error('Bu kullanıcı bulunamadı.'))
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    await fireEvent.press(await screen.findByTestId('hikaye-ifade-cay-molasi'))
+    await fireEvent.press(await screen.findByTestId('hikaye-tepki-1'))
     expect(await screen.findByTestId('hikaye-yanit-durumu')).toHaveTextContent('Bu kullanıcı bulunamadı.')
   })
 
@@ -379,7 +378,7 @@ describe('HikayeIzleEkrani', () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-b1')
 
-    expect(screen.queryByTestId('hikaye-ifadeler')).toBeNull()
+    expect(screen.queryByTestId('hikaye-emojiler')).toBeNull()
     expect(screen.queryByTestId('hikaye-mesaj')).toBeNull()
     expect(screen.getByTestId('hikaye-sahip-eylemleri')).toBeTruthy()
     expect(screen.getByTestId('hikaye-gorenler')).toBeTruthy()
@@ -468,7 +467,7 @@ describe('HikayeIzleEkrani', () => {
     expect(await screen.findByTestId('hikaye-menu-sil')).toBeTruthy()
     await fireEvent.press(screen.getByText('Vazgeç'))
     await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
-    expect(screen.queryByTestId('hikaye-ifadeler')).toBeNull()
+    expect(screen.queryByTestId('hikaye-emojiler')).toBeNull()
     expect(hikayeGoruntulendi).not.toHaveBeenCalled()
     await fireEvent.press(screen.getByTestId('hikaye-geri'))
     expect(screen.getByTestId('hikaye-fotograf-x1')).toBeTruthy()

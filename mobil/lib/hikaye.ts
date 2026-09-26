@@ -289,31 +289,38 @@ export type HikayeGoruntuleyen = {
   kullaniciAdi: string
   avatarUrl: string | null
   goruldu: string
-  /** Attigi ifade (slug) ya da null. */
+  /** Attigi ifade (slug) ya da null - eski 108'lik set. */
   ifade: string | null
+  /** Biraktigi standart emoji (2026-09-26) ya da null. */
+  emoji: string | null
 }
 
 /** Yalnizca sahibine (sunucu baskasina bos doner). En yeni izleyen once. */
 /**
- * Anliga birakilacak EN SIK ifadeler (2026-09-26): once kisinin kendi en
- * sik kullandiklari, sonra genel siklik, sonra sozluk sirasi. Sunucu
- * yalnizca slug doner; sozlukte olmayan (eski surum) istemcide elenir.
+ * Anliga birakilacak EN SIK standart emojiler (2026-09-26): once kisinin
+ * kendi en sik biraktiklari, sonra genel ADET, sonra varsayilan set.
  */
-export async function sikIfadeleriGetir(adet = 6): Promise<string[]> {
-  const { data, error } = await supabase.rpc('sik_ifadeler', { p_adet: adet })
+export async function sikEmojileriGetir(adet = 6): Promise<string[]> {
+  const { data, error } = await supabase.rpc('sik_emojiler', { p_adet: adet })
   if (error) throw new Error(hataMetni(error))
-  return ((data ?? []) as { slug: string }[]).map((s) => s.slug)
+  return ((data ?? []) as { emoji: string }[]).map((s) => s.emoji)
+}
+
+/** Anliga emoji birakir; null kaldirir. Kurallar sunucuda. */
+export async function hikayeEmojisiBirak(hikayeId: string, emoji: string | null): Promise<void> {
+  const { error } = await supabase.rpc('hikaye_emojisi_birak', { p_hikaye_id: hikayeId, p_emoji: emoji })
+  if (error) throw new Error(hataMetni(error))
 }
 
 export async function hikayeGoruntuleyenleriGetir(hikayeId: string): Promise<HikayeGoruntuleyen[]> {
   const { data, error } = await supabase.rpc('hikaye_goruntuleyenler', { p_hikaye_id: hikayeId })
   if (error) throw new Error(hataMetni(error))
-  const satirlar = (data ?? []) as { kullanici_id: string; goruldu: string; ifade?: string | null }[]
+  const satirlar = (data ?? []) as { kullanici_id: string; goruldu: string; ifade?: string | null; emoji?: string | null }[]
   const ozetler = await profilOzetleriniGetir(satirlar.map((s) => s.kullanici_id))
   return satirlar
     .filter((s) => ozetler[s.kullanici_id])
     // Ifade atanlar ONCE (tepkiler gozden kacmasin), sonra en yeni.
-    .sort((a, b) => Number(!a.ifade) - Number(!b.ifade) || b.goruldu.localeCompare(a.goruldu))
+    .sort((a, b) => Number(!(a.emoji || a.ifade)) - Number(!(b.emoji || b.ifade)) || b.goruldu.localeCompare(a.goruldu))
     .map((s) => ({
       id: s.kullanici_id,
       ad: ozetler[s.kullanici_id].ad,
@@ -321,6 +328,7 @@ export async function hikayeGoruntuleyenleriGetir(hikayeId: string): Promise<Hik
       avatarUrl: ozetler[s.kullanici_id].avatarUrl,
       goruldu: s.goruldu,
       ifade: s.ifade ?? null,
+      emoji: s.emoji ?? null,
     }))
 }
 

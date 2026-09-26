@@ -936,3 +936,12 @@ eski satirlar 24 saatlik cron ile zaten siliniyor. Gizlilik metni 7 dil
 - Kim gorur: yalnizca anligin sahibi ("Gorenler" listesi). Standart emoji
   -> sohbet yolu kalkti; "Yanit ver" sohbete mesaj olarak gitmeye devam eder.
 - Gizlilik metni 7 dil + docs guncellendi.
+
+## Anliga birakilan tepki: 108'lik ifade yerine STANDART EMOJI (2026-09-26)
+
+- Hangi veri: `hikaye_goruntulemeler.emoji` (1-16 karakter, harf/rakam
+  icermez - metin tasiyamaz). "En sik emojiler" (`sik_emojiler` RPC)
+  kisinin kendi adedi + genel ADET toplami; kimin ne biraktigi donmez.
+- Dayanak, sure, kim gorur: bir onceki maddeyle ayni (sozlesme; 24 saatte
+  silinir; yalnizca anligin sahibi). Veri disa aktarima `emoji` eklendi.
+- Gizlilik metni 7 dil + docs "ifade" -> "emoji" olarak guncellendi.

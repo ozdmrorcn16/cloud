@@ -16,6 +16,8 @@ export type ListeKisisi = {
   /** Hikaye gorenlerinde: kisinin aniya attigi ifade (slug). Satirin
    *  saginda cizilir (2026-09-24). Begenenlerde yok. */
   ifade?: string | null
+  /** Anliga biraktigi standart emoji (2026-09-26); ifadeden once gelir. */
+  emoji?: string | null
 }
 
 /**
@@ -125,7 +127,11 @@ export function KisiListesiSayfasi({
                     @{item.kullaniciAdi}
                   </Text>
                 </View>
-                {item.ifade && ifadeBul(item.ifade) ? (
+                {item.emoji ? (
+                  <Text style={stiller.emoji} accessibilityLabel={item.emoji} testID={`${satirTestIDOnEki}-emoji-${item.id}`}>
+                    {item.emoji}
+                  </Text>
+                ) : item.ifade && ifadeBul(item.ifade) ? (
                   <Image
                     source={ifadeBul(item.ifade)!.kaynak}
                     style={stiller.ifade}
@@ -168,6 +174,7 @@ const stilleriYap = (renk: Renk) =>
     basili: { opacity: 0.7 },
     metinler: { flex: 1 },
     ifade: { width: 36, height: 36 },
+    emoji: { fontSize: 28, lineHeight: 34 },
     ad: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde, color: renk.metin },
     kullaniciAdi: { fontFamily: yazi.govde, fontSize: olcek.kucuk, color: renk.metinIkincil },
   })

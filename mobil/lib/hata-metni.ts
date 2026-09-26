@@ -65,6 +65,7 @@ const VERITABANI: Record<string, string> = {
   'En az 2 karakter gerekli': 'en_az_2_karakter_gerekli',
   'Gecersiz bulunurluk degeri': 'gecersiz_bulunurluk_degeri',
   'Gecersiz ifade': 'gecersiz_ifade',
+  'Gecersiz emoji': 'gecersiz_emoji',
   'Kendi anina ifade atamazsin': 'kendi_anina_ifade_atamazsin',
   'En fazla 5 fotograf eklenebilir': 'en_fazla_5_fotograf',
   'Ayni anda en fazla 10 hikayen olabilir': 'ayni_anda_en_fazla_10_hikayen_olabilir',

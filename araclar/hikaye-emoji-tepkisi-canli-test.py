@@ -1,6 +1,6 @@
 """ANIYA IFADE TEPKISI - CANLI TEST (2026-09-24).
 
-Kullanicinin karari: ani paylasan ifade/yazi eklemez; IZLEYEN aniya
+EMOJI SURUMU (2026-09-26: ifade seti yerine standart emoji). IZLEYEN anliga
 ifade atar, paylasan onu "Gorenler"de gorur. Jest Supabase'i mock'ladigi
 icin sunucu kurali orada gorulemez. Olculen:
   1. Arkadas B ifade atar -> A'nin gorenler listesinde ifadesiyle.
@@ -81,47 +81,47 @@ try:
     # 1-2. ifade at, gorme kaydi onu doner
     ilk = b.rpc('hikaye_goruntulendi', {'p_hikaye_id': hid}).execute().data
     kontrol('ifade yokken gorme kaydi null doner', ilk is None, repr(ilk))
-    b.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'kahve-keyfi'}).execute()
+    b.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '🔥'}).execute()
     gor = a.rpc('hikaye_goruntuleyenler', {'p_hikaye_id': hid}).execute().data
-    kontrol('A gorenlerde B + ifadesi', [(g['kullanici_id'], g['ifade']) for g in gor] == [(b_id, 'kahve-keyfi')], str(gor)[:120])
+    kontrol('A gorenlerde B + ifadesi', [(g['kullanici_id'], g['emoji']) for g in gor] == [(b_id, '🔥')], str(gor)[:120])
     kontrol('B gorme kaydi attigi ifadeyi doner',
-            b.rpc('hikaye_goruntulendi', {'p_hikaye_id': hid}).execute().data == 'kahve-keyfi')
+            b.rpc('hikaye_goruntulendi', {'p_hikaye_id': hid}).execute().data == '🔥')
 
     # 3. degistir / kaldir
-    b.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'cay-molasi'}).execute()
+    b.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '❤️'}).execute()
     gor = a.rpc('hikaye_goruntuleyenler', {'p_hikaye_id': hid}).execute().data
-    kontrol('degistirince TEK satir, yeni ifade', len(gor) == 1 and gor[0]['ifade'] == 'cay-molasi')
-    b.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': None}).execute()
+    kontrol('degistirince TEK satir, yeni ifade', len(gor) == 1 and gor[0]['emoji'] == '❤️')
+    b.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': None}).execute()
     gor = a.rpc('hikaye_goruntuleyenler', {'p_hikaye_id': hid}).execute().data
-    kontrol('null ile kaldirilir, goren satiri kalir', len(gor) == 1 and gor[0]['ifade'] is None)
+    kontrol('null ile kaldirilir, goren satiri kalir', len(gor) == 1 and gor[0]['emoji'] is None)
 
     # 4-6. kurallar
     reddedilir('sozluk disi slug reddedilir',
-               lambda: b.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'yok-boyle-ifade'}).execute(),
-               'Gecersiz ifade')
+               lambda: b.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': 'abc'}).execute(),
+               'Gecersiz emoji')
     reddedilir('kendi anina ifade atilamaz',
-               lambda: a.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'kahve-keyfi'}).execute(),
+               lambda: a.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '🔥'}).execute(),
                'Kendi anina ifade atamazsin')
     reddedilir('aniyi goremeyen yabanci C atamaz',
-               lambda: c.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'kahve-keyfi'}).execute(),
+               lambda: c.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '🔥'}).execute(),
                'Hikaye bulunamadi')
 
     # 7. gorenler yalnizca sahibe
-    b.rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'kahve-keyfi'}).execute()
+    b.rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '🔥'}).execute()
     kontrol('B gorenler listesini goremez (ifade sizmaz)',
             b.rpc('hikaye_goruntuleyenler', {'p_hikaye_id': hid}).execute().data == [])
 
     # 8. disa aktarim
     da = a.rpc('verilerimi_disa_aktar').execute().data
     satir = [x for x in (da.get('hikaye_goruntulemelerim') or []) if x.get('hikaye_id') == hid]
-    kontrol('A disa aktariminda goren satirinda ifade', satir and satir[0].get('ifade') == 'kahve-keyfi', str(satir)[:100])
+    kontrol('A disa aktariminda goren satirinda ifade', satir and satir[0].get('emoji') == '🔥', str(satir)[:100])
     db = b.rpc('verilerimi_disa_aktar').execute().data
     kontrol('B disa aktariminda hikaye_ifadelerim',
-            any(x.get('hikaye_id') == hid and x.get('ifade') == 'kahve-keyfi' for x in (db.get('hikaye_ifadelerim') or [])))
+            any(x.get('hikaye_id') == hid and x.get('emoji') == '🔥' for x in (db.get('hikaye_ifadelerim') or [])))
 
     # 9. anon
     reddedilir('anon ifade gonderemez',
-               lambda: create_client(URL, ANON).rpc('hikaye_ifadesi_gonder', {'p_hikaye_id': hid, 'p_ifade': 'kahve-keyfi'}).execute(),
+               lambda: create_client(URL, ANON).rpc('hikaye_emojisi_birak', {'p_hikaye_id': hid, 'p_emoji': '🔥'}).execute(),
                'permission denied')
 finally:
     if hid:
