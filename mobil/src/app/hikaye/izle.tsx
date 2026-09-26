@@ -35,7 +35,7 @@ import { Avatar } from '../../tasarim/Avatar'
 import { UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import { HareketliDugme } from '../../tasarim/HareketliDugme'
 import { AnlikMenusu, type AnlikMenuSecimi } from '../../tasarim/AnlikMenusu'
-import { OnayPenceresi } from '../../tasarim/OnayPenceresi'
+import { AnlikSilOnayi } from '../../tasarim/AnlikSilOnayi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
@@ -778,8 +778,9 @@ export default function HikayeIzleEkrani() {
         altBilgi={menuAltBilgi}
         secimler={secimler}
       />
-      <OnayPenceresi
+      <AnlikSilOnayi
         acikMi={silOnayi}
+        fotografUrl={hikaye.fotografUrl}
         baslik={t('hikaye.silBaslik')}
         aciklama={t('hikaye.silAciklama')}
         eylemEtiketi={t('hikaye.silEvet')}

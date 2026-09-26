@@ -209,6 +209,18 @@ describe('HikayeIzleEkrani', () => {
     await waitFor(() => expect(screen.queryByTestId('secim-penceresi')).toBeNull())
   })
 
+  it('SIL ONAYI (beyaz kart, 2026-09-26): Vazgec silmez; Sil animasyondan sonra siler', async () => {
+    mockParams = { kullanici: 'ben' }
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-b1')
+    await fireEvent.press(screen.getByTestId('hikaye-menu'))
+    await menudenSec('hikaye-menu-sil')
+    expect(await screen.findByTestId('onay-penceresi')).toBeTruthy()
+    await fireEvent.press(screen.getByTestId('onay-vazgec'))
+    expect(hikayeSil).not.toHaveBeenCalled()
+    await waitFor(() => expect(screen.queryByTestId('onay-penceresi')).toBeNull())
+  })
+
   it('baskasinin hikayesinde menu Sikayet et: sikayet ekranina hedef=hikaye ile gider', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')

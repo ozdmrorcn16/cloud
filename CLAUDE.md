@@ -96,6 +96,8 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   Uc nokta menusu `AnlikMenusu` (Secenek A "koyu cam kart": onizlemeli
   baslik, yayli giris, kademeli satirlar, arkadaki kart %94); diger
   ekranlar beyaz `SecimPenceresi`nde kalir.
+  Silme onayi `AnlikSilOnayi` (A, BEYAZ kart: egik onizleme + kirmizi cop
+  rozeti; Sil'e basinca onizleme rozete suzulur, sonra silinir).
 - Canli kamera YALNIZCA kartta tek `CameraView`. Modul yoksa deklansor
   sistem kamerasini acar.
 - Check-in formu ve duzenleme `GaleriSayfasi` kullanir (ilk hucre
