@@ -646,6 +646,8 @@ export default {
     hikayeEkle: "Add moment",
     kisininHikayesi: "{{ad}}'s moment",
     ekleBaslik: "Add moment",
+    tekrarCek: "Retake",
+    kimlerGorebilir: "Who can see this?",
     kamera: 'Take photo',
     galeri: 'Choose from gallery',
     kameraIzni: 'Camera permission is needed to take a photo.',

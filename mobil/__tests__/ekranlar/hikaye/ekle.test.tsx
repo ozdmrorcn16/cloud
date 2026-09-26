@@ -90,6 +90,18 @@ describe('HikayeEkleEkrani', () => {
     expect(screen.getByTestId('hikaye-gorunurluk')).toBeTruthy()
   })
 
+  /** Referans (2026-09-26): kartin altinda Tekrar cek + Konum ekle,
+   *  en altta "Kimler gorebilir?" + gorunurluk + Paylas. */
+  it('DUZENLEME DUZENI: Tekrar cek cekim ekranina doner; "Kimler görebilir?" etiketi var', async () => {
+    await render(<HikayeEkleEkrani />)
+    await cek()
+    expect(screen.getByText('Kimler görebilir?')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-konum')).toHaveTextContent(/Konum ekle/)
+    await fireEvent.press(screen.getByTestId('hikaye-tekrar-cek'))
+    expect(await screen.findByTestId('hikaye-deklansor')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-paylas')).toBeNull()
+  })
+
   it('SAG USTTE anlik arsivi ikonu arsiv ekranini acar (2026-09-24)', async () => {
     await render(<HikayeEkleEkrani />)
     await fireEvent.press(await screen.findByTestId('anlik-arsivi'))

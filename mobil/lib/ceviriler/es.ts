@@ -640,6 +640,8 @@ export default {
     hikayeEkle: "Añadir momento",
     kisininHikayesi: "Momento de {{ad}}",
     ekleBaslik: "Añadir momento",
+    tekrarCek: "Repetir",
+    kimlerGorebilir: "¿Quién puede verlo?",
     kamera: 'Hacer foto',
     galeri: 'Elegir de la galería',
     kameraIzni: 'Se necesita permiso de cámara para hacer una foto.',

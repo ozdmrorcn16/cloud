@@ -862,7 +862,7 @@ const stilleriYap = (renk: Renk) =>
     // Fotograf UST CUBUGUN hemen altinda (kullanicinin istegi 2026-09-24:
     // "fotografi daha yukari tasi"), konum altinda ortada.
     kartSutunu: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'flex-start', gap: bosluk.l },
-    kart: { aspectRatio: ANI_KART_ORANI, borderRadius: 44, overflow: 'hidden', backgroundColor: '#1C1A18' },
+    kart: { aspectRatio: ANI_KART_ORANI, borderRadius: 28, overflow: 'hidden', backgroundColor: '#1C1A18' },
     emojiSatiri: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
     emojiHucre: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
     emojiYazi: { fontSize: 28, lineHeight: 34 },

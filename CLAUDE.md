@@ -73,9 +73,11 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   `?foto=`), yalnizca anlik cekim. Cekimden sonra fotograf AYNI
   kartta kalir (`ANI_KART_ORANI` 3:4 = 0.75 (2026-09-24; once 0.88), cover); izleyici de ayni oran
   ve kirpmayla ciziyor - paylasanin gordugu kare = izleyenin gordugu.
-  Cekim dugmeleri kalkar; fotografin ALTINDA ortada animasyonlu KONUM
-  HAPI (check-in varsa mekan otomatik + x; yoksa "Konum ekle" -> yakin
-  mekanlar), altta Paylas, en altta gizlilik (cekimde gizlilik YOK). PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
+  Cekim dugmeleri kalkar; DUZENLEME referansi (2026-09-26): kartin altinda
+  "Tekrar cek" + "Konum ekle" (check-in varsa mekan + x) yan yana, en altta
+  "Kimler gorebilir?" + gorunurluk + Paylas yan yana; butun dugmeler
+  `HareketliDugme` (sirali yayli giris + basma). Kart kosesi 28 (izleyici
+  de). Cekimde gizlilik YOK. PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
 - Baskasinin anliginda: fotografin ALTINDA standart emojiler (❤️😂😮😢👏🔥🎉😍),
   en altta "Yanıt ver…"; ikisi de SOHBETE yanit (`hikayeyeYanitVer`).
   108'lik ifade seridi ve "Gorenler'de ifade" 2026-09-24'te KALKTI
