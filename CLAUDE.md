@@ -84,7 +84,10 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   en altta "Yanıt ver…"; ikisi de SOHBETE yanit (`hikayeyeYanitVer`).
   108'lik ifade seridi ve "Gorenler'de ifade" 2026-09-24'te KALKTI
   (sunucuda `hikaye_ifadesi_gonder` duruyor, istemci cagirmiyor).
-- Ana sayfa anlik seridi (2026-09-25, secim "A ile C"): halka kisinin anlik
+- Ana sayfa anlik seridi: DAIRE DEGIL, cekim kartinin kucugu (3:4, 72x96,
+  oval kose; 2026-09-26 secim B): icinde EN YENI anligin fotografi, sol altta
+  kucuk profil resmi (anligi olmayan kendi kartimda profil resmim). Kenardaki
+  halka (2026-09-25, "A ile C") kisinin anlik
   SAYISI kadar dilim; gorulmemis dilim kalin turuncu->sari->pembe gradyan,
   gorulen ince gri; avatarla halka arasi beyaz bosluk; yenisi olanin adi
   kalin. KENDI dairemde de ayni halka (anligim varsa); sahibin izlemesi

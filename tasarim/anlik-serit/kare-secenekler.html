@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:'Instrument Sans',sans-serif;background:#f3f1ee;padding:16px;width:812px}
+h2{font-size:22px;margin:4px 0 12px;color:#17130F}
+.kol{background:#fff;border-radius:16px;padding:14px;border:1px solid #e6e1db;margin-bottom:12px}
+.kol h3{font-size:15px;margin-bottom:10px;color:#17130F}
+.kol p{font-size:12px;color:#8a8178;margin-top:10px;line-height:1.4}
+.serit{display:flex;gap:12px}
+.kisi{width:72px;display:flex;flex-direction:column;align-items:center;position:relative}
+.ad{margin-top:6px;font-size:12px;color:#17130F;white-space:nowrap}
+.b{font-weight:700}.s{color:#8a8178}
+.p0{background:linear-gradient(135deg,#d9c3ae,#9b7a5e)}.p1{background:linear-gradient(135deg,#b7c6d9,#56708f)}
+.p2{background:linear-gradient(135deg,#e3b8c1,#a05b6b)}.p3{background:linear-gradient(135deg,#c9d9b7,#6f8f56)}
+.f1{background:linear-gradient(160deg,#3a4a66,#9aa9c2 60%,#e2c9a0)}
+.f2{background:linear-gradient(160deg,#6b3e2e,#d98e5a 60%,#f5d7a8)}
+.f3{background:linear-gradient(160deg,#294d3a,#7fae8a 60%,#dfe8c9)}
+.f0{background:linear-gradient(160deg,#2a2723,#6b645a)}
+.kap{position:relative;width:72px;height:96px}
+.ic{position:absolute;left:6px;top:6px;right:6px;bottom:6px;border-radius:14px;overflow:hidden}
+.mini{position:absolute;left:4px;bottom:4px;width:22px;height:22px;border-radius:50%;border:2px solid #fff}
+.arti{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:#FE7813;border:2px solid #fff;color:#fff;font-weight:700;font-size:15px;line-height:19px;text-align:center}
+</style></head><body>
+<h2>Anlık şeridi: yuvarlak yerine köşeleri oval dikdörtgen (3:4, kamera karesi)</h2>
+<div class="kol"><h3>A · Profil resmi dikdörtgende</h3><div class="serit" id="a"></div>
+<p>Şekil kamera karesi (3:4, oval köşeler); içinde yine profil resmi. Halka aynı kural: her anlık bir dilim, yeni gradyan, görülen gri.</p></div>
+<div class="kol"><h3>B · Anlığın fotoğrafı + köşede küçük profil resmi</h3><div class="serit" id="b"></div>
+<p>İçinde kişinin EN YENİ anlığının fotoğrafı, sol alt köşede küçük profil resmi. Açmadan ne paylaşıldığı görünür. Kendi kutunda anlığın yoksa profil resmin. Fotoğraflar zaten önceden indiriliyor (anlık açılışı için), ek veri az.</p></div>
+<script>
+const kisiler=[{ad:'Anlık',av:'p0',f:'f0',n:6,g:6,ben:1},{ad:'ozdemrs',av:'p1',f:'f1',n:3,g:1},{ad:'elifk',av:'p2',f:'f2',n:1,g:0},{ad:'mert',av:'p3',f:'f3',n:4,g:4}];
+function halka(n,g){const w=70,h=94,r=18,x=1.5,y=1.5,W=w-3,H=h-3;
+ const P=2*(W+H)-(8-2*Math.PI)*r, bosl=n>1?7:0, uz=P/n-bosl; let s='';
+ const yol=`M ${x+W/2} ${y} H ${x+W-r} A ${r} ${r} 0 0 1 ${x+W} ${y+r} V ${y+H-r} A ${r} ${r} 0 0 1 ${x+W-r} ${y+H} H ${x+r} A ${r} ${r} 0 0 1 ${x} ${y+H-r} V ${y+r} A ${r} ${r} 0 0 1 ${x+r} ${y} Z`;
+ for(let i=0;i<n;i++){const gor=i<g;s+=`<path d="${yol}" fill="none" stroke="${gor?'#dcd6cf':'url(#gr)'}" stroke-width="${gor?2:3}" stroke-linecap="round" stroke-dasharray="${uz} ${P-uz}" stroke-dashoffset="${-(i*P/n+bosl/2)}"/>`}
+ return `<svg width="72" height="96" style="position:absolute;left:0;top:0"><defs><linearGradient id="gr" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FE7813"/><stop offset=".55" stop-color="#FFB23F"/><stop offset="1" stop-color="#FF4E6A"/></linearGradient></defs>${s}</svg>`}
+function ciz(id,foto){document.getElementById(id).innerHTML=kisiler.map(k=>`<div class="kisi"><div class="kap">${halka(k.n,k.g)}<div class="ic ${foto?k.f:k.av}">${foto?`<div class="mini ${k.av}"></div>`:''}</div>${k.ben?'<div class="arti">+</div>':''}</div><div class="ad ${k.ben?'b':k.g<k.n?'b':'s'}">${k.ad}</div></div>`).join('')}
+ciz('a',0);ciz('b',1);
+document.fonts.load('700 16px "Instrument Sans"').then(()=>document.body.setAttribute('data-hazir',''))
+</script></body></html>

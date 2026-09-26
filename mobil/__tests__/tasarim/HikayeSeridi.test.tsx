@@ -100,6 +100,16 @@ describe('HikayeSeridi', () => {
     expect(screen.getByTestId('hikaye-dilim-ben-1-yeni')).toBeTruthy()
   })
 
+  it('KART (2026-09-26, B): icinde EN YENI anligin fotografi', async () => {
+    const g = grup('ayse')
+    const [h] = g.hikayeler
+    g.hikayeler = [{ ...h, id: 'e1', fotografUrl: 'https://imzali/eski.jpg' }, { ...h, id: 'e2', fotografUrl: 'https://imzali/yeni.jpg' }]
+    await render(<HikayeSeridi gruplar={[g]} ben={ben} />)
+    expect(screen.getByTestId('hikaye-kapak-ayse').props.source).toEqual([{ uri: 'https://imzali/yeni.jpg' }])
+    // Anligim yok: kendi kartimda kapak yok.
+    expect(screen.queryByTestId('hikaye-kapak-ben')).toBeNull()
+  })
+
   it('anligim yokken kendi dairemde halka YOK', async () => {
     await render(<HikayeSeridi gruplar={[]} ben={ben} />)
     expect(screen.queryByTestId('hikaye-halka-ben')).toBeNull()

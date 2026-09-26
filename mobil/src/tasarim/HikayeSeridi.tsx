@@ -1,7 +1,8 @@
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native'
 import { yatayAlan } from '../../lib/yatay-kilit'
 import { useRouter } from 'expo-router'
-import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg'
+import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg'
+import { Image } from 'expo-image'
 import type { HikayeGrubu } from '../../lib/hikaye'
 import { useDil } from '../../lib/dil'
 import { yazi, olcek, bosluk, yuvarlak, type Renk } from './tema'
@@ -25,10 +26,18 @@ import { Avatar } from './Avatar'
  * cunku buradaki daire bir EYLEM (paylas), bilgi degil.
  */
 
-const HALKA = 64
-const AVATAR = 56
-/** Arkadas dairesinde avatar: halka (3) + beyaz bosluk (~3) payi. */
-const ARKADAS_AVATAR = 52
+/**
+ * ANLIK KARTI (2026-09-26, kullanicinin secimi B: "yuvarlak degil,
+ * anlik cekiminin karesine benzer kucugu"): daire yerine cekim kartinin
+ * KUCUGU - dikey 3:4, oval koseler. Icinde kisinin EN YENI anliginin
+ * fotografi, sol altta kucuk profil resmi. Halka kartin kenarinda,
+ * ayni dilim kurali. Anligi olmayan kendi kartimda profil resmim.
+ */
+const KART_EN = 72
+const KART_BOY = 96
+const KART_KOSE = 18
+/** Halka (3) + zemin boslugu (3). */
+const IC_PAY = 6
 
 /**
  * YENI ANLIK GORUNUMU (2026-09-25, kullanicinin secimi "A ile C"):
@@ -75,31 +84,16 @@ export function HikayeSeridi({
             testID="hikaye-benim"
             style={({ pressed }) => [pressed && stiller.basili]}
           >
-            {/* Anligim varsa arkadaslarinki gibi bolumlu halka: yeni dilim
-                gradyan, izledigim dilim gri (2026-09-26). */}
-            {benimGrubum ? (
-              <View style={stiller.dilimliKap}>
-                <DilimliHalka
-                  kimlik={benimGrubum.kullaniciId}
-                  goruldu={benimGrubum.hikayeler.map((h) => h.gordum)}
-                  griRenk={stiller.halkaGri.borderColor as string}
-                />
-                <Avatar
-                  fotografUrl={ben?.avatarUrl ?? benimGrubum.avatarUrl}
-                  ad={ben?.ad ?? benimGrubum.ad}
-                  kullaniciAdi={ben?.kullaniciAdi ?? benimGrubum.kullaniciAdi}
-                  cap={ARKADAS_AVATAR}
-                />
-              </View>
-            ) : (
-              <View style={[stiller.halka, stiller.halkaSade]}>
-                {ben ? (
-                  <Avatar fotografUrl={ben.avatarUrl} ad={ben.ad} kullaniciAdi={ben.kullaniciAdi} cap={AVATAR} />
-                ) : (
-                  <View style={stiller.bosAvatar} />
-                )}
-              </View>
-            )}
+            {/* Anligim varsa arkadaslarinki gibi bolumlu halka + en yeni
+                anligimin fotografi; yoksa kartta profil resmim. */}
+            <AnlikKarti
+              kimlik={benimGrubum?.kullaniciId ?? 'ben'}
+              goruldu={benimGrubum ? benimGrubum.hikayeler.map((h) => h.gordum) : null}
+              fotografUrl={benimGrubum ? sonFotograf(benimGrubum) : null}
+              avatarUrl={ben?.avatarUrl ?? benimGrubum?.avatarUrl ?? null}
+              ad={ben?.ad ?? benimGrubum?.ad ?? ''}
+              kullaniciAdi={ben?.kullaniciAdi ?? benimGrubum?.kullaniciAdi ?? ''}
+            />
             {/* Arti rozeti: hikayem varken de ekleme yolu acik kalsin. */}
             <Pressable
               onPress={ekle}
@@ -127,14 +121,14 @@ export function HikayeSeridi({
               testID={`hikaye-${grup.kullaniciId}`}
               style={({ pressed }) => [pressed && stiller.basili]}
             >
-              <View style={stiller.dilimliKap}>
-                <DilimliHalka
-                  kimlik={grup.kullaniciId}
-                  goruldu={grup.hikayeler.map((h) => h.gordum)}
-                  griRenk={stiller.halkaGri.borderColor as string}
-                />
-                <Avatar fotografUrl={grup.avatarUrl} ad={grup.ad} kullaniciAdi={grup.kullaniciAdi} cap={ARKADAS_AVATAR} />
-              </View>
+              <AnlikKarti
+                kimlik={grup.kullaniciId}
+                goruldu={grup.hikayeler.map((h) => h.gordum)}
+                fotografUrl={sonFotograf(grup)}
+                avatarUrl={grup.avatarUrl}
+                ad={grup.ad}
+                kullaniciAdi={grup.kullaniciAdi}
+              />
             </Pressable>
             <Text style={[stiller.ad, grup.gorulmemisVar ? stiller.adBenim : stiller.adSoluk]} numberOfLines={1}>
               {grup.kullaniciAdi}
@@ -146,20 +140,87 @@ export function HikayeSeridi({
   )
 }
 
+/** Kisinin en yeni anliginin fotografi (hikayeler eskiden yeniye). */
+function sonFotograf(grup: HikayeGrubu): string | null {
+  for (let i = grup.hikayeler.length - 1; i >= 0; i--) {
+    const url = grup.hikayeler[i].fotografUrl
+    if (url) return url
+  }
+  return null
+}
+
+function AnlikKarti({
+  kimlik,
+  goruldu,
+  fotografUrl,
+  avatarUrl,
+  ad,
+  kullaniciAdi,
+}: {
+  kimlik: string
+  /** null: anlik yok, halka cizilmez. */
+  goruldu: boolean[] | null
+  fotografUrl: string | null
+  avatarUrl: string | null
+  ad: string
+  kullaniciAdi: string
+}) {
+  const stiller = useStiller(stilleriYap)
+  return (
+    <View style={stiller.kartKap}>
+      {goruldu && goruldu.length > 0 ? (
+        <DilimliHalka kimlik={kimlik} goruldu={goruldu} griRenk={stiller.halkaGri.borderColor as string} />
+      ) : null}
+      <View style={stiller.kartIc}>
+        {fotografUrl ? (
+          <>
+            <Image
+              source={{ uri: fotografUrl }}
+              style={StyleSheet.absoluteFill}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={fotografUrl}
+              transition={0}
+              testID={`hikaye-kapak-${kimlik}`}
+            />
+            <View style={stiller.miniAvatar}>
+              <Avatar fotografUrl={avatarUrl} ad={ad} kullaniciAdi={kullaniciAdi} cap={22} />
+            </View>
+          </>
+        ) : avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={StyleSheet.absoluteFill} contentFit="cover" />
+        ) : (
+          <View style={stiller.kartBosAvatar}>
+            <Avatar fotografUrl={null} ad={ad} kullaniciAdi={kullaniciAdi} cap={40} />
+          </View>
+        )}
+      </View>
+    </View>
+  )
+}
+
 /**
- * Bolumlu halka: her anlik bir dilim, izleme sirasiyla saat yonunde,
- * tepeden baslar. Tek anlikta tam daire (bosluk yok).
+ * Bolumlu halka kartin kenarinda: her anlik bir dilim, izleme sirasiyla
+ * saat yonunde, UST ORTADAN baslar. Tek anlikta kesintisiz.
  */
 function DilimliHalka({ kimlik, goruldu, griRenk }: { kimlik: string; goruldu: boolean[]; griRenk: string }) {
   const n = Math.max(1, goruldu.length)
-  const merkez = HALKA / 2
-  const r = (HALKA - HALKA_KALIN) / 2
-  const cevre = 2 * Math.PI * r
+  const y0 = HALKA_KALIN / 2
+  const w = KART_EN - HALKA_KALIN
+  const h = KART_BOY - HALKA_KALIN
+  const r = KART_KOSE - HALKA_KALIN / 2
+  const x0 = y0
+  // Ust ortadan saat yonunde yuvarlak dikdortgen.
+  const yol =
+    `M ${x0 + w / 2} ${y0} H ${x0 + w - r} A ${r} ${r} 0 0 1 ${x0 + w} ${y0 + r} V ${y0 + h - r} ` +
+    `A ${r} ${r} 0 0 1 ${x0 + w - r} ${y0 + h} H ${x0 + r} A ${r} ${r} 0 0 1 ${x0} ${y0 + h - r} ` +
+    `V ${y0 + r} A ${r} ${r} 0 0 1 ${x0 + r} ${y0} Z`
+  const cevre = 2 * (w + h) - (8 - 2 * Math.PI) * r
   const bosluk = n > 1 ? DILIM_BOSLUK : 0
   const uzunluk = cevre / n - bosluk
   const gradyanId = `anlikHalka-${kimlik.replace(/[^a-zA-Z0-9]/g, '')}`
   return (
-    <Svg width={HALKA} height={HALKA} style={StyleSheet.absoluteFill} testID={`hikaye-halka-${kimlik}`}>
+    <Svg width={KART_EN} height={KART_BOY} style={StyleSheet.absoluteFill} testID={`hikaye-halka-${kimlik}`}>
       <Defs>
         <LinearGradient id={gradyanId} x1="0" y1="1" x2="1" y2="0">
           <Stop offset="0" stopColor="#FE7813" />
@@ -168,18 +229,16 @@ function DilimliHalka({ kimlik, goruldu, griRenk }: { kimlik: string; goruldu: b
         </LinearGradient>
       </Defs>
       {goruldu.map((gordum, i) => (
-        <Circle
+        <Path
           key={i}
           testID={`hikaye-dilim-${kimlik}-${i}-${gordum ? 'goruldu' : 'yeni'}`}
-          cx={merkez}
-          cy={merkez}
-          r={r}
+          d={yol}
           fill="none"
           stroke={gordum ? griRenk : `url(#${gradyanId})`}
           strokeWidth={gordum ? HALKA_INCE : HALKA_KALIN}
           strokeLinecap={n > 1 ? 'round' : 'butt'}
           strokeDasharray={n > 1 ? `${uzunluk} ${cevre - uzunluk}` : undefined}
-          transform={`rotate(${-90 + (i * 360) / n + ((bosluk / 2) / cevre) * 360} ${merkez} ${merkez})`}
+          strokeDashoffset={n > 1 ? -((i * cevre) / n + bosluk / 2) : undefined}
         />
       ))}
     </Svg>
@@ -198,20 +257,28 @@ const stilleriYap = (renk: Renk) =>
   StyleSheet.create({
     kok: { paddingTop: bosluk.xs, paddingBottom: bosluk.s },
     serit: { paddingHorizontal: bosluk.sayfa, gap: bosluk.m },
-    kisi: { width: 68, alignItems: 'center' },
-    halka: {
-      width: HALKA,
-      height: HALKA,
+    kisi: { width: KART_EN, alignItems: 'center' },
+    kartKap: { width: KART_EN, height: KART_BOY },
+    kartIc: {
+      position: 'absolute',
+      left: IC_PAY,
+      top: IC_PAY,
+      right: IC_PAY,
+      bottom: IC_PAY,
+      borderRadius: KART_KOSE - IC_PAY + 1,
+      overflow: 'hidden',
+      backgroundColor: renk.turuncuZemin,
+    },
+    kartBosAvatar: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    miniAvatar: {
+      position: 'absolute',
+      left: 4,
+      bottom: 4,
       borderRadius: yuvarlak.hap,
       borderWidth: 2,
-      alignItems: 'center',
-      justifyContent: 'center',
+      borderColor: renk.zemin,
     },
-    dilimliKap: { width: HALKA, height: HALKA, alignItems: 'center', justifyContent: 'center' },
     halkaGri: { borderColor: renk.cizgi },
-    /** Kendi dairem: halka yok - ayirt eden sey arti rozeti. */
-    halkaSade: { borderColor: 'transparent' },
-    bosAvatar: { width: AVATAR, height: AVATAR, borderRadius: yuvarlak.hap, backgroundColor: renk.turuncuZemin },
     artiRozeti: {
       position: 'absolute',
       right: -2,
@@ -231,7 +298,7 @@ const stilleriYap = (renk: Renk) =>
       fontFamily: yazi.govde,
       fontSize: olcek.minik,
       color: renk.metin,
-      maxWidth: 68,
+      maxWidth: KART_EN,
     },
     adSoluk: { color: renk.metinIkincil },
     /** Kendi dairemin "Anlık" yazisi ve yeni anligi olanin adi kalin (2026-09-25). */
