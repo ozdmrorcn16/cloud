@@ -390,10 +390,16 @@ describe('HikayeIzleEkrani', () => {
     expect(mockBack).toHaveBeenCalled()
   })
 
-  it('ILERLEME CUBUGU YOK (2026-09-24); × kapatir', async () => {
+  it('SIRA GOSTERGESI (2026-09-26): anlik sayisi kadar parca, bulunulan isaretli; gecince ilerler; × kapatir', async () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
-    expect(screen.queryByTestId('hikaye-ilerleme')).toBeNull()
+    // Ayse: a1 gorulmus, a2 gorulmemis -> a2'den acilir.
+    expect(screen.getByTestId('hikaye-sira-0-gecildi')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-sira-1-burada')).toBeTruthy()
+    expect(screen.queryByTestId('hikaye-sira-2-sirada')).toBeNull()
+    await fireEvent.press(screen.getByTestId('hikaye-geri'))
+    expect(screen.getByTestId('hikaye-sira-0-burada')).toBeTruthy()
+    expect(screen.getByTestId('hikaye-sira-1-sirada')).toBeTruthy()
     await fireEvent.press(screen.getByTestId('hikaye-kapat'))
     expect(mockBack).toHaveBeenCalledTimes(1)
   })

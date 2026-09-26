@@ -63,8 +63,9 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   SAHIBININ arsivinde suresiz ("Anlık ekle" ekraninin SAG USTUNDEKI ikon -> `/anlik-arsivi`; ana
   sayfada YOK -
   izleyici `?arsiv=<id>`). Gorenler/ifadeler/etiketler 24 saatte silinir
-  (cron artik yalnizca bunlari siler). Izleyicide ZAMANLAYICI ve
-  ilerleme cubugu YOK; dokunus/kaydirmayla gecilir. RLS "kendi anlik
+  (cron artik yalnizca bunlari siler). Izleyicide ZAMANLAYICI YOK;
+  dokunus/kaydirmayla gecilir. Ustte SIRA GOSTERGESI (2026-09-26): anlik
+  sayisi kadar parca, gecince bulunulan parca 240 ms'de dolar - sure degil. RLS "kendi anlik
   arsivi"; `hikaye_akisi` sure suzgecini ACIKCA tasir. Hesap silme anlik
   ve TUM check-in fotograflarini kovadan siler (hesap-sil v8). Canli
   `araclar/anlik-arsivi-canli-test.py` 13/13. Ikon: B (arsiv kutusu,

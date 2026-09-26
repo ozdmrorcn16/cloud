@@ -30,7 +30,7 @@ import {
 } from '../../../lib/hikaye'
 import { gorecelZaman } from '../../../lib/zaman'
 import { konumuDuzelt, VARSAYILAN_KONUM } from '../../../lib/hikaye'
-import { useHareket } from '../../tasarim/hareket'
+import { EGRI, useHareket } from '../../tasarim/hareket'
 import { Avatar } from '../../tasarim/Avatar'
 import { UcNoktaIkonu } from '../../tasarim/SecimPenceresi'
 import { HareketliDugme } from '../../tasarim/HareketliDugme'
@@ -57,7 +57,7 @@ const KISI_GECIS_HIZI = 650
 
 /** Kartin ustundeki (ilerleme + kimlik) ve altindaki (ifade seridi /
  *  gorenler) bloklarin guvenli alan disindaki boylari. */
-const UST_BLOK_BOYU = 72
+const UST_BLOK_BOYU = 84
 const ALT_BLOK_BOYU = 96
 
 /**
@@ -680,7 +680,9 @@ export default function HikayeIzleEkrani() {
             ) : null}
           </Animated.View>
 
-          {/* Ust: kimlik (ilerleme cubugu YOK, 2026-09-24) */}
+          {/* Ust: SIRA GOSTERGESI + kimlik. Zamanlayici YOK (2026-09-24);
+              gosterge yalnizca KAC anlik oldugunu ve hangisinde olundugunu
+              soyler, gecince ilerler (kullanicinin istegi 2026-09-26). */}
           {/* BASILI TUTARKEN ARAYUZ GIZLENIR (Instagram): fotografin onunde
               hicbir sey kalmaz. Yalnizca gorsel - zamanlayici zaten duruyor. */}
           <View
@@ -688,6 +690,7 @@ export default function HikayeIzleEkrani() {
             style={[stiller.ust, { paddingTop: guvenliAlan.top + bosluk.s }, basiliTutuluyor && stiller.gizli]}
             pointerEvents={basiliTutuluyor ? 'none' : 'box-none'}
           >
+            <SiraGostergesi adet={grup.hikayeler.length} sira={konum.h} kimlik={grup.kullaniciId} />
             <View style={stiller.kimlikSatiri}>
               <Pressable
                 style={stiller.kimlik}
@@ -824,6 +827,60 @@ function KalpCizimi() {
     </Svg>
   )
 }
+
+/**
+ * SIRA GOSTERGESI: kisinin anlik sayisi kadar ince parca. Gecilenler ve
+ * bulunulan beyaz, siradakiler yari saydam. ILERLEYINCE bulunulan parca
+ * soldan saga 240 ms'de dolar (Instagram deseni, ama SURE YOK - dolum
+ * yalnizca gecisi gosterir, kendiliginden ilerlemez). Renk sabit: zemin
+ * her iki temada siyah izleyici.
+ */
+function SiraGostergesi({ adet, sira, kimlik }: { adet: number; sira: number; kimlik: string }) {
+  // Onceki konum render sirasinda okunur; ileri gecildiyse bulunulan parca
+  // KENDI degeriyle dolar (tek ortak deger eski parcaya bagli kalip
+  // kaldirilmis gorunume animasyon baslatiyordu).
+  const onceki = useRef({ sira, kimlik })
+  const ileri = onceki.current.kimlik === kimlik && sira > onceki.current.sira
+  useEffect(() => {
+    onceki.current = { sira, kimlik }
+  }, [sira, kimlik])
+  return (
+    <View
+      style={gostergeStil.satir}
+      testID="hikaye-sira"
+      accessibilityLabel={`${sira + 1} / ${adet}`}
+      pointerEvents="none"
+    >
+      {Array.from({ length: adet }, (_, i) => (
+        <View key={i} style={gostergeStil.parca} testID={`hikaye-sira-${i}-${i < sira ? 'gecildi' : i === sira ? 'burada' : 'sirada'}`}>
+          {i < sira ? <View style={gostergeStil.dolu} /> : null}
+          {i === sira ? <DolanParca key={`${kimlik}-${sira}`} dolsun={ileri} /> : null}
+        </View>
+      ))}
+    </View>
+  )
+}
+
+/** Bulunulan parcanin dolgusu: ileri gecildiyse mount'ta 240 ms'de dolar. */
+function DolanParca({ dolsun }: { dolsun: boolean }) {
+  const hareket = useHareket()
+  const dolum = useRef(new Animated.Value(dolsun && hareket ? 0 : 1)).current
+  useEffect(() => {
+    if (!dolsun || !hareket) return
+    const a = Animated.timing(dolum, { toValue: 1, duration: 240, easing: EGRI.girisCikis, useNativeDriver: true })
+    a.start()
+    return () => a.stop()
+    // Yalnizca mount'ta: karar ilk cizimde verilir.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return <Animated.View style={[gostergeStil.dolu, { transformOrigin: 'left', transform: [{ scaleX: dolum }] }]} />
+}
+
+const gostergeStil = StyleSheet.create({
+  satir: { flexDirection: 'row', gap: 4, paddingHorizontal: 2 },
+  parca: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.32)', overflow: 'hidden' },
+  dolu: { ...StyleSheet.absoluteFill, backgroundColor: '#FFFFFF', borderRadius: 2 },
+})
 
 function KapatCarpisi() {
   return (
