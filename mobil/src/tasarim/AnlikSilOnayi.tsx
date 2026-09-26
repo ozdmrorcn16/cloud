@@ -4,7 +4,8 @@ import { Image } from 'expo-image'
 import Svg, { Path } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
 import { SURE, useHareket, useModalHareketi } from './hareket'
-import { yazi, olcek } from './tema'
+import { yazi, olcek, type Renk } from './tema'
+import { useStiller } from './tema-baglami'
 
 /**
  * ANLIK SILME ONAYI - SECENEK A, BEYAZ KART (kullanicinin secimi
@@ -37,6 +38,7 @@ export function AnlikSilOnayi({
   onVazgec: () => void
 }) {
   const { t } = useDil()
+  const stiller = useStiller(stilleriYap)
   const hareket = useHareket()
   const { gorunur, ilerleme } = useModalHareketi(acikMi, SURE.sayfaGiris, SURE.sayfaCikis)
   const olcekDeger = useRef(new Animated.Value(1)).current
@@ -147,9 +149,6 @@ export function AnlikSilOnayi({
   )
 }
 
-/** Kirmizi: beyaz kartta dolu dugme; tema jetonu (#C0392B) burada koyu kaliyordu. */
-const KIRMIZI = '#E0453A'
-
 function CopCizimi() {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24">
@@ -158,13 +157,17 @@ function CopCizimi() {
   )
 }
 
-const stiller = StyleSheet.create({
+/** Renkler TEMA JETONLARINDAN (koyu modda `yuzey` kart, 2026-09-26). */
+const stilleriYap = (renk: Renk) =>
+  StyleSheet.create({
   perde: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.6)' },
   orta: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   kart: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: renk.yuzey,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: renk.cizgi,
     borderRadius: 28,
     paddingTop: 26,
     paddingHorizontal: 18,
@@ -176,7 +179,7 @@ const stiller = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: '#3A3632',
+    backgroundColor: renk.cizgi,
     shadowColor: '#000000',
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -190,18 +193,18 @@ const stiller = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: KIRMIZI,
+    backgroundColor: renk.yikici,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: renk.yuzey,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  baslik: { fontFamily: yazi.ekranBasligi, fontSize: olcek.altBaslik, color: '#17130F', textAlign: 'center' },
+  baslik: { fontFamily: yazi.ekranBasligi, fontSize: olcek.altBaslik, color: renk.metin, textAlign: 'center' },
   aciklama: {
     fontFamily: yazi.govde,
     fontSize: olcek.govde,
     lineHeight: 21,
-    color: '#6E6660',
+    color: renk.metinIkincil,
     textAlign: 'center',
     marginTop: 6,
     marginBottom: 20,
@@ -209,9 +212,9 @@ const stiller = StyleSheet.create({
   },
   dugmeler: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
   dugme: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 15, borderRadius: 18 },
-  vazgec: { backgroundColor: '#F1EEEA' },
-  sil: { backgroundColor: KIRMIZI },
-  vazgecYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: '#17130F' },
+  vazgec: { backgroundColor: `${renk.metin}0F` },
+  sil: { backgroundColor: renk.yikici },
+  vazgecYazi: { fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1, color: renk.metin },
   silYazi: { fontFamily: yazi.ekranBasligi, fontSize: olcek.govde + 1, color: '#FFFFFF' },
   basili: { transform: [{ scale: 0.96 }] },
 })

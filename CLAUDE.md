@@ -93,7 +93,7 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
 - Anlik izleyici (2026-09-26): kendi anligimda "Anlığı sil" dugmesi YOK
   (yalnizca uc nokta menusunde); uc nokta ve × `HareketliDugme`
   (`src/tasarim/HareketliDugme.tsx`, ekle ile ortak).
-  Uc nokta menusu `AnlikMenusu` (Secenek A "koyu cam kart": onizlemeli
+  Uc nokta menusu `AnlikMenusu` (Secenek A duzeni, BEYAZ kart = tema `yuzey`: onizlemeli
   baslik, yayli giris, kademeli satirlar, arkadaki kart %94); diger
   ekranlar beyaz `SecimPenceresi`nde kalir.
   Silme onayi `AnlikSilOnayi` (A, BEYAZ kart: egik onizleme + kirmizi cop
@@ -268,6 +268,9 @@ Tasarim sureci
 - Tasarim secenekleri once gorsel sunulur; secim olmadan kod yok.
 - Istenen kadarini yap; ekranlar tek tek, kullanicinin talimatiyla.
 - Ayni kavram her ekranda ayni ikon/bilesen. Listeler sonsuz kaydirma.
+- HER DEGISIKLIK KOYU MODA UYARLI (2026-09-26): renk tema jetonundan
+  (`useStiller`), sabit hex yalnizca her iki temada ayni kalacak yuzeyde
+  (anlik izleyici/kamera siyahi, perde).
 - Yan etki olarak bilesen dis olcusu kucultulmez.
 
 ## Kod kurallari ve tuzaklar (bir daha yapma)

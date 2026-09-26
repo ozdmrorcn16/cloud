@@ -6,14 +6,16 @@ import Svg, { Path } from 'react-native-svg'
 import { useDil } from '../../lib/dil'
 import { EGRI, SURE, useHareket, useModalHareketi } from './hareket'
 import { EYLEM_GECIKMESI_MS } from './SecimPenceresi'
-import { yazi, olcek } from './tema'
+import { yazi, olcek, type Renk } from './tema'
+import { useRenk, useStiller } from './tema-baglami'
 
 /**
- * ANLIK MENUSU - SECENEK A "KOYU CAM KART" (kullanicinin secimi
- * 2026-09-26). Anlik izleyicinin uc nokta menusu; uygulamanin genel
+ * ANLIK MENUSU - SECENEK A duzeni, BEYAZ KART (kullanicinin secimi
+ * 2026-09-26; once koyu camdi, "bu karti da beyaz yap"). Renkler TEMA
+ * JETONLARINDAN: acik modda beyaz, koyu modda `yuzey`. Anlik izleyicinin uc nokta menusu; uygulamanin genel
  * beyaz `SecimPenceresi` siyah izleyicide sert duruyordu.
  *
- * Kenarlardan boslukla YUZEN koyu, hafif saydam kart; ustte anligin
+ * Kenarlardan boslukla YUZEN kart (acik modda beyaz); ustte anligin
  * kucuk onizlemesi + alt bilgi, altta eylem satirlari (yikici olan
  * kirmizi zeminli, ikon kutulu) ve ayri "Vazgec".
  *
@@ -51,6 +53,8 @@ export function AnlikMenusu({
   secimler: AnlikMenuSecimi[]
 }) {
   const { t } = useDil()
+  const stiller = useStiller(stilleriYap)
+  const renk = useRenk()
   const guvenliAlan = useSafeAreaInsets()
   const hareket = useHareket()
   const { gorunur, ilerleme } = useModalHareketi(acikMi, SURE.sayfaGiris, SURE.sayfaCikis)
@@ -126,7 +130,7 @@ export function AnlikMenusu({
                   style={[stiller.satir, secim.yikici ? stiller.satirYikici : stiller.satirNotr]}
                 >
                   <View style={[stiller.ikonKutu, secim.yikici ? stiller.ikonKutuYikici : stiller.ikonKutuNotr]}>
-                    {secim.ikon === 'cop' ? <CopCizimi renk={secim.yikici ? YIKICI : '#FFFFFF'} /> : <BayrakCizimi renk={secim.yikici ? YIKICI : '#FFFFFF'} />}
+                    {secim.ikon === 'cop' ? <CopCizimi renk={secim.yikici ? renk.yikici : renk.metin} /> : <BayrakCizimi renk={secim.yikici ? renk.yikici : renk.metin} />}
                   </View>
                   <Text style={[stiller.satirYazi, secim.yikici && stiller.satirYaziYikici]}>{secim.etiket}</Text>
                 </BasilanSatir>
@@ -143,8 +147,6 @@ export function AnlikMenusu({
     </Modal>
   )
 }
-
-const YIKICI = '#FF6B5E'
 
 /** Satirlar 40 ms arayla asagidan belirir. */
 function KademeliOge({ sira, acik, children }: { sira: number; acik: boolean; children: React.ReactNode }) {
@@ -218,32 +220,34 @@ function BayrakCizimi({ renk }: { renk: string }) {
   )
 }
 
-const stiller = StyleSheet.create({
+const stilleriYap = (renk: Renk) =>
+  StyleSheet.create({
   perde: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.6)' },
   zemin: { flex: 1, justifyContent: 'flex-end' },
   kap: { marginHorizontal: 10 },
   kart: {
-    backgroundColor: 'rgba(38,35,32,0.96)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: renk.yuzey,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: renk.cizgi,
     borderRadius: 26,
     padding: 10,
   },
-  tutamac: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.25)', marginBottom: 12 },
+  tutamac: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: renk.cizgi, marginBottom: 12 },
   bas: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 6, paddingBottom: 12 },
-  onizleme: { width: 40, height: 53, borderRadius: 9, backgroundColor: '#3A3632' },
+  onizleme: { width: 40, height: 53, borderRadius: 9, backgroundColor: renk.cizgi },
   basMetin: { flex: 1 },
-  basBaslik: { color: '#FFFFFF', fontFamily: yazi.ekranBasligi, fontSize: olcek.govde },
-  basAlt: { color: 'rgba(255,255,255,0.6)', fontFamily: yazi.govde, fontSize: olcek.kucuk, marginTop: 2 },
-  ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.12)', marginBottom: 8 },
+  basBaslik: { color: renk.metin, fontFamily: yazi.ekranBasligi, fontSize: olcek.govde },
+  basAlt: { color: renk.metinIkincil, fontFamily: yazi.govde, fontSize: olcek.kucuk, marginTop: 2 },
+  ayirac: { height: StyleSheet.hairlineWidth, backgroundColor: renk.cizgi, marginBottom: 8 },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, marginBottom: 8 },
-  satirYikici: { backgroundColor: 'rgba(255,77,64,0.13)' },
-  satirNotr: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  // Yari saydam ton jetondan (8 haneli hex): iki temada da dogru.
+  satirYikici: { backgroundColor: `${renk.yikici}17` },
+  satirNotr: { backgroundColor: `${renk.metin}0D` },
   ikonKutu: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  ikonKutuYikici: { backgroundColor: 'rgba(255,77,64,0.22)' },
-  ikonKutuNotr: { backgroundColor: 'rgba(255,255,255,0.1)' },
-  satirYazi: { color: '#FFFFFF', fontFamily: yazi.ekranBasligi, fontSize: olcek.govde + 1 },
-  satirYaziYikici: { color: YIKICI },
-  vazgec: { alignItems: 'center', paddingVertical: 15, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.08)' },
-  vazgecYazi: { color: '#FFFFFF', fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1 },
+  ikonKutuYikici: { backgroundColor: `${renk.yikici}26` },
+  ikonKutuNotr: { backgroundColor: `${renk.metin}14` },
+  satirYazi: { color: renk.metin, fontFamily: yazi.ekranBasligi, fontSize: olcek.govde + 1 },
+  satirYaziYikici: { color: renk.yikici },
+  vazgec: { alignItems: 'center', paddingVertical: 15, borderRadius: 18, backgroundColor: `${renk.metin}0F` },
+  vazgecYazi: { color: renk.metin, fontFamily: yazi.govdeKalin, fontSize: olcek.govde + 1 },
 })
