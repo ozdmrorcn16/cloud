@@ -40,7 +40,7 @@ import { AnlikMenusu, type AnlikMenuSecimi } from '../../tasarim/AnlikMenusu'
 import { AnlikSilOnayi } from '../../tasarim/AnlikSilOnayi'
 import { KisiListesiSayfasi } from '../../tasarim/KisiListesiSayfasi'
 import { IfadeCipi } from '../../tasarim/IfadeSecici'
-import { EmojiSecici } from '../../tasarim/EmojiSecici'
+import { EmojiSayfasi } from '../../tasarim/EmojiSayfasi'
 import { HikayeOgesi } from '../../tasarim/HikayeOgesi'
 import { KonumHapi } from '../../tasarim/KonumHapi'
 import { ifadeBul } from '../../../lib/ifadeler'
@@ -107,9 +107,10 @@ export default function HikayeIzleEkrani() {
   const emojilerimRef = useRef(emojilerim)
   emojilerimRef.current = emojilerim
   const [sikEmojiler, setSikEmojiler] = useState<string[]>(VARSAYILAN_EMOJILER)
-  const [emojiSeciciAcik, setEmojiSeciciAcik] = useState(false)
+  const [emojiSayfasiAcik, setEmojiSayfasiAcik] = useState(false)
   useEffect(() => {
-    sikEmojileriGetir(6)
+    // 18: satirda ilk 6, emoji sayfasinin "Onerilenler"inde 18.
+    sikEmojileriGetir(18)
       .then((l) => {
         if (l.length > 0) setSikEmojiler(l)
       })
@@ -419,7 +420,12 @@ export default function HikayeIzleEkrani() {
         .withTestId('hikaye-surukleme')
         .maxPointers(1)
         .minDistance(12)
-        .onBegin(() => {
+        // ARAYUZ YALNIZCA SURUKLEME BASLAYINCA (12 px) GIZLENIR. Onceden
+        // `onBegin`deydi: parmak ekrana DEGDIGI AN (yanit kutusu, Gonder,
+        // emoji dahil) arayuz gizlenip pointerEvents 'none' oluyor ve o
+        // dokunus gecersiz kaliyordu - "Yanit ver calismiyor" (2026-09-26).
+        // Basili tutunca gizleme sol/sag dokunma bolgelerinde (basiliBasladi).
+        .onStart(() => {
           basiliRef.current = true
           setBasiliTutuluyor(true)
           durdur()
@@ -700,7 +706,7 @@ export default function HikayeIzleEkrani() {
                 sik={sikEmojiler}
                 secili={emojilerim[hikaye.id] ?? null}
                 onSec={emojiSec}
-                onDahaFazla={() => setEmojiSeciciAcik(true)}
+                onDahaFazla={() => setEmojiSayfasiAcik(true)}
                 gizli={basiliTutuluyor}
               />
             ) : null}
@@ -820,16 +826,14 @@ export default function HikayeIzleEkrani() {
         altBilgi={menuAltBilgi}
         secimler={secimler}
       />
-      <EmojiSecici
-        acikMi={emojiSeciciAcik}
+      {/* EMOJI SAYFASI (kullanicinin referansi 2026-09-26): Ara +
+          Onerilenler + Tumu; secilen emoji anliga birakilir. */}
+      <EmojiSayfasi
+        acikMi={emojiSayfasiAcik}
+        onerilenler={sikEmojiler}
         secili={emojilerim[hikaye.id] ?? null}
-        onSec={(emoji) => {
-          // Secici secili emojiye dokununca null verir; emojiSec'in kendi
-          // gecis mantigiyla (ayniysa kaldir) ayni sonuca varsin.
-          const onceki = emojilerim[hikaye.id] ?? null
-          void emojiSec(emoji ?? onceki)
-        }}
-        onKapat={() => setEmojiSeciciAcik(false)}
+        onSec={(emoji) => void emojiSec(emoji)}
+        onKapat={() => setEmojiSayfasiAcik(false)}
       />
       <AnlikSilOnayi
         acikMi={silOnayi}
@@ -954,7 +958,7 @@ const VARSAYILAN_EMOJILER = ['❤️', '😂', '😮', '😢', '👏', '🔥']
 
 /**
  * EMOJI SATIRI (2026-09-26): fotografin altinda en sik kullanilan 6
- * standart emoji + sonda ARTI (butun liste, EmojiSecici). Secili emoji
+ * standart emoji + sonda ARTI (EmojiSayfasi: Ara, Onerilenler, Tumu). Secili emoji
  * turuncu halkali; secim sik listede yoksa basa eklenir. Dokunulan emoji
  * yayli ziplar; "Hareketi azalt"ta ziplama yok. Zemin her iki temada
  * siyah izleyici - renkler sabit.

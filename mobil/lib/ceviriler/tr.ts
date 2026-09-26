@@ -743,17 +743,12 @@ export default {
     galeridenSec: 'Galeriden seç',
     ekle: 'Ekle ({{adet}})',
   },
-  /** Anliga birakilan standart emoji secicisi (2026-09-26). */
+  /** Anlik izleyicideki emoji sayfasi (2026-09-26). */
   emoji: {
-    baslik: "Emoji bırak",
-    yuzler: "Yüzler",
-    kalpler: "Kalpler",
-    eller: "Eller",
-    kutlama: "Kutlama",
-    yemek: "Yiyecek ve içecek",
-    doga: "Doğa ve hava",
-    aktivite: "Etkinlik",
-    seyahat: "Seyahat ve yerler",
+    ara: "Ara",
+    onerilenler: "Önerilenler",
+    tumu: "Tümü",
+    sonucYok: "Sonuç yok",
   },
   hikaye: {
     notEkle: 'Not',

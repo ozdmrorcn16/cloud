@@ -600,17 +600,12 @@ export default {
     galeridenSec: 'اختيار من المعرض',
     ekle: 'إضافة ({{adet}})',
   },
-  /** Anliga birakilan standart emoji secicisi (2026-09-26). */
+  /** Anlik izleyicideki emoji sayfasi (2026-09-26). */
   emoji: {
-    baslik: "اترك رمزًا تعبيريًا",
-    yuzler: "وجوه",
-    kalpler: "قلوب",
-    eller: "أيدٍ",
-    kutlama: "احتفال",
-    yemek: "طعام وشراب",
-    doga: "طبيعة وطقس",
-    aktivite: "أنشطة",
-    seyahat: "سفر وأماكن",
+    ara: "بحث",
+    onerilenler: "مقترحة",
+    tumu: "الكل",
+    sonucYok: "لا توجد نتائج",
   },
   hikaye: {
     notEkle: 'ملاحظة',

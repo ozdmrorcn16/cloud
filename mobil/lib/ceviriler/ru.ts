@@ -600,17 +600,12 @@ export default {
     galeridenSec: 'Выбрать из галереи',
     ekle: 'Добавить ({{adet}})',
   },
-  /** Anliga birakilan standart emoji secicisi (2026-09-26). */
+  /** Anlik izleyicideki emoji sayfasi (2026-09-26). */
   emoji: {
-    baslik: "Оставить эмодзи",
-    yuzler: "Лица",
-    kalpler: "Сердца",
-    eller: "Руки",
-    kutlama: "Праздник",
-    yemek: "Еда и напитки",
-    doga: "Природа и погода",
-    aktivite: "Занятия",
-    seyahat: "Путешествия и места",
+    ara: "Поиск",
+    onerilenler: "Рекомендуемые",
+    tumu: "Все",
+    sonucYok: "Ничего не найдено",
   },
   hikaye: {
     notEkle: 'Заметка',

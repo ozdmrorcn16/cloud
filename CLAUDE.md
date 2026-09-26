@@ -82,7 +82,10 @@ sayfasi (OTA `883713d6`, web `slooin--6qnel25x9a`). Kurallar:
   sutun kapta yukseklik 0 olur (telefonda zemin/yazi kayboldu, jest gormez). PAYLASAN yazi/ifade/etiket EKLEYEMEZ.
 - Baskasinin anliginda (2026-09-26): fotografin ALTINDA en sik 6 STANDART
   EMOJI (`sik_emojiler`: once kendi, sonra genel adet, sonra varsayilan) +
-  ARTI (`EmojiSecici`, `lib/emojiler.ts` 8 kategori). Dokunmak emojiyi ANLIGA
+  ARTI -> `EmojiSayfasi` (kullanicinin referansi: koyu yuzen sayfa, Ara +
+  Onerilenler 18 + Tumu 1870; yarim acilir, yukari cekince tam ekran). Veri
+  `lib/emoji-veri/` (`araclar/emoji-veri-uret.mjs`: emojibase + CLDR 7 dil,
+  Unicode <= 15.0; paketler yalnizca uretimde, --no-save). Dokunmak emojiyi ANLIGA
   birakir (`hikaye_emojisi_birak`, `hikaye_goruntulemeler.emoji`; sahibi
   Gorenler'de gorur), yeniden dokunmak kaldirir. 108'lik ifade seti burada
   KULLANILMAZ (`sik_ifadeler`, `hikaye_ifadesi_gonder` duruyor, cagrilmiyor).
@@ -333,6 +336,9 @@ Istemci (React Native / Expo)
   `EYLEM_GECIKMESI_MS` sonra). Onay/secim kapanisini `waitFor` ile olc.
 - Ekrani orten katman hicbir zaman yalnizca bir sozun cozulmesine
   baglanmaz (PaylasimKalkani kilitlenmisti).
+- Tam ekran RNGH Pan'da arayuzu `onBegin`de gizleme: parmak DEGDIGI AN
+  calisir, altindaki girdi/dugme dokunusu duser (anlik "Yanit ver" boyle
+  calismiyordu, 2026-09-26). Gizleme `onStart`ta (surukleme etkinlesince).
 - PanResponder islevleri duz `View`/`Animated.View`a; `Pressable`
   kendi responder'lariyla onlari ezer (jest gormez).
 - OTA ile giden kodda yeni native modul: once expo-modules-core

@@ -342,10 +342,36 @@ describe('HikayeIzleEkrani', () => {
     await render(<HikayeIzleEkrani />)
     await screen.findByTestId('hikaye-fotograf-a2')
     await waitFor(() => expect(screen.getByTestId('hikaye-tepki-1').props.accessibilityState).toEqual({ selected: true }))
+    // Arti EMOJI SAYFASINI acar (referans: Ara + Onerilenler + Tumu).
     await fireEvent.press(screen.getByTestId('hikaye-emoji-daha'))
-    expect(await screen.findByTestId('emoji-secici')).toBeTruthy()
-    await fireEvent.press(screen.getByTestId('emoji-🍕'))
+    expect(await screen.findByTestId('emoji-sayfasi')).toBeTruthy()
+    expect(screen.getByText('Önerilenler')).toBeTruthy()
+    expect(screen.getByText('Tümü')).toBeTruthy()
+    await fireEvent.press(screen.getAllByTestId('emoji-😍')[0])
+    await waitFor(() => expect(hikayeEmojisiBirak).toHaveBeenCalledWith('a2', '😍'))
+  })
+
+  it('EMOJI SAYFASI: Ara Turkce kelimeyle bulur ("pizza"), secilen birakilir', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+    await fireEvent.press(screen.getByTestId('hikaye-emoji-daha'))
+    await fireEvent.changeText(await screen.findByTestId('emoji-ara'), 'pizza')
+    await fireEvent.press(await screen.findByTestId('emoji-🍕'))
     await waitFor(() => expect(hikayeEmojisiBirak).toHaveBeenCalledWith('a2', '🍕'))
+  })
+
+  /**
+   * HATA (2026-09-26, "yanit ver calismiyor"): surukleme hareketi
+   * `onBegin`de arayuzu gizliyordu - parmak yanit kutusuna/Gonder'e
+   * DEGDIGI AN satir pointerEvents 'none' olup dokunus dusuyordu. Gizleme
+   * artik yalnizca surukleme ETKINLESINCE (onStart).
+   */
+  it('HATA: surukleme dokunusun BASINDA arayuzu gizlemez (onBegin yok)', async () => {
+    await render(<HikayeIzleEkrani />)
+    await screen.findByTestId('hikaye-fotograf-a2')
+    const hareket = getByGestureTestId('hikaye-surukleme') as unknown as { handlers: Record<string, unknown> }
+    expect(hareket.handlers.onBegin).toBeUndefined()
+    expect(hareket.handlers.onStart).toBeDefined()
   })
 
   it('YANIT VER: yazilan metin sohbete gider, kutu temizlenir', async () => {

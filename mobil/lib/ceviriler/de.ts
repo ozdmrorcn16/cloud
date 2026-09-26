@@ -600,17 +600,12 @@ export default {
     galeridenSec: 'Aus der Galerie wählen',
     ekle: 'Hinzufügen ({{adet}})',
   },
-  /** Anliga birakilan standart emoji secicisi (2026-09-26). */
+  /** Anlik izleyicideki emoji sayfasi (2026-09-26). */
   emoji: {
-    baslik: "Emoji hinterlassen",
-    yuzler: "Gesichter",
-    kalpler: "Herzen",
-    eller: "Hände",
-    kutlama: "Feiern",
-    yemek: "Essen & Trinken",
-    doga: "Natur & Wetter",
-    aktivite: "Aktivitäten",
-    seyahat: "Reisen & Orte",
+    ara: "Suchen",
+    onerilenler: "Vorschläge",
+    tumu: "Alle",
+    sonucYok: "Keine Ergebnisse",
   },
   hikaye: {
     notEkle: 'Notiz',
