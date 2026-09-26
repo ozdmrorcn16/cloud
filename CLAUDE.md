@@ -273,6 +273,8 @@ Tasarim sureci
 - Tasarim secenekleri once gorsel sunulur; secim olmadan kod yok.
 - Istenen kadarini yap; ekranlar tek tek, kullanicinin talimatiyla.
 - Ayni kavram her ekranda ayni ikon/bilesen. Listeler sonsuz kaydirma.
+- Geri oku (`UstCubuk`, 21 ekran) HAREKETLI (2026-09-26): sagdan yayli
+  giris, basinca sola itilip kuculur.
 - HER DEGISIKLIK KOYU MODA UYARLI (2026-09-26): renk tema jetonundan
   (`useStiller`), sabit hex yalnizca her iki temada ayni kalacak yuzeyde
   (anlik izleyici/kamera siyahi, perde).
